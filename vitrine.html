@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CASE du Bois de Nèfles — Bienvenue</title>
+<style>
+  :root{
+    --vert:#1f9d6b; --vert-fonce:#127a51; --jaune:#f6b400; --ananas:#e8a33d;
+    --ciel:#2eb6e6; --ciel-fonce:#1f8fc4; --ink:#1d3a2e; --muted:#5c7468;
+    --bg:#fffef7; --card:#ffffff; --line:#e7efe9;
+    --shadow:0 6px 22px rgba(20,60,40,.10); --shadow-lg:0 16px 44px rgba(20,60,40,.16);
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+       color:var(--ink);background:var(--bg);line-height:1.6}
+  a{color:inherit}
+  .wrap{max-width:1080px;margin:0 auto;padding:0 20px}
+  /* Header */
+  header{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.92);backdrop-filter:blur(8px);
+         border-bottom:1px solid var(--line)}
+  header .bar{display:flex;align-items:center;gap:12px;padding:12px 20px;max-width:1080px;margin:0 auto}
+  .logo{display:flex;align-items:center;gap:10px;font-weight:900;font-size:18px;text-decoration:none}
+  .logo .pine{font-size:30px;filter:drop-shadow(0 2px 3px rgba(0,0,0,.15))}
+  .logo b{color:var(--vert)} .logo span{color:var(--ananas)}
+  nav.main{margin-left:auto;display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+  nav.main a{padding:8px 12px;border-radius:10px;font-weight:600;font-size:14px;text-decoration:none;color:var(--muted)}
+  nav.main a:hover{color:var(--ink);background:#f0f7f3}
+  .btn{display:inline-block;border:none;cursor:pointer;font:inherit;font-weight:800;text-decoration:none;
+       padding:12px 20px;border-radius:999px;transition:.15s;font-size:15px}
+  .btn.primary{background:var(--vert);color:#fff;box-shadow:0 6px 16px rgba(31,157,107,.35)}
+  .btn.primary:hover{background:var(--vert-fonce);transform:translateY(-1px)}
+  .btn.sun{background:var(--jaune);color:#5b4300}
+  .btn.sun:hover{filter:brightness(.97);transform:translateY(-1px)}
+  .btn.ghost{background:#fff;color:var(--vert);border:2px solid var(--vert)}
+  nav.main .btn{padding:9px 16px;font-size:14px}
+  /* Hero */
+  .hero{position:relative;overflow:hidden;background:linear-gradient(180deg,#7fd4f3 0%,#aee5c4 55%,var(--bg) 100%);
+        padding:54px 0 70px;text-align:center}
+  .hero .sun{position:absolute;top:24px;left:8%;font-size:60px;animation:float 5s ease-in-out infinite}
+  .hero .deco{position:absolute;font-size:46px;opacity:.9}
+  .hero .palm1{bottom:18px;left:3%;font-size:64px} .hero .palm2{bottom:10px;right:4%;font-size:70px}
+  .hero .mtn{top:60px;right:10%;font-size:54px;opacity:.85}
+  @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+  .hero h1{font-size:clamp(28px,5vw,46px);margin:6px 0 8px;font-weight:900;letter-spacing:-.5px}
+  .hero h1 .y{color:var(--ananas)} .hero h1 .g{color:var(--vert-fonce)}
+  .hero p.lead{font-size:18px;max-width:620px;margin:0 auto 22px;color:#2a4a3b;font-weight:500}
+  .mascotte{font-size:96px;display:block;margin:0 auto 6px;filter:drop-shadow(0 8px 10px rgba(0,0,0,.2))}
+  .hero .cta{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+  .kids{margin-top:18px;font-size:30px;letter-spacing:4px}
+  /* Sections */
+  section.block{padding:52px 0}
+  .eyebrow{color:var(--vert);font-weight:800;text-transform:uppercase;letter-spacing:.08em;font-size:13px;text-align:center}
+  h2.title{text-align:center;font-size:clamp(24px,3.5vw,34px);margin:6px 0 8px;font-weight:900}
+  .sub{text-align:center;color:var(--muted);max-width:640px;margin:0 auto 30px}
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:18px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:22px;box-shadow:var(--shadow);
+        transition:.18s}
+  .card:hover{transform:translateY(-4px);box-shadow:var(--shadow-lg)}
+  .card .ico{font-size:38px}
+  .card h3{margin:10px 0 4px;font-size:18px}
+  .card p{margin:0;color:var(--muted);font-size:14.5px}
+  .alt{background:linear-gradient(180deg,#f3faf6,#fffef7)}
+  /* Horaires */
+  .hours{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px}
+  .hour{background:#fff;border:1px solid var(--line);border-radius:16px;padding:18px;box-shadow:var(--shadow)}
+  .hour .lieu{font-weight:800;color:var(--vert-fonce)}
+  .hour .h{color:var(--muted);font-size:14.5px;margin-top:4px}
+  /* Form */
+  .panel{background:#fff;border:1px solid var(--line);border-radius:22px;padding:28px;box-shadow:var(--shadow-lg);max-width:560px;margin:0 auto}
+  .field{display:flex;flex-direction:column;gap:5px;margin-bottom:14px}
+  .field label{font-weight:700;font-size:14px}
+  .field input,.field select{font:inherit;padding:12px 14px;border:1.5px solid var(--line);border-radius:12px;background:#fdfffe}
+  .field input:focus,.field select:focus{outline:none;border-color:var(--vert)}
+  .note{font-size:13px;color:var(--muted);text-align:center;margin-top:8px}
+  .badge{display:inline-block;background:#fff5da;color:#8a6400;font-weight:700;font-size:12px;padding:4px 10px;border-radius:999px;border:1px solid #f1e2ad}
+  /* Contact */
+  .contact-grid{display:grid;grid-template-columns:1fr 1fr;gap:28px;align-items:start}
+  .info-line{display:flex;gap:12px;align-items:flex-start;margin-bottom:14px;font-size:15px}
+  .info-line .i{font-size:22px}
+  .socials{display:flex;gap:10px;margin-top:8px;flex-wrap:wrap}
+  .soc{width:46px;height:46px;border-radius:14px;display:grid;place-items:center;font-size:22px;text-decoration:none;
+       background:#fff;border:1px solid var(--line);box-shadow:var(--shadow);transition:.15s}
+  .soc:hover{transform:translateY(-3px)}
+  /* Footer */
+  footer{background:var(--vert-fonce);color:#dff3e9;padding:30px 0;text-align:center;margin-top:10px}
+  footer .pine{font-size:34px}
+  footer a{color:#fff}
+  .demo-flag{background:var(--jaune);color:#5b4300;text-align:center;font-weight:700;font-size:13.5px;padding:8px}
+  @media(max-width:680px){.contact-grid{grid-template-columns:1fr}.hero .deco{display:none}}
+</style>
+</head>
+<body>
+
+<div class="demo-flag">🍍 Aperçu de démonstration — voici à quoi pourrait ressembler le site public du CASE</div>
+
+<header>
+  <div class="bar">
+    <a href="#accueil" class="logo"><span class="pine">🍍</span> <span><b>CASE</b> <span>Bois de Nèfles</span></span></a>
+    <nav class="main">
+      <a href="#activites">Nos activités</a>
+      <a href="#horaires">Horaires</a>
+      <a href="#contact">Contact</a>
+      <a href="#adhesion" class="btn primary">Devenir adhérent</a>
+    </nav>
+  </div>
+</header>
+
+<!-- HERO -->
+<section class="hero" id="accueil">
+  <span class="sun deco">☀️</span><span class="mtn deco">🏔️</span>
+  <span class="palm1 deco">🌴</span><span class="palm2 deco">🌴</span>
+  <div class="wrap">
+    <span class="mascotte">🍍</span>
+    <h1>Bienvenue au <span class="g">CASE</span> <span class="y">Bois de Nèfles</span></h1>
+    <p class="lead">Le centre social qui fait vivre le quartier : activités pour petits et grands, entraide et bonne humeur, au cœur de La Réunion.</p>
+    <div class="cta">
+      <a href="#adhesion" class="btn primary">✏️ S'inscrire en ligne</a>
+      <a href="#activites" class="btn ghost">Découvrir nos activités</a>
+    </div>
+    <div class="kids">🧒 👦 👧 🧑</div>
+  </div>
+</section>
+
+<!-- QUI SOMMES-NOUS -->
+<section class="block">
+  <div class="wrap">
+    <p class="eyebrow">Qui sommes-nous</p>
+    <h2 class="title">Une association de quartier, pour tous 💚</h2>
+    <p class="sub">Le CASE du Bois de Nèfles est une association loi 1901 qui anime la vie sociale du quartier : accompagnement des familles, activités pour les enfants, moments de partage et de solidarité.</p>
+    <div class="grid">
+      <div class="card"><div class="ico">👨‍👩‍👧‍👦</div><h3>Pour les familles</h3><p>Un lieu d'accueil, d'écoute et d'entraide ouvert à tous les habitants.</p></div>
+      <div class="card"><div class="ico">🎨</div><h3>Pour les enfants</h3><p>Accompagnement scolaire, loisirs et ateliers créatifs tout au long de l'année.</p></div>
+      <div class="card"><div class="ico">🤝</div><h3>Pour le quartier</h3><p>Des événements qui rassemblent et renforcent les liens entre voisins.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ACTIVITÉS -->
+<section class="block alt" id="activites">
+  <div class="wrap">
+    <p class="eyebrow">Nos activités</p>
+    <h2 class="title">Il y en a pour tout le monde 🎉</h2>
+    <p class="sub">Des activités encadrées par notre équipe et nos bénévoles, sur nos différents sites.</p>
+    <div class="grid">
+      <div class="card"><div class="ico">📚</div><h3>Accompagnement scolaire</h3><p>Aide aux devoirs et soutien pour les enfants, après l'école.</p></div>
+      <div class="card"><div class="ico">⚽</div><h3>Accueil de loisirs</h3><p>Jeux, sport et sorties pendant les mercredis et les vacances.</p></div>
+      <div class="card"><div class="ico">👩‍🍳</div><h3>Atelier cuisine</h3><p>On cuisine ensemble les bons produits péi, et on partage !</p></div>
+      <div class="card"><div class="ico">🌱</div><h3>Jardin partagé</h3><p>Cultiver, apprendre et récolter en famille au jardin du quartier.</p></div>
+      <div class="card"><div class="ico">🚌</div><h3>Sorties familiales</h3><p>Plage, montagne, découvertes… des sorties à petit prix.</p></div>
+      <div class="card"><div class="ico">🎪</div><h3>Fête de quartier</h3><p>Le grand rendez-vous festif et solidaire de l'année.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- HORAIRES -->
+<section class="block" id="horaires">
+  <div class="wrap">
+    <p class="eyebrow">Horaires & lieux</p>
+    <h2 class="title">Où et quand nous trouver 🕒</h2>
+    <p class="sub">Nos sites sont ouverts toute la semaine. Passez nous voir !</p>
+    <div class="hours">
+      <div class="hour"><div class="lieu">🏠 Centre social Bois de Nèfles</div><div class="h">Lun – Ven : 8h30 – 17h30<br>Sam : 9h – 12h</div></div>
+      <div class="hour"><div class="lieu">📍 Antenne Le Brûlé</div><div class="h">Mar & Jeu : 14h – 18h<br>Mer : 9h – 17h</div></div>
+      <div class="hour"><div class="lieu">📍 Antenne Montgaillard</div><div class="h">Lun & Ven : 14h – 18h<br>Sam : 9h – 12h</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ADHÉSION / INSCRIPTION -->
+<section class="block alt" id="adhesion">
+  <div class="wrap">
+    <p class="eyebrow">Adhésion & inscriptions</p>
+    <h2 class="title">Rejoignez le CASE en 2 minutes ✏️</h2>
+    <p class="sub">Adhérez en ligne et inscrivez-vous à une activité. Simple, rapide, sécurisé.</p>
+    <div class="panel">
+      <div class="field"><label>Nom et prénom</label><input placeholder="Votre nom"></div>
+      <div class="field"><label>Email</label><input type="email" placeholder="vous@exemple.re"></div>
+      <div class="field"><label>Activité souhaitée</label>
+        <select>
+          <option>Adhésion simple (10 €)</option>
+          <option>Accompagnement scolaire</option>
+          <option>Accueil de loisirs</option>
+          <option>Atelier cuisine</option>
+          <option>Jardin partagé</option>
+        </select></div>
+      <button class="btn primary" style="width:100%" onclick="alert('🍍 Ceci est une démonstration.\n\nDans la version en ligne, le paiement (cotisation + activité) se ferait ici en toute sécurité, et l\'inscription arriverait automatiquement dans la gestion du CASE.')">💳 S'inscrire et payer en ligne</button>
+      <p class="note"><span class="badge">DÉMO</span> Le paiement en ligne sera actif dans la version finale.</p>
+    </div>
+  </div>
+</section>
+
+<!-- CONTACT -->
+<section class="block" id="contact">
+  <div class="wrap">
+    <p class="eyebrow">Nous contacter</p>
+    <h2 class="title">Une question ? Écrivez-nous 📬</h2>
+    <div class="contact-grid">
+      <div>
+        <div class="info-line"><span class="i">📍</span><div><b>Adresse</b><br>Centre social du Bois de Nèfles<br>Saint-Denis, La Réunion (97490)</div></div>
+        <div class="info-line"><span class="i">📞</span><div><b>Téléphone</b><br>0262 00 00 00</div></div>
+        <div class="info-line"><span class="i">✉️</span><div><b>Email</b><br>case.bdn@exemple.re</div></div>
+        <b>Suivez-nous :</b>
+        <div class="socials">
+          <a class="soc" href="#" title="Facebook">📘</a>
+          <a class="soc" href="#" title="Instagram">📸</a>
+          <a class="soc" href="#" title="TikTok">🎵</a>
+          <a class="soc" href="#" title="WhatsApp">💬</a>
+        </div>
+      </div>
+      <div class="panel" style="box-shadow:var(--shadow)">
+        <div class="field"><label>Votre nom</label><input placeholder="Nom"></div>
+        <div class="field"><label>Votre message</label><input placeholder="Bonjour..."></div>
+        <button class="btn sun" style="width:100%" onclick="alert('🍍 Démonstration — dans la version finale, votre message serait envoyé au CASE.')">Envoyer le message</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="pine">🍍</div>
+  <p style="margin:6px 0 2px;font-weight:800;font-size:18px">CASE du Bois de Nèfles</p>
+  <p style="margin:0;opacity:.85">Centre social associatif · Saint-Denis · La Réunion</p>
+  <p style="margin:10px 0 0;font-size:13px;opacity:.7">Aperçu réalisé avec Bob 🤖 — la plateforme des associations</p>
+</footer>
+
+</body>
+</html>
