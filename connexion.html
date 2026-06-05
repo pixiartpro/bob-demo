@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Espace bureau — CASE du Bois de Nèfles</title>
+<style>
+  :root{--vert:#1f9d6b;--vert-fonce:#127a51;--jaune:#f6b400;--ananas:#e8a33d;--ink:#1d3a2e;--muted:#5c7468;
+        --bg:#f4f7f5;--card:#fff;--line:#e2ebe6;--red:#e0533d;--shadow:0 6px 22px rgba(20,60,40,.10);--shadow-lg:0 16px 44px rgba(20,60,40,.16)}
+  *{box-sizing:border-box}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;color:var(--ink);background:var(--bg);line-height:1.55}
+  .wrap{max-width:860px;margin:0 auto;padding:0 18px}
+  header{background:#fff;border-bottom:1px solid var(--line)}
+  header .bar{display:flex;align-items:center;gap:10px;max-width:860px;margin:0 auto;padding:12px 18px}
+  .logo{display:flex;align-items:center;gap:9px;font-weight:900;text-decoration:none}
+  .logo .pine{font-size:26px} .logo b{color:var(--vert)} .logo span{color:var(--ananas)}
+  header nav{margin-left:auto;display:flex;gap:8px}
+  header nav a{padding:8px 12px;border-radius:10px;font-weight:600;font-size:14px;text-decoration:none;color:var(--muted)}
+  header nav a:hover{background:#eef7f2;color:var(--ink)}
+  .demo-flag{background:var(--jaune);color:#5b4300;text-align:center;font-weight:700;font-size:13px;padding:9px 14px}
+  h1.t{font-size:24px;margin:22px 0 2px;font-weight:900}
+  .sub{color:var(--muted);margin:0 0 18px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:22px;box-shadow:var(--shadow);margin-bottom:18px}
+  .card h2{margin:0 0 4px;font-size:17px}
+  .card .h{color:var(--muted);font-size:13.5px;margin:0 0 14px}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+  .field{display:flex;flex-direction:column;gap:5px;margin-bottom:12px}
+  .field label{font-weight:700;font-size:13.5px}
+  input,select{font:inherit;padding:11px 13px;border:1.5px solid var(--line);border-radius:11px;background:#fdfffe}
+  input:focus,select:focus{outline:none;border-color:var(--vert)}
+  .btn{border:none;cursor:pointer;font:inherit;font-weight:800;border-radius:999px;padding:11px 18px;font-size:14px;transition:.15s}
+  .btn.p{background:var(--vert);color:#fff} .btn.p:hover{background:var(--vert-fonce)}
+  .btn.s{background:var(--jaune);color:#5b4300}
+  .btn.g{background:#eef2f0;color:var(--ink)}
+  .btn.d{background:#fde9e5;color:var(--red)}
+  .btn:disabled{opacity:.5;cursor:default}
+  .pill{display:inline-block;padding:3px 10px;border-radius:999px;font-size:12px;font-weight:800}
+  .pill.ok{background:#e3f5ec;color:var(--vert-fonce)} .pill.wait{background:#fcf2de;color:#a9742a} .pill.boss{background:#e8eefc;color:#1f4fc4}
+  .kv{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:11px 0;border-bottom:1px dashed var(--line)}
+  .kv:last-child{border-bottom:none}
+  .role-pill{font-size:11.5px}
+  .danger{border:1.5px solid #f3c4ba;background:#fff6f4;border-radius:14px;padding:16px;margin-top:6px}
+  .danger h2{color:var(--red)}
+  .who{background:linear-gradient(135deg,var(--vert),var(--vert-fonce));color:#fff;border-radius:16px;padding:16px 20px;display:flex;align-items:center;gap:14px;margin-bottom:16px}
+  .who .av{width:46px;height:46px;border-radius:50%;background:rgba(255,255,255,.2);display:grid;place-items:center;font-size:22px}
+  .who b{font-size:17px}
+  .muted{color:var(--muted)} .small{font-size:13px}
+  #toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%) translateY(40px);background:var(--ink);color:#fff;padding:11px 18px;border-radius:999px;font-weight:700;box-shadow:var(--shadow-lg);opacity:0;transition:.25s;z-index:99}
+  #toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+  @media(max-width:640px){.grid2{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="demo-flag">🔒 DÉMONSTRATION du système d'accès — montre le fonctionnement (connexion, validation, rôles). La <b>vraie</b> sécurité (mots de passe protégés) arrivera avec la version en ligne.</div>
+<header><div class="bar">
+  <a href="vitrine.html" class="logo"><span class="pine">🍍</span><span><b>CASE</b> <span>Bois de Nèfles</span></span></a>
+  <nav><a href="vitrine.html">← Site public</a></nav>
+</div></header>
+
+<div class="wrap">
+  <h1 class="t">🔐 Espace bureau</h1>
+  <p class="sub">Connexion réservée à l'équipe et au bureau. Les accès sont accordés par le Président.</p>
+  <div id="app"></div>
+</div>
+<div id="toast"></div>
+
+<script>
+const $=s=>document.querySelector(s);
+const KEY='case_access_demo_v1';
+const ROLES={
+  president:{label:'Président — Super-administrateur',pill:'boss',rank:4,perm:'Accès total · gère les accès · seul à pouvoir tout supprimer'},
+  tresorier:{label:'Trésorier — Administrateur',pill:'boss',rank:3,perm:'Accès total à la gestion · valide les demandes (ne peut pas supprimer le site)'},
+  bureau:{label:'Membre du bureau',pill:'ok',rank:2,perm:'Accès à la gestion (consultation et saisie)'},
+  adherent:{label:'Adhérent',pill:'ok',rank:1,perm:'Accès à l\'espace adhérent uniquement'}
+};
+function def(){return{users:[{id:'u_pres',pseudo:'guillaume',nom:'Guillaume Boulevart',role:'president',statut:'valide',demande:''}],current:null}}
+let db=load();
+function load(){try{return JSON.parse(localStorage.getItem(KEY))||def()}catch(e){return def()}}
+function save(){localStorage.setItem(KEY,JSON.stringify(db));render()}
+function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('show');clearTimeout(t._tm);t._tm=setTimeout(()=>t.classList.remove('show'),2400)}
+function me(){return db.users.find(u=>u.id===db.current)||null}
+function isAdmin(u){return u&&(u.role==='president'||u.role==='tresorier')}
+
+function register(){
+  const pseudo=$('#r_pseudo').value.trim().toLowerCase(), nom=$('#r_nom').value.trim(), dem=$('#r_role').value;
+  if(!pseudo||!nom){toast('Indique ton nom et un identifiant');return}
+  if(db.users.some(u=>u.pseudo===pseudo)){toast('Cet identifiant existe déjà');return}
+  db.users.push({id:'u'+Date.now().toString(36),pseudo,nom,role:'adherent',statut:'en_attente',demande:dem});
+  save();toast('Demande envoyée ✓ — en attente de validation du Président');
+}
+function login(){
+  const pseudo=$('#l_pseudo').value.trim().toLowerCase();
+  const u=db.users.find(x=>x.pseudo===pseudo);
+  if(!u){toast('Identifiant inconnu');return}
+  if(u.statut!=='valide'){toast('Ton accès est en attente de validation ⏳');return}
+  db.current=u.id;save();toast('Connecté ✓');
+}
+function logout(){db.current=null;save()}
+function validate(id,role){const u=db.users.find(x=>x.id===id);if(u){u.statut='valide';u.role=role;save();toast(u.nom+' validé(e) comme '+ROLES[role].label)}}
+function reject(id){db.users=db.users.filter(x=>x.id!==id);save();toast('Demande refusée')}
+function setRole(id,role){const u=db.users.find(x=>x.id===id);if(u){u.role=role;save();toast('Rôle mis à jour')}}
+function removeUser(id){const u=db.users.find(x=>x.id===id);if(!u)return;
+  if(u.role==='president'){toast('Le compte Président ne peut pas être supprimé');return}
+  if(confirm('Retirer l\'accès de '+u.nom+' ?')){db.users=db.users.filter(x=>x.id!==id);save();toast('Accès retiré')}}
+function wipe(){if(confirm('⚠️ SUPPRIMER tous les accès et réinitialiser ? (réservé au Président)')){db=def();save();toast('Réinitialisé')}}
+
+function render(){
+  const u=me();
+  if(!u){
+    $('#app').innerHTML=`
+    <div class="grid2">
+      <div class="card">
+        <h2>Se connecter</h2>
+        <p class="h">Entre ton identifiant. <span class="muted">(En démo, le mot de passe n'est pas vérifié.)</span></p>
+        <div class="field"><label>Identifiant</label><input id="l_pseudo" placeholder="ex. guillaume" onkeydown="if(event.key==='Enter')login()"></div>
+        <div class="field"><label>Mot de passe</label><input type="password" placeholder="••••••••"></div>
+        <button class="btn p" style="width:100%" onclick="login()">Se connecter</button>
+        <p class="small muted" style="margin-top:10px">💡 Essaie <b>guillaume</b> (Président). Puis crée une demande « guy » et reviens valider en tant que Président.</p>
+      </div>
+      <div class="card">
+        <h2>Demander un accès</h2>
+        <p class="h">Ta demande sera envoyée au Président, qui décide de t'accréditer ou non.</p>
+        <div class="field"><label>Nom et prénom</label><input id="r_nom" placeholder="ex. Guy Robert"></div>
+        <div class="field"><label>Identifiant souhaité</label><input id="r_pseudo" placeholder="ex. guy"></div>
+        <div class="field"><label>Vous êtes</label><select id="r_role">
+          <option value="bureau">Membre du bureau</option>
+          <option value="tresorier">Trésorier</option>
+          <option value="adherent">Adhérent</option>
+        </select></div>
+        <button class="btn s" style="width:100%" onclick="register()">Envoyer ma demande</button>
+      </div>
+    </div>`;
+    return;
+  }
+  const r=ROLES[u.role];
+  let html=`<div class="who"><div class="av">${u.role==='president'?'👑':isAdmin(u)?'🛡️':'👤'}</div>
+    <div><b>Bonjour ${esc(u.nom)}</b><br><span class="role-pill pill ${r.pill}">${r.label}</span></div>
+    <div style="margin-left:auto;display:flex;gap:8px;flex-wrap:wrap">
+      <a class="btn p" style="text-decoration:none" href="index.html">Entrer dans la gestion →</a>
+      <button class="btn g" onclick="logout()">Déconnexion</button>
+    </div></div>`;
+  html+=`<div class="card"><h2>Mon accréditation</h2><p class="h" style="margin:0">${r.perm}</p></div>`;
+
+  if(isAdmin(u)){
+    const pend=db.users.filter(x=>x.statut==='en_attente');
+    html+=`<div class="card"><h2>🕒 Demandes en attente (${pend.length})</h2><p class="h">Valide et choisis l'accréditation, ou refuse.</p>`;
+    html+= pend.length? pend.map(p=>`<div class="kv">
+        <span><b>${esc(p.nom)}</b> <span class="muted small">(${esc(p.pseudo)})</span><br><span class="muted small">demande : ${ROLES[p.demande]?ROLES[p.demande].label:'—'}</span></span>
+        <span style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
+          <select id="role_${p.id}">${Object.entries(ROLES).filter(([k])=>k!=='president'||u.role==='president').map(([k,v])=>`<option value="${k}" ${k===p.demande?'selected':''}>${v.label}</option>`).join('')}</select>
+          <button class="btn p" onclick="validate('${p.id}',document.getElementById('role_${p.id}').value)">Valider</button>
+          <button class="btn d" onclick="reject('${p.id}')">Refuser</button>
+        </span></div>`).join('') : '<p class="muted small">Aucune demande en attente.</p>';
+    html+=`</div>`;
+
+    const act=db.users.filter(x=>x.statut==='valide');
+    html+=`<div class="card"><h2>👥 Accès validés (${act.length})</h2><p class="h">${u.role==='president'?'Tu peux modifier les rôles et retirer un accès.':'Tu peux voir les accès (seul le Président modifie les rôles).'}</p>`;
+    html+= act.map(a=>`<div class="kv">
+        <span><b>${esc(a.nom)}</b> <span class="muted small">(${esc(a.pseudo)})</span></span>
+        <span style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
+          ${u.role==='president'&&a.role!=='president'
+            ? `<select onchange="setRole('${a.id}',this.value)">${Object.entries(ROLES).map(([k,v])=>`<option value="${k}" ${k===a.role?'selected':''}>${v.label}</option>`).join('')}</select>
+               <button class="btn d" onclick="removeUser('${a.id}')">Retirer</button>`
+            : `<span class="pill ${ROLES[a.role].pill} role-pill">${ROLES[a.role].label}</span>`}
+        </span></div>`).join('');
+    html+=`</div>`;
+  }
+
+  if(u.role==='president'){
+    html+=`<div class="danger"><h2>⚠️ Zone réservée au Président</h2>
+      <p class="small muted">Toi seul peux réinitialiser/supprimer l'ensemble des accès. Personne d'autre, pas même le Trésorier.</p>
+      <button class="btn d" onclick="wipe()">🗑️ Supprimer / réinitialiser tous les accès</button></div>`;
+  }
+  $('#app').innerHTML=html;
+}
+function esc(s){return (s==null?'':String(s)).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+render();
+</script>
+</body>
+</html>
