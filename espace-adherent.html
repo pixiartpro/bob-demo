@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mon espace adhérent — CASE du Bois de Nèfles</title>
+<style>
+  :root{--vert:#1f9d6b;--vert-fonce:#127a51;--jaune:#f6b400;--ananas:#e8a33d;--ink:#1d3a2e;--muted:#5c7468;
+        --bg:#fffef7;--card:#fff;--line:#e7efe9;--shadow:0 6px 22px rgba(20,60,40,.10);--shadow-lg:0 16px 44px rgba(20,60,40,.16)}
+  *{box-sizing:border-box}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;color:var(--ink);background:var(--bg);line-height:1.6}
+  .wrap{max-width:1000px;margin:0 auto;padding:0 20px}
+  header{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.93);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+  header .bar{display:flex;align-items:center;gap:12px;padding:12px 20px;max-width:1000px;margin:0 auto}
+  .logo{display:flex;align-items:center;gap:10px;font-weight:900;font-size:17px;text-decoration:none}
+  .logo .pine{font-size:28px} .logo b{color:var(--vert)} .logo span{color:var(--ananas)}
+  header nav{margin-left:auto;display:flex;gap:8px;align-items:center}
+  header nav a{padding:8px 12px;border-radius:10px;font-weight:600;font-size:14px;text-decoration:none;color:var(--muted)}
+  header nav a:hover{background:#f0f7f3;color:var(--ink)}
+  .demo-flag{background:var(--jaune);color:#5b4300;text-align:center;font-weight:700;font-size:13.5px;padding:8px}
+  .hero{background:linear-gradient(180deg,#aee5c4,var(--bg));padding:30px 0 10px}
+  .hello{font-size:24px;font-weight:900;margin:0}
+  .wallet{background:linear-gradient(135deg,var(--vert),var(--vert-fonce));color:#fff;border-radius:22px;padding:24px 26px;
+          box-shadow:var(--shadow-lg);display:flex;align-items:center;gap:18px;margin:14px 0 6px}
+  .wallet .big{font-size:46px;font-weight:900;line-height:1}
+  .wallet .coin{font-size:52px;filter:drop-shadow(0 3px 4px rgba(0,0,0,.25))}
+  .wallet .lab{opacity:.9;font-weight:600}
+  .explain{display:flex;gap:14px;flex-wrap:wrap;justify-content:center;color:var(--muted);font-weight:600;margin:8px 0 0;font-size:14.5px}
+  section.block{padding:30px 0}
+  h2.title{font-size:22px;margin:0 0 4px;font-weight:900}
+  h2.title small{font-weight:600;color:var(--muted);font-size:14px}
+  .sub{color:var(--muted);margin:0 0 18px;font-size:14.5px}
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:18px;box-shadow:var(--shadow);display:flex;flex-direction:column;gap:6px}
+  .card .ico{font-size:30px}
+  .card h3{margin:2px 0 0;font-size:16.5px}
+  .card .when{color:var(--muted);font-size:13.5px}
+  .card .foot{margin-top:auto;display:flex;align-items:center;justify-content:space-between;gap:10px;padding-top:10px}
+  .gain{color:var(--vert-fonce);font-weight:800}
+  .cost{color:var(--ananas);font-weight:800}
+  .btn{border:none;cursor:pointer;font:inherit;font-weight:800;border-radius:999px;padding:10px 16px;font-size:14px;transition:.15s}
+  .btn.win{background:var(--vert);color:#fff} .btn.win:hover{background:var(--vert-fonce)}
+  .btn.use{background:var(--jaune);color:#5b4300} .btn.use:hover{filter:brightness(.97)}
+  .btn:disabled{opacity:.5;cursor:default}
+  .alt{background:linear-gradient(180deg,#fff8ec,var(--bg))}
+  .hist{background:#fff;border:1px solid var(--line);border-radius:16px;padding:8px 16px;box-shadow:var(--shadow)}
+  .hist .row{display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px dashed var(--line);font-size:14.5px}
+  .hist .row:last-child{border-bottom:none}
+  .hist .plus{color:var(--vert-fonce);font-weight:800} .hist .minus{color:var(--ananas);font-weight:800}
+  .empty{color:var(--muted);text-align:center;padding:14px}
+  #toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(40px);background:var(--ink);color:#fff;
+         padding:12px 20px;border-radius:999px;font-weight:700;box-shadow:var(--shadow-lg);opacity:0;transition:.25s;z-index:99}
+  #toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+  footer{background:var(--vert-fonce);color:#dff3e9;padding:22px;text-align:center;margin-top:14px;font-size:14px}
+  .reset{background:none;border:none;color:var(--muted);text-decoration:underline;cursor:pointer;font:inherit;font-size:13px}
+</style>
+</head>
+<body>
+<div class="demo-flag">🍍 Démonstration — « Espace adhérent » : gagnez des jetons en aidant, utilisez-les pour participer. Cliquez, ça réagit !</div>
+<header>
+  <div class="bar">
+    <a href="vitrine.html" class="logo"><span class="pine">🍍</span> <span><b>CASE</b> <span>Bois de Nèfles</span></span></a>
+    <nav>
+      <a href="vitrine.html">← Site public</a>
+      <a href="#" style="background:#eef7f2;color:var(--vert-fonce)">Mon espace</a>
+    </nav>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="wrap">
+    <p class="hello">Bonjour Marie 👋</p>
+    <div class="wallet">
+      <span class="coin">🪙</span>
+      <div>
+        <div class="lab">Mon solde de jetons</div>
+        <div class="big"><span id="solde">6</span> jetons</div>
+      </div>
+    </div>
+    <div class="explain"><span>💪 J'aide le CASE → je gagne</span><span>·</span><span>🎟️ Je participe → j'utilise</span></div>
+  </div>
+</section>
+
+<!-- COUPS DE MAIN -->
+<section class="block">
+  <div class="wrap">
+    <h2 class="title">💪 Coups de main <small>— j'aide le CASE, je gagne des jetons</small></h2>
+    <p class="sub">1 heure d'aide = 1 jeton. Inscris-toi, et tes jetons sont crédités après ta participation.</p>
+    <div class="grid" id="missions"></div>
+  </div>
+</section>
+
+<!-- ACTIVITÉS -->
+<section class="block alt">
+  <div class="wrap">
+    <h2 class="title">🎟️ Activités <small>— je participe en utilisant mes jetons</small></h2>
+    <p class="sub">Réserve ta place avec tes jetons. S'il n'y en a pas assez, donne un coup de main !</p>
+    <div class="grid" id="activites"></div>
+  </div>
+</section>
+
+<!-- HISTORIQUE -->
+<section class="block">
+  <div class="wrap">
+    <h2 class="title">📜 Mon historique</h2>
+    <div class="hist" id="hist"></div>
+    <p style="text-align:center;margin-top:14px"><button class="reset" onclick="resetDemo()">↺ Réinitialiser la démo</button></p>
+  </div>
+</section>
+
+<footer>🍍 <b>CASE du Bois de Nèfles</b> — Espace adhérent (aperçu) · réalisé avec Bob 🤖</footer>
+<div id="toast"></div>
+
+<script>
+const $=s=>document.querySelector(s);
+const KEY='case_jetons_demo';
+const MISSIONS=[
+  {id:'m1',ico:'🌱',nom:'Refaire le jardin partagé',when:'Samedi · 9h–12h (3h)',gain:3},
+  {id:'m2',ico:'🎪',nom:'Aider à la fête de quartier',when:'Vendredi · 17h–20h (3h)',gain:3},
+  {id:'m3',ico:'🚌',nom:'Accompagner la sortie plage',when:'Mercredi · 13h–18h (5h)',gain:5},
+  {id:'m4',ico:'🍽️',nom:'Préparer le repas partagé',when:'Jeudi · 10h–12h (2h)',gain:2}
+];
+const ACTIVITES=[
+  {id:'a1',ico:'🎬',nom:'Sortie cinéma en famille',when:'Samedi après-midi',cost:4},
+  {id:'a2',ico:'👩‍🍳',nom:'Atelier cuisine créole',when:'Mercredi · 14h',cost:2},
+  {id:'a3',ico:'🏖️',nom:'Place sortie plage',when:'Dimanche',cost:5},
+  {id:'a4',ico:'🧘',nom:'Atelier bien-être',when:'Mardi · 18h',cost:3}
+];
+let state=load();
+function load(){try{return JSON.parse(localStorage.getItem(KEY))||def()}catch(e){return def()}}
+function def(){return{solde:6,done:[],taken:[],hist:[{t:'Bienvenue ! 3 jetons offerts pour ton adhésion',d:'+3'},{t:'Coup de main : rangement de la salle',d:'+3'}]}}
+function save(){localStorage.setItem(KEY,JSON.stringify(state));render()}
+function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('show');clearTimeout(t._tm);t._tm=setTimeout(()=>t.classList.remove('show'),2200)}
+function doMission(id){
+  const m=MISSIONS.find(x=>x.id===id); if(state.done.includes(id))return;
+  state.done.push(id); state.solde+=m.gain;
+  state.hist.unshift({t:'Coup de main : '+m.nom,d:'+'+m.gain});
+  save(); toast('Bravo ! +'+m.gain+' jetons 🪙');
+}
+function doActivite(id){
+  const a=ACTIVITES.find(x=>x.id===id); if(state.taken.includes(id))return;
+  if(state.solde<a.cost){toast('Pas assez de jetons — donne un coup de main 💪');return;}
+  state.taken.push(id); state.solde-=a.cost;
+  state.hist.unshift({t:'Participation : '+a.nom,d:'−'+a.cost});
+  save(); toast('Inscrit ! −'+a.cost+' jetons');
+}
+function resetDemo(){state=def();save();toast('Démo réinitialisée')}
+function render(){
+  $('#solde').textContent=state.solde;
+  $('#missions').innerHTML=MISSIONS.map(m=>{const f=state.done.includes(m.id);
+    return `<div class="card"><div class="ico">${m.ico}</div><h3>${m.nom}</h3><div class="when">${m.when}</div>
+      <div class="foot"><span class="gain">+${m.gain} 🪙</span>
+      <button class="btn win" ${f?'disabled':''} onclick="doMission('${m.id}')">${f?'✓ Fait':'Je participe'}</button></div></div>`}).join('');
+  $('#activites').innerHTML=ACTIVITES.map(a=>{const f=state.taken.includes(a.id);
+    return `<div class="card"><div class="ico">${a.ico}</div><h3>${a.nom}</h3><div class="when">${a.when}</div>
+      <div class="foot"><span class="cost">${a.cost} 🪙</span>
+      <button class="btn use" ${f?'disabled':''} onclick="doActivite('${a.id}')">${f?'✓ Inscrit':'Participer'}</button></div></div>`}).join('');
+  $('#hist').innerHTML=state.hist.length?state.hist.map(h=>`<div class="row"><span>${h.t}</span><span class="${h.d[0]==='+'?'plus':'minus'}">${h.d} 🪙</span></div>`).join(''):'<div class="empty">Aucun mouvement.</div>';
+}
+render();
+</script>
+</body>
+</html>
