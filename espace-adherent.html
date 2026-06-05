@@ -86,12 +86,28 @@
   <div class="wrap">
     <div class="card" style="border-left:5px solid var(--vert);background:#f3faf6">
       <h2 class="title" style="font-size:19px">🪙 Comment marchent les jetons ?</h2>
-      <div class="grid" style="margin-top:10px">
-        <div><b>1. J'aide → je gagne</b><br><span style="color:var(--muted)">1 heure de coup de main pour le CASE = 1 jeton.</span></div>
-        <div><b>2. Je participe → j'utilise</b><br><span style="color:var(--muted)">Les activités et sorties coûtent quelques jetons.</span></div>
-        <div><b>3. C'est solidaire</b><br><span style="color:var(--muted)">Les jetons ne sont pas de l'argent : c'est une reconnaissance de ton engagement.</span></div>
+      <p style="margin:6px 0 0;color:var(--muted)">Le principe (inspiré des <b>Accorderies</b>) : <b>1 heure d'engagement = 1 jeton</b>, et l'heure de chacun vaut autant. Les jetons ne sont pas de l'argent — c'est une reconnaissance de ta participation.</p>
+      <div class="grid" style="margin-top:14px">
+        <div class="card" style="box-shadow:none;border:1px solid var(--line)">
+          <b style="color:var(--vert-fonce)">💪 Gagner des jetons</b>
+          <div style="font-size:14px;color:var(--muted);margin-top:6px;line-height:1.7">
+            • 1 heure de coup de main = <b>1 jeton</b><br>
+            • Peu importe la tâche (jardin, événement, accueil…)<br>
+            • Une demi-heure = ½ jeton<br>
+            • <b>+2 jetons offerts</b> à l'adhésion 🎁
+          </div>
+        </div>
+        <div class="card" style="box-shadow:none;border:1px solid var(--line)">
+          <b style="color:var(--ananas)">🎟️ Utiliser des jetons</b>
+          <div style="font-size:14px;color:var(--muted);margin-top:6px;line-height:1.7">
+            • Atelier (cuisine, bien-être…) : <b>1 jeton</b><br>
+            • Sortie demi-journée (ciné, parc) : <b>2 jetons</b><br>
+            • Sortie journée (plage, rando) : <b>3 jetons</b><br>
+            • Grand événement / séjour : <b>5 jetons</b>
+          </div>
+        </div>
       </div>
-      <p style="margin:12px 0 0;font-size:13.5px;color:var(--muted)"><span style="display:inline-block;background:#fff5da;color:#8a6400;font-weight:700;font-size:12px;padding:3px 10px;border-radius:999px;border:1px solid #f1e2ad">À DÉFINIR ENSEMBLE</span> &nbsp;La valeur exacte (ce que rapporte chaque action, ce que coûte chaque activité) reste à fixer par le CASE.</p>
+      <p style="margin:12px 0 0;font-size:13px;color:var(--muted)">🤝 <b>Ouvert à tous :</b> beaucoup d'activités restent accessibles <b>sans jetons</b> — les jetons donnent accès à des « plus » et récompensent l'engagement, ils n'excluent personne. <span style="display:inline-block;background:#fff5da;color:#8a6400;font-weight:700;font-size:12px;padding:3px 10px;border-radius:999px;border:1px solid #f1e2ad">PROPOSITION</span> barème ajustable par le CASE.</p>
     </div>
   </div>
 </section>
@@ -136,14 +152,14 @@ const MISSIONS=[
   {id:'m4',ico:'🍽️',nom:'Préparer le repas partagé',when:'Jeudi · 10h–12h (2h)',gain:2}
 ];
 const ACTIVITES=[
-  {id:'a1',ico:'🎬',nom:'Sortie cinéma en famille',when:'Samedi après-midi',cost:4},
-  {id:'a2',ico:'👩‍🍳',nom:'Atelier cuisine créole',when:'Mercredi · 14h',cost:2},
-  {id:'a3',ico:'🏖️',nom:'Place sortie plage',when:'Dimanche',cost:5},
-  {id:'a4',ico:'🧘',nom:'Atelier bien-être',when:'Mardi · 18h',cost:3}
+  {id:'a1',ico:'🎬',nom:'Sortie cinéma (demi-journée)',when:'Samedi après-midi',cost:2},
+  {id:'a2',ico:'👩‍🍳',nom:'Atelier cuisine créole',when:'Mercredi · 14h',cost:1},
+  {id:'a3',ico:'🏖️',nom:'Sortie plage (journée)',when:'Dimanche',cost:3},
+  {id:'a4',ico:'🧘',nom:'Atelier bien-être',when:'Mardi · 18h',cost:1}
 ];
 let state=load();
 function load(){try{return JSON.parse(localStorage.getItem(KEY))||def()}catch(e){return def()}}
-function def(){return{solde:6,done:[],taken:[],hist:[{t:'Bienvenue ! 3 jetons offerts pour ton adhésion',d:'+3'},{t:'Coup de main : rangement de la salle',d:'+3'}]}}
+function def(){return{solde:5,done:[],taken:[],hist:[{t:'Bienvenue ! 2 jetons offerts pour ton adhésion',d:'+2'},{t:'Coup de main : rangement de la salle (3h)',d:'+3'}]}}
 function save(){localStorage.setItem(KEY,JSON.stringify(state));render()}
 function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('show');clearTimeout(t._tm);t._tm=setTimeout(()=>t.classList.remove('show'),2200)}
 function doMission(id){
