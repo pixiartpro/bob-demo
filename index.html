@@ -894,10 +894,12 @@ function renderVentilation(){
   $('ventSite').innerHTML = ventTable('site');
   $('ventAction').innerHTML = ventTable('action');
 }
+const BASE_SITES=["C.A.S.E Bois de Nèfles","Local des Bringelliers"];
+const BASE_ACTIONS=["Périscolaire","Accueil de loisirs (ACM)","VEPI","Secteur ados / Kaz Zados","Danse","Musique","Permanence du samedi","Jeudi info population","Sport & santé","Accompagnement à la parentalité","Animation de quartier","Fêt nout kartyé","Ôté Kartié","Fonctionnement"];
 function refreshDatalists(){
-  const fill=(id,field)=>{ const vals=[...new Set(db.ops.flatMap(o=>getSplits(o).map(s=>(s[field]||'').trim())).filter(Boolean))].sort();
+  const fill=(id,field,base)=>{ const vals=[...new Set([...base, ...db.ops.flatMap(o=>getSplits(o).map(s=>(s[field]||'').trim()))].filter(Boolean))].sort((a,b)=>a.localeCompare(b,'fr',{numeric:true}));
     $(id).innerHTML=vals.map(v=>`<option value="${esc(v)}">`).join(''); };
-  fill('sites','site'); fill('actions','action');
+  fill('sites','site',BASE_SITES); fill('actions','action',BASE_ACTIONS);
 }
 
 /* ---- Plan comptable (liste de comptes modifiable) ---- */
