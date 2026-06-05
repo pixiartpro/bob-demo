@@ -114,6 +114,7 @@
     <button data-tab="incidents">⚠️ Événements</button>
     <button data-tab="accounting">💶 Comptabilité</button>
     <button data-tab="caisse">💵 Caisse</button>
+    <button data-tab="dettes">💳 Dettes & créances</button>
     <button data-tab="bilan">📈 Bilan</button>
     <button data-tab="data" style="margin-left:auto">⚙️ Données</button>
   </nav>
@@ -351,6 +352,28 @@
     </div>
   </section>
 
+  <!-- DETTES & CRÉANCES -->
+  <section id="dettes" class="page">
+    <div class="cards" id="detteKpis"></div>
+    <div class="panel">
+      <h2>Ajouter une dette ou une créance</h2>
+      <p class="hint">Une <strong>dette</strong> = ce que l'association doit (fournisseur, URSSAF…). Une <strong>créance</strong> = ce qu'on doit à l'association (subvention à recevoir, remboursement…). Tu peux ensuite échelonner le paiement.</p>
+      <div class="row">
+        <div class="field" style="flex:0;min-width:150px"><label>Type</label>
+          <select id="de_sens"><option value="dette">💸 Dette (on doit)</option><option value="creance">💰 Créance (on nous doit)</option></select></div>
+        <div class="field"><label>Tiers (qui ?)</label><input id="de_tiers" placeholder="Ex. URSSAF, fournisseur, CAF..."></div>
+        <div class="field" style="flex:2"><label>Libellé</label><input id="de_label" placeholder="Ex. Cotisations URSSAF T2 2026"></div>
+      </div>
+      <div class="row" style="margin-top:10px">
+        <div class="field"><label>Montant total (€)</label><input id="de_montant" type="number" min="0" step="0.01"></div>
+        <div class="field"><label>Date</label><input id="de_date" type="date"></div>
+        <div class="field"><label>Échéance (date limite)</label><input id="de_echeance" type="date"></div>
+        <div class="field" style="flex:0"><label>&nbsp;</label><button class="btn" onclick="addDette()">Ajouter</button></div>
+      </div>
+    </div>
+    <div id="detteList"></div>
+  </section>
+
   <!-- BILAN -->
   <section id="bilan" class="page">
     <div class="panel">
@@ -407,6 +430,11 @@
         <div class="field" style="flex:2"><label>Note (optionnel)</label><input id="l_note" placeholder="Ex. identifiant du compte, échéance..."></div></div>
       <div class="toolbar" style="margin-top:16px"><h2 style="margin:0;font-size:15px">Liens enregistrés</h2><input id="l_search" placeholder="🔎 Rechercher..." oninput="renderRepertoire()" style="max-width:220px"></div>
       <table><thead><tr><th>Intitulé</th><th>Catégorie</th><th>Adresse</th><th>Note</th><th></th></tr></thead><tbody id="lienRows"></tbody></table>
+      <div style="margin-top:18px;padding-top:14px;border-top:1px solid var(--line)">
+        <h2 style="font-size:14px;margin:0 0 4px">🏛️ Portails officiels (toujours disponibles)</h2>
+        <p class="hint" style="margin:0 0 8px">Les sites administratifs utiles, déjà prêts. Un clic et c'est ouvert.</p>
+        <div id="officialLinks" style="display:flex;flex-wrap:wrap;gap:8px"></div>
+      </div>
     </div>
     <div class="panel">
       <h2>📂 Documents clés</h2>
@@ -564,7 +592,7 @@ const uid = () => Date.now().toString(36)+Math.random().toString(36).slice(2,7);
 
 let db = load();
 function load(){ try{ return Object.assign(blank(), JSON.parse(localStorage.getItem(KEY))||{}); }catch(e){ return blank(); } }
-function blank(){ return {members:[],ops:[],projects:[],subventions:[],comptes:[],contacts:[],liens:[],docs:[],notes:[],echeances:[],reunions:[],incidents:[]}; }
+function blank(){ return {members:[],ops:[],projects:[],subventions:[],comptes:[],contacts:[],liens:[],docs:[],notes:[],echeances:[],reunions:[],incidents:[],dettes:[]}; }
 function save(){ localStorage.setItem(KEY, JSON.stringify(db)); renderAll(); }
 
 /* ---- Navigation ---- */
@@ -1322,13 +1350,71 @@ function renderIncidents(){
   }).join('');
 }
 
+/* ---- Portails officiels (liens fixes, toujours dispo) ---- */
+const OFFICIAL_LINKS=[
+  ['Le Compte Asso (subventions État)','https://lecompteasso.associations.gouv.fr'],
+  ['Service-Public — Associations','https://www.service-public.fr/associations'],
+  ['URSSAF','https://www.urssaf.fr'],
+  ['Net-entreprises (DSN)','https://www.net-entreprises.fr'],
+  ['CAF','https://www.caf.fr'],
+  ['Journal Officiel des Associations','https://www.journal-officiel.gouv.fr/pages/associations-recherche/'],
+  ['Impôts.gouv','https://www.impots.gouv.fr'],
+  ['Data Subvention','https://datasubvention.beta.gouv.fr']];
+function renderOfficialLinks(){
+  const el=$('officialLinks'); if(!el) return;
+  el.innerHTML=OFFICIAL_LINKS.map(([lab,url])=>`<a class="ghost btn" style="text-decoration:none;font-size:12.5px" href="${url}" target="_blank" rel="noopener">${esc(lab)} ↗</a>`).join('');
+}
+
+/* ---- Dettes & créances (avec échelonnement) ---- */
+function addDette(){
+  const label=$('de_label').value.trim(); const montant=parseFloat($('de_montant').value);
+  if(!label || !(montant>0)){ alert('Indique un libellé et un montant.'); return; }
+  db.dettes.push({id:uid(),sens:$('de_sens').value,tiers:$('de_tiers').value.trim(),label,montant,
+    date:$('de_date').value||today(),echeance:$('de_echeance').value||'',echeancier:[]});
+  ['de_tiers','de_label','de_montant','de_echeance'].forEach(i=>$(i).value=''); $('de_date').value=today();
+  save();
+}
+function delDette(id){ if(confirm('Supprimer cette ligne ?')){ db.dettes=db.dettes.filter(d=>d.id!==id); save(); } }
+function dettePaid(d){ return (d.echeancier||[]).filter(e=>e.paye).reduce((s,e)=>s+e.montant,0); }
+function addEcheanceDette(id){
+  const d=db.dettes.find(x=>x.id===id); if(!d) return;
+  const m=parseFloat(prompt('Montant de cette échéance de paiement (€) :')); if(!(m>0)) return;
+  const dt=prompt('Date de l\'échéance (jj/mm/aaaa) :',''); if(dt===null) return;
+  d.echeancier.push({date:impDate(dt||today()),montant:m,paye:false}); save();
+}
+function toggleEcheanceDette(id,idx){ const d=db.dettes.find(x=>x.id===id); if(d&&d.echeancier[idx]){ d.echeancier[idx].paye=!d.echeancier[idx].paye; save(); } }
+function delEcheanceDette(id,idx){ const d=db.dettes.find(x=>x.id===id); if(d){ d.echeancier.splice(idx,1); save(); } }
+function renderDettes(){
+  const ds=db.dettes||[];
+  const dueD=ds.filter(d=>d.sens==='dette').reduce((s,d)=>s+(d.montant-dettePaid(d)),0);
+  const dueC=ds.filter(d=>d.sens==='creance').reduce((s,d)=>s+(d.montant-dettePaid(d)),0);
+  $('detteKpis').innerHTML = kpi('💸 À payer (dettes)',euro(dueD),dueD>0.001?'red':'green','restant dû')
+    + kpi('💰 À recevoir (créances)',euro(dueC),'green','restant à encaisser')
+    + kpi('Position nette',euro(dueC-dueD),(dueC-dueD)>=0?'green':'red','créances − dettes');
+  const el=$('detteList');
+  if(!ds.length){ el.innerHTML='<div class="panel"><div class="empty">Aucune dette ni créance enregistrée.</div></div>'; return; }
+  el.innerHTML=ds.slice().sort((a,b)=>(a.echeance||'').localeCompare(b.echeance||'')).map(d=>{
+    const paid=dettePaid(d), reste=d.montant-paid, solde=reste<=0.001, isDette=d.sens==='dette';
+    const ech=(d.echeancier||[]);
+    return `<div class="panel" style="border-left:4px solid ${isDette?'var(--red)':'var(--green)'}">
+      <div class="toolbar">
+        <div><h2 style="margin:0;font-size:16px">${esc(d.label)} <span class="pill ${isDette?'no':'in'}">${isDette?'Dette':'Créance'}</span> <span class="pill ${solde?'ok':'wait'}">${solde?'Soldé':'Reste '+euro(reste)}</span></h2>
+          <p class="hint" style="margin:2px 0 0">${esc(d.tiers||'—')}${d.echeance?' · échéance '+fmtDate(d.echeance):''} · total ${euro(d.montant)}${paid>0?' · déjà '+(isDette?'payé':'reçu')+' '+euro(paid):''}</p></div>
+        <button class="danger" onclick="delDette('${d.id}')">Supprimer</button>
+      </div>
+      ${ech.length?'<div style="margin:8px 0 4px;font-weight:700;font-size:12px;color:var(--muted);letter-spacing:.03em">ÉCHELONNEMENT</div>'+ech.map((e,i)=>`<div class="kv"><span style="${e.paye?'text-decoration:line-through;opacity:.55':''}"><input type="checkbox" ${e.paye?'checked':''} onclick="toggleEcheanceDette('${d.id}',${i})"> ${fmtDate(e.date)} — <strong>${euro(e.montant)}</strong></span><button class="danger" onclick="delEcheanceDette('${d.id}',${i})">✕</button></div>`).join(''):''}
+      <div class="row" style="margin-top:10px"><button class="ghost btn" onclick="addEcheanceDette('${d.id}')">＋ Ajouter une échéance de paiement</button></div>
+    </div>`;
+  }).join('');
+}
+
 /* ---- helpers ---- */
 function kpi(label,value,cls='',sub=''){
   return `<div class="card"><div class="label">${label}</div><div class="value ${cls}">${value}</div>${sub?'<div class="sub">'+sub+'</div>':''}</div>`;
 }
 function esc(s){ return (s==null?'':String(s)).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 
-function renderAll(){ renderDashboard(); renderMembers(); renderRelances(); renderOps(); renderCaisse(); renderProjects(); renderSubventions(); renderEcheancier(); renderBilan(); renderRepertoire(); renderSecretariat(); renderReunions(); renderIncidents(); refreshComptes(); }
+function renderAll(){ renderDashboard(); renderMembers(); renderRelances(); renderOps(); renderCaisse(); renderProjects(); renderSubventions(); renderEcheancier(); renderBilan(); renderRepertoire(); renderSecretariat(); renderReunions(); renderIncidents(); renderDettes(); renderOfficialLinks(); refreshComptes(); }
 
 /* ---- Data import/export ---- */
 function exportJSON(){
@@ -1408,19 +1494,21 @@ function seedDemo(){
     {id:uid(),name:'Cabinet Comptable Réunion',org:'Comptable',email:'contact@cabinet.re',phone:'0262 00 00 00',note:'Bilan en juin/juillet'},
     {id:uid(),name:'Mme Hoarau',org:'Présidente',email:'presidente@exemple.re',phone:'0692 11 22 33',note:''});
   db.liens.push(
-    {id:uid(),label:'Le Compte Asso (subventions État)',cat:'Subventions',url:'https://lecompteasso.associations.gouv.fr',note:''},
-    {id:uid(),label:'Service-Public Associations',cat:'Démarches administratives',url:'https://www.service-public.fr/associations',note:''});
+    {id:uid(),label:'Espace adhérents CAF',cat:'Financeur',url:'https://www.caf.fr',note:''});
   db.docs.push({id:uid(),type:'Statuts',label:'Statuts à jour 2024',url:''});
   db.notes.push(
     {id:uid(),text:'Relancer la Mairie pour la convention',done:false,date:today()},
     {id:uid(),text:'Préparer le bilan pour l\'AG',done:false,date:today()});
   db.echeances.push({id:uid(),label:'Renouvellement assurance MAIF',date:'2026-09-15',recurrent:true});
   db.incidents.push({id:uid(),date:'2026-04-15',site:S.bru,type:'Chute',gravite:'Modéré',personnes:'Un enfant (ALSH)',declare:'Animateur',desc:'Chute sans gravité dans la cour, léger hématome.',mesures:'Premiers soins, parents prévenus.',steps:incidentSteps('Modéré')});
+  db.dettes.push(
+    {id:uid(),sens:'dette',tiers:'URSSAF',label:'Cotisations URSSAF T2 2026',montant:1240,date:'2026-04-15',echeance:'2026-07-15',echeancier:[{date:'2026-07-15',montant:620,paye:false},{date:'2026-08-15',montant:620,paye:false}]},
+    {id:uid(),sens:'creance',tiers:'Mairie de Saint-Denis',label:'Subvention 2026 à recevoir',montant:2000,date:'2026-03-01',echeance:'2026-09-30',echeancier:[]});
   save();
 }
 
 /* init */
-$('m_date').value=today(); $('a_date').value=today(); $('t_date').value=today(); $('q_date').value=today(); $('r_date').value=today(); $('i_date').value=today();
+$('m_date').value=today(); $('a_date').value=today(); $('t_date').value=today(); $('q_date').value=today(); $('r_date').value=today(); $('i_date').value=today(); $('de_date').value=today();
 addSplitRow(); // première ligne de répartition vide
 fillModel(); // pré-remplit le modèle de courrier par défaut
 if(!db.members.length && !db.ops.length && !db.projects.length) seedDemo();
