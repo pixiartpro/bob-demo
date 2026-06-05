@@ -68,9 +68,11 @@
 const $=s=>document.querySelector(s);
 const KEY='case_access_demo_v1';
 const ROLES={
-  president:{label:'Président — Super-administrateur',pill:'boss',rank:4,perm:'Accès total · gère les accès · seul à pouvoir tout supprimer'},
-  tresorier:{label:'Trésorier — Administrateur',pill:'boss',rank:3,perm:'Accès total à la gestion · valide les demandes (ne peut pas supprimer le site)'},
-  bureau:{label:'Membre du bureau',pill:'ok',rank:2,perm:'Accès à la gestion (consultation et saisie)'},
+  president:{label:'Président — Super-administrateur',pill:'boss',rank:6,perm:'Accès total · gère les accès · seul à pouvoir tout supprimer'},
+  tresorier:{label:'Trésorier — Administrateur',pill:'boss',rank:5,perm:'Accès total à la gestion · valide les demandes (ne peut pas supprimer le site)'},
+  bureau:{label:'Membre du bureau',pill:'ok',rank:4,perm:'Accès à la gestion : consultation et saisie'},
+  personnel:{label:'Personnel (salarié)',pill:'ok',rank:3,perm:'Espace de travail : planning, tâches, pointage · gestion liée à son activité'},
+  intervenant:{label:'Intervenant',pill:'ok',rank:2,perm:'Accès à ses créneaux et informations (salle, planning)'},
   adherent:{label:'Adhérent',pill:'ok',rank:1,perm:'Accès à l\'espace adhérent uniquement'}
 };
 function def(){return{users:[{id:'u_pres',pseudo:'guillaume',nom:'Guillaume Boulevart',role:'president',statut:'valide',demande:''}],current:null}}
@@ -123,9 +125,11 @@ function render(){
         <div class="field"><label>Nom et prénom</label><input id="r_nom" placeholder="ex. Guy Robert"></div>
         <div class="field"><label>Identifiant souhaité</label><input id="r_pseudo" placeholder="ex. guy"></div>
         <div class="field"><label>Vous êtes</label><select id="r_role">
-          <option value="bureau">Membre du bureau</option>
-          <option value="tresorier">Trésorier</option>
           <option value="adherent">Adhérent</option>
+          <option value="intervenant">Intervenant</option>
+          <option value="bureau">Membre du bureau</option>
+          <option value="personnel">Personnel (salarié)</option>
+          <option value="tresorier">Trésorier</option>
         </select></div>
         <button class="btn s" style="width:100%" onclick="register()">Envoyer ma demande</button>
       </div>
