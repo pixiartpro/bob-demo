@@ -107,14 +107,14 @@
   <nav class="tabs">
     <button data-tab="dashboard" class="active">📊 Tableau de bord</button>
     <button data-tab="members">👥 Adhérents</button>
-    <button data-tab="accounting">💶 Comptabilité</button>
-    <button data-tab="caisse">💵 Caisse</button>
     <button data-tab="projects">📁 Projets</button>
     <button data-tab="subventions">🏛️ Subventions</button>
-    <button data-tab="bilan">📈 Bilan</button>
     <button data-tab="repertoire">🗂️ Répertoire</button>
     <button data-tab="secretariat">🧰 Secrétariat</button>
     <button data-tab="incidents">⚠️ Événements</button>
+    <button data-tab="accounting">💶 Comptabilité</button>
+    <button data-tab="caisse">💵 Caisse</button>
+    <button data-tab="bilan">📈 Bilan</button>
     <button data-tab="data" style="margin-left:auto">⚙️ Données</button>
   </nav>
 
@@ -1372,10 +1372,58 @@ function download(blob,name){
   const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=name; a.click(); URL.revokeObjectURL(a.href);
 }
 function resetAll(){ if(confirm('Tout effacer définitivement ? Pense à exporter une sauvegarde avant.')){ db=blank(); save(); } }
+/* --- DÉMO : données d'exemple (uniquement version en ligne) --- */
+function seedDemo(){
+  var S={bdn:'Centre social Bois de Nèfles',bru:'Antenne Le Brûlé',mtg:'Antenne Montgaillard'};
+  var A={scol:'Accompagnement scolaire',alsh:'Accueil de loisirs',cuis:'Atelier cuisine',jar:'Jardin partagé',sort:'Sorties familiales',fete:'Fête de quartier',fonc:'Fonctionnement'};
+  var p1=uid(),p2=uid(),p3=uid();
+  db.projects.push(
+    {id:p1,name:'Fête de quartier 2026',budget:2500,status:'En cours'},
+    {id:p2,name:'Séjour familles été 2026',budget:4000,status:'À venir'},
+    {id:p3,name:'Jardin partagé',budget:1200,status:'En cours'});
+  [['Marie Hoarau','12 rue des Mille Roches','97490','Saint-Denis',15,'2026-01-12',true],
+   ['Jean-Marie Payet','5 chemin Bancoul','97400','Saint-Denis',15,'2026-01-14',true],
+   ['Aline Técher','8 allée des Flamboyants','97490','Saint-Denis',10,'2026-01-18',true],
+   ['Fabrice Rivière','2 impasse des Letchis','97490','Saint-Denis',10,'2026-02-03',false],
+   ['Sylvie Maillot','47 rue du Brûlé','97400','Saint-Denis',15,'2026-01-22',true],
+   ['Nadia Boyer','9 rue des Bougainvilliers','97490','Saint-Denis',10,'2026-02-11',false]
+  ].forEach(function(m){db.members.push({id:uid(),name:m[0],email:m[0].split(' ')[0].toLowerCase()+'@exemple.re',phone:'0692 12 34 56',addr:m[1],cp:m[2],city:m[3],amount:m[4],date:m[5],paid:m[6]});});
+  function op(type,label,cat,compte,date,amount,project,account,splits){db.ops.push({id:uid(),type:type,label:label,cat:cat,compte:compte,date:date,amount:amount,project:project||'',account:account||'banque',photo:'',splits:splits||[{site:'',action:'',amount:amount}]});}
+  op('in','Subvention CAF','Subvention','740 - Subventions d\'exploitation','2026-01-31',8000,'','banque',[{site:S.bdn,action:A.fonc,amount:8000}]);
+  op('in','Subvention Ville de Saint-Denis','Subvention','740 - Subventions d\'exploitation','2026-02-10',5000,'','banque',[{site:S.bdn,action:A.fonc,amount:5000}]);
+  op('in','Cotisations adhérents','Cotisations','756 - Cotisations','2026-01-20',160,'','banque',[{site:'',action:A.fonc,amount:160}]);
+  op('in','Recette buvette','Événement','707 - Ventes','2026-05-31',180,p1,'caisse',[{site:S.bdn,action:A.fete,amount:180}]);
+  op('out','Salaires et charges - janvier','Salaires','641 - Rémunérations','2026-01-31',3200,'','banque',[{site:S.bdn,action:A.scol,amount:1600},{site:S.bru,action:A.alsh,amount:1600}]);
+  op('out','Loyer du local','Loyer','613 - Locations','2026-01-05',600,'','banque',[{site:S.bdn,action:A.fonc,amount:600}]);
+  op('out','Électricité (EDF)','Énergie','6061 - Eau, énergie','2026-03-20',480,'','banque',[{site:S.bdn,action:A.fonc,amount:300},{site:S.bru,action:A.fonc,amount:180}]);
+  op('out','Courses alimentaires','Alimentation','6068 - Fournitures','2026-03-12',200,'','banque',[{site:S.bdn,action:A.cuis,amount:120},{site:S.bru,action:A.alsh,amount:80}]);
+  op('out','Location bus - sortie plage','Transport','6251 - Déplacements','2026-04-20',450,p2,'banque',[{site:S.bdn,action:A.sort,amount:450}]);
+  op('out','Graines et terreau','Matériel','6063 - Petit équipement','2026-03-10',160,p3,'banque',[{site:S.mtg,action:A.jar,amount:160}]);
+  op('out','Achat petit matériel','Matériel','6063 - Petit équipement','2026-04-12',38,'','caisse',[{site:S.mtg,action:A.jar,amount:38}]);
+  db.subventions.push(
+    {id:uid(),name:'Fête nout Kartié',structure:'Mairie',site:S.bdn,action:A.fete,demande:2500,accorde:2000,verse:0,date:'',deadline:'2026-07-31',recurrent:true,lien:'https://www.saintdenis.re',opId:''},
+    {id:uid(),name:'CLAS - accompagnement scolaire',structure:'Département 974',site:S.bdn,action:A.scol,demande:3000,accorde:3000,verse:3000,date:'2026-03-01',deadline:'2026-09-15',recurrent:true,lien:'https://lecompteasso.associations.gouv.fr',opId:''},
+    {id:uid(),name:'Séjour familles',structure:'CAF',site:S.bdn,action:A.sort,demande:2500,accorde:0,verse:0,date:'',deadline:'2026-06-25',recurrent:false,lien:'',opId:''});
+  db.contacts.push(
+    {id:uid(),name:'Cabinet Comptable Réunion',org:'Comptable',email:'contact@cabinet.re',phone:'0262 00 00 00',note:'Bilan en juin/juillet'},
+    {id:uid(),name:'Mme Hoarau',org:'Présidente',email:'presidente@exemple.re',phone:'0692 11 22 33',note:''});
+  db.liens.push(
+    {id:uid(),label:'Le Compte Asso (subventions État)',cat:'Subventions',url:'https://lecompteasso.associations.gouv.fr',note:''},
+    {id:uid(),label:'Service-Public Associations',cat:'Démarches administratives',url:'https://www.service-public.fr/associations',note:''});
+  db.docs.push({id:uid(),type:'Statuts',label:'Statuts à jour 2024',url:''});
+  db.notes.push(
+    {id:uid(),text:'Relancer la Mairie pour la convention',done:false,date:today()},
+    {id:uid(),text:'Préparer le bilan pour l\'AG',done:false,date:today()});
+  db.echeances.push({id:uid(),label:'Renouvellement assurance MAIF',date:'2026-09-15',recurrent:true});
+  db.incidents.push({id:uid(),date:'2026-04-15',site:S.bru,type:'Chute',gravite:'Modéré',personnes:'Un enfant (ALSH)',declare:'Animateur',desc:'Chute sans gravité dans la cour, léger hématome.',mesures:'Premiers soins, parents prévenus.',steps:incidentSteps('Modéré')});
+  save();
+}
+
 /* init */
 $('m_date').value=today(); $('a_date').value=today(); $('t_date').value=today(); $('q_date').value=today(); $('r_date').value=today(); $('i_date').value=today();
 addSplitRow(); // première ligne de répartition vide
 fillModel(); // pré-remplit le modèle de courrier par défaut
+if(!db.members.length && !db.ops.length && !db.projects.length) seedDemo();
 renderAll();
 </script>
 </body>
