@@ -185,6 +185,7 @@
       </div>
       <div class="row" style="margin-top:10px">
         <div class="field"><label>Compte comptable</label><input id="q_compte" list="comptes" placeholder="Ex. 6061 - Eau, énergie"></div>
+        <div class="field"><label>Catégorie</label><input id="q_cat" list="cats" placeholder="Ex. Subvention"></div>
         <div class="field" style="flex:0;min-width:150px"><label>Moyen</label>
           <select id="q_account"><option value="banque">🏦 Banque</option><option value="caisse">💵 Espèces</option></select></div>
         <div class="field"><label>Site</label><input id="q_site" list="sites" placeholder="Site"></div>
@@ -252,6 +253,7 @@
         <h2 style="margin:0">Journal des opérations</h2>
         <div class="row" style="margin:0">
           <input id="a_search" placeholder="🔎 Libellé, site, action..." oninput="renderOps()" style="max-width:230px">
+          <select id="a_year" onchange="renderOps()" style="max-width:160px" title="Exercice comptable"><option value="">Tous les exercices</option></select>
           <select id="a_filter" onchange="renderOps()" style="max-width:170px"><option value="">Tous les types</option><option value="in">Recettes</option><option value="out">Dépenses</option></select>
         </div>
       </div>
@@ -260,7 +262,7 @@
     </div>
     <div class="panel">
       <h2>Ventilation des dépenses</h2>
-      <p class="hint">Le total des dépenses réparti par site et par action — pratique pour justifier les budgets et les financements.</p>
+      <p class="hint">Le total des dépenses réparti par site et par action — pratique pour justifier les budgets et les financements. <strong>Suit l'exercice choisi ci-dessus.</strong></p>
       <div class="cards" style="grid-template-columns:repeat(auto-fit,minmax(280px,1fr))">
         <div>
           <h2 style="font-size:14px;margin:0 0 8px">🏢 Dépenses par site</h2>
@@ -269,6 +271,20 @@
         <div>
           <h2 style="font-size:14px;margin:0 0 8px">🎯 Dépenses par action</h2>
           <table><tbody id="ventAction"></tbody></table>
+        </div>
+      </div>
+    </div>
+    <div class="panel">
+      <h2>Ventilation des recettes</h2>
+      <p class="hint">Le total des recettes réparti par site et par action. <strong>Suit l'exercice choisi ci-dessus.</strong></p>
+      <div class="cards" style="grid-template-columns:repeat(auto-fit,minmax(280px,1fr))">
+        <div>
+          <h2 style="font-size:14px;margin:0 0 8px">🏢 Recettes par site</h2>
+          <table><tbody id="ventSiteIn"></tbody></table>
+        </div>
+        <div>
+          <h2 style="font-size:14px;margin:0 0 8px">🎯 Recettes par action</h2>
+          <table><tbody id="ventActionIn"></tbody></table>
         </div>
       </div>
     </div>
@@ -552,7 +568,7 @@
         <button class="ghost btn" onclick="exportOpsCSV()">📋 Compta en Excel (CSV)</button>
         <button class="btn" onclick="exportComptaCSV()">🧾 Export pour le comptable (journal)</button>
       </div>
-      <p class="hint" style="margin-top:8px">L'« export pour le comptable » détaille une ligne par ventilation (compte comptable, site, action, débit/crédit) — prêt à transmettre à votre comptable et au commissaire aux comptes.</p>
+      <p class="hint" style="margin-top:8px">L'« export pour le comptable » détaille une ligne par ventilation (compte comptable, site, action, débit/crédit) — prêt à transmettre à votre comptable et au commissaire aux comptes. 📅 <strong>Astuce :</strong> choisissez d'abord l'<strong>exercice</strong> dans l'onglet Comptabilité (Journal des opérations) ; les exports ne contiendront que cet exercice.</p>
       <p class="hint" style="margin-top:18px;color:var(--red)">Zone sensible :</p>
       <button class="danger" onclick="resetAll()">🗑️ Tout effacer et repartir de zéro</button>
     </div>
@@ -733,7 +749,7 @@ function quickAdd(){
   const label=$('q_label').value.trim();
   const amount=parseFloat($('q_amount').value);
   if(!label || !(amount>0)){ $('q_info').innerHTML='<span class="red">Indique un libellé et un montant.</span>'; return; }
-  db.ops.push({id:uid(), type:$('q_type').value, label, cat:'', compte:$('q_compte').value.trim(),
+  db.ops.push({id:uid(), type:$('q_type').value, label, cat:$('q_cat').value.trim(), compte:$('q_compte').value.trim(),
     amount, date:$('q_date').value||today(), project:'', account:$('q_account').value, photo:'',
     splits:[{site:$('q_site').value.trim(), action:$('q_action').value.trim(), amount}]});
   $('q_info').innerHTML='<span class="green">✓ « '+esc(label)+' » ('+euro(amount)+') ajouté. Enchaîne la facture suivante.</span>';
@@ -825,11 +841,19 @@ function acctBalance(acc){
   return b;
 }
 function projName(id){ const p=db.projects.find(x=>x.id===id); return p?p.name:''; }
+function opYears(){ return [...new Set(db.ops.filter(o=>o.type!=='transfer').map(o=>(o.date||'').slice(0,4)).filter(Boolean))].sort().reverse(); }
+function refreshYearFilter(){
+  const sel=$('a_year'); if(!sel) return; const cur=sel.value;
+  sel.innerHTML='<option value="">Tous les exercices</option>'+opYears().map(y=>`<option value="${y}">Exercice ${y}</option>`).join('');
+  if([...sel.options].some(o=>o.value===cur)) sel.value=cur;
+}
 function renderOps(){
+  refreshYearFilter();
   const f = $('a_filter').value;
+  const yr = $('a_year').value;
   const q = ($('a_search').value||'').toLowerCase();
   const match=o=>!q || (o.label+' '+(o.cat||'')+' '+(o.compte||'')+' '+getSplits(o).map(s=>s.site+' '+s.action).join(' ')).toLowerCase().includes(q);
-  const list = db.ops.filter(o=>o.type!=='transfer' && (!f||o.type===f) && match(o)).slice().sort((a,b)=>b.date.localeCompare(a.date));
+  const list = db.ops.filter(o=>o.type!=='transfer' && (!f||o.type===f) && (!yr||(o.date||'').slice(0,4)===yr) && match(o)).slice().sort((a,b)=>b.date.localeCompare(a.date));
   const tb = $('opRows');
   if(!list.length){ tb.innerHTML='<tr><td colspan="7" class="empty">Aucune opération enregistrée.</td></tr>'; }
   else tb.innerHTML = list.map(o=>{
@@ -879,20 +903,25 @@ function openOpDetail(id){
 function closeModal(){ $('opModal').classList.remove('open'); }
 
 /* ---- Ventilation (totaux dépenses par site / par action) ---- */
-function ventTable(field){
+function curExercice(){ const s=$('a_year'); return s?s.value:''; }
+function ventTable(field, type){
+  type=type||'out';
+  const yr=curExercice();
   const tot={};
-  db.ops.filter(o=>o.type==='out').forEach(o=>{
+  db.ops.filter(o=>o.type===type && (!yr||(o.date||'').slice(0,4)===yr)).forEach(o=>{
     getSplits(o).forEach(s=>{ const k=(s[field]||'').trim()||'(non précisé)'; tot[k]=(tot[k]||0)+s.amount; });
   });
   const rows=Object.entries(tot).sort((a,b)=>b[1]-a[1]);
-  if(!rows.length) return '<tr><td class="empty">Aucune dépense.</td></tr>';
+  if(!rows.length) return '<tr><td class="empty">Aucune '+(type==='in'?'recette':'dépense')+'.</td></tr>';
   const grand=rows.reduce((s,r)=>s+r[1],0);
   return rows.map(([k,v])=>`<tr><td>${esc(k)}</td><td class="num"><strong>${euro(v)}</strong> <span class="muted" style="font-size:12px">${Math.round(v/grand*100)}%</span></td></tr>`).join('')
     + `<tr><td><strong>Total</strong></td><td class="num"><strong>${euro(grand)}</strong></td></tr>`;
 }
 function renderVentilation(){
-  $('ventSite').innerHTML = ventTable('site');
-  $('ventAction').innerHTML = ventTable('action');
+  $('ventSite').innerHTML = ventTable('site','out');
+  $('ventAction').innerHTML = ventTable('action','out');
+  $('ventSiteIn').innerHTML = ventTable('site','in');
+  $('ventActionIn').innerHTML = ventTable('action','in');
 }
 const BASE_SITES=["C.A.S.E Bois de Nèfles","Local des Bringelliers"];
 const BASE_ACTIONS=["Périscolaire","Accueil de loisirs (ACM)","VEPI","Secteur ados / Kaz Zados","Danse","Musique","Permanence du samedi","Jeudi info population","Sport & santé","Accompagnement à la parentalité","Animation de quartier","Fêt nout kartyé","Ôté Kartié","Fonctionnement"];
@@ -1438,23 +1467,27 @@ function exportMembersCSV(){
 function exportOpsCSV(){
   const fmt=(sp,f)=>sp.length>1?sp.map(s=>(s[f]||'?')+' ('+s.amount+'€)').join(' | '):(sp[0][f]||'');
   const tLabel=o=>o.type==='in'?'Recette':o.type==='out'?'Dépense':'Remise en banque';
+  const yr=curExercice();
   const rows=[csvRow(['Date','Type','Libellé','Catégorie','Compte comptable','Moyen','Site','Action','Projet','Montant'])]
-    .concat(db.ops.map(o=>{ const sp=getSplits(o);
+    .concat(db.ops.filter(o=>!yr||(o.date||'').slice(0,4)===yr).map(o=>{ const sp=getSplits(o);
       return csvRow([o.date,tLabel(o),o.label,o.cat,o.compte||'',o.type==='transfer'?'Caisse→Banque':(getAccount(o)==='caisse'?'Espèces':'Banque'),
         o.type==='transfer'?'':fmt(sp,'site'),o.type==='transfer'?'':fmt(sp,'action'),projName(o.project),o.amount]); }));
-  download(new Blob(['﻿'+rows.join('\n')],{type:'text/csv'}),'comptabilite-CASE.csv');
+  download(new Blob(['﻿'+rows.join('\n')],{type:'text/csv'}),'comptabilite-CASE'+(yr?'-'+yr:'')+'.csv');
 }
 function exportComptaCSV(){
   // journal analytique : une ligne par ventilation (compte / site / action), avec débit (dépense) / crédit (recette)
+  const yr=curExercice();
+  const lignes=db.ops.filter(o=>o.type!=='transfer' && (!yr||(o.date||'').slice(0,4)===yr));
+  if(!lignes.length){ alert('Aucune écriture pour '+(yr?('l\'exercice '+yr):'cette sélection')+'.'); return; }
   const rows=[csvRow(['Date','Compte comptable','Libellé','Catégorie','Site','Action','Débit (dépense)','Crédit (recette)','Moyen de paiement'])];
-  db.ops.filter(o=>o.type!=='transfer').slice().sort((a,b)=>(a.date||'').localeCompare(b.date||'')).forEach(o=>{
+  lignes.slice().sort((a,b)=>(a.date||'').localeCompare(b.date||'')).forEach(o=>{
     const moyen = o.mode || (getAccount(o)==='caisse'?'Espèces':'Banque');
     getSplits(o).forEach(s=>{
       rows.push(csvRow([o.date, o.compte||'', o.label, o.cat||'', s.site||'', s.action||'',
         o.type==='out'?s.amount:'', o.type==='in'?s.amount:'', moyen]));
     });
   });
-  download(new Blob(['﻿'+rows.join('\n')],{type:'text/csv'}),'journal-comptable-CASE.csv');
+  download(new Blob(['﻿'+rows.join('\n')],{type:'text/csv'}),'journal-comptable-CASE'+(yr?'-'+yr:'')+'.csv');
 }
 function download(blob,name){
   const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=name; a.click(); URL.revokeObjectURL(a.href);
