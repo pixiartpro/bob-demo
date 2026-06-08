@@ -117,6 +117,16 @@ async function signIn(){
 }
 async function signOut(){ await sb.auth.signOut(); myProfile=null; await refresh(); }
 
+/* ---- Lien magique : connexion (ou inscription) sans mot de passe ---- */
+async function magicLink(){
+  const email=$('#l_email').value.trim();
+  if(!email){toast('Entre ton email ci-dessus, puis clique ici.');return}
+  const btn=$('#magic_btn'); const old=btn.textContent; btn.disabled=true; btn.textContent='Envoi…';
+  const {error}=await sb.auth.signInWithOtp({email,options:{emailRedirectTo:location.origin+location.pathname}});
+  btn.disabled=false; btn.textContent=old;
+  toast(error?error.message:'✓ Lien envoyé ! Ouvre ta boîte mail et clique le lien pour te connecter.');
+}
+
 /* ---- Mot de passe oublié / changement ---- */
 async function resetPwd(){
   const email=$('#l_email').value.trim();
@@ -179,6 +189,9 @@ function renderLoggedOut(){
       <div class="field"><label>Mot de passe</label><input id="l_pw" type="password" placeholder="••••••••" onkeydown="if(event.key==='Enter')signIn()"></div>
       <button id="l_btn" class="btn p" style="width:100%" onclick="signIn()">Se connecter</button>
       <p class="small muted" style="margin-top:10px;text-align:center"><a href="#" onclick="resetPwd();return false" style="color:var(--vert-fonce)">Mot de passe oublié ?</a></p>
+      <div style="display:flex;align-items:center;gap:10px;margin:14px 0 10px"><div style="flex:1;height:1px;background:var(--line)"></div><span class="small muted">ou, sans mot de passe</span><div style="flex:1;height:1px;background:var(--line)"></div></div>
+      <button id="magic_btn" class="btn g" style="width:100%" onclick="magicLink()">✨ Recevoir un lien de connexion par email</button>
+      <p class="small muted" style="margin-top:8px;text-align:center">Tu reçois un lien, tu cliques, tu es connecté. (Saisis ton email ci-dessus d'abord.)</p>
     </div>
     <div class="card">
       <h2>Demander un accès</h2>
