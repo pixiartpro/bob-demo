@@ -17,7 +17,7 @@
   header nav{margin-left:auto;display:flex;gap:8px}
   header nav a{padding:8px 12px;border-radius:10px;font-weight:600;font-size:14px;text-decoration:none;color:var(--muted)}
   header nav a:hover{background:#eef7f2;color:var(--ink)}
-  .demo-flag{background:var(--jaune);color:#5b4300;text-align:center;font-weight:700;font-size:13px;padding:9px 14px}
+  .secure-flag{background:#e3f5ec;color:var(--vert-fonce);text-align:center;font-weight:700;font-size:13px;padding:9px 14px}
   h1.t{font-size:24px;margin:22px 0 2px;font-weight:900}
   .sub{color:var(--muted);margin:0 0 18px}
   .card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:22px;box-shadow:var(--shadow);margin-bottom:18px}
@@ -35,7 +35,7 @@
   .btn.d{background:#fde9e5;color:var(--red)}
   .btn:disabled{opacity:.5;cursor:default}
   .pill{display:inline-block;padding:3px 10px;border-radius:999px;font-size:12px;font-weight:800}
-  .pill.ok{background:#e3f5ec;color:var(--vert-fonce)} .pill.wait{background:#fcf2de;color:#a9742a} .pill.boss{background:#e8eefc;color:#1f4fc4}
+  .pill.ok{background:#e3f5ec;color:var(--vert-fonce)} .pill.wait{background:#fcf2de;color:#a9742a} .pill.boss{background:#e8eefc;color:#1f4fc4} .pill.off{background:#f1eef0;color:#8a7d86}
   .kv{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:11px 0;border-bottom:1px dashed var(--line)}
   .kv:last-child{border-bottom:none}
   .role-pill{font-size:11.5px}
@@ -45,13 +45,14 @@
   .who .av{width:46px;height:46px;border-radius:50%;background:rgba(255,255,255,.2);display:grid;place-items:center;font-size:22px}
   .who b{font-size:17px}
   .muted{color:var(--muted)} .small{font-size:13px}
-  #toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%) translateY(40px);background:var(--ink);color:#fff;padding:11px 18px;border-radius:999px;font-weight:700;box-shadow:var(--shadow-lg);opacity:0;transition:.25s;z-index:99}
+  .notice{background:#fcf8ec;border:1px solid #f0e2b6;border-radius:12px;padding:12px 14px;font-size:13.5px;margin-bottom:16px}
+  #toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%) translateY(40px);background:var(--ink);color:#fff;padding:11px 18px;border-radius:999px;font-weight:700;box-shadow:var(--shadow-lg);opacity:0;transition:.25s;z-index:99;max-width:90%;text-align:center}
   #toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
   @media(max-width:640px){.grid2{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
-<div class="demo-flag">🔒 DÉMONSTRATION du système d'accès — montre le fonctionnement (connexion, validation, rôles). La <b>vraie</b> sécurité (mots de passe protégés) arrivera avec la version en ligne.</div>
+<div class="secure-flag">🔒 Espace sécurisé — connexion chiffrée (Supabase). Les accès sont accordés par le Président.</div>
 <header><div class="bar">
   <a href="vitrine.html" class="logo"><span class="pine">🍍</span><span><b>CASE</b> <span>Bois de Nèfles</span></span></a>
   <nav><a href="vitrine.html">← Site public</a></nav>
@@ -59,126 +60,211 @@
 
 <div class="wrap">
   <h1 class="t">🔐 Espace bureau</h1>
-  <p class="sub">Connexion réservée à l'équipe et au bureau. Les accès sont accordés par le Président.</p>
-  <div id="app"></div>
+  <p class="sub">Connexion réservée à l'équipe et au bureau. Crée une demande d'accès ; un administrateur la validera.</p>
+  <div id="app"><p class="muted">Chargement…</p></div>
 </div>
 <div id="toast"></div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
+/* ====== Connexion à la base sécurisée (clé publique = sans danger) ====== */
+const SUPABASE_URL='https://dkidtwypclpwznleiqnq.supabase.co';
+const SUPABASE_KEY='sb_publishable_HDfV-O2ION1Vw9v03aV_Qg_PkiAjLNo';
+const sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+
 const $=s=>document.querySelector(s);
-const KEY='case_access_demo_v1';
 const ROLES={
-  president:{label:'Président — Super-administrateur',pill:'boss',rank:6,perm:'Accès total · gère les accès · seul à pouvoir tout supprimer'},
-  tresorier:{label:'Trésorier — Administrateur',pill:'boss',rank:5,perm:'Accès total à la gestion · valide les demandes (ne peut pas supprimer le site)'},
-  bureau:{label:'Membre du bureau',pill:'ok',rank:4,perm:'Accès à la gestion : consultation et saisie'},
-  personnel:{label:'Personnel (salarié)',pill:'ok',rank:3,perm:'Espace de travail : planning, tâches, pointage · gestion liée à son activité'},
-  intervenant:{label:'Intervenant',pill:'ok',rank:2,perm:'Accès à ses créneaux et informations (salle, planning)'},
-  adherent:{label:'Adhérent',pill:'ok',rank:1,perm:'Accès à l\'espace adhérent uniquement'}
+  president:{label:'Président — Super-administrateur',pill:'boss',perm:'Accès total · gère les accès · seul à pouvoir tout supprimer'},
+  tresorier:{label:'Trésorier — Administrateur',pill:'boss',perm:'Accès total à la gestion · valide les demandes (ne peut pas supprimer)'},
+  bureau:{label:'Membre du bureau',pill:'ok',perm:'Accès à la gestion : consultation et saisie'},
+  personnel:{label:'Personnel (salarié)',pill:'ok',perm:'Espace de travail : planning, tâches, pointage · gestion liée à son activité'},
+  intervenant:{label:'Intervenant',pill:'ok',perm:'Accès à ses créneaux et informations (salle, planning)'},
+  adherent:{label:'Adhérent',pill:'ok',perm:"Accès à l'espace adhérent uniquement"}
 };
-function def(){return{users:[{id:'u_pres',pseudo:'guillaume',nom:'Guillaume Boulevart',role:'president',statut:'valide',demande:''}],current:null}}
-let db=load();
-function load(){try{return JSON.parse(localStorage.getItem(KEY))||def()}catch(e){return def()}}
-function save(){localStorage.setItem(KEY,JSON.stringify(db));render()}
-function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('show');clearTimeout(t._tm);t._tm=setTimeout(()=>t.classList.remove('show'),2400)}
-function me(){return db.users.find(u=>u.id===db.current)||null}
-function isAdmin(u){return u&&(u.role==='president'||u.role==='tresorier')}
+const STATUTS={en_attente:{label:'En attente de validation',pill:'wait'},actif:{label:'Actif',pill:'ok'},suspendu:{label:'Suspendu',pill:'off'}};
+let myProfile=null;
 
-function register(){
-  const pseudo=$('#r_pseudo').value.trim().toLowerCase(), nom=$('#r_nom').value.trim(), dem=$('#r_role').value;
-  if(!pseudo||!nom){toast('Indique ton nom et un identifiant');return}
-  if(db.users.some(u=>u.pseudo===pseudo)){toast('Cet identifiant existe déjà');return}
-  db.users.push({id:'u'+Date.now().toString(36),pseudo,nom,role:'adherent',statut:'en_attente',demande:dem});
-  save();toast('Demande envoyée ✓ — en attente de validation du Président');
-}
-function login(){
-  const pseudo=$('#l_pseudo').value.trim().toLowerCase();
-  const u=db.users.find(x=>x.pseudo===pseudo);
-  if(!u){toast('Identifiant inconnu');return}
-  if(u.statut!=='valide'){toast('Ton accès est en attente de validation ⏳');return}
-  db.current=u.id;save();toast('Connecté ✓');
-}
-function logout(){db.current=null;save()}
-function validate(id,role){const u=db.users.find(x=>x.id===id);if(u){u.statut='valide';u.role=role;save();toast(u.nom+' validé(e) comme '+ROLES[role].label)}}
-function reject(id){db.users=db.users.filter(x=>x.id!==id);save();toast('Demande refusée')}
-function setRole(id,role){const u=db.users.find(x=>x.id===id);if(u){u.role=role;save();toast('Rôle mis à jour')}}
-function removeUser(id){const u=db.users.find(x=>x.id===id);if(!u)return;
-  if(u.role==='president'){toast('Le compte Président ne peut pas être supprimé');return}
-  if(confirm('Retirer l\'accès de '+u.nom+' ?')){db.users=db.users.filter(x=>x.id!==id);save();toast('Accès retiré')}}
-function wipe(){if(confirm('⚠️ SUPPRIMER tous les accès et réinitialiser ? (réservé au Président)')){db=def();save();toast('Réinitialisé')}}
+function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('show');clearTimeout(t._tm);t._tm=setTimeout(()=>t.classList.remove('show'),3200)}
+function esc(s){return (s==null?'':String(s)).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function isAdmin(p){return p&&(p.role==='president'||p.role==='tresorier')}
 
-function render(){
-  const u=me();
-  if(!u){
-    $('#app').innerHTML=`
-    <div class="grid2">
-      <div class="card">
-        <h2>Se connecter</h2>
-        <p class="h">Entre ton identifiant. <span class="muted">(En démo, le mot de passe n'est pas vérifié.)</span></p>
-        <div class="field"><label>Identifiant</label><input id="l_pseudo" placeholder="ex. guillaume" onkeydown="if(event.key==='Enter')login()"></div>
-        <div class="field"><label>Mot de passe</label><input type="password" placeholder="••••••••"></div>
-        <button class="btn p" style="width:100%" onclick="login()">Se connecter</button>
-        <p class="small muted" style="margin-top:10px">💡 Essaie <b>guillaume</b> (Président). Puis crée une demande « guy » et reviens valider en tant que Président.</p>
-      </div>
-      <div class="card">
-        <h2>Demander un accès</h2>
-        <p class="h">Ta demande sera envoyée au Président, qui décide de t'accréditer ou non.</p>
-        <div class="field"><label>Nom et prénom</label><input id="r_nom" placeholder="ex. Guy Robert"></div>
-        <div class="field"><label>Identifiant souhaité</label><input id="r_pseudo" placeholder="ex. guy"></div>
-        <div class="field"><label>Vous êtes</label><select id="r_role">
-          <option value="adherent">Adhérent</option>
-          <option value="intervenant">Intervenant</option>
-          <option value="bureau">Membre du bureau</option>
-          <option value="personnel">Personnel (salarié)</option>
-          <option value="tresorier">Trésorier</option>
-        </select></div>
-        <button class="btn s" style="width:100%" onclick="register()">Envoyer ma demande</button>
-      </div>
-    </div>`;
+/* ---- Inscription = demande d'accès ---- */
+async function signUp(){
+  const nom=$('#r_nom').value.trim();
+  const email=$('#r_email').value.trim();
+  const pw=$('#r_pw').value;
+  if(!nom||!email||!pw){toast('Indique ton nom, ton email et un mot de passe.');return}
+  if(pw.length<6){toast('Le mot de passe doit faire au moins 6 caractères.');return}
+  const btn=$('#r_btn'); btn.disabled=true; btn.textContent='Envoi…';
+  const {data,error}=await sb.auth.signUp({email,password:pw,options:{data:{full_name:nom}}});
+  btn.disabled=false; btn.textContent='Envoyer ma demande';
+  if(error){toast(error.message);return}
+  if(data.session){ await refresh(); toast('Demande créée ✓ — en attente de validation.'); }
+  else { $('#app').innerHTML=`<div class="card"><h2>✅ Demande créée</h2>
+    <p class="h" style="margin:0">Un email de confirmation t'a été envoyé à <b>${esc(email)}</b>. Clique sur le lien pour confirmer ton adresse, puis reviens te connecter. Ta demande d'accès sera validée par un administrateur.</p>
+    <p style="margin-top:14px"><button class="btn g" onclick="refresh()">← Retour à la connexion</button></p></div>`; }
+}
+/* ---- Connexion ---- */
+async function signIn(){
+  const email=$('#l_email').value.trim();
+  const pw=$('#l_pw').value;
+  if(!email||!pw){toast('Entre ton email et ton mot de passe.');return}
+  const btn=$('#l_btn'); btn.disabled=true; btn.textContent='Connexion…';
+  const {error}=await sb.auth.signInWithPassword({email,password:pw});
+  btn.disabled=false; btn.textContent='Se connecter';
+  if(error){toast(error.message.includes('confirm')?"Confirme d'abord ton email (lien reçu par mail).":'Email ou mot de passe incorrect.');return}
+  await refresh();
+}
+async function signOut(){ await sb.auth.signOut(); myProfile=null; await refresh(); }
+
+/* ---- Mot de passe oublié / changement ---- */
+async function resetPwd(){
+  const email=$('#l_email').value.trim();
+  if(!email){toast('Entre ton email ci-dessus d\'abord.');return}
+  const {error}=await sb.auth.resetPasswordForEmail(email);
+  toast(error?error.message:'Email de réinitialisation envoyé ✓');
+}
+async function changePwd(){
+  const pw=prompt('Nouveau mot de passe (au moins 6 caractères) :'); if(pw===null)return;
+  if(pw.length<6){toast('Trop court (min 6).');return}
+  const {error}=await sb.auth.updateUser({password:pw});
+  toast(error?error.message:'Mot de passe mis à jour ✓');
+}
+
+/* ---- Profil ---- */
+async function loadProfile(user){
+  const {data:p,error}=await sb.from('profiles').select('*').eq('id',user.id).single();
+  if(error||!p) return null;
+  if(!p.full_name && user.user_metadata && user.user_metadata.full_name){
+    await sb.from('profiles').update({full_name:user.user_metadata.full_name}).eq('id',user.id);
+    p.full_name=user.user_metadata.full_name;
+  }
+  return p;
+}
+async function refresh(){
+  const {data:{session}}=await sb.auth.getSession();
+  if(!session){ myProfile=null; renderLoggedOut(); return; }
+  myProfile=await loadProfile(session.user);
+  renderLoggedIn(session.user);
+}
+
+/* ---- Actions admin (validation / rôles) ---- */
+async function validateUser(id){
+  const role=document.getElementById('role_'+id).value;
+  const {error}=await sb.from('profiles').update({statut:'actif',role}).eq('id',id);
+  toast(error?error.message:'Accès validé ✓'); await refresh();
+}
+async function rejectUser(id){
+  const {error}=await sb.from('profiles').update({statut:'suspendu'}).eq('id',id);
+  toast(error?error.message:'Demande refusée (suspendue)'); await refresh();
+}
+async function setRole(id,role){
+  const {error}=await sb.from('profiles').update({role}).eq('id',id);
+  toast(error?error.message:'Rôle mis à jour ✓'); await refresh();
+}
+async function removeUser(id){
+  if(!confirm('Retirer définitivement cet accès ?'))return;
+  const {error}=await sb.from('profiles').delete().eq('id',id);
+  toast(error?error.message:'Accès retiré'); await refresh();
+}
+
+/* ====== Rendu ====== */
+function renderLoggedOut(){
+  $('#app').innerHTML=`
+  <div class="grid2">
+    <div class="card">
+      <h2>Se connecter</h2>
+      <p class="h">Avec ton email et ton mot de passe.</p>
+      <div class="field"><label>Email</label><input id="l_email" type="email" placeholder="ton@email.fr" onkeydown="if(event.key==='Enter')signIn()"></div>
+      <div class="field"><label>Mot de passe</label><input id="l_pw" type="password" placeholder="••••••••" onkeydown="if(event.key==='Enter')signIn()"></div>
+      <button id="l_btn" class="btn p" style="width:100%" onclick="signIn()">Se connecter</button>
+      <p class="small muted" style="margin-top:10px;text-align:center"><a href="#" onclick="resetPwd();return false" style="color:var(--vert-fonce)">Mot de passe oublié ?</a></p>
+    </div>
+    <div class="card">
+      <h2>Demander un accès</h2>
+      <p class="h">Crée ton compte. Ta demande arrive en « en attente » et un administrateur t'accrédite.</p>
+      <div class="field"><label>Nom et prénom</label><input id="r_nom" placeholder="ex. Guy Robert"></div>
+      <div class="field"><label>Email</label><input id="r_email" type="email" placeholder="ton@email.fr"></div>
+      <div class="field"><label>Mot de passe (min. 6 caractères)</label><input id="r_pw" type="password" placeholder="••••••••"></div>
+      <button id="r_btn" class="btn s" style="width:100%" onclick="signUp()">Envoyer ma demande</button>
+    </div>
+  </div>`;
+}
+
+async function renderLoggedIn(user){
+  if(!myProfile){
+    $('#app').innerHTML=`<div class="card"><h2>Compte sans profil</h2>
+      <p class="h">Ton compte existe mais aucun profil n'est associé. Contacte le Président.</p>
+      <button class="btn g" onclick="signOut()">Déconnexion</button></div>`;
     return;
   }
-  const r=ROLES[u.role];
-  let html=`<div class="who"><div class="av">${u.role==='president'?'👑':isAdmin(u)?'🛡️':'👤'}</div>
-    <div><b>Bonjour ${esc(u.nom)}</b><br><span class="role-pill pill ${r.pill}">${r.label}</span></div>
+  const p=myProfile, r=ROLES[p.role]||ROLES.adherent, st=STATUTS[p.statut]||STATUTS.en_attente;
+  const nom=p.full_name||user.email;
+  let html=`<div class="who"><div class="av">${p.role==='president'?'👑':isAdmin(p)?'🛡️':'👤'}</div>
+    <div><b>Bonjour ${esc(nom)}</b><br>
+      <span class="role-pill pill ${r.pill}">${r.label}</span>
+      <span class="role-pill pill ${st.pill}">${st.label}</span></div>
     <div style="margin-left:auto;display:flex;gap:8px;flex-wrap:wrap">
-      <a class="btn p" style="text-decoration:none" href="index.html">Entrer dans la gestion →</a>
-      <button class="btn g" onclick="logout()">Déconnexion</button>
+      ${p.statut==='actif'?`<a class="btn p" style="text-decoration:none" href="index.html">Entrer dans la gestion →</a>`:''}
+      <button class="btn g" onclick="changePwd()">Mot de passe</button>
+      <button class="btn g" onclick="signOut()">Déconnexion</button>
     </div></div>`;
-  html+=`<div class="card"><h2>Mon accréditation</h2><p class="h" style="margin:0">${r.perm}</p></div>`;
 
-  if(isAdmin(u)){
-    const pend=db.users.filter(x=>x.statut==='en_attente');
-    html+=`<div class="card"><h2>🕒 Demandes en attente (${pend.length})</h2><p class="h">Valide et choisis l'accréditation, ou refuse.</p>`;
-    html+= pend.length? pend.map(p=>`<div class="kv">
-        <span><b>${esc(p.nom)}</b> <span class="muted small">(${esc(p.pseudo)})</span><br><span class="muted small">demande : ${ROLES[p.demande]?ROLES[p.demande].label:'—'}</span></span>
-        <span style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
-          <select id="role_${p.id}">${Object.entries(ROLES).filter(([k])=>k!=='president'||u.role==='president').map(([k,v])=>`<option value="${k}" ${k===p.demande?'selected':''}>${v.label}</option>`).join('')}</select>
-          <button class="btn p" onclick="validate('${p.id}',document.getElementById('role_${p.id}').value)">Valider</button>
-          <button class="btn d" onclick="reject('${p.id}')">Refuser</button>
-        </span></div>`).join('') : '<p class="muted small">Aucune demande en attente.</p>';
-    html+=`</div>`;
-
-    const act=db.users.filter(x=>x.statut==='valide');
-    html+=`<div class="card"><h2>👥 Accès validés (${act.length})</h2><p class="h">${u.role==='president'?'Tu peux modifier les rôles et retirer un accès.':'Tu peux voir les accès (seul le Président modifie les rôles).'}</p>`;
-    html+= act.map(a=>`<div class="kv">
-        <span><b>${esc(a.nom)}</b> <span class="muted small">(${esc(a.pseudo)})</span></span>
-        <span style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
-          ${u.role==='president'&&a.role!=='president'
-            ? `<select onchange="setRole('${a.id}',this.value)">${Object.entries(ROLES).map(([k,v])=>`<option value="${k}" ${k===a.role?'selected':''}>${v.label}</option>`).join('')}</select>
-               <button class="btn d" onclick="removeUser('${a.id}')">Retirer</button>`
-            : `<span class="pill ${ROLES[a.role].pill} role-pill">${ROLES[a.role].label}</span>`}
-        </span></div>`).join('');
-    html+=`</div>`;
+  if(p.statut==='en_attente'){
+    html+=`<div class="notice">⏳ <b>Ton accès est en attente de validation.</b> Un administrateur (Président ou Trésorier) doit valider ta demande et t'attribuer un rôle. Tu seras alors autorisé à entrer dans la gestion.</div>`;
+  } else if(p.statut==='suspendu'){
+    html+=`<div class="notice" style="background:#fdeeea;border-color:#f3c4ba">🚫 <b>Ton accès est suspendu.</b> Contacte le Président pour le rétablir.</div>`;
+  } else {
+    html+=`<div class="card"><h2>Mon accréditation</h2><p class="h" style="margin:0">${r.perm}</p></div>`;
   }
 
-  if(u.role==='president'){
+  if(isAdmin(p) && p.statut==='actif'){
+    html+=`<div class="card" id="adminPending"><h2>🕒 Demandes en attente</h2><p class="muted small">Chargement…</p></div>`;
+    html+=`<div class="card" id="adminActive"><h2>👥 Accès validés</h2><p class="muted small">Chargement…</p></div>`;
+  }
+  if(p.role==='president' && p.statut==='actif'){
     html+=`<div class="danger"><h2>⚠️ Zone réservée au Président</h2>
-      <p class="small muted">Toi seul peux réinitialiser/supprimer l'ensemble des accès. Personne d'autre, pas même le Trésorier.</p>
-      <button class="btn d" onclick="wipe()">🗑️ Supprimer / réinitialiser tous les accès</button></div>`;
+      <p class="small muted">Toi seul peux retirer définitivement un accès (boutons « Retirer » ci-dessus). Le Trésorier peut valider et suspendre, mais pas supprimer.</p></div>`;
   }
   $('#app').innerHTML=html;
+  if(isAdmin(p) && p.statut==='actif') fillAdmin();
 }
-function esc(s){return (s==null?'':String(s)).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
-render();
+
+async function fillAdmin(){
+  const {data:profiles,error}=await sb.from('profiles').select('*').order('created_at',{ascending:true});
+  if(error){ $('#adminPending').innerHTML='<h2>🕒 Demandes en attente</h2><p class="small" style="color:var(--red)">Erreur de lecture : '+esc(error.message)+'</p>'; return; }
+  const others=(profiles||[]).filter(x=>x.id!==myProfile.id);
+  const pend=others.filter(x=>x.statut==='en_attente');
+  const act=(profiles||[]).filter(x=>x.statut==='actif');
+  const isPres=myProfile.role==='president';
+
+  const roleOpts=(sel)=>Object.entries(ROLES).filter(([k])=>k!=='president'||isPres).map(([k,v])=>`<option value="${k}" ${k===sel?'selected':''}>${v.label}</option>`).join('');
+
+  $('#adminPending').innerHTML=`<h2>🕒 Demandes en attente (${pend.length})</h2>
+    <p class="h">Choisis le rôle puis valide, ou refuse (suspend).</p>`+
+    (pend.length?pend.map(u=>`<div class="kv">
+      <span><b>${esc(u.full_name||'(sans nom)')}</b><br><span class="muted small">${esc(u.email||'')}</span></span>
+      <span style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
+        <select id="role_${u.id}">${roleOpts('adherent')}</select>
+        <button class="btn p" onclick="validateUser('${u.id}')">Valider</button>
+        <button class="btn d" onclick="rejectUser('${u.id}')">Refuser</button>
+      </span></div>`).join(''):'<p class="muted small">Aucune demande en attente.</p>');
+
+  $('#adminActive').innerHTML=`<h2>👥 Accès validés (${act.length})</h2>
+    <p class="h">${isPres?'Tu peux modifier les rôles et retirer un accès.':'Tu vois les accès (seul le Président modifie les rôles et supprime).'}</p>`+
+    act.map(a=>`<div class="kv">
+      <span><b>${esc(a.full_name||'(sans nom)')}</b>${a.id===myProfile.id?' <span class="muted small">(toi)</span>':''}<br><span class="muted small">${esc(a.email||'')}</span></span>
+      <span style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
+        ${isPres&&a.role!=='president'&&a.id!==myProfile.id
+          ? `<select onchange="setRole('${a.id}',this.value)">${roleOpts(a.role)}</select>
+             <button class="btn d" onclick="removeUser('${a.id}')">Retirer</button>`
+          : `<span class="pill ${(ROLES[a.role]||ROLES.adherent).pill} role-pill">${(ROLES[a.role]||ROLES.adherent).label}</span>`}
+      </span></div>`).join('');
+}
+
+/* re-render automatique quand l'état de connexion change */
+sb.auth.onAuthStateChange(()=>{ refresh(); });
+refresh();
 </script>
 </body>
 </html>
