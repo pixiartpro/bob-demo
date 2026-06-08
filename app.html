@@ -112,6 +112,7 @@
     <button data-tab="repertoire">🗂️ Répertoire</button>
     <button data-tab="partenaires">🤝 Partenaires</button>
     <button data-tab="secretariat">🧰 Secrétariat</button>
+    <button data-tab="chat">💬 Chat</button>
     <button data-tab="incidents">⚠️ Événements</button>
     <button data-tab="accounting">💶 Comptabilité</button>
     <button data-tab="caisse">💵 Caisse</button>
@@ -578,6 +579,21 @@
       </div>
       <p class="hint">Les commerçants et acteurs du quartier qui remplissent le formulaire « Devenir partenaire » sur le site public apparaissent ici.</p>
       <div id="partList"><p class="hint">Chargement…</p></div>
+    </div>
+  </section>
+
+  <section id="chat" class="page">
+    <div class="panel">
+      <div class="toolbar">
+        <h2 style="margin:0">💬 Chat du bureau</h2>
+        <button class="ghost btn" onclick="if(window.loadChat)loadChat()">↻ Rafraîchir</button>
+      </div>
+      <p class="hint">Discussion interne entre les membres connectés. Visible uniquement par votre association.</p>
+      <div id="chatList" style="max-height:440px;overflow:auto;margin:10px 0;padding:4px;background:#f7faf8;border:1px solid #e6ece7;border-radius:12px"></div>
+      <div class="row" style="gap:8px">
+        <div class="field" style="flex:1;margin:0"><input id="chatInput" placeholder="Votre message…" onkeydown="if(event.key==='Enter')sendChat()"></div>
+        <div class="field" style="flex:0;margin:0"><button class="btn" onclick="sendChat()">Envoyer</button></div>
+      </div>
     </div>
   </section>
 
@@ -1804,6 +1820,31 @@ renderAll();
   };
   window.setPartStatut=async function(id,st){ const {error}=await sbc.from('partenaires').update({statut:st}).eq('id',id); if(error){alert(error.message);return;} window.loadPartenaires(); };
 
+  // Chat interne du bureau (table messages)
+  window.loadChat=async function(){
+    const box=document.getElementById('chatList'); if(!box) return;
+    const {data,error}=await sbc.from('messages').select('*').order('created_at',{ascending:true}).limit(200);
+    if(error){ box.innerHTML='<p class="hint" style="color:#c0392b">Erreur : '+esc(error.message)+'</p>'; return; }
+    if(!data||!data.length){ box.innerHTML='<p class="hint" style="padding:10px">Aucun message. Démarrez la discussion !</p>'; return; }
+    const mine=myProfile.id;
+    box.innerHTML=data.map(m=>{ const own=m.author_id===mine;
+      return `<div style="margin:8px 6px;display:flex;flex-direction:column;align-items:${own?'flex-end':'flex-start'}">
+        <div style="max-width:80%;background:${own?'#dff5e9':'#fff'};border:1px solid #e6ece7;border-radius:14px;padding:8px 12px">
+          <div style="font-size:12px;color:#5c7468;font-weight:700">${esc(m.author_name||'?')}<span style="font-weight:400"> · ${esc((m.created_at||'').slice(0,16).replace('T',' '))}</span></div>
+          <div style="white-space:pre-wrap">${esc(m.body)}</div>
+        </div></div>`;
+    }).join('');
+    box.scrollTop=box.scrollHeight;
+  };
+  window.sendChat=async function(){
+    const inp=document.getElementById('chatInput'); if(!inp) return; const body=inp.value.trim(); if(!body) return;
+    inp.value='';
+    const nom=(myProfile.full_name||myProfile.email||'').split('@')[0];
+    const {error}=await sbc.from('messages').insert({asso_id:myAsso, author_id:myProfile.id, author_name:nom, body});
+    if(error){ alert(error.message); inp.value=body; return; }
+    window.loadChat();
+  };
+
   async function boot(){
     if(!window.supabase){ gate('<h2>Erreur de chargement</h2><p>Impossible de charger Supabase (connexion internet ?). Réessaie.</p>'); return; }
     sbc=window.supabase.createClient(SB_URL,SB_KEY);
@@ -1827,6 +1868,8 @@ renderAll();
     applyPerms();
     const pb=document.querySelector('nav.tabs button[data-tab="partenaires"]'); if(pb) pb.addEventListener('click',()=>{ if(window.loadPartenaires) loadPartenaires(); });
     if(window.loadPartenaires) loadPartenaires();
+    const cb=document.querySelector('nav.tabs button[data-tab="chat"]'); if(cb) cb.addEventListener('click',()=>{ if(window.loadChat) loadChat(); });
+    setInterval(()=>{ const s=document.getElementById('chat'); if(s&&s.classList.contains('active')&&window.loadChat) loadChat(); }, 12000);
     document.documentElement.style.visibility='';
     setSync(canWrite?'✓ synchronisé':'lecture seule (pas d\'enregistrement)');
     // si l'utilisateur se déconnecte ailleurs
