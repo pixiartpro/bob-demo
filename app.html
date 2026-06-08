@@ -110,6 +110,7 @@
     <button data-tab="projects">📁 Projets</button>
     <button data-tab="subventions">🏛️ Subventions</button>
     <button data-tab="repertoire">🗂️ Répertoire</button>
+    <button data-tab="partenaires">🤝 Partenaires</button>
     <button data-tab="secretariat">🧰 Secrétariat</button>
     <button data-tab="incidents">⚠️ Événements</button>
     <button data-tab="accounting">💶 Comptabilité</button>
@@ -569,6 +570,17 @@
   </section>
 
   <!-- DATA -->
+  <section id="partenaires" class="page">
+    <div class="panel">
+      <div class="toolbar">
+        <h2 style="margin:0">🤝 Demandes de partenariat</h2>
+        <button class="ghost btn" onclick="if(window.loadPartenaires)loadPartenaires()">↻ Rafraîchir</button>
+      </div>
+      <p class="hint">Les commerçants et acteurs du quartier qui remplissent le formulaire « Devenir partenaire » sur le site public apparaissent ici.</p>
+      <div id="partList"><p class="hint">Chargement…</p></div>
+    </div>
+  </section>
+
   <section id="data" class="page">
     <div class="panel">
       <h2>Sauvegarde & données</h2>
@@ -1769,6 +1781,29 @@ renderAll();
     return v;
   };
 
+  // Demandes de partenariat (commerçants) — table partenaires
+  const PART_STATUTS={nouveau:'🆕 Nouveau',contacte:'📞 Contacté',partenaire:'✅ Partenaire',refuse:'✖️ Refusé'};
+  window.loadPartenaires=async function(){
+    const box=document.getElementById('partList'); if(!box) return;
+    const {data,error}=await sbc.from('partenaires').select('*').order('created_at',{ascending:false});
+    if(error){ box.innerHTML='<p class="hint" style="color:#c0392b">Erreur : '+esc(error.message)+'</p>'; return; }
+    if(!data||!data.length){ box.innerHTML='<p class="hint">Aucune demande de partenariat pour le moment.</p>'; return; }
+    box.innerHTML=data.map(p=>`<div class="panel" style="margin:10px 0;border-left:4px solid #1f9d6b">
+      <div class="toolbar"><div><strong>${esc(p.commerce||'(sans nom)')}</strong> <span class="pill" style="background:#eef2fb;color:#1f4fc4;font-size:11px">${PART_STATUTS[p.statut]||esc(p.statut||'')}</span><br>
+        <span class="muted" style="font-size:13px">${esc(p.contact||'')}${p.type_activite?' · '+esc(p.type_activite):''}</span></div>
+        <span class="muted" style="font-size:12px">${esc((p.created_at||'').slice(0,10))}</span></div>
+      ${(p.email||p.phone)?`<div class="kv"><span class="k">Contact</span><span>${p.email?esc(p.email):''}${p.email&&p.phone?' · ':''}${p.phone?esc(p.phone):''}</span></div>`:''}
+      ${p.message?`<div class="kv"><span class="k">Message</span><span style="text-align:right;max-width:70%">${esc(p.message)}</span></div>`:''}
+      ${canWrite?`<div class="row" style="margin-top:10px;gap:6px;flex-wrap:wrap">
+        <button class="ghost btn" onclick="setPartStatut('${p.id}','contacte')">📞 Contacté</button>
+        <button class="ghost btn" onclick="setPartStatut('${p.id}','partenaire')">✅ Partenaire</button>
+        <button class="ghost btn" onclick="setPartStatut('${p.id}','refuse')">✖️ Refusé</button>
+        <button class="ghost btn" onclick="setPartStatut('${p.id}','nouveau')">↩︎ Nouveau</button>
+      </div>`:''}
+    </div>`).join('');
+  };
+  window.setPartStatut=async function(id,st){ const {error}=await sbc.from('partenaires').update({statut:st}).eq('id',id); if(error){alert(error.message);return;} window.loadPartenaires(); };
+
   async function boot(){
     if(!window.supabase){ gate('<h2>Erreur de chargement</h2><p>Impossible de charger Supabase (connexion internet ?). Réessaie.</p>'); return; }
     sbc=window.supabase.createClient(SB_URL,SB_KEY);
@@ -1790,6 +1825,8 @@ renderAll();
     addBanner();
     renderAll();
     applyPerms();
+    const pb=document.querySelector('nav.tabs button[data-tab="partenaires"]'); if(pb) pb.addEventListener('click',()=>{ if(window.loadPartenaires) loadPartenaires(); });
+    if(window.loadPartenaires) loadPartenaires();
     document.documentElement.style.visibility='';
     setSync(canWrite?'✓ synchronisé':'lecture seule (pas d\'enregistrement)');
     // si l'utilisateur se déconnecte ailleurs

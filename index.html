@@ -102,6 +102,7 @@
       <a href="#ados">Ados</a>
       <a href="#horaires">Horaires</a>
       <a href="#contact">Contact</a>
+      <a href="#partenaires">🤝 Partenaires</a>
       <a href="espace-adherent.html">🪙 Espace adhérent</a>
       <a href="connexion.html">🔐 Espace bureau</a>
       <a href="demo.html">🧪 Démo gestion</a>
@@ -282,12 +283,49 @@
   </div>
 </section>
 
+<section class="block" id="partenaires">
+  <div class="wrap">
+    <p class="eyebrow">Commerçants & partenaires</p>
+    <h2 class="title">Soutenez le quartier 🤝</h2>
+    <p style="max-width:640px;margin:0 auto 22px;text-align:center;color:var(--muted);font-size:16px">Vous êtes un commerce ou un acteur du quartier et vous souhaitez soutenir le CASE — offrir un avantage à nos adhérents, parrainer une action, ou simplement nous rencontrer ? Laissez-nous vos coordonnées, on vous recontacte. 🍍</p>
+    <div class="panel" style="max-width:640px;margin:0 auto;box-shadow:var(--shadow)">
+      <div class="field"><label>Nom du commerce / structure *</label><input id="pa_commerce" placeholder="Ex. Boulangerie du Moufia"></div>
+      <div class="field"><label>Votre nom *</label><input id="pa_contact" placeholder="Prénom Nom"></div>
+      <div class="field"><label>Email</label><input id="pa_email" type="email" placeholder="vous@exemple.re"></div>
+      <div class="field"><label>Téléphone</label><input id="pa_phone" placeholder="0692 ..."></div>
+      <div class="field"><label>Votre activité</label><input id="pa_type" placeholder="Ex. boulangerie, coiffeur, association..."></div>
+      <div class="field"><label>Votre message / ce que vous proposez</label><input id="pa_message" placeholder="Ex. réduction pour les adhérents, coup de main sur un événement..."></div>
+      <button id="pa_btn" class="btn sun" style="width:100%" onclick="submitPartner()">Envoyer ma demande de partenariat</button>
+      <p id="pa_info" style="margin:10px 0 0;font-size:13.5px;text-align:center;font-weight:700"></p>
+    </div>
+  </div>
+</section>
+
 <footer>
   <div class="pine">🍍</div>
   <p style="margin:6px 0 2px;font-weight:800;font-size:18px">CASE du Bois de Nèfles</p>
   <p style="margin:0;opacity:.85">Centre social associatif · Saint-Denis · La Réunion</p>
   <p style="margin:10px 0 0;font-size:13px;opacity:.7">Aperçu réalisé avec Bob 🤖 — la plateforme des associations</p>
 </footer>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+const _sbPart=window.supabase.createClient('https://dkidtwypclpwznleiqnq.supabase.co','sb_publishable_HDfV-O2ION1Vw9v03aV_Qg_PkiAjLNo');
+async function submitPartner(){
+  const g=id=>document.getElementById(id);
+  const commerce=g('pa_commerce').value.trim(), contact=g('pa_contact').value.trim(), info=g('pa_info');
+  if(!commerce||!contact){ info.style.color='#c0392b'; info.textContent='Indiquez au moins le nom du commerce et votre nom.'; return; }
+  const btn=g('pa_btn'); btn.disabled=true; btn.textContent='Envoi…';
+  const {error}=await _sbPart.from('partenaires').insert({
+    commerce, contact, email:g('pa_email').value.trim(), phone:g('pa_phone').value.trim(),
+    type_activite:g('pa_type').value.trim(), message:g('pa_message').value.trim()
+  });
+  btn.disabled=false; btn.textContent='Envoyer ma demande de partenariat';
+  if(error){ info.style.color='#c0392b'; info.textContent='Oups, une erreur est survenue. Réessayez dans un instant.'; return; }
+  info.style.color='#1f9d6b'; info.textContent='✅ Merci ! Votre demande est envoyée — le CASE vous recontactera.';
+  ['pa_commerce','pa_contact','pa_email','pa_phone','pa_type','pa_message'].forEach(id=>g(id).value='');
+}
+</script>
 
 </body>
 </html>
