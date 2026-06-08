@@ -1,0 +1,13 @@
+{
+  "name": "Bob — CASE du Bois de Nèfles",
+  "short_name": "Bob CASE",
+  "description": "Gestion en ligne du CASE du Bois de Nèfles",
+  "start_url": "app.html",
+  "scope": ".",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#127a51",
+  "icons": [
+    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}

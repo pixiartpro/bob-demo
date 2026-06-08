@@ -2,8 +2,16 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Bob — secrétaire-directeur du CASE du Bois de Nèfles</title>
+<meta name="theme-color" content="#127a51">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Bob CASE">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icon.png">
+<link rel="manifest" href="manifest.webmanifest">
+<script>if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js').catch(function(){});}</script>
 <style>
   :root{
     --bg:#f4f6fb; --card:#ffffff; --ink:#1d2433; --muted:#6b7488;
@@ -1805,10 +1813,15 @@ renderAll();
   window.setPartStatut=async function(id,st){ const {error}=await sbc.from('partenaires').update({statut:st}).eq('id',id); if(error){alert(error.message);return;} window.loadPartenaires(); };
 
   // Chat interne FLOTTANT (bulle en bas à droite + badge non-lus + panneau)
-  let chatSeen=0, chatOpen=false;
+  let chatSeen=0, chatOpen=false, lastUnread=0;
   const chatSeenKey=()=>'chat_seen_'+myAsso+'_'+myProfile.id;
+  function chatBeep(){ try{ const C=window.AudioContext||window.webkitAudioContext; if(!C)return; const a=new C(); const o=a.createOscillator(),g=a.createGain(); o.connect(g); g.connect(a.destination); o.type='sine'; o.frequency.value=880; g.gain.setValueAtTime(.0001,a.currentTime); g.gain.exponentialRampToValueAtTime(.18,a.currentTime+.02); g.gain.exponentialRampToValueAtTime(.0001,a.currentTime+.35); o.start(); o.stop(a.currentTime+.36); }catch(e){} }
   function updateBadge(n){ const b=document.getElementById('chatBadge'); if(!b)return; if(n>0){ b.textContent=n>9?'9+':n; b.style.display='flex'; } else b.style.display='none'; }
-  function markChatRead(){ chatSeen=Math.floor(Date.now()/1000); try{localStorage.setItem(chatSeenKey(),String(chatSeen));}catch(e){} updateBadge(0); }
+  function markChatRead(){ chatSeen=Math.floor(Date.now()/1000); try{localStorage.setItem(chatSeenKey(),String(chatSeen));}catch(e){} updateBadge(0); lastUnread=0;
+    const fab=document.getElementById('chatFab'); if(fab) fab.classList.remove('pulse');
+    try{document.title='Bob — CASE';}catch(e){}
+    try{ if(navigator.clearAppBadge) navigator.clearAppBadge(); }catch(e){}
+  }
   window.toggleChat=function(){
     chatOpen=!chatOpen;
     document.getElementById('chatPanel').classList.toggle('open',chatOpen);
@@ -1827,7 +1840,8 @@ renderAll();
       +'#chatBody{flex:1;overflow:auto;padding:8px;background:#f7faf8}'
       +'#chatBar{display:flex;gap:6px;padding:8px;border-top:1px solid #e6ece7}'
       +'#chatBar input{flex:1;font:inherit;padding:10px 12px;border:1px solid #e6ece7;border-radius:10px}'
-      +'#chatBar button{background:#127a51;color:#fff;border:none;border-radius:10px;padding:0 14px;font-size:16px;cursor:pointer}';
+      +'#chatBar button{background:#127a51;color:#fff;border:none;border-radius:10px;padding:0 14px;font-size:16px;cursor:pointer}'
+      +'@keyframes chatpulse{0%,100%{transform:scale(1)}50%{transform:scale(1.13)}}#chatFab.pulse{animation:chatpulse 1.3s ease-in-out infinite}';
     document.head.appendChild(st);
     const fab=document.createElement('button'); fab.id='chatFab'; fab.title='Chat du bureau'; fab.innerHTML='💬<span id="chatBadge"></span>';
     fab.onclick=()=>window.toggleChat();
@@ -1844,7 +1858,13 @@ renderAll();
     if(error){ if(box) box.innerHTML='<p class="hint" style="padding:10px;color:#c0392b">Erreur : '+esc(error.message)+'</p>'; return; }
     const msgs=data||[];
     const unread=msgs.filter(m=>m.author_id!==myProfile.id && Math.floor(new Date(m.created_at).getTime()/1000)>chatSeen).length;
-    updateBadge(chatOpen?0:unread);
+    const shown=chatOpen?0:unread;
+    updateBadge(shown);
+    const fab=document.getElementById('chatFab'); if(fab) fab.classList.toggle('pulse', shown>0);
+    try{ document.title = shown>0 ? '('+shown+') 💬 Bob — CASE' : 'Bob — CASE'; }catch(e){}
+    try{ if(shown>0 && navigator.setAppBadge) navigator.setAppBadge(shown); else if(navigator.clearAppBadge) navigator.clearAppBadge(); }catch(e){}
+    if(shown>0 && unread>lastUnread) chatBeep();
+    lastUnread=unread;
     if(box){
       if(!msgs.length){ box.innerHTML='<p class="hint" style="padding:10px">Aucun message. Démarrez la discussion !</p>'; }
       else { const mine=myProfile.id;
