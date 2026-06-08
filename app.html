@@ -1825,7 +1825,7 @@ renderAll();
   window.toggleChat=function(){
     chatOpen=!chatOpen;
     document.getElementById('chatPanel').classList.toggle('open',chatOpen);
-    if(chatOpen){ loadChat(); markChatRead(); const i=document.getElementById('chatInput'); if(i) setTimeout(()=>i.focus(),60); }
+    if(chatOpen){ const sp=document.getElementById('sugPanel'); if(sp)sp.classList.remove('open'); loadChat(); markChatRead(); const i=document.getElementById('chatInput'); if(i) setTimeout(()=>i.focus(),60); }
   };
   function addChatWidget(){
     chatSeen=parseInt(localStorage.getItem(chatSeenKey())||'0',10)||0;
@@ -1872,6 +1872,63 @@ renderAll();
     t.style.display='block';
     clearTimeout(t._tm); t._tm=setTimeout(function(){ t.style.display='none'; }, 7000);
   }
+
+  // Boîte à idées / améliorations (bouton flottant 💡, sur toutes les pages)
+  function curTabLabel(){ const b=document.querySelector('nav.tabs button.active'); return b?b.textContent.trim():''; }
+  const SUG_STATUTS={nouvelle:'🆕 Nouvelle',vue:'👀 Vue',faite:'✅ Faite',rejetee:'✖️ Écartée'};
+  function addSuggestWidget(){
+    const st=document.createElement('style');
+    st.textContent='#sugFab{position:fixed;right:88px;bottom:20px;z-index:200;width:58px;height:58px;border-radius:50%;border:none;cursor:pointer;background:#f4b740;color:#5b4300;font-size:24px;box-shadow:0 10px 26px rgba(16,60,40,.3)}'
+      +'#sugFab:hover{filter:brightness(.96)}'
+      +'#sugPanel{position:fixed;right:20px;bottom:88px;z-index:200;width:360px;max-width:calc(100vw - 32px);height:480px;max-height:74vh;background:#fff;border:1px solid #e6ece7;border-radius:18px;box-shadow:0 20px 50px rgba(16,60,40,.25);display:none;flex-direction:column;overflow:hidden}'
+      +'#sugPanel.open{display:flex}'
+      +'#sugHead{background:#f4b740;color:#5b4300;padding:12px 14px;font-weight:800;display:flex;align-items:center;justify-content:space-between}'
+      +'#sugHead button{background:rgba(0,0,0,.12);border:none;color:#5b4300;cursor:pointer;border-radius:8px;font-size:15px;width:28px;height:28px}'
+      +'#sugList{flex:1;overflow:auto;padding:8px;background:#fffdf6}'
+      +'#sugBar{padding:8px;border-top:1px solid #e6ece7}'
+      +'#sugBar textarea{width:100%;font:inherit;padding:9px 11px;border:1px solid #e6ece7;border-radius:10px;resize:none;height:62px}'
+      +'#sugBar button{margin-top:6px;width:100%;background:#f4b740;color:#5b4300;border:none;border-radius:10px;padding:10px;font-weight:800;cursor:pointer}';
+    document.head.appendChild(st);
+    const fab=document.createElement('button'); fab.id='sugFab'; fab.title='Proposer une amélioration'; fab.textContent='💡';
+    fab.onclick=()=>window.toggleSuggest();
+    const panel=document.createElement('div'); panel.id='sugPanel';
+    panel.innerHTML='<div id="sugHead"><span>💡 Idées &amp; améliorations</span><button title="Fermer" onclick="toggleSuggest()">✕</button></div>'
+      +'<div id="sugList"><p class="hint" style="padding:10px">Chargement…</p></div>'
+      +'<div id="sugBar"><textarea id="sugInput" placeholder="Une idée, un truc à améliorer, un bug à signaler ?…"></textarea><button onclick="sendSuggest()">Envoyer ma suggestion</button></div>';
+    document.body.appendChild(fab); document.body.appendChild(panel);
+  }
+  window.toggleSuggest=function(){
+    const p=document.getElementById('sugPanel'); const open=!p.classList.contains('open');
+    p.classList.toggle('open',open);
+    if(open){ const c=document.getElementById('chatPanel'); if(c)c.classList.remove('open'); chatOpen=false; loadSuggest(); const i=document.getElementById('sugInput'); if(i) setTimeout(()=>i.focus(),60); }
+  };
+  window.loadSuggest=async function(){
+    const box=document.getElementById('sugList'); if(!box) return;
+    const {data,error}=await sbc.from('suggestions').select('*').order('created_at',{ascending:false}).limit(100);
+    if(error){ box.innerHTML='<p class="hint" style="padding:10px;color:#c0392b">Erreur : '+esc(error.message)+'</p>'; return; }
+    if(!data||!data.length){ box.innerHTML='<p class="hint" style="padding:10px">Aucune idée pour l\'instant. Lance-toi : qu\'est-ce qu\'on pourrait améliorer&nbsp;?</p>'; return; }
+    box.innerHTML=data.map(s=>{
+      const d=new Date(s.created_at).toLocaleString('fr-FR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
+      return '<div style="margin:7px 4px;background:#fff;border:1px solid #e6ece7;border-radius:12px;padding:9px 11px">'
+        +'<div style="font-size:11px;color:#8a7d56;font-weight:700">'+esc(s.author_name||'?')+' · '+esc(d)+(s.context?' · '+esc(s.context):'')+' <span style="float:right">'+(SUG_STATUTS[s.statut]||'')+'</span></div>'
+        +'<div style="white-space:pre-wrap;margin-top:3px">'+esc(s.body)+'</div>'
+        +(canWrite?'<div style="margin-top:7px;display:flex;gap:5px;flex-wrap:wrap">'
+            +'<button onclick="setSugStatut(\''+s.id+'\',\'vue\')" style="font-size:12px;border:1px solid #e6ece7;background:#fff;border-radius:8px;padding:3px 8px;cursor:pointer">👀 Vue</button>'
+            +'<button onclick="setSugStatut(\''+s.id+'\',\'faite\')" style="font-size:12px;border:1px solid #e6ece7;background:#fff;border-radius:8px;padding:3px 8px;cursor:pointer">✅ Faite</button>'
+            +'<button onclick="setSugStatut(\''+s.id+'\',\'rejetee\')" style="font-size:12px;border:1px solid #e6ece7;background:#fff;border-radius:8px;padding:3px 8px;cursor:pointer">✖️ Écarter</button>'
+          +'</div>':'')
+        +'</div>';
+    }).join('');
+  };
+  window.sendSuggest=async function(){
+    const inp=document.getElementById('sugInput'); if(!inp) return; const body=inp.value.trim(); if(!body) return;
+    inp.value='';
+    const nom=(myProfile.full_name||myProfile.email||'').split('@')[0];
+    const {error}=await sbc.from('suggestions').insert({asso_id:myAsso, author_id:myProfile.id, author_name:nom, body, context:curTabLabel()});
+    if(error){ alert(error.message); inp.value=body; return; }
+    loadSuggest();
+  };
+  window.setSugStatut=async function(id,st){ const {error}=await sbc.from('suggestions').update({statut:st}).eq('id',id); if(error){alert(error.message);return;} loadSuggest(); };
   window.loadChat=async function(){
     const {data,error}=await sbc.from('messages').select('*').order('created_at',{ascending:true}).limit(200);
     const box=document.getElementById('chatBody');
@@ -1931,7 +1988,7 @@ renderAll();
     applyPerms();
     const pb=document.querySelector('nav.tabs button[data-tab="partenaires"]'); if(pb) pb.addEventListener('click',()=>{ if(window.loadPartenaires) loadPartenaires(); });
     if(window.loadPartenaires) loadPartenaires();
-    addChatWidget();
+    addChatWidget(); addSuggestWidget();
     heartbeat(); if(window.loadPresence) loadPresence();
     setInterval(()=>{ heartbeat(); if(window.loadChat) loadChat(); if(window.loadPresence) loadPresence(); }, 10000);
     document.documentElement.style.visibility='';
