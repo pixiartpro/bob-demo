@@ -6,10 +6,10 @@
 <title>CASE du Bois de Nèfles — Bienvenue</title>
 <style>
   :root{
-    --vert:#1f9d6b; --vert-fonce:#127a51; --jaune:#f6b400; --ananas:#e8a33d;
-    --ciel:#2eb6e6; --ciel-fonce:#1f8fc4; --ink:#1d3a2e; --muted:#5c7468;
-    --bg:#fffef7; --card:#ffffff; --line:#e7efe9;
-    --shadow:0 6px 22px rgba(20,60,40,.10); --shadow-lg:0 16px 44px rgba(20,60,40,.16);
+    --vert:#1f9d6b; --vert-fonce:#0f6b46; --jaune:#f4b740; --ananas:#dc8f38;
+    --ciel:#cfeaf0; --ink:#16302a; --muted:#62756b;
+    --bg:#fbfcf8; --card:#ffffff; --line:#e9efe9;
+    --shadow:0 8px 28px rgba(16,60,40,.07); --shadow-lg:0 22px 50px rgba(16,60,40,.13);
   }
   *{box-sizing:border-box}
   body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
@@ -35,19 +35,15 @@
   .btn.ghost{background:#fff;color:var(--vert);border:2px solid var(--vert)}
   nav.main .btn{padding:9px 16px;font-size:14px}
   /* Hero */
-  .hero{position:relative;overflow:hidden;background:linear-gradient(180deg,#7fd4f3 0%,#aee5c4 55%,var(--bg) 100%);
-        padding:54px 0 70px;text-align:center}
-  .hero .sun{position:absolute;top:24px;left:8%;font-size:60px;animation:float 5s ease-in-out infinite}
-  .hero .deco{position:absolute;font-size:46px;opacity:.9}
-  .hero .palm1{bottom:18px;left:3%;font-size:64px} .hero .palm2{bottom:10px;right:4%;font-size:70px}
-  .hero .mtn{top:60px;right:10%;font-size:54px;opacity:.85}
-  @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
-  .hero h1{font-size:clamp(28px,5vw,46px);margin:6px 0 8px;font-weight:900;letter-spacing:-.5px}
+  .hero{position:relative;overflow:hidden;text-align:center;padding:72px 0 78px;
+        background:radial-gradient(1100px 460px at 50% -140px,#d7efe2 0%,rgba(215,239,226,0) 70%),linear-gradient(180deg,#f3faf6 0%,var(--bg) 100%)}
+  .hero .deco,.kids{display:none}
+  .hero-logo{width:88px;height:88px;border-radius:24px;object-fit:contain;background:#fff;padding:10px;
+        box-shadow:var(--shadow-lg);border:1px solid var(--line);display:block;margin:0 auto 20px}
+  .hero h1{font-size:clamp(30px,5vw,50px);margin:8px 0 10px;font-weight:900;letter-spacing:-1px;line-height:1.08}
   .hero h1 .y{color:var(--ananas)} .hero h1 .g{color:var(--vert-fonce)}
-  .hero p.lead{font-size:18px;max-width:620px;margin:0 auto 22px;color:#2a4a3b;font-weight:500}
-  .mascotte{font-size:96px;display:block;margin:0 auto 6px;filter:drop-shadow(0 8px 10px rgba(0,0,0,.2))}
+  .hero p.lead{font-size:18.5px;max-width:600px;margin:0 auto 26px;color:#3a5246;font-weight:500}
   .hero .cta{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
-  .kids{margin-top:18px;font-size:30px;letter-spacing:4px}
   /* Sections */
   section.block{padding:52px 0}
   .eyebrow{color:var(--vert);font-weight:800;text-transform:uppercase;letter-spacing:.08em;font-size:13px;text-align:center}
@@ -113,18 +109,15 @@
 
 <!-- HERO -->
 <section class="hero" id="accueil">
-  <span class="sun deco">☀️</span><span class="mtn deco">🏔️</span>
-  <span class="palm1 deco">🌴</span><span class="palm2 deco">🌴</span>
   <div class="wrap">
-    <span class="mascotte">🍍</span>
-    <div style="margin-bottom:10px"><span class="badge">🎉 Nouveau · inauguration bientôt</span></div>
+    <img class="hero-logo" src="logo.png" alt="Logo CASE Bois de Nèfles" onerror="this.style.display='none'">
+    <div style="margin-bottom:12px"><span class="badge">Nouveau · inauguration bientôt</span></div>
     <h1>Bienvenue au <span class="g">CASE</span> <span class="y">Bois de Nèfles</span></h1>
     <p class="lead">Le centre social qui fait vivre le quartier : activités pour petits et grands, entraide et bonne humeur, au cœur de La Réunion.</p>
     <div class="cta">
-      <a href="#adhesion" class="btn primary">✏️ S'inscrire en ligne</a>
+      <a href="#adhesion" class="btn primary">S'inscrire en ligne</a>
       <a href="#activites" class="btn ghost">Découvrir nos activités</a>
     </div>
-    <div class="kids">🧒 👦 👧 🧑</div>
   </div>
 </section>
 
