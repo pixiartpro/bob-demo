@@ -3,1710 +3,291 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Bob — secrétaire-directeur du CASE du Bois de Nèfles</title>
+<title>CASE du Bois de Nèfles — Bienvenue</title>
 <style>
   :root{
-    --bg:#f4f6fb; --card:#ffffff; --ink:#1d2433; --muted:#6b7488;
-    --line:#e5e9f2; --brand:#2f6df0; --brand-dk:#1f4fc4;
-    --green:#1f9d6b; --red:#e0533d; --amber:#e2a23b;
-    --shadow:0 1px 3px rgba(20,30,60,.06),0 6px 24px rgba(20,30,60,.06);
+    --vert:#1f9d6b; --vert-fonce:#127a51; --jaune:#f6b400; --ananas:#e8a33d;
+    --ciel:#2eb6e6; --ciel-fonce:#1f8fc4; --ink:#1d3a2e; --muted:#5c7468;
+    --bg:#fffef7; --card:#ffffff; --line:#e7efe9;
+    --shadow:0 6px 22px rgba(20,60,40,.10); --shadow-lg:0 16px 44px rgba(20,60,40,.16);
   }
   *{box-sizing:border-box}
   body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
-       background:var(--bg);color:var(--ink);line-height:1.5}
-  header.top{background:linear-gradient(135deg,var(--brand),var(--brand-dk));color:#fff;
-       padding:18px 24px;display:flex;align-items:center;gap:14px;box-shadow:var(--shadow)}
-  header.top .logo{width:42px;height:42px;border-radius:12px;background:rgba(255,255,255,.18);
-       display:grid;place-items:center;font-size:22px}
-  header.top h1{font-size:18px;margin:0;font-weight:700}
-  header.top p{margin:0;font-size:12.5px;opacity:.85}
-  .wrap{max-width:1100px;margin:0 auto;padding:20px}
-  nav.tabs{display:flex;gap:6px;flex-wrap:wrap;margin:18px 0}
-  nav.tabs button{border:none;background:var(--card);color:var(--muted);padding:10px 16px;
-       border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;box-shadow:var(--shadow);
-       transition:.15s}
-  nav.tabs button:hover{color:var(--ink)}
-  nav.tabs button.active{background:var(--brand);color:#fff}
-  .page{display:none;animation:fade .2s ease}
-  .page.active{display:block}
-  @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
-  .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;margin-bottom:20px}
-  .card{background:var(--card);border-radius:14px;padding:18px;box-shadow:var(--shadow)}
-  .card .label{font-size:12.5px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.03em}
-  .card .value{font-size:26px;font-weight:800;margin-top:6px}
-  .card .sub{font-size:12.5px;color:var(--muted);margin-top:2px}
-  .panel{background:var(--card);border-radius:14px;padding:20px;box-shadow:var(--shadow);margin-bottom:20px}
-  .panel h2{margin:0 0 4px;font-size:16px}
-  .panel .hint{color:var(--muted);font-size:13px;margin:0 0 16px}
-  .row{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end}
-  .field{display:flex;flex-direction:column;gap:4px;flex:1;min-width:140px}
-  .field label{font-size:12.5px;color:var(--muted);font-weight:600}
-  input,select{font:inherit;padding:9px 11px;border:1px solid var(--line);border-radius:9px;background:#fff;color:var(--ink)}
-  input:focus,select:focus{outline:none;border-color:var(--brand)}
-  button.btn{background:var(--brand);color:#fff;border:none;padding:10px 16px;border-radius:9px;
-       font-weight:600;font-size:14px;cursor:pointer;transition:.15s}
-  button.btn:hover{background:var(--brand-dk)}
-  button.ghost{background:#eef2fb;color:var(--brand-dk)}
-  button.ghost:hover{background:#e2e9f9}
-  button.danger{background:transparent;color:var(--red);border:none;cursor:pointer;font-size:13px;font-weight:600}
-  table{width:100%;border-collapse:collapse;font-size:14px}
-  th,td{text-align:left;padding:10px 12px;border-bottom:1px solid var(--line)}
-  th{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.03em}
-  td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
-  .pill{display:inline-block;padding:3px 10px;border-radius:99px;font-size:12px;font-weight:700}
-  .pill.ok{background:#e3f5ec;color:var(--green)}
-  .pill.no{background:#fde9e5;color:var(--red)}
-  .pill.wait{background:#fcf2de;color:#a9742a}
-  .pill.in{background:#e3f5ec;color:var(--green)}
-  .pill.out{background:#fde9e5;color:var(--red)}
-  .empty{text-align:center;color:var(--muted);padding:30px;font-size:14px}
-  .toolbar{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap}
-  .bar{height:8px;border-radius:99px;background:var(--line);overflow:hidden;margin-top:8px}
-  .bar > span{display:block;height:100%;background:var(--brand)}
-  .bar.over > span{background:var(--red)}
-  .muted{color:var(--muted)}
-  .green{color:var(--green)}.red{color:var(--red)}.amber{color:var(--amber)}
-  tr.clickable{cursor:pointer}
-  tr.clickable:hover td{background:#f7f9ff}
-  .tag{display:inline-block;padding:2px 8px;border-radius:7px;font-size:11px;font-weight:700}
-  .tag.bank{background:#e8eefc;color:#1f4fc4}
-  .tag.cash{background:#fdf3e0;color:#a9742a}
-  .overlay{position:fixed;inset:0;background:rgba(20,30,60,.45);display:none;align-items:center;justify-content:center;padding:18px;z-index:50}
-  .overlay.open{display:flex}
-  .modal{background:#fff;border-radius:16px;max-width:560px;width:100%;max-height:90vh;overflow:auto;box-shadow:0 20px 60px rgba(20,30,60,.3)}
-  .modal .mhead{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;padding:18px 20px;border-bottom:1px solid var(--line)}
-  .modal .mbody{padding:18px 20px}
-  .modal h3{margin:0;font-size:18px}
-  .modal .close{background:none;border:none;font-size:22px;cursor:pointer;color:var(--muted);line-height:1}
-  .kv{display:flex;justify-content:space-between;gap:12px;padding:8px 0;border-bottom:1px dashed var(--line);font-size:14px}
-  .kv .k{color:var(--muted)}
-  .photo-thumb{max-width:100%;border-radius:10px;border:1px solid var(--line);margin-top:8px}
-  footer{text-align:center;color:var(--muted);font-size:12px;padding:24px}
-  #printArea{display:none}
-  @media print{
-    body{background:#fff}
-    body > *{display:none !important}
-    #printArea{display:block !important;padding:10px}
-    #printArea table{width:100%;border-collapse:collapse;margin-top:8px}
-    #printArea th,#printArea td{border:1px solid #ccc;padding:6px 10px;text-align:left;font-size:13px}
-    #printArea td.num{text-align:right}
-  }
-  @media(max-width:600px){.field{min-width:100%}}
+       color:var(--ink);background:var(--bg);line-height:1.6}
+  a{color:inherit}
+  .wrap{max-width:1080px;margin:0 auto;padding:0 20px}
+  /* Header */
+  header{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.92);backdrop-filter:blur(8px);
+         border-bottom:1px solid var(--line)}
+  header .bar{display:flex;align-items:center;gap:12px;padding:12px 20px;max-width:1080px;margin:0 auto}
+  .logo{display:flex;align-items:center;gap:10px;font-weight:900;font-size:18px;text-decoration:none}
+  .logo .pine{font-size:30px;filter:drop-shadow(0 2px 3px rgba(0,0,0,.15))}
+  .logo b{color:var(--vert)} .logo span{color:var(--ananas)}
+  nav.main{margin-left:auto;display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+  nav.main a{padding:8px 12px;border-radius:10px;font-weight:600;font-size:14px;text-decoration:none;color:var(--muted)}
+  nav.main a:hover{color:var(--ink);background:#f0f7f3}
+  .btn{display:inline-block;border:none;cursor:pointer;font:inherit;font-weight:800;text-decoration:none;
+       padding:12px 20px;border-radius:999px;transition:.15s;font-size:15px}
+  .btn.primary{background:var(--vert);color:#fff;box-shadow:0 6px 16px rgba(31,157,107,.35)}
+  .btn.primary:hover{background:var(--vert-fonce);transform:translateY(-1px)}
+  .btn.sun{background:var(--jaune);color:#5b4300}
+  .btn.sun:hover{filter:brightness(.97);transform:translateY(-1px)}
+  .btn.ghost{background:#fff;color:var(--vert);border:2px solid var(--vert)}
+  nav.main .btn{padding:9px 16px;font-size:14px}
+  /* Hero */
+  .hero{position:relative;overflow:hidden;background:linear-gradient(180deg,#7fd4f3 0%,#aee5c4 55%,var(--bg) 100%);
+        padding:54px 0 70px;text-align:center}
+  .hero .sun{position:absolute;top:24px;left:8%;font-size:60px;animation:float 5s ease-in-out infinite}
+  .hero .deco{position:absolute;font-size:46px;opacity:.9}
+  .hero .palm1{bottom:18px;left:3%;font-size:64px} .hero .palm2{bottom:10px;right:4%;font-size:70px}
+  .hero .mtn{top:60px;right:10%;font-size:54px;opacity:.85}
+  @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+  .hero h1{font-size:clamp(28px,5vw,46px);margin:6px 0 8px;font-weight:900;letter-spacing:-.5px}
+  .hero h1 .y{color:var(--ananas)} .hero h1 .g{color:var(--vert-fonce)}
+  .hero p.lead{font-size:18px;max-width:620px;margin:0 auto 22px;color:#2a4a3b;font-weight:500}
+  .mascotte{font-size:96px;display:block;margin:0 auto 6px;filter:drop-shadow(0 8px 10px rgba(0,0,0,.2))}
+  .hero .cta{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+  .kids{margin-top:18px;font-size:30px;letter-spacing:4px}
+  /* Sections */
+  section.block{padding:52px 0}
+  .eyebrow{color:var(--vert);font-weight:800;text-transform:uppercase;letter-spacing:.08em;font-size:13px;text-align:center}
+  h2.title{text-align:center;font-size:clamp(24px,3.5vw,34px);margin:6px 0 8px;font-weight:900}
+  .sub{text-align:center;color:var(--muted);max-width:640px;margin:0 auto 30px}
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:18px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:22px;box-shadow:var(--shadow);
+        transition:.18s}
+  .card:hover{transform:translateY(-4px);box-shadow:var(--shadow-lg)}
+  .card .ico{font-size:38px}
+  .card h3{margin:10px 0 4px;font-size:18px}
+  .card p{margin:0;color:var(--muted);font-size:14.5px}
+  .alt{background:linear-gradient(180deg,#f3faf6,#fffef7)}
+  /* Horaires */
+  .hours{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px}
+  .hour{background:#fff;border:1px solid var(--line);border-radius:16px;padding:18px;box-shadow:var(--shadow)}
+  .hour .lieu{font-weight:800;color:var(--vert-fonce)}
+  .hour .h{color:var(--muted);font-size:14.5px;margin-top:4px}
+  /* Form */
+  .panel{background:#fff;border:1px solid var(--line);border-radius:22px;padding:28px;box-shadow:var(--shadow-lg);max-width:560px;margin:0 auto}
+  .field{display:flex;flex-direction:column;gap:5px;margin-bottom:14px}
+  .field label{font-weight:700;font-size:14px}
+  .field input,.field select{font:inherit;padding:12px 14px;border:1.5px solid var(--line);border-radius:12px;background:#fdfffe}
+  .field input:focus,.field select:focus{outline:none;border-color:var(--vert)}
+  .note{font-size:13px;color:var(--muted);text-align:center;margin-top:8px}
+  .badge{display:inline-block;background:#fff5da;color:#8a6400;font-weight:700;font-size:12px;padding:4px 10px;border-radius:999px;border:1px solid #f1e2ad}
+  /* Contact */
+  .contact-grid{display:grid;grid-template-columns:1fr 1fr;gap:28px;align-items:start}
+  .info-line{display:flex;gap:12px;align-items:flex-start;margin-bottom:14px;font-size:15px}
+  .info-line .i{font-size:22px}
+  .socials{display:flex;gap:10px;margin-top:8px;flex-wrap:wrap}
+  .soc{width:46px;height:46px;border-radius:14px;display:grid;place-items:center;font-size:22px;text-decoration:none;
+       background:#fff;border:1px solid var(--line);box-shadow:var(--shadow);transition:.15s}
+  .soc:hover{transform:translateY(-3px)}
+  /* Footer */
+  footer{background:var(--vert-fonce);color:#dff3e9;padding:30px 0;text-align:center;margin-top:10px}
+  footer .pine{font-size:34px}
+  footer a{color:#fff}
+  .demo-flag{background:var(--jaune);color:#5b4300;text-align:center;font-weight:700;font-size:13.5px;padding:8px}
+  @media(max-width:680px){.contact-grid{grid-template-columns:1fr}.hero .deco{display:none}}
 </style>
 </head>
 <body>
-<header class="top">
-  <div class="logo">🤖</div>
-  <div>
-    <h1>Bob <span style="font-weight:500;opacity:.85">· secrétaire-directeur du CASE</span></h1>
-    <p>La Bible du CASE du Bois de Nèfles : adhésions, comptabilité, subventions, répertoire</p>
+
+<div class="demo-flag">🍍 Aperçu de démonstration — voici à quoi pourrait ressembler le site public du CASE</div>
+
+<header>
+  <div class="bar">
+    <a href="#accueil" class="logo"><span class="pine">🍍</span> <span><b>CASE</b> <span>Bois de Nèfles</span></span></a>
+    <nav class="main">
+      <a href="#activites">Nos activités</a>
+      <a href="#ados">Ados</a>
+      <a href="#horaires">Horaires</a>
+      <a href="#contact">Contact</a>
+      <a href="espace-adherent.html">🪙 Espace adhérent</a>
+      <a href="connexion.html">🔐 Espace bureau</a>
+      <a href="demo.html">🧪 Démo gestion</a>
+      <a href="#adhesion" class="btn primary">Devenir adhérent</a>
+    </nav>
   </div>
 </header>
 
-<div class="wrap">
-  <nav class="tabs">
-    <button data-tab="dashboard" class="active">📊 Tableau de bord</button>
-    <button data-tab="members">👥 Adhérents</button>
-    <button data-tab="projects">📁 Projets</button>
-    <button data-tab="subventions">🏛️ Subventions</button>
-    <button data-tab="repertoire">🗂️ Répertoire</button>
-    <button data-tab="secretariat">🧰 Secrétariat</button>
-    <button data-tab="incidents">⚠️ Événements</button>
-    <button data-tab="accounting">💶 Comptabilité</button>
-    <button data-tab="caisse">💵 Caisse</button>
-    <button data-tab="dettes">💳 Dettes & créances</button>
-    <button data-tab="bilan">📈 Bilan</button>
-    <button data-tab="data" style="margin-left:auto">⚙️ Données</button>
-  </nav>
-
-  <!-- DASHBOARD -->
-  <section id="dashboard" class="page active">
-    <div class="cards" id="kpis"></div>
-    <div id="dashAlerts"></div>
-    <div class="panel">
-      <h2>Dernières opérations</h2>
-      <p class="hint">Les 6 dernières entrées de la comptabilité.</p>
-      <table><thead><tr><th>Date</th><th>Libellé</th><th>Projet</th><th class="num">Montant</th></tr></thead>
-        <tbody id="dashOps"></tbody></table>
+<!-- HERO -->
+<section class="hero" id="accueil">
+  <span class="sun deco">☀️</span><span class="mtn deco">🏔️</span>
+  <span class="palm1 deco">🌴</span><span class="palm2 deco">🌴</span>
+  <div class="wrap">
+    <span class="mascotte">🍍</span>
+    <div style="margin-bottom:10px"><span class="badge">🎉 Nouveau · inauguration bientôt</span></div>
+    <h1>Bienvenue au <span class="g">CASE</span> <span class="y">Bois de Nèfles</span></h1>
+    <p class="lead">Le centre social qui fait vivre le quartier : activités pour petits et grands, entraide et bonne humeur, au cœur de La Réunion.</p>
+    <div class="cta">
+      <a href="#adhesion" class="btn primary">✏️ S'inscrire en ligne</a>
+      <a href="#activites" class="btn ghost">Découvrir nos activités</a>
     </div>
-  </section>
-
-  <!-- MEMBERS -->
-  <section id="members" class="page">
-    <div class="panel">
-      <h2>Ajouter un adhérent</h2>
-      <p class="hint">Nom, contact, montant et date de la cotisation. Coche « à jour » si la cotisation est payée.</p>
-      <div class="row">
-        <div class="field"><label>Nom et prénom</label><input id="m_name" placeholder="Ex. Marie Hoarau"></div>
-        <div class="field"><label>Email</label><input id="m_email" placeholder="marie@exemple.re"></div>
-        <div class="field"><label>Téléphone</label><input id="m_phone" placeholder="0692 ..."></div>
-      </div>
-      <div class="row" style="margin-top:10px">
-        <div class="field"><label>Type d'adhésion</label><input id="m_typeAdh" list="typesAdh" placeholder="Ex. Danse, Périscolaire…"></div>
-        <div class="field"><label>Site</label><input id="m_site" list="sites" placeholder="Ex. Case BDN, Bringelliers…"></div>
-        <datalist id="typesAdh"></datalist>
-      </div>
-      <div class="row" style="margin-top:10px">
-        <div class="field" style="flex:2"><label>Adresse</label><input id="m_addr" placeholder="Ex. 12 rue des Mille Roches"></div>
-        <div class="field" style="flex:0;min-width:120px"><label>Code postal</label><input id="m_cp" placeholder="97490"></div>
-        <div class="field"><label>Ville</label><input id="m_city" placeholder="Saint-Denis"></div>
-      </div>
-      <div class="row" style="margin-top:10px">
-        <div class="field"><label>Cotisation (€)</label><input id="m_amount" type="number" min="0" step="1" value="10"></div>
-        <div class="field"><label>Date d'adhésion</label><input id="m_date" type="date"></div>
-        <div class="field"><label>Statut</label>
-          <select id="m_paid"><option value="1">✅ Cotisation à jour</option><option value="0">⏳ En attente</option></select>
-        </div>
-        <div class="field" style="flex:0"><label>&nbsp;</label><button class="btn" onclick="addMember()">Ajouter</button></div>
-      </div>
-    </div>
-    <div class="panel">
-      <h2>📧 Relances de cotisation</h2>
-      <p class="hint">Les adhérents qui n'ont pas réglé leur cotisation. Clique sur « Relancer » pour ouvrir un email pré-rempli.</p>
-      <div id="relanceBox"></div>
-    </div>
-    <div class="panel">
-      <div class="toolbar">
-        <h2 style="margin:0">Liste des adhérents</h2>
-        <input id="m_search" placeholder="🔎 Rechercher..." oninput="renderMembers()" style="max-width:240px">
-      </div>
-      <table><thead><tr><th>Nom</th><th>Contact</th><th>Adresse</th><th>Adhésion</th><th class="num">Cotisation</th><th>Statut</th><th></th></tr></thead>
-        <tbody id="memberRows"></tbody></table>
-    </div>
-  </section>
-
-  <!-- ACCOUNTING -->
-  <section id="accounting" class="page">
-    <div class="cards" id="accKpis"></div>
-    <div class="panel" style="border:2px solid var(--brand)">
-      <h2>⚡ Saisie rapide — rentrer beaucoup de factures vite</h2>
-      <p class="hint">Pour le stock de factures : remplis une ligne, appuie sur <strong>Entrée</strong> (ou « Ajouter ») et enchaîne la suivante. La date, le type, le site, l'action et le compte sont conservés d'une ligne à l'autre. Tu pourras toujours ajouter une photo ou répartir le montant ensuite, en cliquant sur l'opération.</p>
-      <div class="row">
-        <div class="field" style="flex:0;min-width:140px"><label>Date</label><input id="q_date" type="date"></div>
-        <div class="field" style="flex:0;min-width:130px"><label>Type</label>
-          <select id="q_type"><option value="out">➖ Dépense</option><option value="in">➕ Recette</option></select></div>
-        <div class="field" style="flex:2"><label>Libellé</label><input id="q_label" placeholder="Ex. Facture EDF mars" onkeydown="if(event.key==='Enter')quickAdd()"></div>
-        <div class="field" style="flex:0;min-width:120px"><label>Montant (€)</label><input id="q_amount" type="number" min="0" step="0.01" onkeydown="if(event.key==='Enter')quickAdd()"></div>
-      </div>
-      <div class="row" style="margin-top:10px">
-        <div class="field"><label>Compte comptable</label><input id="q_compte" list="comptes" placeholder="Ex. 6061 - Eau, énergie"></div>
-        <div class="field"><label>Catégorie</label><input id="q_cat" list="cats" placeholder="Ex. Subvention"></div>
-        <div class="field" style="flex:0;min-width:150px"><label>Moyen</label>
-          <select id="q_account"><option value="banque">🏦 Banque</option><option value="caisse">💵 Espèces</option></select></div>
-        <div class="field"><label>Site</label><input id="q_site" list="sites" placeholder="Site"></div>
-        <div class="field"><label>Action</label><input id="q_action" list="actions" placeholder="Action"></div>
-        <div class="field" style="flex:0"><label>&nbsp;</label><button class="btn" onclick="quickAdd()">＋ Ajouter</button></div>
-      </div>
-      <p id="q_info" class="hint" style="margin:8px 0 0"></p>
-    </div>
-    <details class="panel">
-      <summary style="cursor:pointer;font-weight:700;font-size:16px">📥 Importer depuis Excel (le recueil des factures)</summary>
-      <p class="hint" style="margin:10px 0">Dans Excel ou Google Sheets, sélectionne tes lignes de factures, copie (Ctrl/Cmd + C), puis colle ci-dessous. Tu indiqueras ensuite à quoi correspond chaque colonne.</p>
-      <label style="font-size:13px;color:var(--muted);font-weight:600"><input type="checkbox" id="imp_header" checked> La première ligne contient les titres des colonnes</label>
-      <textarea id="imp_paste" rows="6" style="width:100%;margin-top:8px;font:inherit;padding:10px;border:1px solid var(--line);border-radius:9px;resize:vertical" placeholder="Colle ici tes lignes Excel (une facture par ligne)..."></textarea>
-      <div class="row" style="margin-top:8px;align-items:center">
-        <button class="btn" onclick="analyzeImport()">Analyser le collage</button>
-        <button class="ghost btn" onclick="document.getElementById('imp_file').click()">📁 Ou choisir un fichier (.csv)</button>
-        <input type="file" id="imp_file" accept=".csv,.txt" style="display:none" onchange="importFile(event)">
-        <span id="imp_info" class="hint" style="margin:0"></span></div>
-      <div id="imp_preview" style="margin-top:14px;overflow:auto"></div>
-    </details>
-    <div class="panel">
-      <h2>Nouvelle opération</h2>
-      <p class="hint">Une recette (argent qui entre) ou une dépense (argent qui sort). Tu peux la relier à un projet.</p>
-      <div class="row">
-        <div class="field" style="flex:0;min-width:150px"><label>Type</label>
-          <select id="a_type"><option value="in">➕ Recette</option><option value="out">➖ Dépense</option></select>
-        </div>
-        <div class="field"><label>Libellé</label><input id="a_label" placeholder="Ex. Subvention mairie"></div>
-        <div class="field"><label>Catégorie</label><input id="a_cat" list="cats" placeholder="Ex. Subvention">
-          <datalist id="cats"><option>Cotisations</option><option>Subvention</option><option>Dons</option><option>Événement</option><option>Matériel</option><option>Frais</option></datalist>
-        </div>
-        <div class="field"><label>Compte comptable</label><input id="a_compte" list="comptes" placeholder="Ex. 756 - Cotisations"></div>
-      </div>
-      <datalist id="comptes"></datalist>
-      <div class="row" style="margin-top:10px">
-        <div class="field"><label>Montant total (€)</label><input id="a_amount" type="number" min="0" step="0.01" oninput="updateSplitSum()"></div>
-        <div class="field"><label>Date</label><input id="a_date" type="date"></div>
-        <div class="field" style="flex:0;min-width:170px"><label>Moyen de paiement</label>
-          <select id="a_account"><option value="banque">🏦 Banque</option><option value="caisse">💵 Espèces (caisse)</option></select>
-        </div>
-        <div class="field"><label>Projet (optionnel)</label><select id="a_project"></select></div>
-      </div>
-      <div class="row" style="margin-top:10px">
-        <div class="field"><label>📸 Justificatif (photo facture/ticket)</label>
-          <input id="a_photo" type="file" accept="image/*" onchange="handlePhoto(event)"></div>
-        <div class="field" style="flex:0"><label>&nbsp;</label><span id="a_photoInfo" class="hint" style="margin:0"></span></div>
-      </div>
-      <div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--line)">
-        <label style="font-size:12.5px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.03em">Répartition par site / action</label>
-        <p class="hint" style="margin:4px 0 10px">Une seule ligne si la dépense concerne un seul site/action. Sinon, ajoute des lignes pour répartir le montant (ex. une facture alimentaire partagée entre deux sites).</p>
-        <datalist id="sites"></datalist><datalist id="actions"></datalist>
-        <div id="splitRows"></div>
-        <div class="row" style="margin-top:10px;align-items:center">
-          <button class="ghost btn" type="button" onclick="addSplitRow()">＋ Ajouter une ligne</button>
-          <span id="splitInfo" class="hint" style="margin:0;font-weight:600"></span>
-        </div>
-      </div>
-      <div class="row" style="margin-top:16px;align-items:center">
-        <div class="field" style="flex:0"><button class="btn" id="opBtn" onclick="addOp()">Enregistrer l'opération</button></div>
-        <span id="editInfo" class="hint" style="margin:0"></span>
-      </div>
-    </div>
-    <div class="panel">
-      <div class="toolbar">
-        <h2 style="margin:0">Journal des opérations</h2>
-        <div class="row" style="margin:0">
-          <input id="a_search" placeholder="🔎 Libellé, site, action..." oninput="renderOps()" style="max-width:230px">
-          <select id="a_year" onchange="renderOps()" style="max-width:160px" title="Exercice comptable"><option value="">Tous les exercices</option></select>
-          <select id="a_filter" onchange="renderOps()" style="max-width:170px"><option value="">Tous les types</option><option value="in">Recettes</option><option value="out">Dépenses</option></select>
-        </div>
-      </div>
-      <p class="hint" style="margin:0 0 6px">Clique sur un en-tête de colonne pour trier (re-clique pour inverser l'ordre).</p>
-      <table><thead><tr>
-        <th onclick="setOpSort('date')" style="cursor:pointer" title="Trier par date">Date ⇅</th>
-        <th onclick="setOpSort('label')" style="cursor:pointer" title="Trier par libellé">Libellé ⇅</th>
-        <th onclick="setOpSort('site')" style="cursor:pointer" title="Trier par site">Site ⇅</th>
-        <th onclick="setOpSort('action')" style="cursor:pointer" title="Trier par action">Action ⇅</th>
-        <th onclick="setOpSort('project')" style="cursor:pointer" title="Trier par projet">Projet ⇅</th>
-        <th class="num" onclick="setOpSort('amount')" style="cursor:pointer" title="Trier par montant">Montant ⇅</th>
-        <th></th></tr></thead>
-        <tbody id="opRows"></tbody></table>
-    </div>
-    <div class="panel">
-      <h2>Ventilation des dépenses</h2>
-      <p class="hint">Le total des dépenses réparti par site et par action — pratique pour justifier les budgets et les financements. <strong>Suit l'exercice choisi ci-dessus.</strong></p>
-      <div class="cards" style="grid-template-columns:repeat(auto-fit,minmax(280px,1fr))">
-        <div>
-          <h2 style="font-size:14px;margin:0 0 8px">🏢 Dépenses par site</h2>
-          <table><tbody id="ventSite"></tbody></table>
-        </div>
-        <div>
-          <h2 style="font-size:14px;margin:0 0 8px">🎯 Dépenses par action</h2>
-          <table><tbody id="ventAction"></tbody></table>
-        </div>
-      </div>
-    </div>
-    <div class="panel">
-      <h2>Ventilation des recettes</h2>
-      <p class="hint">Le total des recettes réparti par site et par action. <strong>Suit l'exercice choisi ci-dessus.</strong></p>
-      <div class="cards" style="grid-template-columns:repeat(auto-fit,minmax(280px,1fr))">
-        <div>
-          <h2 style="font-size:14px;margin:0 0 8px">🏢 Recettes par site</h2>
-          <table><tbody id="ventSiteIn"></tbody></table>
-        </div>
-        <div>
-          <h2 style="font-size:14px;margin:0 0 8px">🎯 Recettes par action</h2>
-          <table><tbody id="ventActionIn"></tbody></table>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- CAISSE -->
-  <section id="caisse" class="page">
-    <div class="cards" id="caisseKpis"></div>
-    <div class="panel">
-      <h2>Remise en banque</h2>
-      <p class="hint">Quand tu déposes les espèces de la caisse sur le compte bancaire. L'argent passe de la caisse vers la banque — le solde total ne change pas.</p>
-      <div class="row">
-        <div class="field"><label>Montant déposé (€)</label><input id="t_amount" type="number" min="0" step="0.01"></div>
-        <div class="field"><label>Date</label><input id="t_date" type="date"></div>
-        <div class="field" style="flex:0"><label>&nbsp;</label><button class="btn" onclick="addRemise()">💸 Enregistrer la remise</button></div>
-      </div>
-    </div>
-    <div class="panel">
-      <h2>Mouvements d'espèces</h2>
-      <p class="hint">Toutes les entrées et sorties en espèces, et les remises en banque. Clique sur une ligne pour le détail.</p>
-      <table><thead><tr><th>Date</th><th>Libellé</th><th>Type</th><th class="num">Montant</th><th class="num">Solde caisse</th></tr></thead>
-        <tbody id="caisseRows"></tbody></table>
-    </div>
-  </section>
-
-  <!-- PROJECTS -->
-  <section id="projects" class="page">
-    <div class="panel">
-      <h2>Nouveau projet</h2>
-      <p class="hint">Donne un nom et un budget prévu. Les dépenses reliées au projet se cumulent automatiquement.</p>
-      <div class="row">
-        <div class="field"><label>Nom du projet</label><input id="p_name" placeholder="Ex. Fête de quartier 2026"></div>
-        <div class="field"><label>Budget prévu (€)</label><input id="p_budget" type="number" min="0" step="1"></div>
-        <div class="field"><label>Statut</label>
-          <select id="p_status"><option>En cours</option><option>À venir</option><option>Terminé</option></select>
-        </div>
-        <div class="field" style="flex:0"><label>&nbsp;</label><button class="btn" onclick="addProject()">Créer</button></div>
-      </div>
-    </div>
-    <div id="projectList"></div>
-  </section>
-
-  <!-- SUBVENTIONS -->
-  <section id="subventions" class="page">
-    <div class="cards" id="subKpis"></div>
-    <div class="panel">
-      <h2>Ajouter / suivre une subvention</h2>
-      <p class="hint">Suis le pipeline : demandée → accordée → versée. Le statut se calcule tout seul. Seuls les <strong>montants versés</strong> comptent en recettes dans la comptabilité ; le reste est suivi ici sans fausser le solde.</p>
-      <div class="row">
-        <div class="field" style="flex:2"><label>Nom de la subvention</label><input id="s_name" placeholder="Ex. Fête nout Kartié"></div>
-        <div class="field"><label>Financeur</label><input id="s_struct" list="structs" placeholder="Mairie, CAF...">
-          <datalist id="structs"><option>Mairie</option><option>CAF</option><option>Région</option><option>État</option><option>Département</option><option>Autre</option></datalist></div>
-      </div>
-      <div class="row" style="margin-top:10px">
-        <div class="field"><label>Site</label><input id="s_site" list="sites" placeholder="Site"></div>
-        <div class="field"><label>Action</label><input id="s_action" list="actions" placeholder="Action"></div>
-      </div>
-      <div class="row" style="margin-top:10px">
-        <div class="field"><label>Montant demandé (€)</label><input id="s_demande" type="number" min="0" step="0.01"></div>
-        <div class="field"><label>Montant accordé (€)</label><input id="s_accorde" type="number" min="0" step="0.01"></div>
-        <div class="field"><label>Montant versé (€)</label><input id="s_verse" type="number" min="0" step="0.01"></div>
-        <div class="field"><label>Date de versement</label><input id="s_date" type="date"></div>
-      </div>
-      <div class="row" style="margin-top:10px">
-        <div class="field"><label>📅 Date limite de dépôt</label><input id="s_deadline" type="date"></div>
-        <div class="field" style="flex:0;min-width:200px"><label>Récurrence</label>
-          <select id="s_recurrent"><option value="">Demande unique</option><option value="1">🔁 Revient chaque année</option></select></div>
-        <div class="field" style="flex:2"><label>Lien de dépôt en ligne</label><input id="s_lien" placeholder="https://... (portail de la Mairie, CAF...)"></div>
-        <div class="field" style="flex:0"><label>&nbsp;</label><button class="btn" onclick="addSubvention()">Ajouter</button></div>
-      </div>
-    </div>
-    <div class="panel" style="border:2px solid var(--brand)">
-      <h2>📅 Échéancier des demandes</h2>
-      <p class="hint">Les prochaines dates limites de dépôt (les demandes récurrentes reviennent automatiquement chaque année). Clique sur « Déposer » pour ouvrir le portail.</p>
-      <div id="echeancier"></div>
-    </div>
-    <div class="panel">
-      <h2 style="margin:0 0 12px">Suivi des subventions</h2>
-      <table><thead><tr><th>Subvention</th><th>Financeur</th><th>Site / Action</th><th class="num">Demandé</th><th class="num">Accordé</th><th class="num">Versé</th><th>Statut</th><th></th></tr></thead>
-        <tbody id="subRows"></tbody></table>
-    </div>
-  </section>
-
-  <!-- DETTES & CRÉANCES -->
-  <section id="dettes" class="page">
-    <div class="cards" id="detteKpis"></div>
-    <div class="panel">
-      <h2>Ajouter une dette ou une créance</h2>
-      <p class="hint">Une <strong>dette</strong> = ce que l'association doit (fournisseur, URSSAF…). Une <strong>créance</strong> = ce qu'on doit à l'association (subvention à recevoir, remboursement…). Tu peux ensuite échelonner le paiement.</p>
-      <div class="row">
-        <div class="field" style="flex:0;min-width:150px"><label>Type</label>
-          <select id="de_sens"><option value="dette">💸 Dette (on doit)</option><option value="creance">💰 Créance (on nous doit)</option></select></div>
-        <div class="field"><label>Tiers (qui ?)</label><input id="de_tiers" placeholder="Ex. URSSAF, fournisseur, CAF..."></div>
-        <div class="field" style="flex:2"><label>Libellé</label><input id="de_label" placeholder="Ex. Cotisations URSSAF T2 2026"></div>
-      </div>
-      <div class="row" style="margin-top:10px">
-        <div class="field"><label>Montant total (€)</label><input id="de_montant" type="number" min="0" step="0.01"></div>
-        <div class="field"><label>Date</label><input id="de_date" type="date"></div>
-        <div class="field"><label>Échéance (date limite)</label><input id="de_echeance" type="date"></div>
-        <div class="field" style="flex:0"><label>&nbsp;</label><button class="btn" onclick="addDette()">Ajouter</button></div>
-      </div>
-    </div>
-    <div id="detteList"></div>
-  </section>
-
-  <!-- BILAN -->
-  <section id="bilan" class="page">
-    <div class="panel">
-      <div class="toolbar">
-        <div>
-          <h2 style="margin:0">Compte de résultat</h2>
-          <p class="hint" style="margin:2px 0 0">Recettes et dépenses par catégorie, pour l'assemblée générale et les financeurs.</p>
-        </div>
-        <div class="row" style="align-items:center">
-          <div class="field" style="flex:0;min-width:120px"><label>Exercice</label><select id="b_year" onchange="renderBilan()"></select></div>
-          <button class="btn" onclick="printBilan()">🖨️ Imprimer / PDF</button>
-        </div>
-      </div>
-      <div id="bilanResultWrap" style="margin:14px 0"></div>
-      <div class="cards" style="grid-template-columns:repeat(auto-fit,minmax(280px,1fr))">
-        <div>
-          <h2 style="font-size:14px;margin:0 0 8px" class="green">➕ Recettes par catégorie</h2>
-          <table><tbody id="bilanRec"></tbody></table>
-        </div>
-        <div>
-          <h2 style="font-size:14px;margin:0 0 8px" class="red">➖ Dépenses par catégorie</h2>
-          <table><tbody id="bilanDep"></tbody></table>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- REPERTOIRE -->
-  <section id="repertoire" class="page">
-    <div class="panel">
-      <h2>📇 Contacts</h2>
-      <p class="hint">Le carnet d'adresses du CASE : comptable, commissaire aux comptes, financeurs, fournisseurs, partenaires… La Bible des bons interlocuteurs.</p>
-      <div class="row">
-        <div class="field"><label>Nom</label><input id="c_name" placeholder="Ex. Cabinet Untel"></div>
-        <div class="field"><label>Organisme / rôle</label><input id="c_org" placeholder="Ex. Comptable, Mairie, CAF..."></div>
-        <div class="field"><label>Email</label><input id="c_email" placeholder="contact@..."></div>
-        <div class="field"><label>Téléphone</label><input id="c_phone" placeholder="0262 ..."></div>
-        <div class="field" style="flex:0"><label>&nbsp;</label><button class="btn" onclick="addContact()">Ajouter</button></div>
-      </div>
-      <div class="row" style="margin-top:8px"><div class="field"><label>Note (optionnel)</label><input id="c_note" placeholder="Ex. référent dossier subvention, jours de présence..."></div></div>
-      <div class="toolbar" style="margin-top:16px"><h2 style="margin:0;font-size:15px">Carnet</h2><input id="c_search" placeholder="🔎 Rechercher..." oninput="renderRepertoire()" style="max-width:220px"></div>
-      <table><thead><tr><th>Nom</th><th>Organisme / rôle</th><th>Contact</th><th>Note</th><th></th></tr></thead><tbody id="contactRows"></tbody></table>
-    </div>
-    <div class="panel">
-      <h2>🔗 Liens & adresses internet</h2>
-      <p class="hint">Tous les sites utiles : portails de dépôt de subvention, espaces financeurs, démarches en ligne, outils… Un clic et c'est ouvert.</p>
-      <div class="row">
-        <div class="field" style="flex:2"><label>Intitulé</label><input id="l_label" placeholder="Ex. Le Compte Asso (subventions État)"></div>
-        <div class="field"><label>Catégorie</label><input id="l_cat" list="lienCats" placeholder="Subventions, Financeur, Démarche...">
-          <datalist id="lienCats"><option>Subventions</option><option>Financeur</option><option>Démarches administratives</option><option>Banque</option><option>Outils</option><option>Partenaire</option></datalist></div>
-        <div class="field" style="flex:0"><label>&nbsp;</label><button class="btn" onclick="addLien()">Ajouter</button></div>
-      </div>
-      <div class="row" style="margin-top:8px"><div class="field" style="flex:3"><label>Adresse (URL)</label><input id="l_url" placeholder="https://..."></div>
-        <div class="field" style="flex:2"><label>Note (optionnel)</label><input id="l_note" placeholder="Ex. identifiant du compte, échéance..."></div></div>
-      <div class="toolbar" style="margin-top:16px"><h2 style="margin:0;font-size:15px">Liens enregistrés</h2><input id="l_search" placeholder="🔎 Rechercher..." oninput="renderRepertoire()" style="max-width:220px"></div>
-      <table><thead><tr><th>Intitulé</th><th>Catégorie</th><th>Adresse</th><th>Note</th><th></th></tr></thead><tbody id="lienRows"></tbody></table>
-      <div style="margin-top:18px;padding-top:14px;border-top:1px solid var(--line)">
-        <h2 style="font-size:14px;margin:0 0 4px">🏛️ Portails officiels (toujours disponibles)</h2>
-        <p class="hint" style="margin:0 0 8px">Les sites administratifs utiles, déjà prêts. Un clic et c'est ouvert.</p>
-        <div id="officialLinks" style="display:flex;flex-wrap:wrap;gap:8px"></div>
-      </div>
-    </div>
-    <div class="panel">
-      <h2>📂 Documents clés</h2>
-      <p class="hint">Les documents importants de l'association, accessibles en un clic (statuts, RIB, récépissé préfecture, assurance, PV d'AG…). Mets ici le lien vers le fichier (Drive, etc.) ou une note indiquant où il se trouve.</p>
-      <div class="row">
-        <div class="field" style="flex:0;min-width:170px"><label>Type</label><input id="d_type" list="docTypes" placeholder="Statuts, RIB...">
-          <datalist id="docTypes"><option>Statuts</option><option>RIB</option><option>Récépissé préfecture</option><option>Attestation d'assurance</option><option>PV d'assemblée générale</option><option>Liste des dirigeants</option><option>Autre</option></datalist></div>
-        <div class="field"><label>Intitulé / description</label><input id="d_label" placeholder="Ex. Statuts mis à jour 2024"></div>
-        <div class="field" style="flex:2"><label>Lien (optionnel)</label><input id="d_url" placeholder="https://... (Drive, etc.)"></div>
-        <div class="field" style="flex:0"><label>&nbsp;</label><button class="btn" onclick="addDoc()">Ajouter</button></div>
-      </div>
-      <table><thead><tr><th>Type</th><th>Document</th><th>Accès</th><th></th></tr></thead><tbody id="docRows"></tbody></table>
-    </div>
-  </section>
-
-  <!-- SECRETARIAT -->
-  <section id="secretariat" class="page">
-    <div class="panel">
-      <h2>📝 Mémo du bureau</h2>
-      <p class="hint">Le pense-bête partagé : idées, choses à faire, points à retenir. Coche quand c'est fait.</p>
-      <div class="row">
-        <div class="field"><label>Nouvelle note</label><input id="n_text" placeholder="Ex. Relancer la Mairie pour la convention" onkeydown="if(event.key==='Enter')addNote()"></div>
-        <div class="field" style="flex:0"><label>&nbsp;</label><button class="btn" onclick="addNote()">＋ Ajouter</button></div>
-      </div>
-      <div id="noteList" style="margin-top:12px"></div>
-    </div>
-    <div class="panel" style="border:2px solid var(--brand)">
-      <h2>📅 Échéancier général</h2>
-      <p class="hint">Les dates à ne pas oublier : renouvellement d'assurance, déclarations, AG, contrats… Les échéances proches s'affichent aussi sur le tableau de bord.</p>
-      <div class="row">
-        <div class="field" style="flex:2"><label>Intitulé</label><input id="e_label" placeholder="Ex. Renouvellement assurance MAIF"></div>
-        <div class="field"><label>Date</label><input id="e_date" type="date"></div>
-        <div class="field" style="flex:0;min-width:190px"><label>Récurrence</label>
-          <select id="e_recurrent"><option value="">Une fois</option><option value="1">🔁 Chaque année</option></select></div>
-        <div class="field" style="flex:0"><label>&nbsp;</label><button class="btn" onclick="addEcheance()">Ajouter</button></div>
-      </div>
-      <div id="echeanceList" style="margin-top:12px"></div>
-    </div>
-    <div class="panel">
-      <h2>✉️ Modèles de courriers</h2>
-      <p class="hint">Choisis un modèle, complète, et imprime (ou enregistre en PDF). L'en-tête de l'association est ajouté automatiquement.</p>
-      <div class="row">
-        <div class="field" style="flex:0;min-width:240px"><label>Modèle</label>
-          <select id="cr_model" onchange="fillModel()">
-            <option value="ag">Convocation à l'assemblée générale</option>
-            <option value="sub">Demande de subvention</option>
-            <option value="attest">Attestation d'adhésion</option>
-            <option value="libre">Courrier libre</option>
-          </select></div>
-        <div class="field"><label>Objet</label><input id="cr_objet" placeholder="Objet du courrier"></div>
-        <div class="field"><label>Destinataire (optionnel)</label><input id="cr_dest" placeholder="Ex. Monsieur le Maire"></div>
-      </div>
-      <div class="row" style="margin-top:10px">
-        <div class="field"><label>Corps du courrier</label><textarea id="cr_corps" rows="7" style="width:100%;font:inherit;padding:10px;border:1px solid var(--line);border-radius:9px;resize:vertical"></textarea></div>
-      </div>
-      <div class="row" style="margin-top:10px"><button class="btn" onclick="printCourrier()">🖨️ Générer / imprimer</button></div>
-    </div>
-    <div class="panel">
-      <h2>🗳️ Réunions & décisions</h2>
-      <p class="hint">Le registre des réunions du bureau : participants, décisions, et le lien vers le compte-rendu sur le Drive (pour le déposer ou le récupérer).</p>
-      <div class="row">
-        <div class="field"><label>Date</label><input id="r_date" type="date"></div>
-        <div class="field" style="flex:0;min-width:150px"><label>Type</label>
-          <select id="r_type"><option>Bureau</option><option>Conseil d'administration</option><option>Assemblée générale</option><option>Autre</option></select></div>
-        <div class="field" style="flex:2"><label>Participants</label><input id="r_present" placeholder="Ex. G. Robert, L. Payet..."></div>
-      </div>
-      <div class="row" style="margin-top:10px">
-        <div class="field"><label>Ordre du jour</label><input id="r_ordre" placeholder="Points abordés"></div>
-        <div class="field" style="flex:2"><label>Décisions prises</label><input id="r_dec" placeholder="Décisions / votes"></div>
-      </div>
-      <div class="row" style="margin-top:10px">
-        <div class="field" style="flex:3"><label>Lien du compte-rendu (Drive)</label><input id="r_drive" placeholder="https://drive.google.com/..."></div>
-        <div class="field" style="flex:0"><label>&nbsp;</label><button class="btn" onclick="addReunion()">Ajouter</button></div>
-      </div>
-      <table style="margin-top:14px"><thead><tr><th>Date</th><th>Type</th><th>Décisions</th><th>CR</th><th></th></tr></thead><tbody id="reunionRows"></tbody></table>
-    </div>
-  </section>
-
-  <!-- INCIDENTS / ÉVÉNEMENTS INDÉSIRABLES -->
-  <section id="incidents" class="page">
-    <div class="panel">
-      <h2>Déclarer un événement indésirable</h2>
-      <p class="hint">Accident, chute, blessure, conflit, dommage… Tu renseignes les faits, et Bob génère automatiquement la <strong>démarche à suivre</strong> (à cocher au fur et à mesure). <em>Les obligations de signalement dépendent de votre cadre réglementaire — à valider avec la direction.</em></p>
-      <div class="row">
-        <div class="field"><label>Date</label><input id="i_date" type="date"></div>
-        <div class="field"><label>Site / lieu</label><input id="i_site" list="sites" placeholder="Où ?"></div>
-        <div class="field"><label>Type d'événement</label><input id="i_type" list="incTypes" placeholder="Ex. Chute">
-          <datalist id="incTypes"><option>Accident</option><option>Chute</option><option>Blessure</option><option>Malaise</option><option>Conflit / incivilité</option><option>Dommage matériel</option><option>Problème de sécurité</option><option>Disparition / fugue</option><option>Autre</option></datalist></div>
-        <div class="field" style="flex:0;min-width:150px"><label>Gravité</label>
-          <select id="i_gravite"><option>Mineur</option><option>Modéré</option><option>Grave</option></select></div>
-      </div>
-      <div class="row" style="margin-top:10px">
-        <div class="field"><label>Personnes concernées</label><input id="i_personnes" placeholder="Qui ? (sans données sensibles inutiles)"></div>
-        <div class="field"><label>Déclaré par</label><input id="i_declare" placeholder="Nom du déclarant"></div>
-      </div>
-      <div class="row" style="margin-top:10px">
-        <div class="field"><label>Description des faits</label><input id="i_desc" placeholder="Que s'est-il passé ?"></div>
-        <div class="field"><label>Mesures immédiates prises</label><input id="i_mesures" placeholder="Premiers gestes / actions"></div>
-        <div class="field" style="flex:0"><label>&nbsp;</label><button class="btn" onclick="addIncident()">Déclarer</button></div>
-      </div>
-    </div>
-    <div id="incidentList"></div>
-  </section>
-
-  <!-- DATA -->
-  <section id="data" class="page">
-    <div class="panel">
-      <h2>Sauvegarde & données</h2>
-      <p class="hint">Tes données sont enregistrées dans ce navigateur, sur cet ordinateur. Pense à exporter une sauvegarde de temps en temps.</p>
-      <div class="row">
-        <button class="btn" onclick="exportJSON()">💾 Exporter une sauvegarde</button>
-        <button class="ghost btn" onclick="document.getElementById('importFile').click()">📂 Importer une sauvegarde</button>
-        <input type="file" id="importFile" accept=".json" style="display:none" onchange="importJSON(event)">
-        <button class="ghost btn" onclick="exportMembersCSV()">📋 Adhérents en Excel (CSV)</button>
-        <button class="ghost btn" onclick="exportOpsCSV()">📋 Compta en Excel (CSV)</button>
-        <button class="btn" onclick="exportComptaCSV()">🧾 Export pour le comptable (journal)</button>
-      </div>
-      <p class="hint" style="margin-top:8px">L'« export pour le comptable » détaille une ligne par ventilation (compte comptable, site, action, débit/crédit) — prêt à transmettre à votre comptable et au commissaire aux comptes. 📅 <strong>Astuce :</strong> choisissez d'abord l'<strong>exercice</strong> dans l'onglet Comptabilité (Journal des opérations) ; les exports ne contiendront que cet exercice.</p>
-      <p class="hint" style="margin-top:18px;color:var(--red)">Zone sensible :</p>
-      <button class="danger" onclick="resetAll()">🗑️ Tout effacer et repartir de zéro</button>
-    </div>
-    <div class="panel">
-      <h2>Plan comptable — comptes personnalisés</h2>
-      <p class="hint">Ajoute ici les comptes comptables qui te manquent. Ils s'ajoutent à la liste standard proposée à la saisie. (Les comptes déjà utilisés dans tes écritures apparaissent aussi automatiquement.)</p>
-      <div class="row">
-        <div class="field"><label>Nouveau compte</label><input id="newCompte" placeholder="Ex. 6135 - Locations mobilières" onkeydown="if(event.key==='Enter')addCompte()"></div>
-        <div class="field" style="flex:0"><label>&nbsp;</label><button class="btn" onclick="addCompte()">＋ Ajouter à la liste</button></div>
-      </div>
-      <div id="compteList" style="margin-top:14px"></div>
-    </div>
-    <div class="panel">
-      <h2>Paramétrer les listes (Site · Action · Catégorie · Type d'adhésion)</h2>
-      <p class="hint">Ajoute ou retire les valeurs proposées à la saisie, comme pour le plan comptable. Les valeurs standard et celles déjà utilisées dans tes données restent toujours proposées automatiquement.</p>
-      <div class="cards" style="grid-template-columns:repeat(auto-fit,minmax(250px,1fr))">
-        <div>
-          <h2 style="font-size:14px;margin:0 0 8px">🏢 Sites</h2>
-          <div class="row"><div class="field"><input id="newList_sites" placeholder="Nouveau site" onkeydown="if(event.key==='Enter')addToList('sites')"></div><div class="field" style="flex:0"><button class="btn" onclick="addToList('sites')">＋</button></div></div>
-          <div id="listBox_sites" style="margin-top:8px"></div>
-        </div>
-        <div>
-          <h2 style="font-size:14px;margin:0 0 8px">🎯 Actions</h2>
-          <div class="row"><div class="field"><input id="newList_actions" placeholder="Nouvelle action" onkeydown="if(event.key==='Enter')addToList('actions')"></div><div class="field" style="flex:0"><button class="btn" onclick="addToList('actions')">＋</button></div></div>
-          <div id="listBox_actions" style="margin-top:8px"></div>
-        </div>
-        <div>
-          <h2 style="font-size:14px;margin:0 0 8px">🏷️ Catégories</h2>
-          <div class="row"><div class="field"><input id="newList_cats" placeholder="Nouvelle catégorie" onkeydown="if(event.key==='Enter')addToList('cats')"></div><div class="field" style="flex:0"><button class="btn" onclick="addToList('cats')">＋</button></div></div>
-          <div id="listBox_cats" style="margin-top:8px"></div>
-        </div>
-        <div>
-          <h2 style="font-size:14px;margin:0 0 8px">👤 Types d'adhésion</h2>
-          <div class="row"><div class="field"><input id="newList_typesAdh" placeholder="Nouveau type" onkeydown="if(event.key==='Enter')addToList('typesAdh')"></div><div class="field" style="flex:0"><button class="btn" onclick="addToList('typesAdh')">＋</button></div></div>
-          <div id="listBox_typesAdh" style="margin-top:8px"></div>
-        </div>
-      </div>
-    </div>
-  </section>
-</div>
-
-<div class="overlay" id="opModal" onclick="if(event.target===this)closeModal()">
-  <div class="modal">
-    <div class="mhead">
-      <h3 id="md_title">Détail de l'opération</h3>
-      <button class="close" onclick="closeModal()">✕</button>
-    </div>
-    <div class="mbody" id="md_body"></div>
+    <div class="kids">🧒 👦 👧 🧑</div>
   </div>
-</div>
+</section>
 
-<div id="printArea"></div>
+<!-- QUI SOMMES-NOUS -->
+<section class="block">
+  <div class="wrap">
+    <p class="eyebrow">Qui sommes-nous</p>
+    <h2 class="title">Une association de quartier, pour tous 💚</h2>
+    <p class="sub">Le CASE du Bois de Nèfles est une association loi 1901 qui anime la vie sociale du quartier : accompagnement des familles, activités pour les enfants, moments de partage et de solidarité.</p>
+    <div class="grid">
+      <div class="card"><div class="ico">👨‍👩‍👧‍👦</div><h3>Pour les familles</h3><p>Un lieu d'accueil, d'écoute et d'entraide ouvert à tous les habitants.</p></div>
+      <div class="card"><div class="ico">🎨</div><h3>Pour les enfants</h3><p>Accompagnement scolaire, loisirs et ateliers créatifs tout au long de l'année.</p></div>
+      <div class="card"><div class="ico">🤝</div><h3>Pour le quartier</h3><p>Des événements qui rassemblent et renforcent les liens entre voisins.</p></div>
+    </div>
+  </div>
+</section>
 
-<footer>Bob · secrétaire-directeur du CASE du Bois de Nèfles · données stockées localement dans votre navigateur</footer>
+<!-- ACTIVITÉS -->
+<section class="block alt" id="activites">
+  <div class="wrap">
+    <p class="eyebrow">Nos activités</p>
+    <h2 class="title">Il y en a pour tout le monde 🎉</h2>
+    <p class="sub">Des activités encadrées par notre équipe et nos bénévoles, sur nos différents sites.</p>
+    <div class="grid">
+      <div class="card"><div class="ico">💃</div><h3>Danse</h3><p>Éveil, hip-hop, K-pop, classique, salsa, ladies… pour petits et grands.</p></div>
+      <div class="card"><div class="ico">🎵</div><h3>Musique</h3><p>Groupe variété et ateliers musique pour les adultes.</p></div>
+      <div class="card"><div class="ico">📚</div><h3>Périscolaire & loisirs (ACM)</h3><p>Accueil des enfants après l'école et pendant les vacances.</p></div>
+      <div class="card"><div class="ico">☕</div><h3>Permanence du samedi</h3><p>Accueil convivial de tous les habitants — café & petit-déjeuner offerts.</p></div>
+      <div class="card"><div class="ico">⚖️</div><h3>Jeudi info population</h3><p>Accès aux droits et aux ressources (CRIJ, France Services…).</p></div>
+      <div class="card"><div class="ico">🎪</div><h3>Animation de quartier</h3><p>Événements, fêtes et temps forts tout au long de l'année.</p></div>
+    </div>
+  </div>
+</section>
 
-<script>
-const $ = id => document.getElementById(id);
-const KEY = 'case_bdn_v1';
-const euro = n => (n||0).toLocaleString('fr-FR',{style:'currency',currency:'EUR'});
-const today = () => new Date().toISOString().slice(0,10);
-const fmtDate = d => d ? new Date(d).toLocaleDateString('fr-FR') : '';
-const uid = () => Date.now().toString(36)+Math.random().toString(36).slice(2,7);
+<!-- TEMPS FORTS 2026 -->
+<section class="block" id="temps-forts">
+  <div class="wrap">
+    <p class="eyebrow">Temps forts 2026</p>
+    <h2 class="title">Les grands rendez-vous 🎉</h2>
+    <p class="sub">Plus de 2 400 participations attendues sur l'année — et un temps fort qui rassemble tout le quartier.</p>
+    <div class="grid">
+      <div class="card"><div class="ico">🎶</div><h3>Fête de la musique</h3><p>20 juin · tout public.</p></div>
+      <div class="card"><div class="ico">💃</div><h3>Galas de danse</h3><p>Juin & décembre · la danse à l'honneur.</p></div>
+      <div class="card"><div class="ico">🎪</div><h3>Fêt nout kartyé</h3><p>En août, Place Bancoul · le grand rendez-vous du quartier (~1 500 personnes).</p></div>
+      <div class="card"><div class="ico">🪘</div><h3>Semaine créole & ron maloya</h3><p>En octobre · culture et traditions péi.</p></div>
+      <div class="card"><div class="ico">🎄</div><h3>Fête du 20 décembre</h3><p>Commémoration et fête de fin d'année.</p></div>
+      <div class="card"><div class="ico">⛰️</div><h3>Week-end famille</h3><p>Septembre · Plaine des Cafres.</p></div>
+    </div>
+  </div>
+</section>
 
-let db = load();
-function load(){ try{ return Object.assign(blank(), JSON.parse(localStorage.getItem(KEY))||{}); }catch(e){ return blank(); } }
-function blank(){ return {members:[],ops:[],projects:[],subventions:[],comptes:[],contacts:[],liens:[],docs:[],notes:[],echeances:[],reunions:[],incidents:[],dettes:[]}; }
-function save(){ localStorage.setItem(KEY, JSON.stringify(db)); renderAll(); }
+<!-- ADOS -->
+<section class="block" id="ados">
+  <div class="wrap">
+    <p class="eyebrow">Espace jeunes · 11–17 ans</p>
+    <h2 class="title">La jeunesse aux commandes 🛹</h2>
+    <p class="sub">Un secteur ados où les jeunes deviennent <strong>acteurs</strong> : accueil de loisirs les mercredis, samedis et vacances — et bien plus.</p>
+    <div class="grid">
+      <div class="card"><div class="ico">🏠</div><h3>La Kaz Zados</h3><p>Un lieu à eux, géré par eux : leurs projets, leurs idées, leur autonomie.</p></div>
+      <div class="card"><div class="ico">🎤</div><h3>Ôté Kartié</h3><p>Le projet phare des jeunes pour faire bouger le quartier.</p></div>
+      <div class="card"><div class="ico">💃</div><h3>Danse & créations</h3><p>Danse, expression et activités menées avec les ados.</p></div>
+      <div class="card"><div class="ico">📅</div><h3>Mercredi, samedi & vacances</h3><p>Un accueil régulier pour les 11–17 ans toute l'année.</p></div>
+    </div>
+  </div>
+</section>
 
-/* ---- Navigation ---- */
-document.querySelectorAll('nav.tabs button').forEach(b=>{
-  b.onclick = ()=>{
-    document.querySelectorAll('nav.tabs button').forEach(x=>x.classList.remove('active'));
-    document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
-    b.classList.add('active'); $(b.dataset.tab).classList.add('active');
-  };
-});
+<!-- BIENTÔT / EN TRAVAUX -->
+<section class="block alt" id="bientot">
+  <div class="wrap">
+    <p class="eyebrow">En préparation</p>
+    <h2 class="title">Ça arrive bientôt 🚧</h2>
+    <p class="sub">De nouveaux projets sont en chantier au CASE. Restez connectés !</p>
+    <div class="grid">
+      <div class="card"><div class="ico">🏠</div><h3>La Kaz Zados <span class="badge">🚧 Bientôt</span></h3><p>L'espace dédié aux ados, en cours d'aménagement.</p></div>
+      <div class="card"><div class="ico">🎤</div><h3>Projet « Ôté Kartié » <span class="badge">🚧 Bientôt</span></h3><p>Lancement du projet jeunesse de quartier.</p></div>
+      <div class="card"><div class="ico">🌐</div><h3>Inscriptions en ligne <span class="badge">🚧 Bientôt</span></h3><p>Adhésion et paiement directement sur le site.</p></div>
+    </div>
+  </div>
+</section>
 
-/* ---- Members ---- */
-function addMember(){
-  const name = $('m_name').value.trim();
-  if(!name){ alert('Indique au moins le nom de l\'adhérent.'); return; }
-  db.members.push({id:uid(), name, typeAdh:$('m_typeAdh').value.trim(), site:$('m_site').value.trim(), email:$('m_email').value.trim(), phone:$('m_phone').value.trim(),
-    addr:$('m_addr').value.trim(), cp:$('m_cp').value.trim(), city:$('m_city').value.trim(),
-    amount:parseFloat($('m_amount').value)||0, date:$('m_date').value||today(), paid:$('m_paid').value==='1'});
-  $('m_name').value=$('m_typeAdh').value=$('m_site').value=$('m_email').value=$('m_phone').value=$('m_addr').value=$('m_cp').value=$('m_city').value=''; $('m_amount').value=10; $('m_date').value='';
-  save();
-}
-function togglePaid(id){ const m=db.members.find(x=>x.id===id); if(m){m.paid=!m.paid; save();} }
-function delMember(id){ if(confirm('Supprimer cet adhérent ?')){ db.members=db.members.filter(x=>x.id!==id); save(); } }
-function renderMembers(){
-  const q = ($('m_search').value||'').toLowerCase();
-  const list = db.members.filter(m=>m.name.toLowerCase().includes(q)||(m.email||'').toLowerCase().includes(q));
-  const tb = $('memberRows');
-  if(!list.length){ tb.innerHTML='<tr><td colspan="7" class="empty">Aucun adhérent pour le moment.</td></tr>'; return; }
-  tb.innerHTML = list.map(m=>`<tr>
-    <td><strong>${esc(m.name)}</strong>${m.typeAdh?' <span class="pill" style="background:#eef2fb;color:#1f4fc4;font-size:11px">'+esc(m.typeAdh)+'</span>':''}<br><span class="muted" style="font-size:12px">${m.site?esc(m.site)+' · ':''}Depuis le ${fmtDate(m.date)}</span></td>
-    <td style="font-size:13px">${esc(m.email||'—')}<br><span class="muted">${esc(m.phone||'')}</span></td>
-    <td style="font-size:13px">${esc(m.addr||'—')}<br><span class="muted">${esc(((m.cp||'')+' '+(m.city||'')).trim())}</span></td>
-    <td>${fmtDate(m.date)}</td>
-    <td class="num">${euro(m.amount)}</td>
-    <td><span class="pill ${m.paid?'ok':'wait'}" style="cursor:pointer" onclick="togglePaid('${m.id}')">${m.paid?'À jour':'En attente'}</span></td>
-    <td style="white-space:nowrap"><button class="ghost btn" style="padding:4px 9px;font-size:12px" onclick="openEdit('members','${m.id}')" title="Modifier">✏️</button>
-      <button class="ghost btn" style="padding:4px 9px;font-size:12px" onclick="memberReceipt('${m.id}')">🧾 Reçu</button>
-      <button class="danger" onclick="delMember('${m.id}')">Suppr.</button></td></tr>`).join('');
-}
+<!-- HORAIRES -->
+<section class="block" id="horaires">
+  <div class="wrap">
+    <p class="eyebrow">Horaires & lieux</p>
+    <h2 class="title">Où et quand nous trouver 🕒</h2>
+    <p class="sub">Nos sites sont ouverts toute la semaine. Passez nous voir !</p>
+    <div class="hours">
+      <div class="hour"><div class="lieu">🏠 C.A.S.E Bois de Nèfles</div><div class="h">132 Route des Ananas, Sainte-Clotilde<br>Lun → Mer : 9h–12h30 & 14h–17h30<br>Jeu & Ven : 9h–16h30</div></div>
+      <div class="hour"><div class="lieu">📍 Local des Bringelliers</div><div class="h">En matinée en semaine<br>Activités enfance & familles</div></div>
+      <div class="hour"><div class="lieu">☕ Permanence du samedi</div><div class="h">Samedi matin · café offert<br>Accueil de tous les habitants</div></div>
+    </div>
+  </div>
+</section>
 
-/* ---- Accounting ---- */
-/* une opération = un montant total + une ou plusieurs lignes de répartition (site/action/montant) */
-function getSplits(o){
-  if(o.splits && o.splits.length) return o.splits;
-  return [{site:o.site||'', action:o.action||'', amount:o.amount}]; // compat anciennes données
-}
-function getAccount(o){ return o.account||'banque'; }
-/* photo justificatif : compressée avant stockage pour ne pas saturer la mémoire */
-let pendingPhoto=null;
-function handlePhoto(e){
-  const f=e.target.files[0];
-  if(!f){ pendingPhoto=null; $('a_photoInfo').textContent=''; return; }
-  const rd=new FileReader();
-  rd.onload=()=>{ const img=new Image(); img.onload=()=>{
-    const max=1200; let w=img.width,h=img.height;
-    if(w>max||h>max){ const r=Math.min(max/w,max/h); w=Math.round(w*r); h=Math.round(h*r); }
-    const c=document.createElement('canvas'); c.width=w; c.height=h;
-    c.getContext('2d').drawImage(img,0,0,w,h);
-    pendingPhoto=c.toDataURL('image/jpeg',0.6);
-    $('a_photoInfo').innerHTML='<span class="green">✓ Photo prête ('+Math.round(pendingPhoto.length/1024)+' Ko)</span>';
-  }; img.src=rd.result; };
-  rd.readAsDataURL(f);
-}
-function splitRowTpl(site,action,amount){
-  return `<div class="row split-row" style="margin-top:8px">
-    <div class="field"><input class="s-site" list="sites" placeholder="Site" value="${esc(site)}"></div>
-    <div class="field"><input class="s-action" list="actions" placeholder="Action" value="${esc(action)}"></div>
-    <div class="field" style="flex:0;min-width:130px"><input class="s-amount" type="number" min="0" step="0.01" placeholder="Montant €" value="${amount||''}" oninput="updateSplitSum()"></div>
-    <div class="field" style="flex:0"><button class="danger" type="button" title="Retirer cette ligne" onclick="this.closest('.split-row').remove();updateSplitSum()">✕</button></div>
-  </div>`;
-}
-function addSplitRow(site='',action='',amount=''){
-  $('splitRows').insertAdjacentHTML('beforeend', splitRowTpl(site,action,amount));
-  updateSplitSum();
-}
-function resetSplitRows(){ $('splitRows').innerHTML=''; addSplitRow(); }
-function splitRowsData(){
-  return [...document.querySelectorAll('#splitRows .split-row')].map(r=>({
-    site:r.querySelector('.s-site').value.trim(),
-    action:r.querySelector('.s-action').value.trim(),
-    amount:parseFloat(r.querySelector('.s-amount').value)||0 }));
-}
-function updateSplitSum(){
-  const total=parseFloat($('a_amount').value)||0;
-  const rows=splitRowsData();
-  const info=$('splitInfo');
-  if(rows.length<=1){ info.textContent=''; return; }
-  const sum=+rows.reduce((s,r)=>s+r.amount,0).toFixed(2);
-  const diff=+(total-sum).toFixed(2);
-  info.innerHTML = diff===0
-    ? '<span class="green">✓ Réparti : '+euro(sum)+' (= total)</span>'
-    : '<span class="red">Réparti : '+euro(sum)+' · reste : '+euro(diff)+'</span>';
-}
-function addOp(){
-  const label = $('a_label').value.trim();
-  const total = parseFloat($('a_amount').value);
-  if(!label || !(total>0)){ alert('Indique un libellé et un montant total supérieur à 0.'); return; }
-  let splits = splitRowsData().filter(s=>s.site||s.action||s.amount>0);
-  if(splits.length<=1){
-    const s=splits[0]||{site:'',action:'',amount:0};
-    splits=[{site:s.site, action:s.action, amount:total}]; // une seule ligne = tout le montant
-  } else {
-    const sum=+splits.reduce((a,s)=>a+s.amount,0).toFixed(2);
-    if(Math.abs(sum-total)>0.01 &&
-       !confirm('La répartition ('+euro(sum)+') ne correspond pas au montant total ('+euro(total)+').\nEnregistrer quand même ?')) return;
-  }
-  const data={type:$('a_type').value, label, cat:$('a_cat').value.trim(), compte:$('a_compte').value.trim(),
-    amount:total, date:$('a_date').value||today(), project:$('a_project').value||'',
-    account:$('a_account').value, photo:pendingPhoto||'', splits};
-  if(editingId){ Object.assign(db.ops.find(x=>x.id===editingId), data); cancelEdit(); }
-  else db.ops.push({id:uid(), ...data});
-  $('a_label').value=$('a_cat').value=$('a_compte').value=$('a_amount').value=''; $('a_date').value=today();
-  $('a_account').value='banque'; $('a_photo').value=''; $('a_photoInfo').textContent=''; pendingPhoto=null;
-  resetSplitRows();
-  save();
-}
-let editingId=null;
-function editOp(id){
-  const o=db.ops.find(x=>x.id===id); if(!o) return;
-  editingId=id;
-  $('a_type').value=o.type; $('a_label').value=o.label; $('a_cat').value=o.cat||''; $('a_compte').value=o.compte||'';
-  $('a_amount').value=o.amount; $('a_date').value=o.date; $('a_account').value=getAccount(o); $('a_project').value=o.project||'';
-  pendingPhoto=o.photo||null;
-  $('a_photoInfo').innerHTML = o.photo?'<span class="muted">Photo conservée (choisis un fichier pour la remplacer)</span>':'';
-  $('splitRows').innerHTML=''; getSplits(o).forEach(s=>addSplitRow(s.site,s.action,s.amount)); updateSplitSum();
-  $('opBtn').textContent='💾 Mettre à jour'; $('editInfo').innerHTML='<span class="red">Modification en cours · <a href="#" onclick="cancelEdit();return false">annuler</a></span>';
-  closeModal();
-  document.querySelector('nav.tabs button[data-tab="accounting"]').click();
-  window.scrollTo(0,0);
-}
-function cancelEdit(){
-  editingId=null; $('opBtn').textContent="Enregistrer l'opération"; $('editInfo').textContent='';
-  $('a_label').value=$('a_cat').value=$('a_compte').value=$('a_amount').value=''; $('a_date').value=today();
-  $('a_account').value='banque'; $('a_photo').value=''; $('a_photoInfo').textContent=''; pendingPhoto=null;
-  resetSplitRows();
-}
-/* saisie rapide : conserve date/type/site/action/compte/moyen d'une ligne à l'autre */
-function quickAdd(){
-  const label=$('q_label').value.trim();
-  const amount=parseFloat($('q_amount').value);
-  if(!label || !(amount>0)){ $('q_info').innerHTML='<span class="red">Indique un libellé et un montant.</span>'; return; }
-  db.ops.push({id:uid(), type:$('q_type').value, label, cat:$('q_cat').value.trim(), compte:$('q_compte').value.trim(),
-    amount, date:$('q_date').value||today(), project:'', account:$('q_account').value, photo:'',
-    splits:[{site:$('q_site').value.trim(), action:$('q_action').value.trim(), amount}]});
-  $('q_info').innerHTML='<span class="green">✓ « '+esc(label)+' » ('+euro(amount)+') ajouté. Enchaîne la facture suivante.</span>';
-  $('q_label').value=''; $('q_amount').value=''; $('q_label').focus();
-  save();
-}
+<!-- ADHÉSION / INSCRIPTION -->
+<section class="block alt" id="adhesion">
+  <div class="wrap">
+    <p class="eyebrow">Adhésion & inscriptions</p>
+    <h2 class="title">Rejoignez le CASE en 2 minutes ✏️</h2>
+    <p class="sub">Adhérez en ligne et inscrivez-vous à une activité. Simple, rapide, sécurisé.</p>
+    <div class="panel">
+      <div class="field"><label>Nom et prénom</label><input placeholder="Votre nom"></div>
+      <div class="field"><label>Email</label><input type="email" placeholder="vous@exemple.re"></div>
+      <div class="field"><label>Activité souhaitée</label>
+        <select>
+          <option>Adhésion simple (10 €)</option>
+          <option>Accompagnement scolaire</option>
+          <option>Accueil de loisirs</option>
+          <option>Atelier cuisine</option>
+          <option>Jardin partagé</option>
+        </select></div>
+      <button class="btn primary" style="width:100%" onclick="alert('🍍 Ceci est une démonstration.\n\nDans la version en ligne, le paiement (cotisation + activité) se ferait ici en toute sécurité, et l\'inscription arriverait automatiquement dans la gestion du CASE.')">💳 S'inscrire et payer en ligne</button>
+      <p class="note"><span class="badge">DÉMO</span> Le paiement en ligne sera actif dans la version finale.</p>
+    </div>
+  </div>
+</section>
 
-/* ---- Import Excel (copier-coller ou fichier) ---- */
-function importFile(e){
-  const f=e.target.files[0]; if(!f) return;
-  const r=new FileReader();
-  r.onload=()=>{ $('imp_paste').value=r.result; analyzeImport(); };
-  r.readAsText(f,'utf-8'); e.target.value='';
-}
-let impRows=[];
-const IMP_FIELDS=[['','— Ignorer —'],['date','Date'],['label','Libellé'],['amount','Montant'],['type','Type (recette/dépense)'],['compte','Compte comptable'],['site','Site'],['action','Action'],['account','Moyen (banque/espèces)'],['cat','Catégorie']];
-function impGuess(h){ h=(h||'').toLowerCase();
-  if(/date/.test(h))return'date'; if(/lib|intit|design|désign|objet|nature/.test(h))return'label';
-  if(/montant|somme|total|ttc|prix|€|euro/.test(h))return'amount'; if(/type|sens/.test(h))return'type';
-  if(/compte|comptab/.test(h))return'compte'; if(/site|lieu|centre|antenne/.test(h))return'site';
-  if(/action|activ/.test(h))return'action'; if(/moyen|paiement|banq|caiss|esp|règlement|regl/.test(h))return'account';
-  if(/cat[ée]g/.test(h))return'cat'; return''; }
-function analyzeImport(){
-  const raw=$('imp_paste').value.replace(/\s+$/,'');
-  if(!raw.trim()){ $('imp_info').innerHTML='<span class="red">Colle d\'abord tes lignes depuis Excel.</span>'; return; }
-  let lines=raw.split(/\r?\n/).filter(l=>l.trim());
-  const sep = lines[0].includes('\t')?'\t':(lines[0].includes(';')?';':',');
-  let data=lines.map(l=>l.split(sep).map(c=>c.trim()));
-  let header=null;
-  if($('imp_header').checked && data.length){ header=data.shift(); }
-  impRows=data;
-  if(!data.length){ $('imp_info').innerHTML='<span class="red">Aucune ligne de données détectée.</span>'; $('imp_preview').innerHTML=''; return; }
-  const ncol=Math.max(...data.map(r=>r.length));
-  let cols='';
-  for(let i=0;i<ncol;i++){
-    const g=header?impGuess(header[i]):(i===0?'date':i===1?'label':i===2?'amount':'');
-    cols+=`<th><select id="map_${i}" style="font-size:12px;max-width:150px">`+IMP_FIELDS.map(([v,l])=>`<option value="${v}" ${v===g?'selected':''}>${l}</option>`).join('')+`</select>`+(header?`<br><span class="muted" style="font-size:11px">${esc(header[i]||'')}</span>`:'')+`</th>`;
-  }
-  const body=data.slice(0,5).map(r=>'<tr>'+Array.from({length:ncol},(_,i)=>`<td style="font-size:12px">${esc(r[i]||'')}</td>`).join('')+'</tr>').join('');
-  $('imp_preview').innerHTML=`<p class="hint">Aperçu (5 premières lignes) — choisis pour chaque colonne ce qu'elle représente :</p>
-    <table><thead><tr>${cols}</tr></thead><tbody>${body}</tbody></table>
-    <div class="row" style="margin-top:14px;align-items:center">
-      <div class="field" style="flex:0;min-width:230px"><label>Si le type n'est pas précisé, ces lignes sont des :</label>
-        <select id="imp_deftype"><option value="out">Dépenses</option><option value="in">Recettes</option></select></div>
-      <div class="field" style="flex:0"><label>&nbsp;</label><button class="btn" onclick="runImport(${ncol})">✅ Importer ${data.length} ligne(s)</button></div>
-    </div>`;
-  $('imp_info').innerHTML='<span class="green">'+data.length+' ligne(s) détectée(s).</span>';
-}
-function impAmount(s){ s=(s||'').replace(/[^\d,.\-]/g,'').replace(/\s/g,'');
-  if(s.includes(',')&&s.includes('.')) s=s.replace(/\./g,'').replace(',','.'); else s=s.replace(',','.');
-  return Math.abs(parseFloat(s)||0); }
-function impDate(s){ s=(s||'').trim(); let m;
-  if(m=s.match(/^(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{2,4})$/)){ let y=m[3]; if(y.length===2)y='20'+y; return y+'-'+String(m[2]).padStart(2,'0')+'-'+String(m[1]).padStart(2,'0'); }
-  if(/^\d{4}-\d{2}-\d{2}/.test(s)) return s.slice(0,10);
-  return today(); }
-function impType(s,def){ s=(s||'').toLowerCase();
-  if(/rec|entr|produit|encaiss|\+/.test(s))return'in';
-  if(/d[ée]p|sort|achat|charge|fact/.test(s))return'out';
-  return def; }
-function runImport(ncol){
-  const map={}; for(let i=0;i<ncol;i++){ const el=$('map_'+i); if(el&&el.value) map[el.value]=i; }
-  if(map.amount===undefined){ alert('Indique au moins quelle colonne contient le Montant.'); return; }
-  const def=$('imp_deftype').value; let ok=0,skip=0;
-  impRows.forEach(r=>{
-    const amount=impAmount(r[map.amount]);
-    if(!(amount>0)){ skip++; return; }
-    const acc=(map.account!==undefined && /esp|caiss|liq/i.test(r[map.account]||''))?'caisse':'banque';
-    db.ops.push({id:uid(), type:impType(map.type!==undefined?r[map.type]:'',def),
-      label:((map.label!==undefined?r[map.label]:'')||'').trim()||'(sans libellé)',
-      cat:map.cat!==undefined?((r[map.cat]||'').trim()):'', compte:map.compte!==undefined?((r[map.compte]||'').trim()):'',
-      amount, date:map.date!==undefined?impDate(r[map.date]):today(), project:'', account:acc, photo:'',
-      splits:[{site:map.site!==undefined?((r[map.site]||'').trim()):'', action:map.action!==undefined?((r[map.action]||'').trim()):'', amount}]});
-    ok++;
-  });
-  $('imp_paste').value=''; $('imp_preview').innerHTML=''; $('imp_info').textContent=''; impRows=[];
-  save();
-  alert('Import terminé ✅\n'+ok+' opération(s) importée(s).'+(skip?'\n'+skip+' ligne(s) ignorée(s) (montant manquant ou nul).':''));
-}
-function delOp(id){ if(confirm('Supprimer cette opération ?')){ db.ops=db.ops.filter(x=>x.id!==id); save(); } }
-function totalIn(){ return db.ops.filter(o=>o.type==='in').reduce((s,o)=>s+o.amount,0); }
-function totalOut(){ return db.ops.filter(o=>o.type==='out').reduce((s,o)=>s+o.amount,0); }
-function balance(){ return totalIn()-totalOut(); } // les remises (transfer) ne changent pas le solde total
-function acctBalance(acc){
-  let b=0;
-  db.ops.forEach(o=>{
-    if(o.type==='transfer'){ if(o.from===acc)b-=o.amount; if(o.to===acc)b+=o.amount; }
-    else if(getAccount(o)===acc){ b+=(o.type==='in'?o.amount:-o.amount); }
-  });
-  return b;
-}
-function projName(id){ const p=db.projects.find(x=>x.id===id); return p?p.name:''; }
-function opYears(){ return [...new Set(db.ops.filter(o=>o.type!=='transfer').map(o=>(o.date||'').slice(0,4)).filter(Boolean))].sort().reverse(); }
-function refreshYearFilter(){
-  const sel=$('a_year'); if(!sel) return; const cur=sel.value;
-  sel.innerHTML='<option value="">Tous les exercices</option>'+opYears().map(y=>`<option value="${y}">Exercice ${y}</option>`).join('');
-  if([...sel.options].some(o=>o.value===cur)) sel.value=cur;
-}
-function renderOps(){
-  refreshYearFilter();
-  const f = $('a_filter').value;
-  const yr = $('a_year').value;
-  const q = ($('a_search').value||'').toLowerCase();
-  const match=o=>!q || (o.label+' '+(o.cat||'')+' '+(o.compte||'')+' '+getSplits(o).map(s=>s.site+' '+s.action).join(' ')).toLowerCase().includes(q);
-  const list = db.ops.filter(o=>o.type!=='transfer' && (!f||o.type===f) && (!yr||(o.date||'').slice(0,4)===yr) && match(o)).slice().sort((a,b)=>{const va=opSortVal(a),vb=opSortVal(b);return (va<vb?-1:va>vb?1:0)*opSort.dir;});
-  const tb = $('opRows');
-  if(!list.length){ tb.innerHTML='<tr><td colspan="7" class="empty">Aucune opération enregistrée.</td></tr>'; }
-  else tb.innerHTML = list.map(o=>{
-    const sp=getSplits(o), multi=sp.length>1;
-    const detail=sp.map(s=>`${esc(s.site||'—')} / ${esc(s.action||'—')} : ${euro(s.amount)}`).join(' · ');
-    const siteCell = multi?`<span class="muted">🔀 Réparti (${sp.length})</span>`:esc(sp[0].site||'—');
-    const actCell = multi?`<span class="muted">voir détail</span>`:esc(sp[0].action||'—');
-    const acc = getAccount(o)==='caisse'?'<span class="tag cash">Espèces</span>':'<span class="tag bank">Banque</span>';
-    return `<tr class="clickable" onclick="openOpDetail('${o.id}')">
-    <td>${fmtDate(o.date)}<br>${acc}</td>
-    <td><strong>${esc(o.label)}</strong>${o.photo?' 📎':''}${o.cat?'<br><span class="pill" style="background:#eef2fb;color:#1f4fc4;font-size:11px">'+esc(o.cat)+'</span>':''}</td>
-    <td style="font-size:13px">${siteCell}</td>
-    <td style="font-size:13px">${actCell}</td>
-    <td style="font-size:13px" class="muted">${esc(projName(o.project))||'—'}</td>
-    <td class="num ${o.type==='in'?'green':'red'}">${o.type==='in'?'+':'−'} ${euro(o.amount)}</td>
-    <td><button class="danger" onclick="event.stopPropagation();delOp('${o.id}')">Suppr.</button></td></tr>`; }).join('');
-  $('accKpis').innerHTML = kpi('Solde total',euro(balance()),balance()>=0?'green':'red')
-    + kpi('🏦 Banque',euro(acctBalance('banque')),acctBalance('banque')>=0?'green':'red')
-    + kpi('💵 Caisse',euro(acctBalance('caisse')),acctBalance('caisse')>=0?'green':'red')
-    + kpi('Total recettes',euro(totalIn()),'green') + kpi('Total dépenses',euro(totalOut()),'red');
-  renderVentilation();
-  refreshDatalists();
-}
-/* ---- Détail d'une opération (modale) ---- */
-function openOpDetail(id){
-  const o=db.ops.find(x=>x.id===id); if(!o) return;
-  const sp=getSplits(o);
-  const splitRows=sp.map(s=>`<div class="kv"><span class="k">${esc(s.site||'(site non précisé)')} · ${esc(s.action||'(action non précisée)')}</span><span><strong>${euro(s.amount)}</strong></span></div>`).join('');
-  const acc=getAccount(o)==='caisse'?'<span class="tag cash">💵 Espèces (caisse)</span>':'<span class="tag bank">🏦 Banque</span>';
-  $('md_title').textContent=o.label;
-  $('md_body').innerHTML=`
-    <div class="kv"><span class="k">Type</span><span class="${o.type==='in'?'green':'red'}"><strong>${o.type==='in'?'Recette ➕':'Dépense ➖'} ${euro(o.amount)}</strong></span></div>
-    <div class="kv"><span class="k">Date</span><span>${fmtDate(o.date)}</span></div>
-    <div class="kv"><span class="k">Catégorie</span><span>${esc(o.cat||'—')}</span></div>
-    <div class="kv"><span class="k">Compte comptable</span><span>${esc(o.compte||'—')}</span></div>
-    <div class="kv"><span class="k">Moyen de paiement</span><span>${acc}</span></div>
-    <div class="kv"><span class="k">Projet</span><span>${esc(projName(o.project))||'—'}</span></div>
-    <div style="margin:14px 0 4px;font-weight:700;font-size:12px;color:var(--muted);letter-spacing:.03em">RÉPARTITION PAR SITE / ACTION</div>
-    ${splitRows}
-    ${o.photo?`<div style="margin:14px 0 4px;font-weight:700;font-size:12px;color:var(--muted);letter-spacing:.03em">JUSTIFICATIF</div><a href="${o.photo}" target="_blank" title="Ouvrir en grand"><img class="photo-thumb" src="${o.photo}"></a>`:'<p class="hint" style="margin-top:14px">📎 Aucun justificatif joint.</p>'}
-    <div class="row" style="margin-top:20px;justify-content:flex-end">
-      <button class="ghost btn" onclick="editOp('${o.id}')">✏️ Modifier</button>
-      <button class="danger" onclick="delOp('${o.id}');closeModal()">🗑️ Supprimer</button>
-    </div>`;
-  $('opModal').classList.add('open');
-}
-function closeModal(){ $('opModal').classList.remove('open'); }
+<!-- BOÎTE À IDÉES -->
+<section class="block" id="idees">
+  <div class="wrap">
+    <p class="eyebrow">Votre avis compte</p>
+    <h2 class="title">La boîte à idées 💡</h2>
+    <p class="sub">Une envie, une suggestion, un projet pour le quartier ? Proposez-le, on vous écoute !</p>
+    <div class="panel" style="box-shadow:var(--shadow)">
+      <div class="field"><label>Votre idée</label><input placeholder="Ex. un atelier réparation vélo, une sortie..."></div>
+      <div class="field"><label>Votre prénom (optionnel)</label><input placeholder="Prénom"></div>
+      <button class="btn sun" style="width:100%" onclick="alert('🍍 Démonstration — votre idée serait envoyée au CASE. Merci de votre participation !')">Envoyer mon idée 💡</button>
+    </div>
+  </div>
+</section>
 
-/* ---- Ventilation (totaux dépenses par site / par action) ---- */
-function curExercice(){ const s=$('a_year'); return s?s.value:''; }
-function ventTable(field, type){
-  type=type||'out';
-  const yr=curExercice();
-  const tot={};
-  db.ops.filter(o=>o.type===type && (!yr||(o.date||'').slice(0,4)===yr)).forEach(o=>{
-    getSplits(o).forEach(s=>{ const k=(s[field]||'').trim()||'(non précisé)'; tot[k]=(tot[k]||0)+s.amount; });
-  });
-  const rows=Object.entries(tot).sort((a,b)=>b[1]-a[1]);
-  if(!rows.length) return '<tr><td class="empty">Aucune '+(type==='in'?'recette':'dépense')+'.</td></tr>';
-  const grand=rows.reduce((s,r)=>s+r[1],0);
-  return rows.map(([k,v])=>`<tr><td>${esc(k)}</td><td class="num"><strong>${euro(v)}</strong> <span class="muted" style="font-size:12px">${Math.round(v/grand*100)}%</span></td></tr>`).join('')
-    + `<tr><td><strong>Total</strong></td><td class="num"><strong>${euro(grand)}</strong></td></tr>`;
-}
-function renderVentilation(){
-  $('ventSite').innerHTML = ventTable('site','out');
-  $('ventAction').innerHTML = ventTable('action','out');
-  $('ventSiteIn').innerHTML = ventTable('site','in');
-  $('ventActionIn').innerHTML = ventTable('action','in');
-}
-const BASE_SITES=["C.A.S.E Bois de Nèfles","Local des Bringelliers"];
-const BASE_ACTIONS=["Périscolaire","Accueil de loisirs (ACM)","VEPI","Secteur ados / Kaz Zados","Danse","Musique","Permanence du samedi","Jeudi info population","Sport & santé","Accompagnement à la parentalité","Animation de quartier","Fêt nout kartyé","Ôté Kartié","Fonctionnement"];
-const BASE_CATS=["Cotisations","Subvention","Dons","Événement","Matériel","Frais"];
-const TYPES_ADH=["Membre","Danse","Périscolaire","VEPI","ACM","Musique","Famille"];
-/* listes paramétrables : standard (base) + perso (db[key]) + déjà utilisées */
-const LIST_DEFS={
-  sites:{label:"Sites",base:BASE_SITES,dl:"sites"},
-  actions:{label:"Actions",base:BASE_ACTIONS,dl:"actions"},
-  cats:{label:"Catégories",base:BASE_CATS,dl:"cats"},
-  typesAdh:{label:"Types d'adhésion",base:TYPES_ADH,dl:"typesAdh"}
-};
-function usedFor(key){
-  if(key==='sites')return db.ops.flatMap(o=>getSplits(o).map(s=>(s.site||'').trim()));
-  if(key==='actions')return db.ops.flatMap(o=>getSplits(o).map(s=>(s.action||'').trim()));
-  if(key==='cats')return db.ops.map(o=>(o.cat||'').trim());
-  if(key==='typesAdh')return (db.members||[]).map(m=>(m.typeAdh||'').trim());
-  return [];
-}
-function listValues(key){ const d=LIST_DEFS[key]; return [...new Set([...d.base, ...(db[key]||[]), ...usedFor(key)].filter(Boolean))].sort((a,b)=>a.localeCompare(b,'fr',{numeric:true})); }
-function refreshDatalists(){
-  Object.keys(LIST_DEFS).forEach(key=>{ const dl=$(LIST_DEFS[key].dl); if(dl) dl.innerHTML=listValues(key).map(v=>`<option value="${esc(v)}">`).join(''); });
-}
-/* ---- Paramétrage des listes (ajout/retrait, comme le plan comptable) ---- */
-function addToList(key){ const inp=$('newList_'+key); if(!inp)return; const v=inp.value.trim(); if(!v)return; db[key]=db[key]||[]; if(listValues(key).includes(v)){ alert('« '+v+' » est déjà dans la liste.'); return; } db[key].push(v); inp.value=''; save(); }
-function delFromList(key,v){ db[key]=(db[key]||[]).filter(x=>x!==v); save(); }
-function renderListParams(){
-  Object.keys(LIST_DEFS).forEach(key=>{ const box=$('listBox_'+key); if(!box)return;
-    const cust=db[key]||[];
-    box.innerHTML = cust.length ? cust.map(v=>`<div class="kv"><span>${esc(v)}</span><button class="danger" onclick="delFromList('${key}','${esc(v).replace(/'/g,"\\'")}')">Retirer</button></div>`).join('')
-      : '<p class="hint" style="margin:0">Aucun ajout perso pour le moment. La liste standard est déjà proposée à la saisie.</p>';
-  });
-}
-/* ---- Tri du Journal des opérations par colonnes ---- */
-let opSort={col:'date',dir:-1};
-function setOpSort(col){ if(opSort.col===col) opSort.dir*=-1; else opSort={col,dir:(col==='date'||col==='amount')?-1:1}; renderOps(); }
-function opSortVal(o){
-  const c=opSort.col;
-  if(c==='label')return (o.label||'').toLowerCase();
-  if(c==='amount')return o.amount||0;
-  if(c==='site')return (getSplits(o)[0].site||'').toLowerCase();
-  if(c==='action')return (getSplits(o)[0].action||'').toLowerCase();
-  if(c==='project')return (projName(o.project)||'').toLowerCase();
-  return o.date||'';
-}
-/* ---- Édition générique de toutes les fiches (un seul système) ---- */
-const EDIT_SCHEMAS={
-  members:{coll:'members',title:'adhérent',f:[
-    {k:'name',l:'Nom et prénom',t:'text'},{k:'typeAdh',l:"Type d'adhésion",t:'list',dl:'typesAdh'},{k:'site',l:'Site',t:'list',dl:'sites'},
-    {k:'email',l:'Email',t:'text'},{k:'phone',l:'Téléphone',t:'text'},{k:'addr',l:'Adresse',t:'text'},
-    {k:'cp',l:'Code postal',t:'text'},{k:'city',l:'Ville',t:'text'},{k:'amount',l:'Cotisation (€)',t:'number'},
-    {k:'date',l:"Date d'adhésion",t:'date'},{k:'paid',l:'Cotisation à jour',t:'bool'}]},
-  projects:{coll:'projects',title:'projet',f:[
-    {k:'name',l:'Nom du projet',t:'text'},{k:'budget',l:'Budget prévu (€)',t:'number'},
-    {k:'status',l:'Statut',t:'select',opts:['À venir','En cours','Terminé']}]},
-  subventions:{coll:'subventions',title:'subvention',f:[
-    {k:'name',l:'Nom',t:'text'},{k:'structure',l:'Financeur',t:'list',dl:'structs'},{k:'site',l:'Site',t:'list',dl:'sites'},{k:'action',l:'Action',t:'list',dl:'actions'},
-    {k:'demande',l:'Demandé (€)',t:'number'},{k:'accorde',l:'Accordé (€)',t:'number'},{k:'verse',l:'Versé (€)',t:'number'},
-    {k:'date',l:'Date',t:'date'},{k:'deadline',l:'Date limite de dépôt',t:'date'},{k:'recurrent',l:'Annuelle (récurrente)',t:'bool'},{k:'lien',l:'Lien de dépôt',t:'text'}]},
-  contacts:{coll:'contacts',title:'contact',f:[
-    {k:'name',l:'Nom',t:'text'},{k:'org',l:'Organisation',t:'text'},{k:'email',l:'Email',t:'text'},{k:'phone',l:'Téléphone',t:'text'},{k:'note',l:'Note',t:'textarea'}]},
-  liens:{coll:'liens',title:'lien',f:[
-    {k:'label',l:'Intitulé',t:'text'},{k:'cat',l:'Catégorie',t:'list',dl:'lienCats'},{k:'url',l:'Adresse (URL)',t:'text'},{k:'note',l:'Note',t:'textarea'}]},
-  docs:{coll:'docs',title:'document',f:[
-    {k:'type',l:'Type',t:'list',dl:'docTypes'},{k:'label',l:'Intitulé',t:'text'},{k:'url',l:'Lien',t:'text'}]},
-  echeances:{coll:'echeances',title:'échéance',f:[
-    {k:'label',l:'Intitulé',t:'text'},{k:'date',l:'Date',t:'date'},{k:'recurrent',l:'Annuelle (récurrente)',t:'bool'}]},
-  reunions:{coll:'reunions',title:'réunion',f:[
-    {k:'date',l:'Date',t:'date'},{k:'type',l:'Type',t:'select',opts:['Bureau','Conseil d\'administration','Assemblée générale',"Réunion d'équipe",'Autre']},
-    {k:'present',l:'Présents',t:'text'},{k:'ordre',l:'Ordre du jour',t:'textarea'},{k:'decisions',l:'Décisions',t:'textarea'},{k:'drive',l:'Lien du compte-rendu (Drive)',t:'text'}]},
-  incidents:{coll:'incidents',title:'événement',f:[
-    {k:'date',l:'Date',t:'date'},{k:'site',l:'Site',t:'list',dl:'sites'},{k:'type',l:'Type',t:'list',dl:'incTypes'},
-    {k:'gravite',l:'Gravité',t:'select',opts:['Mineur','Modéré','Grave']},{k:'personnes',l:'Personnes concernées',t:'text'},
-    {k:'declare',l:'Déclaré par',t:'text'},{k:'desc',l:'Description des faits',t:'textarea'},{k:'mesures',l:'Mesures immédiates',t:'textarea'}]}
-};
-let editCtx=null;
-function openEdit(entity,id){
-  const sch=EDIT_SCHEMAS[entity]; if(!sch)return;
-  const rec=(db[sch.coll]||[]).find(x=>x.id===id); if(!rec)return;
-  editCtx={entity,id};
-  const body=sch.f.map(f=>{
-    const sval=rec[f.k]==null?'':rec[f.k];
-    if(f.t==='bool') return `<div class="field"><label>${f.l}</label><select id="ed_${f.k}"><option value="1"${rec[f.k]?' selected':''}>Oui</option><option value="0"${!rec[f.k]?' selected':''}>Non</option></select></div>`;
-    if(f.t==='select'){ const opts=[...f.opts]; if(sval&&!opts.includes(sval))opts.unshift(sval); return `<div class="field"><label>${f.l}</label><select id="ed_${f.k}">${opts.map(o=>`<option${o===sval?' selected':''}>${esc(o)}</option>`).join('')}</select></div>`; }
-    if(f.t==='textarea') return `<div class="field"><label>${f.l}</label><textarea id="ed_${f.k}" rows="3" style="width:100%;font:inherit;padding:8px;border:1px solid var(--line);border-radius:8px;resize:vertical">${esc(sval)}</textarea></div>`;
-    const list=f.dl?` list="${f.dl}"`:''; const type=f.t==='number'?'number':f.t==='date'?'date':'text'; const step=f.t==='number'?' step="0.01"':'';
-    return `<div class="field"><label>${f.l}</label><input id="ed_${f.k}" type="${type}"${step}${list} value="${esc(sval)}"></div>`;
-  }).join('');
-  $('md_title').textContent='✏️ Modifier — '+sch.title;
-  $('md_body').innerHTML=`<div style="display:grid;gap:10px">${body}</div>
-    <div class="row" style="margin-top:18px;justify-content:flex-end">
-      <button class="ghost btn" onclick="closeModal()">Annuler</button>
-      <button class="btn" onclick="saveEdit()">💾 Enregistrer</button></div>`;
-  $('opModal').classList.add('open');
-}
-function saveEdit(){
-  if(!editCtx)return; const sch=EDIT_SCHEMAS[editCtx.entity];
-  const rec=(db[sch.coll]||[]).find(x=>x.id===editCtx.id); if(!rec){ editCtx=null; closeModal(); return; }
-  sch.f.forEach(f=>{ const el=$('ed_'+f.k); if(!el)return; let v=el.value;
-    if(f.t==='number') v=parseFloat(v)||0;
-    else if(f.t==='bool') v=(v==='1');
-    else { v=(typeof v==='string')?v.trim():v; if((f.k==='url'||f.k==='lien'||f.k==='drive')&&v&&!/^https?:\/\//i.test(v))v='https://'+v; }
-    rec[f.k]=v;
-  });
-  editCtx=null; closeModal(); save();
-}
-/* ---- Subventions : enregistrer un versement reçu → crée la recette en compta + met à jour le solde ---- */
-function recordVersement(id){
-  const s=db.subventions.find(x=>x.id===id); if(!s)return;
-  const reste=Math.max(0,(s.accorde||0)-(s.verse||0));
-  const mStr=prompt('Montant du versement reçu pour « '+s.name+' » (€) :', reste>0?reste:''); if(mStr===null)return;
-  const montant=parseFloat((mStr||'').replace(',','.'))||0;
-  if(!(montant>0)){ alert('Montant invalide.'); return; }
-  const dStr=prompt('Date du versement (AAAA-MM-JJ) :', today()); if(dStr===null)return;
-  const date=/^\d{4}-\d{2}-\d{2}$/.test((dStr||'').trim())?dStr.trim():today();
-  const op={id:uid(),type:'in',label:'Subvention — '+s.name,cat:'Subvention',compte:"740 - Subventions d'exploitation",
-    amount:montant,date,project:'',account:'banque',photo:'',splits:[{site:s.site||'',action:s.action||'',amount:montant}]};
-  db.ops.push(op);
-  s.verse=(s.verse||0)+montant;
-  s.versements=s.versements||[]; s.versements.push({opId:op.id,montant,date});
-  save();
-  alert('✅ Versement de '+euro(montant)+' enregistré.\nUne recette a été créée en comptabilité (compte 740 — Subventions) et le solde de la subvention mis à jour.');
-}
-
-/* ---- Plan comptable (liste de comptes modifiable) ---- */
-const BASE_COMPTES=["706 - Prestations de services","707 - Ventes (buvette, marchandises)","740 - Subventions d'exploitation",
-"754 - Dons et legs","756 - Cotisations","758 - Autres produits de gestion","6041 - Achats d'études et prestations",
-"6061 - Eau, gaz, électricité","6063 - Petit équipement","6064 - Fournitures administratives",
-"6068 - Autres fournitures (alimentation…)","611 - Sous-traitance, prestations","613 - Locations","614 - Charges de locaux",
-"616 - Assurances","6181 - Documentation","6184 - Formation","6226 - Honoraires","623 - Publicité, communication",
-"6251 - Voyages et déplacements","6257 - Réceptions, repas","6262 - Télécommunications","627 - Services bancaires",
-"63 - Impôts et taxes","641 - Rémunérations du personnel","645 - Charges sociales"];
-function allComptes(){
-  const used=db.ops.flatMap(o=>o.compte?[o.compte]:[]);
-  return [...new Set([...BASE_COMPTES, ...(db.comptes||[]), ...used])].sort((a,b)=>a.localeCompare(b,'fr',{numeric:true}));
-}
-function refreshComptes(){
-  $('comptes').innerHTML = allComptes().map(c=>`<option value="${esc(c)}">`).join('');
-  const box=$('compteList');
-  if(box){
-    const custom=db.comptes||[];
-    box.innerHTML = custom.length
-      ? custom.map(c=>`<div class="kv"><span>${esc(c)}</span><button class="danger" onclick="delCompte('${esc(c).replace(/'/g,"\\'")}')">Retirer</button></div>`).join('')
-      : '<p class="hint" style="margin:0">Aucun compte ajouté manuellement. La liste standard du plan comptable associatif est déjà disponible à la saisie.</p>';
-  }
-}
-function addCompte(){
-  const v=$('newCompte').value.trim();
-  if(!v){ return; }
-  db.comptes=db.comptes||[];
-  if(allComptes().includes(v)){ alert('Ce compte est déjà dans la liste.'); return; }
-  db.comptes.push(v); $('newCompte').value=''; save();
-}
-function delCompte(v){
-  db.comptes=(db.comptes||[]).filter(c=>c!==v); save();
-}
-
-/* ---- Caisse (espèces) ---- */
-function addRemise(){
-  const amount=parseFloat($('t_amount').value);
-  if(!(amount>0)){ alert('Indique le montant déposé.'); return; }
-  const cash=acctBalance('caisse');
-  if(amount>cash && !confirm('Le dépôt ('+euro(amount)+') dépasse le solde de la caisse ('+euro(cash)+'). Enregistrer quand même ?')) return;
-  db.ops.push({id:uid(), type:'transfer', label:'Remise en banque', from:'caisse', to:'banque', amount, date:$('t_date').value||today()});
-  $('t_amount').value=''; $('t_date').value=today();
-  save();
-}
-function renderCaisse(){
-  const cash=acctBalance('caisse'), bank=acctBalance('banque');
-  $('caisseKpis').innerHTML = kpi('💵 Solde caisse (espèces)',euro(cash),cash>=0?'green':'red','en liquide')
-    + kpi('🏦 Solde banque',euro(bank),bank>=0?'green':'red','sur le compte')
-    + kpi('Solde total',euro(balance()),balance()>=0?'green':'red','caisse + banque');
-  const moves = db.ops.filter(o=> o.type==='transfer' ? (o.from==='caisse'||o.to==='caisse') : getAccount(o)==='caisse')
-    .slice().sort((a,b)=> a.date.localeCompare(b.date) || a.id.localeCompare(b.id));
-  let run=0;
-  const rows = moves.map(o=>{
-    let delta, tag;
-    if(o.type==='in'){ delta=o.amount; tag='<span class="pill in">Entrée</span>'; }
-    else if(o.type==='out'){ delta=-o.amount; tag='<span class="pill out">Sortie</span>'; }
-    else { delta = o.to==='caisse'?o.amount:-o.amount; tag='<span class="pill wait">Remise banque</span>'; }
-    run+=delta; return {o,delta,tag,run};
-  });
-  const tb=$('caisseRows');
-  if(!rows.length){ tb.innerHTML='<tr><td colspan="5" class="empty">Aucun mouvement d\'espèces. Saisis une opération en « Espèces » dans la Comptabilité.</td></tr>'; return; }
-  tb.innerHTML = rows.slice().reverse().map(r=>{
-    const clk = r.o.type!=='transfer';
-    return `<tr class="${clk?'clickable':''}" ${clk?`onclick="openOpDetail('${r.o.id}')"`:''}>
-      <td>${fmtDate(r.o.date)}</td><td>${esc(r.o.label)}</td><td>${r.tag}</td>
-      <td class="num ${r.delta>=0?'green':'red'}">${r.delta>=0?'+':'−'} ${euro(Math.abs(r.delta))}</td>
-      <td class="num"><strong>${euro(r.run)}</strong></td></tr>`; }).join('');
-}
-
-/* ---- Projects ---- */
-function addProject(){
-  const name=$('p_name').value.trim();
-  if(!name){ alert('Donne un nom au projet.'); return; }
-  db.projects.push({id:uid(), name, budget:parseFloat($('p_budget').value)||0, status:$('p_status').value});
-  $('p_name').value=$('p_budget').value='';
-  save();
-}
-function delProject(id){
-  if(confirm('Supprimer ce projet ? Les opérations reliées seront déliées (pas supprimées).')){
-    db.projects=db.projects.filter(x=>x.id!==id);
-    db.ops.forEach(o=>{ if(o.project===id) o.project=''; });
-    save();
-  }
-}
-function projSpent(id){ return db.ops.filter(o=>o.project===id&&o.type==='out').reduce((s,o)=>s+o.amount,0); }
-function projIn(id){ return db.ops.filter(o=>o.project===id&&o.type==='in').reduce((s,o)=>s+o.amount,0); }
-function renderProjects(){
-  const el=$('projectList');
-  if(!db.projects.length){ el.innerHTML='<div class="panel"><div class="empty">Aucun projet pour le moment.</div></div>'; return; }
-  el.innerHTML = db.projects.map(p=>{
-    const spent=projSpent(p.id), inc=projIn(p.id), pct=p.budget>0?Math.min(100,Math.round(spent/p.budget*100)):0;
-    const over=p.budget>0&&spent>p.budget;
-    const sCls=p.status==='Terminé'?'ok':p.status==='À venir'?'wait':'in';
-    return `<div class="panel">
-      <div class="toolbar">
-        <div><h2 style="margin:0">${esc(p.name)} <span class="pill ${sCls}" style="font-size:11px;vertical-align:middle">${esc(p.status)}</span></h2></div>
-        <div style="white-space:nowrap"><button class="ghost btn" onclick="openEdit('projects','${p.id}')">✏️ Modifier</button>
-        <button class="danger" onclick="delProject('${p.id}')">Supprimer</button></div>
+<!-- CONTACT -->
+<section class="block" id="contact">
+  <div class="wrap">
+    <p class="eyebrow">Nous contacter</p>
+    <h2 class="title">Une question ? Écrivez-nous 📬</h2>
+    <div class="contact-grid">
+      <div>
+        <div class="info-line"><span class="i">📍</span><div><b>Adresse</b><br>C.A.S.E du Bois de Nèfles<br>132 Route des Ananas, 97490 Sainte-Clotilde<br><span style="font-size:13px;color:var(--muted)">+ Local des Bringelliers</span></div></div>
+        <div class="info-line"><span class="i">📞</span><div><b>Téléphone</b><br>0262 00 00 00</div></div>
+        <div class="info-line"><span class="i">✉️</span><div><b>Email</b><br>case.bdn@exemple.re</div></div>
+        <b>Suivez-nous :</b>
+        <div class="socials">
+          <a class="soc" href="#" title="Facebook">📘</a>
+          <a class="soc" href="#" title="Instagram">📸</a>
+          <a class="soc" href="#" title="TikTok">🎵</a>
+          <a class="soc" href="#" title="WhatsApp">💬</a>
+        </div>
       </div>
-      <div class="cards" style="margin-bottom:8px">
-        ${kpi('Budget prévu',euro(p.budget))}
-        ${kpi('Dépensé',euro(spent),over?'red':'')}
-        ${kpi('Recettes liées',euro(inc),'green')}
-        ${kpi('Reste',euro(p.budget-spent),(p.budget-spent)<0?'red':'green')}
+      <div class="panel" style="box-shadow:var(--shadow)">
+        <div class="field"><label>Votre nom</label><input placeholder="Nom"></div>
+        <div class="field"><label>Votre message</label><input placeholder="Bonjour..."></div>
+        <button class="btn sun" style="width:100%" onclick="alert('🍍 Démonstration — dans la version finale, votre message serait envoyé au CASE.')">Envoyer le message</button>
       </div>
-      <div class="bar ${over?'over':''}"><span style="width:${pct}%"></span></div>
-      <p class="hint" style="margin:6px 0 0">${pct}% du budget consommé${over?' ⚠️ dépassement !':''}</p>
-    </div>`;
-  }).join('');
-  // refresh project selector in accounting
-  const sel=$('a_project'); const cur=sel.value;
-  sel.innerHTML='<option value="">— Aucun —</option>'+db.projects.map(p=>`<option value="${p.id}">${esc(p.name)}</option>`).join('');
-  sel.value=cur;
-}
+    </div>
+  </div>
+</section>
 
-/* ---- Dashboard ---- */
-function renderDashboard(){
-  const upToDate = db.members.filter(m=>m.paid).length;
-  $('kpis').innerHTML =
-    kpi('Solde de l\'association',euro(balance()),balance()>=0?'green':'red','Recettes − dépenses')
-    + kpi('Adhérents',db.members.length,'',upToDate+' à jour / '+(db.members.length-upToDate)+' en attente')
-    + kpi('Projets actifs',db.projects.filter(p=>p.status!=='Terminé').length,'',db.projects.length+' au total')
-    + kpi('Cotisations encaissées',euro(db.members.filter(m=>m.paid).reduce((s,m)=>s+m.amount,0)),'green','sur l\'année');
-  // rappels (≤ 60 jours) : subventions + échéances générales
-  const al=[];
-  (db.subventions||[]).forEach(s=>{ const d=subEcheance(s); if(d){ const j=daysTo(d); if(j<=60) al.push({titre:s.name,sous:(s.structure||'')+' — à déposer',d,j,lien:s.lien}); } });
-  (db.echeances||[]).forEach(e=>{ const d=gEcheance(e); if(d){ const j=daysTo(d); if(j<=60) al.push({titre:e.label,sous:e.recurrent?'échéance annuelle':'échéance',d,j,lien:''}); } });
-  al.sort((a,b)=>a.j-b.j);
-  $('dashAlerts').innerHTML = al.length ? `<div class="panel" style="border-left:4px solid var(--amber)">
-    <h2>⏰ Échéances à venir</h2>`+al.map(({titre,sous,d,j,lien})=>`<div class="kv">
-      <span><strong>${esc(titre)}</strong> <span class="muted">${esc(sous)}</span> — ${fmtDate(isoDate(d))}</span>
-      <span><span class="pill ${j<0?'no':j<=30?'wait':'ok'}">${j<0?'dépassée':j===0?"aujourd'hui":'dans '+j+' j'}</span>${lien?` <a class="btn" style="padding:4px 12px;font-size:12px;text-decoration:none" href="${esc(lien)}" target="_blank" rel="noopener">Déposer ↗</a>`:''}</span></div>`).join('')+`</div>` : '';
-  const last = db.ops.filter(o=>o.type!=='transfer').slice().sort((a,b)=>b.date.localeCompare(a.date)).slice(0,6);
-  $('dashOps').innerHTML = last.length? last.map(o=>`<tr class="clickable" onclick="openOpDetail('${o.id}')">
-    <td>${fmtDate(o.date)}</td><td>${esc(o.label)}</td>
-    <td class="muted" style="font-size:13px">${esc(projName(o.project))||'—'}</td>
-    <td class="num ${o.type==='in'?'green':'red'}">${o.type==='in'?'+':'−'} ${euro(o.amount)}</td></tr>`).join('')
-    : '<tr><td colspan="4" class="empty">Aucune opération. Va dans « Comptabilité » pour commencer.</td></tr>';
-}
+<footer>
+  <div class="pine">🍍</div>
+  <p style="margin:6px 0 2px;font-weight:800;font-size:18px">CASE du Bois de Nèfles</p>
+  <p style="margin:0;opacity:.85">Centre social associatif · Saint-Denis · La Réunion</p>
+  <p style="margin:10px 0 0;font-size:13px;opacity:.7">Aperçu réalisé avec Bob 🤖 — la plateforme des associations</p>
+</footer>
 
-/* ---- Bilan / compte de résultat ---- */
-function bilanData(y){
-  const ops=db.ops.filter(o=>o.type!=='transfer' && (o.date||'').slice(0,4)===y);
-  const grp=type=>{ const t={}; ops.filter(o=>o.type===type).forEach(o=>{ const k=o.cat||'(sans catégorie)'; t[k]=(t[k]||0)+o.amount; }); return Object.entries(t).sort((a,b)=>b[1]-a[1]); };
-  const rec=grp('in'), dep=grp('out');
-  const tIn=rec.reduce((s,r)=>s+r[1],0), tOut=dep.reduce((s,r)=>s+r[1],0);
-  return {rec,dep,tIn,tOut,res:tIn-tOut};
-}
-function bilanYears(){ const ys=[...new Set(db.ops.map(o=>(o.date||'').slice(0,4)).filter(Boolean))].sort().reverse(); return ys.length?ys:[String(new Date(today()).getFullYear())]; }
-function renderBilan(){
-  const sel=$('b_year'), years=bilanYears();
-  if(!sel.value || !years.includes(sel.value)) sel.value=years[0];
-  sel.innerHTML=years.map(y=>`<option ${y===sel.value?'selected':''}>${y}</option>`).join('');
-  const y=sel.value, d=bilanData(y);
-  const tbl=(rows,tot,cls)=> (rows.length?rows.map(([k,v])=>`<tr><td>${esc(k)}</td><td class="num">${euro(v)}</td></tr>`).join(''):'<tr><td class="empty">Aucune ligne.</td></tr>')
-    + `<tr><td><strong>Total</strong></td><td class="num ${cls}"><strong>${euro(tot)}</strong></td></tr>`;
-  $('bilanRec').innerHTML=tbl(d.rec,d.tIn,'green');
-  $('bilanDep').innerHTML=tbl(d.dep,d.tOut,'red');
-  $('bilanResultWrap').innerHTML=`<div class="card" style="border-left:4px solid ${d.res>=0?'var(--green)':'var(--red)'}">
-    <div class="label">Résultat de l'exercice ${y}</div>
-    <div class="value ${d.res>=0?'green':'red'}">${d.res>=0?'Excédent ':'Déficit '}${euro(Math.abs(d.res))}</div>
-    <div class="sub">${euro(d.tIn)} de recettes − ${euro(d.tOut)} de dépenses</div></div>`;
-}
-function printBilan(){
-  const y=$('b_year').value, d=bilanData(y);
-  const tbl=(rows,tot)=>`<table><thead><tr><th>Catégorie</th><th class="num">Montant</th></tr></thead><tbody>`
-    + rows.map(([k,v])=>`<tr><td>${esc(k)}</td><td class="num">${euro(v)}</td></tr>`).join('')
-    + `<tr><td><strong>Total</strong></td><td class="num"><strong>${euro(tot)}</strong></td></tr></tbody></table>`;
-  printHTML(`<h1 style="margin:0">CASE du Bois de Nèfles</h1>
-    <p style="margin:2px 0 0">Association loi 1901 — Saint-Denis (La Réunion)</p>
-    <h2>Compte de résultat — exercice ${y}</h2>
-    <h3 style="margin-bottom:0">Recettes</h3>${tbl(d.rec,d.tIn)}
-    <h3 style="margin-bottom:0">Dépenses</h3>${tbl(d.dep,d.tOut)}
-    <h3>Résultat de l'exercice : ${d.res>=0?'Excédent':'Déficit'} de ${euro(Math.abs(d.res))}</h3>
-    <p style="margin-top:30px;font-size:12px;color:#666">Édité le ${fmtDate(today())} — document établi à partir de la comptabilité de l'association.</p>`);
-}
-function printHTML(html){ $('printArea').innerHTML=html; window.print(); }
-
-/* ---- Relances de cotisation ---- */
-function mailtoRelance(m){
-  const subj=encodeURIComponent('Rappel — cotisation CASE du Bois de Nèfles');
-  const body=encodeURIComponent(`Bonjour ${m.name},\n\nNous n'avons pas encore enregistré votre cotisation (${euro(m.amount)}) pour l'association CASE du Bois de Nèfles.\nNous vous remercions de bien vouloir la régulariser dès que possible.\n\nBien cordialement,\nLe bureau du CASE du Bois de Nèfles`);
-  return 'mailto:'+(m.email||'')+'?subject='+subj+'&body='+body;
-}
-function copyEmails(str){
-  const t=str.split(',').filter(Boolean).join(', ');
-  if(navigator.clipboard) navigator.clipboard.writeText(t).then(()=>alert('Emails copiés ✅'),()=>alert(t));
-  else alert(t);
-}
-function renderRelances(){
-  const due=db.members.filter(m=>!m.paid);
-  const box=$('relanceBox');
-  if(!due.length){ box.innerHTML='<p class="hint" style="margin:0">🎉 Tous les adhérents sont à jour de cotisation.</p>'; return; }
-  const emails=due.map(m=>m.email).filter(Boolean).join(',');
-  box.innerHTML = due.map(m=>`<div class="kv"><span>${esc(m.name)} <span class="muted" style="font-size:12px">${esc(m.email||'(sans email)')} · ${euro(m.amount)}</span></span>
-      <span>${m.email?`<a class="ghost btn" style="padding:5px 12px;font-size:12px;text-decoration:none" href="${mailtoRelance(m)}">📧 Relancer</a>`:'<span class="muted">—</span>'}</span></div>`).join('')
-    + (emails?`<div style="margin-top:14px"><button class="ghost btn" onclick="copyEmails('${emails}')">📋 Copier tous les emails</button></div>`:'');
-}
-
-/* ---- Reçu de cotisation (imprimable) ---- */
-function memberReceipt(id){
-  const m=db.members.find(x=>x.id===id); if(!m) return;
-  const y=(m.date||today()).slice(0,4);
-  printHTML(`<h1 style="margin:0">CASE du Bois de Nèfles</h1>
-    <p style="margin:2px 0 0">Association loi 1901 — Saint-Denis (La Réunion)</p>
-    <h2>Reçu de cotisation — année ${y}</h2>
-    <p>L'association atteste que <strong>${esc(m.name)}</strong>${m.addr?', demeurant '+esc(m.addr)+' '+esc(m.cp||'')+' '+esc(m.city||''):''} est adhérent(e) pour l'année ${y}.</p>
-    <table><tbody>
-      <tr><td>Montant de la cotisation</td><td class="num"><strong>${euro(m.amount)}</strong></td></tr>
-      <tr><td>Statut du règlement</td><td class="num">${m.paid?'Réglée ✓':'En attente'}</td></tr>
-      <tr><td>Date d'adhésion</td><td class="num">${fmtDate(m.date)}</td></tr>
-    </tbody></table>
-    <p style="margin-top:40px">Fait à Saint-Denis, le ${fmtDate(today())}.</p>
-    <p style="margin-top:30px">Le Trésorier,</p>`);
-}
-
-/* ---- Subventions (pipeline demandé → accordé → versé) ---- */
-function subStatut(s){ return (s.verse>0)?'Versée':(s.accorde>0)?'Accordée':'Demandée'; }
-function addSubvention(){
-  const name=$('s_name').value.trim();
-  if(!name){ alert('Donne un nom à la subvention.'); return; }
-  const verse=parseFloat($('s_verse').value)||0;
-  const sub={id:uid(), name, structure:$('s_struct').value.trim(), site:$('s_site').value.trim(), action:$('s_action').value.trim(),
-    demande:parseFloat($('s_demande').value)||0, accorde:parseFloat($('s_accorde').value)||0, verse, date:$('s_date').value||'',
-    deadline:$('s_deadline').value||'', recurrent:$('s_recurrent').value==='1', lien:$('s_lien').value.trim(), opId:''};
-  if(verse>0){ const op={id:uid(),type:'in',label:'Subvention — '+name,cat:'Subvention',compte:"740 - Subventions d'exploitation",
-      amount:verse,date:sub.date||today(),project:'',account:'banque',photo:'',splits:[{site:sub.site,action:sub.action,amount:verse}]};
-    db.ops.push(op); sub.opId=op.id; }
-  db.subventions.push(sub);
-  ['s_name','s_struct','s_site','s_action','s_demande','s_accorde','s_verse','s_date','s_deadline','s_lien'].forEach(id=>$(id).value='');
-  $('s_recurrent').value='';
-  save();
-}
-/* échéances : date limite, en roulant à l'année suivante si récurrente et déjà passée */
-function subEcheance(s){
-  if(!s.deadline) return null;
-  let d=new Date(s.deadline+'T00:00:00');
-  if(s.recurrent){
-    const now=new Date(today()+'T00:00:00');
-    while(d<now){ d=new Date(d.getFullYear()+1, d.getMonth(), d.getDate()); }
-  }
-  return d;
-}
-function daysTo(d){ return Math.round((d-new Date(today()+'T00:00:00'))/86400000); }
-function isoDate(d){ return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
-function renderEcheancier(){
-  const box=$('echeancier'); if(!box) return;
-  const list=(db.subventions||[]).map(s=>({s,d:subEcheance(s)})).filter(x=>x.d).sort((a,b)=>a.d-b.d);
-  if(!list.length){ box.innerHTML='<p class="hint" style="margin:0">Aucune date limite renseignée. Ajoute une « date limite de dépôt » à une subvention pour la voir apparaître ici.</p>'; return; }
-  box.innerHTML=list.map(({s,d})=>{
-    const j=daysTo(d); const urg = j<0?'no':j<=30?'wait':'ok';
-    const txt = j<0?'dépassée':j===0?"aujourd'hui":'dans '+j+' j';
-    const dep = s.lien?` <a class="btn" style="padding:4px 12px;font-size:12px;text-decoration:none" href="${esc(s.lien)}" target="_blank" rel="noopener">Déposer ↗</a>`:'';
-    return `<div class="kv"><span><strong>${esc(s.name)}</strong> <span class="muted">${esc(s.structure||'')}${s.recurrent?' · 🔁 annuelle':''}</span><br>
-      <span class="muted" style="font-size:13px">limite : ${fmtDate(isoDate(d))}</span></span>
-      <span style="text-align:right"><span class="pill ${urg}">${txt}</span>${dep}</span></div>`;
-  }).join('');
-}
-function delSubvention(id){
-  const s=db.subventions.find(x=>x.id===id); if(!s) return;
-  if(!confirm('Supprimer cette subvention ?'+(s.opId?' La recette versée liée sera aussi supprimée.':''))) return;
-  if(s.opId) db.ops=db.ops.filter(o=>o.id!==s.opId);
-  db.subventions=db.subventions.filter(x=>x.id!==id); save();
-}
-function renderSubventions(){
-  const subs=db.subventions||[];
-  const sum=f=>subs.reduce((t,s)=>t+(s[f]||0),0);
-  const reste=subs.reduce((t,s)=>t+Math.max(0,(s.accorde||0)-(s.verse||0)),0);
-  $('subKpis').innerHTML = kpi('Demandé',euro(sum('demande')),'','toutes demandes')
-    + kpi('Accordé',euro(sum('accorde')),'','notifié')
-    + kpi('Versé',euro(sum('verse')),'green','reçu, compté en recettes')
-    + kpi('Reste à percevoir',euro(reste),reste>0?'amber':'','accordé non encore versé');
-  const tb=$('subRows');
-  if(!subs.length){ tb.innerHTML='<tr><td colspan="8" class="empty">Aucune subvention enregistrée.</td></tr>'; return; }
-  const pill=st=> st==='Versée'?'<span class="pill ok">Versée</span>':st==='Accordée'?'<span class="pill wait">Accordée</span>':'<span class="pill" style="background:#eef0f5;color:#6b7488">Demandée</span>';
-  tb.innerHTML=subs.slice().sort((a,b)=>(b.demande||0)-(a.demande||0)).map(s=>`<tr>
-    <td><strong>${esc(s.name)}</strong></td><td>${esc(s.structure||'—')}</td>
-    <td style="font-size:13px" class="muted">${esc(s.site||'—')}${s.action?'<br>'+esc(s.action):''}</td>
-    <td class="num">${euro(s.demande||0)}</td><td class="num">${euro(s.accorde||0)}</td>
-    <td class="num ${s.verse>0?'green':''}">${euro(s.verse||0)}</td>
-    <td>${pill(subStatut(s))}</td>
-    <td style="white-space:nowrap"><button class="ghost btn" style="padding:4px 9px;font-size:12px" onclick="recordVersement('${s.id}')" title="Enregistrer un versement reçu (crée la recette en compta)">💶 Versement</button>
-      <button class="ghost btn" style="padding:4px 9px;font-size:12px" onclick="openEdit('subventions','${s.id}')" title="Modifier">✏️</button>
-      <button class="danger" onclick="delSubvention('${s.id}')">Suppr.</button></td></tr>`).join('');
-}
-
-/* ---- Répertoire (contacts + liens = la "Bible") ---- */
-function addContact(){
-  const name=$('c_name').value.trim();
-  if(!name){ alert('Indique au moins un nom.'); return; }
-  db.contacts.push({id:uid(),name,org:$('c_org').value.trim(),email:$('c_email').value.trim(),phone:$('c_phone').value.trim(),note:$('c_note').value.trim()});
-  ['c_name','c_org','c_email','c_phone','c_note'].forEach(i=>$(i).value=''); save();
-}
-function delContact(id){ if(confirm('Supprimer ce contact ?')){ db.contacts=db.contacts.filter(c=>c.id!==id); save(); } }
-function addLien(){
-  const label=$('l_label').value.trim(); let url=$('l_url').value.trim();
-  if(!label){ alert('Indique un intitulé.'); return; }
-  if(url && !/^https?:\/\//i.test(url)) url='https://'+url;
-  db.liens.push({id:uid(),label,cat:$('l_cat').value.trim(),url,note:$('l_note').value.trim()});
-  ['l_label','l_cat','l_url','l_note'].forEach(i=>$(i).value=''); save();
-}
-function delLien(id){ if(confirm('Supprimer ce lien ?')){ db.liens=db.liens.filter(l=>l.id!==id); save(); } }
-function renderRepertoire(){
-  const cq=($('c_search')?.value||'').toLowerCase();
-  const cs=(db.contacts||[]).filter(c=>(c.name+' '+c.org+' '+c.email+' '+c.note).toLowerCase().includes(cq));
-  $('contactRows').innerHTML = cs.length ? cs.map(c=>`<tr>
-    <td><strong>${esc(c.name)}</strong></td><td>${esc(c.org||'—')}</td>
-    <td style="font-size:13px">${c.email?`<a href="mailto:${esc(c.email)}">${esc(c.email)}</a>`:''}${c.email&&c.phone?'<br>':''}${c.phone?`<a href="tel:${esc(c.phone.replace(/\s/g,''))}">${esc(c.phone)}</a>`:''}${!c.email&&!c.phone?'—':''}</td>
-    <td class="muted" style="font-size:13px">${esc(c.note||'')}</td>
-    <td style="white-space:nowrap"><button class="ghost btn" style="padding:4px 9px;font-size:12px" onclick="openEdit('contacts','${c.id}')" title="Modifier">✏️</button><button class="danger" onclick="delContact('${c.id}')">Suppr.</button></td></tr>`).join('')
-    : '<tr><td colspan="5" class="empty">Aucun contact. Ajoute le comptable, le CAC, les financeurs…</td></tr>';
-  const lq=($('l_search')?.value||'').toLowerCase();
-  const ls=(db.liens||[]).filter(l=>(l.label+' '+l.cat+' '+l.url+' '+l.note).toLowerCase().includes(lq));
-  $('lienRows').innerHTML = ls.length ? ls.map(l=>`<tr>
-    <td><strong>${esc(l.label)}</strong></td>
-    <td>${l.cat?'<span class="pill" style="background:#eef2fb;color:#1f4fc4">'+esc(l.cat)+'</span>':'—'}</td>
-    <td style="font-size:13px">${l.url?`<a href="${esc(l.url)}" target="_blank" rel="noopener">Ouvrir ↗</a>`:'—'}</td>
-    <td class="muted" style="font-size:13px">${esc(l.note||'')}</td>
-    <td style="white-space:nowrap"><button class="ghost btn" style="padding:4px 9px;font-size:12px" onclick="openEdit('liens','${l.id}')" title="Modifier">✏️</button><button class="danger" onclick="delLien('${l.id}')">Suppr.</button></td></tr>`).join('')
-    : '<tr><td colspan="5" class="empty">Aucun lien. Ajoute les portails de subvention, espaces financeurs…</td></tr>';
-  // Documents clés
-  const ds=db.docs||[];
-  $('docRows').innerHTML = ds.length ? ds.map(d=>`<tr>
-    <td><span class="pill" style="background:#fcf2de;color:#a9742a">${esc(d.type||'Document')}</span></td>
-    <td><strong>${esc(d.label||'')}</strong></td>
-    <td style="font-size:13px">${d.url?`<a href="${esc(d.url)}" target="_blank" rel="noopener">Ouvrir ↗</a>`:'<span class="muted">—</span>'}</td>
-    <td style="white-space:nowrap"><button class="ghost btn" style="padding:4px 9px;font-size:12px" onclick="openEdit('docs','${d.id}')" title="Modifier">✏️</button><button class="danger" onclick="delDoc('${d.id}')">Suppr.</button></td></tr>`).join('')
-    : '<tr><td colspan="4" class="empty">Aucun document. Ajoute les statuts, le RIB, le récépissé de préfecture…</td></tr>';
-}
-function addDoc(){
-  const label=$('d_label').value.trim()||$('d_type').value.trim();
-  if(!label){ alert('Indique au moins un type ou un intitulé.'); return; }
-  let url=$('d_url').value.trim(); if(url && !/^https?:\/\//i.test(url)) url='https://'+url;
-  db.docs.push({id:uid(),type:$('d_type').value.trim()||'Document',label:$('d_label').value.trim(),url});
-  ['d_type','d_label','d_url'].forEach(i=>$(i).value=''); save();
-}
-function delDoc(id){ if(confirm('Supprimer ce document ?')){ db.docs=db.docs.filter(d=>d.id!==id); save(); } }
-
-/* ---- Secrétariat : mémo, échéancier général, courriers ---- */
-function addNote(){
-  const t=$('n_text').value.trim(); if(!t) return;
-  db.notes.push({id:uid(),text:t,done:false,date:today()}); $('n_text').value=''; save();
-}
-function toggleNote(id){ const n=db.notes.find(x=>x.id===id); if(n){ n.done=!n.done; save(); } }
-function delNote(id){ db.notes=db.notes.filter(n=>n.id!==id); save(); }
-function addEcheance(){
-  const label=$('e_label').value.trim(); if(!label){ alert('Indique un intitulé.'); return; }
-  db.echeances.push({id:uid(),label,date:$('e_date').value||'',recurrent:$('e_recurrent').value==='1'});
-  ['e_label','e_date'].forEach(i=>$(i).value=''); $('e_recurrent').value=''; save();
-}
-function delEcheance(id){ db.echeances=db.echeances.filter(e=>e.id!==id); save(); }
-function gEcheance(e){ // prochaine occurrence (roule si récurrente)
-  if(!e.date) return null;
-  let d=new Date(e.date+'T00:00:00');
-  if(e.recurrent){ const now=new Date(today()+'T00:00:00'); while(d<now){ d=new Date(d.getFullYear()+1,d.getMonth(),d.getDate()); } }
-  return d;
-}
-function renderSecretariat(){
-  const ns=db.notes||[];
-  $('noteList').innerHTML = ns.length ? ns.slice().sort((a,b)=>(a.done-b.done)).map(n=>`<div class="kv">
-    <span style="${n.done?'text-decoration:line-through;opacity:.55':''}"><input type="checkbox" ${n.done?'checked':''} onclick="toggleNote('${n.id}')"> ${esc(n.text)}</span>
-    <button class="danger" onclick="delNote('${n.id}')">Suppr.</button></div>`).join('')
-    : '<p class="hint" style="margin:0">Aucune note pour le moment.</p>';
-  const es=(db.echeances||[]).map(e=>({e,d:gEcheance(e)})).filter(x=>x.d).sort((a,b)=>a.d-b.d);
-  const noDate=(db.echeances||[]).filter(e=>!e.date);
-  $('echeanceList').innerHTML = (es.length||noDate.length) ?
-    es.map(({e,d})=>{const j=daysTo(d);const u=j<0?'no':j<=30?'wait':'ok';
-      return `<div class="kv"><span><strong>${esc(e.label)}</strong>${e.recurrent?' <span class="muted">· 🔁 annuelle</span>':''}<br><span class="muted" style="font-size:13px">${fmtDate(isoDate(d))}</span></span>
-      <span><span class="pill ${u}">${j<0?'dépassée':j===0?"aujourd'hui":'dans '+j+' j'}</span> <button class="ghost btn" style="padding:4px 9px;font-size:12px" onclick="openEdit('echeances','${e.id}')" title="Modifier">✏️</button> <button class="danger" onclick="delEcheance('${e.id}')">Suppr.</button></span></div>`;}).join('')
-      + noDate.map(e=>`<div class="kv"><span><strong>${esc(e.label)}</strong> <span class="muted">(sans date)</span></span><span style="white-space:nowrap"><button class="ghost btn" style="padding:4px 9px;font-size:12px" onclick="openEdit('echeances','${e.id}')" title="Modifier">✏️</button> <button class="danger" onclick="delEcheance('${e.id}')">Suppr.</button></span></div>`).join('')
-    : '<p class="hint" style="margin:0">Aucune échéance enregistrée.</p>';
-}
-const MODELS={
-  ag:"Madame, Monsieur,\n\nVous êtes convié(e) à l'assemblée générale de l'association, qui se tiendra le [date] à [heure], à [lieu].\n\nOrdre du jour :\n- Rapport moral\n- Rapport financier\n- [autres points]\n- Questions diverses\n\nComptant sur votre présence, nous vous prions d'agréer, Madame, Monsieur, nos salutations associatives.",
-  sub:"Madame, Monsieur,\n\nDans le cadre de ses actions, l'association sollicite l'attribution d'une subvention d'un montant de [montant] € destinée à [objet de l'action].\n\nVous trouverez ci-joint le dossier complet (budget prévisionnel, descriptif de l'action, comptes du dernier exercice).\n\nNous restons à votre disposition pour tout complément et vous prions d'agréer, Madame, Monsieur, l'expression de nos salutations distinguées.",
-  attest:"Je soussigné(e) [nom du président], président(e) de l'association, atteste que [nom de l'adhérent] est adhérent(e) de l'association pour l'année en cours.\n\nCette attestation est délivrée pour servir et valoir ce que de droit.",
-  libre:""
-};
-function fillModel(){ $('cr_corps').value = MODELS[$('cr_model').value]||''; }
-function printCourrier(){
-  const objet=$('cr_objet').value.trim(), dest=$('cr_dest').value.trim(), corps=$('cr_corps').value;
-  printHTML(`<h1 style="margin:0">CASE du Bois de Nèfles</h1>
-    <p style="margin:2px 0 0">Association loi 1901 — Saint-Denis (La Réunion)</p>
-    <p style="text-align:right;margin-top:24px">Saint-Denis, le ${fmtDate(today())}</p>
-    ${dest?`<p style="margin-top:10px"><strong>${esc(dest)}</strong></p>`:''}
-    ${objet?`<p style="margin-top:14px"><strong>Objet : ${esc(objet)}</strong></p>`:''}
-    <div style="margin-top:14px;white-space:pre-wrap;line-height:1.5">${esc(corps)}</div>
-    <p style="margin-top:40px">Le Président,</p>`);
-}
-
-/* ---- Réunions & décisions ---- */
-function addReunion(){
-  if(!$('r_dec').value.trim() && !$('r_ordre').value.trim()){ alert('Indique au moins l\'ordre du jour ou les décisions.'); return; }
-  let drive=$('r_drive').value.trim(); if(drive && !/^https?:\/\//i.test(drive)) drive='https://'+drive;
-  db.reunions.push({id:uid(),date:$('r_date').value||today(),type:$('r_type').value,present:$('r_present').value.trim(),
-    ordre:$('r_ordre').value.trim(),decisions:$('r_dec').value.trim(),drive});
-  ['r_present','r_ordre','r_dec','r_drive'].forEach(i=>$(i).value=''); $('r_date').value=today(); save();
-}
-function delReunion(id){ if(confirm('Supprimer cette réunion ?')){ db.reunions=db.reunions.filter(r=>r.id!==id); save(); } }
-function renderReunions(){
-  const rs=(db.reunions||[]).slice().sort((a,b)=>(b.date||'').localeCompare(a.date||''));
-  $('reunionRows').innerHTML = rs.length ? rs.map(r=>`<tr>
-    <td>${fmtDate(r.date)}</td><td><span class="pill" style="background:#eef2fb;color:#1f4fc4">${esc(r.type)}</span></td>
-    <td style="font-size:13px">${esc(r.decisions||r.ordre||'—')}</td>
-    <td>${r.drive?`<a href="${esc(r.drive)}" target="_blank" rel="noopener">CR ↗</a>`:'<span class="muted">—</span>'}</td>
-    <td style="white-space:nowrap"><button class="ghost btn" style="padding:4px 9px;font-size:12px" onclick="openEdit('reunions','${r.id}')" title="Modifier">✏️</button><button class="danger" onclick="delReunion('${r.id}')">Suppr.</button></td></tr>`).join('')
-    : '<tr><td colspan="5" class="empty">Aucune réunion enregistrée.</td></tr>';
-}
-
-/* ---- Événements indésirables (avec démarche guidée) ---- */
-function incidentSteps(gravite){
-  const s=["Mettre en sécurité les personnes et les lieux",
-    "Prévenir le responsable / la direction",
-    "Renseigner cette fiche (faits, date, lieu, personnes)",
-    "Informer les familles / personnes concernées",
-    "Analyser les causes de l'événement",
-    "Définir et mettre en œuvre des mesures correctives",
-    "Clôturer et archiver la fiche"];
-  if(gravite==='Grave') s.splice(2,0,"⚠️ Signaler sans délai aux autorités compétentes (ARS / Conseil départemental / assurance, selon le cas)");
-  return s.map(label=>({label,done:false}));
-}
-function addIncident(){
-  const desc=$('i_desc').value.trim();
-  if(!desc){ alert('Décris brièvement ce qui s\'est passé.'); return; }
-  db.incidents.push({id:uid(),date:$('i_date').value||today(),site:$('i_site').value.trim(),type:$('i_type').value.trim()||'Événement',
-    gravite:$('i_gravite').value,personnes:$('i_personnes').value.trim(),declare:$('i_declare').value.trim(),
-    desc,mesures:$('i_mesures').value.trim(),steps:incidentSteps($('i_gravite').value)});
-  ['i_site','i_type','i_personnes','i_declare','i_desc','i_mesures'].forEach(i=>$(i).value=''); $('i_date').value=today(); $('i_gravite').value='Mineur';
-  save();
-}
-function toggleIncidentStep(id,idx){ const o=db.incidents.find(x=>x.id===id); if(o&&o.steps[idx]){ o.steps[idx].done=!o.steps[idx].done; save(); } }
-function delIncident(id){ if(confirm('Supprimer cette fiche d\'événement ?')){ db.incidents=db.incidents.filter(x=>x.id!==id); save(); } }
-function renderIncidents(){
-  const list=(db.incidents||[]).slice().sort((a,b)=>(b.date||'').localeCompare(a.date||''));
-  const el=$('incidentList');
-  if(!list.length){ el.innerHTML='<div class="panel"><div class="empty">Aucun événement déclaré. Espérons que ça dure 🤞</div></div>'; return; }
-  el.innerHTML=list.map(o=>{
-    const done=o.steps.filter(s=>s.done).length, tot=o.steps.length;
-    const clos=done===tot; const gcls=o.gravite==='Grave'?'no':o.gravite==='Modéré'?'wait':'ok';
-    return `<div class="panel" style="border-left:4px solid ${o.gravite==='Grave'?'var(--red)':o.gravite==='Modéré'?'var(--amber)':'var(--green)'}">
-      <div class="toolbar">
-        <div><h2 style="margin:0;font-size:16px">${esc(o.type)} <span class="pill ${gcls}">${esc(o.gravite)}</span> <span class="pill ${clos?'ok':'wait'}">${clos?'Clôturé':'En cours ('+done+'/'+tot+')'}</span></h2>
-          <p class="hint" style="margin:2px 0 0">${fmtDate(o.date)}${o.site?' · '+esc(o.site):''}${o.declare?' · déclaré par '+esc(o.declare):''}</p></div>
-        <div style="white-space:nowrap"><button class="ghost btn" onclick="openEdit('incidents','${o.id}')">✏️ Modifier</button>
-        <button class="danger" onclick="delIncident('${o.id}')">Supprimer</button></div>
-      </div>
-      <div class="kv"><span class="k">Faits</span><span style="text-align:right;max-width:70%">${esc(o.desc)}</span></div>
-      ${o.personnes?`<div class="kv"><span class="k">Personnes</span><span>${esc(o.personnes)}</span></div>`:''}
-      ${o.mesures?`<div class="kv"><span class="k">Mesures immédiates</span><span style="text-align:right;max-width:70%">${esc(o.mesures)}</span></div>`:''}
-      <div style="margin:12px 0 4px;font-weight:700;font-size:12px;color:var(--muted);letter-spacing:.03em">DÉMARCHE À SUIVRE</div>
-      ${o.steps.map((s,i)=>`<div class="kv"><span style="${s.done?'text-decoration:line-through;opacity:.55':''}"><input type="checkbox" ${s.done?'checked':''} onclick="toggleIncidentStep('${o.id}',${i})"> ${esc(s.label)}</span></div>`).join('')}
-    </div>`;
-  }).join('');
-}
-
-/* ---- Portails officiels (liens fixes, toujours dispo) ---- */
-const OFFICIAL_LINKS=[
-  ['Le Compte Asso (subventions État)','https://lecompteasso.associations.gouv.fr'],
-  ['Service-Public — Associations','https://www.service-public.fr/associations'],
-  ['URSSAF','https://www.urssaf.fr'],
-  ['Net-entreprises (DSN)','https://www.net-entreprises.fr'],
-  ['CAF','https://www.caf.fr'],
-  ['Journal Officiel des Associations','https://www.journal-officiel.gouv.fr/pages/associations-recherche/'],
-  ['Impôts.gouv','https://www.impots.gouv.fr'],
-  ['Data Subvention','https://datasubvention.beta.gouv.fr']];
-function renderOfficialLinks(){
-  const el=$('officialLinks'); if(!el) return;
-  el.innerHTML=OFFICIAL_LINKS.map(([lab,url])=>`<a class="ghost btn" style="text-decoration:none;font-size:12.5px" href="${url}" target="_blank" rel="noopener">${esc(lab)} ↗</a>`).join('');
-}
-
-/* ---- Dettes & créances (avec échelonnement) ---- */
-function addDette(){
-  const label=$('de_label').value.trim(); const montant=parseFloat($('de_montant').value);
-  if(!label || !(montant>0)){ alert('Indique un libellé et un montant.'); return; }
-  db.dettes.push({id:uid(),sens:$('de_sens').value,tiers:$('de_tiers').value.trim(),label,montant,
-    date:$('de_date').value||today(),echeance:$('de_echeance').value||'',echeancier:[]});
-  ['de_tiers','de_label','de_montant','de_echeance'].forEach(i=>$(i).value=''); $('de_date').value=today();
-  save();
-}
-function delDette(id){ if(confirm('Supprimer cette ligne ?')){ db.dettes=db.dettes.filter(d=>d.id!==id); save(); } }
-function dettePaid(d){ return (d.echeancier||[]).filter(e=>e.paye).reduce((s,e)=>s+e.montant,0); }
-function addEcheanceDette(id){
-  const d=db.dettes.find(x=>x.id===id); if(!d) return;
-  const m=parseFloat(prompt('Montant de cette échéance de paiement (€) :')); if(!(m>0)) return;
-  const dt=prompt('Date de l\'échéance (jj/mm/aaaa) :',''); if(dt===null) return;
-  d.echeancier.push({date:impDate(dt||today()),montant:m,paye:false}); save();
-}
-function toggleEcheanceDette(id,idx){ const d=db.dettes.find(x=>x.id===id); if(d&&d.echeancier[idx]){ d.echeancier[idx].paye=!d.echeancier[idx].paye; save(); } }
-function delEcheanceDette(id,idx){ const d=db.dettes.find(x=>x.id===id); if(d){ d.echeancier.splice(idx,1); save(); } }
-function renderDettes(){
-  const ds=db.dettes||[];
-  const dueD=ds.filter(d=>d.sens==='dette').reduce((s,d)=>s+(d.montant-dettePaid(d)),0);
-  const dueC=ds.filter(d=>d.sens==='creance').reduce((s,d)=>s+(d.montant-dettePaid(d)),0);
-  $('detteKpis').innerHTML = kpi('💸 À payer (dettes)',euro(dueD),dueD>0.001?'red':'green','restant dû')
-    + kpi('💰 À recevoir (créances)',euro(dueC),'green','restant à encaisser')
-    + kpi('Position nette',euro(dueC-dueD),(dueC-dueD)>=0?'green':'red','créances − dettes');
-  const el=$('detteList');
-  if(!ds.length){ el.innerHTML='<div class="panel"><div class="empty">Aucune dette ni créance enregistrée.</div></div>'; return; }
-  el.innerHTML=ds.slice().sort((a,b)=>(a.echeance||'').localeCompare(b.echeance||'')).map(d=>{
-    const paid=dettePaid(d), reste=d.montant-paid, solde=reste<=0.001, isDette=d.sens==='dette';
-    const ech=(d.echeancier||[]);
-    return `<div class="panel" style="border-left:4px solid ${isDette?'var(--red)':'var(--green)'}">
-      <div class="toolbar">
-        <div><h2 style="margin:0;font-size:16px">${esc(d.label)} <span class="pill ${isDette?'no':'in'}">${isDette?'Dette':'Créance'}</span> <span class="pill ${solde?'ok':'wait'}">${solde?'Soldé':'Reste '+euro(reste)}</span></h2>
-          <p class="hint" style="margin:2px 0 0">${esc(d.tiers||'—')}${d.echeance?' · échéance '+fmtDate(d.echeance):''} · total ${euro(d.montant)}${paid>0?' · déjà '+(isDette?'payé':'reçu')+' '+euro(paid):''}</p></div>
-        <button class="danger" onclick="delDette('${d.id}')">Supprimer</button>
-      </div>
-      ${ech.length?'<div style="margin:8px 0 4px;font-weight:700;font-size:12px;color:var(--muted);letter-spacing:.03em">ÉCHELONNEMENT</div>'+ech.map((e,i)=>`<div class="kv"><span style="${e.paye?'text-decoration:line-through;opacity:.55':''}"><input type="checkbox" ${e.paye?'checked':''} onclick="toggleEcheanceDette('${d.id}',${i})"> ${fmtDate(e.date)} — <strong>${euro(e.montant)}</strong></span><button class="danger" onclick="delEcheanceDette('${d.id}',${i})">✕</button></div>`).join(''):''}
-      <div class="row" style="margin-top:10px"><button class="ghost btn" onclick="addEcheanceDette('${d.id}')">＋ Ajouter une échéance de paiement</button></div>
-    </div>`;
-  }).join('');
-}
-
-/* ---- helpers ---- */
-function kpi(label,value,cls='',sub=''){
-  return `<div class="card"><div class="label">${label}</div><div class="value ${cls}">${value}</div>${sub?'<div class="sub">'+sub+'</div>':''}</div>`;
-}
-function esc(s){ return (s==null?'':String(s)).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
-
-function renderAll(){ renderDashboard(); renderMembers(); renderRelances(); renderOps(); renderCaisse(); renderProjects(); renderSubventions(); renderEcheancier(); renderBilan(); renderRepertoire(); renderSecretariat(); renderReunions(); renderIncidents(); renderDettes(); renderOfficialLinks(); refreshComptes(); renderListParams(); }
-
-/* ---- Data import/export ---- */
-function exportJSON(){
-  const blob=new Blob([JSON.stringify(db,null,2)],{type:'application/json'});
-  download(blob,'sauvegarde-CASE-'+today()+'.json');
-}
-function importJSON(e){
-  const f=e.target.files[0]; if(!f)return;
-  const r=new FileReader();
-  r.onload=()=>{ try{ const d=JSON.parse(r.result); db=Object.assign(blank(),d); save(); alert('Sauvegarde importée ✅'); }catch(err){ alert('Fichier illisible.'); } };
-  r.readAsText(f); e.target.value='';
-}
-function csvRow(arr){ return arr.map(v=>'"'+String(v==null?'':v).replace(/"/g,'""')+'"').join(';'); }
-function exportMembersCSV(){
-  const rows=[csvRow(['Nom','Email','Téléphone','Adresse','Code postal','Ville','Cotisation','Date adhésion','À jour'])]
-    .concat(db.members.map(m=>csvRow([m.name,m.email,m.phone,m.addr,m.cp,m.city,m.amount,m.date,m.paid?'Oui':'Non'])));
-  download(new Blob(['﻿'+rows.join('\n')],{type:'text/csv'}),'adherents-CASE.csv');
-}
-function exportOpsCSV(){
-  const fmt=(sp,f)=>sp.length>1?sp.map(s=>(s[f]||'?')+' ('+s.amount+'€)').join(' | '):(sp[0][f]||'');
-  const tLabel=o=>o.type==='in'?'Recette':o.type==='out'?'Dépense':'Remise en banque';
-  const yr=curExercice();
-  const rows=[csvRow(['Date','Type','Libellé','Catégorie','Compte comptable','Moyen','Site','Action','Projet','Montant'])]
-    .concat(db.ops.filter(o=>!yr||(o.date||'').slice(0,4)===yr).map(o=>{ const sp=getSplits(o);
-      return csvRow([o.date,tLabel(o),o.label,o.cat,o.compte||'',o.type==='transfer'?'Caisse→Banque':(getAccount(o)==='caisse'?'Espèces':'Banque'),
-        o.type==='transfer'?'':fmt(sp,'site'),o.type==='transfer'?'':fmt(sp,'action'),projName(o.project),o.amount]); }));
-  download(new Blob(['﻿'+rows.join('\n')],{type:'text/csv'}),'comptabilite-CASE'+(yr?'-'+yr:'')+'.csv');
-}
-function exportComptaCSV(){
-  // journal analytique : une ligne par ventilation (compte / site / action), avec débit (dépense) / crédit (recette)
-  const yr=curExercice();
-  const lignes=db.ops.filter(o=>o.type!=='transfer' && (!yr||(o.date||'').slice(0,4)===yr));
-  if(!lignes.length){ alert('Aucune écriture pour '+(yr?('l\'exercice '+yr):'cette sélection')+'.'); return; }
-  const rows=[csvRow(['Date','Compte comptable','Libellé','Catégorie','Site','Action','Débit (dépense)','Crédit (recette)','Moyen de paiement'])];
-  lignes.slice().sort((a,b)=>(a.date||'').localeCompare(b.date||'')).forEach(o=>{
-    const moyen = o.mode || (getAccount(o)==='caisse'?'Espèces':'Banque');
-    getSplits(o).forEach(s=>{
-      rows.push(csvRow([o.date, o.compte||'', o.label, o.cat||'', s.site||'', s.action||'',
-        o.type==='out'?s.amount:'', o.type==='in'?s.amount:'', moyen]));
-    });
-  });
-  download(new Blob(['﻿'+rows.join('\n')],{type:'text/csv'}),'journal-comptable-CASE'+(yr?'-'+yr:'')+'.csv');
-}
-function download(blob,name){
-  const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=name; a.click(); URL.revokeObjectURL(a.href);
-}
-function resetAll(){ if(confirm('Tout effacer définitivement ? Pense à exporter une sauvegarde avant.')){ db=blank(); save(); } }
-/* --- DÉMO : données d'exemple (uniquement version en ligne) --- */
-function seedDemo(){
-  var S={bdn:'Centre social Bois de Nèfles',bru:'Antenne Le Brûlé',mtg:'Antenne Montgaillard'};
-  var A={scol:'Accompagnement scolaire',alsh:'Accueil de loisirs',cuis:'Atelier cuisine',jar:'Jardin partagé',sort:'Sorties familiales',fete:'Fête de quartier',fonc:'Fonctionnement'};
-  var p1=uid(),p2=uid(),p3=uid();
-  db.projects.push(
-    {id:p1,name:'Fête de quartier 2026',budget:2500,status:'En cours'},
-    {id:p2,name:'Séjour familles été 2026',budget:4000,status:'À venir'},
-    {id:p3,name:'Jardin partagé',budget:1200,status:'En cours'});
-  [['Marie Hoarau','12 rue des Mille Roches','97490','Saint-Denis',15,'2026-01-12',true],
-   ['Jean-Marie Payet','5 chemin Bancoul','97400','Saint-Denis',15,'2026-01-14',true],
-   ['Aline Técher','8 allée des Flamboyants','97490','Saint-Denis',10,'2026-01-18',true],
-   ['Fabrice Rivière','2 impasse des Letchis','97490','Saint-Denis',10,'2026-02-03',false],
-   ['Sylvie Maillot','47 rue du Brûlé','97400','Saint-Denis',15,'2026-01-22',true],
-   ['Nadia Boyer','9 rue des Bougainvilliers','97490','Saint-Denis',10,'2026-02-11',false]
-  ].forEach(function(m){db.members.push({id:uid(),name:m[0],email:m[0].split(' ')[0].toLowerCase()+'@exemple.re',phone:'0692 12 34 56',addr:m[1],cp:m[2],city:m[3],amount:m[4],date:m[5],paid:m[6]});});
-  function op(type,label,cat,compte,date,amount,project,account,splits){db.ops.push({id:uid(),type:type,label:label,cat:cat,compte:compte,date:date,amount:amount,project:project||'',account:account||'banque',photo:'',splits:splits||[{site:'',action:'',amount:amount}]});}
-  op('in','Subvention CAF','Subvention','740 - Subventions d\'exploitation','2026-01-31',8000,'','banque',[{site:S.bdn,action:A.fonc,amount:8000}]);
-  op('in','Subvention Ville de Saint-Denis','Subvention','740 - Subventions d\'exploitation','2026-02-10',5000,'','banque',[{site:S.bdn,action:A.fonc,amount:5000}]);
-  op('in','Cotisations adhérents','Cotisations','756 - Cotisations','2026-01-20',160,'','banque',[{site:'',action:A.fonc,amount:160}]);
-  op('in','Recette buvette','Événement','707 - Ventes','2026-05-31',180,p1,'caisse',[{site:S.bdn,action:A.fete,amount:180}]);
-  op('out','Salaires et charges - janvier','Salaires','641 - Rémunérations','2026-01-31',3200,'','banque',[{site:S.bdn,action:A.scol,amount:1600},{site:S.bru,action:A.alsh,amount:1600}]);
-  op('out','Loyer du local','Loyer','613 - Locations','2026-01-05',600,'','banque',[{site:S.bdn,action:A.fonc,amount:600}]);
-  op('out','Électricité (EDF)','Énergie','6061 - Eau, énergie','2026-03-20',480,'','banque',[{site:S.bdn,action:A.fonc,amount:300},{site:S.bru,action:A.fonc,amount:180}]);
-  op('out','Courses alimentaires','Alimentation','6068 - Fournitures','2026-03-12',200,'','banque',[{site:S.bdn,action:A.cuis,amount:120},{site:S.bru,action:A.alsh,amount:80}]);
-  op('out','Location bus - sortie plage','Transport','6251 - Déplacements','2026-04-20',450,p2,'banque',[{site:S.bdn,action:A.sort,amount:450}]);
-  op('out','Graines et terreau','Matériel','6063 - Petit équipement','2026-03-10',160,p3,'banque',[{site:S.mtg,action:A.jar,amount:160}]);
-  op('out','Achat petit matériel','Matériel','6063 - Petit équipement','2026-04-12',38,'','caisse',[{site:S.mtg,action:A.jar,amount:38}]);
-  db.subventions.push(
-    {id:uid(),name:'Fête nout Kartié',structure:'Mairie',site:S.bdn,action:A.fete,demande:2500,accorde:2000,verse:0,date:'',deadline:'2026-07-31',recurrent:true,lien:'https://www.saintdenis.re',opId:''},
-    {id:uid(),name:'CLAS - accompagnement scolaire',structure:'Département 974',site:S.bdn,action:A.scol,demande:3000,accorde:3000,verse:3000,date:'2026-03-01',deadline:'2026-09-15',recurrent:true,lien:'https://lecompteasso.associations.gouv.fr',opId:''},
-    {id:uid(),name:'Séjour familles',structure:'CAF',site:S.bdn,action:A.sort,demande:2500,accorde:0,verse:0,date:'',deadline:'2026-06-25',recurrent:false,lien:'',opId:''});
-  db.contacts.push(
-    {id:uid(),name:'Cabinet Comptable Réunion',org:'Comptable',email:'contact@cabinet.re',phone:'0262 00 00 00',note:'Bilan en juin/juillet'},
-    {id:uid(),name:'Mme Hoarau',org:'Présidente',email:'presidente@exemple.re',phone:'0692 11 22 33',note:''});
-  db.liens.push(
-    {id:uid(),label:'Espace adhérents CAF',cat:'Financeur',url:'https://www.caf.fr',note:''});
-  db.docs.push({id:uid(),type:'Statuts',label:'Statuts à jour 2024',url:''});
-  db.notes.push(
-    {id:uid(),text:'Relancer la Mairie pour la convention',done:false,date:today()},
-    {id:uid(),text:'Préparer le bilan pour l\'AG',done:false,date:today()});
-  db.echeances.push({id:uid(),label:'Renouvellement assurance MAIF',date:'2026-09-15',recurrent:true});
-  db.incidents.push({id:uid(),date:'2026-04-15',site:S.bru,type:'Chute',gravite:'Modéré',personnes:'Un enfant (ALSH)',declare:'Animateur',desc:'Chute sans gravité dans la cour, léger hématome.',mesures:'Premiers soins, parents prévenus.',steps:incidentSteps('Modéré')});
-  db.dettes.push(
-    {id:uid(),sens:'dette',tiers:'URSSAF',label:'Cotisations URSSAF T2 2026',montant:1240,date:'2026-04-15',echeance:'2026-07-15',echeancier:[{date:'2026-07-15',montant:620,paye:false},{date:'2026-08-15',montant:620,paye:false}]},
-    {id:uid(),sens:'creance',tiers:'Mairie de Saint-Denis',label:'Subvention 2026 à recevoir',montant:2000,date:'2026-03-01',echeance:'2026-09-30',echeancier:[]});
-  save();
-}
-
-/* init */
-$('m_date').value=today(); $('a_date').value=today(); $('t_date').value=today(); $('q_date').value=today(); $('r_date').value=today(); $('i_date').value=today(); $('de_date').value=today();
-addSplitRow(); // première ligne de répartition vide
-fillModel(); // pré-remplit le modèle de courrier par défaut
-if(!db.members.length && !db.ops.length && !db.projects.length) seedDemo();
-renderAll();
-</script>
 </body>
 </html>

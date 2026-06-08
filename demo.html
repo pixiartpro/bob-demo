@@ -137,8 +137,8 @@
       <h2>Ajouter un adhérent</h2>
       <p class="hint">Nom, contact, montant et date de la cotisation. Coche « à jour » si la cotisation est payée.</p>
       <div class="row">
-        <div class="field"><label>Nom et prénom</label><input id="m_name" placeholder="Nom et prénom de l'adhérent"></div>
-        <div class="field"><label>Email</label><input id="m_email" placeholder="adresse email"></div>
+        <div class="field"><label>Nom et prénom</label><input id="m_name" placeholder="Ex. Marie Hoarau"></div>
+        <div class="field"><label>Email</label><input id="m_email" placeholder="marie@exemple.re"></div>
         <div class="field"><label>Téléphone</label><input id="m_phone" placeholder="0692 ..."></div>
       </div>
       <div class="row" style="margin-top:10px">
@@ -1652,110 +1652,61 @@ function download(blob,name){
   const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=name; a.click(); URL.revokeObjectURL(a.href);
 }
 function resetAll(){ if(confirm('Tout effacer définitivement ? Pense à exporter une sauvegarde avant.')){ db=blank(); save(); } }
+/* --- DÉMO : données d'exemple (uniquement version en ligne) --- */
+function seedDemo(){
+  var S={bdn:'Centre social Bois de Nèfles',bru:'Antenne Le Brûlé',mtg:'Antenne Montgaillard'};
+  var A={scol:'Accompagnement scolaire',alsh:'Accueil de loisirs',cuis:'Atelier cuisine',jar:'Jardin partagé',sort:'Sorties familiales',fete:'Fête de quartier',fonc:'Fonctionnement'};
+  var p1=uid(),p2=uid(),p3=uid();
+  db.projects.push(
+    {id:p1,name:'Fête de quartier 2026',budget:2500,status:'En cours'},
+    {id:p2,name:'Séjour familles été 2026',budget:4000,status:'À venir'},
+    {id:p3,name:'Jardin partagé',budget:1200,status:'En cours'});
+  [['Marie Hoarau','12 rue des Mille Roches','97490','Saint-Denis',15,'2026-01-12',true],
+   ['Jean-Marie Payet','5 chemin Bancoul','97400','Saint-Denis',15,'2026-01-14',true],
+   ['Aline Técher','8 allée des Flamboyants','97490','Saint-Denis',10,'2026-01-18',true],
+   ['Fabrice Rivière','2 impasse des Letchis','97490','Saint-Denis',10,'2026-02-03',false],
+   ['Sylvie Maillot','47 rue du Brûlé','97400','Saint-Denis',15,'2026-01-22',true],
+   ['Nadia Boyer','9 rue des Bougainvilliers','97490','Saint-Denis',10,'2026-02-11',false]
+  ].forEach(function(m){db.members.push({id:uid(),name:m[0],email:m[0].split(' ')[0].toLowerCase()+'@exemple.re',phone:'0692 12 34 56',addr:m[1],cp:m[2],city:m[3],amount:m[4],date:m[5],paid:m[6]});});
+  function op(type,label,cat,compte,date,amount,project,account,splits){db.ops.push({id:uid(),type:type,label:label,cat:cat,compte:compte,date:date,amount:amount,project:project||'',account:account||'banque',photo:'',splits:splits||[{site:'',action:'',amount:amount}]});}
+  op('in','Subvention CAF','Subvention','740 - Subventions d\'exploitation','2026-01-31',8000,'','banque',[{site:S.bdn,action:A.fonc,amount:8000}]);
+  op('in','Subvention Ville de Saint-Denis','Subvention','740 - Subventions d\'exploitation','2026-02-10',5000,'','banque',[{site:S.bdn,action:A.fonc,amount:5000}]);
+  op('in','Cotisations adhérents','Cotisations','756 - Cotisations','2026-01-20',160,'','banque',[{site:'',action:A.fonc,amount:160}]);
+  op('in','Recette buvette','Événement','707 - Ventes','2026-05-31',180,p1,'caisse',[{site:S.bdn,action:A.fete,amount:180}]);
+  op('out','Salaires et charges - janvier','Salaires','641 - Rémunérations','2026-01-31',3200,'','banque',[{site:S.bdn,action:A.scol,amount:1600},{site:S.bru,action:A.alsh,amount:1600}]);
+  op('out','Loyer du local','Loyer','613 - Locations','2026-01-05',600,'','banque',[{site:S.bdn,action:A.fonc,amount:600}]);
+  op('out','Électricité (EDF)','Énergie','6061 - Eau, énergie','2026-03-20',480,'','banque',[{site:S.bdn,action:A.fonc,amount:300},{site:S.bru,action:A.fonc,amount:180}]);
+  op('out','Courses alimentaires','Alimentation','6068 - Fournitures','2026-03-12',200,'','banque',[{site:S.bdn,action:A.cuis,amount:120},{site:S.bru,action:A.alsh,amount:80}]);
+  op('out','Location bus - sortie plage','Transport','6251 - Déplacements','2026-04-20',450,p2,'banque',[{site:S.bdn,action:A.sort,amount:450}]);
+  op('out','Graines et terreau','Matériel','6063 - Petit équipement','2026-03-10',160,p3,'banque',[{site:S.mtg,action:A.jar,amount:160}]);
+  op('out','Achat petit matériel','Matériel','6063 - Petit équipement','2026-04-12',38,'','caisse',[{site:S.mtg,action:A.jar,amount:38}]);
+  db.subventions.push(
+    {id:uid(),name:'Fête nout Kartié',structure:'Mairie',site:S.bdn,action:A.fete,demande:2500,accorde:2000,verse:0,date:'',deadline:'2026-07-31',recurrent:true,lien:'https://www.saintdenis.re',opId:''},
+    {id:uid(),name:'CLAS - accompagnement scolaire',structure:'Département 974',site:S.bdn,action:A.scol,demande:3000,accorde:3000,verse:3000,date:'2026-03-01',deadline:'2026-09-15',recurrent:true,lien:'https://lecompteasso.associations.gouv.fr',opId:''},
+    {id:uid(),name:'Séjour familles',structure:'CAF',site:S.bdn,action:A.sort,demande:2500,accorde:0,verse:0,date:'',deadline:'2026-06-25',recurrent:false,lien:'',opId:''});
+  db.contacts.push(
+    {id:uid(),name:'Cabinet Comptable Réunion',org:'Comptable',email:'contact@cabinet.re',phone:'0262 00 00 00',note:'Bilan en juin/juillet'},
+    {id:uid(),name:'Mme Hoarau',org:'Présidente',email:'presidente@exemple.re',phone:'0692 11 22 33',note:''});
+  db.liens.push(
+    {id:uid(),label:'Espace adhérents CAF',cat:'Financeur',url:'https://www.caf.fr',note:''});
+  db.docs.push({id:uid(),type:'Statuts',label:'Statuts à jour 2024',url:''});
+  db.notes.push(
+    {id:uid(),text:'Relancer la Mairie pour la convention',done:false,date:today()},
+    {id:uid(),text:'Préparer le bilan pour l\'AG',done:false,date:today()});
+  db.echeances.push({id:uid(),label:'Renouvellement assurance MAIF',date:'2026-09-15',recurrent:true});
+  db.incidents.push({id:uid(),date:'2026-04-15',site:S.bru,type:'Chute',gravite:'Modéré',personnes:'Un enfant (ALSH)',declare:'Animateur',desc:'Chute sans gravité dans la cour, léger hématome.',mesures:'Premiers soins, parents prévenus.',steps:incidentSteps('Modéré')});
+  db.dettes.push(
+    {id:uid(),sens:'dette',tiers:'URSSAF',label:'Cotisations URSSAF T2 2026',montant:1240,date:'2026-04-15',echeance:'2026-07-15',echeancier:[{date:'2026-07-15',montant:620,paye:false},{date:'2026-08-15',montant:620,paye:false}]},
+    {id:uid(),sens:'creance',tiers:'Mairie de Saint-Denis',label:'Subvention 2026 à recevoir',montant:2000,date:'2026-03-01',echeance:'2026-09-30',echeancier:[]});
+  save();
+}
+
 /* init */
 $('m_date').value=today(); $('a_date').value=today(); $('t_date').value=today(); $('q_date').value=today(); $('r_date').value=today(); $('i_date').value=today(); $('de_date').value=today();
 addSplitRow(); // première ligne de répartition vide
 fillModel(); // pré-remplit le modèle de courrier par défaut
+if(!db.members.length && !db.ops.length && !db.projects.length) seedDemo();
 renderAll();
-</script>
-
-<!-- ===== Couche EN LIGNE (Supabase) : connexion requise + coffre de données partagé par asso ===== -->
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script>
-(function(){
-  // cache la page le temps de vérifier la connexion (évite un flash de l'appli vide)
-  document.documentElement.style.visibility='hidden';
-  const SB_URL='https://dkidtwypclpwznleiqnq.supabase.co';
-  const SB_KEY='sb_publishable_HDfV-O2ION1Vw9v03aV_Qg_PkiAjLNo';
-  const ROLE_LABEL={president:'Président',tresorier:'Trésorier',bureau:'Membre du bureau',personnel:'Personnel',intervenant:'Intervenant',adherent:'Adhérent'};
-  let sbc, myAsso=null, myProfile=null, canWrite=false, pushTimer=null, lastSyncTs=null, dirty=false, checkTimer=null;
-
-  function gate(html){
-    document.documentElement.style.visibility='';
-    document.body.innerHTML='<div style="max-width:560px;margin:64px auto;padding:28px;text-align:center;font-family:-apple-system,Segoe UI,Roboto,sans-serif;color:#1d3a2e">'+html+'</div>';
-  }
-  function setSync(txt,cls){ const e=document.getElementById('cloudSync'); if(e){ e.textContent=txt; e.style.color=cls||'#5c7468'; } }
-
-  function addBanner(){
-    const bar=document.createElement('div');
-    bar.id='cloudBar';
-    bar.style.cssText='position:sticky;top:0;z-index:50;background:#127a51;color:#fff;display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:8px 14px;font:600 13px/-apple-system,Segoe UI,Roboto,sans-serif';
-    bar.innerHTML='<span>🟢 En ligne — <b>'+esc(myProfile.full_name||myProfile.email||'')+'</b> · '+(ROLE_LABEL[myProfile.role]||myProfile.role)+'</span>'
-      +'<span id="cloudSync" style="opacity:.9">✓ synchronisé</span>'
-      +(canWrite?'':'<span style="background:#f6b400;color:#5b4300;padding:2px 9px;border-radius:999px">Lecture seule</span>')
-      +'<span style="margin-left:auto;display:flex;gap:8px">'
-      +'<button onclick="cloudRefresh()" style="cursor:pointer;border:none;border-radius:999px;padding:6px 12px;font:inherit;background:rgba(255,255,255,.2);color:#fff">↻ Rafraîchir</button>'
-      +'<a href="connexion.html" style="text-decoration:none;border-radius:999px;padding:6px 12px;background:rgba(255,255,255,.2);color:#fff">Espace bureau</a>'
-      +'<button onclick="cloudLogout()" style="cursor:pointer;border:none;border-radius:999px;padding:6px 12px;font:inherit;background:#fff;color:#127a51">Déconnexion</button>'
-      +'</span>';
-    document.body.insertBefore(bar, document.body.firstChild);
-  }
-
-  async function pushNow(){
-    if(!myAsso||!canWrite)return;
-    setSync('… enregistrement');
-    // garde-fou anti-écrasement : un collègue a-t-il enregistré depuis notre dernier chargement ?
-    const {data:rem}=await sbc.from('app_state').select('updated_at').eq('asso_id',myAsso).maybeSingle();
-    if(rem && rem.updated_at && lastSyncTs && new Date(rem.updated_at) > new Date(lastSyncTs)){
-      if(!confirm('⚠️ Un collègue a enregistré des modifications entre-temps.\n\nOK = écraser avec TA version (ses changements récents seront perdus).\nAnnuler = recharger SA version (tes changements non enregistrés seront perdus).')){
-        await window.cloudRefresh(); return;
-      }
-    }
-    const ts=new Date().toISOString();
-    const {error}=await sbc.from('app_state').upsert({asso_id:myAsso,data:db,updated_at:ts,updated_by:myProfile.id});
-    if(!error){ lastSyncTs=ts; dirty=false; }
-    setSync(error?('⚠️ '+error.message):'✓ enregistré en ligne', error?'#ffd9d0':'#dff5e9');
-  }
-  function schedulePush(){ if(!canWrite)return; dirty=true; setSync('… modifications en attente'); clearTimeout(pushTimer); pushTimer=setTimeout(pushNow,800); }
-
-  // exposées globalement pour les boutons du bandeau
-  window.cloudLogout=async function(){ await sbc.auth.signOut(); location.href='connexion.html'; };
-  window.cloudRefresh=async function(){
-    const {data:st}=await sbc.from('app_state').select('data,updated_at').eq('asso_id',myAsso).maybeSingle();
-    db = Object.assign(blank(), (st&&st.data&&typeof st.data==='object')?st.data:{});
-    lastSyncTs = st?st.updated_at:lastSyncTs; dirty=false;
-    renderAll(); setSync('✓ rechargé depuis le serveur','#dff5e9');
-  };
-
-  async function boot(){
-    if(!window.supabase){ gate('<h2>Erreur de chargement</h2><p>Impossible de charger Supabase (connexion internet ?). Réessaie.</p>'); return; }
-    sbc=window.supabase.createClient(SB_URL,SB_KEY);
-    const {data:{session}}=await sbc.auth.getSession();
-    if(!session){ gate('<h2>🔒 Connexion requise</h2><p>La gestion est réservée au bureau connecté.</p><p style="margin-top:18px"><a href="connexion.html" style="background:#1f9d6b;color:#fff;text-decoration:none;padding:11px 18px;border-radius:999px;font-weight:800">→ Aller à l\'espace bureau</a></p>'); return; }
-    const {data:prof}=await sbc.from('profiles').select('*').eq('id',session.user.id).single();
-    if(!prof){ gate('<h2>Profil introuvable</h2><p>Contacte le Président.</p><p><a href="connexion.html">→ Espace bureau</a></p>'); return; }
-    myProfile=prof;
-    if(prof.statut!=='actif'){ gate('<h2>⏳ Accès en attente</h2><p>Ton accès doit être validé par un administrateur avant d\'entrer dans la gestion.</p><p style="margin-top:18px"><a href="connexion.html" style="background:#1f9d6b;color:#fff;text-decoration:none;padding:11px 18px;border-radius:999px;font-weight:800">→ Espace bureau</a></p>'); return; }
-    myAsso=prof.asso_id;
-    canWrite=['president','tresorier','bureau'].includes(prof.role);
-    // charge le coffre de l'asso
-    const {data:st,error:le}=await sbc.from('app_state').select('data,updated_at').eq('asso_id',myAsso).maybeSingle();
-    if(le){ gate('<h2>Erreur de lecture</h2><p>'+esc(le.message)+'</p>'); return; }
-    db = Object.assign(blank(), (st&&st.data&&typeof st.data==='object')?st.data:{});
-    lastSyncTs = st?st.updated_at:null;
-    // remplace l'enregistrement local par l'enregistrement en ligne
-    save = function(){ try{localStorage.setItem(KEY,JSON.stringify(db));}catch(e){} renderAll(); schedulePush(); };
-    addBanner();
-    renderAll();
-    document.documentElement.style.visibility='';
-    setSync(canWrite?'✓ synchronisé':'lecture seule (pas d\'enregistrement)');
-    // si l'utilisateur se déconnecte ailleurs
-    sbc.auth.onAuthStateChange((ev)=>{ if(ev==='SIGNED_OUT') location.href='connexion.html'; });
-    // détecte les modifications d'un collègue (toutes les 15 s + au retour sur l'onglet)
-    async function checkRemote(){
-      if(document.hidden||!myAsso) return;
-      const {data:rem}=await sbc.from('app_state').select('updated_at').eq('asso_id',myAsso).maybeSingle();
-      if(!rem||!rem.updated_at||!lastSyncTs) return;
-      if(new Date(rem.updated_at) > new Date(lastSyncTs)){
-        if(dirty){ setSync('⚠️ un collègue a modifié — clique ↻ Rafraîchir','#ffd9d0'); }
-        else { await window.cloudRefresh(); setSync('✓ mis à jour par un collègue','#dff5e9'); }
-      }
-    }
-    checkTimer=setInterval(checkRemote, 15000);
-    document.addEventListener('visibilitychange',()=>{ if(!document.hidden) checkRemote(); });
-  }
-  boot();
-})();
 </script>
 </body>
 </html>
