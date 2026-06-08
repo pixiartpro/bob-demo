@@ -26,6 +26,15 @@
   nav.main{margin-left:auto;display:flex;gap:6px;align-items:center;flex-wrap:wrap}
   nav.main a{padding:8px 12px;border-radius:10px;font-weight:600;font-size:14px;text-decoration:none;color:var(--muted)}
   nav.main a:hover{color:var(--ink);background:#f0f7f3}
+  .burger{display:none;margin-left:auto;background:#f0f7f3;border:none;border-radius:10px;font-size:22px;line-height:1;padding:8px 13px;cursor:pointer;color:var(--ink)}
+  @media(max-width:760px){
+    .burger{display:block}
+    header .bar{position:relative;flex-wrap:wrap;align-items:center}
+    nav.main{display:none;flex-direction:column;align-items:stretch;width:100%;gap:4px;margin:8px 0 2px;flex-wrap:nowrap}
+    nav.main.open{display:flex}
+    nav.main a{padding:12px;border-radius:10px}
+    nav.main .btn{text-align:center}
+  }
   .btn{display:inline-block;border:none;cursor:pointer;font:inherit;font-weight:800;text-decoration:none;
        padding:12px 20px;border-radius:999px;transition:.15s;font-size:15px}
   .btn.primary{background:var(--vert);color:#fff;box-shadow:0 6px 16px rgba(31,157,107,.35)}
@@ -93,7 +102,8 @@
 <header>
   <div class="bar">
     <a href="#accueil" class="logo"><span class="pine">🍍</span> <span><b>CASE</b> <span>Bois de Nèfles</span></span></a>
-    <nav class="main">
+    <button class="burger" aria-label="Menu" onclick="document.querySelector('nav.main').classList.toggle('open')">☰</button>
+    <nav class="main" onclick="if(event.target.tagName==='A')this.classList.remove('open')">
       <a href="#activites">Nos activités</a>
       <a href="#ados">Ados</a>
       <a href="#horaires">Horaires</a>
