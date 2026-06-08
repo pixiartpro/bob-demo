@@ -61,6 +61,8 @@
         border:1px solid var(--line);border-radius:18px;padding:18px 18px 16px;box-shadow:var(--shadow);transition:.18s}
   .tile:hover{transform:translateY(-4px);box-shadow:var(--shadow-lg);border-color:#cfe7d9}
   .tile .ti{font-size:32px;line-height:1}
+  .tico{width:52px;height:52px;border-radius:15px;display:grid;place-items:center;background:linear-gradient(145deg,#1f9d6b,#0f6b46);box-shadow:0 6px 14px rgba(18,122,81,.28)}
+  .tico svg{width:28px;height:28px;stroke:#fff;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
   .tile b{font-size:15.5px;margin-top:8px}
   .tile small{font-size:12.5px;color:var(--muted)}
   .bg-w{background:#ffffff}
@@ -147,14 +149,14 @@
     <p class="eyebrow">Accès rapide</p>
     <h2 class="title">Que cherchez-vous ? 👇</h2>
     <div class="tiles">
-      <a class="tile" href="#activites"><span class="ti">🎭</span><b>Nos activités</b><small>Danse, musique, périscolaire…</small></a>
-      <a class="tile" href="#ados"><span class="ti">🛹</span><b>Espace ados</b><small>La Kaz Zados, Ôté Kartié</small></a>
-      <a class="tile" href="#horaires"><span class="ti">🕒</span><b>Horaires &amp; lieux</b><small>Nos 2 sites, quand venir</small></a>
-      <a class="tile" href="#adhesion"><span class="ti">✏️</span><b>Adhérer / s'inscrire</b><small>En ligne, en quelques clics</small></a>
-      <a class="tile" href="espace-adherent.html"><span class="ti">🪙</span><b>Espace adhérent</b><small>Vos jetons &amp; activités</small></a>
-      <a class="tile" href="#partenaires"><span class="ti">🤝</span><b>Devenir partenaire</b><small>Commerçants du quartier</small></a>
-      <a class="tile" href="#contact"><span class="ti">✉️</span><b>Nous contacter</b><small>Adresse, téléphone, réseaux</small></a>
-      <a class="tile" href="connexion.html"><span class="ti">🔐</span><b>Espace bureau</b><small>Équipe &amp; gestion</small></a>
+      <a class="tile" href="#activites"><span class="tico"><svg viewBox="0 0 24 24"><path d="M9 17V4l10-2v13"/><circle cx="6.5" cy="17" r="2.5"/><circle cx="16.5" cy="15" r="2.5"/></svg></span><b>Nos activités</b><small>Danse, musique, périscolaire…</small></a>
+      <a class="tile" href="#ados"><span class="tico"><svg viewBox="0 0 24 24"><ellipse cx="12" cy="13.5" rx="9" ry="2.3"/><circle cx="8" cy="18.5" r="1.6"/><circle cx="16" cy="18.5" r="1.6"/></svg></span><b>Espace ados</b><small>La Kaz Zados, Ôté Kartié</small></a>
+      <a class="tile" href="#horaires"><span class="tico"><svg viewBox="0 0 24 24"><path d="M12 21c4-3.6 6.5-6.8 6.5-10.5a6.5 6.5 0 1 0-13 0C5.5 14.2 8 17.4 12 21z"/><circle cx="12" cy="10.2" r="2.4"/></svg></span><b>Horaires &amp; lieux</b><small>Nos 2 sites, quand venir</small></a>
+      <a class="tile" href="#adhesion"><span class="tico"><svg viewBox="0 0 24 24"><rect x="3" y="5.5" width="18" height="13" rx="2.5"/><path d="M3 9.5h18"/><path d="M8 14.2l2.2 2.2 4.3-4.3"/></svg></span><b>Adhérer / s'inscrire</b><small>En ligne, en quelques clics</small></a>
+      <a class="tile" href="espace-adherent.html"><span class="tico"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.2"/><circle cx="12" cy="12" r="3.4"/></svg></span><b>Espace adhérent</b><small>Vos jetons &amp; activités</small></a>
+      <a class="tile" href="#partenaires"><span class="tico"><svg viewBox="0 0 24 24"><path d="M4 9.5l1.3-4h13.4l1.3 4"/><path d="M5.2 9.5V19h13.6V9.5"/><path d="M10 19v-4.5h4V19"/></svg></span><b>Devenir partenaire</b><small>Commerçants du quartier</small></a>
+      <a class="tile" href="#contact"><span class="tico"><svg viewBox="0 0 24 24"><rect x="3" y="5.5" width="18" height="13" rx="2.5"/><path d="M3.6 7.5L12 13.5 20.4 7.5"/></svg></span><b>Nous contacter</b><small>Adresse, téléphone, réseaux</small></a>
+      <a class="tile" href="connexion.html"><span class="tico"><svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="8.5" rx="2"/><path d="M8 11V8.2a4 4 0 0 1 8 0V11"/></svg></span><b>Espace bureau</b><small>Équipe &amp; gestion</small></a>
     </div>
   </div>
 </section>
