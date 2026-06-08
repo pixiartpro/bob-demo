@@ -63,6 +63,9 @@
   .tile .ti{font-size:32px;line-height:1}
   .tile b{font-size:15.5px;margin-top:8px}
   .tile small{font-size:12.5px;color:var(--muted)}
+  .bg-w{background:#ffffff}
+  .bg-g{background:#eef6f1}
+  .bg-sun{background:#fdf6e7}
   .eyebrow{color:var(--vert);font-weight:800;text-transform:uppercase;letter-spacing:.08em;font-size:13px;text-align:center}
   h2.title{text-align:center;font-size:clamp(24px,3.5vw,34px);margin:6px 0 8px;font-weight:900}
   .sub{text-align:center;color:var(--muted);max-width:640px;margin:0 auto 30px}
@@ -139,7 +142,7 @@
 </section>
 
 <!-- ACCÈS RAPIDE (tuiles cliquables) -->
-<section class="block" id="acces" style="padding-top:6px">
+<section class="block bg-w" id="acces" style="padding-top:6px">
   <div class="wrap">
     <p class="eyebrow">Accès rapide</p>
     <h2 class="title">Que cherchez-vous ? 👇</h2>
@@ -156,22 +159,8 @@
   </div>
 </section>
 
-<!-- QUI SOMMES-NOUS -->
-<section class="block">
-  <div class="wrap">
-    <p class="eyebrow">Qui sommes-nous</p>
-    <h2 class="title">Une association de quartier, pour tous 💚</h2>
-    <p class="sub">Le CASE du Bois de Nèfles est une association loi 1901 qui anime la vie sociale du quartier : accompagnement des familles, activités pour les enfants, moments de partage et de solidarité.</p>
-    <div class="grid">
-      <div class="card"><div class="ico">👨‍👩‍👧‍👦</div><h3>Pour les familles</h3><p>Un lieu d'accueil, d'écoute et d'entraide ouvert à tous les habitants.</p></div>
-      <div class="card"><div class="ico">🎨</div><h3>Pour les enfants</h3><p>Accompagnement scolaire, loisirs et ateliers créatifs tout au long de l'année.</p></div>
-      <div class="card"><div class="ico">🤝</div><h3>Pour le quartier</h3><p>Des événements qui rassemblent et renforcent les liens entre voisins.</p></div>
-    </div>
-  </div>
-</section>
-
 <!-- ACTIVITÉS -->
-<section class="block alt" id="activites">
+<section class="block bg-g" id="activites">
   <div class="wrap">
     <p class="eyebrow">Nos activités</p>
     <h2 class="title">Il y en a pour tout le monde 🎉</h2>
@@ -188,7 +177,7 @@
 </section>
 
 <!-- TEMPS FORTS 2026 -->
-<section class="block" id="temps-forts">
+<section class="block bg-w" id="temps-forts">
   <div class="wrap">
     <p class="eyebrow">Temps forts 2026</p>
     <h2 class="title">Les grands rendez-vous 🎉</h2>
@@ -205,7 +194,7 @@
 </section>
 
 <!-- ADOS -->
-<section class="block" id="ados">
+<section class="block bg-g" id="ados">
   <div class="wrap">
     <p class="eyebrow">Espace jeunes · 11–17 ans</p>
     <h2 class="title">La jeunesse aux commandes 🛹</h2>
@@ -219,22 +208,8 @@
   </div>
 </section>
 
-<!-- BIENTÔT / EN TRAVAUX -->
-<section class="block alt" id="bientot">
-  <div class="wrap">
-    <p class="eyebrow">En préparation</p>
-    <h2 class="title">Ça arrive bientôt 🚧</h2>
-    <p class="sub">De nouveaux projets sont en chantier au CASE. Restez connectés !</p>
-    <div class="grid">
-      <div class="card"><div class="ico">🏠</div><h3>La Kaz Zados <span class="badge">🚧 Bientôt</span></h3><p>L'espace dédié aux ados, en cours d'aménagement.</p></div>
-      <div class="card"><div class="ico">🎤</div><h3>Projet « Ôté Kartié » <span class="badge">🚧 Bientôt</span></h3><p>Lancement du projet jeunesse de quartier.</p></div>
-      <div class="card"><div class="ico">🌐</div><h3>Inscriptions en ligne <span class="badge">🚧 Bientôt</span></h3><p>Adhésion et paiement directement sur le site.</p></div>
-    </div>
-  </div>
-</section>
-
 <!-- HORAIRES -->
-<section class="block" id="horaires">
+<section class="block bg-w" id="horaires">
   <div class="wrap">
     <p class="eyebrow">Horaires & lieux</p>
     <h2 class="title">Où et quand nous trouver 🕒</h2>
@@ -248,7 +223,7 @@
 </section>
 
 <!-- ADHÉSION / INSCRIPTION -->
-<section class="block alt" id="adhesion">
+<section class="block bg-sun" id="adhesion">
   <div class="wrap">
     <p class="eyebrow">Adhésion & inscriptions</p>
     <h2 class="title">Rejoignez le CASE en 2 minutes ✏️</h2>
@@ -270,22 +245,8 @@
   </div>
 </section>
 
-<!-- BOÎTE À IDÉES -->
-<section class="block" id="idees">
-  <div class="wrap">
-    <p class="eyebrow">Votre avis compte</p>
-    <h2 class="title">La boîte à idées 💡</h2>
-    <p class="sub">Une envie, une suggestion, un projet pour le quartier ? Proposez-le, on vous écoute !</p>
-    <div class="panel" style="box-shadow:var(--shadow)">
-      <div class="field"><label>Votre idée</label><input placeholder="Ex. un atelier réparation vélo, une sortie..."></div>
-      <div class="field"><label>Votre prénom (optionnel)</label><input placeholder="Prénom"></div>
-      <button class="btn sun" style="width:100%" onclick="alert('🍍 Démonstration — votre idée serait envoyée au CASE. Merci de votre participation !')">Envoyer mon idée 💡</button>
-    </div>
-  </div>
-</section>
-
 <!-- CONTACT -->
-<section class="block" id="contact">
+<section class="block bg-g" id="contact">
   <div class="wrap">
     <p class="eyebrow">Nous contacter</p>
     <h2 class="title">Une question ? Écrivez-nous 📬</h2>
@@ -311,7 +272,7 @@
   </div>
 </section>
 
-<section class="block" id="partenaires">
+<section class="block bg-w" id="partenaires">
   <div class="wrap">
     <p class="eyebrow">Commerçants & partenaires</p>
     <h2 class="title">Soutenez le quartier 🤝</h2>
