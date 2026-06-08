@@ -1691,6 +1691,28 @@ renderAll();
     document.body.insertBefore(bar, document.body.firstChild);
   }
 
+  function applyPerms(){
+    const perms=(myProfile.perms&&typeof myProfile.perms==='object')?myProfile.perms:{};
+    const css=[];
+    document.querySelectorAll('nav.tabs button[data-tab]').forEach(b=>{
+      const k=b.dataset.tab;
+      const lvl=perms[k]||(canWrite?'gestion':'lecture');
+      if(lvl==='cache'){
+        css.push('nav.tabs button[data-tab="'+k+'"]{display:none!important}');
+        css.push('#'+k+'{display:none!important}');
+      } else if(lvl==='lecture'){
+        css.push('#'+k+' button{display:none!important}');
+        css.push('#'+k+' input,#'+k+' select,#'+k+' textarea{pointer-events:none!important;background:#f1f1f1!important;opacity:.6}');
+      }
+    });
+    const old=document.getElementById('permsStyle'); if(old)old.remove();
+    if(css.length){ const st=document.createElement('style'); st.id='permsStyle'; st.textContent=css.join('\n'); document.head.appendChild(st); }
+    // si l'onglet actif est caché, bascule sur la première rubrique visible
+    const vis=[...document.querySelectorAll('nav.tabs button[data-tab]')].filter(b=>(perms[b.dataset.tab]||(canWrite?'gestion':'lecture'))!=='cache');
+    const active=document.querySelector('nav.tabs button.active');
+    if(vis.length && (!active || (perms[active.dataset.tab]||'')==='cache')) vis[0].click();
+  }
+
   async function pushNow(){
     if(!myAsso||!canWrite)return;
     setSync('… enregistrement');
@@ -1737,6 +1759,7 @@ renderAll();
     save = function(){ try{localStorage.setItem(KEY,JSON.stringify(db));}catch(e){} renderAll(); schedulePush(); };
     addBanner();
     renderAll();
+    applyPerms();
     document.documentElement.style.visibility='';
     setSync(canWrite?'✓ synchronisé':'lecture seule (pas d\'enregistrement)');
     // si l'utilisateur se déconnecte ailleurs

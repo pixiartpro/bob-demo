@@ -82,7 +82,8 @@ const ROLES={
   adherent:{label:'Adhérent',pill:'ok',perm:"Accès à l'espace adhérent uniquement"}
 };
 const STATUTS={en_attente:{label:'En attente de validation',pill:'wait'},actif:{label:'Actif',pill:'ok'},suspendu:{label:'Suspendu',pill:'off'}};
-let myProfile=null;
+const MODULES=[['dashboard','Tableau de bord'],['members','Adhérents'],['projects','Projets'],['subventions','Subventions'],['repertoire','Répertoire'],['secretariat','Secrétariat'],['incidents','Événements'],['accounting','Comptabilité'],['caisse','Caisse'],['dettes','Dettes & créances'],['bilan','Bilan'],['data','Données']];
+let myProfile=null, adminProfiles=[];
 
 function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('show');clearTimeout(t._tm);t._tm=setTimeout(()=>t.classList.remove('show'),3200)}
 function esc(s){return (s==null?'':String(s)).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
@@ -246,6 +247,7 @@ async function renderLoggedIn(user){
 async function fillAdmin(){
   const {data:profiles,error}=await sb.from('profiles').select('*').order('created_at',{ascending:true});
   if(error){ $('#adminPending').innerHTML='<h2>🕒 Demandes en attente</h2><p class="small" style="color:var(--red)">Erreur de lecture : '+esc(error.message)+'</p>'; return; }
+  adminProfiles=profiles||[];
   const others=(profiles||[]).filter(x=>x.id!==myProfile.id);
   const pend=others.filter(x=>x.statut==='en_attente');
   const act=(profiles||[]).filter(x=>x.statut==='actif');
@@ -268,11 +270,44 @@ async function fillAdmin(){
     act.map(a=>`<div class="kv">
       <span><b>${esc(a.full_name||'(sans nom)')}</b>${a.id===myProfile.id?' <span class="muted small">(toi)</span>':''}<br><span class="muted small">${esc(a.email||'')}</span></span>
       <span style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
+        <button class="btn g" onclick="openPerms('${a.id}')" title="Choisir les rubriques visibles/modifiables">🔧 Rubriques</button>
         ${isPres&&a.role!=='president'&&a.id!==myProfile.id
           ? `<select onchange="setRole('${a.id}',this.value)">${roleOpts(a.role)}</select>
              <button class="btn d" onclick="removeUser('${a.id}')">Retirer</button>`
           : `<span class="pill ${(ROLES[a.role]||ROLES.adherent).pill} role-pill">${(ROLES[a.role]||ROLES.adherent).label}</span>`}
       </span></div>`).join('');
+}
+
+/* ---- Droits par rubrique (module) pour un utilisateur ---- */
+function openPerms(id){
+  const u=adminProfiles.find(x=>x.id===id); if(!u){toast('Utilisateur introuvable');return}
+  const cur=(u.perms&&typeof u.perms==='object')?u.perms:{};
+  const rows=MODULES.map(([k,l])=>{
+    const v=cur[k]||'gestion';
+    return `<div class="kv"><span>${l}</span>
+      <select id="pm_${k}">
+        <option value="gestion"${v==='gestion'?' selected':''}>✍️ Gestion (voir + modifier)</option>
+        <option value="lecture"${v==='lecture'?' selected':''}>👁️ Lecture seule</option>
+        <option value="cache"${v==='cache'?' selected':''}>🚫 Cachée</option>
+      </select></div>`;
+  }).join('');
+  const ov=document.createElement('div'); ov.id='permsOverlay';
+  ov.style.cssText='position:fixed;inset:0;background:rgba(20,40,30,.45);display:flex;align-items:flex-start;justify-content:center;padding:28px 14px;overflow:auto;z-index:200';
+  ov.innerHTML=`<div style="background:#fff;max-width:520px;width:100%;border-radius:16px;padding:22px;box-shadow:var(--shadow-lg)">
+    <h2 style="margin:0 0 4px">🔧 Rubriques — ${esc(u.full_name||u.email||'')}</h2>
+    <p class="h">Pour chaque rubrique, choisis ce que cette personne peut faire. ⚠️ Une personne dont le rôle est « lecture seule » (Personnel, Intervenant, Adhérent) ne pourra de toute façon pas modifier, même en « Gestion ».</p>
+    ${rows}
+    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:16px">
+      <button class="btn g" onclick="closePerms()">Annuler</button>
+      <button class="btn p" onclick="savePerms('${id}')">💾 Enregistrer</button>
+    </div></div>`;
+  document.body.appendChild(ov);
+}
+function closePerms(){ const o=document.getElementById('permsOverlay'); if(o)o.remove(); }
+async function savePerms(id){
+  const perms={}; MODULES.forEach(([k])=>{ const el=document.getElementById('pm_'+k); if(el)perms[k]=el.value; });
+  const {error}=await sb.from('profiles').update({perms}).eq('id',id);
+  toast(error?error.message:'Droits par rubrique enregistrés ✓'); closePerms(); await refresh();
 }
 
 /* re-render automatique quand l'état de connexion change */
