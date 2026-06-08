@@ -701,13 +701,22 @@ function handlePhoto(e){
   const f=e.target.files[0];
   if(!f){ pendingPhoto=null; $('a_photoInfo').textContent=''; return; }
   const rd=new FileReader();
-  rd.onload=()=>{ const img=new Image(); img.onload=()=>{
+  rd.onload=()=>{ const img=new Image(); img.onload=async()=>{
     const max=1200; let w=img.width,h=img.height;
     if(w>max||h>max){ const r=Math.min(max/w,max/h); w=Math.round(w*r); h=Math.round(h*r); }
     const c=document.createElement('canvas'); c.width=w; c.height=h;
     c.getContext('2d').drawImage(img,0,0,w,h);
-    pendingPhoto=c.toDataURL('image/jpeg',0.6);
-    $('a_photoInfo').innerHTML='<span class="green">✓ Photo prête ('+Math.round(pendingPhoto.length/1024)+' Ko)</span>';
+    const dataUrl=c.toDataURL('image/jpeg',0.6);
+    if(window.bobUploadPhoto){
+      $('a_photoInfo').innerHTML='<span class="muted">⏳ Envoi de la photo en ligne…</span>';
+      pendingPhoto=await window.bobUploadPhoto(dataUrl);
+      $('a_photoInfo').innerHTML = (pendingPhoto&&pendingPhoto.indexOf('sb:')===0)
+        ? '<span class="green">✓ Photo enregistrée en ligne</span>'
+        : '<span class="green">✓ Photo prête ('+Math.round((pendingPhoto||'').length/1024)+' Ko)</span>';
+    } else {
+      pendingPhoto=dataUrl;
+      $('a_photoInfo').innerHTML='<span class="green">✓ Photo prête ('+Math.round(pendingPhoto.length/1024)+' Ko)</span>';
+    }
   }; img.src=rd.result; };
   rd.readAsDataURL(f);
 }
@@ -918,8 +927,9 @@ function renderOps(){
   refreshDatalists();
 }
 /* ---- Détail d'une opération (modale) ---- */
-function openOpDetail(id){
+async function openOpDetail(id){
   const o=db.ops.find(x=>x.id===id); if(!o) return;
+  let photoSrc=o.photo||''; if(photoSrc && window.bobPhotoSrc) photoSrc=await window.bobPhotoSrc(photoSrc);
   const sp=getSplits(o);
   const splitRows=sp.map(s=>`<div class="kv"><span class="k">${esc(s.site||'(site non précisé)')} · ${esc(s.action||'(action non précisée)')}</span><span><strong>${euro(s.amount)}</strong></span></div>`).join('');
   const acc=getAccount(o)==='caisse'?'<span class="tag cash">💵 Espèces (caisse)</span>':'<span class="tag bank">🏦 Banque</span>';
@@ -933,7 +943,7 @@ function openOpDetail(id){
     <div class="kv"><span class="k">Projet</span><span>${esc(projName(o.project))||'—'}</span></div>
     <div style="margin:14px 0 4px;font-weight:700;font-size:12px;color:var(--muted);letter-spacing:.03em">RÉPARTITION PAR SITE / ACTION</div>
     ${splitRows}
-    ${o.photo?`<div style="margin:14px 0 4px;font-weight:700;font-size:12px;color:var(--muted);letter-spacing:.03em">JUSTIFICATIF</div><a href="${o.photo}" target="_blank" title="Ouvrir en grand"><img class="photo-thumb" src="${o.photo}"></a>`:'<p class="hint" style="margin-top:14px">📎 Aucun justificatif joint.</p>'}
+    ${photoSrc?`<div style="margin:14px 0 4px;font-weight:700;font-size:12px;color:var(--muted);letter-spacing:.03em">JUSTIFICATIF</div><a href="${photoSrc}" target="_blank" title="Ouvrir en grand"><img class="photo-thumb" src="${photoSrc}"></a>`:'<p class="hint" style="margin-top:14px">📎 Aucun justificatif joint.</p>'}
     <div class="row" style="margin-top:20px;justify-content:flex-end">
       <button class="ghost btn" onclick="editOp('${o.id}')">✏️ Modifier</button>
       <button class="danger" onclick="delOp('${o.id}');closeModal()">🗑️ Supprimer</button>
@@ -1737,6 +1747,26 @@ renderAll();
     db = Object.assign(blank(), (st&&st.data&&typeof st.data==='object')?st.data:{});
     lastSyncTs = st?st.updated_at:lastSyncTs; dirty=false;
     renderAll(); setSync('✓ rechargé depuis le serveur','#dff5e9');
+  };
+
+  // Photos de justificatifs : envoyées dans le coffre fichiers (Storage), pas dans le bloc de données
+  window.bobUploadPhoto=async function(dataUrl){
+    if(!myAsso||!canWrite||!dataUrl||!/^data:/.test(dataUrl)) return dataUrl;
+    try{
+      const blob=await (await fetch(dataUrl)).blob();
+      const path=myAsso+'/'+Date.now().toString(36)+Math.random().toString(36).slice(2,7)+'.jpg';
+      const {error}=await sbc.storage.from('justificatifs').upload(path, blob, {contentType:'image/jpeg'});
+      if(error){ console.warn('upload justificatif:', error.message); return dataUrl; }
+      return 'sb:'+path;
+    }catch(e){ console.warn('upload justificatif:', e); return dataUrl; }
+  };
+  window.bobPhotoSrc=async function(v){
+    if(!v) return '';
+    if(v.indexOf('sb:')===0){
+      try{ const {data}=await sbc.storage.from('justificatifs').createSignedUrl(v.slice(3), 3600); return data?data.signedUrl:''; }
+      catch(e){ return ''; }
+    }
+    return v;
   };
 
   async function boot(){
