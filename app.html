@@ -1821,6 +1821,7 @@ renderAll();
     const fab=document.getElementById('chatFab'); if(fab) fab.classList.remove('pulse');
     try{document.title='Bob — CASE';}catch(e){}
     try{ if(navigator.clearAppBadge) navigator.clearAppBadge(); }catch(e){}
+    try{ sbc.from('profiles').update({chat_read_at:new Date().toISOString()}).eq('id',myProfile.id).then(function(){},function(){}); }catch(e){}
   }
   window.toggleChat=function(){
     chatOpen=!chatOpen;
@@ -1934,6 +1935,8 @@ renderAll();
     const box=document.getElementById('chatBody');
     if(error){ if(box) box.innerHTML='<p class="hint" style="padding:10px;color:#c0392b">Erreur : '+esc(error.message)+'</p>'; return; }
     const msgs=data||[];
+    let othersReadMax=0;
+    try{ const {data:profs}=await sbc.from('profiles').select('id,chat_read_at').eq('asso_id',myAsso); othersReadMax=(profs||[]).filter(p=>p.id!==myProfile.id).reduce(function(mx,p){return Math.max(mx, p.chat_read_at?new Date(p.chat_read_at).getTime():0);},0); }catch(e){}
     const unread=msgs.filter(m=>m.author_id!==myProfile.id && Math.floor(new Date(m.created_at).getTime()/1000)>chatSeen).length;
     const shown=chatOpen?0:unread;
     updateBadge(shown);
@@ -1946,10 +1949,12 @@ renderAll();
       if(!msgs.length){ box.innerHTML='<p class="hint" style="padding:10px">Aucun message. Démarrez la discussion !</p>'; }
       else { const mine=myProfile.id;
         box.innerHTML=msgs.map(m=>{ const own=m.author_id===mine;
+          const recu = own && new Date(m.created_at).getTime()<=othersReadMax;
+          const indic = own ? ('<div style="font-size:10px;text-align:right;margin-top:2px;color:'+(recu?'#127a51':'#9aa6a0')+'">'+(recu?'✓✓ Lu':'✓ Envoyé')+'</div>') : '';
           return '<div style="margin:6px 4px;display:flex;flex-direction:column;align-items:'+(own?'flex-end':'flex-start')+'">'
             +'<div style="max-width:82%;background:'+(own?'#dff5e9':'#fff')+';border:1px solid #e6ece7;border-radius:12px;padding:7px 11px">'
             +'<div style="font-size:11px;color:#5c7468;font-weight:700">'+esc(m.author_name||'?')+'<span style="font-weight:400"> · '+esc(new Date(m.created_at).toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'}))+'</span></div>'
-            +'<div style="white-space:pre-wrap;font-size:14px">'+esc(m.body)+'</div></div></div>';
+            +'<div style="white-space:pre-wrap;font-size:14px">'+esc(m.body)+'</div>'+indic+'</div></div>';
         }).join('');
         box.scrollTop=box.scrollHeight;
       }
