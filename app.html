@@ -1846,11 +1846,31 @@ renderAll();
     const fab=document.createElement('button'); fab.id='chatFab'; fab.title='Chat du bureau'; fab.innerHTML='💬<span id="chatBadge"></span>';
     fab.onclick=()=>window.toggleChat();
     const panel=document.createElement('div'); panel.id='chatPanel';
-    panel.innerHTML='<div id="chatHead"><span>💬 Chat du bureau</span><button title="Fermer" onclick="toggleChat()">✕</button></div>'
+    panel.innerHTML='<div id="chatHead"><div><div>💬 Chat du bureau</div><div id="chatPresence" style="font-size:11px;font-weight:500;opacity:.92">…</div></div><button title="Fermer" onclick="toggleChat()">✕</button></div>'
       +'<div id="chatBody"><p class="hint" style="padding:10px">Chargement…</p></div>'
       +'<div id="chatBar"><input id="chatInput" placeholder="Votre message…" onkeydown="if(event.key===\'Enter\')sendChat()"><button onclick="sendChat()" title="Envoyer">➤</button></div>';
     document.body.appendChild(fab); document.body.appendChild(panel);
-    loadChat();
+    loadChat(); if(window.loadPresence) loadPresence();
+  }
+  async function heartbeat(){ try{ await sbc.from('profiles').update({last_seen:new Date().toISOString()}).eq('id',myProfile.id); }catch(e){} }
+  window.loadPresence=async function(){
+    const el=document.getElementById('chatPresence'); if(!el) return;
+    const {data}=await sbc.from('profiles').select('full_name,email,last_seen').eq('asso_id',myAsso);
+    const cutoff=Date.now()-90000;
+    const online=(data||[]).filter(p=>p.last_seen && new Date(p.last_seen).getTime()>cutoff);
+    const names=online.map(p=> p.email===myProfile.email ? 'toi' : (p.full_name||p.email||'').split('@')[0].split(' ')[0]);
+    el.textContent = online.length>1 ? ('🟢 En ligne : '+names.join(', ')) : "⚪ Personne d'autre en ligne pour l'instant";
+  };
+  function showChatToast(name,body){
+    let t=document.getElementById('chatToast');
+    if(!t){ t=document.createElement('div'); t.id='chatToast';
+      t.style.cssText='position:fixed;right:20px;bottom:88px;z-index:201;max-width:300px;background:#127a51;color:#fff;padding:12px 14px;border-radius:14px;box-shadow:0 14px 36px rgba(16,60,40,.3);cursor:pointer;font:600 14px -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans-serif;display:none';
+      t.onclick=function(){ t.style.display='none'; if(!chatOpen) window.toggleChat(); };
+      document.body.appendChild(t);
+    }
+    t.innerHTML='💬 <b>'+esc(name||'Nouveau message')+'</b><br><span style="font-weight:400;opacity:.92">'+esc((body||'').slice(0,60))+'</span><br><span style="font-size:12px;opacity:.8">Cliquez pour répondre</span>';
+    t.style.display='block';
+    clearTimeout(t._tm); t._tm=setTimeout(function(){ t.style.display='none'; }, 7000);
   }
   window.loadChat=async function(){
     const {data,error}=await sbc.from('messages').select('*').order('created_at',{ascending:true}).limit(200);
@@ -1863,7 +1883,7 @@ renderAll();
     const fab=document.getElementById('chatFab'); if(fab) fab.classList.toggle('pulse', shown>0);
     try{ document.title = shown>0 ? '('+shown+') 💬 Bob — CASE' : 'Bob — CASE'; }catch(e){}
     try{ if(shown>0 && navigator.setAppBadge) navigator.setAppBadge(shown); else if(navigator.clearAppBadge) navigator.clearAppBadge(); }catch(e){}
-    if(shown>0 && unread>lastUnread) chatBeep();
+    if(shown>0 && unread>lastUnread){ chatBeep(); const lo=[...msgs].reverse().find(m=>m.author_id!==myProfile.id); if(lo) showChatToast(lo.author_name, lo.body); }
     lastUnread=unread;
     if(box){
       if(!msgs.length){ box.innerHTML='<p class="hint" style="padding:10px">Aucun message. Démarrez la discussion !</p>'; }
@@ -1871,7 +1891,7 @@ renderAll();
         box.innerHTML=msgs.map(m=>{ const own=m.author_id===mine;
           return '<div style="margin:6px 4px;display:flex;flex-direction:column;align-items:'+(own?'flex-end':'flex-start')+'">'
             +'<div style="max-width:82%;background:'+(own?'#dff5e9':'#fff')+';border:1px solid #e6ece7;border-radius:12px;padding:7px 11px">'
-            +'<div style="font-size:11px;color:#5c7468;font-weight:700">'+esc(m.author_name||'?')+'<span style="font-weight:400"> · '+esc((m.created_at||'').slice(11,16))+'</span></div>'
+            +'<div style="font-size:11px;color:#5c7468;font-weight:700">'+esc(m.author_name||'?')+'<span style="font-weight:400"> · '+esc(new Date(m.created_at).toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'}))+'</span></div>'
             +'<div style="white-space:pre-wrap;font-size:14px">'+esc(m.body)+'</div></div></div>';
         }).join('');
         box.scrollTop=box.scrollHeight;
@@ -1912,7 +1932,8 @@ renderAll();
     const pb=document.querySelector('nav.tabs button[data-tab="partenaires"]'); if(pb) pb.addEventListener('click',()=>{ if(window.loadPartenaires) loadPartenaires(); });
     if(window.loadPartenaires) loadPartenaires();
     addChatWidget();
-    setInterval(()=>{ if(window.loadChat) loadChat(); }, 15000);
+    heartbeat(); if(window.loadPresence) loadPresence();
+    setInterval(()=>{ heartbeat(); if(window.loadChat) loadChat(); if(window.loadPresence) loadPresence(); }, 10000);
     document.documentElement.style.visibility='';
     setSync(canWrite?'✓ synchronisé':'lecture seule (pas d\'enregistrement)');
     // si l'utilisateur se déconnecte ailleurs
