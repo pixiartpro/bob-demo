@@ -44,7 +44,7 @@
   .btn.ghost{background:#fff;color:var(--vert);border:2px solid var(--vert)}
   nav.main .btn{padding:9px 16px;font-size:14px}
   /* Hero */
-  .hero{position:relative;overflow:hidden;text-align:center;padding:72px 0 78px;
+  .hero{position:relative;overflow:hidden;text-align:center;padding:52px 0 44px;
         background:radial-gradient(1100px 460px at 50% -140px,#d7efe2 0%,rgba(215,239,226,0) 70%),linear-gradient(180deg,#f3faf6 0%,var(--bg) 100%)}
   .hero .deco,.kids{display:none}
   .hero-logo{width:88px;height:88px;border-radius:24px;object-fit:contain;background:#fff;padding:10px;
@@ -54,7 +54,15 @@
   .hero p.lead{font-size:18.5px;max-width:600px;margin:0 auto 26px;color:#3a5246;font-weight:500}
   .hero .cta{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
   /* Sections */
-  section.block{padding:52px 0}
+  section.block{padding:38px 0}
+  /* Tuiles d'accès rapide */
+  .tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(178px,1fr));gap:14px}
+  .tile{display:flex;flex-direction:column;gap:2px;text-decoration:none;color:var(--ink);background:var(--card);
+        border:1px solid var(--line);border-radius:18px;padding:18px 18px 16px;box-shadow:var(--shadow);transition:.18s}
+  .tile:hover{transform:translateY(-4px);box-shadow:var(--shadow-lg);border-color:#cfe7d9}
+  .tile .ti{font-size:32px;line-height:1}
+  .tile b{font-size:15.5px;margin-top:8px}
+  .tile small{font-size:12.5px;color:var(--muted)}
   .eyebrow{color:var(--vert);font-weight:800;text-transform:uppercase;letter-spacing:.08em;font-size:13px;text-align:center}
   h2.title{text-align:center;font-size:clamp(24px,3.5vw,34px);margin:6px 0 8px;font-weight:900}
   .sub{text-align:center;color:var(--muted);max-width:640px;margin:0 auto 30px}
@@ -126,6 +134,24 @@
     <div class="cta">
       <a href="#adhesion" class="btn primary">S'inscrire en ligne</a>
       <a href="#activites" class="btn ghost">Découvrir nos activités</a>
+    </div>
+  </div>
+</section>
+
+<!-- ACCÈS RAPIDE (tuiles cliquables) -->
+<section class="block" id="acces" style="padding-top:6px">
+  <div class="wrap">
+    <p class="eyebrow">Accès rapide</p>
+    <h2 class="title">Que cherchez-vous ? 👇</h2>
+    <div class="tiles">
+      <a class="tile" href="#activites"><span class="ti">🎭</span><b>Nos activités</b><small>Danse, musique, périscolaire…</small></a>
+      <a class="tile" href="#ados"><span class="ti">🛹</span><b>Espace ados</b><small>La Kaz Zados, Ôté Kartié</small></a>
+      <a class="tile" href="#horaires"><span class="ti">🕒</span><b>Horaires &amp; lieux</b><small>Nos 2 sites, quand venir</small></a>
+      <a class="tile" href="#adhesion"><span class="ti">✏️</span><b>Adhérer / s'inscrire</b><small>En ligne, en quelques clics</small></a>
+      <a class="tile" href="espace-adherent.html"><span class="ti">🪙</span><b>Espace adhérent</b><small>Vos jetons &amp; activités</small></a>
+      <a class="tile" href="#partenaires"><span class="ti">🤝</span><b>Devenir partenaire</b><small>Commerçants du quartier</small></a>
+      <a class="tile" href="#contact"><span class="ti">✉️</span><b>Nous contacter</b><small>Adresse, téléphone, réseaux</small></a>
+      <a class="tile" href="connexion.html"><span class="ti">🔐</span><b>Espace bureau</b><small>Équipe &amp; gestion</small></a>
     </div>
   </div>
 </section>
