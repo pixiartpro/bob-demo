@@ -142,6 +142,11 @@
         <div class="field"><label>Téléphone</label><input id="m_phone" placeholder="0692 ..."></div>
       </div>
       <div class="row" style="margin-top:10px">
+        <div class="field"><label>Type d'adhésion</label><input id="m_typeAdh" list="typesAdh" placeholder="Ex. Danse, Périscolaire…"></div>
+        <div class="field"><label>Site</label><input id="m_site" list="sites" placeholder="Ex. Case BDN, Bringelliers…"></div>
+        <datalist id="typesAdh"></datalist>
+      </div>
+      <div class="row" style="margin-top:10px">
         <div class="field" style="flex:2"><label>Adresse</label><input id="m_addr" placeholder="Ex. 12 rue des Mille Roches"></div>
         <div class="field" style="flex:0;min-width:120px"><label>Code postal</label><input id="m_cp" placeholder="97490"></div>
         <div class="field"><label>Ville</label><input id="m_city" placeholder="Saint-Denis"></div>
@@ -257,7 +262,15 @@
           <select id="a_filter" onchange="renderOps()" style="max-width:170px"><option value="">Tous les types</option><option value="in">Recettes</option><option value="out">Dépenses</option></select>
         </div>
       </div>
-      <table><thead><tr><th>Date</th><th>Libellé</th><th>Site</th><th>Action</th><th>Projet</th><th class="num">Montant</th><th></th></tr></thead>
+      <p class="hint" style="margin:0 0 6px">Clique sur un en-tête de colonne pour trier (re-clique pour inverser l'ordre).</p>
+      <table><thead><tr>
+        <th onclick="setOpSort('date')" style="cursor:pointer" title="Trier par date">Date ⇅</th>
+        <th onclick="setOpSort('label')" style="cursor:pointer" title="Trier par libellé">Libellé ⇅</th>
+        <th onclick="setOpSort('site')" style="cursor:pointer" title="Trier par site">Site ⇅</th>
+        <th onclick="setOpSort('action')" style="cursor:pointer" title="Trier par action">Action ⇅</th>
+        <th onclick="setOpSort('project')" style="cursor:pointer" title="Trier par projet">Projet ⇅</th>
+        <th class="num" onclick="setOpSort('amount')" style="cursor:pointer" title="Trier par montant">Montant ⇅</th>
+        <th></th></tr></thead>
         <tbody id="opRows"></tbody></table>
     </div>
     <div class="panel">
@@ -581,6 +594,32 @@
       </div>
       <div id="compteList" style="margin-top:14px"></div>
     </div>
+    <div class="panel">
+      <h2>Paramétrer les listes (Site · Action · Catégorie · Type d'adhésion)</h2>
+      <p class="hint">Ajoute ou retire les valeurs proposées à la saisie, comme pour le plan comptable. Les valeurs standard et celles déjà utilisées dans tes données restent toujours proposées automatiquement.</p>
+      <div class="cards" style="grid-template-columns:repeat(auto-fit,minmax(250px,1fr))">
+        <div>
+          <h2 style="font-size:14px;margin:0 0 8px">🏢 Sites</h2>
+          <div class="row"><div class="field"><input id="newList_sites" placeholder="Nouveau site" onkeydown="if(event.key==='Enter')addToList('sites')"></div><div class="field" style="flex:0"><button class="btn" onclick="addToList('sites')">＋</button></div></div>
+          <div id="listBox_sites" style="margin-top:8px"></div>
+        </div>
+        <div>
+          <h2 style="font-size:14px;margin:0 0 8px">🎯 Actions</h2>
+          <div class="row"><div class="field"><input id="newList_actions" placeholder="Nouvelle action" onkeydown="if(event.key==='Enter')addToList('actions')"></div><div class="field" style="flex:0"><button class="btn" onclick="addToList('actions')">＋</button></div></div>
+          <div id="listBox_actions" style="margin-top:8px"></div>
+        </div>
+        <div>
+          <h2 style="font-size:14px;margin:0 0 8px">🏷️ Catégories</h2>
+          <div class="row"><div class="field"><input id="newList_cats" placeholder="Nouvelle catégorie" onkeydown="if(event.key==='Enter')addToList('cats')"></div><div class="field" style="flex:0"><button class="btn" onclick="addToList('cats')">＋</button></div></div>
+          <div id="listBox_cats" style="margin-top:8px"></div>
+        </div>
+        <div>
+          <h2 style="font-size:14px;margin:0 0 8px">👤 Types d'adhésion</h2>
+          <div class="row"><div class="field"><input id="newList_typesAdh" placeholder="Nouveau type" onkeydown="if(event.key==='Enter')addToList('typesAdh')"></div><div class="field" style="flex:0"><button class="btn" onclick="addToList('typesAdh')">＋</button></div></div>
+          <div id="listBox_typesAdh" style="margin-top:8px"></div>
+        </div>
+      </div>
+    </div>
   </section>
 </div>
 
@@ -624,10 +663,10 @@ document.querySelectorAll('nav.tabs button').forEach(b=>{
 function addMember(){
   const name = $('m_name').value.trim();
   if(!name){ alert('Indique au moins le nom de l\'adhérent.'); return; }
-  db.members.push({id:uid(), name, email:$('m_email').value.trim(), phone:$('m_phone').value.trim(),
+  db.members.push({id:uid(), name, typeAdh:$('m_typeAdh').value.trim(), site:$('m_site').value.trim(), email:$('m_email').value.trim(), phone:$('m_phone').value.trim(),
     addr:$('m_addr').value.trim(), cp:$('m_cp').value.trim(), city:$('m_city').value.trim(),
     amount:parseFloat($('m_amount').value)||0, date:$('m_date').value||today(), paid:$('m_paid').value==='1'});
-  $('m_name').value=$('m_email').value=$('m_phone').value=$('m_addr').value=$('m_cp').value=$('m_city').value=''; $('m_amount').value=10; $('m_date').value='';
+  $('m_name').value=$('m_typeAdh').value=$('m_site').value=$('m_email').value=$('m_phone').value=$('m_addr').value=$('m_cp').value=$('m_city').value=''; $('m_amount').value=10; $('m_date').value='';
   save();
 }
 function togglePaid(id){ const m=db.members.find(x=>x.id===id); if(m){m.paid=!m.paid; save();} }
@@ -638,13 +677,14 @@ function renderMembers(){
   const tb = $('memberRows');
   if(!list.length){ tb.innerHTML='<tr><td colspan="7" class="empty">Aucun adhérent pour le moment.</td></tr>'; return; }
   tb.innerHTML = list.map(m=>`<tr>
-    <td><strong>${esc(m.name)}</strong><br><span class="muted" style="font-size:12px">Depuis le ${fmtDate(m.date)}</span></td>
+    <td><strong>${esc(m.name)}</strong>${m.typeAdh?' <span class="pill" style="background:#eef2fb;color:#1f4fc4;font-size:11px">'+esc(m.typeAdh)+'</span>':''}<br><span class="muted" style="font-size:12px">${m.site?esc(m.site)+' · ':''}Depuis le ${fmtDate(m.date)}</span></td>
     <td style="font-size:13px">${esc(m.email||'—')}<br><span class="muted">${esc(m.phone||'')}</span></td>
     <td style="font-size:13px">${esc(m.addr||'—')}<br><span class="muted">${esc(((m.cp||'')+' '+(m.city||'')).trim())}</span></td>
     <td>${fmtDate(m.date)}</td>
     <td class="num">${euro(m.amount)}</td>
     <td><span class="pill ${m.paid?'ok':'wait'}" style="cursor:pointer" onclick="togglePaid('${m.id}')">${m.paid?'À jour':'En attente'}</span></td>
-    <td style="white-space:nowrap"><button class="ghost btn" style="padding:4px 9px;font-size:12px" onclick="memberReceipt('${m.id}')">🧾 Reçu</button>
+    <td style="white-space:nowrap"><button class="ghost btn" style="padding:4px 9px;font-size:12px" onclick="openEdit('members','${m.id}')" title="Modifier">✏️</button>
+      <button class="ghost btn" style="padding:4px 9px;font-size:12px" onclick="memberReceipt('${m.id}')">🧾 Reçu</button>
       <button class="danger" onclick="delMember('${m.id}')">Suppr.</button></td></tr>`).join('');
 }
 
@@ -853,7 +893,7 @@ function renderOps(){
   const yr = $('a_year').value;
   const q = ($('a_search').value||'').toLowerCase();
   const match=o=>!q || (o.label+' '+(o.cat||'')+' '+(o.compte||'')+' '+getSplits(o).map(s=>s.site+' '+s.action).join(' ')).toLowerCase().includes(q);
-  const list = db.ops.filter(o=>o.type!=='transfer' && (!f||o.type===f) && (!yr||(o.date||'').slice(0,4)===yr) && match(o)).slice().sort((a,b)=>b.date.localeCompare(a.date));
+  const list = db.ops.filter(o=>o.type!=='transfer' && (!f||o.type===f) && (!yr||(o.date||'').slice(0,4)===yr) && match(o)).slice().sort((a,b)=>{const va=opSortVal(a),vb=opSortVal(b);return (va<vb?-1:va>vb?1:0)*opSort.dir;});
   const tb = $('opRows');
   if(!list.length){ tb.innerHTML='<tr><td colspan="7" class="empty">Aucune opération enregistrée.</td></tr>'; }
   else tb.innerHTML = list.map(o=>{
@@ -925,10 +965,125 @@ function renderVentilation(){
 }
 const BASE_SITES=["C.A.S.E Bois de Nèfles","Local des Bringelliers"];
 const BASE_ACTIONS=["Périscolaire","Accueil de loisirs (ACM)","VEPI","Secteur ados / Kaz Zados","Danse","Musique","Permanence du samedi","Jeudi info population","Sport & santé","Accompagnement à la parentalité","Animation de quartier","Fêt nout kartyé","Ôté Kartié","Fonctionnement"];
+const BASE_CATS=["Cotisations","Subvention","Dons","Événement","Matériel","Frais"];
+const TYPES_ADH=["Membre","Danse","Périscolaire","VEPI","ACM","Musique","Famille"];
+/* listes paramétrables : standard (base) + perso (db[key]) + déjà utilisées */
+const LIST_DEFS={
+  sites:{label:"Sites",base:BASE_SITES,dl:"sites"},
+  actions:{label:"Actions",base:BASE_ACTIONS,dl:"actions"},
+  cats:{label:"Catégories",base:BASE_CATS,dl:"cats"},
+  typesAdh:{label:"Types d'adhésion",base:TYPES_ADH,dl:"typesAdh"}
+};
+function usedFor(key){
+  if(key==='sites')return db.ops.flatMap(o=>getSplits(o).map(s=>(s.site||'').trim()));
+  if(key==='actions')return db.ops.flatMap(o=>getSplits(o).map(s=>(s.action||'').trim()));
+  if(key==='cats')return db.ops.map(o=>(o.cat||'').trim());
+  if(key==='typesAdh')return (db.members||[]).map(m=>(m.typeAdh||'').trim());
+  return [];
+}
+function listValues(key){ const d=LIST_DEFS[key]; return [...new Set([...d.base, ...(db[key]||[]), ...usedFor(key)].filter(Boolean))].sort((a,b)=>a.localeCompare(b,'fr',{numeric:true})); }
 function refreshDatalists(){
-  const fill=(id,field,base)=>{ const vals=[...new Set([...base, ...db.ops.flatMap(o=>getSplits(o).map(s=>(s[field]||'').trim()))].filter(Boolean))].sort((a,b)=>a.localeCompare(b,'fr',{numeric:true}));
-    $(id).innerHTML=vals.map(v=>`<option value="${esc(v)}">`).join(''); };
-  fill('sites','site',BASE_SITES); fill('actions','action',BASE_ACTIONS);
+  Object.keys(LIST_DEFS).forEach(key=>{ const dl=$(LIST_DEFS[key].dl); if(dl) dl.innerHTML=listValues(key).map(v=>`<option value="${esc(v)}">`).join(''); });
+}
+/* ---- Paramétrage des listes (ajout/retrait, comme le plan comptable) ---- */
+function addToList(key){ const inp=$('newList_'+key); if(!inp)return; const v=inp.value.trim(); if(!v)return; db[key]=db[key]||[]; if(listValues(key).includes(v)){ alert('« '+v+' » est déjà dans la liste.'); return; } db[key].push(v); inp.value=''; save(); }
+function delFromList(key,v){ db[key]=(db[key]||[]).filter(x=>x!==v); save(); }
+function renderListParams(){
+  Object.keys(LIST_DEFS).forEach(key=>{ const box=$('listBox_'+key); if(!box)return;
+    const cust=db[key]||[];
+    box.innerHTML = cust.length ? cust.map(v=>`<div class="kv"><span>${esc(v)}</span><button class="danger" onclick="delFromList('${key}','${esc(v).replace(/'/g,"\\'")}')">Retirer</button></div>`).join('')
+      : '<p class="hint" style="margin:0">Aucun ajout perso pour le moment. La liste standard est déjà proposée à la saisie.</p>';
+  });
+}
+/* ---- Tri du Journal des opérations par colonnes ---- */
+let opSort={col:'date',dir:-1};
+function setOpSort(col){ if(opSort.col===col) opSort.dir*=-1; else opSort={col,dir:(col==='date'||col==='amount')?-1:1}; renderOps(); }
+function opSortVal(o){
+  const c=opSort.col;
+  if(c==='label')return (o.label||'').toLowerCase();
+  if(c==='amount')return o.amount||0;
+  if(c==='site')return (getSplits(o)[0].site||'').toLowerCase();
+  if(c==='action')return (getSplits(o)[0].action||'').toLowerCase();
+  if(c==='project')return (projName(o.project)||'').toLowerCase();
+  return o.date||'';
+}
+/* ---- Édition générique de toutes les fiches (un seul système) ---- */
+const EDIT_SCHEMAS={
+  members:{coll:'members',title:'adhérent',f:[
+    {k:'name',l:'Nom et prénom',t:'text'},{k:'typeAdh',l:"Type d'adhésion",t:'list',dl:'typesAdh'},{k:'site',l:'Site',t:'list',dl:'sites'},
+    {k:'email',l:'Email',t:'text'},{k:'phone',l:'Téléphone',t:'text'},{k:'addr',l:'Adresse',t:'text'},
+    {k:'cp',l:'Code postal',t:'text'},{k:'city',l:'Ville',t:'text'},{k:'amount',l:'Cotisation (€)',t:'number'},
+    {k:'date',l:"Date d'adhésion",t:'date'},{k:'paid',l:'Cotisation à jour',t:'bool'}]},
+  projects:{coll:'projects',title:'projet',f:[
+    {k:'name',l:'Nom du projet',t:'text'},{k:'budget',l:'Budget prévu (€)',t:'number'},
+    {k:'status',l:'Statut',t:'select',opts:['À venir','En cours','Terminé']}]},
+  subventions:{coll:'subventions',title:'subvention',f:[
+    {k:'name',l:'Nom',t:'text'},{k:'structure',l:'Financeur',t:'list',dl:'structs'},{k:'site',l:'Site',t:'list',dl:'sites'},{k:'action',l:'Action',t:'list',dl:'actions'},
+    {k:'demande',l:'Demandé (€)',t:'number'},{k:'accorde',l:'Accordé (€)',t:'number'},{k:'verse',l:'Versé (€)',t:'number'},
+    {k:'date',l:'Date',t:'date'},{k:'deadline',l:'Date limite de dépôt',t:'date'},{k:'recurrent',l:'Annuelle (récurrente)',t:'bool'},{k:'lien',l:'Lien de dépôt',t:'text'}]},
+  contacts:{coll:'contacts',title:'contact',f:[
+    {k:'name',l:'Nom',t:'text'},{k:'org',l:'Organisation',t:'text'},{k:'email',l:'Email',t:'text'},{k:'phone',l:'Téléphone',t:'text'},{k:'note',l:'Note',t:'textarea'}]},
+  liens:{coll:'liens',title:'lien',f:[
+    {k:'label',l:'Intitulé',t:'text'},{k:'cat',l:'Catégorie',t:'list',dl:'lienCats'},{k:'url',l:'Adresse (URL)',t:'text'},{k:'note',l:'Note',t:'textarea'}]},
+  docs:{coll:'docs',title:'document',f:[
+    {k:'type',l:'Type',t:'list',dl:'docTypes'},{k:'label',l:'Intitulé',t:'text'},{k:'url',l:'Lien',t:'text'}]},
+  echeances:{coll:'echeances',title:'échéance',f:[
+    {k:'label',l:'Intitulé',t:'text'},{k:'date',l:'Date',t:'date'},{k:'recurrent',l:'Annuelle (récurrente)',t:'bool'}]},
+  reunions:{coll:'reunions',title:'réunion',f:[
+    {k:'date',l:'Date',t:'date'},{k:'type',l:'Type',t:'select',opts:['Bureau','Conseil d\'administration','Assemblée générale',"Réunion d'équipe",'Autre']},
+    {k:'present',l:'Présents',t:'text'},{k:'ordre',l:'Ordre du jour',t:'textarea'},{k:'decisions',l:'Décisions',t:'textarea'},{k:'drive',l:'Lien du compte-rendu (Drive)',t:'text'}]},
+  incidents:{coll:'incidents',title:'événement',f:[
+    {k:'date',l:'Date',t:'date'},{k:'site',l:'Site',t:'list',dl:'sites'},{k:'type',l:'Type',t:'list',dl:'incTypes'},
+    {k:'gravite',l:'Gravité',t:'select',opts:['Mineur','Modéré','Grave']},{k:'personnes',l:'Personnes concernées',t:'text'},
+    {k:'declare',l:'Déclaré par',t:'text'},{k:'desc',l:'Description des faits',t:'textarea'},{k:'mesures',l:'Mesures immédiates',t:'textarea'}]}
+};
+let editCtx=null;
+function openEdit(entity,id){
+  const sch=EDIT_SCHEMAS[entity]; if(!sch)return;
+  const rec=(db[sch.coll]||[]).find(x=>x.id===id); if(!rec)return;
+  editCtx={entity,id};
+  const body=sch.f.map(f=>{
+    const sval=rec[f.k]==null?'':rec[f.k];
+    if(f.t==='bool') return `<div class="field"><label>${f.l}</label><select id="ed_${f.k}"><option value="1"${rec[f.k]?' selected':''}>Oui</option><option value="0"${!rec[f.k]?' selected':''}>Non</option></select></div>`;
+    if(f.t==='select'){ const opts=[...f.opts]; if(sval&&!opts.includes(sval))opts.unshift(sval); return `<div class="field"><label>${f.l}</label><select id="ed_${f.k}">${opts.map(o=>`<option${o===sval?' selected':''}>${esc(o)}</option>`).join('')}</select></div>`; }
+    if(f.t==='textarea') return `<div class="field"><label>${f.l}</label><textarea id="ed_${f.k}" rows="3" style="width:100%;font:inherit;padding:8px;border:1px solid var(--line);border-radius:8px;resize:vertical">${esc(sval)}</textarea></div>`;
+    const list=f.dl?` list="${f.dl}"`:''; const type=f.t==='number'?'number':f.t==='date'?'date':'text'; const step=f.t==='number'?' step="0.01"':'';
+    return `<div class="field"><label>${f.l}</label><input id="ed_${f.k}" type="${type}"${step}${list} value="${esc(sval)}"></div>`;
+  }).join('');
+  $('md_title').textContent='✏️ Modifier — '+sch.title;
+  $('md_body').innerHTML=`<div style="display:grid;gap:10px">${body}</div>
+    <div class="row" style="margin-top:18px;justify-content:flex-end">
+      <button class="ghost btn" onclick="closeModal()">Annuler</button>
+      <button class="btn" onclick="saveEdit()">💾 Enregistrer</button></div>`;
+  $('opModal').classList.add('open');
+}
+function saveEdit(){
+  if(!editCtx)return; const sch=EDIT_SCHEMAS[editCtx.entity];
+  const rec=(db[sch.coll]||[]).find(x=>x.id===editCtx.id); if(!rec){ editCtx=null; closeModal(); return; }
+  sch.f.forEach(f=>{ const el=$('ed_'+f.k); if(!el)return; let v=el.value;
+    if(f.t==='number') v=parseFloat(v)||0;
+    else if(f.t==='bool') v=(v==='1');
+    else { v=(typeof v==='string')?v.trim():v; if((f.k==='url'||f.k==='lien'||f.k==='drive')&&v&&!/^https?:\/\//i.test(v))v='https://'+v; }
+    rec[f.k]=v;
+  });
+  editCtx=null; closeModal(); save();
+}
+/* ---- Subventions : enregistrer un versement reçu → crée la recette en compta + met à jour le solde ---- */
+function recordVersement(id){
+  const s=db.subventions.find(x=>x.id===id); if(!s)return;
+  const reste=Math.max(0,(s.accorde||0)-(s.verse||0));
+  const mStr=prompt('Montant du versement reçu pour « '+s.name+' » (€) :', reste>0?reste:''); if(mStr===null)return;
+  const montant=parseFloat((mStr||'').replace(',','.'))||0;
+  if(!(montant>0)){ alert('Montant invalide.'); return; }
+  const dStr=prompt('Date du versement (AAAA-MM-JJ) :', today()); if(dStr===null)return;
+  const date=/^\d{4}-\d{2}-\d{2}$/.test((dStr||'').trim())?dStr.trim():today();
+  const op={id:uid(),type:'in',label:'Subvention — '+s.name,cat:'Subvention',compte:"740 - Subventions d'exploitation",
+    amount:montant,date,project:'',account:'banque',photo:'',splits:[{site:s.site||'',action:s.action||'',amount:montant}]};
+  db.ops.push(op);
+  s.verse=(s.verse||0)+montant;
+  s.versements=s.versements||[]; s.versements.push({opId:op.id,montant,date});
+  save();
+  alert('✅ Versement de '+euro(montant)+' enregistré.\nUne recette a été créée en comptabilité (compte 740 — Subventions) et le solde de la subvention mis à jour.');
 }
 
 /* ---- Plan comptable (liste de comptes modifiable) ---- */
@@ -1026,7 +1181,8 @@ function renderProjects(){
     return `<div class="panel">
       <div class="toolbar">
         <div><h2 style="margin:0">${esc(p.name)} <span class="pill ${sCls}" style="font-size:11px;vertical-align:middle">${esc(p.status)}</span></h2></div>
-        <button class="danger" onclick="delProject('${p.id}')">Supprimer</button>
+        <div style="white-space:nowrap"><button class="ghost btn" onclick="openEdit('projects','${p.id}')">✏️ Modifier</button>
+        <button class="danger" onclick="delProject('${p.id}')">Supprimer</button></div>
       </div>
       <div class="cards" style="margin-bottom:8px">
         ${kpi('Budget prévu',euro(p.budget))}
@@ -1210,7 +1366,9 @@ function renderSubventions(){
     <td class="num">${euro(s.demande||0)}</td><td class="num">${euro(s.accorde||0)}</td>
     <td class="num ${s.verse>0?'green':''}">${euro(s.verse||0)}</td>
     <td>${pill(subStatut(s))}</td>
-    <td><button class="danger" onclick="delSubvention('${s.id}')">Suppr.</button></td></tr>`).join('');
+    <td style="white-space:nowrap"><button class="ghost btn" style="padding:4px 9px;font-size:12px" onclick="recordVersement('${s.id}')" title="Enregistrer un versement reçu (crée la recette en compta)">💶 Versement</button>
+      <button class="ghost btn" style="padding:4px 9px;font-size:12px" onclick="openEdit('subventions','${s.id}')" title="Modifier">✏️</button>
+      <button class="danger" onclick="delSubvention('${s.id}')">Suppr.</button></td></tr>`).join('');
 }
 
 /* ---- Répertoire (contacts + liens = la "Bible") ---- */
@@ -1236,7 +1394,7 @@ function renderRepertoire(){
     <td><strong>${esc(c.name)}</strong></td><td>${esc(c.org||'—')}</td>
     <td style="font-size:13px">${c.email?`<a href="mailto:${esc(c.email)}">${esc(c.email)}</a>`:''}${c.email&&c.phone?'<br>':''}${c.phone?`<a href="tel:${esc(c.phone.replace(/\s/g,''))}">${esc(c.phone)}</a>`:''}${!c.email&&!c.phone?'—':''}</td>
     <td class="muted" style="font-size:13px">${esc(c.note||'')}</td>
-    <td><button class="danger" onclick="delContact('${c.id}')">Suppr.</button></td></tr>`).join('')
+    <td style="white-space:nowrap"><button class="ghost btn" style="padding:4px 9px;font-size:12px" onclick="openEdit('contacts','${c.id}')" title="Modifier">✏️</button><button class="danger" onclick="delContact('${c.id}')">Suppr.</button></td></tr>`).join('')
     : '<tr><td colspan="5" class="empty">Aucun contact. Ajoute le comptable, le CAC, les financeurs…</td></tr>';
   const lq=($('l_search')?.value||'').toLowerCase();
   const ls=(db.liens||[]).filter(l=>(l.label+' '+l.cat+' '+l.url+' '+l.note).toLowerCase().includes(lq));
@@ -1245,7 +1403,7 @@ function renderRepertoire(){
     <td>${l.cat?'<span class="pill" style="background:#eef2fb;color:#1f4fc4">'+esc(l.cat)+'</span>':'—'}</td>
     <td style="font-size:13px">${l.url?`<a href="${esc(l.url)}" target="_blank" rel="noopener">Ouvrir ↗</a>`:'—'}</td>
     <td class="muted" style="font-size:13px">${esc(l.note||'')}</td>
-    <td><button class="danger" onclick="delLien('${l.id}')">Suppr.</button></td></tr>`).join('')
+    <td style="white-space:nowrap"><button class="ghost btn" style="padding:4px 9px;font-size:12px" onclick="openEdit('liens','${l.id}')" title="Modifier">✏️</button><button class="danger" onclick="delLien('${l.id}')">Suppr.</button></td></tr>`).join('')
     : '<tr><td colspan="5" class="empty">Aucun lien. Ajoute les portails de subvention, espaces financeurs…</td></tr>';
   // Documents clés
   const ds=db.docs||[];
@@ -1253,7 +1411,7 @@ function renderRepertoire(){
     <td><span class="pill" style="background:#fcf2de;color:#a9742a">${esc(d.type||'Document')}</span></td>
     <td><strong>${esc(d.label||'')}</strong></td>
     <td style="font-size:13px">${d.url?`<a href="${esc(d.url)}" target="_blank" rel="noopener">Ouvrir ↗</a>`:'<span class="muted">—</span>'}</td>
-    <td><button class="danger" onclick="delDoc('${d.id}')">Suppr.</button></td></tr>`).join('')
+    <td style="white-space:nowrap"><button class="ghost btn" style="padding:4px 9px;font-size:12px" onclick="openEdit('docs','${d.id}')" title="Modifier">✏️</button><button class="danger" onclick="delDoc('${d.id}')">Suppr.</button></td></tr>`).join('')
     : '<tr><td colspan="4" class="empty">Aucun document. Ajoute les statuts, le RIB, le récépissé de préfecture…</td></tr>';
 }
 function addDoc(){
@@ -1295,8 +1453,8 @@ function renderSecretariat(){
   $('echeanceList').innerHTML = (es.length||noDate.length) ?
     es.map(({e,d})=>{const j=daysTo(d);const u=j<0?'no':j<=30?'wait':'ok';
       return `<div class="kv"><span><strong>${esc(e.label)}</strong>${e.recurrent?' <span class="muted">· 🔁 annuelle</span>':''}<br><span class="muted" style="font-size:13px">${fmtDate(isoDate(d))}</span></span>
-      <span><span class="pill ${u}">${j<0?'dépassée':j===0?"aujourd'hui":'dans '+j+' j'}</span> <button class="danger" onclick="delEcheance('${e.id}')">Suppr.</button></span></div>`;}).join('')
-      + noDate.map(e=>`<div class="kv"><span><strong>${esc(e.label)}</strong> <span class="muted">(sans date)</span></span><button class="danger" onclick="delEcheance('${e.id}')">Suppr.</button></div>`).join('')
+      <span><span class="pill ${u}">${j<0?'dépassée':j===0?"aujourd'hui":'dans '+j+' j'}</span> <button class="ghost btn" style="padding:4px 9px;font-size:12px" onclick="openEdit('echeances','${e.id}')" title="Modifier">✏️</button> <button class="danger" onclick="delEcheance('${e.id}')">Suppr.</button></span></div>`;}).join('')
+      + noDate.map(e=>`<div class="kv"><span><strong>${esc(e.label)}</strong> <span class="muted">(sans date)</span></span><span style="white-space:nowrap"><button class="ghost btn" style="padding:4px 9px;font-size:12px" onclick="openEdit('echeances','${e.id}')" title="Modifier">✏️</button> <button class="danger" onclick="delEcheance('${e.id}')">Suppr.</button></span></div>`).join('')
     : '<p class="hint" style="margin:0">Aucune échéance enregistrée.</p>';
 }
 const MODELS={
@@ -1332,7 +1490,7 @@ function renderReunions(){
     <td>${fmtDate(r.date)}</td><td><span class="pill" style="background:#eef2fb;color:#1f4fc4">${esc(r.type)}</span></td>
     <td style="font-size:13px">${esc(r.decisions||r.ordre||'—')}</td>
     <td>${r.drive?`<a href="${esc(r.drive)}" target="_blank" rel="noopener">CR ↗</a>`:'<span class="muted">—</span>'}</td>
-    <td><button class="danger" onclick="delReunion('${r.id}')">Suppr.</button></td></tr>`).join('')
+    <td style="white-space:nowrap"><button class="ghost btn" style="padding:4px 9px;font-size:12px" onclick="openEdit('reunions','${r.id}')" title="Modifier">✏️</button><button class="danger" onclick="delReunion('${r.id}')">Suppr.</button></td></tr>`).join('')
     : '<tr><td colspan="5" class="empty">Aucune réunion enregistrée.</td></tr>';
 }
 
@@ -1370,7 +1528,8 @@ function renderIncidents(){
       <div class="toolbar">
         <div><h2 style="margin:0;font-size:16px">${esc(o.type)} <span class="pill ${gcls}">${esc(o.gravite)}</span> <span class="pill ${clos?'ok':'wait'}">${clos?'Clôturé':'En cours ('+done+'/'+tot+')'}</span></h2>
           <p class="hint" style="margin:2px 0 0">${fmtDate(o.date)}${o.site?' · '+esc(o.site):''}${o.declare?' · déclaré par '+esc(o.declare):''}</p></div>
-        <button class="danger" onclick="delIncident('${o.id}')">Supprimer</button>
+        <div style="white-space:nowrap"><button class="ghost btn" onclick="openEdit('incidents','${o.id}')">✏️ Modifier</button>
+        <button class="danger" onclick="delIncident('${o.id}')">Supprimer</button></div>
       </div>
       <div class="kv"><span class="k">Faits</span><span style="text-align:right;max-width:70%">${esc(o.desc)}</span></div>
       ${o.personnes?`<div class="kv"><span class="k">Personnes</span><span>${esc(o.personnes)}</span></div>`:''}
@@ -1445,7 +1604,7 @@ function kpi(label,value,cls='',sub=''){
 }
 function esc(s){ return (s==null?'':String(s)).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 
-function renderAll(){ renderDashboard(); renderMembers(); renderRelances(); renderOps(); renderCaisse(); renderProjects(); renderSubventions(); renderEcheancier(); renderBilan(); renderRepertoire(); renderSecretariat(); renderReunions(); renderIncidents(); renderDettes(); renderOfficialLinks(); refreshComptes(); }
+function renderAll(){ renderDashboard(); renderMembers(); renderRelances(); renderOps(); renderCaisse(); renderProjects(); renderSubventions(); renderEcheancier(); renderBilan(); renderRepertoire(); renderSecretariat(); renderReunions(); renderIncidents(); renderDettes(); renderOfficialLinks(); refreshComptes(); renderListParams(); }
 
 /* ---- Data import/export ---- */
 function exportJSON(){
