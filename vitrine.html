@@ -128,6 +128,15 @@
   footer .pine{font-size:34px}
   footer a{color:#fff}
   .demo-flag{background:var(--jaune);color:#5b4300;text-align:center;font-weight:700;font-size:13.5px;padding:8px}
+  /* Bandeau actualité */
+  .newsbar{position:relative;display:flex;align-items:center;justify-content:center;gap:10px 14px;flex-wrap:wrap;
+           background:linear-gradient(90deg,var(--vert),var(--vert-fonce));color:#fff;padding:11px 46px 11px 18px;font-size:14.5px;text-align:center}
+  .newsbar .nb-tag{background:var(--jaune);color:#5b4300;font-weight:900;font-size:11px;letter-spacing:.06em;padding:3px 9px;border-radius:999px;text-transform:uppercase}
+  .newsbar .nb-txt{font-weight:600}
+  .newsbar .nb-link{color:#fff;font-weight:800;text-decoration:underline;white-space:nowrap}
+  .newsbar .nb-x{position:absolute;right:10px;top:50%;transform:translateY(-50%);background:rgba(255,255,255,.22);border:none;color:#fff;width:26px;height:26px;border-radius:50%;cursor:pointer;font-size:12px;line-height:1}
+  .newsbar .nb-x:hover{background:rgba(255,255,255,.4)}
+  .newsbar.hidden{display:none}
   @media(max-width:680px){.contact-grid{grid-template-columns:1fr}.hero .deco{display:none}}
 </style>
 </head>
@@ -151,6 +160,14 @@
     </nav>
   </div>
 </header>
+
+<!-- ===== BANDEAU ACTUALITÉ — POUR CHANGER L'ACTU : modifier data-news (un identifiant unique), le texte et le lien ci-dessous ===== -->
+<div class="newsbar" id="newsbar" data-news="2026-juin-travaux-inauguration">
+  <span class="nb-tag">Info</span>
+  <span class="nb-txt">🚧 <b>Le CASE fait peau neuve !</b> Travaux en cours tout le mois de juin — réouverture très vite avec une belle inauguration. 🎉</span>
+  <a class="nb-link" href="#contact">Restez informés →</a>
+  <button class="nb-x" onclick="closeNews()" aria-label="Fermer l'annonce">✕</button>
+</div>
 
 <!-- HERO -->
 <section class="hero" id="accueil">
@@ -364,6 +381,13 @@ async function submitPartner(){
   info.style.color='#1f9d6b'; info.textContent='✅ Merci ! Votre demande est envoyée — le CASE vous recontactera.';
   ['pa_commerce','pa_contact','pa_email','pa_phone','pa_type','pa_message'].forEach(id=>g(id).value='');
 }
+/* Bandeau actualité : fermeture mémorisée (réapparaît si on change data-news) */
+(function(){
+  var bar=document.getElementById('newsbar'); if(!bar) return;
+  var key='news_'+bar.dataset.news;
+  try{ if(localStorage.getItem(key)==='1') bar.classList.add('hidden'); }catch(e){}
+  window.closeNews=function(){ bar.classList.add('hidden'); try{localStorage.setItem(key,'1')}catch(e){} };
+})();
 </script>
 
 </body>
