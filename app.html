@@ -126,6 +126,7 @@
     <button data-tab="caisse">💵 Caisse</button>
     <button data-tab="dettes">💳 Dettes & créances</button>
     <button data-tab="bilan">📈 Bilan</button>
+    <button data-tab="journal" style="display:none">🕘 Historique</button>
     <button data-tab="data" style="margin-left:auto">⚙️ Données</button>
   </nav>
 
@@ -657,6 +658,17 @@
       </div>
     </div>
   </section>
+
+  <section id="journal" class="page">
+    <div class="panel">
+      <div class="toolbar" style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
+        <h2 style="margin:0">🕘 Historique des modifications</h2>
+        <div class="field" style="max-width:280px;flex:1"><input id="j_search" placeholder="🔍 Filtrer (nom, rubrique, personne…)" oninput="renderJournal()"></div>
+      </div>
+      <p class="hint">Journal automatique : chaque ajout, modification ou suppression est noté ici avec la date, l'heure et la personne connectée. Réservé au bureau. L'historique démarre à la mise en place de cette fonction — les changements antérieurs n'ont pas pu être enregistrés.</p>
+      <div id="journalRows"></div>
+    </div>
+  </section>
 </div>
 
 <div class="overlay" id="opModal" onclick="if(event.target===this)closeModal()">
@@ -684,7 +696,71 @@ const uid = () => Date.now().toString(36)+Math.random().toString(36).slice(2,7);
 let db = load();
 function load(){ try{ return Object.assign(blank(), JSON.parse(localStorage.getItem(KEY))||{}); }catch(e){ return blank(); } }
 function blank(){ return {members:[],ops:[],projects:[],subventions:[],comptes:[],contacts:[],liens:[],docs:[],notes:[],echeances:[],reunions:[],incidents:[],dettes:[]}; }
-function save(){ localStorage.setItem(KEY, JSON.stringify(db)); renderAll(); }
+function save(){ jLog(); localStorage.setItem(KEY, JSON.stringify(db)); renderAll(); }
+
+/* ---- Historique (journal d'activité automatique, onglet réservé au bureau) ---- */
+const J_COLLS={
+  members:{lbl:'Adhérent',mod:'Adhérents',name:x=>x.name},
+  ops:{lbl:'Opération',f:1,mod:'Comptabilité',name:x=>x.label},
+  projects:{lbl:'Projet',mod:'Projets',name:x=>x.name},
+  subventions:{lbl:'Subvention',f:1,mod:'Subventions',name:x=>x.name},
+  contacts:{lbl:'Contact',mod:'Répertoire',name:x=>x.name},
+  liens:{lbl:'Lien',mod:'Répertoire',name:x=>x.label},
+  docs:{lbl:'Document',mod:'Secrétariat',name:x=>x.label||x.type},
+  notes:{lbl:'Note',f:1,mod:'Secrétariat',name:x=>(x.text||'').slice(0,50)},
+  echeances:{lbl:'Échéance',f:1,mod:'Secrétariat',name:x=>x.label},
+  reunions:{lbl:'Réunion',f:1,mod:'Secrétariat',name:x=>(x.type||'Réunion')+(x.date?' du '+fmtDate(x.date):'')},
+  incidents:{lbl:'Événement',mod:'Événements',name:x=>(x.type||'Événement')+(x.date?' du '+fmtDate(x.date):'')},
+  dettes:{lbl:'Dette/créance',f:1,mod:'Dettes & créances',name:x=>x.label||x.tiers}
+};
+const J_LISTS={comptes:{lbl:'Compte comptable'},sites:{lbl:'Site'},actions:{lbl:'Action',f:1},cats:{lbl:'Catégorie',f:1},typesAdh:{lbl:"Type d'adhésion"}};
+const jAcc=(f,verbe)=>verbe+(f?'e':'');
+let _jPrev=null;
+function jSnap(){
+  const s={};
+  for(const k in J_COLLS){ const m={}; (db[k]||[]).forEach(it=>{ if(it&&it.id) m[it.id]=JSON.stringify(it); }); s[k]=m; }
+  for(const k in J_LISTS){ s['#'+k]=(db[k]||[]).slice(); }
+  return s;
+}
+function jEntry(mod,txt){ return {t:new Date().toISOString(), u:window._bobUser||'', mod, txt}; }
+function jLog(){
+  if(!_jPrev){ _jPrev=jSnap(); return; }
+  const now=jSnap(), entries=[];
+  for(const k in J_COLLS){
+    const prev=_jPrev[k]||{}, cur=now[k]||{}, C=J_COLLS[k];
+    for(const id in cur){
+      if(!(id in prev)) entries.push(jEntry(C.mod,'➕ '+C.lbl+' '+jAcc(C.f,'ajouté')+' : '+(C.name(JSON.parse(cur[id]))||'(sans nom)')));
+      else if(prev[id]!==cur[id]) entries.push(jEntry(C.mod,'✏️ '+C.lbl+' '+jAcc(C.f,'modifié')+' : '+(C.name(JSON.parse(cur[id]))||'(sans nom)')));
+    }
+    for(const id in prev){ if(!(id in cur)) entries.push(jEntry(C.mod,'🗑️ '+C.lbl+' '+jAcc(C.f,'supprimé')+' : '+(C.name(JSON.parse(prev[id]))||'(sans nom)'))); }
+  }
+  for(const k in J_LISTS){
+    const p=_jPrev['#'+k]||[], c=now['#'+k]||[], L=J_LISTS[k];
+    c.filter(v=>!p.includes(v)).forEach(v=>entries.push(jEntry('Données','➕ '+L.lbl+' '+jAcc(L.f,'ajouté')+' : '+v)));
+    p.filter(v=>!c.includes(v)).forEach(v=>entries.push(jEntry('Données','🗑️ '+L.lbl+' '+jAcc(L.f,'supprimé')+' : '+v)));
+  }
+  _jPrev=now;
+  if(entries.length) db.journal=(db.journal||[]).concat(entries).slice(-500);
+}
+function renderJournal(){
+  const box=$('journalRows'); if(!box) return;
+  const q=(($('j_search')||{value:''}).value||'').toLowerCase();
+  const items=(db.journal||[]).slice().reverse().filter(e=>((e.txt||'')+' '+(e.u||'')+' '+(e.mod||'')).toLowerCase().includes(q));
+  if(!items.length){ box.innerHTML='<p class="empty">Aucune activité enregistrée pour le moment. À partir de maintenant, chaque ajout, modification ou suppression sera noté ici automatiquement.</p>'; return; }
+  let lastDay='', html='';
+  items.forEach(e=>{
+    const d=new Date(e.t);
+    let day=d.toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+    day=day.charAt(0).toUpperCase()+day.slice(1);
+    if(day!==lastDay){ html+='<h3 style="margin:16px 0 4px;font-size:13px;color:#5c7468">'+esc(day)+'</h3>'; lastDay=day; }
+    html+='<div style="display:flex;gap:10px;align-items:baseline;padding:7px 10px;border-bottom:1px solid #eef3ef;font-size:14px">'
+      +'<span class="muted" style="font-size:12px;white-space:nowrap">'+d.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'})+'</span>'
+      +'<span style="flex:1">'+esc(e.txt||'')+' <span class="pill" style="background:#eef2fb;color:#1f4fc4;font-size:11px">'+esc(e.mod||'')+'</span></span>'
+      +'<strong style="font-size:12px;color:#127a51;white-space:nowrap">'+esc(e.u||'')+'</strong>'
+      +'</div>';
+  });
+  box.innerHTML=html;
+}
 
 /* ---- Navigation ---- */
 document.querySelectorAll('nav.tabs button').forEach(b=>{
@@ -1127,15 +1203,15 @@ function renderDocsModal(){
   $('md_title').textContent='📎 Documents — '+(rec.name||'');
   const list = files.length
     ? files.map((f,i)=>`<div class="kv"><span>📄 <a href="#" onclick="openDoc(${i});return false" style="color:var(--brand)">${esc(f.name)}</a> <span class="muted" style="font-size:12px">${f.ts?fmtDate(f.ts):''}</span></span>
-        <button class="danger" onclick="delDoc(${i})">Retirer</button></div>`).join('')
+        <button class="danger" onclick="delDocFile(${i})">Retirer</button></div>`).join('')
     : '<p class="hint" style="margin:0">Aucun document joint pour le moment.</p>';
   $('md_body').innerHTML=`<div style="display:grid;gap:8px">${list}</div>
     <div class="field" style="margin-top:16px"><label>➕ Joindre un fichier (PDF, image, tableau…)</label>
-      <input type="file" id="docFileInput" onchange="addDoc(this)"></div>
+      <input type="file" id="docFileInput" onchange="addDocFile(this)"></div>
     <p class="hint" id="docInfo" style="margin:6px 0 0"></p>
     <div class="row" style="margin-top:16px;justify-content:flex-end"><button class="ghost btn" onclick="closeModal()">Fermer</button></div>`;
 }
-async function addDoc(input){
+async function addDocFile(input){
   const f=input.files&&input.files[0]; if(!f)return;
   if(!window.bobUploadFile){ $('docInfo').innerHTML='<span style="color:#c0392b">Connexion requise pour joindre un fichier.</span>'; return; }
   $('docInfo').innerHTML='⏳ Envoi du document en ligne…';
@@ -1151,7 +1227,7 @@ async function openDoc(i){
   const url=window.bobPhotoSrc?await window.bobPhotoSrc(f.ref):f.ref;
   if(url) window.open(url,'_blank'); else alert('Document indisponible.');
 }
-function delDoc(i){
+function delDocFile(i){
   if(!docsCtx)return; if(!confirm('Retirer ce document de la liste ?'))return;
   const rec=(db[docsCtx.entity]||[]).find(x=>x.id===docsCtx.id); if(!rec)return;
   rec.files=(rec.files||[]).filter((_,j)=>j!==i);
@@ -1703,7 +1779,7 @@ function kpi(label,value,cls='',sub=''){
 }
 function esc(s){ return (s==null?'':String(s)).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 
-function renderAll(){ renderDashboard(); renderMembers(); renderRelances(); renderOps(); renderCaisse(); renderProjects(); renderSubventions(); renderEcheancier(); renderBilan(); renderRepertoire(); renderSecretariat(); renderReunions(); renderIncidents(); renderDettes(); renderOfficialLinks(); refreshComptes(); renderListParams(); }
+function renderAll(){ renderDashboard(); renderMembers(); renderRelances(); renderOps(); renderCaisse(); renderProjects(); renderSubventions(); renderEcheancier(); renderBilan(); renderRepertoire(); renderSecretariat(); renderReunions(); renderIncidents(); renderDettes(); renderOfficialLinks(); refreshComptes(); renderListParams(); renderJournal(); }
 
 /* ---- Data import/export ---- */
 function exportJSON(){
@@ -1713,7 +1789,7 @@ function exportJSON(){
 function importJSON(e){
   const f=e.target.files[0]; if(!f)return;
   const r=new FileReader();
-  r.onload=()=>{ try{ const d=JSON.parse(r.result); db=Object.assign(blank(),d); save(); alert('Sauvegarde importée ✅'); }catch(err){ alert('Fichier illisible.'); } };
+  r.onload=()=>{ try{ const d=JSON.parse(r.result); db=Object.assign(blank(),d); _jPrev=null; db.journal=(db.journal||[]).concat([jEntry('Données','📥 Sauvegarde importée (remplacement des données)')]).slice(-500); save(); alert('Sauvegarde importée ✅'); }catch(err){ alert('Fichier illisible.'); } };
   r.readAsText(f); e.target.value='';
 }
 function csvRow(arr){ return arr.map(v=>'"'+String(v==null?'':v).replace(/"/g,'""')+'"').join(';'); }
@@ -1750,11 +1826,12 @@ function exportComptaCSV(){
 function download(blob,name){
   const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=name; a.click(); URL.revokeObjectURL(a.href);
 }
-function resetAll(){ if(confirm('Tout effacer définitivement ? Pense à exporter une sauvegarde avant.')){ db=blank(); save(); } }
+function resetAll(){ if(confirm('Tout effacer définitivement ? Pense à exporter une sauvegarde avant.')){ db=blank(); _jPrev=null; db.journal=[jEntry('Données','🧹 Toutes les données ont été effacées (remise à zéro)')]; save(); } }
 /* init */
 $('m_date').value=today(); $('a_date').value=today(); $('t_date').value=today(); $('q_date').value=today(); $('r_date').value=today(); $('i_date').value=today(); $('de_date').value=today();
 addSplitRow(); // première ligne de répartition vide
 fillModel(); // pré-remplit le modèle de courrier par défaut
+_jPrev=jSnap(); // point de départ de l'historique (sinon la 1ère action après ouverture n'est pas notée)
 renderAll();
 </script>
 
@@ -1834,6 +1911,7 @@ renderAll();
   window.cloudRefresh=async function(){
     const {data:st}=await sbc.from('app_state').select('data,updated_at').eq('asso_id',myAsso).maybeSingle();
     db = Object.assign(blank(), (st&&st.data&&typeof st.data==='object')?st.data:{});
+    _jPrev = jSnap();
     lastSyncTs = st?st.updated_at:lastSyncTs; dirty=false;
     renderAll(); setSync('✓ rechargé depuis le serveur','#dff5e9');
   };
@@ -2061,13 +2139,19 @@ renderAll();
     if(prof.statut!=='actif'){ gate('<h2>⏳ Accès en attente</h2><p>Ton accès doit être validé par un administrateur avant d\'entrer dans la gestion.</p><p style="margin-top:18px"><a href="connexion.html" style="background:#1f9d6b;color:#fff;text-decoration:none;padding:11px 18px;border-radius:999px;font-weight:800">→ Espace bureau</a></p>'); return; }
     myAsso=prof.asso_id;
     canWrite=['president','tresorier','bureau'].includes(prof.role);
+    window._bobUser=(prof.full_name||prof.email||'').split('@')[0];
+    // onglet Historique : réservé au bureau (retiré du navigateur pour les autres rôles)
+    const jBtn=document.querySelector('nav.tabs button[data-tab="journal"]'), jSec=document.getElementById('journal');
+    if(canWrite){ if(jBtn) jBtn.style.display=''; }
+    else { if(jBtn) jBtn.remove(); if(jSec) jSec.remove(); }
     // charge le coffre de l'asso
     const {data:st,error:le}=await sbc.from('app_state').select('data,updated_at').eq('asso_id',myAsso).maybeSingle();
     if(le){ gate('<h2>Erreur de lecture</h2><p>'+esc(le.message)+'</p>'); return; }
     db = Object.assign(blank(), (st&&st.data&&typeof st.data==='object')?st.data:{});
+    _jPrev = jSnap();
     lastSyncTs = st?st.updated_at:null;
     // remplace l'enregistrement local par l'enregistrement en ligne
-    save = function(){ try{localStorage.setItem(KEY,JSON.stringify(db));}catch(e){} renderAll(); schedulePush(); };
+    save = function(){ jLog(); try{localStorage.setItem(KEY,JSON.stringify(db));}catch(e){} renderAll(); schedulePush(); };
     addBanner();
     renderAll();
     applyPerms();
