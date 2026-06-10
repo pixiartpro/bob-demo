@@ -326,8 +326,11 @@
       </div>
     </div>
     <div class="panel">
-      <h2>Mouvements d'espèces</h2>
-      <p class="hint">Toutes les entrées et sorties en espèces, et les remises en banque. Clique sur une ligne pour le détail.</p>
+      <div class="toolbar">
+        <div><h2 style="margin:0">Mouvements d'espèces</h2>
+        <p class="hint" style="margin:2px 0 0">Toutes les entrées et sorties en espèces, et les remises en banque. Clique sur une ligne pour le détail.</p></div>
+        <button class="ghost btn" id="caisseSortBtn" onclick="toggleCaisseSort()" title="Inverser l'ordre des dates">↓ Plus récents en premier</button>
+      </div>
       <table><thead><tr><th>Date</th><th>Libellé</th><th>Type</th><th class="num">Montant</th><th class="num">Solde caisse</th></tr></thead>
         <tbody id="caisseRows"></tbody></table>
     </div>
@@ -435,6 +438,18 @@
         <div>
           <h2 style="font-size:14px;margin:0 0 8px" class="red">➖ Dépenses par catégorie</h2>
           <table><tbody id="bilanDep"></tbody></table>
+        </div>
+      </div>
+      <h2 style="font-size:14px;margin:22px 0 4px">📒 Détail par Code Comptable</h2>
+      <p class="hint" style="margin:0 0 10px">Les mêmes recettes et dépenses, regroupées cette fois par code du plan comptable (pratique pour l'expert-comptable et le compte rendu financier).</p>
+      <div class="cards" style="grid-template-columns:repeat(auto-fit,minmax(280px,1fr))">
+        <div>
+          <h2 style="font-size:14px;margin:0 0 8px" class="green">➕ Recettes par code comptable</h2>
+          <table><tbody id="bilanRecC"></tbody></table>
+        </div>
+        <div>
+          <h2 style="font-size:14px;margin:0 0 8px" class="red">➖ Dépenses par code comptable</h2>
+          <table><tbody id="bilanDepC"></tbody></table>
         </div>
       </div>
     </div>
@@ -1099,6 +1114,49 @@ function saveEdit(){
   });
   editCtx=null; closeModal(); save();
 }
+/* ---- Documents joints (projets, subventions) : fichiers stockés dans le coffre sécurisé ---- */
+let docsCtx=null;
+function openDocs(entity,id){
+  const rec=(db[entity]||[]).find(x=>x.id===id); if(!rec)return;
+  docsCtx={entity,id}; renderDocsModal(); $('opModal').classList.add('open');
+}
+function renderDocsModal(){
+  if(!docsCtx)return;
+  const rec=(db[docsCtx.entity]||[]).find(x=>x.id===docsCtx.id); if(!rec){ closeModal(); return; }
+  const files=rec.files||[];
+  $('md_title').textContent='📎 Documents — '+(rec.name||'');
+  const list = files.length
+    ? files.map((f,i)=>`<div class="kv"><span>📄 <a href="#" onclick="openDoc(${i});return false" style="color:var(--brand)">${esc(f.name)}</a> <span class="muted" style="font-size:12px">${f.ts?fmtDate(f.ts):''}</span></span>
+        <button class="danger" onclick="delDoc(${i})">Retirer</button></div>`).join('')
+    : '<p class="hint" style="margin:0">Aucun document joint pour le moment.</p>';
+  $('md_body').innerHTML=`<div style="display:grid;gap:8px">${list}</div>
+    <div class="field" style="margin-top:16px"><label>➕ Joindre un fichier (PDF, image, tableau…)</label>
+      <input type="file" id="docFileInput" onchange="addDoc(this)"></div>
+    <p class="hint" id="docInfo" style="margin:6px 0 0"></p>
+    <div class="row" style="margin-top:16px;justify-content:flex-end"><button class="ghost btn" onclick="closeModal()">Fermer</button></div>`;
+}
+async function addDoc(input){
+  const f=input.files&&input.files[0]; if(!f)return;
+  if(!window.bobUploadFile){ $('docInfo').innerHTML='<span style="color:#c0392b">Connexion requise pour joindre un fichier.</span>'; return; }
+  $('docInfo').innerHTML='⏳ Envoi du document en ligne…';
+  const ref=await window.bobUploadFile(f);
+  if(!ref){ $('docInfo').innerHTML='<span style="color:#c0392b">❌ Échec de l\'envoi (réessaie, ou vérifie tes droits d\'écriture).</span>'; return; }
+  const rec=(db[docsCtx.entity]||[]).find(x=>x.id===docsCtx.id); if(!rec)return;
+  rec.files=rec.files||[]; rec.files.push({name:f.name, ref, ts:today()});
+  save(); renderDocsModal();
+}
+async function openDoc(i){
+  if(!docsCtx)return; const rec=(db[docsCtx.entity]||[]).find(x=>x.id===docsCtx.id); if(!rec)return;
+  const f=(rec.files||[])[i]; if(!f)return;
+  const url=window.bobPhotoSrc?await window.bobPhotoSrc(f.ref):f.ref;
+  if(url) window.open(url,'_blank'); else alert('Document indisponible.');
+}
+function delDoc(i){
+  if(!docsCtx)return; if(!confirm('Retirer ce document de la liste ?'))return;
+  const rec=(db[docsCtx.entity]||[]).find(x=>x.id===docsCtx.id); if(!rec)return;
+  rec.files=(rec.files||[]).filter((_,j)=>j!==i);
+  save(); renderDocsModal();
+}
 /* ---- Subventions : enregistrer un versement reçu → crée la recette en compta + met à jour le solde ---- */
 function recordVersement(id){
   const s=db.subventions.find(x=>x.id===id); if(!s)return;
@@ -1151,6 +1209,8 @@ function delCompte(v){
 }
 
 /* ---- Caisse (espèces) ---- */
+let caisseAsc=false;
+function toggleCaisseSort(){ caisseAsc=!caisseAsc; renderCaisse(); }
 function addRemise(){
   const amount=parseFloat($('t_amount').value);
   if(!(amount>0)){ alert('Indique le montant déposé.'); return; }
@@ -1175,9 +1235,10 @@ function renderCaisse(){
     else { delta = o.to==='caisse'?o.amount:-o.amount; tag='<span class="pill wait">Remise banque</span>'; }
     run+=delta; return {o,delta,tag,run};
   });
+  const sb=$('caisseSortBtn'); if(sb) sb.innerHTML = caisseAsc ? '↑ Plus anciens en premier' : '↓ Plus récents en premier';
   const tb=$('caisseRows');
   if(!rows.length){ tb.innerHTML='<tr><td colspan="5" class="empty">Aucun mouvement d\'espèces. Saisis une opération en « Espèces » dans la Comptabilité.</td></tr>'; return; }
-  tb.innerHTML = rows.slice().reverse().map(r=>{
+  tb.innerHTML = (caisseAsc ? rows.slice() : rows.slice().reverse()).map(r=>{
     const clk = r.o.type!=='transfer';
     return `<tr class="${clk?'clickable':''}" ${clk?`onclick="openOpDetail('${r.o.id}')"`:''}>
       <td>${fmtDate(r.o.date)}</td><td>${esc(r.o.label)}</td><td>${r.tag}</td>
@@ -1212,7 +1273,8 @@ function renderProjects(){
     return `<div class="panel">
       <div class="toolbar">
         <div><h2 style="margin:0">${esc(p.name)} <span class="pill ${sCls}" style="font-size:11px;vertical-align:middle">${esc(p.status)}</span></h2></div>
-        <div style="white-space:nowrap"><button class="ghost btn" onclick="openEdit('projects','${p.id}')">✏️ Modifier</button>
+        <div style="white-space:nowrap"><button class="ghost btn" onclick="openDocs('projects','${p.id}')" title="Pièces jointes du projet">📎 Documents${(p.files&&p.files.length)?' ('+p.files.length+')':''}</button>
+        <button class="ghost btn" onclick="openEdit('projects','${p.id}')">✏️ Modifier</button>
         <button class="danger" onclick="delProject('${p.id}')">Supprimer</button></div>
       </div>
       <div class="cards" style="margin-bottom:8px">
@@ -1259,10 +1321,11 @@ function renderDashboard(){
 /* ---- Bilan / compte de résultat ---- */
 function bilanData(y){
   const ops=db.ops.filter(o=>o.type!=='transfer' && (o.date||'').slice(0,4)===y);
-  const grp=type=>{ const t={}; ops.filter(o=>o.type===type).forEach(o=>{ const k=o.cat||'(sans catégorie)'; t[k]=(t[k]||0)+o.amount; }); return Object.entries(t).sort((a,b)=>b[1]-a[1]); };
-  const rec=grp('in'), dep=grp('out');
+  const grpBy=(type,field,fallback)=>{ const t={}; ops.filter(o=>o.type===type).forEach(o=>{ const k=(o[field]||'').toString().trim()||fallback; t[k]=(t[k]||0)+o.amount; }); return Object.entries(t).sort((a,b)=>b[1]-a[1]); };
+  const rec=grpBy('in','cat','(sans catégorie)'), dep=grpBy('out','cat','(sans catégorie)');
+  const recC=grpBy('in','compte','(sans code comptable)'), depC=grpBy('out','compte','(sans code comptable)');
   const tIn=rec.reduce((s,r)=>s+r[1],0), tOut=dep.reduce((s,r)=>s+r[1],0);
-  return {rec,dep,tIn,tOut,res:tIn-tOut};
+  return {rec,dep,recC,depC,tIn,tOut,res:tIn-tOut};
 }
 function bilanYears(){ const ys=[...new Set(db.ops.map(o=>(o.date||'').slice(0,4)).filter(Boolean))].sort().reverse(); return ys.length?ys:[String(new Date(today()).getFullYear())]; }
 function renderBilan(){
@@ -1274,6 +1337,8 @@ function renderBilan(){
     + `<tr><td><strong>Total</strong></td><td class="num ${cls}"><strong>${euro(tot)}</strong></td></tr>`;
   $('bilanRec').innerHTML=tbl(d.rec,d.tIn,'green');
   $('bilanDep').innerHTML=tbl(d.dep,d.tOut,'red');
+  $('bilanRecC').innerHTML=tbl(d.recC,d.tIn,'green');
+  $('bilanDepC').innerHTML=tbl(d.depC,d.tOut,'red');
   $('bilanResultWrap').innerHTML=`<div class="card" style="border-left:4px solid ${d.res>=0?'var(--green)':'var(--red)'}">
     <div class="label">Résultat de l'exercice ${y}</div>
     <div class="value ${d.res>=0?'green':'red'}">${d.res>=0?'Excédent ':'Déficit '}${euro(Math.abs(d.res))}</div>
@@ -1281,15 +1346,17 @@ function renderBilan(){
 }
 function printBilan(){
   const y=$('b_year').value, d=bilanData(y);
-  const tbl=(rows,tot)=>`<table><thead><tr><th>Catégorie</th><th class="num">Montant</th></tr></thead><tbody>`
+  const tbl=(rows,tot,head='Catégorie')=>`<table><thead><tr><th>${head}</th><th class="num">Montant</th></tr></thead><tbody>`
     + rows.map(([k,v])=>`<tr><td>${esc(k)}</td><td class="num">${euro(v)}</td></tr>`).join('')
     + `<tr><td><strong>Total</strong></td><td class="num"><strong>${euro(tot)}</strong></td></tr></tbody></table>`;
   printHTML(`<h1 style="margin:0">CASE du Bois de Nèfles</h1>
     <p style="margin:2px 0 0">Association loi 1901 — Saint-Denis (La Réunion)</p>
     <h2>Compte de résultat — exercice ${y}</h2>
-    <h3 style="margin-bottom:0">Recettes</h3>${tbl(d.rec,d.tIn)}
-    <h3 style="margin-bottom:0">Dépenses</h3>${tbl(d.dep,d.tOut)}
+    <h3 style="margin-bottom:0">Recettes par catégorie</h3>${tbl(d.rec,d.tIn)}
+    <h3 style="margin-bottom:0">Dépenses par catégorie</h3>${tbl(d.dep,d.tOut)}
     <h3>Résultat de l'exercice : ${d.res>=0?'Excédent':'Déficit'} de ${euro(Math.abs(d.res))}</h3>
+    <h3 style="margin-bottom:0">Recettes par code comptable</h3>${tbl(d.recC,d.tIn,'Code comptable')}
+    <h3 style="margin-bottom:0">Dépenses par code comptable</h3>${tbl(d.depC,d.tOut,'Code comptable')}
     <p style="margin-top:30px;font-size:12px;color:#666">Édité le ${fmtDate(today())} — document établi à partir de la comptabilité de l'association.</p>`);
 }
 function printHTML(html){ $('printArea').innerHTML=html; window.print(); }
@@ -1398,6 +1465,7 @@ function renderSubventions(){
     <td class="num ${s.verse>0?'green':''}">${euro(s.verse||0)}</td>
     <td>${pill(subStatut(s))}</td>
     <td style="white-space:nowrap"><button class="ghost btn" style="padding:4px 9px;font-size:12px" onclick="recordVersement('${s.id}')" title="Enregistrer un versement reçu (crée la recette en compta)">💶 Versement</button>
+      <button class="ghost btn" style="padding:4px 9px;font-size:12px" onclick="openDocs('subventions','${s.id}')" title="Pièces jointes (dossier, tableau financier...)">📎${(s.files&&s.files.length)?' '+s.files.length:''}</button>
       <button class="ghost btn" style="padding:4px 9px;font-size:12px" onclick="openEdit('subventions','${s.id}')" title="Modifier">✏️</button>
       <button class="danger" onclick="delSubvention('${s.id}')">Suppr.</button></td></tr>`).join('');
 }
@@ -1788,6 +1856,17 @@ renderAll();
       catch(e){ return ''; }
     }
     return v;
+  };
+  // Documents joints (projets, subventions) : tout type de fichier, dans le même coffre sécurisé
+  window.bobUploadFile=async function(file){
+    if(!myAsso||!canWrite||!file) return null;
+    try{
+      const m=(file.name||'').match(/\.[a-z0-9]+$/i); const ext=m?m[0].toLowerCase():'';
+      const path=myAsso+'/docs/'+Date.now().toString(36)+Math.random().toString(36).slice(2,7)+ext;
+      const {error}=await sbc.storage.from('justificatifs').upload(path, file, {contentType:file.type||'application/octet-stream'});
+      if(error){ console.warn('upload doc:', error.message); return null; }
+      return 'sb:'+path;
+    }catch(e){ console.warn('upload doc:', e); return null; }
   };
 
   // Demandes de partenariat (commerçants) — table partenaires
