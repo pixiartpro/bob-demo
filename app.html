@@ -126,6 +126,7 @@
     <button data-tab="caisse">💵 Caisse</button>
     <button data-tab="dettes">💳 Dettes & créances</button>
     <button data-tab="bilan">📈 Bilan</button>
+    <button data-tab="previsionnel">🔮 Prévisionnel</button>
     <button data-tab="journal" style="display:none">🕘 Historique</button>
     <button data-tab="data" style="margin-left:auto">⚙️ Données</button>
   </nav>
@@ -377,6 +378,7 @@
       </div>
       <div class="row" style="margin-top:10px">
         <div class="field"><label>📅 Date limite de dépôt</label><input id="s_deadline" type="date"></div>
+        <div class="field"><label>🗳️ Date de vote (réelle ou prévue)</label><input id="s_datevote" type="date" title="Date du passage en commission / vote du financeur. Sert au prévisionnel : 80% versés ~3 mois après, 20% l'année suivante."></div>
         <div class="field" style="flex:0;min-width:200px"><label>Récurrence</label>
           <select id="s_recurrent"><option value="">Demande unique</option><option value="1">🔁 Revient chaque année</option></select></div>
         <div class="field" style="flex:2"><label>Lien de dépôt en ligne</label><input id="s_lien" placeholder="https://... (portail de la Mairie, CAF...)"></div>
@@ -415,6 +417,44 @@
       </div>
     </div>
     <div id="detteList"></div>
+  </section>
+
+  <!-- PRÉVISIONNEL -->
+  <section id="previsionnel" class="page">
+    <div class="panel">
+      <div class="toolbar">
+        <div>
+          <h2 style="margin:0">🔮 Budget prévisionnel <span id="prevYear"></span></h2>
+          <p class="hint" style="margin:2px 0 0">Projection jusqu'au 31 décembre : on prolonge les dépenses au rythme moyen des mois saisis et on estime les subventions selon leur statut. <strong>Aucune écriture n'est créée en compta</strong> — c'est une simulation.</p>
+        </div>
+        <div class="field" style="flex:0;min-width:130px"><label>Année</label><select id="prev_year" onchange="renderPrevisionnel()"></select></div>
+      </div>
+      <div class="cards" id="prevKpis" style="margin-top:8px"></div>
+      <p class="hint" id="prevHypo" style="margin:8px 0 0"></p>
+    </div>
+
+    <div class="panel">
+      <h2 style="margin:0 0 4px">📊 Compte de résultat prévisionnel</h2>
+      <p class="hint">Coche « récurrent » pour les lignes qui reviennent chaque mois (loyer, charges…) : elles sont projetées jusqu'à décembre. Les lignes non cochées (cotisations, dons, subventions ponctuelles) sont comptées une seule fois, telles que saisies. Les subventions à venir sont estimées automatiquement (ligne « auto »).</p>
+      <h3 style="margin:14px 0 6px;font-size:15px;color:#127a51">Recettes</h3>
+      <table><thead><tr><th>Catégorie</th><th class="num">Réel à ce jour</th><th style="text-align:center">Récurrent&nbsp;?</th><th class="num">Projeté</th></tr></thead><tbody id="prevRecRows"></tbody></table>
+      <h3 style="margin:18px 0 6px;font-size:15px;color:#c0392b">Dépenses</h3>
+      <table><thead><tr><th>Catégorie</th><th class="num">Réel à ce jour</th><th style="text-align:center">Récurrent&nbsp;?</th><th class="num">Projeté</th></tr></thead><tbody id="prevDepRows"></tbody></table>
+    </div>
+
+    <div class="panel">
+      <h2 style="margin:0 0 4px">🏛️ Détail des subventions retenues</h2>
+      <p class="hint">Refusée = 0 · Versée = déjà reçu (déjà en compta) · Accordée non versée = reste à percevoir · En commission = 50 % du demandé. Le « à recevoir » est étalé : 80 % un mois après le vote, 20 % l'année suivante.</p>
+      <table><thead><tr><th>Subvention</th><th>Statut</th><th class="num">Base retenue</th><th class="num">Déjà reçu</th><th class="num">À recevoir cette année</th><th class="num">Reporté an prochain</th></tr></thead>
+        <tbody id="prevSubRows"></tbody></table>
+    </div>
+
+    <div class="panel">
+      <h2 style="margin:0 0 12px">📅 Mois par mois</h2>
+      <table><thead><tr><th>Mois</th><th class="num">Recettes</th><th class="num">Dépenses</th><th class="num">Solde du mois</th><th class="num">Trésorerie cumulée</th></tr></thead>
+        <tbody id="prevMonthRows"></tbody></table>
+      <p class="hint" style="margin:8px 0 0">Les mois <strong>déjà saisis</strong> reprennent les chiffres réels ; les mois à venir sont une projection (en italique).</p>
+    </div>
   </section>
 
   <!-- BILAN -->
@@ -695,7 +735,7 @@ const uid = () => Date.now().toString(36)+Math.random().toString(36).slice(2,7);
 
 let db = load();
 function load(){ try{ return Object.assign(blank(), JSON.parse(localStorage.getItem(KEY))||{}); }catch(e){ return blank(); } }
-function blank(){ return {members:[],ops:[],projects:[],subventions:[],comptes:[],contacts:[],liens:[],docs:[],notes:[],echeances:[],reunions:[],incidents:[],dettes:[]}; }
+function blank(){ return {members:[],ops:[],projects:[],subventions:[],comptes:[],contacts:[],liens:[],docs:[],notes:[],echeances:[],reunions:[],incidents:[],dettes:[],recurrents:{}}; }
 function save(){ jLog(); localStorage.setItem(KEY, JSON.stringify(db)); renderAll(); }
 
 /* ---- Historique (journal d'activité automatique, onglet réservé au bureau) ---- */
@@ -1142,7 +1182,11 @@ const EDIT_SCHEMAS={
   subventions:{coll:'subventions',title:'subvention',f:[
     {k:'name',l:'Nom',t:'text'},{k:'structure',l:'Financeur',t:'list',dl:'structs'},{k:'site',l:'Site',t:'list',dl:'sites'},{k:'action',l:'Action',t:'list',dl:'actions'},
     {k:'demande',l:'Demandé (€)',t:'number'},{k:'accorde',l:'Accordé (€)',t:'number'},{k:'verse',l:'Versé (€)',t:'number'},
-    {k:'date',l:'Date',t:'date'},{k:'deadline',l:'Date limite de dépôt',t:'date'},{k:'recurrent',l:'Annuelle (récurrente)',t:'bool'},{k:'lien',l:'Lien de dépôt',t:'text'}]},
+    {k:'date',l:'Date de versement',t:'date'},{k:'deadline',l:'Date limite de dépôt',t:'date'},{k:'dateVote',l:'Date de vote (réelle ou prévue)',t:'date'},
+    {k:'recurrent',l:'Annuelle (récurrente)',t:'bool'},{k:'refusee',l:'Refusée',t:'bool'},{k:'lien',l:'Lien de dépôt',t:'text'}]},
+  dettes:{coll:'dettes',title:'dette / créance',f:[
+    {k:'sens',l:'Type',t:'select',opts:['dette','creance']},{k:'tiers',l:'Tiers (qui ?)',t:'text'},{k:'label',l:'Libellé',t:'text'},
+    {k:'montant',l:'Montant total (€)',t:'number'},{k:'date',l:'Date',t:'date'},{k:'echeance',l:'Échéance (date limite)',t:'date'}]},
   contacts:{coll:'contacts',title:'contact',f:[
     {k:'name',l:'Nom',t:'text'},{k:'org',l:'Organisation',t:'text'},{k:'email',l:'Email',t:'text'},{k:'phone',l:'Téléphone',t:'text'},{k:'note',l:'Note',t:'textarea'}]},
   liens:{coll:'liens',title:'lien',f:[
@@ -1476,19 +1520,24 @@ function memberReceipt(id){
 }
 
 /* ---- Subventions (pipeline demandé → accordé → versé) ---- */
-function subStatut(s){ return (s.verse>0)?'Versée':(s.accorde>0)?'Accordée':'Demandée'; }
+function subStatut(s){ return s.refusee?'Refusée':(s.verse>0)?'Versée':(s.accorde>0)?'Accordée':'Demandée'; }
+function toggleRefus(id){
+  const s=db.subventions.find(x=>x.id===id); if(!s) return;
+  if(!s.refusee && (s.verse>0)){ alert('Cette subvention a déjà des versements : on ne peut pas la marquer « refusée ».'); return; }
+  s.refusee=!s.refusee; save();
+}
 function addSubvention(){
   const name=$('s_name').value.trim();
   if(!name){ alert('Donne un nom à la subvention.'); return; }
   const verse=parseFloat($('s_verse').value)||0;
   const sub={id:uid(), name, structure:$('s_struct').value.trim(), site:$('s_site').value.trim(), action:$('s_action').value.trim(),
     demande:parseFloat($('s_demande').value)||0, accorde:parseFloat($('s_accorde').value)||0, verse, date:$('s_date').value||'',
-    deadline:$('s_deadline').value||'', recurrent:$('s_recurrent').value==='1', lien:$('s_lien').value.trim(), opId:''};
+    deadline:$('s_deadline').value||'', dateVote:$('s_datevote').value||'', refusee:false, recurrent:$('s_recurrent').value==='1', lien:$('s_lien').value.trim(), opId:''};
   if(verse>0){ const op={id:uid(),type:'in',label:'Subvention — '+name,cat:'Subvention',compte:"740 - Subventions d'exploitation",
       amount:verse,date:sub.date||today(),project:'',account:'banque',photo:'',splits:[{site:sub.site,action:sub.action,amount:verse}]};
     db.ops.push(op); sub.opId=op.id; }
   db.subventions.push(sub);
-  ['s_name','s_struct','s_site','s_action','s_demande','s_accorde','s_verse','s_date','s_deadline','s_lien'].forEach(id=>$(id).value='');
+  ['s_name','s_struct','s_site','s_action','s_demande','s_accorde','s_verse','s_date','s_deadline','s_datevote','s_lien'].forEach(id=>$(id).value='');
   $('s_recurrent').value='';
   save();
 }
@@ -1533,8 +1582,8 @@ function renderSubventions(){
     + kpi('Reste à percevoir',euro(reste),reste>0?'amber':'','accordé non encore versé');
   const tb=$('subRows');
   if(!subs.length){ tb.innerHTML='<tr><td colspan="8" class="empty">Aucune subvention enregistrée.</td></tr>'; return; }
-  const pill=st=> st==='Versée'?'<span class="pill ok">Versée</span>':st==='Accordée'?'<span class="pill wait">Accordée</span>':'<span class="pill" style="background:#eef0f5;color:#6b7488">Demandée</span>';
-  tb.innerHTML=subs.slice().sort((a,b)=>(b.demande||0)-(a.demande||0)).map(s=>`<tr>
+  const pill=st=> st==='Versée'?'<span class="pill ok">Versée</span>':st==='Accordée'?'<span class="pill wait">Accordée</span>':st==='Refusée'?'<span class="pill no">Refusée</span>':'<span class="pill" style="background:#eef0f5;color:#6b7488">Demandée</span>';
+  tb.innerHTML=subs.slice().sort((a,b)=>(b.demande||0)-(a.demande||0)).map(s=>`<tr${s.refusee?' style="opacity:.55"':''}>
     <td><strong>${esc(s.name)}</strong></td><td>${esc(s.structure||'—')}</td>
     <td style="font-size:13px" class="muted">${esc(s.site||'—')}${s.action?'<br>'+esc(s.action):''}</td>
     <td class="num">${euro(s.demande||0)}</td><td class="num">${euro(s.accorde||0)}</td>
@@ -1542,6 +1591,7 @@ function renderSubventions(){
     <td>${pill(subStatut(s))}</td>
     <td style="white-space:nowrap"><button class="ghost btn" style="padding:4px 9px;font-size:12px" onclick="recordVersement('${s.id}')" title="Enregistrer un versement reçu (crée la recette en compta)">💶 Versement</button>
       <button class="ghost btn" style="padding:4px 9px;font-size:12px" onclick="openDocs('subventions','${s.id}')" title="Pièces jointes (dossier, tableau financier...)">📎${(s.files&&s.files.length)?' '+s.files.length:''}</button>
+      <button class="ghost btn" style="padding:4px 9px;font-size:12px" onclick="toggleRefus('${s.id}')" title="${s.refusee?'Annuler le refus':'Marquer comme refusée (exclue du prévisionnel)'}">${s.refusee?'↩︎ Refus':'✖️ Refusée'}</button>
       <button class="ghost btn" style="padding:4px 9px;font-size:12px" onclick="openEdit('subventions','${s.id}')" title="Modifier">✏️</button>
       <button class="danger" onclick="delSubvention('${s.id}')">Suppr.</button></td></tr>`).join('');
 }
@@ -1748,6 +1798,12 @@ function addEcheanceDette(id){
   d.echeancier.push({date:impDate(dt||today()),montant:m,paye:false}); save();
 }
 function toggleEcheanceDette(id,idx){ const d=db.dettes.find(x=>x.id===id); if(d&&d.echeancier[idx]){ d.echeancier[idx].paye=!d.echeancier[idx].paye; save(); } }
+function editEcheanceDette(id,idx){
+  const d=db.dettes.find(x=>x.id===id); if(!d||!d.echeancier[idx]) return; const e=d.echeancier[idx];
+  const m=parseFloat(prompt('Nouveau montant de cette échéance (€) :', e.montant)); if(!(m>0)) return;
+  const dt=prompt('Nouvelle date de l\'échéance (jj/mm/aaaa) :', fmtDate(e.date)); if(dt===null) return;
+  e.montant=m; e.date=impDate(dt||e.date); save();
+}
 function delEcheanceDette(id,idx){ const d=db.dettes.find(x=>x.id===id); if(d){ d.echeancier.splice(idx,1); save(); } }
 function renderDettes(){
   const ds=db.dettes||[];
@@ -1765,9 +1821,10 @@ function renderDettes(){
       <div class="toolbar">
         <div><h2 style="margin:0;font-size:16px">${esc(d.label)} <span class="pill ${isDette?'no':'in'}">${isDette?'Dette':'Créance'}</span> <span class="pill ${solde?'ok':'wait'}">${solde?'Soldé':'Reste '+euro(reste)}</span></h2>
           <p class="hint" style="margin:2px 0 0">${esc(d.tiers||'—')}${d.echeance?' · échéance '+fmtDate(d.echeance):''} · total ${euro(d.montant)}${paid>0?' · déjà '+(isDette?'payé':'reçu')+' '+euro(paid):''}</p></div>
-        <button class="danger" onclick="delDette('${d.id}')">Supprimer</button>
+        <div style="white-space:nowrap"><button class="ghost btn" style="padding:4px 9px;font-size:12px" onclick="openEdit('dettes','${d.id}')" title="Modifier le montant, le libellé, les dates">✏️ Modifier</button>
+          <button class="danger" onclick="delDette('${d.id}')">Supprimer</button></div>
       </div>
-      ${ech.length?'<div style="margin:8px 0 4px;font-weight:700;font-size:12px;color:var(--muted);letter-spacing:.03em">ÉCHELONNEMENT</div>'+ech.map((e,i)=>`<div class="kv"><span style="${e.paye?'text-decoration:line-through;opacity:.55':''}"><input type="checkbox" ${e.paye?'checked':''} onclick="toggleEcheanceDette('${d.id}',${i})"> ${fmtDate(e.date)} — <strong>${euro(e.montant)}</strong></span><button class="danger" onclick="delEcheanceDette('${d.id}',${i})">✕</button></div>`).join(''):''}
+      ${ech.length?'<div style="margin:8px 0 4px;font-weight:700;font-size:12px;color:var(--muted);letter-spacing:.03em">ÉCHELONNEMENT</div>'+ech.map((e,i)=>`<div class="kv"><span style="${e.paye?'text-decoration:line-through;opacity:.55':''}"><input type="checkbox" ${e.paye?'checked':''} onclick="toggleEcheanceDette('${d.id}',${i})"> ${fmtDate(e.date)} — <strong>${euro(e.montant)}</strong></span><span style="white-space:nowrap"><button class="ghost btn" style="padding:2px 8px;font-size:12px" onclick="editEcheanceDette('${d.id}',${i})" title="Modifier cette échéance">✏️</button> <button class="danger" onclick="delEcheanceDette('${d.id}',${i})">✕</button></span></div>`).join(''):''}
       <div class="row" style="margin-top:10px"><button class="ghost btn" onclick="addEcheanceDette('${d.id}')">＋ Ajouter une échéance de paiement</button></div>
     </div>`;
   }).join('');
@@ -1779,7 +1836,126 @@ function kpi(label,value,cls='',sub=''){
 }
 function esc(s){ return (s==null?'':String(s)).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 
-function renderAll(){ renderDashboard(); renderMembers(); renderRelances(); renderOps(); renderCaisse(); renderProjects(); renderSubventions(); renderEcheancier(); renderBilan(); renderRepertoire(); renderSecretariat(); renderReunions(); renderIncidents(); renderDettes(); renderOfficialLinks(); refreshComptes(); renderListParams(); renderJournal(); }
+/* ---- Budget prévisionnel ---- */
+function prevAddMonths(iso,n){ const d=new Date(iso+'T00:00:00'); d.setDate(1); d.setMonth(d.getMonth()+n); return isoDate(d); }
+function subVoteDate(s,Y){
+  if(s.dateVote) return s.dateVote;
+  // hypothèse quand la date de vote n'est pas renseignée :
+  // accordée → supposée votée récemment (aujourd'hui) ; simple demande en commission → vote supposé au milieu de l'année
+  return (s.accorde||0)>0 ? today() : (Y+'-06-30');
+}
+function subExpected(s){
+  if(s.refusee) return 0;
+  const base=(s.accorde||0)>0 ? s.accorde : 0.5*(s.demande||0);
+  return Math.max(base, s.verse||0);
+}
+function subFlux(s,Y){ // flux RESTANT à encaisser (hors déjà versé) : 80% un mois après le vote, 20% l'année suivante
+  const exp=subExpected(s); if(exp<=0) return [];
+  const verse=s.verse||0, t80=0.8*exp;
+  const reste80=Math.max(0,t80-verse);
+  const reste20=(verse>=t80)?Math.max(0,exp-verse):(exp-t80);
+  const vd=subVoteDate(s,Y), f=[];
+  if(reste80>0.005) f.push({date:prevAddMonths(vd,1),montant:reste80});
+  if(reste20>0.005) f.push({date:prevAddMonths(vd,13),montant:reste20}); // ~ l'année suivante
+  return f;
+}
+function prevYears(){ const ys=opYears(); const cur=String(new Date(today()).getFullYear()); if(!ys.includes(cur)) ys.unshift(cur); return ys; }
+function prevRecKey(cat,type){ return type+'::'+cat; }
+function prevIsRecurrent(cat,type){ const r=(db.recurrents||{}); const k=prevRecKey(cat,type); return (k in r)?!!r[k]:(type==='out'); }
+function setRecurrent(cat,type,el){ db.recurrents=db.recurrents||{}; db.recurrents[prevRecKey(cat,type)]=el.checked; save(); }
+function renderPrevisionnel(){
+  const sel=$('prev_year'); if(!sel) return;
+  const years=prevYears();
+  if(sel.dataset.filled!=='1'){ sel.innerHTML=years.map(y=>`<option value="${y}">${y}</option>`).join(''); sel.dataset.filled='1'; }
+  let Y=sel.value||years[0]; if(!years.includes(Y)) Y=years[0]; sel.value=Y;
+  $('prevYear').textContent=Y;
+
+  const opsY=db.ops.filter(o=>o.type!=='transfer' && (o.date||'').slice(0,4)===Y);
+  const mIdx=o=>parseInt((o.date||'').slice(5,7),10)||0;
+  let refM=0; opsY.forEach(o=>{ const m=mIdx(o); if(m>refM) refM=m; }); // dernier mois saisi
+
+  // agrégats par mois ET par catégorie
+  const realOut=Array(13).fill(0), realNonSub=Array(13).fill(0), realSub=Array(13).fill(0);
+  const catOut={}, catIn={}; let realSubTot=0;
+  opsY.forEach(o=>{ const m=mIdx(o); if(m<1||m>12) return; const cat=(o.cat||'').trim()||'(sans catégorie)';
+    if(o.type==='out'){ realOut[m]+=o.amount; catOut[cat]=(catOut[cat]||0)+o.amount; }
+    else if(o.type==='in'){ if(cat==='Subvention'){ realSub[m]+=o.amount; realSubTot+=o.amount; } else { realNonSub[m]+=o.amount; catIn[cat]=(catIn[cat]||0)+o.amount; } } });
+
+  // flux subventions à recevoir, ventilés par mois et reportés
+  const fluxByMonth=Array(13).fill(0), subRows=[]; let subFutureY=0;
+  (db.subventions||[]).forEach(s=>{
+    const exp=subExpected(s), verse=s.verse||0;
+    let aRecevoirY=0, aReporter=0;
+    subFlux(s,Y).forEach(f=>{ const fy=(f.date||'').slice(0,4);
+      if(fy===Y){ let m=parseInt(f.date.slice(5,7),10); if(m>=1&&m<=12){ if(m<=refM && refM<12) m=refM+1; fluxByMonth[m]+=f.montant; aRecevoirY+=f.montant; } }
+      else if(fy>Y){ aReporter+=f.montant; } });
+    subFutureY+=aRecevoirY;
+    if(exp>0 || s.refusee || verse>0) subRows.push({s,exp,verse,aRecevoirY,aReporter});
+  });
+
+  // moyennes mensuelles : RÉCURRENT uniquement
+  let recurOut=0, recurIn=0;
+  Object.keys(catOut).forEach(c=>{ if(prevIsRecurrent(c,'out')) recurOut+=catOut[c]; });
+  Object.keys(catIn).forEach(c=>{ if(prevIsRecurrent(c,'in')) recurIn+=catIn[c]; });
+  const avgOutRec = refM>0 ? recurOut/refM : 0;
+  const avgInRec  = refM>0 ? recurIn/refM  : 0;
+
+  // ---- compte de résultat prévisionnel (par catégorie) ----
+  const jsq=s=>String(s).replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+  const projCat=(real,cat,type)=> (prevIsRecurrent(cat,type)&&refM>0) ? real/refM*12 : real;
+  const catRow=(cat,real,proj,type,fixed)=>{
+    const toggle = fixed ? '<span class="muted" style="font-size:11px">auto</span>'
+      : '<input type="checkbox" '+(prevIsRecurrent(cat,type)?'checked':'')+' onclick="setRecurrent(\''+jsq(cat)+'\',\''+type+'\',this)">';
+    return '<tr><td>'+esc(cat)+'</td><td class="num">'+euro(real)+'</td><td style="text-align:center">'+toggle+'</td><td class="num"><strong>'+euro(proj)+'</strong></td></tr>';
+  };
+  let recHtml='', depHtml='', totRec=0, totDep=0;
+  Object.keys(catIn).sort((a,b)=>catIn[b]-catIn[a]).forEach(c=>{ const p=projCat(catIn[c],c,'in'); totRec+=p; recHtml+=catRow(c,catIn[c],p,'in',false); });
+  const projSub=realSubTot+subFutureY; totRec+=projSub;
+  recHtml+=catRow('Subventions',realSubTot,projSub,'in',true);
+  Object.keys(catOut).sort((a,b)=>catOut[b]-catOut[a]).forEach(c=>{ const p=projCat(catOut[c],c,'out'); totDep+=p; depHtml+=catRow(c,catOut[c],p,'out',false); });
+  if(!recHtml) recHtml='<tr><td colspan="4" class="empty">Aucune recette.</td></tr>';
+  if(!depHtml) depHtml='<tr><td colspan="4" class="empty">Aucune dépense.</td></tr>';
+  $('prevRecRows').innerHTML=recHtml+'<tr style="border-top:2px solid #cdd8d0"><td><strong>Total recettes</strong></td><td></td><td></td><td class="num green"><strong>'+euro(totRec)+'</strong></td></tr>';
+  $('prevDepRows').innerHTML=depHtml+'<tr style="border-top:2px solid #cdd8d0"><td><strong>Total dépenses</strong></td><td></td><td></td><td class="num red"><strong>'+euro(totDep)+'</strong></td></tr>';
+
+  // ---- mois par mois ----
+  const MOIS=['janv.','févr.','mars','avr.','mai','juin','juil.','août','sept.','oct.','nov.','déc.'];
+  let rows='', run=balance();
+  for(let m=1;m<=12;m++){
+    const isReal = m<=refM;
+    const dep = isReal ? realOut[m] : avgOutRec;
+    const recM = (isReal ? (realNonSub[m]+realSub[m]) : avgInRec) + fluxByMonth[m];
+    let cumulTxt='<span class="muted">—</span>';
+    if(m>refM){ run += (recM-dep); cumulTxt=euro(run); }
+    const it = isReal ? '' : 'font-style:italic;color:#6b7488';
+    rows += `<tr><td style="${it}">${MOIS[m-1]} ${Y}${isReal?'':' <span class="pill" style="background:#eef0f5;color:#6b7488;font-size:10px">prévu</span>'}</td>
+      <td class="num" style="${it}">${euro(recM)}</td><td class="num" style="${it}">${euro(dep)}</td>
+      <td class="num ${(recM-dep)>=0?'green':'red'}" style="${it}">${euro(recM-dep)}</td>
+      <td class="num" style="${it}">${cumulTxt}</td></tr>`;
+  }
+  $('prevMonthRows').innerHTML=rows;
+
+  const resultat=totRec-totDep;
+  $('prevKpis').innerHTML =
+      kpi('Recettes projetées',euro(totRec),'green','sur l\'année '+Y)
+    + kpi('Dépenses projetées',euro(totDep),'red','sur l\'année '+Y)
+    + kpi('Résultat projeté',euro(resultat),resultat>=0?'green':'red','recettes − dépenses')
+    + kpi('Trésorerie au 31/12',euro(run),run>=0?'green':'red','estimation');
+
+  const sr=$('prevSubRows');
+  if(!subRows.length){ sr.innerHTML='<tr><td colspan="6" class="empty">Aucune subvention enregistrée.</td></tr>'; }
+  else sr.innerHTML=subRows.sort((a,b)=>b.exp-a.exp).map(r=>`<tr${r.s.refusee?' style="opacity:.55"':''}>
+      <td><strong>${esc(r.s.name)}</strong> <span class="muted" style="font-size:12px">${esc(r.s.structure||'')}</span></td>
+      <td>${subStatut(r.s)}</td><td class="num">${euro(r.exp)}</td><td class="num">${euro(r.verse)}</td>
+      <td class="num ${r.aRecevoirY>0?'green':''}">${euro(r.aRecevoirY)}</td>
+      <td class="num muted">${r.aReporter>0?euro(r.aReporter):'—'}</td></tr>`).join('');
+
+  $('prevHypo').innerHTML = refM>0
+    ? `Base de calcul : <strong>${refM} mois saisis</strong> (janv.→${MOIS[refM-1]}). Seules les catégories cochées « récurrent » sont projetées sur les mois à venir (≈ ${euro(avgOutRec)}/mois de dépenses, ${euro(avgInRec)}/mois de recettes courantes) ; les ponctuelles (cotisations, dons…) ne comptent qu'une fois. Subventions : 80 % un mois après le vote, 20 % l'année suivante (renseigne la « date de vote » pour affiner). Trésorerie de départ = solde actuel ${euro(balance())}.`
+    : `Aucune opération saisie pour ${Y} : ajoute des dépenses dans la Comptabilité pour lancer la projection.`;
+}
+
+function renderAll(){ renderDashboard(); renderMembers(); renderRelances(); renderOps(); renderCaisse(); renderProjects(); renderSubventions(); renderEcheancier(); renderBilan(); renderPrevisionnel(); renderRepertoire(); renderSecretariat(); renderReunions(); renderIncidents(); renderDettes(); renderOfficialLinks(); refreshComptes(); renderListParams(); renderJournal(); }
 
 /* ---- Data import/export ---- */
 function exportJSON(){
