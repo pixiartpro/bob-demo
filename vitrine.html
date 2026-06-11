@@ -153,6 +153,7 @@
       <a href="#ados">Ados</a>
       <a href="#horaires">Horaires</a>
       <a href="#contact">Contact</a>
+      <a href="#ateliers">💡 Ateliers</a>
       <a href="#partenaires">🤝 Partenaires</a>
       <a href="espace-adherent.html">🪙 Espace adhérent</a>
       <a href="connexion.html">🔐 Espace bureau</a>
@@ -357,6 +358,26 @@
   </div>
 </section>
 
+<!-- ATELIERS PARTICIPATIFS & APPELS À COMPÉTENCES -->
+<section class="block bg-g" id="ateliers">
+  <div class="wrap">
+    <p class="eyebrow">Ateliers participatifs</p>
+    <h2 class="title">Et si on l'ouvrait ensemble ? 💡</h2>
+    <p style="max-width:640px;margin:0 auto 22px;text-align:center;color:var(--muted);font-size:16px">Ces ateliers ouvriront dès qu'il y aura <b>assez d'inscrits</b> — et parfois, on cherche aussi <b>la personne qui saura les animer</b>. Que vous soyez simplement intéressé·e ou que vous ayez le talent pour animer : dites-le nous, ça compte !</p>
+    <div class="grid" id="atGrid"><p style="grid-column:1/-1;text-align:center;color:var(--muted)">Chargement des ateliers…</p></div>
+    <div class="panel" style="max-width:640px;margin:26px auto 0;box-shadow:var(--shadow)">
+      <h3 style="margin:0 0 6px">💡 Vous avez une idée d'atelier ?</h3>
+      <p style="margin:0 0 12px;color:var(--muted);font-size:14px">Proposez-la : le CASE l'étudie, et si elle est retenue elle apparaîtra ici pour recueillir les inscriptions.</p>
+      <div class="field"><label>Votre idée d'atelier *</label><input id="ai_titre" placeholder="Ex. couture, échecs, danse classique..."></div>
+      <div class="field"><label>En quelques mots</label><input id="ai_desc" placeholder="Pour qui, quoi, à quelle fréquence..."></div>
+      <div class="field"><label>Votre nom *</label><input id="ai_nom" placeholder="Prénom Nom"></div>
+      <div class="field"><label>Email ou téléphone</label><input id="ai_contact" placeholder="Pour vous recontacter"></div>
+      <button id="ai_btn" class="btn primary" style="width:100%" onclick="submitAtelierIdee()">Envoyer ma proposition</button>
+      <p id="ai_info" style="margin:10px 0 0;font-size:13.5px;text-align:center;font-weight:700"></p>
+    </div>
+  </div>
+</section>
+
 <footer>
   <div class="pine">🍍</div>
   <p style="margin:6px 0 2px;font-weight:800;font-size:18px">CASE du Bois de Nèfles</p>
@@ -381,6 +402,83 @@ async function submitPartner(){
   info.style.color='#1f9d6b'; info.textContent='✅ Merci ! Votre demande est envoyée — le CASE vous recontactera.';
   ['pa_commerce','pa_contact','pa_email','pa_phone','pa_type','pa_message'].forEach(id=>g(id).value='');
 }
+/* ===== Ateliers participatifs : liste publique + inscriptions + idées ===== */
+const AT_PAGE='https://pixiartpro.github.io/bob-demo/#ateliers';
+let _atForm={};
+async function loadAteliersPublics(){
+  const grid=document.getElementById('atGrid'); if(!grid) return;
+  const {data,error}=await _sbPart.from('ateliers').select('*').eq('publie',true).neq('statut','archive').order('created_at',{ascending:false});
+  if(error){ grid.innerHTML='<p style="grid-column:1/-1;text-align:center;color:#c0392b">Impossible de charger les ateliers pour le moment.</p>'; return; }
+  if(!data||!data.length){ grid.innerHTML='<p style="grid-column:1/-1;text-align:center;color:var(--muted)">Pas d\'atelier en préparation pour le moment — proposez le vôtre juste en dessous ! 👇</p>'; return; }
+  const escA=s=>String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  grid.innerHTML=data.map(a=>{
+    const nbI=a.nb_interesses||0, seuil=a.seuil||1, nbC=a.nb_competents||0;
+    const pct=Math.min(100,Math.round(100*nbI/seuil));
+    const ouvert=a.statut==='ouvert';
+    const cherche=a.cherche_animateur&&!nbC;
+    const share=encodeURIComponent('💡 Le CASE du Bois de Nèfles cherche quelqu\'un pour animer l\'atelier « '+(a.titre||'')+' » — ça vous dit ? '+AT_PAGE);
+    return '<div class="card">'
+      +'<div class="ico">'+(ouvert?'🎉':'💡')+'</div>'
+      +'<h3>'+escA(a.titre)+'</h3>'
+      +(ouvert?'<p style="margin:0;color:var(--vert-fonce);font-weight:800">✅ Ça y est, l\'atelier ouvre ! Vous pouvez encore vous inscrire.</p>':'')
+      +(cherche?'<p style="margin:0;color:#b23a23;font-weight:700;font-size:13.5px">🔍 On cherche un animateur / une animatrice !</p>':'')
+      +(a.description?'<p style="margin:0;color:var(--muted);font-size:14px">'+escA(a.description)+'</p>':'')
+      +'<div style="background:#eef3ef;border-radius:999px;height:10px;overflow:hidden"><div style="width:'+pct+'%;height:100%;background:var(--vert)"></div></div>'
+      +'<p style="margin:0;font-size:13px;font-weight:700;color:var(--muted)">'+nbI+' / '+seuil+' intéressé·e·s'+(nbC?' · '+nbC+' prêt·e·s à animer':'')+'</p>'
+      +'<div id="atf_'+a.id+'" style="display:none;margin-top:4px">'
+        +'<input id="atn_'+a.id+'" placeholder="Votre nom *" style="width:100%;margin:3px 0;padding:9px 11px;border:1px solid var(--line);border-radius:10px;font:inherit">'
+        +'<input id="atc_'+a.id+'" placeholder="Email ou téléphone" style="width:100%;margin:3px 0;padding:9px 11px;border:1px solid var(--line);border-radius:10px;font:inherit">'
+        +'<button class="btn primary" style="width:100%;margin-top:4px" onclick="atSend(\''+a.id+'\')">Valider mon inscription</button>'
+      +'</div>'
+      +'<p id="ati_'+a.id+'" style="margin:0;font-size:13px;font-weight:700;text-align:center"></p>'
+      +'<div class="foot" style="gap:6px;flex-wrap:wrap">'
+        +'<button class="btn win" onclick="atJoin(\''+a.id+'\',\'interesse\')">🙋 Ça m\'intéresse</button>'
+        +'<button class="btn use" onclick="atJoin(\''+a.id+'\',\'competent\')">🧑‍🏫 Je peux animer</button>'
+      +'</div>'
+      +(cherche?('<div style="display:flex;gap:10px;justify-content:center;margin-top:4px;font-size:13px;flex-wrap:wrap">'
+        +'<span style="color:var(--muted);font-weight:700">Faites passer :</span>'
+        +'<a target="_blank" rel="noopener" href="https://www.facebook.com/sharer/sharer.php?u='+encodeURIComponent(AT_PAGE)+'">📘 Facebook</a>'
+        +'<a target="_blank" rel="noopener" href="https://wa.me/?text='+share+'">💬 WhatsApp</a>'
+        +'<a target="_blank" rel="noopener" href="https://www.linkedin.com/sharing/share-offsite/?url='+encodeURIComponent(AT_PAGE)+'">💼 LinkedIn</a>'
+      +'</div>'):'')
+      +'</div>';
+  }).join('');
+}
+function atJoin(id,type){
+  _atForm[id]=type;
+  document.getElementById('atf_'+id).style.display='block';
+  const i=document.getElementById('ati_'+id);
+  i.style.color='var(--vert-fonce)';
+  i.textContent=type==='competent'?'Super, un grand merci ! Dites-nous qui vous êtes 👇':'Top ! Dites-nous qui vous êtes 👇';
+  document.getElementById('atn_'+id).focus();
+}
+async function atSend(id){
+  const nom=document.getElementById('atn_'+id).value.trim();
+  const contact=document.getElementById('atc_'+id).value.trim();
+  const info=document.getElementById('ati_'+id);
+  if(!nom){ info.style.color='#c0392b'; info.textContent='Indiquez votre nom.'; return; }
+  const {error}=await _sbPart.from('atelier_inscriptions').insert({atelier_id:id, nom, contact, type:_atForm[id]||'interesse'});
+  if(error){
+    info.style.color='#c0392b';
+    info.textContent=(error.code==='23505')?'Vous êtes déjà inscrit·e à cet atelier 😉':'Oups, une erreur est survenue. Réessayez dans un instant.';
+    return;
+  }
+  document.getElementById('atf_'+id).style.display='none';
+  info.style.color='var(--vert-fonce)'; info.textContent='✅ C\'est noté, merci ! Le CASE vous tiendra au courant.';
+  setTimeout(loadAteliersPublics, 2500);
+}
+async function submitAtelierIdee(){
+  const g=id=>document.getElementById(id);
+  const titre=g('ai_titre').value.trim(), nom=g('ai_nom').value.trim(), info=g('ai_info');
+  if(!titre||!nom){ info.style.color='#c0392b'; info.textContent='Indiquez au moins votre idée et votre nom.'; return; }
+  const btn=g('ai_btn'); btn.disabled=true; btn.textContent='Envoi…';
+  const {error}=await _sbPart.from('ateliers').insert({titre, description:g('ai_desc').value.trim(), proposeur:nom, contact_proposeur:g('ai_contact').value.trim()});
+  btn.disabled=false; btn.textContent='Envoyer ma proposition';
+  if(error){ info.style.color='#c0392b'; info.textContent='Oups, une erreur est survenue. Réessayez dans un instant.'; return; }
+  info.style.color='var(--vert-fonce)'; info.textContent='✅ Merci ! Votre idée est transmise au CASE, qui l\'étudie.';
+  ['ai_titre','ai_desc','ai_nom','ai_contact'].forEach(id=>g(id).value='');
+}
+loadAteliersPublics();
 /* Bandeau actualité : fermeture mémorisée (réapparaît si on change data-news) */
 (function(){
   var bar=document.getElementById('newsbar'); if(!bar) return;

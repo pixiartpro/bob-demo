@@ -136,6 +136,15 @@
   </div>
 </section>
 
+<!-- ATELIERS PARTICIPATIFS (données réelles, via le site) -->
+<section class="block">
+  <div class="wrap">
+    <h2 class="title">💡 Ateliers en préparation <small>— on ouvre dès qu'il y a assez d'inscrits</small></h2>
+    <p class="sub">Dis-nous si ça t'intéresse — ou si tu sais animer ! Quand le seuil est atteint, l'atelier ouvre. 🍍</p>
+    <div class="grid" id="ateliersGrid"><p class="empty">Chargement…</p></div>
+  </div>
+</section>
+
 <!-- HISTORIQUE -->
 <section class="block">
   <div class="wrap">
@@ -195,6 +204,63 @@ function render(){
   $('#hist').innerHTML=state.hist.length?state.hist.map(h=>`<div class="row"><span>${h.t}</span><span class="${h.d[0]==='+'?'plus':'minus'}">${h.d} 🪙</span></div>`).join(''):'<div class="empty">Aucun mouvement.</div>';
 }
 render();
+</script>
+<!-- Ateliers participatifs : vraies données (table ateliers de Bob, lecture publique) -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+const _sbAt=window.supabase.createClient('https://dkidtwypclpwznleiqnq.supabase.co','sb_publishable_HDfV-O2ION1Vw9v03aV_Qg_PkiAjLNo');
+let _atType={};
+async function loadAteliersAdh(){
+  const grid=document.getElementById('ateliersGrid'); if(!grid) return;
+  const {data,error}=await _sbAt.from('ateliers').select('*').eq('publie',true).neq('statut','archive').order('created_at',{ascending:false});
+  if(error){ grid.innerHTML='<p class="empty">Impossible de charger les ateliers pour le moment.</p>'; return; }
+  if(!data||!data.length){ grid.innerHTML='<p class="empty">Pas d\'atelier en préparation pour le moment. Une idée ? Propose-la sur le site public ! 💡</p>'; return; }
+  const escA=s=>String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  grid.innerHTML=data.map(a=>{
+    const nbI=a.nb_interesses||0, seuil=a.seuil||1, nbC=a.nb_competents||0;
+    const pct=Math.min(100,Math.round(100*nbI/seuil));
+    const ouvert=a.statut==='ouvert';
+    return `<div class="card"><div class="ico">${ouvert?'🎉':'💡'}</div><h3>${escA(a.titre)}</h3>
+      ${ouvert?'<div style="color:var(--vert-fonce);font-weight:800;font-size:14px">✅ L\'atelier ouvre !</div>':''}
+      ${a.cherche_animateur&&!nbC?'<div style="color:#b23a23;font-weight:700;font-size:13px">🔍 On cherche qui peut l\'animer</div>':''}
+      ${a.description?`<div class="when">${escA(a.description)}</div>`:''}
+      <div style="background:#eef3ef;border-radius:999px;height:9px;overflow:hidden"><div style="width:${pct}%;height:100%;background:var(--vert)"></div></div>
+      <div class="when" style="font-weight:700">${nbI} / ${seuil} intéressé·e·s${nbC?' · '+nbC+' prêt·e·s à animer':''}</div>
+      <div id="adf_${a.id}" style="display:none">
+        <input id="adn_${a.id}" placeholder="Ton nom *" style="width:100%;margin:3px 0;padding:9px 11px;border:1px solid var(--line);border-radius:10px;font:inherit">
+        <input id="adc_${a.id}" placeholder="Email ou téléphone" style="width:100%;margin:3px 0;padding:9px 11px;border:1px solid var(--line);border-radius:10px;font:inherit">
+        <button class="btn win" style="width:100%;margin-top:4px" onclick="adhSend('${a.id}')">Valider mon inscription</button>
+      </div>
+      <p id="adi_${a.id}" style="margin:0;font-size:13px;font-weight:700;text-align:center"></p>
+      <div class="foot" style="flex-wrap:wrap;gap:6px">
+        <button class="btn win" onclick="adhJoin('${a.id}','interesse')">🙋 Ça m'intéresse</button>
+        <button class="btn use" onclick="adhJoin('${a.id}','competent')">🧑‍🏫 Je peux animer</button>
+      </div></div>`;
+  }).join('');
+}
+function adhJoin(id,type){
+  _atType[id]=type;
+  document.getElementById('adf_'+id).style.display='block';
+  const i=document.getElementById('adi_'+id);
+  i.style.color='var(--vert-fonce)'; i.textContent='Dis-nous qui tu es 👇';
+  document.getElementById('adn_'+id).focus();
+}
+async function adhSend(id){
+  const nom=document.getElementById('adn_'+id).value.trim();
+  const contact=document.getElementById('adc_'+id).value.trim();
+  const info=document.getElementById('adi_'+id);
+  if(!nom){ info.style.color='#c0392b'; info.textContent='Indique ton nom.'; return; }
+  const {error}=await _sbAt.from('atelier_inscriptions').insert({atelier_id:id, nom, contact, type:_atType[id]||'interesse'});
+  if(error){
+    info.style.color='#c0392b';
+    info.textContent=(error.code==='23505')?'Tu es déjà inscrit·e à cet atelier 😉':'Oups, une erreur est survenue. Réessaie dans un instant.';
+    return;
+  }
+  document.getElementById('adf_'+id).style.display='none';
+  info.style.color='var(--vert-fonce)'; info.textContent='✅ C\'est noté ! Le CASE te tiendra au courant.';
+  setTimeout(loadAteliersAdh, 2500);
+}
+loadAteliersAdh();
 </script>
 </body>
 </html>

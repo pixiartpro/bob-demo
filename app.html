@@ -120,6 +120,7 @@
     <button data-tab="subventions">🏛️ Subventions</button>
     <button data-tab="repertoire">🗂️ Répertoire</button>
     <button data-tab="partenaires">🤝 Partenaires</button>
+    <button data-tab="ateliers">💡 Ateliers</button>
     <button data-tab="secretariat">🧰 Secrétariat</button>
     <button data-tab="equipe">📒 Équipe</button>
     <button data-tab="incidents">⚠️ Événements</button>
@@ -128,6 +129,7 @@
     <button data-tab="dettes">💳 Dettes & créances</button>
     <button data-tab="bilan">📈 Bilan</button>
     <button data-tab="previsionnel">🔮 Prévisionnel</button>
+    <button data-tab="aide">❓ Aide</button>
     <button data-tab="journal" style="display:none">🕘 Historique</button>
     <button data-tab="data" style="margin-left:auto">⚙️ Données</button>
   </nav>
@@ -682,6 +684,33 @@
     </div>
   </section>
 
+  <!-- ATELIERS PARTICIPATIFS -->
+  <section id="ateliers" class="page">
+    <div class="panel">
+      <h2>💡 Créer un atelier</h2>
+      <p class="hint">Un atelier <strong>publié</strong> apparaît sur le site public : les habitants s'inscrivent comme <strong>intéressés</strong> ou <strong>compétents pour l'animer</strong>. Quand le nombre d'intéressés atteint le <strong>seuil</strong>, Bob te propose de l'ouvrir. Les idées envoyées depuis le site arrivent ici en « proposition à étudier ».</p>
+      <div class="row">
+        <div class="field" style="flex:2"><label>Titre de l'atelier *</label><input id="at_titre" placeholder="Ex. Danse classique, couture, échecs…"></div>
+        <div class="field" style="flex:0;min-width:130px"><label>Seuil d'ouverture</label><input id="at_seuil" type="number" min="1" value="6"></div>
+        <div class="field" style="flex:0;min-width:190px"><label>On cherche un animateur ?</label>
+          <select id="at_anim"><option value="1">Oui — appel à compétences</option><option value="0">Non — animateur trouvé</option></select></div>
+      </div>
+      <div class="row" style="margin-top:10px">
+        <div class="field" style="flex:3"><label>Description</label><input id="at_desc" placeholder="Pour qui, quoi, à quelle fréquence…"></div>
+        <div class="field" style="flex:0;min-width:170px"><label>Visibilité</label>
+          <select id="at_pub"><option value="1">🌍 Publié sur le site</option><option value="0">🔒 Interne (brouillon)</option></select></div>
+        <div class="field" style="flex:0"><label>&nbsp;</label><button class="btn" onclick="addAtelier()">Créer l'atelier</button></div>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="toolbar">
+        <h2 style="margin:0">📋 Ateliers &amp; inscriptions</h2>
+        <button class="ghost btn" onclick="if(window.loadAteliers)loadAteliers()">↻ Rafraîchir</button>
+      </div>
+      <div id="atList"><p class="hint">Chargement…</p></div>
+    </div>
+  </section>
+
   <section id="data" class="page">
     <div class="panel">
       <h2>Sauvegarde & données</h2>
@@ -732,6 +761,28 @@
           <div id="listBox_typesAdh" style="margin-top:8px"></div>
         </div>
       </div>
+    </div>
+  </section>
+
+  <section id="aide" class="page">
+    <div class="panel" style="background:linear-gradient(135deg,#eafaf2,#f3fbf6);border:1px solid #cdeede">
+      <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap">
+        <img src="zanana-point.png" alt="Zanana" style="width:74px;height:74px;object-fit:contain;flex:0 0 auto" onerror="this.style.display='none'">
+        <div style="flex:1;min-width:220px">
+          <h2 style="margin:0 0 4px">❓ Demande à Zanana</h2>
+          <p class="hint" style="margin:0">Pose ta question avec tes mots — « Comment j'ajoute un adhérent ? », « Où je sauvegarde ? » — et Zanana te montre la marche à suivre. Si elle ne sait pas, ta question est transmise pour qu'on y réponde.</p>
+        </div>
+      </div>
+      <div class="row" style="margin-top:14px;gap:8px;flex-wrap:nowrap">
+        <input id="faqAsk" placeholder="Écris ta question ici…" style="flex:1" onkeydown="if(event.key==='Enter')askZanana()" oninput="faqLive()">
+        <button class="btn" onclick="askZanana()" style="flex:0 0 auto">Demander</button>
+      </div>
+      <div id="faqAnswer" style="margin-top:14px"></div>
+    </div>
+    <div class="panel">
+      <h3 style="margin:0 0 4px">📖 Toutes les questions fréquentes</h3>
+      <p class="hint" style="margin:0 0 10px">Clique sur une question pour voir la réponse. Tu peux aussi filtrer ci-dessus.</p>
+      <div id="faqList"></div>
     </div>
   </section>
 
@@ -844,8 +895,96 @@ document.querySelectorAll('nav.tabs button').forEach(b=>{
     document.querySelectorAll('nav.tabs button').forEach(x=>x.classList.remove('active'));
     document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
     b.classList.add('active'); $(b.dataset.tab).classList.add('active');
+    if(b.dataset.tab==='aide'){ const i=$('faqAsk'); if(i)i.focus(); }
   };
 });
+
+/* ---- Aide : « Demande à Zanana » (FAQ + assistant par mots-clés, sans IA) ---- */
+const FAQ=[
+  {cat:'🚀 Démarrer',q:"Comment je me connecte à Bob ?",kw:"connexion connecter login mot de passe identifiant entrer acceder ouvrir session",
+   a:"Va sur la page de connexion, entre ton <b>email</b> et ton <b>mot de passe</b>, puis clique sur « Se connecter ». Tu arrives sur ton espace : clique alors sur <b>« Entrer dans la gestion »</b> pour ouvrir Bob."},
+  {cat:'🚀 Démarrer',q:"J'ai oublié mon mot de passe, je fais quoi ?",kw:"oublie oublié mot de passe perdu reinitialiser lien magique connexion email",
+   a:"Sur la page de connexion, clique sur <b>« Mot de passe oublié ? »</b> : tu recevras un email pour en choisir un nouveau. Tu peux aussi utiliser <b>« Recevoir un lien de connexion par email »</b> pour entrer sans mot de passe."},
+  {cat:'🚀 Démarrer',q:"Est-ce que mes données sont en sécurité ?",kw:"securite securisé prive confidentiel rgpd protection heberge piratage vol",
+   a:"Oui. Les données sont hébergées <b>en France</b> (RGPD), chaque association ne voit que <b>ses propres données</b>, et l'accès est réservé au bureau connecté. Pense quand même à faire des sauvegardes régulières dans ⚙️ Données."},
+  {cat:'👥 Adhérents',q:"Comment j'ajoute un adhérent ?",kw:"ajouter adherent membre nouveau inscrire cotisation creer enregistrer",
+   a:"Onglet <b>👥 Adhérents</b> : remplis le nom (et ce que tu veux : email, téléphone, cotisation…) en haut, puis clique sur <b>« Ajouter »</b>. L'adhérent apparaît dans la liste juste en dessous."},
+  {cat:'👥 Adhérents',q:"Comment je modifie la fiche d'un adhérent ?",kw:"modifier corriger changer adherent membre fiche editer mettre a jour",
+   a:"Dans la liste des adhérents, clique sur le crayon <b>✏️</b> de la ligne concernée. Change ce qu'il faut dans la fenêtre, puis <b>« Enregistrer »</b>."},
+  {cat:'👥 Adhérents',q:"À quoi servent les champs « Type d'adhésion » et « Site » ?",kw:"type adhesion site membre danse periscolaire vepi acm bringelliers categorie classer",
+   a:"Ils servent à <b>classer</b> tes adhérents : « Type d'adhésion » (Membre, Danse, Périscolaire, ACM…) et « Site » (Case BDN, Bringelliers…). Tu choisis les valeurs disponibles dans <b>⚙️ Données</b>."},
+  {cat:'📁 Projets & 🏛️ Subventions',q:"Comment je joins un document à un projet ou une subvention ?",kw:"piece jointe joindre document fichier pdf attacher ajouter projet subvention telecharger televerser",
+   a:"Ouvre le projet ou la subvention, clique sur le bouton <b>📎 Documents</b>, puis sur <b>« Joindre un fichier »</b> et choisis ton document (PDF, image, tableau…). Il est rangé dans le coffre sécurisé et tu peux le rouvrir à tout moment."},
+  {cat:'📁 Projets & 🏛️ Subventions',q:"Comment je crée un projet ou une subvention ?",kw:"creer ajouter projet subvention nouveau enregistrer financeur",
+   a:"Va dans <b>📁 Projets</b> ou <b>🏛️ Subventions</b>, remplis les champs en haut (nom, budget/montant, etc.) et clique sur <b>« Ajouter »</b>."},
+  {cat:'📁 Projets & 🏛️ Subventions',q:"Comment j'enregistre un versement de subvention reçu ?",kw:"versement subvention recu recette compta encaisser solde verser argent recu",
+   a:"Sur la subvention, clique sur <b>« Enregistrer un versement »</b> : indique le montant reçu et la date. Bob crée tout seul la <b>recette en comptabilité</b> et met à jour le <b>solde restant à verser</b>. Pas besoin de la ressaisir en compta."},
+  {cat:'💶 Comptabilité',q:"Comment je saisis une dépense ou une recette ?",kw:"saisir depense recette ecriture operation compta facture ajouter argent paiement",
+   a:"Onglet <b>💶 Comptabilité</b> : utilise <b>« Nouvelle opération »</b> pour une écriture détaillée, ou <b>« Saisie rapide »</b> pour enchaîner beaucoup de factures vite. Choisis Recette ou Dépense, le montant, la date, la catégorie…"},
+  {cat:'💶 Comptabilité',q:"C'est quoi la « saisie rapide » ?",kw:"saisie rapide beaucoup factures vite enchainer compta rapide plusieurs",
+   a:"C'est un mode pour <b>entrer beaucoup d'écritures rapidement</b> les unes après les autres (idéal pour un paquet de factures). Tu remplis l'essentiel et tu valides ; la ligne suivante s'enchaîne."},
+  {cat:'💶 Comptabilité',q:"Comment je trie ou filtre le journal des opérations ?",kw:"trier filtrer classer journal operations colonnes date montant rechercher chercher tri",
+   a:"Dans le <b>Journal des opérations</b>, clique sur l'<b>en-tête d'une colonne</b> (Date, Libellé, Montant…) pour trier. La barre de recherche permet de filtrer par libellé, site, action… Tu peux aussi choisir l'<b>exercice comptable</b> (l'année)."},
+  {cat:'💶 Comptabilité',q:"Comment j'exporte la compta pour le comptable ?",kw:"export exporter comptable journal csv excel envoyer transmettre exercice annee",
+   a:"Choisis d'abord l'<b>exercice comptable</b> (l'année des écritures), puis clique sur <b>« Export pour le comptable (Journal) »</b>. Le fichier obtenu contient exactement les écritures de l'exercice sélectionné."},
+  {cat:'⚙️ Données',q:"Comment je sauvegarde mes données ?",kw:"sauvegarde sauvegarder backup exporter enregistrer copie securite proteger",
+   a:"Onglet <b>⚙️ Données</b> → <b>« Exporter une sauvegarde »</b> : un fichier est téléchargé sur ton ordinateur. Fais-le régulièrement, surtout après une grosse saisie. Tes données sont aussi enregistrées en ligne automatiquement."},
+  {cat:'⚙️ Données',q:"Comment je récupère une sauvegarde / je reviens en arrière ?",kw:"recuperer restaurer importer sauvegarde revenir arriere annuler retrouver backup",
+   a:"Onglet <b>⚙️ Données</b> → <b>« Importer une sauvegarde »</b>, puis choisis ton fichier de sauvegarde. Bob recharge les données de ce fichier. (En cas de doute, exporte d'abord l'état actuel pour ne rien perdre.)"},
+  {cat:'⚙️ Données',q:"Comment je paramètre les listes (sites, actions, catégories…) ?",kw:"parametrer listes site action categorie type adhesion plan comptable ajouter modifier supprimer choix deroulant",
+   a:"Onglet <b>⚙️ Données</b> : tu peux <b>ajouter, modifier ou supprimer</b> les éléments de chaque liste (Site, Action, Catégorie, Type d'adhésion…), comme pour le plan comptable. Ces choix apparaissent ensuite dans les menus déroulants."},
+  {cat:'🛟 Le reste',q:"À quoi sert le chat et la boîte à idées 💡 ?",kw:"chat message boite idee ampoule suggestion bug signaler discuter communiquer guillaume",
+   a:"Le <b>💬 chat</b> sert à discuter en direct avec l'équipe. La <b>boîte à idées 💡</b> (le bouton ampoule) sert à noter une idée, une amélioration ou un bug : c'est traité au fur et à mesure."},
+  {cat:'🛟 Le reste',q:"Qui peut voir ou modifier quoi ?",kw:"droits acces role president tresorier bureau permission voir modifier qui rubrique cacher lecture",
+   a:"Les droits dépendent de ton <b>rôle</b>. Le président et le trésorier (administrateurs) peuvent régler, pour chaque personne, quelles rubriques elle voit et si elle peut modifier — via <b>« 🔧 Rubriques »</b> dans l'espace bureau."}
+];
+function faqNorm(s){return (s||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^a-z0-9 ]/g,' ').replace(/\s+/g,' ').trim();}
+const FAQ_STOP=new Set("le la les un une des de du au aux et ou a à je tu il on en y ce que qui quoi est sont pour dans sur mes mon ma ta ton se sa ses comment ou est-ce faire fait puis peux peut on nous vous me te d".split(' '));
+function faqTokens(s){return faqNorm(s).split(' ').filter(w=>w.length>2&&!FAQ_STOP.has(w));}
+function faqScore(query){
+  const qt=faqTokens(query); if(!qt.length) return [];
+  return FAQ.map(item=>{
+    const hay=new Set(faqTokens(item.q+' '+item.kw));
+    let sc=0; qt.forEach(w=>{ if(hay.has(w))sc+=2; else if([...hay].some(h=>h.startsWith(w)||w.startsWith(h)))sc+=1; });
+    return {item,sc};
+  }).filter(x=>x.sc>0).sort((a,b)=>b.sc-a.sc);
+}
+function faqCard(item,open){
+  return '<details class="panel" style="margin:8px 0;padding:10px 14px"'+(open?' open':'')+'>'
+    +'<summary style="cursor:pointer;font-weight:600;color:#1d3a2e">'+esc(item.q)+' <span class="muted" style="font-weight:400;font-size:12px">· '+esc(item.cat)+'</span></summary>'
+    +'<div style="margin-top:8px;line-height:1.5">'+item.a+'</div></details>';
+}
+function renderFaqList(){
+  const box=$('faqList'); if(!box) return;
+  box.innerHTML=FAQ.map(it=>faqCard(it,false)).join('');
+}
+let faqTimer=null;
+function faqLive(){ clearTimeout(faqTimer); faqTimer=setTimeout(()=>{ const v=$('faqAsk').value.trim(); if(v.length>=3) askZanana(true); else $('faqAnswer').innerHTML=''; },350); }
+function askZanana(live){
+  const q=$('faqAsk').value.trim(); const out=$('faqAnswer'); if(!out) return;
+  if(q.length<3){ out.innerHTML=''; return; }
+  const res=faqScore(q);
+  if(res.length && res[0].sc>=2){
+    let html='<div style="display:flex;gap:10px;align-items:flex-start"><img src="zanana-point.png" style="width:34px;height:34px;object-fit:contain;flex:0 0 auto" onerror="this.style.display=\'none\'"><div style="flex:1"><b>Voici ce que je te propose :</b></div></div>';
+    html+=faqCard(res[0].item,true);
+    const autres=res.slice(1,3).filter(x=>x.sc>=2);
+    if(autres.length){ html+='<p class="hint" style="margin:10px 0 2px">Ça peut aussi t\'aider :</p>'+autres.map(x=>faqCard(x.item,false)).join(''); }
+    out.innerHTML=html;
+  } else {
+    out.innerHTML='<div class="panel" style="background:#fff8ec;border:1px solid #f0d9a8">'
+      +'<div style="display:flex;gap:10px;align-items:flex-start"><img src="zanana-point.png" style="width:34px;height:34px;object-fit:contain;flex:0 0 auto" onerror="this.style.display=\'none\'">'
+      +'<div style="flex:1"><b>Je n\'ai pas encore la réponse à ça.</b><p class="hint" style="margin:6px 0 10px">Transmets ta question : on y répondra et elle sera ajoutée à l\'aide.</p>'
+      +'<button class="btn" onclick="faqAskHelp()">📨 Transmettre ma question</button> <span id="faqSent" class="muted" style="font-size:13px"></span></div></div></div>';
+  }
+}
+async function faqAskHelp(){
+  const q=$('faqAsk').value.trim(); if(!q) return;
+  const tag=$('faqSent');
+  if(!window.bobSendSuggest){ if(tag)tag.textContent='Connexion requise.'; return; }
+  if(tag)tag.textContent='⏳ Envoi…';
+  const ok=await window.bobSendSuggest('[Question Aide] '+q, '❓ Aide (sans réponse)');
+  if(tag)tag.textContent= ok ? '✅ Transmise, merci !' : '❌ Échec, réessaie.';
+}
 
 /* ---- Members ---- */
 function addMember(){
@@ -2036,7 +2175,7 @@ function renderProtocoles(){
 }
 function renderEquipe(){ const t=$('accueilIntro'); if(t && document.activeElement!==t) t.value=db.accueilIntro||''; renderContrats(); renderProtocoles(); }
 
-function renderAll(){ renderDashboard(); renderMembers(); renderRelances(); renderOps(); renderCaisse(); renderProjects(); renderSubventions(); renderEcheancier(); renderBilan(); renderPrevisionnel(); renderEquipe(); renderRepertoire(); renderSecretariat(); renderReunions(); renderIncidents(); renderDettes(); renderOfficialLinks(); refreshComptes(); renderListParams(); renderJournal(); }
+function renderAll(){ renderDashboard(); renderMembers(); renderRelances(); renderOps(); renderCaisse(); renderProjects(); renderSubventions(); renderEcheancier(); renderBilan(); renderPrevisionnel(); renderEquipe(); renderRepertoire(); renderSecretariat(); renderReunions(); renderIncidents(); renderDettes(); renderOfficialLinks(); refreshComptes(); renderListParams(); renderJournal(); renderFaqList(); }
 
 /* ---- Data import/export ---- */
 function exportJSON(){
@@ -2125,7 +2264,8 @@ renderAll();
   }
 
   function applyPerms(){
-    const perms=(myProfile.perms&&typeof myProfile.perms==='object')?myProfile.perms:{};
+    const perms=Object.assign({}, (myProfile.perms&&typeof myProfile.perms==='object')?myProfile.perms:{});
+    if(!canWrite) perms.aide='cache'; // l'Aide « Demande à Zanana » est réservée au bureau
     const css=[];
     document.querySelectorAll('nav.tabs button[data-tab]').forEach(b=>{
       const k=b.dataset.tab;
@@ -2226,6 +2366,86 @@ renderAll();
     </div>`).join('');
   };
   window.setPartStatut=async function(id,st){ const {error}=await sbc.from('partenaires').update({statut:st}).eq('id',id); if(error){alert(error.message);return;} window.loadPartenaires(); };
+
+  // Ateliers participatifs — tables ateliers + atelier_inscriptions (hors coffre, comme partenaires)
+  const AT_STATUTS={proposition:'💡 Proposition à étudier',inscriptions:'📝 Inscriptions ouvertes',ouvert:'✅ Atelier ouvert',archive:'📦 Archivé'};
+  const AT_URL='https://pixiartpro.github.io/bob-demo/#ateliers';
+  window.atCopyAnnonce=async function(titre){
+    const txt='💡 Le CASE du Bois de Nèfles cherche du monde pour l\'atelier « '+titre+' » — ça vous intéresse, ou vous sauriez l\'animer ? Dites-le nous ici : '+AT_URL;
+    try{ await navigator.clipboard.writeText(txt); alert('📣 Annonce copiée !\n\nCollez-la sur LinkedIn, Facebook, WhatsApp, ou envoyez-la à la Maison des Associations.'); }
+    catch(e){ prompt('Copiez ce texte :', txt); }
+  };
+  window.loadAteliers=async function(){
+    const box=document.getElementById('atList'); if(!box) return;
+    const [ra,ri]=await Promise.all([
+      sbc.from('ateliers').select('*').order('created_at',{ascending:false}),
+      sbc.from('atelier_inscriptions').select('*').order('created_at',{ascending:true})
+    ]);
+    if(ra.error){ box.innerHTML='<p class="hint" style="color:#c0392b">Erreur : '+esc(ra.error.message)+'</p>'; return; }
+    const ats=ra.data||[], byAt={};
+    (ri.data||[]).forEach(i=>{ (byAt[i.atelier_id]=byAt[i.atelier_id]||[]).push(i); });
+    if(!ats.length){ box.innerHTML='<p class="hint">Aucun atelier pour le moment. Crée le premier ci-dessus 👆</p>'; return; }
+    box.innerHTML=ats.map(a=>{
+      const list=byAt[a.id]||[];
+      const nbI=a.nb_interesses||0, nbC=a.nb_competents||0, seuil=a.seuil||1;
+      const pct=Math.min(100,Math.round(100*nbI/seuil));
+      const pret=(nbI>=seuil)&&a.statut==='inscriptions';
+      const insHtml=list.length
+        ? '<table style="margin-top:10px"><thead><tr><th></th><th>Nom</th><th>Contact</th><th>Date</th>'+(canWrite?'<th></th>':'')+'</tr></thead><tbody>'
+          +list.map(i=>'<tr><td>'+(i.type==='competent'?'🧑‍🏫 Peut animer':'🙋 Intéressé·e')+'</td><td>'+esc(i.nom||'')+'</td><td>'+esc(i.contact||'')+'</td><td>'+esc((i.created_at||'').slice(0,10))+'</td>'
+            +(canWrite?'<td><button class="ghost btn" title="Retirer cette inscription" onclick="delInscription(\''+i.id+'\')">✕</button></td>':'')+'</tr>').join('')
+          +'</tbody></table>'
+        : '<p class="hint" style="margin:8px 0 0">Personne d\'inscrit pour l\'instant.</p>';
+      let btns='';
+      if(canWrite){
+        if(a.statut==='proposition') btns+='<button class="btn" onclick="setAtelier(\''+a.id+'\',{statut:\'inscriptions\',publie:true})">✅ Valider &amp; publier</button>'
+          +'<button class="ghost btn" onclick="setAtelier(\''+a.id+'\',{statut:\'archive\'})">✖️ Écarter</button>';
+        if(a.statut==='inscriptions') btns+='<button class="btn"'+(pret?' style="background:#e0533d"':'')+' onclick="setAtelier(\''+a.id+'\',{statut:\'ouvert\'})">🚀 Ouvrir l\'atelier</button>'
+          +'<button class="ghost btn" onclick="setAtelier(\''+a.id+'\',{publie:'+(a.publie?'false':'true')+'})">'+(a.publie?'🔒 Dépublier':'🌍 Publier sur le site')+'</button>'
+          +'<button class="ghost btn" onclick="setAtelier(\''+a.id+'\',{statut:\'archive\'})">📦 Archiver</button>';
+        if(a.statut==='ouvert') btns+='<button class="ghost btn" onclick="setAtelier(\''+a.id+'\',{statut:\'inscriptions\'})">↩︎ Rouvrir les inscriptions</button>'
+          +'<button class="ghost btn" onclick="setAtelier(\''+a.id+'\',{statut:\'archive\'})">📦 Archiver</button>';
+        if(a.statut==='archive') btns+='<button class="ghost btn" onclick="setAtelier(\''+a.id+'\',{statut:\'inscriptions\'})">↩︎ Réactiver</button>';
+        if(a.publie&&a.statut!=='archive') btns+='<button class="ghost btn" onclick="atCopyAnnonce(this.dataset.titre)" data-titre="'+esc(a.titre||'')+'">📣 Copier l\'annonce à partager</button>';
+        if(myProfile.role==='president') btns+='<button class="ghost btn" style="color:#c0392b" onclick="delAtelier(\''+a.id+'\')">🗑️ Supprimer</button>';
+      }
+      return '<div class="panel" style="margin:10px 0;border-left:4px solid '+(pret?'#e0533d':'#f4b740')+'">'
+        +'<div class="toolbar"><div><strong>'+esc(a.titre||'(sans titre)')+'</strong> '
+        +'<span class="pill" style="background:#fff5da;color:#8a6400;font-size:11px">'+(AT_STATUTS[a.statut]||esc(a.statut||''))+'</span> '
+        +'<span class="pill" style="background:'+(a.publie?'#dff5e9':'#f1f1f1')+';color:'+(a.publie?'#127a51':'#777')+';font-size:11px">'+(a.publie?'🌍 Visible sur le site':'🔒 Interne')+'</span>'
+        +(a.cherche_animateur&&!nbC?' <span class="pill" style="background:#ffe9e3;color:#b23a23;font-size:11px">🔍 Cherche animateur</span>':'')
+        +'</div><span class="muted" style="font-size:12px">'+esc((a.created_at||'').slice(0,10))+'</span></div>'
+        +(a.description?'<p class="hint" style="margin:6px 0 0">'+esc(a.description)+'</p>':'')
+        +(a.proposeur?'<p class="hint" style="margin:4px 0 0">Proposé par : '+esc(a.proposeur)+(a.contact_proposeur?' ('+esc(a.contact_proposeur)+')':'')+'</p>':'')
+        +'<div style="margin-top:10px;display:flex;align-items:center;gap:10px;flex-wrap:wrap">'
+        +'<div style="background:#eef3ef;border-radius:999px;height:10px;overflow:hidden;width:200px"><div style="width:'+pct+'%;height:100%;background:'+(pret?'#e0533d':'#1f9d6b')+'"></div></div>'
+        +'<span style="font-size:13px;font-weight:700">'+nbI+' / '+seuil+' intéressé·e·s · '+nbC+' animateur'+(nbC>1?'s':'')+' potentiel'+(nbC>1?'s':'')+'</span>'
+        +(pret?'<span style="font-size:13px;font-weight:800;color:#e0533d">🎉 Seuil atteint — tu peux ouvrir l\'atelier !</span>':'')
+        +'</div>'
+        +insHtml
+        +(btns?'<div class="row" style="margin-top:10px;gap:6px;flex-wrap:wrap">'+btns+'</div>':'')
+        +'</div>';
+    }).join('');
+  };
+  window.addAtelier=async function(){
+    const g=id=>document.getElementById(id);
+    const titre=g('at_titre').value.trim();
+    if(!titre){ alert('Indique au moins le titre de l\'atelier.'); return; }
+    const {error}=await sbc.from('ateliers').insert({
+      asso_id:myAsso, titre, description:g('at_desc').value.trim(),
+      seuil:Math.max(1,parseInt(g('at_seuil').value,10)||6),
+      cherche_animateur:g('at_anim').value==='1',
+      publie:g('at_pub').value==='1',
+      statut:'inscriptions',
+      proposeur:(myProfile.full_name||myProfile.email||'').split('@')[0]
+    });
+    if(error){ alert(error.message); return; }
+    g('at_titre').value=''; g('at_desc').value=''; g('at_seuil').value='6';
+    loadAteliers();
+  };
+  window.setAtelier=async function(id,patch){ const {error}=await sbc.from('ateliers').update(patch).eq('id',id); if(error){alert(error.message);return;} loadAteliers(); };
+  window.delAtelier=async function(id){ if(!confirm('Supprimer définitivement cet atelier et ses inscriptions ?'))return; const {error}=await sbc.from('ateliers').delete().eq('id',id); if(error){alert(error.message);return;} loadAteliers(); };
+  window.delInscription=async function(id){ if(!confirm('Retirer cette inscription ?'))return; const {error}=await sbc.from('atelier_inscriptions').delete().eq('id',id); if(error){alert(error.message);return;} loadAteliers(); };
 
   // Chat interne FLOTTANT (bulle en bas à droite + badge non-lus + panneau)
   let chatSeen=0, chatOpen=false, lastUnread=0;
@@ -2345,6 +2565,15 @@ renderAll();
     loadSuggest();
   };
   window.setSugStatut=async function(id,st){ const {error}=await sbc.from('suggestions').update({statut:st}).eq('id',id); if(error){alert(error.message);return;} loadSuggest(); };
+  // Envoi programmatique d'une suggestion (utilisé par l'Aide « Demande à Zanana » pour les questions sans réponse)
+  window.bobSendSuggest=async function(body, context){
+    if(!myAsso||!myProfile||!body) return false;
+    const nom=(myProfile.full_name||myProfile.email||'').split('@')[0];
+    const {error}=await sbc.from('suggestions').insert({asso_id:myAsso, author_id:myProfile.id, author_name:nom, body, context:context||'❓ Aide'});
+    if(error){ console.warn('bobSendSuggest:', error.message); return false; }
+    if(window.loadSuggest) loadSuggest();
+    return true;
+  };
   window.loadChat=async function(){
     const {data,error}=await sbc.from('messages').select('*').order('created_at',{ascending:true}).limit(200);
     const box=document.getElementById('chatBody');
@@ -2414,6 +2643,8 @@ renderAll();
     applyPerms();
     const pb=document.querySelector('nav.tabs button[data-tab="partenaires"]'); if(pb) pb.addEventListener('click',()=>{ if(window.loadPartenaires) loadPartenaires(); });
     if(window.loadPartenaires) loadPartenaires();
+    const ab=document.querySelector('nav.tabs button[data-tab="ateliers"]'); if(ab) ab.addEventListener('click',()=>{ if(window.loadAteliers) loadAteliers(); });
+    if(window.loadAteliers) loadAteliers();
     addChatWidget(); addSuggestWidget();
     heartbeat(); if(window.loadPresence) loadPresence();
     setInterval(()=>{ heartbeat(); if(window.loadChat) loadChat(); if(window.loadPresence) loadPresence(); }, 10000);
