@@ -121,6 +121,7 @@
     <button data-tab="repertoire">🗂️ Répertoire</button>
     <button data-tab="partenaires">🤝 Partenaires</button>
     <button data-tab="secretariat">🧰 Secrétariat</button>
+    <button data-tab="equipe">📒 Équipe</button>
     <button data-tab="incidents">⚠️ Événements</button>
     <button data-tab="accounting">💶 Comptabilité</button>
     <button data-tab="caisse">💵 Caisse</button>
@@ -417,6 +418,41 @@
       </div>
     </div>
     <div id="detteList"></div>
+  </section>
+
+  <!-- ÉQUIPE -->
+  <section id="equipe" class="page">
+    <div class="panel">
+      <h2 style="margin:0 0 4px">👋 Accueil des nouveaux arrivants</h2>
+      <p class="hint">Le mot d'accueil et l'essentiel pour toute personne qui rejoint l'équipe.</p>
+      <textarea id="accueilIntro" onchange="saveAccueilIntro()" style="width:100%;min-height:90px;font:inherit;padding:10px 12px;border:1px solid #e6ece7;border-radius:10px;resize:vertical" placeholder="Ex. Bienvenue au CASE du Bois de Nèfles ! Voici l'essentiel pour bien démarrer…"></textarea>
+      <h3 style="margin:16px 0 8px;font-size:15px">Les statuts / contrats</h3>
+      <p class="hint">Service Civique, PEC, CDI… : pour chaque statut, ses spécificités (durée, temps de travail, congés, indemnité…).</p>
+      <div class="row" style="margin-bottom:8px">
+        <div class="field" style="flex:0;min-width:200px"><label>Statut / contrat</label><input id="ct_type" list="ctTypes" placeholder="Ex. Service Civique">
+          <datalist id="ctTypes"><option>Service Civique</option><option>PEC (Parcours Emploi Compétences)</option><option>CDI</option><option>CDD</option><option>Stage</option><option>Bénévole</option></datalist></div>
+        <div class="field" style="flex:2"><label>Spécificités</label><input id="ct_desc" placeholder="Durée, temps de travail, congés, indemnité…"></div>
+        <div class="field" style="flex:0"><label>&nbsp;</label><button class="btn" onclick="addContrat()">Ajouter</button></div>
+      </div>
+      <div id="contratList"></div>
+      <div class="row" style="margin-top:6px"><button class="ghost btn" onclick="seedContrats()" title="Pré-remplir Service Civique, PEC et CDI">＋ Ajouter les statuts courants</button></div>
+    </div>
+
+    <div class="panel">
+      <h2 style="margin:0 0 4px">📋 Protocoles &amp; procédures</h2>
+      <p class="hint">Les protocoles et procédures internes, consultables par toute l'équipe (sécurité, accueil du public, ouverture/fermeture des locaux, gestion d'un incident…).</p>
+      <div class="row" style="margin-bottom:8px">
+        <div class="field" style="flex:2"><label>Titre</label><input id="pr_titre" placeholder="Ex. Procédure d'évacuation"></div>
+        <div class="field"><label>Catégorie</label><input id="pr_cat" list="prCats" placeholder="Sécurité, Accueil, RH…">
+          <datalist id="prCats"><option>Sécurité</option><option>Accueil du public</option><option>RH</option><option>Locaux</option><option>Activités</option><option>Administratif</option></datalist></div>
+      </div>
+      <div class="row" style="margin-bottom:8px">
+        <div class="field" style="flex:3"><label>Contenu / consignes</label><input id="pr_contenu" placeholder="Les étapes, les consignes essentielles…"></div>
+        <div class="field" style="flex:2"><label>Lien (document Drive, PDF…)</label><input id="pr_url" placeholder="https://…"></div>
+        <div class="field" style="flex:0"><label>&nbsp;</label><button class="btn" onclick="addProtocole()">Ajouter</button></div>
+      </div>
+      <div id="protocoleList"></div>
+    </div>
   </section>
 
   <!-- PRÉVISIONNEL -->
@@ -735,7 +771,7 @@ const uid = () => Date.now().toString(36)+Math.random().toString(36).slice(2,7);
 
 let db = load();
 function load(){ try{ return Object.assign(blank(), JSON.parse(localStorage.getItem(KEY))||{}); }catch(e){ return blank(); } }
-function blank(){ return {members:[],ops:[],projects:[],subventions:[],comptes:[],contacts:[],liens:[],docs:[],notes:[],echeances:[],reunions:[],incidents:[],dettes:[],recurrents:{}}; }
+function blank(){ return {members:[],ops:[],projects:[],subventions:[],comptes:[],contacts:[],liens:[],docs:[],notes:[],echeances:[],reunions:[],incidents:[],dettes:[],recurrents:{},protocoles:[],contrats:[],accueilIntro:''}; }
 function save(){ jLog(); localStorage.setItem(KEY, JSON.stringify(db)); renderAll(); }
 
 /* ---- Historique (journal d'activité automatique, onglet réservé au bureau) ---- */
@@ -1187,6 +1223,10 @@ const EDIT_SCHEMAS={
   dettes:{coll:'dettes',title:'dette / créance',f:[
     {k:'sens',l:'Type',t:'select',opts:['dette','creance']},{k:'tiers',l:'Tiers (qui ?)',t:'text'},{k:'label',l:'Libellé',t:'text'},
     {k:'montant',l:'Montant total (€)',t:'number'},{k:'date',l:'Date',t:'date'},{k:'echeance',l:'Échéance (date limite)',t:'date'}]},
+  contrats:{coll:'contrats',title:'statut / contrat',f:[
+    {k:'type',l:'Statut / contrat',t:'text'},{k:'description',l:'Spécificités',t:'textarea'}]},
+  protocoles:{coll:'protocoles',title:'protocole',f:[
+    {k:'titre',l:'Titre',t:'text'},{k:'categorie',l:'Catégorie',t:'text'},{k:'contenu',l:'Contenu / consignes',t:'textarea'},{k:'url',l:'Lien',t:'text'}]},
   contacts:{coll:'contacts',title:'contact',f:[
     {k:'name',l:'Nom',t:'text'},{k:'org',l:'Organisation',t:'text'},{k:'email',l:'Email',t:'text'},{k:'phone',l:'Téléphone',t:'text'},{k:'note',l:'Note',t:'textarea'}]},
   liens:{coll:'liens',title:'lien',f:[
@@ -1955,7 +1995,48 @@ function renderPrevisionnel(){
     : `Aucune opération saisie pour ${Y} : ajoute des dépenses dans la Comptabilité pour lancer la projection.`;
 }
 
-function renderAll(){ renderDashboard(); renderMembers(); renderRelances(); renderOps(); renderCaisse(); renderProjects(); renderSubventions(); renderEcheancier(); renderBilan(); renderPrevisionnel(); renderRepertoire(); renderSecretariat(); renderReunions(); renderIncidents(); renderDettes(); renderOfficialLinks(); refreshComptes(); renderListParams(); renderJournal(); }
+/* ---- Équipe : accueil nouveaux arrivants + protocoles ---- */
+function saveAccueilIntro(){ db.accueilIntro=$('accueilIntro').value; save(); }
+function addContrat(){
+  const type=$('ct_type').value.trim(); if(!type){ alert('Indique le statut / contrat.'); return; }
+  db.contrats=db.contrats||[]; db.contrats.push({id:uid(),type,description:$('ct_desc').value.trim()});
+  ['ct_type','ct_desc'].forEach(i=>$(i).value=''); save();
+}
+function delContrat(id){ if(confirm('Supprimer ce statut ?')){ db.contrats=(db.contrats||[]).filter(c=>c.id!==id); save(); } }
+function seedContrats(){
+  db.contrats=db.contrats||[]; const has=t=>db.contrats.some(c=>(c.type||'').toLowerCase()===t.toLowerCase());
+  [['Service Civique',"Engagement de 6 à 12 mois, 24 à 35h/semaine. Indemnité mensuelle (part État + part association). 2 jours de congés par mois de mission."],
+   ['PEC (Parcours Emploi Compétences)',"Contrat aidé (CDD) avec accompagnement et formation. Durée et temps de travail selon la convention. Congés payés selon le Code du travail."],
+   ['CDI',"Contrat à durée indéterminée. Congés payés (2,5 jours ouvrables par mois travaillé) + éventuels RTT selon l'accord. Période d'essai à l'embauche."]]
+  .forEach(([type,description])=>{ if(!has(type)) db.contrats.push({id:uid(),type,description}); });
+  save();
+}
+function renderContrats(){
+  const box=$('contratList'); if(!box) return; const cs=db.contrats||[];
+  if(!cs.length){ box.innerHTML='<p class="hint" style="margin:0">Aucun statut renseigné. Clique sur « Ajouter les statuts courants » pour démarrer.</p>'; return; }
+  box.innerHTML=cs.map(c=>`<div class="panel" style="padding:12px 14px;margin:8px 0;border-left:4px solid var(--brand)">
+    <div class="toolbar"><div><strong>${esc(c.type)}</strong></div>
+      <div style="white-space:nowrap"><button class="ghost btn" style="padding:4px 9px;font-size:12px" onclick="openEdit('contrats','${c.id}')" title="Modifier">✏️</button>
+      <button class="danger" onclick="delContrat('${c.id}')">Suppr.</button></div></div>
+    ${c.description?'<p style="margin:6px 0 0;white-space:pre-wrap">'+esc(c.description)+'</p>':''}</div>`).join('');
+}
+function addProtocole(){
+  const titre=$('pr_titre').value.trim(); if(!titre){ alert('Indique un titre.'); return; }
+  db.protocoles=db.protocoles||[]; db.protocoles.push({id:uid(),titre,categorie:$('pr_cat').value.trim()||'Général',contenu:$('pr_contenu').value.trim(),url:$('pr_url').value.trim()});
+  ['pr_titre','pr_cat','pr_contenu','pr_url'].forEach(i=>$(i).value=''); save();
+}
+function delProtocole(id){ if(confirm('Supprimer ce protocole ?')){ db.protocoles=(db.protocoles||[]).filter(p=>p.id!==id); save(); } }
+function renderProtocoles(){
+  const box=$('protocoleList'); if(!box) return; const ps=db.protocoles||[];
+  if(!ps.length){ box.innerHTML='<p class="hint" style="margin:0">Aucun protocole. Ajoute la première procédure ci-dessus.</p>'; return; }
+  const byCat={}; ps.forEach(p=>{ const k=p.categorie||'Général'; (byCat[k]=byCat[k]||[]).push(p); });
+  box.innerHTML=Object.keys(byCat).sort().map(cat=>`<div style="margin:12px 0 4px;font-weight:800;font-size:12px;color:var(--muted);letter-spacing:.04em;text-transform:uppercase">${esc(cat)}</div>`
+    +byCat[cat].map(p=>`<div class="kv"><span><strong>${esc(p.titre)}</strong>${p.contenu?'<br><span class="muted" style="font-size:13px;white-space:pre-wrap">'+esc(p.contenu)+'</span>':''}</span>
+      <span style="white-space:nowrap">${p.url?'<a class="btn" style="padding:4px 12px;font-size:12px;text-decoration:none" href="'+esc(p.url)+'" target="_blank" rel="noopener">Ouvrir ↗</a> ':''}<button class="ghost btn" style="padding:4px 9px;font-size:12px" onclick="openEdit('protocoles','${p.id}')" title="Modifier">✏️</button> <button class="danger" onclick="delProtocole('${p.id}')">✕</button></span></div>`).join('')).join('');
+}
+function renderEquipe(){ const t=$('accueilIntro'); if(t && document.activeElement!==t) t.value=db.accueilIntro||''; renderContrats(); renderProtocoles(); }
+
+function renderAll(){ renderDashboard(); renderMembers(); renderRelances(); renderOps(); renderCaisse(); renderProjects(); renderSubventions(); renderEcheancier(); renderBilan(); renderPrevisionnel(); renderEquipe(); renderRepertoire(); renderSecretariat(); renderReunions(); renderIncidents(); renderDettes(); renderOfficialLinks(); refreshComptes(); renderListParams(); renderJournal(); }
 
 /* ---- Data import/export ---- */
 function exportJSON(){
