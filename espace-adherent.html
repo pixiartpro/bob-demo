@@ -345,8 +345,19 @@ function askZananaAdh(){
   } else {
     out.innerHTML='<div style="background:#fff5da;border:1px solid #f1e2ad;border-radius:12px;padding:14px;display:flex;gap:10px;align-items:flex-start">'
       +'<img src="zanana-wave.png" onerror="this.style.display=\'none\'" style="width:30px;height:auto;flex:0 0 auto">'
-      +'<div style="flex:1;color:#6b5300"><b>Je n\'ai pas la réponse à ça.</b><br>Pose ta question directement au <b>bureau du CASE</b> ou à l\'accueil, on te répondra avec plaisir ! 🍍</div></div>';
+      +'<div style="flex:1;color:#6b5300"><b>Je n\'ai pas encore la réponse à ça.</b><br>Envoie ta question au CASE : on y répondra et elle sera ajoutée à l\'aide. Tu peux aussi en parler au bureau ou à l\'accueil. 🍍'
+      +'<div style="margin-top:10px"><button class="btn win" onclick="aqSendQuestion()">📨 Envoyer ma question</button> <span id="aqSent" style="font-size:13px;font-weight:700"></span></div></div></div>';
   }
+}
+async function aqSendQuestion(){
+  const q=document.getElementById('aqAsk').value.trim(); const tag=document.getElementById('aqSent');
+  if(!q || q.length<2){ if(tag){tag.style.color='#c0392b';tag.textContent='Écris ta question d\'abord.';} return; }
+  if(tag){ tag.style.color='var(--muted)'; tag.textContent='⏳ Envoi…'; }
+  try{
+    const {error}=await _sbAt.from('questions_aide').insert({question:q});
+    if(error){ if(tag){tag.style.color='#c0392b';tag.textContent='Oups, réessaie dans un instant.';} return; }
+    if(tag){ tag.style.color='var(--vert-fonce)'; tag.textContent='✅ Envoyée, merci !'; }
+  }catch(e){ if(tag){tag.style.color='#c0392b';tag.textContent='Oups, réessaie dans un instant.';} }
 }
 renderAqList();
 </script>
