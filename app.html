@@ -844,6 +844,11 @@
       </div>
       <div id="faqAnswer" style="margin-top:14px"></div>
     </div>
+    <div class="panel" id="newsPanel">
+      <h3 style="margin:0 0 4px">✨ Quoi de neuf dans Bob</h3>
+      <p class="hint" style="margin:0 0 10px">Chaque nouveauté arrive ici avec sa date et l'onglet concerné — une pastille rouge sur l'onglet ❓ Aide te prévient tant que tu n'as pas regardé. Une fois lues, les cartes restent : c'est la <strong>notice de Bob</strong>, dans l'ordre chronologique. (La FAQ ci-dessous reste la notice par thème.)</p>
+      <div id="newsList"></div>
+    </div>
     <div class="panel" id="qaPanel" style="display:none;border-left:4px solid #f0a500">
       <h3 style="margin:0 0 4px">📨 Questions des adhérents <span id="qaCount" class="muted" style="font-weight:400;font-size:13px"></span></h3>
       <p class="hint" style="margin:0 0 10px">Questions posées depuis l'espace adhérent et restées sans réponse. Réponds-y (et pense à enrichir la FAQ), puis marque-les traitées.</p>
@@ -971,6 +976,8 @@ document.querySelectorAll('nav.tabs button').forEach(b=>{
 
 /* ---- Aide : « Demande à Zanana » (FAQ + assistant par mots-clés, sans IA) ---- */
 const FAQ=[
+  {cat:'🚀 Démarrer',q:"Où je vois les nouveautés de Bob ?",kw:"nouveaute nouveau quoi de neuf notice changement evolution pastille rouge mise a jour decouvrir fonctionnalite",
+   a:"Onglet <b>❓ Aide</b>, panneau <b>✨ Quoi de neuf</b> : chaque évolution de Bob y arrive avec sa date et l'onglet concerné. Une <b>pastille rouge</b> sur l'onglet Aide te prévient tant que tu n'as pas regardé ; une fois lues, les cartes restent — c'est la notice chronologique de Bob. La FAQ ci-dessous sert de notice par thème."},
   {cat:'🚀 Démarrer',q:"Comment je me connecte à Bob ?",kw:"connexion connecter login mot de passe identifiant entrer acceder ouvrir session",
    a:"Va sur la page de connexion, entre ton <b>email</b> et ton <b>mot de passe</b>, puis clique sur « Se connecter ». Tu arrives sur ton espace : clique alors sur <b>« Entrer dans la gestion »</b> pour ouvrir Bob."},
   {cat:'🚀 Démarrer',q:"J'ai oublié mon mot de passe, je fais quoi ?",kw:"oublie oublié mot de passe perdu reinitialiser lien magique connexion email",
@@ -1091,6 +1098,40 @@ function faqCard(item,open){
 function renderFaqList(){
   const box=$('faqList'); if(!box) return;
   box.innerHTML=FAQ.map(it=>faqCard(it,false)).join('');
+}
+
+/* ---- ✨ Quoi de neuf (nouveautés + notice chronologique) ---- */
+const NEWS=[
+  {id:'2026-06-12-news',date:'2026-06-12',tab:'❓ Aide',titre:'✨ Le panneau « Quoi de neuf »',
+   desc:"Celui que tu lis ! À chaque évolution de Bob, une carte arrive ici et une pastille rouge s'affiche sur l'onglet Aide. Les cartes lues restent : c'est la notice de Bob au fil du temps."},
+  {id:'2026-06-12-alertes',date:'2026-06-12',tab:'📊 Tableau de bord',titre:'🚨 Alertes importantes',
+   desc:"Bob surveille tout seul : solde négatif (global, banque ou caisse), échéances de dettes à moins de 14 jours ou en retard (pense à saisir les échéanciers dans 💳 Dettes), et fins d'aides PEC à moins de 90 jours. Le bloc rouge n'apparaît que s'il y a quelque chose à traiter."},
+  {id:'2026-06-12-rap',date:'2026-06-12',tab:'💵 Caisse',titre:'🏦 Rapprochement bancaire',
+   desc:"Relevé en main : coche chaque opération retrouvée sur le relevé, saisis le solde du relevé — écart à 0,00 € en vert = la compta et la banque racontent la même chose."},
+  {id:'2026-06-12-n1',date:'2026-06-12',tab:'📈 Bilan',titre:'📊 Comparaison N−1 du compte de résultat',
+   desc:"Dès qu'un exercice précédent contient des écritures, des colonnes N−1 et Évolution % apparaissent sur chaque ligne du bilan, et le résultat de l'an dernier s'affiche sous celui de l'année."},
+  {id:'2026-06-12-ms',date:'2026-06-12',tab:'📒 Équipe',titre:'💰 Masse salariale',
+   desc:"Saisis chaque salarié avec son bulletin (brut horaire, heures, % charges, aide PEC) : Bob calcule le coût employeur au mois et à l'année, le reste à charge réel de l'asso et le coût horaire chargé."},
+  {id:'2026-06-12-simu',date:'2026-06-12',tab:'🔮 Prévisionnel',titre:'📐 Simulateur garderie du matin',
+   desc:"Est-ce rentable, et combien ajouter à la grille tarifaire ? Le simulateur ne compte que l'argent nouveau (supplément des déjà-inscrits + nouveaux enfants) et donne le supplément d'équilibre. Bouton 💾 pour partager tes hypothèses avec le bureau."},
+];
+function newsLus(){ try{ return JSON.parse(localStorage.getItem('bob_news_lus')||'[]'); }catch(e){ return []; } }
+function newsMarkRead(){ try{ localStorage.setItem('bob_news_lus',JSON.stringify(NEWS.map(n=>n.id))); }catch(e){} newsBadge(); renderNews(); }
+function newsBadge(){
+  const b=document.querySelector('nav.tabs button[data-tab="aide"]'); if(!b) return;
+  const lus=newsLus(), nb=NEWS.filter(n=>!lus.includes(n.id)).length;
+  let s=b.querySelector('.newsdot');
+  if(!s){ s=document.createElement('span'); s.className='newsdot'; s.style.cssText='display:inline-block;margin-left:6px;background:var(--red);color:#fff;border-radius:10px;padding:0 7px;font-size:11px;font-weight:700'; b.appendChild(s); }
+  s.style.display=nb?'inline-block':'none'; s.textContent=nb;
+}
+function renderNews(){
+  const el=$('newsList'); if(!el) return;
+  const lus=newsLus();
+  el.innerHTML=NEWS.map(n=>`<div class="kv" style="align-items:flex-start;padding:8px 0;border-bottom:1px solid #eef3ef">
+    <span style="flex:1;min-width:0"><strong>${esc(n.titre)}</strong> <span class="pill ${lus.includes(n.id)?'ok':'no'}">${lus.includes(n.id)?'vu':'nouveau'}</span><br>
+      <span class="muted" style="font-size:13px;line-height:1.45">${esc(n.desc)}</span></span>
+    <span class="muted" style="white-space:nowrap;font-size:12px;text-align:right;margin-left:12px">${fmtDate(n.date)}<br>${esc(n.tab)}</span></div>`).join('');
+  newsBadge();
 }
 let faqTimer=null;
 function faqLive(){ clearTimeout(faqTimer); faqTimer=setTimeout(()=>{ const v=$('faqAsk').value.trim(); if(v.length>=3) askZanana(true); else $('faqAnswer').innerHTML=''; },350); }
@@ -2461,7 +2502,7 @@ function renderProtocoles(){
 }
 function renderEquipe(){ const t=$('accueilIntro'); if(t && document.activeElement!==t) t.value=db.accueilIntro||''; renderSalaries(); renderContrats(); renderProtocoles(); }
 
-function renderAll(){ renderDashboard(); renderMembers(); renderRelances(); renderOps(); renderCaisse(); renderRapprochement(); renderProjects(); renderSubventions(); renderEcheancier(); renderBilan(); renderPrevisionnel(); renderEquipe(); renderRepertoire(); renderSecretariat(); renderReunions(); renderIncidents(); renderDettes(); renderOfficialLinks(); refreshComptes(); renderListParams(); renderJournal(); renderFaqList(); }
+function renderAll(){ renderDashboard(); renderMembers(); renderRelances(); renderOps(); renderCaisse(); renderRapprochement(); renderProjects(); renderSubventions(); renderEcheancier(); renderBilan(); renderPrevisionnel(); renderEquipe(); renderRepertoire(); renderSecretariat(); renderReunions(); renderIncidents(); renderDettes(); renderOfficialLinks(); refreshComptes(); renderListParams(); renderJournal(); renderFaqList(); renderNews(); }
 
 /* ---- Data import/export ---- */
 function exportJSON(){
@@ -2940,6 +2981,7 @@ renderAll();
     addBanner();
     renderAll();
     applyPerms();
+    const hb=document.querySelector('nav.tabs button[data-tab="aide"]'); if(hb) hb.addEventListener('click',()=>{ newsMarkRead(); });
     const pb=document.querySelector('nav.tabs button[data-tab="partenaires"]'); if(pb) pb.addEventListener('click',()=>{ if(window.loadPartenaires) loadPartenaires(); });
     if(window.loadPartenaires) loadPartenaires();
     const ab=document.querySelector('nav.tabs button[data-tab="ateliers"]'); if(ab) ab.addEventListener('click',()=>{ if(window.loadAteliers) loadAteliers(); });
