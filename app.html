@@ -424,6 +424,27 @@
 
   <!-- ÉQUIPE -->
   <section id="equipe" class="page">
+    <div class="panel" id="masseSalariale">
+      <h2 style="margin:0 0 4px">💰 Masse salariale — ce que le personnel coûte vraiment</h2>
+      <p class="hint">Pour chaque salarié : son brut horaire, ses heures, le taux de charges patronales et l'aide éventuelle (PEC…). Bob calcule le coût employeur <strong>au mois, à l'année et à l'heure</strong>. Le % de charges se lit sur un bulletin de paie : (coût total employeur − salaire brut) ÷ brut × 100 — demande le chiffre exact à la gestionnaire de paie, il varie selon les exonérations.</p>
+      <div class="cards" id="msKpis" style="margin-top:8px"></div>
+      <div class="toolbar" style="flex-wrap:wrap;gap:10px;margin-top:12px">
+        <input type="hidden" id="ms_id">
+        <div class="field" style="min-width:160px"><label>Nom</label><input id="ms_name" placeholder="Ex. Kathie M."></div>
+        <div class="field" style="min-width:150px"><label>Poste</label><input id="ms_poste" placeholder="Ex. Responsable animation"></div>
+        <div class="field" style="min-width:110px"><label>Contrat</label><input id="ms_contrat" placeholder="CDI, PEC, CEE…"></div>
+        <div class="field" style="min-width:110px"><label>Heures / semaine</label><input type="number" id="ms_hsem" min="0" step="0.5" placeholder="35"></div>
+        <div class="field" style="min-width:130px"><label>Brut horaire (€)</label><input type="number" id="ms_bruth" min="0" step="0.01" placeholder="Ex. 12,10"></div>
+        <div class="field" style="min-width:150px"><label>Charges patronales (%)</label><input type="number" id="ms_charges" min="0" max="100" step="1" placeholder="Ex. 25"></div>
+        <div class="field" style="min-width:140px"><label>Aide sur le poste (%)</label><input type="number" id="ms_aide" min="0" max="100" step="5" placeholder="Ex. PEC 60"></div>
+        <div class="field" style="min-width:130px"><label>Fin de l'aide</label><input id="ms_aidefin" placeholder="Ex. 02/2027"></div>
+        <div class="field" style="flex:0"><label>&nbsp;</label><button class="btn" onclick="addSalarie()" id="ms_btn">Ajouter</button></div>
+      </div>
+      <table style="margin-top:10px"><thead><tr><th>Salarié</th><th>Contrat</th><th class="num">h / sem</th><th class="num">Brut / mois</th><th class="num">Coût employeur / mois</th><th class="num">Aide / mois</th><th class="num">Reste à charge / an</th><th class="num">Coût horaire chargé</th><th></th></tr></thead>
+        <tbody id="msRows"></tbody></table>
+      <p class="hint" style="margin:8px 0 0">💡 Le « coût horaire chargé » de la dernière colonne est exactement le chiffre à reporter dans le <strong>📐 Simulateur</strong> de l'onglet 🔮 Prévisionnel.</p>
+    </div>
+
     <div class="panel">
       <h2 style="margin:0 0 4px">👋 Accueil des nouveaux arrivants</h2>
       <p class="hint">Le mot d'accueil et l'essentiel pour toute personne qui rejoint l'équipe.</p>
@@ -492,6 +513,37 @@
       <table><thead><tr><th>Mois</th><th class="num">Recettes</th><th class="num">Dépenses</th><th class="num">Solde du mois</th><th class="num">Trésorerie cumulée</th></tr></thead>
         <tbody id="prevMonthRows"></tbody></table>
       <p class="hint" style="margin:8px 0 0">Les mois <strong>déjà saisis</strong> reprennent les chiffres réels ; les mois à venir sont une projection (en italique).</p>
+    </div>
+
+    <div class="panel" id="simuGarderie">
+      <h2 style="margin:0 0 4px">📐 Simulateur de nouvelle activité — garderie du matin</h2>
+      <p class="hint">Pour répondre à « est-ce que ça vaut le coup, et à quel tarif ? » : ajuste les chiffres ci-dessous, Bob recalcule tout en direct. <strong>Aucune écriture n'est créée en compta</strong> — c'est une simulation. Rappel de la grille actuelle (2025) : le périscolaire est facturé <strong>par jour selon le quotient familial</strong>, de 3,14 € (tranche 1) à 7,43 € (tranche 10), 8,25 € hors commune, −5 % par enfant supplémentaire. Le « tarif » ci-dessous = le <strong>supplément matin</strong> moyen ajouté à ce tarif jour.</p>
+
+      <h3 style="margin:14px 0 6px;font-size:15px;color:#c0392b">Ce que ça coûte</h3>
+      <div class="toolbar" style="flex-wrap:wrap;gap:10px">
+        <div class="field" style="min-width:120px"><label>Matins / semaine</label><input type="number" id="sg_matins" min="1" max="6" step="1" oninput="renderSimuGarderie()"></div>
+        <div class="field" style="min-width:130px"><label>Durée d'un matin (h)</label><input type="number" id="sg_duree" min="0.5" max="4" step="0.25" oninput="renderSimuGarderie()"></div>
+        <div class="field" style="min-width:140px"><label>Semaines d'école / an</label><input type="number" id="sg_sem" min="1" max="52" step="1" oninput="renderSimuGarderie()"></div>
+        <div class="field" style="min-width:120px"><label>Animateurs présents</label><input type="number" id="sg_anim" min="1" max="5" step="1" oninput="renderSimuGarderie()"></div>
+        <div class="field" style="min-width:170px"><label>Coût horaire chargé (€ / h)</label><input type="number" id="sg_ch" min="0" step="0.5" oninput="renderSimuGarderie()"></div>
+        <div class="field" style="min-width:170px"><label>Aide sur le poste (% — PEC…)</label><input type="number" id="sg_aide" min="0" max="100" step="5" oninput="renderSimuGarderie()"></div>
+        <div class="field" style="min-width:180px"><label>Autres coûts / an (collation…)</label><input type="number" id="sg_autres" min="0" step="10" oninput="renderSimuGarderie()"></div>
+      </div>
+
+      <h3 style="margin:14px 0 6px;font-size:15px;color:#127a51">Ce que ça rapporte — seulement l'argent NOUVEAU</h3>
+      <p class="hint" style="margin:0 0 6px">⚠️ Un enfant déjà inscrit le soir qui vient en plus le matin ne rapporte rien de nouveau… sauf si on crée un <strong>supplément matin</strong>. Seuls comptent donc : le supplément payé par les enfants déjà inscrits, et les <strong>nouveaux enfants</strong> attirés par le matin.</p>
+      <div class="toolbar" style="flex-wrap:wrap;gap:10px">
+        <div class="field" style="min-width:210px"><label>Enfants déjà inscrits qui prendront le matin</label><input type="number" id="sg_enf" min="0" max="60" step="1" oninput="renderSimuGarderie()"></div>
+        <div class="field" style="min-width:230px"><label>Supplément matin par enfant (€ / jour)</label><input type="number" id="sg_tarif" min="0" step="0.1" oninput="renderSimuGarderie()"></div>
+        <div class="field" style="min-width:190px"><label>Nouveaux enfants (grâce au matin)</label><input type="number" id="sg_enfnew" min="0" max="60" step="1" oninput="renderSimuGarderie()"></div>
+        <div class="field" style="min-width:230px"><label>Tarif payé par un nouvel enfant (€ / jour)</label><input type="number" id="sg_tarifnew" min="0" step="0.1" oninput="renderSimuGarderie()"></div>
+        <div class="field" style="min-width:190px"><label>Aide CAF / subvention (€ / an)</label><input type="number" id="sg_caf" min="0" step="50" oninput="renderSimuGarderie()"></div>
+      </div>
+      <p class="hint" style="margin:6px 0 0">« Tarif nouvel enfant » : s'il ne vient que le matin, mets le tarif matin seul (ex. 1,50–2 €) ; s'il s'inscrit à la journée complète grâce au matin, mets le tarif jour de sa tranche (3,14 € à 7,43 €, moyenne ≈ 4,50 €) + le supplément.</p>
+
+      <div class="cards" id="sgKpis" style="margin-top:10px"></div>
+      <p class="hint" id="sgVerdict" style="margin:10px 0 0;font-size:14px"></p>
+      <div style="margin-top:10px"><button class="btn" onclick="saveSimuGarderie()">💾 Garder ces hypothèses</button> <span class="hint" id="sgSaved"></span></div>
     </div>
   </section>
 
@@ -954,6 +1006,8 @@ const FAQ=[
    a:"Onglet <b>📈 Bilan</b> : tu obtiens le compte de résultat (recettes et dépenses) <b>par catégorie</b> et aussi <b>par code comptable</b> (pratique pour l'expert-comptable et le compte rendu financier des subventions)."},
   {cat:'🔮 Prévisionnel',q:"À quoi sert le prévisionnel ?",kw:"previsionnel budget projection prevision fin annee estimer decembre recurrent futur anticiper",
    a:"Onglet <b>🔮 Prévisionnel</b> : Bob projette le budget jusqu'au 31 décembre. Coche <b>« récurrent »</b> pour les lignes qui reviennent chaque mois (loyer, charges…) : elles sont prolongées automatiquement. Les subventions à venir sont estimées selon leur statut."},
+  {cat:'🔮 Prévisionnel',q:"Comment savoir si la garderie du matin est rentable et combien ajouter à la grille tarifaire ?",kw:"simulateur garderie matin rentable rentabilite tarif supplement equilibre point mort enfants nouvelle activite cout calcul grille tarifaire quotient familial",
+   a:"Onglet <b>🔮 Prévisionnel</b>, panneau <b>📐 Simulateur</b> (tout en bas). Important : on ne compte que l'argent <b>nouveau</b> — un enfant déjà inscrit le soir qui vient aussi le matin ne rapporte que le <b>supplément matin</b> qu'on lui facture ; un <b>nouvel enfant</b> rapporte son tarif jour complet. Renseigne les deux groupes, les heures et le coût de l'animateur : Bob calcule le coût annuel, les recettes nouvelles, le résultat et le <b>supplément d'équilibre</b> à ajouter au tarif jour de la grille (3,14 € à 7,43 € selon quotient familial). Clique sur <b>« 💾 Garder ces hypothèses »</b> pour les partager avec le bureau. C'est une simulation : rien n'est écrit en compta."},
   {cat:'🧰 Secrétariat',q:"Où je note les choses à ne pas oublier (assurance, AG, déclarations) ?",kw:"secretariat echeancier general date oubli assurance ag declaration contrat rappel agenda memo penser",
    a:"Onglet <b>🧰 Secrétariat</b> → <b>Échéancier général</b> : note les dates importantes (renouvellement d'assurance, déclarations, AG, contrats…). Les échéances proches s'affichent aussi sur le tableau de bord. Le <b>Mémo du bureau</b> sert de pense-bête partagé."},
   {cat:'🧰 Secrétariat',q:"Comment je fais un courrier avec l'en-tête de l'association ?",kw:"courrier lettre modele entete papier en-tete imprimer pdf secretariat redaction officiel",
@@ -962,6 +1016,8 @@ const FAQ=[
    a:"Onglet <b>🧰 Secrétariat</b> → section <b>Réunions & décisions</b> : enregistre la date, le type (bureau, CA, AG…), les présents, l'ordre du jour, les décisions, et un lien vers le compte-rendu."},
   {cat:'📒 Équipe',q:"Où sont les infos sur les salariés et les contrats (PEC, Service Civique…) ?",kw:"equipe salarie contrat statut pec service civique cdi protocole procedure accueil arrivant personnel",
    a:"Onglet <b>📒 Équipe</b> : le mot d'accueil des nouveaux arrivants, les <b>statuts/contrats</b> (Service Civique, PEC, CDI… avec leurs spécificités) et les <b>protocoles & procédures</b> internes consultables par toute l'équipe."},
+  {cat:'📒 Équipe',q:"Combien nous coûte le personnel par an (salaires + charges) ?",kw:"masse salariale cout personnel salaire charges patronales brut horaire annuel mensuel employeur aide pec combien coute",
+   a:"Onglet <b>📒 Équipe</b>, panneau <b>💰 Masse salariale</b> (en haut) : saisis chaque salarié avec son bulletin de paie sous les yeux (brut horaire, heures/semaine, % de charges patronales, % d'aide PEC). Bob calcule le <b>coût employeur au mois et à l'année</b>, déduit les aides, et donne le <b>coût horaire chargé</b> de chacun — c'est ce chiffre qu'on reporte dans le 📐 Simulateur du Prévisionnel. Le % de charges exact se lit sur un bulletin : (coût total employeur − brut) ÷ brut."},
   {cat:'⚠️ Événements',q:"Comment je déclare un accident ou un incident ?",kw:"evenement incident accident chute blessure conflit dommage declarer indesirable securite fiche signalement",
    a:"Onglet <b>⚠️ Événements</b> → <b>Déclarer un événement indésirable</b> : renseigne les faits (accident, chute, blessure, conflit…). Bob génère automatiquement la fiche de déclaration que tu peux imprimer ou archiver."},
   {cat:'🤝 Partenaires',q:"Où je vois les commerçants qui veulent devenir partenaires ?",kw:"partenaire commercant demande quartier formulaire devenir partenaire site public contact entreprise",
@@ -2191,6 +2247,102 @@ function renderPrevisionnel(){
   $('prevHypo').innerHTML = refM>0
     ? `Base de calcul : <strong>${refM} mois saisis</strong> (janv.→${MOIS[refM-1]}). Seules les catégories cochées « récurrent » sont projetées sur les mois à venir (≈ ${euro(avgOutRec)}/mois de dépenses, ${euro(avgInRec)}/mois de recettes courantes) ; les ponctuelles (cotisations, dons…) ne comptent qu'une fois. Subventions : 80 % un mois après le vote, 20 % l'année suivante (renseigne la « date de vote » pour affiner). Trésorerie de départ = solde actuel ${euro(balance())}.`
     : `Aucune opération saisie pour ${Y} : ajoute des dépenses dans la Comptabilité pour lancer la projection.`;
+  renderSimuGarderie();
+}
+
+/* ---- Simulateur garderie du matin (onglet Prévisionnel) ---- */
+const SG_DEFAUTS={matins:4,duree:1,sem:36,anim:1,ch:14,aide:0,autres:0,enf:10,tarif:1.5,enfnew:0,tarifnew:4.5,caf:0};
+let sgCharge=false;
+function sgVals(){
+  const v={}; for(const k in SG_DEFAUTS){ const el=$('sg_'+k); v[k]=el?parseFloat(el.value):SG_DEFAUTS[k]; if(isNaN(v[k])||v[k]<0) v[k]=0; }
+  return v;
+}
+function renderSimuGarderie(){
+  if(!$('sg_enf')) return;
+  if(!sgCharge){
+    const s=Object.assign({},SG_DEFAUTS,db.simuGarderie||{});
+    for(const k in SG_DEFAUTS){ const el=$('sg_'+k); if(el) el.value=s[k]; }
+    sgCharge=true;
+  }
+  const v=sgVals();
+  const seances=v.matins*v.sem;                                        // nb de matins sur l'année
+  const coutAnim=v.matins*v.duree*v.sem*v.anim*v.ch*(1-Math.min(v.aide,100)/100);
+  const cout=coutAnim+v.autres;
+  const recSuppl=v.enf*v.tarif*seances;                                // supplément payé par les enfants déjà inscrits
+  const recNew=v.enfnew*v.tarifnew*seances;                            // argent frais des nouveaux enfants
+  const rec=recSuppl+recNew+v.caf;
+  const res=rec-cout;
+  const totEnf=v.enf+v.enfnew;
+  const resteACouvrir=Math.max(0,cout-v.caf-recNew);
+  const tarifEq=(v.enf>0&&seances>0)?resteACouvrir/(v.enf*seances):0;  // supplément d'équilibre pour les déjà-inscrits
+  const newEq=(v.tarifnew>0&&seances>0)?Math.ceil(Math.max(0,cout-v.caf-recSuppl)/(v.tarifnew*seances)):0; // ou combien de nouveaux enfants
+  $('sgKpis').innerHTML =
+      kpi('Coût par an',euro(cout),'red',`dont encadrement ${euro(coutAnim)}`)
+    + kpi('Recettes nouvelles par an',euro(rec),'green',`suppléments ${euro(recSuppl)} + nouveaux ${euro(recNew)}${v.caf>0?' + aide '+euro(v.caf):''}`)
+    + kpi('Résultat par an',euro(res),res>=0?'green':'red',`soit ${euro(res/12)} / mois — ${totEnf} enfant${totEnf>1?'s':''} le matin`)
+    + kpi("Supplément d'équilibre",v.enf>0?euro(tarifEq)+' / matin':'—',res>=0?'green':'red',v.enf>0?`à faire payer aux ${v.enf} déjà-inscrits pour couvrir le reste`:'aucun enfant déjà inscrit saisi');
+  let verdict;
+  if(totEnf===0){ verdict=`Indique un nombre d'enfants (déjà inscrits et/ou nouveaux) pour lancer le calcul.`; }
+  else if(res>=0){
+    verdict=`✅ <strong>À l'équilibre ou rentable</strong> : la garderie du matin dégage environ <strong>${euro(res)} / an</strong> avec ${v.enf>0?`<strong>${v.enf} déjà-inscrits</strong> payant un supplément de ${euro(v.tarif)} / matin`:''}${v.enf>0&&v.enfnew>0?' et ':''}${v.enfnew>0?`<strong>${v.enfnew} nouveaux enfants</strong> à ${euro(v.tarifnew)} / jour`:''}. Pour garder la logique sociale de la grille, le supplément peut être réparti en % du tarif jour de chaque tranche plutôt qu'en montant unique.`;
+  } else {
+    verdict=`❌ <strong>Déficitaire de ${euro(-res)} / an</strong> dans ces conditions. Leviers pour atteindre l'équilibre : ${v.enf>0?`porter le supplément des déjà-inscrits à <strong>${euro(tarifEq)} / matin</strong>`:''}${v.enf>0&&newEq>0?', ou ':''}${newEq>0?`compter <strong>${newEq} nouveaux enfants</strong> au tarif saisi`:''}. Pense aussi à l'aide CAF (PSO) et au % d'aide PEC sur le poste : renseigne-les dès que les montants sont confirmés.`;
+  }
+  $('sgVerdict').innerHTML=verdict;
+}
+function saveSimuGarderie(){
+  db.simuGarderie=sgVals(); save();
+  const el=$('sgSaved'); if(el){ el.textContent='Hypothèses enregistrées et partagées avec le bureau ✔'; setTimeout(()=>{ el.textContent=''; },4000); }
+}
+
+/* ---- Équipe : masse salariale ---- */
+function msCalc(s){
+  const hMois=(s.hsem||0)*52/12;                       // heures payées par mois (lissées)
+  const brutMois=hMois*(s.bruth||0);
+  const coutMois=brutMois*(1+(s.charges||0)/100);
+  const aideMois=coutMois*Math.min(s.aide||0,100)/100;
+  const resteMois=coutMois-aideMois;
+  return {hMois,brutMois,coutMois,aideMois,resteMois,coutAn:coutMois*12,resteAn:resteMois*12,chargesAn:(coutMois-brutMois)*12,coutH:(s.bruth||0)*(1+(s.charges||0)/100)};
+}
+function addSalarie(){
+  const name=$('ms_name').value.trim(); if(!name){ alert('Indique au moins le nom.'); return; }
+  const s={id:$('ms_id').value||uid(),name,poste:$('ms_poste').value.trim(),contrat:$('ms_contrat').value.trim(),
+    hsem:parseFloat($('ms_hsem').value)||0,bruth:parseFloat($('ms_bruth').value)||0,
+    charges:parseFloat($('ms_charges').value)||0,aide:parseFloat($('ms_aide').value)||0,aidefin:$('ms_aidefin').value.trim()};
+  db.salaries=db.salaries||[];
+  const i=db.salaries.findIndex(x=>x.id===s.id);
+  if(i>=0) db.salaries[i]=s; else db.salaries.push(s);
+  ['ms_id','ms_name','ms_poste','ms_contrat','ms_hsem','ms_bruth','ms_charges','ms_aide','ms_aidefin'].forEach(id=>$(id).value='');
+  $('ms_btn').textContent='Ajouter';
+  save();
+}
+function editSalarie(id){
+  const s=(db.salaries||[]).find(x=>x.id===id); if(!s) return;
+  $('ms_id').value=s.id; $('ms_name').value=s.name||''; $('ms_poste').value=s.poste||''; $('ms_contrat').value=s.contrat||'';
+  $('ms_hsem').value=s.hsem||''; $('ms_bruth').value=s.bruth||''; $('ms_charges').value=s.charges||''; $('ms_aide').value=s.aide||''; $('ms_aidefin').value=s.aidefin||'';
+  $('ms_btn').textContent='Enregistrer'; $('ms_name').focus();
+}
+function delSalarie(id){ if(confirm('Retirer ce salarié du tableau ?')){ db.salaries=(db.salaries||[]).filter(x=>x.id!==id); save(); } }
+function renderSalaries(){
+  const tb=$('msRows'); if(!tb) return;
+  const list=db.salaries||[];
+  if(!list.length){ tb.innerHTML='<tr><td colspan="9" class="empty">Aucun salarié saisi. Ajoute chaque membre de l\'équipe avec son bulletin de paie sous les yeux.</td></tr>'; $('msKpis').innerHTML=''; return; }
+  let totCoutAn=0,totChargesAn=0,totAideAn=0,totResteAn=0,totBrutAn=0;
+  tb.innerHTML=list.map(s=>{
+    const c=msCalc(s);
+    totCoutAn+=c.coutAn; totChargesAn+=c.chargesAn; totAideAn+=c.aideMois*12; totResteAn+=c.resteAn; totBrutAn+=c.brutMois*12;
+    return `<tr><td><strong>${esc(s.name)}</strong> <span class="muted" style="font-size:12px">${esc(s.poste||'')}</span></td>
+      <td>${esc(s.contrat||'—')}${s.aide>0&&s.aidefin?` <span class="muted" style="font-size:11px">aide jusqu'à ${esc(s.aidefin)}</span>`:''}</td>
+      <td class="num">${s.hsem||0}</td><td class="num">${euro(c.brutMois)}</td><td class="num">${euro(c.coutMois)}</td>
+      <td class="num ${c.aideMois>0?'green':''}">${c.aideMois>0?'−'+euro(c.aideMois):'—'}</td>
+      <td class="num"><strong>${euro(c.resteAn)}</strong></td><td class="num">${euro(c.coutH)} / h</td>
+      <td style="white-space:nowrap"><button class="ghost btn" onclick="editSalarie('${s.id}')" title="Modifier">✏️</button> <button class="ghost btn" onclick="delSalarie('${s.id}')" title="Retirer">🗑</button></td></tr>`;
+  }).join('');
+  $('msKpis').innerHTML =
+      kpi('Coût employeur total',euro(totCoutAn)+' / an','red',`brut ${euro(totBrutAn)} + charges ${euro(totChargesAn)}`)
+    + kpi('Aides déduites',totAideAn>0?'−'+euro(totAideAn)+' / an':'—','green','PEC et autres aides au poste')
+    + kpi('Reste à charge réel',euro(totResteAn)+' / an',(totResteAn<=totCoutAn*0.7)?'green':'red',`soit ${euro(totResteAn/12)} / mois pour l'asso`)
+    + kpi('Part des charges',totBrutAn>0?Math.round(totChargesAn/totBrutAn*100)+' %':'—','', 'charges patronales ÷ brut');
 }
 
 /* ---- Équipe : accueil nouveaux arrivants + protocoles ---- */
@@ -2232,7 +2384,7 @@ function renderProtocoles(){
     +byCat[cat].map(p=>`<div class="kv"><span><strong>${esc(p.titre)}</strong>${p.contenu?'<br><span class="muted" style="font-size:13px;white-space:pre-wrap">'+esc(p.contenu)+'</span>':''}</span>
       <span style="white-space:nowrap">${p.url?'<a class="btn" style="padding:4px 12px;font-size:12px;text-decoration:none" href="'+esc(p.url)+'" target="_blank" rel="noopener">Ouvrir ↗</a> ':''}<button class="ghost btn" style="padding:4px 9px;font-size:12px" onclick="openEdit('protocoles','${p.id}')" title="Modifier">✏️</button> <button class="danger" onclick="delProtocole('${p.id}')">✕</button></span></div>`).join('')).join('');
 }
-function renderEquipe(){ const t=$('accueilIntro'); if(t && document.activeElement!==t) t.value=db.accueilIntro||''; renderContrats(); renderProtocoles(); }
+function renderEquipe(){ const t=$('accueilIntro'); if(t && document.activeElement!==t) t.value=db.accueilIntro||''; renderSalaries(); renderContrats(); renderProtocoles(); }
 
 function renderAll(){ renderDashboard(); renderMembers(); renderRelances(); renderOps(); renderCaisse(); renderProjects(); renderSubventions(); renderEcheancier(); renderBilan(); renderPrevisionnel(); renderEquipe(); renderRepertoire(); renderSecretariat(); renderReunions(); renderIncidents(); renderDettes(); renderOfficialLinks(); refreshComptes(); renderListParams(); renderJournal(); renderFaqList(); }
 
