@@ -339,6 +339,19 @@
       <table><thead><tr><th>Date</th><th>Libellé</th><th>Type</th><th class="num">Montant</th><th class="num">Solde caisse</th></tr></thead>
         <tbody id="caisseRows"></tbody></table>
     </div>
+
+    <div class="panel" id="rapprochement">
+      <h2 style="margin:0 0 4px">🏦 Rapprochement bancaire</h2>
+      <p class="hint">Relevé bancaire en main : coche chaque opération que tu retrouves sur le relevé, et saisis le solde indiqué en bas du relevé. Quand l'écart tombe à <strong>0,00 €</strong>, la compta de Bob et la banque racontent la même histoire. S'il reste un écart : opération oubliée dans Bob, chèque pas encore débité, ou erreur de saisie.</p>
+      <div class="toolbar" style="flex-wrap:wrap;gap:10px;margin-top:6px">
+        <div class="field" style="min-width:170px"><label>Solde du relevé (€)</label><input type="number" id="rap_solde" step="0.01" onchange="setRapInfo()" placeholder="En bas du relevé"></div>
+        <div class="field" style="min-width:150px"><label>Date du relevé</label><input type="date" id="rap_date" onchange="setRapInfo()"></div>
+        <div class="field" style="flex:0"><label>&nbsp;</label><button class="ghost btn" id="rapShowBtn" onclick="rapToggleAll()">Voir aussi les pointées</button></div>
+      </div>
+      <div class="cards" id="rapKpis" style="margin-top:8px"></div>
+      <table style="margin-top:10px"><thead><tr><th style="width:34px">✓</th><th>Date</th><th>Libellé</th><th class="num">Montant</th></tr></thead>
+        <tbody id="rapRows"></tbody></table>
+    </div>
   </section>
 
   <!-- PROJECTS -->
@@ -1004,6 +1017,12 @@ const FAQ=[
    a:"Onglet <b>💳 Dettes & créances</b> : ajoute une dette (ce que le CASE doit) ou une créance (ce qu'on lui doit), avec échéance. Tu peux même prévoir un <b>échelonnement</b> et cocher les versements au fur et à mesure."},
   {cat:'📈 Bilan',q:"Comment je sors le bilan pour l'AG ou un financeur ?",kw:"bilan compte resultat recettes depenses categorie code comptable assemblee generale financeur rapport",
    a:"Onglet <b>📈 Bilan</b> : tu obtiens le compte de résultat (recettes et dépenses) <b>par catégorie</b> et aussi <b>par code comptable</b> (pratique pour l'expert-comptable et le compte rendu financier des subventions)."},
+  {cat:'📈 Bilan',q:"Comment comparer avec l'année dernière (N-1) ?",kw:"bilan annee derniere precedente n-1 comparer comparaison evolution variation exercice precedent",
+   a:"Onglet <b>📈 Bilan</b> : dès qu'un exercice précédent contient des écritures, une colonne <b>N−1</b> et une colonne <b>Évol. %</b> apparaissent automatiquement à côté de chaque ligne, et le résultat de l'an dernier s'affiche sous le résultat de l'année. Astuce : importe la compta de l'année passée (⚙️ Données) pour activer la comparaison."},
+  {cat:'💵 Caisse',q:"Comment faire le rapprochement bancaire ?",kw:"rapprochement bancaire pointage pointer releve banque solde ecart verifier compte coche",
+   a:"Onglet <b>💵 Caisse</b>, panneau <b>🏦 Rapprochement bancaire</b> : relevé en main, <b>coche</b> chaque opération que tu retrouves sur le relevé et saisis le <b>solde indiqué en bas du relevé</b>. Quand l'écart affiche 0,00 € en vert, c'est rapproché ✅. S'il reste un écart : opération oubliée dans Bob, chèque pas encore passé, ou erreur de montant."},
+  {cat:'📊 Tableau de bord',q:"C'est quoi les alertes importantes en rouge ?",kw:"alerte rouge importante urgent solde negatif dette retard echeance aide pec fin surveiller",
+   a:"Le bloc <b>🚨 Alertes importantes</b> du tableau de bord surveille tout seul : <b>solde négatif</b> (global, banque ou caisse), <b>échéances de dettes</b> à moins de 14 jours ou en retard (ex. URSSAF), et <b>fins d'aides au poste</b> (PEC) à moins de 90 jours pour anticiper le surcoût. Il n'apparaît que s'il y a quelque chose à traiter — pas de bloc = tout va bien."},
   {cat:'🔮 Prévisionnel',q:"À quoi sert le prévisionnel ?",kw:"previsionnel budget projection prevision fin annee estimer decembre recurrent futur anticiper",
    a:"Onglet <b>🔮 Prévisionnel</b> : Bob projette le budget jusqu'au 31 décembre. Coche <b>« récurrent »</b> pour les lignes qui reviennent chaque mois (loyer, charges…) : elles sont prolongées automatiquement. Les subventions à venir sont estimées selon leur statut."},
   {cat:'🔮 Prévisionnel',q:"Comment savoir si la garderie du matin est rentable et combien ajouter à la grille tarifaire ?",kw:"simulateur garderie matin rentable rentabilite tarif supplement equilibre point mort enfants nouvelle activite cout calcul grille tarifaire quotient familial",
@@ -1660,6 +1679,37 @@ function renderCaisse(){
       <td class="num"><strong>${euro(r.run)}</strong></td></tr>`; }).join('');
 }
 
+/* ---- Rapprochement bancaire ---- */
+let rapShowAll=false;
+function bankMoves(){
+  return db.ops.filter(o=> o.type==='transfer' ? (o.from==='banque'||o.to==='banque') : getAccount(o)==='banque')
+    .map(o=>({o, delta: o.type==='in'?o.amount : o.type==='out'?-o.amount : (o.to==='banque'?o.amount:-o.amount)}));
+}
+function toggleRap(id){ const o=db.ops.find(x=>x.id===id); if(o){ o.rap=!o.rap; save(); } }
+function setRapInfo(){ db.rapSolde=$('rap_solde').value===''?null:(parseFloat($('rap_solde').value)||0); db.rapDate=$('rap_date').value||''; save(); }
+function rapToggleAll(){ rapShowAll=!rapShowAll; const b=$('rapShowBtn'); if(b) b.textContent=rapShowAll?'Masquer les pointées':'Voir aussi les pointées'; renderRapprochement(); }
+function renderRapprochement(){
+  const tb=$('rapRows'); if(!tb) return;
+  const sEl=$('rap_solde'); if(sEl && document.activeElement!==sEl) sEl.value=(db.rapSolde==null?'':db.rapSolde);
+  const dEl=$('rap_date'); if(dEl && document.activeElement!==dEl) dEl.value=db.rapDate||'';
+  const moves=bankMoves().sort((a,b)=>(b.o.date||'').localeCompare(a.o.date||''));
+  const cochees=moves.filter(m=>m.o.rap);
+  const pointe=cochees.reduce((s,m)=>s+m.delta,0);
+  const aSaisir=db.rapSolde==null;
+  const ecart=aSaisir?0:db.rapSolde-pointe;
+  $('rapKpis').innerHTML =
+      kpi('Total pointé',euro(pointe),'',cochees.length+' opération'+(cochees.length>1?'s':'')+' cochée'+(cochees.length>1?'s':''))
+    + kpi('Solde du relevé',aSaisir?'—':euro(db.rapSolde),'',db.rapDate?'au '+fmtDate(db.rapDate):(aSaisir?'à saisir ci-dessus':'pense à saisir la date du relevé'))
+    + kpi('Écart',aSaisir?'—':euro(ecart),aSaisir?'':(Math.abs(ecart)<0.01?'green':'red'),aSaisir?'saisis le solde du relevé':(Math.abs(ecart)<0.01?'✅ rapproché, tout colle !':'opération oubliée, chèque non débité ou erreur'))
+    + kpi('Solde banque selon Bob',euro(acctBalance('banque')),'','toutes opérations, pointées ou non');
+  const show=rapShowAll?moves:moves.filter(m=>!m.o.rap);
+  tb.innerHTML = show.length ? show.slice(0,300).map(m=>`<tr style="${m.o.rap?'opacity:.55':''}">
+      <td><input type="checkbox" ${m.o.rap?'checked':''} onclick="toggleRap('${m.o.id}')"></td>
+      <td>${fmtDate(m.o.date)}</td><td>${esc(m.o.label)}${m.o.type==='transfer'?' <span class="pill wait">remise</span>':''}</td>
+      <td class="num ${m.delta>=0?'green':'red'}">${m.delta>=0?'+':'−'} ${euro(Math.abs(m.delta))}</td></tr>`).join('')
+    : `<tr><td colspan="4" class="empty">${rapShowAll?'Aucune opération bancaire saisie.':'Tout est pointé 🎉 — clique « Voir aussi les pointées » pour revérifier.'}</td></tr>`;
+}
+
 /* ---- Projects ---- */
 function addProject(){
   const name=$('p_name').value.trim();
@@ -1715,15 +1765,30 @@ function renderDashboard(){
     + kpi('Adhérents',db.members.length,'',upToDate+' à jour / '+(db.members.length-upToDate)+' en attente')
     + kpi('Projets actifs',db.projects.filter(p=>p.status!=='Terminé').length,'',db.projects.length+' au total')
     + kpi('Cotisations encaissées',euro(db.members.filter(m=>m.paid).reduce((s,m)=>s+m.amount,0)),'green','sur l\'année');
+  // 🚨 alertes importantes : argent, dettes, fins d'aides
+  const urg=[];
+  if(balance()<0) urg.push({t:'Solde global négatif',s:euro(balance())+' — les dépenses dépassent les recettes'});
+  const _bank=acctBalance('banque'); if(_bank<0) urg.push({t:'Compte bancaire négatif',s:euro(_bank)+' — risque d\'agios / rejets'});
+  const _cash=acctBalance('caisse'); if(_cash<0) urg.push({t:'Caisse espèces négative',s:euro(_cash)+' — impossible en vrai : une saisie est à corriger'});
+  (db.dettes||[]).forEach(d=>{ if(d.sens!=='dette') return; (d.echeancier||[]).forEach(e=>{ if(e.paye||!e.date) return;
+    const j=daysTo(new Date(e.date+'T00:00:00'));
+    if(j<=14) urg.push({t:'Échéance « '+d.label+' »',s:euro(e.montant)+(d.tiers?' à '+d.tiers:'')+(j<0?' — EN RETARD de '+(-j)+' j':j===0?" — aujourd'hui":' — dans '+j+' j')}); }); });
+  (db.salaries||[]).forEach(s=>{ if(!(s.aide>0)||!s.aidefin) return;
+    const m=String(s.aidefin).match(/(\d{1,2})[\/\-](\d{4})/)||String(s.aidefin).match(/(\d{4})-(\d{1,2})/);
+    if(!m) return; const fin=m[2].length===4?new Date(+m[2],+m[1],0):new Date(+m[1],+m[2],0);
+    const j=daysTo(fin);
+    if(j<=90) urg.push({t:'Fin de l\'aide au poste de '+s.name,s:'aide '+s.aide+' % jusqu\'à '+s.aidefin+(j<0?' — TERMINÉE, le coût plein s\'applique':' — dans '+j+' j, anticiper le surcoût')}); });
+  const urgHtml = urg.length ? `<div class="panel" style="border-left:4px solid var(--red)">
+    <h2>🚨 Alertes importantes</h2>`+urg.map(({t,s})=>`<div class="kv"><span><strong>${esc(t)}</strong> <span class="muted">${esc(s)}</span></span><span class="pill no">à traiter</span></div>`).join('')+`</div>` : '';
   // rappels (≤ 60 jours) : subventions + échéances générales
   const al=[];
   (db.subventions||[]).forEach(s=>{ const d=subEcheance(s); if(d){ const j=daysTo(d); if(j<=60) al.push({titre:s.name,sous:(s.structure||'')+' — à déposer',d,j,lien:s.lien}); } });
   (db.echeances||[]).forEach(e=>{ const d=gEcheance(e); if(d){ const j=daysTo(d); if(j<=60) al.push({titre:e.label,sous:e.recurrent?'échéance annuelle':'échéance',d,j,lien:''}); } });
   al.sort((a,b)=>a.j-b.j);
-  $('dashAlerts').innerHTML = al.length ? `<div class="panel" style="border-left:4px solid var(--amber)">
+  $('dashAlerts').innerHTML = urgHtml + (al.length ? `<div class="panel" style="border-left:4px solid var(--amber)">
     <h2>⏰ Échéances à venir</h2>`+al.map(({titre,sous,d,j,lien})=>`<div class="kv">
       <span><strong>${esc(titre)}</strong> <span class="muted">${esc(sous)}</span> — ${fmtDate(isoDate(d))}</span>
-      <span><span class="pill ${j<0?'no':j<=30?'wait':'ok'}">${j<0?'dépassée':j===0?"aujourd'hui":'dans '+j+' j'}</span>${lien?` <a class="btn" style="padding:4px 12px;font-size:12px;text-decoration:none" href="${esc(lien)}" target="_blank" rel="noopener">Déposer ↗</a>`:''}</span></div>`).join('')+`</div>` : '';
+      <span><span class="pill ${j<0?'no':j<=30?'wait':'ok'}">${j<0?'dépassée':j===0?"aujourd'hui":'dans '+j+' j'}</span>${lien?` <a class="btn" style="padding:4px 12px;font-size:12px;text-decoration:none" href="${esc(lien)}" target="_blank" rel="noopener">Déposer ↗</a>`:''}</span></div>`).join('')+`</div>` : '');
   const last = db.ops.filter(o=>o.type!=='transfer').slice().sort((a,b)=>b.date.localeCompare(a.date)).slice(0,6);
   $('dashOps').innerHTML = last.length? last.map(o=>`<tr class="clickable" onclick="openOpDetail('${o.id}')">
     <td>${fmtDate(o.date)}</td><td>${esc(o.label)}</td>
@@ -1746,17 +1811,27 @@ function renderBilan(){
   const sel=$('b_year'), years=bilanYears();
   if(!sel.value || !years.includes(sel.value)) sel.value=years[0];
   sel.innerHTML=years.map(y=>`<option ${y===sel.value?'selected':''}>${y}</option>`).join('');
-  const y=sel.value, d=bilanData(y);
-  const tbl=(rows,tot,cls)=> (rows.length?rows.map(([k,v])=>`<tr><td>${esc(k)}</td><td class="num">${euro(v)}</td></tr>`).join(''):'<tr><td class="empty">Aucune ligne.</td></tr>')
-    + `<tr><td><strong>Total</strong></td><td class="num ${cls}"><strong>${euro(tot)}</strong></td></tr>`;
-  $('bilanRec').innerHTML=tbl(d.rec,d.tIn,'green');
-  $('bilanDep').innerHTML=tbl(d.dep,d.tOut,'red');
-  $('bilanRecC').innerHTML=tbl(d.recC,d.tIn,'green');
-  $('bilanDepC').innerHTML=tbl(d.depC,d.tOut,'red');
+  const y=sel.value, yPrev=String(parseInt(y,10)-1);
+  const d=bilanData(y), p=bilanData(yPrev);
+  const hasPrev=p.tIn>0||p.tOut>0;
+  const evo=(cur,old)=>{ if(!old) return cur>0?'<span class="pill in" style="font-size:11px">nouveau</span>':'—';
+    const pc=Math.round((cur-old)/old*100);
+    return `<span style="font-size:12px" class="${pc>=0?'green':'red'}">${pc>=0?'+':''}${pc} %</span>`; };
+  const tbl=(rows,prows,tot,ptot,cls)=>{
+    const pm=new Map(prows), seen=new Set(rows.map(r=>r[0]));
+    const all=rows.concat(prows.filter(r=>!seen.has(r[0])).map(([k])=>[k,0]));   // catégories disparues incluses
+    const head=`<tr><th></th><th class="num">${y}</th>${hasPrev?`<th class="num" style="opacity:.6">${yPrev}</th><th class="num">Évol.</th>`:''}</tr>`;
+    return head+(all.length?all.map(([k,v])=>`<tr><td>${esc(k)}</td><td class="num">${v?euro(v):'—'}</td>${hasPrev?`<td class="num" style="opacity:.6">${pm.has(k)?euro(pm.get(k)):'—'}</td><td class="num">${evo(v,pm.get(k)||0)}</td>`:''}</tr>`).join(''):'<tr><td class="empty">Aucune ligne.</td></tr>')
+      + `<tr><td><strong>Total</strong></td><td class="num ${cls}"><strong>${euro(tot)}</strong></td>${hasPrev?`<td class="num" style="opacity:.6"><strong>${euro(ptot)}</strong></td><td class="num">${evo(tot,ptot)}</td>`:''}</tr>`;
+  };
+  $('bilanRec').innerHTML=tbl(d.rec,p.rec,d.tIn,p.tIn,'green');
+  $('bilanDep').innerHTML=tbl(d.dep,p.dep,d.tOut,p.tOut,'red');
+  $('bilanRecC').innerHTML=tbl(d.recC,p.recC,d.tIn,p.tIn,'green');
+  $('bilanDepC').innerHTML=tbl(d.depC,p.depC,d.tOut,p.tOut,'red');
   $('bilanResultWrap').innerHTML=`<div class="card" style="border-left:4px solid ${d.res>=0?'var(--green)':'var(--red)'}">
     <div class="label">Résultat de l'exercice ${y}</div>
     <div class="value ${d.res>=0?'green':'red'}">${d.res>=0?'Excédent ':'Déficit '}${euro(Math.abs(d.res))}</div>
-    <div class="sub">${euro(d.tIn)} de recettes − ${euro(d.tOut)} de dépenses</div></div>`;
+    <div class="sub">${euro(d.tIn)} de recettes − ${euro(d.tOut)} de dépenses${hasPrev?` · ${yPrev} : ${p.res>=0?'excédent':'déficit'} ${euro(Math.abs(p.res))}`:` · aucune écriture en ${yPrev} (la colonne N−1 apparaîtra dès qu'un exercice précédent existe)`}</div></div>`;
 }
 function printBilan(){
   const y=$('b_year').value, d=bilanData(y);
@@ -2386,7 +2461,7 @@ function renderProtocoles(){
 }
 function renderEquipe(){ const t=$('accueilIntro'); if(t && document.activeElement!==t) t.value=db.accueilIntro||''; renderSalaries(); renderContrats(); renderProtocoles(); }
 
-function renderAll(){ renderDashboard(); renderMembers(); renderRelances(); renderOps(); renderCaisse(); renderProjects(); renderSubventions(); renderEcheancier(); renderBilan(); renderPrevisionnel(); renderEquipe(); renderRepertoire(); renderSecretariat(); renderReunions(); renderIncidents(); renderDettes(); renderOfficialLinks(); refreshComptes(); renderListParams(); renderJournal(); renderFaqList(); }
+function renderAll(){ renderDashboard(); renderMembers(); renderRelances(); renderOps(); renderCaisse(); renderRapprochement(); renderProjects(); renderSubventions(); renderEcheancier(); renderBilan(); renderPrevisionnel(); renderEquipe(); renderRepertoire(); renderSecretariat(); renderReunions(); renderIncidents(); renderDettes(); renderOfficialLinks(); refreshComptes(); renderListParams(); renderJournal(); renderFaqList(); }
 
 /* ---- Data import/export ---- */
 function exportJSON(){
