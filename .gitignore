@@ -1,0 +1,13 @@
+# Secrets — ne JAMAIS committer
+.env
+.env.*
+*.key
+*.pem
+# La clé Supabase publishable (sb_publishable_...) dans le HTML est PUBLIQUE : c'est normal.
+# Ne jamais committer la clé sb_secret_... ni le mot de passe de la base.
+
+# Système
+.DS_Store
+
+# Vercel
+.vercel
