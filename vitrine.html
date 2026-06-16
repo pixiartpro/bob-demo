@@ -78,15 +78,15 @@
   /* Sections */
   section.block{padding:38px 0}
   /* Tuiles d'accès rapide */
-  .tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(178px,1fr));gap:14px}
-  .tile{display:flex;flex-direction:column;gap:2px;text-decoration:none;color:var(--ink);background:var(--card);
-        border:1px solid var(--line);border-radius:18px;padding:18px 18px 16px;box-shadow:var(--shadow);transition:.18s}
+  .tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
+  .tile{display:flex;flex-direction:column;align-items:center;text-align:center;gap:6px;text-decoration:none;color:var(--ink);background:var(--card);
+        border:1px solid var(--line);border-radius:16px;padding:14px 10px;box-shadow:var(--shadow);transition:.18s}
   .tile:hover{transform:translateY(-4px);box-shadow:var(--shadow-lg);border-color:#cfe7d9}
   .tile .ti{font-size:32px;line-height:1}
   .tico{width:52px;height:52px;border-radius:15px;display:grid;place-items:center;background:linear-gradient(145deg,#1f9d6b,#0f6b46);box-shadow:0 6px 14px rgba(18,122,81,.28)}
   .tico svg{width:28px;height:28px;stroke:#fff;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
-  .ticoimg{width:62px;height:62px;display:block;border-radius:15px}
-  .tile b{font-size:15.5px;margin-top:8px}
+  .ticoimg{width:46px;height:46px;display:block;border-radius:13px}
+  .tile b{font-size:13.5px;margin-top:2px;line-height:1.25}
   .tile small{font-size:12.5px;color:var(--muted)}
   .bg-w{background:#ffffff}
   .bg-g{background:#eef6f1}
@@ -103,10 +103,10 @@
   .card p{margin:0;color:var(--muted);font-size:14.5px}
   .alt{background:linear-gradient(180deg,#f3faf6,#fffef7)}
   /* Horaires */
-  .hours{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px}
-  .hour{background:#fff;border:1px solid var(--line);border-radius:16px;padding:18px;box-shadow:var(--shadow)}
+  .hours{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+  .hour{background:#fff;border:1px solid var(--line);border-radius:14px;padding:13px 15px;box-shadow:var(--shadow)}
   .hour .lieu{font-weight:800;color:var(--vert-fonce)}
-  .hour .h{color:var(--muted);font-size:14.5px;margin-top:4px}
+  .hour .h{color:var(--muted);font-size:13.5px;margin-top:3px}
   /* Form */
   .panel{background:#fff;border:1px solid var(--line);border-radius:22px;padding:28px;box-shadow:var(--shadow-lg);max-width:560px;margin:0 auto}
   .field{display:flex;flex-direction:column;gap:5px;margin-bottom:14px}
@@ -137,6 +137,53 @@
   .newsbar .nb-x{position:absolute;right:10px;top:50%;transform:translateY(-50%);background:rgba(255,255,255,.22);border:none;color:#fff;width:26px;height:26px;border-radius:50%;cursor:pointer;font-size:12px;line-height:1}
   .newsbar .nb-x:hover{background:rgba(255,255,255,.4)}
   .newsbar.hidden{display:none}
+  /* ===== Plan « ce qui tourne / ce qui arrive » ===== */
+  .dot{width:10px;height:10px;border-radius:50%;display:inline-block;flex:0 0 auto}
+  .dot.on{background:#1f9d6b}.dot.work{background:var(--jaune)}.dot.soon{background:#4a90d9}
+  .plan-cols{display:grid;grid-template-columns:1fr 1fr;gap:18px;align-items:start}
+  @media(max-width:760px){.plan-cols{grid-template-columns:1fr}}
+  .ppanel{background:#fff;border:1px solid var(--line);border-radius:20px;padding:0 8px 14px;box-shadow:var(--shadow);overflow:hidden}
+  .ppanel.tourne{border-top:4px solid var(--vert)}
+  .ppanel.arrive{border-top:4px solid var(--jaune)}
+  .ppanel-head{display:flex;align-items:center;gap:9px;padding:16px 14px 8px;font-weight:900;font-size:17px}
+  .ppanel-head .hcount{margin-left:auto;font-size:13px;font-weight:800;color:var(--muted);background:#f0f7f3;padding:3px 10px;border-radius:999px}
+  .pfam{font-size:11.5px;font-weight:800;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);padding:13px 14px 3px}
+  .prow{display:flex;align-items:center;gap:12px;width:100%;text-align:left;background:none;border:none;font:inherit;color:var(--ink);cursor:pointer;padding:11px 12px;border-radius:13px;transition:.13s}
+  .prow:hover{background:#f3faf6}
+  .prow .rico{font-size:22px;line-height:1;flex:0 0 auto;width:28px;text-align:center}
+  .prow .rname{font-weight:700;font-size:15.5px;flex:1}
+  .prow .rgo{color:#c4d6cb;font-size:22px;font-weight:700;flex:0 0 auto;line-height:1}
+  .prow:hover .rgo{color:var(--vert)}
+  .ptag{font-size:10.5px;font-weight:800;padding:3px 9px;border-radius:999px;flex:0 0 auto;text-transform:uppercase;letter-spacing:.02em}
+  .ptag.work{background:#fdf0dc;color:#9a5b00}.ptag.soon{background:#e6effb;color:#2a5aa0}
+  .pill{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:800;padding:5px 11px;border-radius:999px;margin-top:12px;text-transform:uppercase;letter-spacing:.03em}
+  .pill.on{background:#e3f6ec;color:#0f6b46}.pill.work{background:#fdf0dc;color:#9a5b00}.pill.soon{background:#e6effb;color:#2a5aa0}
+  .pmodal{position:fixed;inset:0;z-index:200;background:rgba(16,48,42,.55);backdrop-filter:blur(3px);display:none;align-items:center;justify-content:center;padding:20px}
+  .pmodal.open{display:flex}
+  .pmodal-box{background:#fff;border-radius:22px;max-width:520px;width:100%;padding:28px;box-shadow:var(--shadow-lg);position:relative;max-height:88vh;overflow:auto}
+  .pmodal-box .px{position:absolute;right:16px;top:14px;background:#f0f7f3;border:none;width:34px;height:34px;border-radius:50%;font-size:16px;cursor:pointer;color:var(--ink)}
+  .pmodal-box .pico{font-size:46px}
+  .pmodal-box h3{margin:6px 0 4px;font-size:24px}
+  .pmd-line{display:flex;gap:10px;align-items:flex-start;margin-top:12px;font-size:15px}
+  .pmd-line .i{font-size:19px;flex:0 0 auto}
+  .pmd-line b{color:var(--vert-fonce)}
+  /* Nos activités — liste compacte + inscription */
+  .actlist{display:flex;flex-direction:column;gap:10px;max-width:780px;margin:0 auto}
+  .actrow{display:flex;align-items:center;gap:14px;background:#fff;border:1px solid var(--line);border-radius:16px;padding:12px 14px 12px 16px;box-shadow:var(--shadow);transition:.15s}
+  .actrow:hover{box-shadow:var(--shadow-lg)}
+  .actrow .aico{font-size:27px;flex:0 0 auto;width:34px;text-align:center}
+  .actrow .abody{flex:1;min-width:0}
+  .actrow .abody b{font-size:16px}
+  .actrow .abody span{display:block;color:var(--muted);font-size:13.5px}
+  .actrow .btn{flex:0 0 auto;padding:9px 18px;font-size:14px}
+  .actnote{max-width:780px;margin:16px auto 0;text-align:center;color:var(--muted);font-size:14px}
+  @media(max-width:520px){.actrow{flex-wrap:wrap}.actrow .abody{flex:1 1 auto}.actrow .btn{width:100%;margin-top:4px}}
+  /* Temps forts — agenda compact */
+  .agenda{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:10px;max-width:900px;margin:0 auto}
+  .ag-item{display:flex;gap:12px;align-items:center;background:#fff;border:1px solid var(--line);border-radius:14px;padding:11px 14px;box-shadow:var(--shadow)}
+  .ag-item .ag-ico{font-size:24px;flex:0 0 auto;width:30px;text-align:center}
+  .ag-item .ag-when{font-size:12.5px;font-weight:800;color:var(--vert)}
+  .ag-item .ag-name{font-weight:700;font-size:15px}
   @media(max-width:680px){.contact-grid{grid-template-columns:1fr}.hero .deco{display:none}}
 </style>
 </head>
@@ -149,6 +196,7 @@
     <a href="#accueil" class="logo"><img src="logo.png" alt="CASE Bois de Nèfles" style="height:40px;width:auto;display:block"> <span><b>CASE</b> <span>Bois de Nèfles</span></span></a>
     <button class="burger" aria-label="Menu" onclick="document.querySelector('nav.main').classList.toggle('open')">☰</button>
     <nav class="main" onclick="if(event.target.tagName==='A')this.classList.remove('open')">
+      <a href="#plan">Le projet</a>
       <a href="#activites">Nos activités</a>
       <a href="#ados">Ados</a>
       <a href="#horaires">Horaires</a>
@@ -193,20 +241,29 @@
 <section class="block bg-w" id="acces" style="padding-top:6px">
   <div class="wrap">
     <p class="eyebrow">Accès rapide</p>
-    <h2 class="title">Que cherchez-vous ? 👇</h2>
-    <div class="zguide">
-      <img class="zg-img" src="zanana-point.png" onerror="this.src='mascotte-hero.png'" alt="Zanana">
-      <span class="zg-bulle">Bonjour, moi c'est <b>Zanana</b> ! Choisis ce que tu cherches juste en dessous 👇</span>
-    </div>
+    <h2 class="title" style="margin-bottom:18px">Que cherchez-vous ? 👇</h2>
     <div class="tiles">
-      <a class="tile" href="#activites"><img class="ticoimg" src="img/tile-activites.png" alt=""><b>Nos activités</b><small>Danse, musique, périscolaire…</small></a>
-      <a class="tile" href="#ados"><img class="ticoimg" src="img/tile-ados.png" alt=""><b>Espace ados</b><small>La Kaz Zados, Ôté Kartié</small></a>
-      <a class="tile" href="#horaires"><img class="ticoimg" src="img/tile-horaires.png" alt=""><b>Horaires &amp; lieux</b><small>Nos 2 sites, quand venir</small></a>
-      <a class="tile" href="#adhesion"><img class="ticoimg" src="img/tile-adherer.png" alt=""><b>Adhérer / s'inscrire</b><small>En ligne, en quelques clics</small></a>
-      <a class="tile" href="espace-adherent.html"><img class="ticoimg" src="img/tile-adherent.png" alt=""><b>Espace adhérent</b><small>Vos jetons &amp; activités</small></a>
-      <a class="tile" href="#partenaires"><img class="ticoimg" src="img/tile-partenaires.png" alt=""><b>Devenir partenaire</b><small>Commerçants du quartier</small></a>
-      <a class="tile" href="#contact"><img class="ticoimg" src="img/tile-contact.png" alt=""><b>Nous contacter</b><small>Adresse, téléphone, réseaux</small></a>
-      <a class="tile" href="connexion.html"><img class="ticoimg" src="img/tile-bureau.png" alt=""><b>Espace bureau</b><small>Équipe &amp; gestion</small></a>
+      <a class="tile" href="#adhesion"><img class="ticoimg" src="img/tile-adherer.png" alt=""><b>Adhérer / s'inscrire</b></a>
+      <a class="tile" href="#activites"><img class="ticoimg" src="img/tile-activites.png" alt=""><b>Nos activités</b></a>
+      <a class="tile" href="#ados"><img class="ticoimg" src="img/tile-ados.png" alt=""><b>Espace ados</b></a>
+      <a class="tile" href="#horaires"><img class="ticoimg" src="img/tile-horaires.png" alt=""><b>Horaires &amp; lieux</b></a>
+      <a class="tile" href="espace-adherent.html"><img class="ticoimg" src="img/tile-adherent.png" alt=""><b>Espace adhérent</b></a>
+      <a class="tile" href="#contact"><img class="ticoimg" src="img/tile-contact.png" alt=""><b>Nous contacter</b></a>
+      <a class="tile" href="#partenaires"><img class="ticoimg" src="img/tile-partenaires.png" alt=""><b>Devenir partenaire</b></a>
+      <a class="tile" href="connexion.html"><img class="ticoimg" src="img/tile-bureau.png" alt=""><b>Espace bureau</b></a>
+    </div>
+  </div>
+</section>
+
+<!-- LE PROJET : CE QUI TOURNE / CE QUI ARRIVE -->
+<section class="block bg-sun" id="plan">
+  <div class="wrap">
+    <p class="eyebrow">Le projet du CASE</p>
+    <h2 class="title">Ce qui tourne, ce qui arrive 🚧</h2>
+    <p class="sub">Tout le projet du CASE en un coup d'œil. Cliquez sur une ligne pour en savoir plus.</p>
+    <div class="plan-cols">
+      <div class="ppanel tourne" id="panelTourne"></div>
+      <div class="ppanel arrive" id="panelArrive"></div>
     </div>
   </div>
 </section>
@@ -216,19 +273,9 @@
   <div class="wrap">
     <p class="eyebrow">Nos activités</p>
     <h2 class="title">Il y en a pour tout le monde 🎉</h2>
-    <p class="sub">Des activités encadrées par notre équipe et nos bénévoles, sur nos différents sites.</p>
-    <div class="zguide">
-      <img class="zg-img" src="zanana-dance.png" onerror="this.src='mascotte-hero.png'" alt="Zanana">
-      <span class="zg-bulle">Danse, musique, périscolaire… y'en a pour tous les goûts ! 🎶</span>
-    </div>
-    <div class="grid">
-      <div class="card"><div class="ico">💃</div><h3>Danse</h3><p>Éveil, hip-hop, K-pop, classique, salsa, ladies… pour petits et grands.</p></div>
-      <div class="card"><div class="ico">🎵</div><h3>Musique</h3><p>Groupe variété et ateliers musique pour les adultes.</p></div>
-      <div class="card"><div class="ico">📚</div><h3>Périscolaire & loisirs (ACM)</h3><p>Accueil des enfants après l'école et pendant les vacances.</p></div>
-      <div class="card"><div class="ico">☕</div><h3>Permanence du samedi</h3><p>Accueil convivial de tous les habitants — café & petit-déjeuner offerts.</p></div>
-      <div class="card"><div class="ico">⚖️</div><h3>Jeudi info population</h3><p>Accès aux droits et aux ressources (CRIJ, France Services…).</p></div>
-      <div class="card"><div class="ico">🎪</div><h3>Animation de quartier</h3><p>Événements, fêtes et temps forts tout au long de l'année.</p></div>
-    </div>
+    <p class="sub">Choisissez une activité et inscrivez-vous directement.</p>
+    <div class="actlist" id="actList"></div>
+    <p class="actnote">Et aussi, en accès libre (sans inscription) : <b>permanence du samedi</b> (café offert) et <b>jeudi info population</b> (accès aux droits).</p>
   </div>
 </section>
 
@@ -237,14 +284,14 @@
   <div class="wrap">
     <p class="eyebrow">Temps forts 2026</p>
     <h2 class="title">Les grands rendez-vous 🎉</h2>
-    <p class="sub">Plus de 2 400 participations attendues sur l'année — et un temps fort qui rassemble tout le quartier.</p>
-    <div class="grid">
-      <div class="card"><div class="ico">🎶</div><h3>Fête de la musique</h3><p>20 juin · tout public.</p></div>
-      <div class="card"><div class="ico">💃</div><h3>Galas de danse</h3><p>Juin & décembre · la danse à l'honneur.</p></div>
-      <div class="card"><div class="ico">🎪</div><h3>Fêt nout kartyé</h3><p>En août, Place Bancoul · le grand rendez-vous du quartier (~1 500 personnes).</p></div>
-      <div class="card"><div class="ico">🪘</div><h3>Semaine créole & ron maloya</h3><p>En octobre · culture et traditions péi.</p></div>
-      <div class="card"><div class="ico">🎄</div><h3>Fête du 20 décembre</h3><p>Commémoration et fête de fin d'année.</p></div>
-      <div class="card"><div class="ico">⛰️</div><h3>Week-end famille</h3><p>Septembre · Plaine des Cafres.</p></div>
+    <p class="sub">Plus de 2 400 participations attendues sur l'année.</p>
+    <div class="agenda">
+      <div class="ag-item"><span class="ag-ico">🎶</span><div><div class="ag-when">20 juin</div><div class="ag-name">Fête de la musique</div></div></div>
+      <div class="ag-item"><span class="ag-ico">💃</span><div><div class="ag-when">Juin &amp; décembre</div><div class="ag-name">Galas de danse</div></div></div>
+      <div class="ag-item"><span class="ag-ico">🎪</span><div><div class="ag-when">Août · Place Bancoul</div><div class="ag-name">Fêt nout kartyé (~1 500 pers.)</div></div></div>
+      <div class="ag-item"><span class="ag-ico">🪘</span><div><div class="ag-when">Octobre</div><div class="ag-name">Semaine créole &amp; ron maloya</div></div></div>
+      <div class="ag-item"><span class="ag-ico">⛰️</span><div><div class="ag-when">Septembre</div><div class="ag-name">Week-end famille · Plaine des Cafres</div></div></div>
+      <div class="ag-item"><span class="ag-ico">🎄</span><div><div class="ag-when">20 décembre</div><div class="ag-name">Fête de fin d'année</div></div></div>
     </div>
   </div>
 </section>
@@ -255,11 +302,11 @@
     <p class="eyebrow">Espace jeunes · 11–17 ans</p>
     <h2 class="title">La jeunesse aux commandes 🛹</h2>
     <p class="sub">Un secteur ados où les jeunes deviennent <strong>acteurs</strong> : accueil de loisirs les mercredis, samedis et vacances — et bien plus.</p>
-    <div class="grid">
-      <div class="card"><div class="ico">🏠</div><h3>La Kaz Zados</h3><p>Un lieu à eux, géré par eux : leurs projets, leurs idées, leur autonomie.</p></div>
-      <div class="card"><div class="ico">🎤</div><h3>Ôté Kartié</h3><p>Le projet phare des jeunes pour faire bouger le quartier.</p></div>
-      <div class="card"><div class="ico">💃</div><h3>Danse & créations</h3><p>Danse, expression et activités menées avec les ados.</p></div>
-      <div class="card"><div class="ico">📅</div><h3>Mercredi, samedi & vacances</h3><p>Un accueil régulier pour les 11–17 ans toute l'année.</p></div>
+    <div class="actlist">
+      <div class="actrow"><span class="aico">🏠</span><div class="abody"><b>La Kaz Zados</b><span>Un lieu à eux, géré par eux : leurs projets, leur autonomie</span></div></div>
+      <div class="actrow"><span class="aico">🎤</span><div class="abody"><b>Ôté Kartié</b><span>Le projet phare des jeunes pour faire bouger le quartier</span></div></div>
+      <div class="actrow"><span class="aico">💃</span><div class="abody"><b>Danse &amp; créations</b><span>Danse, expression et activités menées avec les ados</span></div></div>
+      <div class="actrow"><span class="aico">📅</span><div class="abody"><b>Mercredi, samedi &amp; vacances</b><span>Un accueil régulier pour les 11–17 ans toute l'année</span></div></div>
     </div>
   </div>
 </section>
@@ -292,12 +339,13 @@
       <div class="field"><label>Nom et prénom</label><input placeholder="Votre nom"></div>
       <div class="field"><label>Email</label><input type="email" placeholder="vous@exemple.re"></div>
       <div class="field"><label>Activité souhaitée</label>
-        <select>
+        <select id="adh_activite">
           <option>Adhésion simple (10 €)</option>
-          <option>Accompagnement scolaire</option>
-          <option>Accueil de loisirs</option>
-          <option>Atelier cuisine</option>
-          <option>Jardin partagé</option>
+          <option>Danse</option>
+          <option>Musique</option>
+          <option>Périscolaire</option>
+          <option>Accueil de loisirs (ACM)</option>
+          <option>Secteur ados (11–17 ans)</option>
         </select></div>
       <button class="btn primary" style="width:100%" onclick="alert('🍍 Ceci est une démonstration.\n\nDans la version en ligne, le paiement (cotisation + activité) se ferait ici en toute sécurité, et l\'inscription arriverait automatiquement dans la gestion du CASE.')">💳 S'inscrire et payer en ligne</button>
       <p class="note"><span class="badge">DÉMO</span> Le paiement en ligne sera actif dans la version finale.</p>
@@ -317,8 +365,8 @@
     <div class="contact-grid">
       <div>
         <div class="info-line"><span class="i">📍</span><div><b>Adresse</b><br>C.A.S.E du Bois de Nèfles<br>132 Route des Ananas, 97490 Sainte-Clotilde<br><span style="font-size:13px;color:var(--muted)">+ Local des Bringelliers</span></div></div>
-        <div class="info-line"><span class="i">📞</span><div><b>Téléphone</b><br>0262 00 00 00</div></div>
-        <div class="info-line"><span class="i">✉️</span><div><b>Email</b><br>case.bdn@exemple.re</div></div>
+        <div class="info-line"><span class="i">📞</span><div><b>Téléphone</b><br><a href="tel:+262262293790" style="text-decoration:none">0262 29 37 90</a> · <span style="font-size:13px;color:var(--muted)">CASE</span><br><a href="tel:+262692691811" style="text-decoration:none">0692 69 18 11</a> · <span style="font-size:13px;color:var(--muted)">ligne directe</span></div></div>
+        <div class="info-line"><span class="i">✉️</span><div><b>Email</b><br><a href="mailto:case.bdn@gmail.com" style="text-decoration:none">case.bdn@gmail.com</a></div></div>
         <b>Suivez-nous :</b>
         <div class="socials">
           <a class="soc" href="#" title="Facebook">📘</a>
@@ -377,6 +425,11 @@
     </div>
   </div>
 </section>
+
+<!-- Fenêtre de détail du plan -->
+<div class="pmodal" id="pmodal" onclick="if(event.target===this)closePlan()">
+  <div class="pmodal-box" id="pmodalBox"></div>
+</div>
 
 <footer>
   <div class="pine">🍍</div>
@@ -478,6 +531,116 @@ async function submitAtelierIdee(){
   info.style.color='var(--vert-fonce)'; info.textContent='✅ Merci ! Votre idée est transmise au CASE, qui l\'étudie.';
   ['ai_titre','ai_desc','ai_nom','ai_contact'].forEach(id=>g(id).value='');
 }
+/* ===== Plan « ce qui tourne / ce qui arrive » =====
+   POUR METTRE À JOUR : modifier la liste PLAN ci-dessous.
+   statut  = 'actif' (🟢 ça tourne) · 'travaux' (🟠 en préparation) · 'bientot' (🔵 à l'étude)
+   famille = le regroupement affiché dans la colonne « ce qui tourne » (ex. "Culture & loisirs").
+   Chaque activité : emoji, nom, statut, famille, public, horaires, lieu, desc (détail au clic). */
+const PLAN=[
+  {emoji:'📚', nom:'Périscolaire — après-midi', statut:'actif', famille:'Enfance & périscolaire',
+   inscriptible:true, insOption:'Périscolaire', court:"Après l'école : devoirs, goûter, activités",
+   public:"Enfants scolarisés", horaires:"Lun → Ven, ~15h30–18h", lieu:"CASE Bois de Nèfles / école du Piton",
+   desc:"Le périscolaire de l'après-midi fonctionne aujourd'hui : aide aux devoirs, goûter et activités encadrées jusqu'au retour des familles."},
+  {emoji:'🏕️', nom:'Accueil de loisirs (ACM)', statut:'actif', famille:'Enfance & périscolaire',
+   inscriptible:true, insOption:'Accueil de loisirs (ACM)', court:"Vacances scolaires : sorties & activités",
+   public:"Enfants & ados", horaires:"Vacances scolaires", lieu:"CASE Bois de Nèfles",
+   desc:"Accueil collectif de mineurs pendant les vacances : sorties, activités et projets collectifs."},
+  {emoji:'💃', nom:'Danse', statut:'actif', famille:'Culture & loisirs',
+   inscriptible:true, insOption:'Danse', court:"Éveil, hip-hop, classique, salsa…",
+   public:"Petits et grands", horaires:"En semaine (voir planning)", lieu:"CASE Bois de Nèfles",
+   desc:"Plusieurs cours de danse pour tous les âges, avec des galas en juin et en décembre."},
+  {emoji:'🎵', nom:'Musique', statut:'actif', famille:'Culture & loisirs',
+   inscriptible:true, insOption:'Musique', court:"Groupe variété & ateliers adultes",
+   public:"Adultes", horaires:"En semaine", lieu:"CASE Bois de Nèfles",
+   desc:"Atelier musique et groupe variété pour les adultes du quartier."},
+  {emoji:'🛹', nom:'Secteur ados — accueil', statut:'actif', famille:'Jeunesse · 11–17 ans',
+   inscriptible:true, insOption:'Secteur ados (11–17 ans)', court:"11–17 ans · mercredi, samedi, vacances",
+   public:"11–17 ans", horaires:"Mercredi, samedi & vacances", lieu:"CASE Bois de Nèfles",
+   desc:"Un accueil régulier pour les jeunes : activités, sorties et projets menés avec eux."},
+  {emoji:'☕', nom:'Permanence du samedi', statut:'actif', famille:'Vie de quartier',
+   public:"Tous les habitants", horaires:"Samedi matin", lieu:"CASE Bois de Nèfles",
+   desc:"Un moment convivial ouvert à tous les habitants du quartier, café offert."},
+  {emoji:'⚖️', nom:'Jeudi info population', statut:'actif', famille:'Vie de quartier',
+   public:"Tous publics", horaires:"Le jeudi", lieu:"CASE Bois de Nèfles",
+   desc:"Accompagnement vers l'accès aux droits et aux ressources (CRIJ, France Services…)."},
+  {emoji:'🌅', nom:'Périscolaire — le matin', statut:'travaux', famille:'Enfance & périscolaire',
+   public:"Enfants scolarisés", horaires:"~1h le matin · dès la rentrée d'août 2026", lieu:"CASE Bois de Nèfles",
+   desc:"En préparation pour la rentrée d'août : un accueil d'environ 1h le matin, en plus de l'après-midi. La grille tarifaire (selon le quotient familial) est en cours de réévaluation."},
+  {emoji:'🏠', nom:'La Kaz Zados — espace dédié', statut:'travaux', famille:'Jeunesse · 11–17 ans',
+   public:"11–17 ans", horaires:"En montage", lieu:"CASE Bois de Nèfles",
+   desc:"Le projet pédagogique du secteur ados (2026-2030) : un espace géré par et pour les jeunes, en cours de montage avec les partenaires."},
+  {emoji:'🚧', nom:'Le CASE fait peau neuve', statut:'travaux', famille:'Le lieu',
+   public:"Tout le quartier", horaires:"Réouverture · inauguration de juillet", lieu:"CASE Bois de Nèfles",
+   desc:"Le centre se refait une beauté. Réouverture en fête lors de l'inauguration de juillet."},
+  {emoji:'🤸', nom:'Sport & santé', statut:'bientot', famille:'Bien-être',
+   public:"Tous publics", horaires:"À venir", lieu:"CASE Bois de Nèfles",
+   desc:"Une offre sport & santé est à l'étude pour les prochaines saisons."},
+  {emoji:'👨‍👩‍👧', nom:'Accompagnement à la parentalité', statut:'bientot', famille:'Familles',
+   public:"Familles", horaires:"À venir", lieu:"CASE Bois de Nèfles",
+   desc:"Des temps d'échange et de soutien pour les parents, en préparation."}
+];
+const PLAN_LABEL={actif:'Ça tourne',travaux:'En travaux',bientot:'Bientôt'};
+const PLAN_CLS={actif:'on',travaux:'work',bientot:'soon'};
+function escP(s){return String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+function planRow(i){
+  const p=PLAN[i];
+  const tag = p.statut==='travaux' ? '<span class="ptag work">en travaux</span>'
+            : p.statut==='bientot' ? '<span class="ptag soon">à l\'étude</span>' : '';
+  return '<button class="prow" onclick="openPlan('+i+')">'
+    +'<span class="rico">'+p.emoji+'</span>'
+    +'<span class="rname">'+escP(p.nom)+'</span>'+tag
+    +'<span class="rgo">›</span></button>';
+}
+function planGroup(items){            // items = [{p,i}] ; regroupe par famille, dans l'ordre d'apparition
+  const fams=[]; items.forEach(o=>{ if(!fams.includes(o.p.famille)) fams.push(o.p.famille); });
+  return fams.map(f=>'<div class="pfam">'+escP(f)+'</div>'
+    +items.filter(o=>o.p.famille===f).map(o=>planRow(o.i)).join('')).join('');
+}
+function renderPlan(){
+  const A=document.getElementById('panelTourne'), B=document.getElementById('panelArrive');
+  if(!A||!B) return;
+  const idx=PLAN.map((p,i)=>({p,i}));
+  const actifs=idx.filter(o=>o.p.statut==='actif');
+  const travaux=idx.filter(o=>o.p.statut==='travaux');
+  const bientot=idx.filter(o=>o.p.statut==='bientot');
+  A.innerHTML='<div class="ppanel-head"><i class="dot on"></i> Ce qui tourne aujourd\'hui <span class="hcount">'+actifs.length+'</span></div>'+planGroup(actifs);
+  let b='<div class="ppanel-head"><i class="dot work"></i> Ce qui arrive <span class="hcount">'+(travaux.length+bientot.length)+'</span></div>';
+  if(travaux.length) b+='<div class="pfam">En travaux</div>'+travaux.map(o=>planRow(o.i)).join('');
+  if(bientot.length) b+='<div class="pfam">À l\'étude · bientôt</div>'+bientot.map(o=>planRow(o.i)).join('');
+  B.innerHTML=b;
+}
+/* ===== Nos activités : liste compacte + bouton « S'inscrire » ===== */
+function renderActivites(){
+  const box=document.getElementById('actList'); if(!box) return;
+  box.innerHTML=PLAN.filter(p=>p.inscriptible).map(p=>'<div class="actrow">'
+    +'<span class="aico">'+p.emoji+'</span>'
+    +'<div class="abody"><b>'+escP(p.nom)+'</b><span>'+escP(p.court||'')+'</span></div>'
+    +'<button class="btn primary" onclick="inscrire(&quot;'+escP(p.insOption||p.nom)+'&quot;)">S\'inscrire</button>'
+    +'</div>').join('');
+}
+function inscrire(option){
+  const s=document.getElementById('adh_activite');
+  if(s){ for(const o of s.options){ if(o.value===option||o.textContent===option){ s.value=o.value; break; } } }
+  const sec=document.getElementById('adhesion'); if(sec) sec.scrollIntoView({behavior:'smooth'});
+}
+function openPlan(i){
+  const p=PLAN[i]; if(!p) return;
+  const box=document.getElementById('pmodalBox');
+  box.innerHTML='<button class="px" onclick="closePlan()" aria-label="Fermer">✕</button>'
+    +'<div class="pico">'+p.emoji+'</div>'
+    +'<span class="pill '+PLAN_CLS[p.statut]+'"><i class="dot '+PLAN_CLS[p.statut]+'"></i>'+PLAN_LABEL[p.statut]+'</span>'
+    +'<h3>'+escP(p.nom)+'</h3>'
+    +'<p style="color:var(--muted);margin:0">'+escP(p.desc)+'</p>'
+    +(p.public?'<div class="pmd-line"><span class="i">👥</span><div><b>Pour qui</b><br>'+escP(p.public)+'</div></div>':'')
+    +(p.horaires?'<div class="pmd-line"><span class="i">🕒</span><div><b>Quand</b><br>'+escP(p.horaires)+'</div></div>':'')
+    +(p.lieu?'<div class="pmd-line"><span class="i">📍</span><div><b>Où</b><br>'+escP(p.lieu)+'</div></div>':'')
+    +'<div class="pmd-line"><span class="i">✉️</span><div><b>Infos &amp; inscriptions</b><br><a href="#contact" onclick="closePlan()">Nous contacter</a></div></div>';
+  document.getElementById('pmodal').classList.add('open');
+}
+function closePlan(){ document.getElementById('pmodal').classList.remove('open'); }
+document.addEventListener('keydown',e=>{ if(e.key==='Escape')closePlan(); });
+renderPlan();
+renderActivites();
 loadAteliersPublics();
 /* Bandeau actualité : fermeture mémorisée (réapparaît si on change data-news) */
 (function(){
