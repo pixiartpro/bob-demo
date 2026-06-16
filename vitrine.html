@@ -189,7 +189,7 @@
 </head>
 <body>
 
-<div class="demo-flag">🍍 Aperçu de démonstration — voici à quoi pourrait ressembler le site public du CASE</div>
+<!-- (bandeau démo retiré — site public réel) -->
 
 <header>
   <div class="bar">
@@ -336,8 +336,8 @@
       <span class="zg-bulle">Adhère en ligne en 2 minutes, je te montre ! ✏️</span>
     </div>
     <div class="panel">
-      <div class="field"><label>Nom et prénom</label><input placeholder="Votre nom"></div>
-      <div class="field"><label>Email</label><input type="email" placeholder="vous@exemple.re"></div>
+      <div class="field"><label>Nom et prénom</label><input id="adh_nom" placeholder="Votre nom"></div>
+      <div class="field"><label>Email</label><input id="adh_email" type="email" placeholder="vous@exemple.re"></div>
       <div class="field"><label>Activité souhaitée</label>
         <select id="adh_activite">
           <option>Adhésion simple (10 €)</option>
@@ -345,10 +345,11 @@
           <option>Musique</option>
           <option>Périscolaire</option>
           <option>Accueil de loisirs (ACM)</option>
+          <option>VEPI</option>
           <option>Secteur ados (11–17 ans)</option>
         </select></div>
-      <button class="btn primary" style="width:100%" onclick="alert('🍍 Ceci est une démonstration.\n\nDans la version en ligne, le paiement (cotisation + activité) se ferait ici en toute sécurité, et l\'inscription arriverait automatiquement dans la gestion du CASE.')">💳 S'inscrire et payer en ligne</button>
-      <p class="note"><span class="badge">DÉMO</span> Le paiement en ligne sera actif dans la version finale.</p>
+      <button class="btn primary" style="width:100%" onclick="envoyerInscription()">Envoyer ma demande d'inscription</button>
+      <p class="note">Votre demande arrive directement au CASE. Le règlement se fait sur place (paiement en ligne bientôt).</p>
     </div>
   </div>
 </section>
@@ -367,18 +368,12 @@
         <div class="info-line"><span class="i">📍</span><div><b>Adresse</b><br>C.A.S.E du Bois de Nèfles<br>132 Route des Ananas, 97490 Sainte-Clotilde<br><span style="font-size:13px;color:var(--muted)">+ Local des Bringelliers</span></div></div>
         <div class="info-line"><span class="i">📞</span><div><b>Téléphone</b><br><a href="tel:+262262293790" style="text-decoration:none">0262 29 37 90</a> · <span style="font-size:13px;color:var(--muted)">CASE</span><br><a href="tel:+262692691811" style="text-decoration:none">0692 69 18 11</a> · <span style="font-size:13px;color:var(--muted)">ligne directe</span></div></div>
         <div class="info-line"><span class="i">✉️</span><div><b>Email</b><br><a href="mailto:case.bdn@gmail.com" style="text-decoration:none">case.bdn@gmail.com</a></div></div>
-        <b>Suivez-nous :</b>
-        <div class="socials">
-          <a class="soc" href="#" title="Facebook">📘</a>
-          <a class="soc" href="#" title="Instagram">📸</a>
-          <a class="soc" href="#" title="TikTok">🎵</a>
-          <a class="soc" href="#" title="WhatsApp">💬</a>
-        </div>
+        <!-- Réseaux sociaux : à remettre dès que Guillaume fournit les liens FB/Insta/TikTok/WhatsApp -->
       </div>
       <div class="panel" style="box-shadow:var(--shadow)">
-        <div class="field"><label>Votre nom</label><input placeholder="Nom"></div>
-        <div class="field"><label>Votre message</label><input placeholder="Bonjour..."></div>
-        <button class="btn sun" style="width:100%" onclick="alert('🍍 Démonstration — dans la version finale, votre message serait envoyé au CASE.')">Envoyer le message</button>
+        <div class="field"><label>Votre nom</label><input id="ct_nom" placeholder="Nom"></div>
+        <div class="field"><label>Votre message</label><input id="ct_msg" placeholder="Bonjour..."></div>
+        <button class="btn sun" style="width:100%" onclick="envoyerContact()">Envoyer le message</button>
       </div>
     </div>
   </div>
@@ -537,14 +532,18 @@ async function submitAtelierIdee(){
    famille = le regroupement affiché dans la colonne « ce qui tourne » (ex. "Culture & loisirs").
    Chaque activité : emoji, nom, statut, famille, public, horaires, lieu, desc (détail au clic). */
 const PLAN=[
-  {emoji:'📚', nom:'Périscolaire — après-midi', statut:'actif', famille:'Enfance & périscolaire',
+  {emoji:'📚', nom:'Périscolaire — après-midi', statut:'actif', famille:'Péri & extrascolaire',
    inscriptible:true, insOption:'Périscolaire', court:"Après l'école : devoirs, goûter, activités",
    public:"Enfants scolarisés", horaires:"Lun → Ven, ~15h30–18h", lieu:"CASE Bois de Nèfles / école du Piton",
    desc:"Le périscolaire de l'après-midi fonctionne aujourd'hui : aide aux devoirs, goûter et activités encadrées jusqu'au retour des familles."},
-  {emoji:'🏕️', nom:'Accueil de loisirs (ACM)', statut:'actif', famille:'Enfance & périscolaire',
+  {emoji:'🏕️', nom:'Accueil de loisirs (ACM)', statut:'actif', famille:'Péri & extrascolaire',
    inscriptible:true, insOption:'Accueil de loisirs (ACM)', court:"Vacances scolaires : sorties & activités",
    public:"Enfants & ados", horaires:"Vacances scolaires", lieu:"CASE Bois de Nèfles",
    desc:"Accueil collectif de mineurs pendant les vacances : sorties, activités et projets collectifs."},
+  {emoji:'🧒', nom:'VEPI', statut:'actif', famille:'Péri & extrascolaire',
+   inscriptible:true, insOption:'VEPI', court:"Accueil extrascolaire",
+   public:"Enfants", horaires:"Hors temps scolaire", lieu:"CASE Bois de Nèfles",
+   desc:"Accueil extrascolaire proposé par le CASE (VEPI)."},
   {emoji:'💃', nom:'Danse', statut:'actif', famille:'Culture & loisirs',
    inscriptible:true, insOption:'Danse', court:"Éveil, hip-hop, classique, salsa…",
    public:"Petits et grands", horaires:"En semaine (voir planning)", lieu:"CASE Bois de Nèfles",
@@ -563,7 +562,7 @@ const PLAN=[
   {emoji:'⚖️', nom:'Jeudi info population', statut:'actif', famille:'Vie de quartier',
    public:"Tous publics", horaires:"Le jeudi", lieu:"CASE Bois de Nèfles",
    desc:"Accompagnement vers l'accès aux droits et aux ressources (CRIJ, France Services…)."},
-  {emoji:'🌅', nom:'Périscolaire — le matin', statut:'travaux', famille:'Enfance & périscolaire',
+  {emoji:'🌅', nom:'Périscolaire — le matin', statut:'travaux', famille:'Péri & extrascolaire',
    public:"Enfants scolarisés", horaires:"~1h le matin · dès la rentrée d'août 2026", lieu:"CASE Bois de Nèfles",
    desc:"En préparation pour la rentrée d'août : un accueil d'environ 1h le matin, en plus de l'après-midi. La grille tarifaire (selon le quotient familial) est en cours de réévaluation."},
   {emoji:'🏠', nom:'La Kaz Zados — espace dédié', statut:'travaux', famille:'Jeunesse · 11–17 ans',
@@ -622,6 +621,24 @@ function inscrire(option){
   const s=document.getElementById('adh_activite');
   if(s){ for(const o of s.options){ if(o.value===option||o.textContent===option){ s.value=o.value; break; } } }
   const sec=document.getElementById('adhesion'); if(sec) sec.scrollIntoView({behavior:'smooth'});
+}
+/* ===== Envoi réel par email (mailto) — contact + demande d'inscription ===== */
+function envoyerContact(){
+  const nom=(document.getElementById('ct_nom').value||'').trim();
+  const msg=(document.getElementById('ct_msg').value||'').trim();
+  if(!msg){ alert('Écris ton message avant d\'envoyer 🙂'); return; }
+  const subject=encodeURIComponent('Message du site — '+(nom||'Visiteur'));
+  const body=encodeURIComponent(msg+'\n\n— '+(nom||'')+' (envoyé depuis le site du CASE)');
+  window.location.href='mailto:case.bdn@gmail.com?subject='+subject+'&body='+body;
+}
+function envoyerInscription(){
+  const nom=(document.getElementById('adh_nom').value||'').trim();
+  const email=(document.getElementById('adh_email').value||'').trim();
+  const act=document.getElementById('adh_activite').value;
+  if(!nom){ alert('Indique ton nom avant d\'envoyer la demande 🙂'); return; }
+  const subject=encodeURIComponent("Demande d'inscription — "+act);
+  const body=encodeURIComponent("Bonjour,\n\nJe souhaite m'inscrire à : "+act+"\n\nNom : "+nom+"\nEmail : "+email+"\n\n(envoyé depuis le site du CASE)");
+  window.location.href='mailto:case.bdn@gmail.com?subject='+subject+'&body='+body;
 }
 function openPlan(i){
   const p=PLAN[i]; if(!p) return;
