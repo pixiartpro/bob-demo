@@ -75,6 +75,7 @@
   <div class="wrap">
     <div class="card" id="periCard" style="border-left:5px solid var(--ananas);background:#fff8ec">
       <h2 class="title" style="font-size:20px">🎒 Inscription au périscolaire <small>— matin &amp; soir · rentrée d'août</small></h2>
+      <p class="sub" style="margin:2px 0 10px">Année scolaire <b>2026–2027</b> · adhésion annuelle <b>10 €</b> (valable du <b>1ᵉʳ août au 31 juillet</b>).</p>
       <div id="periBody"><p class="sub">Chargement…</p></div>
     </div>
   </div>
@@ -373,7 +374,7 @@ renderAqList();
 
 /* ===== Inscription périscolaire (réel — Supabase Auth + coffre privé dossiers-periscolaire) ===== */
 const PERI = {
-  ANNEE: '2026',
+  ANNEE: '2026-2027',
   uid:null, profile:null, asso:null,
   row:{foyer:'',email:'',tel:'',enfants:[],pieces:{},statut:'brouillon',annee:'2026'},
   PIECES:[
