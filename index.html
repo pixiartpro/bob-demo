@@ -155,7 +155,9 @@
   .prow .rgo{color:#c4d6cb;font-size:22px;font-weight:700;flex:0 0 auto;line-height:1}
   .prow:hover .rgo{color:var(--vert)}
   .ptag{font-size:10.5px;font-weight:800;padding:3px 9px;border-radius:999px;flex:0 0 auto;text-transform:uppercase;letter-spacing:.02em}
-  .ptag.work{background:#fdf0dc;color:#9a5b00}.ptag.soon{background:#e6effb;color:#2a5aa0}
+  .ptag.work{background:#fdf0dc;color:#9a5b00}.ptag.soon{background:#e6effb;color:#2a5aa0}.ptag.on{background:#e3f6ec;color:#0f6b46}
+  .actform{background:#fff;border:1px solid var(--line);border-radius:14px;padding:12px 14px;box-shadow:var(--shadow);margin-top:2px}
+  .actform input{width:100%;margin:4px 0;padding:9px 11px;border:1px solid var(--line);border-radius:10px;font:inherit}
   .pill{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:800;padding:5px 11px;border-radius:999px;margin-top:12px;text-transform:uppercase;letter-spacing:.03em}
   .pill.on{background:#e3f6ec;color:#0f6b46}.pill.work{background:#fdf0dc;color:#9a5b00}.pill.soon{background:#e6effb;color:#2a5aa0}
   .pmodal{position:fixed;inset:0;z-index:200;background:rgba(16,48,42,.55);backdrop-filter:blur(3px);display:none;align-items:center;justify-content:center;padding:20px}
@@ -608,19 +610,45 @@ function renderPlan(){
   if(bientot.length) b+='<div class="pfam">À l\'étude · bientôt</div>'+bientot.map(o=>planRow(o.i)).join('');
   B.innerHTML=b;
 }
-/* ===== Nos activités : liste compacte + bouton « S'inscrire » ===== */
-function renderActivites(){
+/* ===== Nos activités : lecture en direct (places restantes) + inscription ===== */
+async function loadActivitesPubliques(){
   const box=document.getElementById('actList'); if(!box) return;
-  box.innerHTML=PLAN.filter(p=>p.inscriptible).map(p=>'<div class="actrow">'
-    +'<span class="aico">'+p.emoji+'</span>'
-    +'<div class="abody"><b>'+escP(p.nom)+'</b><span>'+escP(p.court||'')+'</span></div>'
-    +'<button class="btn primary" onclick="inscrire(&quot;'+escP(p.insOption||p.nom)+'&quot;)">S\'inscrire</button>'
-    +'</div>').join('');
+  const {data,error}=await _sbPart.from('activites').select('*').eq('publie',true).neq('statut','archive').order('ordre',{ascending:true});
+  if(error){ box.innerHTML='<p style="text-align:center;color:#c0392b">Impossible de charger les activités pour le moment.</p>'; return; }
+  if(!data||!data.length){ box.innerHTML='<p style="text-align:center;color:var(--muted)">Nos activités arrivent très bientôt ici. 🍍</p>'; return; }
+  box.innerHTML=data.map(a=>{
+    const places=Math.max(0,(a.capacite||0)-(a.nb_inscrits||0));
+    const bientot=a.statut==='bientot';
+    const complet=!bientot && places<=0;
+    const badge = bientot ? '<span class="ptag soon">arrive bientôt</span>'
+                : complet ? '<span class="ptag work">complet</span>'
+                : '<span class="ptag on">'+places+' place'+(places>1?'s':'')+' restante'+(places>1?'s':'')+'</span>';
+    const btn = (bientot||complet) ? '' : '<button class="btn primary" onclick="actToggle(\''+a.id+'\')">S\'inscrire</button>';
+    return '<div class="actrow">'
+        +'<span class="aico">'+(a.emoji||'•')+'</span>'
+        +'<div class="abody"><b>'+escP(a.nom)+'</b><span>'+escP(a.description||'')+'</span></div>'
+        +badge+btn
+      +'</div>'
+      +'<div class="actform" id="actf_'+a.id+'" style="display:none">'
+        +'<input id="actn_'+a.id+'" placeholder="Nom de l\'enfant / participant *">'
+        +'<input id="actr_'+a.id+'" placeholder="Responsable (parent)">'
+        +'<input id="actc_'+a.id+'" placeholder="Téléphone ou email">'
+        +'<button class="btn primary" style="width:100%;margin-top:4px" onclick="actSend(\''+a.id+'\')">Valider l\'inscription</button>'
+        +'<p id="acti_'+a.id+'" style="margin:6px 0 0;font-size:13px;font-weight:700;text-align:center"></p>'
+      +'</div>';
+  }).join('');
 }
-function inscrire(option){
-  const s=document.getElementById('adh_activite');
-  if(s){ for(const o of s.options){ if(o.value===option||o.textContent===option){ s.value=o.value; break; } } }
-  const sec=document.getElementById('adhesion'); if(sec) sec.scrollIntoView({behavior:'smooth'});
+function actToggle(id){ const f=document.getElementById('actf_'+id); if(!f) return; f.style.display=(f.style.display==='none')?'block':'none'; if(f.style.display==='block'){ const n=document.getElementById('actn_'+id); if(n) n.focus(); } }
+async function actSend(id){
+  const nom=(document.getElementById('actn_'+id).value||'').trim();
+  const info=document.getElementById('acti_'+id);
+  if(!nom){ info.style.color='#c0392b'; info.textContent='Indique le nom.'; return; }
+  const {error}=await _sbPart.from('inscriptions_activite').insert({ activite_id:id, nom,
+    responsable:(document.getElementById('actr_'+id).value||'').trim(),
+    contact:(document.getElementById('actc_'+id).value||'').trim() });
+  if(error){ info.style.color='#c0392b'; info.textContent=(error.code==='23505')?'Déjà inscrit·e à cette activité 😉':"Oups : plus de place disponible, ou une erreur. Réessaie."; return; }
+  info.style.color='var(--vert-fonce)'; info.textContent='✅ Inscription enregistrée, merci ! Le CASE vous recontacte.';
+  setTimeout(loadActivitesPubliques, 1800);
 }
 /* ===== Envoi réel par email (mailto) — contact + demande d'inscription ===== */
 function envoyerContact(){
@@ -657,7 +685,7 @@ function openPlan(i){
 function closePlan(){ document.getElementById('pmodal').classList.remove('open'); }
 document.addEventListener('keydown',e=>{ if(e.key==='Escape')closePlan(); });
 renderPlan();
-renderActivites();
+loadActivitesPubliques();
 loadAteliersPublics();
 /* Bandeau actualité : fermeture mémorisée (réapparaît si on change data-news) */
 (function(){
