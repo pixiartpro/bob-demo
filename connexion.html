@@ -226,7 +226,7 @@ async function renderLoggedIn(user){
       <span class="role-pill pill ${r.pill}">${r.label}</span>
       <span class="role-pill pill ${st.pill}">${st.label}</span></div>
     <div style="margin-left:auto;display:flex;gap:8px;flex-wrap:wrap">
-      ${p.statut==='actif'?`<a class="btn p" style="text-decoration:none" href="app.html">Entrer dans la gestion →</a>`:''}
+      ${p.statut==='actif'?(p.role==='adherent'?`<a class="btn p" style="text-decoration:none" href="espace-adherent.html">Mon espace adhérent →</a>`:`<a class="btn p" style="text-decoration:none" href="app.html">Entrer dans la gestion →</a>`):''}
       <button class="btn g" onclick="changePwd()">Mot de passe</button>
       <button class="btn g" onclick="signOut()">Déconnexion</button>
     </div></div>`;
