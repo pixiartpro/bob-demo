@@ -252,12 +252,9 @@
 <section class="block bg-sun" id="plan">
   <div class="wrap">
     <p class="eyebrow">Le projet du CASE</p>
-    <h2 class="title">Ce qui tourne, ce qui arrive 🚧</h2>
-    <p class="sub">Tout le projet du CASE en un coup d'œil. Cliquez sur une ligne pour en savoir plus.</p>
-    <div class="plan-cols">
-      <div class="ppanel tourne" id="panelTourne"></div>
-      <div class="ppanel arrive" id="panelArrive"></div>
-    </div>
+    <h2 class="title">Ce qui arrive 🚧</h2>
+    <p class="sub">Les nouveautés qu'on prépare pour le quartier. Cliquez pour en savoir plus — et retrouvez tout ce qui tourne déjà dans <a href="#activites" style="color:var(--vert-fonce);font-weight:800">Nos activités</a>.</p>
+    <div class="ppanel arrive" id="panelArrive" style="max-width:640px;margin:0 auto"></div>
   </div>
 </section>
 
@@ -272,8 +269,23 @@
   </div>
 </section>
 
+<!-- ADOS -->
+<section class="block bg-w" id="ados">
+  <div class="wrap">
+    <p class="eyebrow">Espace jeunes · 11–17 ans</p>
+    <h2 class="title">La jeunesse aux commandes 🛹</h2>
+    <p class="sub">Un secteur ados où les jeunes deviennent <strong>acteurs</strong> : accueil de loisirs les mercredis, samedis et vacances — et bien plus.</p>
+    <div class="actlist">
+      <div class="actrow"><span class="aico">🏠</span><div class="abody"><b>La Kaz Zados</b><span>Un lieu à eux, géré par eux : leurs projets, leur autonomie</span></div></div>
+      <div class="actrow"><span class="aico">🎤</span><div class="abody"><b>Ôté Kartié</b><span>Le projet phare des jeunes pour faire bouger le quartier</span></div></div>
+      <div class="actrow"><span class="aico">💃</span><div class="abody"><b>Danse &amp; créations</b><span>Danse, expression et activités menées avec les ados</span></div></div>
+      <div class="actrow"><span class="aico">📅</span><div class="abody"><b>Mercredi, samedi &amp; vacances</b><span>Un accueil régulier pour les 11–17 ans toute l'année</span></div></div>
+    </div>
+  </div>
+</section>
+
 <!-- TEMPS FORTS 2026 -->
-<section class="block bg-w" id="temps-forts">
+<section class="block bg-g" id="temps-forts">
   <div class="wrap">
     <p class="eyebrow">Temps forts 2026</p>
     <h2 class="title">Les grands rendez-vous 🎉</h2>
@@ -285,21 +297,6 @@
       <div class="ag-item"><span class="ag-ico">🪘</span><div><div class="ag-when">Octobre</div><div class="ag-name">Semaine créole &amp; ron maloya</div></div></div>
       <div class="ag-item"><span class="ag-ico">⛰️</span><div><div class="ag-when">Septembre</div><div class="ag-name">Week-end famille · Plaine des Cafres</div></div></div>
       <div class="ag-item"><span class="ag-ico">🎄</span><div><div class="ag-when">20 décembre</div><div class="ag-name">Fête de fin d'année</div></div></div>
-    </div>
-  </div>
-</section>
-
-<!-- ADOS -->
-<section class="block bg-g" id="ados">
-  <div class="wrap">
-    <p class="eyebrow">Espace jeunes · 11–17 ans</p>
-    <h2 class="title">La jeunesse aux commandes 🛹</h2>
-    <p class="sub">Un secteur ados où les jeunes deviennent <strong>acteurs</strong> : accueil de loisirs les mercredis, samedis et vacances — et bien plus.</p>
-    <div class="actlist">
-      <div class="actrow"><span class="aico">🏠</span><div class="abody"><b>La Kaz Zados</b><span>Un lieu à eux, géré par eux : leurs projets, leur autonomie</span></div></div>
-      <div class="actrow"><span class="aico">🎤</span><div class="abody"><b>Ôté Kartié</b><span>Le projet phare des jeunes pour faire bouger le quartier</span></div></div>
-      <div class="actrow"><span class="aico">💃</span><div class="abody"><b>Danse &amp; créations</b><span>Danse, expression et activités menées avec les ados</span></div></div>
-      <div class="actrow"><span class="aico">📅</span><div class="abody"><b>Mercredi, samedi &amp; vacances</b><span>Un accueil régulier pour les 11–17 ans toute l'année</span></div></div>
     </div>
   </div>
 </section>
@@ -589,13 +586,10 @@ function planGroup(items){            // items = [{p,i}] ; regroupe par famille,
     +items.filter(o=>o.p.famille===f).map(o=>planRow(o.i)).join('')).join('');
 }
 function renderPlan(){
-  const A=document.getElementById('panelTourne'), B=document.getElementById('panelArrive');
-  if(!A||!B) return;
+  const B=document.getElementById('panelArrive'); if(!B) return;
   const idx=PLAN.map((p,i)=>({p,i}));
-  const actifs=idx.filter(o=>o.p.statut==='actif');
   const travaux=idx.filter(o=>o.p.statut==='travaux');
   const bientot=idx.filter(o=>o.p.statut==='bientot');
-  A.innerHTML='<div class="ppanel-head"><i class="dot on"></i> Ce qui tourne aujourd\'hui <span class="hcount">'+actifs.length+'</span></div>'+planGroup(actifs);
   let b='<div class="ppanel-head"><i class="dot work"></i> Ce qui arrive <span class="hcount">'+(travaux.length+bientot.length)+'</span></div>';
   if(travaux.length) b+='<div class="pfam">En travaux</div>'+travaux.map(o=>planRow(o.i)).join('');
   if(bientot.length) b+='<div class="pfam">À l\'étude · bientôt</div>'+bientot.map(o=>planRow(o.i)).join('');
