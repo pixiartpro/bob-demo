@@ -117,6 +117,7 @@
     <button data-tab="dashboard" class="active">📊 Tableau de bord</button>
     <button data-tab="members">👥 Adhérents</button>
     <button data-tab="periscolaire">🎒 Périscolaire</button>
+    <button data-tab="activites">🎟️ Activités</button>
     <button data-tab="projects">📁 Projets</button>
     <button data-tab="subventions">🏛️ Subventions</button>
     <button data-tab="repertoire">🗂️ Répertoire</button>
@@ -604,6 +605,28 @@
     </div>
   </section>
 
+  <!-- ACTIVITÉS & PLACES (gestion du public) -->
+  <section id="activites" class="page">
+    <div class="panel">
+      <div class="toolbar"><div>
+        <h2 style="margin:0">🎟️ Activités &amp; places</h2>
+        <p class="hint" style="margin:2px 0 0">Crée les activités proposées au public, fixe leur <strong>capacité</strong>, publie-les sur le site, et vois les <strong>inscriptions</strong>. Le site affiche en direct « X places restantes / complet / arrive bientôt ». <button class="ghost btn" onclick="if(window.loadActivitesGestion)loadActivitesGestion()">↻ Rafraîchir</button></p>
+      </div></div>
+      <div class="row" style="flex-wrap:wrap;gap:10px;margin-top:8px">
+        <div class="field" style="min-width:150px"><label>Nom</label><input id="ag_nom" placeholder="Ex. Danse"></div>
+        <div class="field" style="flex:0;min-width:80px"><label>Emoji</label><input id="ag_emoji" placeholder="💃"></div>
+        <div class="field" style="min-width:150px"><label>Catégorie</label><input id="ag_cat" placeholder="Culture & loisirs"></div>
+        <div class="field" style="min-width:190px"><label>Description (courte)</label><input id="ag_desc" placeholder="Une ligne"></div>
+        <div class="field" style="flex:0;min-width:95px"><label>Capacité</label><input id="ag_cap" type="number" min="0" value="20"></div>
+        <div class="field" style="flex:0;min-width:140px"><label>Statut</label><select id="ag_statut"><option value="ouvert">Ouvert</option><option value="bientot">Arrive bientôt</option></select></div>
+        <div class="field" style="flex:0;min-width:120px"><label>Sur le site ?</label><select id="ag_pub"><option value="1">Oui</option><option value="0">Non</option></select></div>
+        <div class="field" style="flex:0;min-width:85px"><label>Ordre</label><input id="ag_ordre" type="number" value="0"></div>
+        <div class="field" style="flex:0"><label>&nbsp;</label><button class="btn" onclick="addActivite()">+ Créer</button></div>
+      </div>
+    </div>
+    <div id="actgList"></div>
+  </section>
+
   <!-- BILAN -->
   <section id="bilan" class="page">
     <div class="panel">
@@ -1020,6 +1043,8 @@ document.querySelectorAll('nav.tabs button').forEach(b=>{
 
 /* ---- Aide : « Demande à Zanana » (FAQ + assistant par mots-clés, sans IA) ---- */
 const FAQ=[
+  {cat:'🎟️ Activités',q:"Comment afficher les places restantes et gérer les inscriptions sur le site ?",kw:"activite activites place places restantes capacite complet inscription inscriptions site public publier vitrine arrive bientot acm vepi danse musique",
+   a:"Onglet <b>🎟️ Activités</b>. Crée chaque activité (nom, emoji, catégorie, description), fixe sa <b>capacité</b>, choisis le statut (<b>Ouvert</b> / <b>Arrive bientôt</b> / Archivé) et clique <b>🌍 Publier sur le site</b>. Sur le site public, « Nos activités » affiche alors en direct <b>« X places restantes »</b>, <b>« complet »</b> quand la capacité est atteinte, ou <b>« arrive bientôt »</b>. Quand une famille s'inscrit depuis le site, son inscription <b>arrive automatiquement ici</b> (tu vois le nom, le responsable, le contact) et le nombre de places se met à jour tout seul. Tu peux retirer une inscription avec ✕."},
   {cat:'🎒 Périscolaire',q:"Comment gérer le périscolaire, les tarifs et ce que paient les familles ?",kw:"periscolaire garderie tarif grille quotient familial qf enfant inscription facture facturation matin apres-midi aprem fratrie remise extrascolaire acm vepi place",
    a:"Onglet <b>🎒 Périscolaire</b>. La <b>grille tarifaire</b> est par <b>jour</b> selon le quotient familial (pré-remplie avec les tarifs 2024-2025) : modifie une case puis clique <b>💾 Enregistrer la grille</b> pour la réévaluer (ex. pour la rentrée d'août). Ajoute ensuite chaque <b>enfant</b> (tranche, matin et/ou après-midi, rang dans la fratrie) : Bob calcule tout seul ce qu'il doit par mois — <i>tarif jour × nombre de jours du mois, + supplément matin, − remise fratrie</i> — et le total des recettes attendues. C'est la gestion interne ; l'affichage des <b>places restantes</b> côté site public viendra ensuite."},
   {cat:'🚀 Démarrer',q:"Où je vois les nouveautés de Bob ?",kw:"nouveaute nouveau quoi de neuf notice changement evolution pastille rouge mise a jour decouvrir fonctionnalite",
@@ -1148,6 +1173,8 @@ function renderFaqList(){
 
 /* ---- ✨ Quoi de neuf (nouveautés + notice chronologique) ---- */
 const NEWS=[
+  {id:'2026-06-16-activites',date:'2026-06-16',tab:'🎟️ Activités',titre:'🎟️ Activités & places restantes',
+   desc:"Nouvel onglet pour gérer les activités proposées au public : fixe la capacité, publie sur le site, vois les inscriptions. Le site affiche en direct « X places restantes », « complet » ou « arrive bientôt » (ACM/VEPI). Les inscriptions du public arrivent automatiquement ici."},
   {id:'2026-06-16-peri',date:'2026-06-16',tab:'🎒 Périscolaire',titre:'🎒 Nouvel onglet Périscolaire',
    desc:"Gère la grille tarifaire par quotient familial (pré-remplie avec les tarifs 2024-2025, à réévaluer pour la rentrée d'août), inscris les enfants (matin et/ou après-midi, rang dans la fratrie) et Bob calcule tout seul ce que chaque famille doit par mois + les recettes attendues."},
   {id:'2026-06-12-news',date:'2026-06-12',tab:'❓ Aide',titre:'✨ Le panneau « Quoi de neuf »',
@@ -2914,6 +2941,69 @@ renderAll();
   window.delAtelier=async function(id){ if(!confirm('Supprimer définitivement cet atelier et ses inscriptions ?'))return; const {error}=await sbc.from('ateliers').delete().eq('id',id); if(error){alert(error.message);return;} loadAteliers(); };
   window.delInscription=async function(id){ if(!confirm('Retirer cette inscription ?'))return; const {error}=await sbc.from('atelier_inscriptions').delete().eq('id',id); if(error){alert(error.message);return;} loadAteliers(); };
 
+  /* ---- Gestion des Activités & places (table activites + inscriptions_activite) ---- */
+  const ACT_STATUTS={ouvert:'Ouvert',bientot:'Arrive bientôt',archive:'Archivé'};
+  window.loadActivitesGestion=async function(){
+    const box=document.getElementById('actgList'); if(!box) return;
+    const [ra,ri]=await Promise.all([
+      sbc.from('activites').select('*').order('ordre',{ascending:true}).order('created_at',{ascending:true}),
+      sbc.from('inscriptions_activite').select('*').order('created_at',{ascending:true})
+    ]);
+    if(ra.error){ box.innerHTML='<p class="hint" style="color:#c0392b">Erreur : '+esc(ra.error.message)+'</p>'; return; }
+    const acts=ra.data||[], byA={};
+    (ri.data||[]).forEach(i=>{ (byA[i.activite_id]=byA[i.activite_id]||[]).push(i); });
+    if(!acts.length){ box.innerHTML='<p class="hint">Aucune activité pour le moment. Crée la première ci-dessus 👆</p>'; return; }
+    box.innerHTML=acts.map(a=>{
+      const list=byA[a.id]||[];
+      const places=Math.max(0,(a.capacite||0)-(a.nb_inscrits||0));
+      const complet=a.statut==='ouvert'&&places<=0;
+      const insHtml=list.length
+        ? '<table style="margin-top:10px"><thead><tr><th>Nom</th><th>Responsable</th><th>Contact</th><th>Date</th>'+(canWrite?'<th></th>':'')+'</tr></thead><tbody>'
+          +list.map(i=>'<tr><td>'+esc(i.nom||'')+'</td><td>'+esc(i.responsable||'')+'</td><td>'+esc(i.contact||'')+'</td><td>'+esc((i.created_at||'').slice(0,10))+'</td>'
+            +(canWrite?'<td><button class="ghost btn" title="Retirer" onclick="delInscriptionActivite(\''+i.id+'\')">✕</button></td>':'')+'</tr>').join('')
+          +'</tbody></table>'
+        : '<p class="hint" style="margin:8px 0 0">Personne d\'inscrit pour l\'instant.</p>';
+      let ctrl='';
+      if(canWrite){
+        ctrl='<div class="row" style="margin-top:10px;gap:8px;flex-wrap:wrap;align-items:flex-end">'
+          +'<div class="field" style="flex:0;min-width:110px"><label>Capacité</label><input type="number" min="0" value="'+(a.capacite||0)+'" onchange="setActivite(\''+a.id+'\',{capacite:Math.max(0,parseInt(this.value)||0)})"></div>'
+          +'<div class="field" style="flex:0;min-width:150px"><label>Statut</label><select onchange="setActivite(\''+a.id+'\',{statut:this.value})">'
+            +['ouvert','bientot','archive'].map(s=>'<option value="'+s+'"'+(a.statut===s?' selected':'')+'>'+ACT_STATUTS[s]+'</option>').join('')+'</select></div>'
+          +'<button class="ghost btn" onclick="setActivite(\''+a.id+'\',{publie:'+(a.publie?'false':'true')+'})">'+(a.publie?'🔒 Dépublier':'🌍 Publier sur le site')+'</button>'
+          +'<button class="ghost btn" onclick="renameActivite(\''+a.id+'\')">✏️ Renommer</button>'
+          +(myProfile && myProfile.role==='president'?'<button class="ghost btn" style="color:#c0392b" onclick="delActivite(\''+a.id+'\')">🗑️ Supprimer</button>':'')
+          +'</div>';
+      }
+      return '<div class="panel" style="margin:10px 0;border-left:4px solid '+(complet?'#e0533d':(a.publie?'#1f9d6b':'#bbb'))+'">'
+        +'<div class="toolbar"><div><strong>'+esc((a.emoji?a.emoji+' ':'')+(a.nom||'(sans nom)'))+'</strong> '
+        +(a.categorie?'<span class="pill" style="background:#eef3ef;color:#555;font-size:11px">'+esc(a.categorie)+'</span> ':'')
+        +'<span class="pill" style="background:'+(a.publie?'#dff5e9':'#f1f1f1')+';color:'+(a.publie?'#127a51':'#777')+';font-size:11px">'+(a.publie?'🌍 En ligne':'🔒 Interne')+'</span> '
+        +'<span class="pill" style="font-size:11px;background:'+(a.statut==='bientot'?'#e6effb':(complet?'#ffe9e3':'#fff5da'))+';color:'+(a.statut==='bientot'?'#2a5aa0':(complet?'#b23a23':'#8a6400'))+'">'+(a.statut==='bientot'?'Arrive bientôt':(a.statut==='archive'?'Archivé':(complet?'Complet':places+' / '+(a.capacite||0)+' places')))+'</span>'
+        +'</div></div>'
+        +(a.description?'<p class="hint" style="margin:6px 0 0">'+esc(a.description)+'</p>':'')
+        +'<p class="hint" style="margin:6px 0 0"><strong>'+(a.nb_inscrits||0)+'</strong> inscrit'+((a.nb_inscrits||0)>1?'s':'')+(a.statut==='ouvert'?' · '+places+' place'+(places>1?'s':'')+' restante'+(places>1?'s':''):'')+'</p>'
+        +insHtml
+        +ctrl
+        +'</div>';
+    }).join('');
+  };
+  window.addActivite=async function(){
+    const g=id=>document.getElementById(id);
+    const nom=g('ag_nom').value.trim(); if(!nom){ alert('Indique le nom de l\'activité.'); return; }
+    const {error}=await sbc.from('activites').insert({
+      asso_id:myAsso, nom, categorie:g('ag_cat').value.trim(), emoji:g('ag_emoji').value.trim(),
+      description:g('ag_desc').value.trim(), capacite:Math.max(0,parseInt(g('ag_cap').value,10)||0),
+      statut:g('ag_statut').value, publie:g('ag_pub').value==='1', ordre:parseInt(g('ag_ordre').value,10)||0
+    });
+    if(error){ alert(error.message); return; }
+    ['ag_nom','ag_cat','ag_emoji','ag_desc'].forEach(id=>g(id).value=''); g('ag_cap').value='20';
+    loadActivitesGestion();
+  };
+  window.setActivite=async function(id,patch){ const {error}=await sbc.from('activites').update(patch).eq('id',id); if(error){alert(error.message);return;} loadActivitesGestion(); };
+  window.renameActivite=async function(id){ const nv=prompt('Nouveau nom de l\'activité :'); if(nv===null) return; const n=nv.trim(); if(!n) return; setActivite(id,{nom:n}); };
+  window.delActivite=async function(id){ if(!confirm('Supprimer définitivement cette activité et ses inscriptions ?'))return; const {error}=await sbc.from('activites').delete().eq('id',id); if(error){alert(error.message);return;} loadActivitesGestion(); };
+  window.delInscriptionActivite=async function(id){ if(!confirm('Retirer cette inscription ?'))return; const {error}=await sbc.from('inscriptions_activite').delete().eq('id',id); if(error){alert(error.message);return;} loadActivitesGestion(); };
+
   // Chat interne FLOTTANT (bulle en bas à droite + badge non-lus + panneau)
   let chatSeen=0, chatOpen=false, lastUnread=0;
   const chatSeenKey=()=>'chat_seen_'+myAsso+'_'+myProfile.id;
@@ -3126,6 +3216,8 @@ renderAll();
     if(window.loadPartenaires) loadPartenaires();
     const ab=document.querySelector('nav.tabs button[data-tab="ateliers"]'); if(ab) ab.addEventListener('click',()=>{ if(window.loadAteliers) loadAteliers(); });
     if(window.loadAteliers) loadAteliers();
+    const cb=document.querySelector('nav.tabs button[data-tab="activites"]'); if(cb) cb.addEventListener('click',()=>{ if(window.loadActivitesGestion) loadActivitesGestion(); });
+    if(window.loadActivitesGestion) loadActivitesGestion();
     addChatWidget(); addSuggestWidget();
     heartbeat(); if(window.loadPresence) loadPresence();
     setInterval(()=>{ heartbeat(); if(window.loadChat) loadChat(); if(window.loadPresence) loadPresence(); }, 10000);
