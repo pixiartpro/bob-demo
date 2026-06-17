@@ -320,6 +320,16 @@
     <h2 class="title">Les grands rendez-vous 🎉</h2>
     <p class="sub">Les prochains rendez-vous du quartier. Cliquez pour le programme et pour vous inscrire.</p>
     <div class="actlist" id="agendaList"></div>
+    <div class="panel" style="max-width:640px;margin:24px auto 0;box-shadow:var(--shadow)">
+      <h3 style="margin:0 0 6px">💡 Une idée de temps fort ?</h3>
+      <p style="margin:0 0 12px;color:var(--muted);font-size:14px">Proposez votre idée : le CASE l'étudie, et si elle est retenue elle rejoindra l'agenda.</p>
+      <div class="field"><label>Votre idée *</label><input id="tf_titre" placeholder="Ex. Marché nocturne, tournoi de dominos…"></div>
+      <div class="field"><label>En quelques mots</label><input id="tf_desc" placeholder="Pour qui, quand, comment…"></div>
+      <div class="field"><label>Votre nom *</label><input id="tf_nom" placeholder="Prénom Nom"></div>
+      <div class="field"><label>Email ou téléphone</label><input id="tf_contact" placeholder="Pour vous recontacter"></div>
+      <button id="tf_btn" class="btn primary" style="width:100%" onclick="submitTempsFort()">Envoyer ma proposition</button>
+      <p id="tf_info" style="margin:10px 0 0;font-size:13.5px;text-align:center;font-weight:700"></p>
+    </div>
   </div>
 </section>
 
@@ -533,6 +543,20 @@ async function submitAtelierIdee(){
   if(error){ info.style.color='#c0392b'; info.textContent='Oups, une erreur est survenue. Réessayez dans un instant.'; return; }
   info.style.color='var(--vert-fonce)'; info.textContent='✅ Merci ! Votre idée est transmise au CASE, qui l\'étudie.';
   ['ai_titre','ai_desc','ai_nom','ai_contact'].forEach(id=>g(id).value='');
+}
+/* ===== Proposer un temps fort (public) → événement non publié, modéré par le bureau ===== */
+async function submitTempsFort(){
+  const g=id=>document.getElementById(id);
+  const titre=(g('tf_titre').value||'').trim(), nom=(g('tf_nom').value||'').trim(), info=g('tf_info');
+  if(!titre||!nom){ info.style.color='#c0392b'; info.textContent='Indiquez au moins votre idée et votre nom.'; return; }
+  const contact=(g('tf_contact').value||'').trim();
+  const btn=g('tf_btn'); btn.disabled=true; btn.textContent='Envoi…';
+  const {error}=await _sbPart.from('activites').insert({ nom:titre, type:'evenement', categorie:'Temps forts', publie:false, statut:'bientot',
+    programme:(g('tf_desc').value||'').trim(), description:'💡 Proposé par '+nom+(contact?' ('+contact+')':'') });
+  btn.disabled=false; btn.textContent='Envoyer ma proposition';
+  if(error){ info.style.color='#c0392b'; info.textContent='Oups, une erreur est survenue. Réessayez dans un instant.'; return; }
+  info.style.color='var(--vert-fonce)'; info.textContent='✅ Merci ! Votre idée est transmise au CASE, qui l\'étudie.';
+  ['tf_titre','tf_desc','tf_nom','tf_contact'].forEach(id=>g(id).value='');
 }
 /* ===== Plan « ce qui tourne / ce qui arrive » =====
    POUR METTRE À JOUR : modifier la liste PLAN ci-dessous.
