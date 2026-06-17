@@ -127,6 +127,7 @@
     <button data-tab="secretariat">🧰 Secrétariat</button>
     <button data-tab="equipe">📒 Équipe</button>
     <button data-tab="accompagnement">🤝 Accompagnement</button>
+    <button data-tab="rh">🧑‍💼 RH</button>
     <button data-tab="incidents">⚠️ Événements</button>
     <button data-tab="accounting">💶 Comptabilité</button>
     <button data-tab="caisse">💵 Caisse</button>
@@ -1277,6 +1278,70 @@
     </div>
   </section>
 
+  <!-- RH & ORGANISATION -->
+  <section id="rh" class="page">
+    <div class="panel" style="background:linear-gradient(135deg,#eef2fb,#f5f8ff);border:1px solid #d4ddf2">
+      <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap">
+        <div style="font-size:40px;flex:0 0 auto">🧑‍💼</div>
+        <div style="flex:1;min-width:220px">
+          <h2 style="margin:0 0 4px">RH &amp; Organisation</h2>
+          <p class="hint" style="margin:0">L'équipe, les fiches de poste, l'organisation que tu vises et les projets d'embauche — point de départ tiré du travail avec le DLA, à réajuster librement.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h3 style="margin:0 0 4px">🎯 Organisation cible</h3>
+      <p class="hint" style="margin:0 0 8px">Comment tu veux que ça tourne. Pré-rempli d'après le DLA (cartographie 7 piliers, clarification des rôles) — <strong>modifie librement, c'est enregistré dans le coffre du bureau</strong>.</p>
+      <textarea id="rhOrgCible" onchange="saveRhOrgCible()" style="width:100%;min-height:300px;font:inherit;padding:10px 12px;border:1px solid #e6ece7;border-radius:10px;resize:vertical;line-height:1.55">ORGANISATION CIBLE DU CASE (issue du travail avec le DLA — à réajuster)
+
+GOUVERNANCE (bénévole)
+• Président (Guillaume Boulevart) : stratégie, représentation, fonction employeur — à décharger progressivement de l'opérationnel (aujourd'hui ~4 piliers sur 7, jugé non soutenable par le DLA).
+• Trésorier (Guy Robert) : finances, dettes, subventions.
+• Secrétaire : poste à pourvoir (succession de Cynthia, actée à la prochaine AG).
+• Bureau à élargir : nouveaux administrateurs et bénévoles (cf. appel à candidatures).
+
+COORDINATION (salariée)
+• Kathy Maillot, coordinatrice : pivot de l'équipe, lien bureau/extérieur, appui administratif — à soutenir et former.
+
+ÉQUIPE
+• Sandrine Michel : référente périscolaire (programmation, encadrement, lien parents).
+• Fabrice Ramin : animation socioculturelle / conduite de projets (positionnement à statuer).
+
+CAP 12-18 MOIS
+• Identifier/recruter une direction (qualification BAFD) pour décharger le président de l'opérationnel.
+• Bureau bénévole au complet et pilotage réparti sur les 7 piliers (financier, administratif, équipe, RH, activités, communication, partenariats).</textarea>
+    </div>
+
+    <div class="panel">
+      <h3 style="margin:0 0 4px">🪪 Fiches de poste (salariés)</h3>
+      <p class="hint" style="margin:0 0 10px">Coefficients ÉCLAT en cours de validation avec Hexopée (cf. onglet Accompagnement).</p>
+      <table>
+        <thead><tr><th>Poste</th><th>Titulaire</th><th>Missions principales</th><th>Coeff ÉCLAT</th><th>Statut</th></tr></thead>
+        <tbody>
+          <tr><td>Coordination</td><td>Kathy Maillot</td><td>Coordination de l'équipe et des actions, lien bureau/extérieur, appui administratif</td><td>285-295 <span class="muted">(à valider)</span></td><td><span class="pill ok">En poste, à conforter</span></td></tr>
+          <tr><td>Référent·e périscolaire</td><td>Sandrine Michel</td><td>Programmation et encadrement périscolaire, goûters, lien avec les parents</td><td>257 → 265 <span class="muted">(PEC)</span></td><td><span class="pill ok">En poste (PEC)</span></td></tr>
+          <tr><td>Animation / projets</td><td>Fabrice Ramin</td><td>Animation socioculturelle, conduite de projets</td><td>285 <span class="muted">(si maintien)</span></td><td><span class="pill wait">Positionnement à statuer</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="panel">
+      <h3 style="margin:0 0 4px">📋 Projets d'embauche</h3>
+      <table>
+        <thead><tr><th>Projet</th><th>Pour quoi</th><th>Échéance / statut</th></tr></thead>
+        <tbody>
+          <tr><td>Poste PEC « matin »</td><td>Encadrer le périscolaire du matin (équilibre économique)</td><td><span class="pill wait">Rentrée août 2026</span></td></tr>
+          <tr><td>Animateurs ACM été</td><td>ACM 3 semaines (juillet/août)</td><td><span class="pill wait">À recruter</span></td></tr>
+          <tr><td>Service civique (binôme)</td><td>Média de quartier « Ôté Kartié » (via Unis-Cité)</td><td><span class="pill ok">En cours (11/06)</span></td></tr>
+          <tr><td>Direction (BAFD)</td><td>Décharger le président de l'opérationnel</td><td><span class="pill wait">Cap 12-18 mois</span></td></tr>
+          <tr><td>Paie / bascule comptable</td><td>Fiabiliser la paie</td><td><span class="pill wait">Fenêtre août/sept.</span></td></tr>
+        </tbody>
+      </table>
+      <p class="hint" style="margin:8px 0 0">Dis-moi ce que tu veux ajuster (rôles, coefficients, postes à créer) et je mets à jour.</p>
+    </div>
+  </section>
+
   <section id="aide" class="page">
     <div class="panel" style="background:linear-gradient(135deg,#eafaf2,#f3fbf6);border:1px solid #cdeede">
       <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap">
@@ -1345,7 +1410,7 @@ const uid = () => Date.now().toString(36)+Math.random().toString(36).slice(2,7);
 
 let db = load();
 function load(){ try{ return Object.assign(blank(), JSON.parse(localStorage.getItem(KEY))||{}); }catch(e){ return blank(); } }
-function blank(){ return {members:[],ops:[],projects:[],subventions:[],comptes:[],contacts:[],liens:[],docs:[],notes:[],echeances:[],reunions:[],incidents:[],dettes:[],recurrents:{},protocoles:[],contrats:[],accueilIntro:'',accompNotes:'',assurance:{},periscolaire:{enfants:[]}}; }
+function blank(){ return {members:[],ops:[],projects:[],subventions:[],comptes:[],contacts:[],liens:[],docs:[],notes:[],echeances:[],reunions:[],incidents:[],dettes:[],recurrents:{},protocoles:[],contrats:[],accueilIntro:'',accompNotes:'',rhOrgCible:'',assurance:{},periscolaire:{enfants:[]}}; }
 function save(){ jLog(); localStorage.setItem(KEY, JSON.stringify(db)); renderAll(); }
 
 /* ---- Historique (journal d'activité automatique, onglet réservé au bureau) ---- */
@@ -1428,6 +1493,8 @@ const FAQ=[
    a:"Onglet <b>🎒 Périscolaire</b>, panneau <b>📨 Dossiers d'inscription</b> (en bas). Chaque famille <b>adhérente</b> dépose son dossier depuis <b>son espace adhérent</b> : enfants (matin et/ou soir) et les pièces (attestation CAF de <b>moins de 3 mois</b>, avis d'imposition, justificatif de domicile, attestation d'assurance, vaccins à jour, livret de famille). Tu vois l'état des pièces, tu cliques pour <b>consulter</b> chacune, et tu marques le dossier <b>✅ Validé</b> ou <b>⚠️ Incomplet</b>. Seules les familles adhérentes (compte validé) peuvent déposer."},
   {cat:'🧰 Secrétariat',q:"Où sont les informations de l'assurance (MAIF) pour se connecter ?",kw:"assurance maif raqvam contrat sociétaire societaire cotisation garantie connexion identifiant mot de passe attestation sinistre responsabilite civile rc secretariat",
    a:"Onglet <b>🧰 Secrétariat</b>, panneau <b>🛡️ Assurance de l'association</b>. Tu y trouves le contrat : assureur <b>MAIF</b>, contrat <b>Raqvam</b> (réf. M4202RACA), cotisation 2026 de 1&nbsp;514,10&nbsp;€, les 4 sites assurés, les garanties, l'espace <b>espacepersonnel.maif.fr</b> et le <b>contact MAIF (09 78 97 98 99, gestionsocietaire@maif.fr)</b>. Le <b>n° de sociétaire</b> et l'<b>identifiant</b> de connexion se saisissent par le bureau (rangés dans le coffre privé, jamais publiés) ; le numéro figure sur l'avis d'échéance MAIF (dossier CASE/BDN/2026/Maif). 🔒 N'écris pas le mot de passe en clair : gestionnaire de mots de passe ou « identifiant/mot de passe oublié » sur le site MAIF."},
+  {cat:'🧑‍💼 RH',q:"Où je gère les RH : organisation cible, fiches de poste, embauches ?",kw:"rh ressources humaines organisation cible fiche de poste fiches poste embauche embauches recrutement coordination kathy sandrine fabrice coefficient eclat pec direction bafd equipe salaries piliers projet embauche",
+   a:"Onglet <strong>🧑‍💼 RH</strong> (réservé au bureau). Tu y trouves : l'<strong>organisation cible</strong> (zone modifiable — comment tu veux que ça tourne), les <strong>fiches de poste</strong> des salariés (missions + coefficient ÉCLAT) et les <strong>projets d'embauche</strong> (PEC matin, ACM été, service civique, direction). C'est un point de départ tiré du DLA : dis-moi ce que tu veux ajuster et je mets à jour."},
   {cat:'🤝 Accompagnement',q:"Où je retrouve l'accompagnement DLA, la Maison des Associations et la préparation des RDV ?",kw:"accompagnement dla charlotte verdure demele maison associations mda mdac aurelie gaudieux monbeig france active hexopee eclat elisfa neopale uniformation seance seances rdv rendez-vous diagnostic preparation suivi strategique conseillere",
    a:"Ouvre l'onglet <strong>🤝 Accompagnement</strong>. Tu y trouves : la fiche et la frise des 9 séances du <strong>DLA</strong> (Charlotte Verdure, Démêlé ESS), le diagnostic du CASE (séance 3) et le plan d'actions, la <strong>Maison Des Associations</strong>, les autres ressources (France Active, Hexopée, ELISFA, Uniformation…), et en bas le bloc <strong>Préparation du RDV</strong> avec le statut de tes actions, les demandes de Charlotte et une zone de notes de séance. Cet onglet est réservé au bureau."},
   {cat:'🎟️ Activités',q:"Comment afficher les places restantes et gérer les inscriptions sur le site ?",kw:"activite activites place places restantes capacite complet inscription inscriptions site public publier vitrine arrive bientot acm vepi danse musique",
@@ -1564,6 +1631,8 @@ const NEWS=[
    desc:"Les familles adhérentes déposent désormais leur dossier d'inscription au périscolaire (matin & soir, rentrée d'août) depuis leur espace adhérent : enfants + pièces (attestation CAF de moins de 3 mois, avis d'imposition, justificatif de domicile, assurance, vaccins, livret de famille), scannées depuis le téléphone. Tu les retrouves dans 🎒 Périscolaire → 📨 Dossiers d'inscription : consulte chaque pièce, marque le dossier ✅ Validé ou ⚠️ Incomplet. Seuls les adhérents (compte validé) peuvent déposer."},
   {id:'2026-06-17-assurance',date:'2026-06-17',tab:'🧰 Secrétariat',titre:'🛡️ Fiche Assurance (MAIF)',
    desc:"Nouveau panneau dans l'onglet 🧰 Secrétariat qui réunit le contrat d'assurance, à partir de l'avis d'échéance MAIF 2026 : assureur MAIF, contrat Raqvam (M4202RACA), cotisation 2026 (1 514,10 €), 4 sites assurés, garanties, espace espacepersonnel.maif.fr et contact (09 78 97 98 99 / gestionsocietaire@maif.fr). Le n° de sociétaire et l'identifiant de connexion se saisissent par le bureau et restent dans le coffre privé (jamais publiés) ; le mot de passe ne se met pas en clair."},
+  {id:'2026-06-17-rh',date:'2026-06-17',tab:'🧑‍💼 RH',titre:'🧑‍💼 Nouvel onglet RH & Organisation',
+   desc:"L'organisation que tu vises (zone modifiable), les fiches de poste des salariés (avec coefficients ÉCLAT) et les projets d'embauche (PEC matin, ACM été, service civique, direction). Point de départ tiré du DLA, à réajuster. Réservé au bureau."},
   {id:'2026-06-17-accompagnement',date:'2026-06-17',tab:'🤝 Accompagnement',titre:'🤝 Nouvel onglet Accompagnement',
    desc:"Tout l'accompagnement du CASE réuni au même endroit : le DLA (Charlotte Verdure / Démêlé ESS) avec la frise des 9 séances et le diagnostic, la Maison Des Associations, et les autres ressources (France Active, Hexopée, ELISFA, Uniformation…). En bas : la préparation des rendez-vous (statut de tes actions, demandes de Charlotte, notes de séance). Réservé au bureau."},
   {id:'2026-06-17-evenements',date:'2026-06-17',tab:'🎟️ Activités',titre:'📅 Événements (temps forts) dans la gestion',
@@ -3027,6 +3096,8 @@ function renderSalaries(){
 function saveAccueilIntro(){ db.accueilIntro=$('accueilIntro').value; save(); }
 function saveAccompNotes(){ db.accompNotes=$('accompNotes').value; save(); }
 function renderAccompagnement(){ const t=$('accompNotes'); if(t && document.activeElement!==t) t.value=db.accompNotes||''; }
+function saveRhOrgCible(){ db.rhOrgCible=$('rhOrgCible').value; save(); }
+function renderRH(){ const t=$('rhOrgCible'); if(t && db.rhOrgCible && document.activeElement!==t) t.value=db.rhOrgCible; }
 function saveAssurance(){ const g=id=>{ const e=$(id); return e?(e.value||''):''; }; db.assurance=Object.assign({}, db.assurance, {num:g('as_num').trim(), login:g('as_login').trim(), memo:g('as_memo')}); save(); }
 function renderAssurance(){ const a=db.assurance||{}; const f=(id,v)=>{ const el=$(id); if(el && document.activeElement!==el) el.value=v||''; }; f('as_num',a.num); f('as_login',a.login); f('as_memo',a.memo); }
 function addContrat(){
@@ -3068,7 +3139,7 @@ function renderProtocoles(){
 }
 function renderEquipe(){ const t=$('accueilIntro'); if(t && document.activeElement!==t) t.value=db.accueilIntro||''; renderSalaries(); renderContrats(); renderProtocoles(); }
 
-function renderAll(){ renderDashboard(); renderMembers(); renderRelances(); renderOps(); renderCaisse(); renderRapprochement(); renderProjects(); renderSubventions(); renderEcheancier(); renderBilan(); renderPrevisionnel(); renderEquipe(); renderRepertoire(); renderSecretariat(); renderAssurance(); renderReunions(); renderIncidents(); renderDettes(); renderOfficialLinks(); refreshComptes(); renderListParams(); renderJournal(); renderPeriscolaire(); renderFaqList(); renderNews(); renderAccompagnement(); }
+function renderAll(){ renderDashboard(); renderMembers(); renderRelances(); renderOps(); renderCaisse(); renderRapprochement(); renderProjects(); renderSubventions(); renderEcheancier(); renderBilan(); renderPrevisionnel(); renderEquipe(); renderRepertoire(); renderSecretariat(); renderAssurance(); renderReunions(); renderIncidents(); renderDettes(); renderOfficialLinks(); refreshComptes(); renderListParams(); renderJournal(); renderPeriscolaire(); renderFaqList(); renderNews(); renderAccompagnement(); renderRH(); }
 
 /* ---- Data import/export ---- */
 function exportJSON(){
@@ -3160,6 +3231,7 @@ renderAll();
     const perms=Object.assign({}, (myProfile.perms&&typeof myProfile.perms==='object')?myProfile.perms:{});
     if(!canWrite) perms.aide='cache'; // l'Aide « Demande à Zanana » est réservée au bureau
     if(!canWrite) perms.accompagnement='cache'; // Accompagnement : contenu sensible (RH, gouvernance) → bureau uniquement par défaut
+    if(!canWrite) perms.rh='cache'; // RH & Organisation : contenu sensible → bureau uniquement par défaut
     const css=[];
     document.querySelectorAll('nav.tabs button[data-tab]').forEach(b=>{
       const k=b.dataset.tab;
