@@ -118,6 +118,7 @@
     <button data-tab="members">👥 Adhérents</button>
     <button data-tab="periscolaire">🎒 Périscolaire</button>
     <button data-tab="activites">🎟️ Activités</button>
+    <button data-tab="lieux">🏠 Lieux</button>
     <button data-tab="projects">📁 Projets</button>
     <button data-tab="subventions">🏛️ Subventions</button>
     <button data-tab="repertoire">🗂️ Répertoire</button>
@@ -640,6 +641,29 @@
       </div>
     </div>
     <div id="actgList"></div>
+  </section>
+
+  <!-- LIEUX (gestion) -->
+  <section id="lieux" class="page">
+    <div class="panel">
+      <div class="toolbar"><div>
+        <h2 style="margin:0">🏠 Lieux</h2>
+        <p class="hint" style="margin:2px 0 0">Gère tes locaux : état (rénovation…), adresse, horaires, photo (lien), et publie-les sur le site. Le site affiche aussi les activités qui s'y déroulent (selon le champ « Lieu » de chaque activité). <button class="ghost btn" onclick="if(window.loadLieuxGestion)loadLieuxGestion()">↻ Rafraîchir</button></p>
+      </div></div>
+      <input type="hidden" id="lg_id">
+      <div class="row" style="flex-wrap:wrap;gap:10px;margin-top:8px">
+        <div class="field" style="min-width:160px"><label>Nom du lieu</label><input id="lg_nom" placeholder="Ex. Local des Bringelliers"></div>
+        <div class="field" style="min-width:160px"><label>État</label><input id="lg_etat" placeholder="Ouvert / En rénovation…"></div>
+        <div class="field" style="min-width:200px"><label>Description</label><input id="lg_desc" placeholder="Une phrase"></div>
+        <div class="field" style="min-width:180px"><label>Adresse</label><input id="lg_adresse" placeholder="132 Route des Ananas…"></div>
+        <div class="field" style="min-width:200px"><label>Horaires</label><input id="lg_horaires" placeholder="Lun → Ven…"></div>
+        <div class="field" style="min-width:220px"><label>Photo (lien URL)</label><input id="lg_photo" placeholder="https://…"></div>
+        <div class="field" style="flex:0;min-width:85px"><label>Ordre</label><input id="lg_ordre" type="number" value="0"></div>
+        <div class="field" style="flex:0;min-width:120px"><label>Sur le site ?</label><select id="lg_pub"><option value="1">Oui</option><option value="0">Non</option></select></div>
+        <div class="field" style="flex:0"><label>&nbsp;</label><button class="btn" id="lg_btn" onclick="addLieu()">+ Créer</button></div>
+      </div>
+    </div>
+    <div id="lieuxgList"></div>
   </section>
 
   <!-- BILAN -->
@@ -3421,6 +3445,59 @@ renderAll();
   window.delActivite=async function(id){ if(!confirm('Supprimer définitivement cette activité et ses inscriptions ?'))return; const {error}=await sbc.from('activites').delete().eq('id',id); if(error){alert(error.message);return;} loadActivitesGestion(); };
   window.delInscriptionActivite=async function(id){ if(!confirm('Retirer cette inscription ?'))return; const {error}=await sbc.from('inscriptions_activite').delete().eq('id',id); if(error){alert(error.message);return;} loadActivitesGestion(); };
 
+  /* ---- Gestion des Lieux (table lieux) + liaison vers les activités ---- */
+  window.loadLieuxGestion=async function(){
+    const box=document.getElementById('lieuxgList'); if(!box) return;
+    const [rl,ra]=await Promise.all([
+      sbc.from('lieux').select('*').order('ordre',{ascending:true}),
+      sbc.from('activites').select('nom,emoji,lieu,type').eq('type','activite')
+    ]);
+    if(rl.error){ box.innerHTML='<p class="hint" style="color:#c0392b">Erreur : '+esc(rl.error.message)+'</p>'; return; }
+    const lieux=rl.data||[], acts=ra.data||[];
+    if(!lieux.length){ box.innerHTML='<p class="hint">Aucun lieu pour le moment. Crée le premier ci-dessus 👆</p>'; return; }
+    box.innerHTML=lieux.map(L=>{
+      const mine=acts.filter(a=>(a.lieu||'')===L.nom);
+      let ctrl='';
+      if(canWrite){
+        ctrl='<div class="row" style="margin-top:10px;gap:8px;flex-wrap:wrap">'
+          +'<button class="ghost btn" onclick="setLieu(\''+L.id+'\',{publie:'+(L.publie?'false':'true')+'})">'+(L.publie?'🔒 Dépublier':'🌍 Publier sur le site')+'</button>'
+          +'<button class="ghost btn" onclick="editLieu(\''+L.id+'\')">✏️ Modifier</button>'
+          +(myProfile && myProfile.role==='president'?'<button class="ghost btn" style="color:#c0392b" onclick="delLieu(\''+L.id+'\')">🗑️ Supprimer</button>':'')
+          +'</div>';
+      }
+      return '<div class="panel" style="margin:10px 0;border-left:4px solid '+(L.publie?'#1f9d6b':'#bbb')+'">'
+        +'<div class="toolbar"><div><strong>🏠 '+esc(L.nom||'(sans nom)')+'</strong> '
+        +(L.etat?'<span class="pill" style="font-size:11px;background:#fff5da;color:#8a6400">'+esc(L.etat)+'</span> ':'')
+        +'<span class="pill" style="background:'+(L.publie?'#dff5e9':'#f1f1f1')+';color:'+(L.publie?'#127a51':'#777')+';font-size:11px">'+(L.publie?'🌍 En ligne':'🔒 Interne')+'</span>'
+        +'</div></div>'
+        +(L.description?'<p class="hint" style="margin:6px 0 0">'+esc(L.description)+'</p>':'')
+        +(L.adresse?'<p class="hint" style="margin:4px 0 0">📍 '+esc(L.adresse)+'</p>':'')
+        +(L.horaires?'<p class="hint" style="margin:4px 0 0">🕒 '+esc(L.horaires)+'</p>':'')
+        +'<p class="hint" style="margin:6px 0 0"><b>Activités ici :</b> '+(mine.length?mine.map(a=>esc((a.emoji?a.emoji+' ':'')+a.nom)).join(' · '):'<em>aucune (mets ce lieu dans le champ « Lieu » d\'une activité)</em>')+'</p>'
+        +ctrl
+        +'</div>';
+    }).join('');
+  };
+  function lgReset(){ const g=id=>document.getElementById(id); ['lg_id','lg_nom','lg_etat','lg_desc','lg_adresse','lg_horaires','lg_photo'].forEach(k=>{ if(g(k)) g(k).value=''; }); if(g('lg_ordre'))g('lg_ordre').value='0'; if(g('lg_pub'))g('lg_pub').value='1'; const b=g('lg_btn'); if(b) b.textContent='+ Créer'; }
+  window.addLieu=async function(){
+    const g=id=>document.getElementById(id);
+    const nom=g('lg_nom').value.trim(); if(!nom){ alert('Indique le nom du lieu.'); return; }
+    const rec={ asso_id:myAsso, nom, etat:g('lg_etat').value.trim(), description:g('lg_desc').value.trim(), adresse:g('lg_adresse').value.trim(), horaires:g('lg_horaires').value.trim(), photo_url:g('lg_photo').value.trim(), ordre:parseInt(g('lg_ordre').value,10)||0, publie:g('lg_pub').value==='1' };
+    const id=g('lg_id').value;
+    const {error}= id ? await sbc.from('lieux').update(rec).eq('id',id) : await sbc.from('lieux').insert(rec);
+    if(error){ alert(error.message); return; }
+    lgReset(); loadLieuxGestion();
+  };
+  window.setLieu=async function(id,patch){ const {error}=await sbc.from('lieux').update(patch).eq('id',id); if(error){alert(error.message);return;} loadLieuxGestion(); };
+  window.editLieu=async function(id){
+    const {data,error}=await sbc.from('lieux').select('*').eq('id',id).single();
+    if(error||!data){ alert('Lieu introuvable'); return; }
+    const g=k=>document.getElementById(k);
+    g('lg_id').value=data.id; g('lg_nom').value=data.nom||''; g('lg_etat').value=data.etat||''; g('lg_desc').value=data.description||''; g('lg_adresse').value=data.adresse||''; g('lg_horaires').value=data.horaires||''; g('lg_photo').value=data.photo_url||''; g('lg_ordre').value=data.ordre||0; g('lg_pub').value=data.publie?'1':'0';
+    g('lg_btn').textContent='Enregistrer'; g('lg_nom').focus(); g('lg_nom').scrollIntoView({behavior:'smooth',block:'center'});
+  };
+  window.delLieu=async function(id){ if(!confirm('Supprimer ce lieu ?'))return; const {error}=await sbc.from('lieux').delete().eq('id',id); if(error){alert(error.message);return;} loadLieuxGestion(); };
+
   // Chat interne FLOTTANT (bulle en bas à droite + badge non-lus + panneau)
   let chatSeen=0, chatOpen=false, lastUnread=0;
   const chatSeenKey=()=>'chat_seen_'+myAsso+'_'+myProfile.id;
@@ -3634,6 +3711,8 @@ renderAll();
     const ab=document.querySelector('nav.tabs button[data-tab="ateliers"]'); if(ab) ab.addEventListener('click',()=>{ if(window.loadAteliers) loadAteliers(); });
     if(window.loadAteliers) loadAteliers();
     const cb=document.querySelector('nav.tabs button[data-tab="activites"]'); if(cb) cb.addEventListener('click',()=>{ if(window.loadActivitesGestion) loadActivitesGestion(); });
+    const lgb=document.querySelector('nav.tabs button[data-tab="lieux"]'); if(lgb) lgb.addEventListener('click',()=>{ if(window.loadLieuxGestion) loadLieuxGestion(); });
+    if(window.loadLieuxGestion) loadLieuxGestion();
     if(window.loadActivitesGestion) loadActivitesGestion();
     const peb=document.querySelector('nav.tabs button[data-tab="periscolaire"]'); if(peb) peb.addEventListener('click',()=>{ if(window.loadDossiersPeri) loadDossiersPeri(); });
     if(window.loadDossiersPeri) loadDossiersPeri();

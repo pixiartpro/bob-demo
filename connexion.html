@@ -89,7 +89,7 @@ const ROLES={
   adherent:{label:'Adhérent',pill:'ok',perm:"Accès à l'espace adhérent uniquement"}
 };
 const STATUTS={en_attente:{label:'En attente de validation',pill:'wait'},actif:{label:'Actif',pill:'ok'},suspendu:{label:'Suspendu',pill:'off'}};
-const MODULES=[['dashboard','Tableau de bord'],['members','Adhérents'],['periscolaire','Périscolaire'],['activites','Activités & places'],['projects','Projets'],['subventions','Subventions'],['repertoire','Répertoire'],['ateliers','Ateliers'],['secretariat','Secrétariat'],['incidents','Événements'],['accounting','Comptabilité'],['caisse','Caisse'],['dettes','Dettes & créances'],['bilan','Bilan'],['data','Données']];
+const MODULES=[['dashboard','Tableau de bord'],['members','Adhérents'],['periscolaire','Périscolaire'],['activites','Activités & places'],['lieux','Lieux'],['projects','Projets'],['subventions','Subventions'],['repertoire','Répertoire'],['ateliers','Ateliers'],['secretariat','Secrétariat'],['incidents','Événements'],['accounting','Comptabilité'],['caisse','Caisse'],['dettes','Dettes & créances'],['bilan','Bilan'],['data','Données']];
 let myProfile=null, adminProfiles=[];
 
 function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('show');clearTimeout(t._tm);t._tm=setTimeout(()=>t.classList.remove('show'),3200)}
