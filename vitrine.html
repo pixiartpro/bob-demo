@@ -29,6 +29,10 @@
   nav.main{margin-left:auto;display:flex;gap:6px;align-items:center;flex-wrap:wrap}
   nav.main a{padding:8px 12px;border-radius:10px;font-weight:600;font-size:14px;text-decoration:none;color:var(--muted)}
   nav.main a:hover{color:var(--ink);background:#f0f7f3}
+  .nav-sep{width:1px;height:22px;background:var(--line);margin:0 6px;align-self:center;flex:0 0 auto}
+  nav.main a.navpill{border:1.5px solid var(--line);border-radius:999px;padding:7px 13px}
+  nav.main a.navpill:hover{border-color:var(--vert);color:var(--vert);background:#fff}
+  @media(max-width:760px){.nav-sep{display:none}nav.main a.navpill{border:none;border-radius:10px;padding:12px}}
   .burger{display:none;margin-left:auto;background:#f0f7f3;border:none;border-radius:10px;font-size:22px;line-height:1;padding:8px 13px;cursor:pointer;color:var(--ink)}
   @media(max-width:760px){
     .burger{display:block}
@@ -202,11 +206,12 @@
       <a href="#activites">Nos activités</a>
       <a href="#ados">Ados</a>
       <a href="#horaires">Horaires</a>
-      <a href="#contact">Contact</a>
       <a href="#ateliers">💡 Ateliers</a>
       <a href="#partenaires">🤝 Partenaires</a>
-      <a href="espace-adherent.html">🪙 Espace adhérent</a>
-      <a href="connexion.html">🔐 Espace bureau</a>
+      <a href="#contact">Contact</a>
+      <span class="nav-sep"></span>
+      <a href="espace-adherent.html" class="navpill">🪙 Espace adhérent</a>
+      <a href="connexion.html" class="navpill">🔐 Espace bureau</a>
       <a href="#adhesion" class="btn primary">Devenir adhérent</a>
     </nav>
   </div>
@@ -239,23 +244,7 @@
   </div>
 </section>
 
-<!-- ACCÈS RAPIDE (tuiles cliquables) -->
-<section class="block bg-w" id="acces" style="padding-top:6px">
-  <div class="wrap">
-    <p class="eyebrow">Accès rapide</p>
-    <h2 class="title" style="margin-bottom:18px">Que cherchez-vous ? 👇</h2>
-    <div class="tiles">
-      <a class="tile" href="#adhesion"><img class="ticoimg" src="img/tile-adherer.png" alt=""><b>Adhérer / s'inscrire</b></a>
-      <a class="tile" href="#activites"><img class="ticoimg" src="img/tile-activites.png" alt=""><b>Nos activités</b></a>
-      <a class="tile" href="#ados"><img class="ticoimg" src="img/tile-ados.png" alt=""><b>Espace ados</b></a>
-      <a class="tile" href="#horaires"><img class="ticoimg" src="img/tile-horaires.png" alt=""><b>Horaires &amp; lieux</b></a>
-      <a class="tile" href="espace-adherent.html"><img class="ticoimg" src="img/tile-adherent.png" alt=""><b>Espace adhérent</b></a>
-      <a class="tile" href="#contact"><img class="ticoimg" src="img/tile-contact.png" alt=""><b>Nous contacter</b></a>
-      <a class="tile" href="#partenaires"><img class="ticoimg" src="img/tile-partenaires.png" alt=""><b>Devenir partenaire</b></a>
-      <a class="tile" href="connexion.html"><img class="ticoimg" src="img/tile-bureau.png" alt=""><b>Espace bureau</b></a>
-    </div>
-  </div>
-</section>
+<!-- (Section « Accès rapide » retirée : tout est désormais dans le menu du haut) -->
 
 <!-- LE PROJET : CE QUI TOURNE / CE QUI ARRIVE -->
 <section class="block bg-sun" id="plan">
