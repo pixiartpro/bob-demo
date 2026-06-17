@@ -532,7 +532,7 @@
     </div>
 
     <div class="panel" id="simuGarderie">
-      <h2 style="margin:0 0 4px">📐 Simulateur de nouvelle activité — garderie du matin</h2>
+      <h2 style="margin:0 0 4px">📐 Simulateur de nouvelle activité — périscolaire du matin</h2>
       <p class="hint">Pour répondre à « est-ce que ça vaut le coup, et à quel tarif ? » : ajuste les chiffres ci-dessous, Bob recalcule tout en direct. <strong>Aucune écriture n'est créée en compta</strong> — c'est une simulation. Rappel de la grille actuelle (2025) : le périscolaire est facturé <strong>par jour selon le quotient familial</strong>, de 3,14 € (tranche 1) à 7,43 € (tranche 10), 8,25 € hors commune, −5 % par enfant supplémentaire. Le « tarif » ci-dessous = le <strong>supplément matin</strong> moyen ajouté à ce tarif jour.</p>
 
       <h3 style="margin:14px 0 6px;font-size:15px;color:#c0392b">Ce que ça coûte</h3>
@@ -604,6 +604,14 @@
       <table style="margin-top:12px"><thead><tr><th>Enfant</th><th>Responsable</th><th>Tranche</th><th>Formule</th><th class="num">Par mois</th><th></th></tr></thead>
         <tbody id="periEnfRows"></tbody></table>
     </div>
+
+    <div class="panel">
+      <div class="toolbar"><div>
+        <h2 style="margin:0">📨 Dossiers d'inscription périscolaire (familles)</h2>
+        <p class="hint" style="margin:2px 0 0">Dossiers déposés par les familles <strong>adhérentes</strong> depuis leur espace (enfants + pièces : CAF, assurance, vaccins…). Clique sur une pièce pour la consulter, puis valide ou signale un dossier incomplet.</p>
+      </div><button class="ghost btn" onclick="if(window.loadDossiersPeri)loadDossiersPeri()">↻ Rafraîchir</button></div>
+      <div id="periDossiersList" style="margin-top:8px"><p class="hint">Chargement…</p></div>
+    </div>
   </section>
 
   <!-- ACTIVITÉS & PLACES (gestion du public) -->
@@ -613,16 +621,22 @@
         <h2 style="margin:0">🎟️ Activités &amp; places</h2>
         <p class="hint" style="margin:2px 0 0">Crée les activités proposées au public, fixe leur <strong>capacité</strong>, publie-les sur le site, et vois les <strong>inscriptions</strong>. Le site affiche en direct « X places restantes / complet / arrive bientôt ». <button class="ghost btn" onclick="if(window.loadActivitesGestion)loadActivitesGestion()">↻ Rafraîchir</button></p>
       </div></div>
+      <input type="hidden" id="ag_id">
       <div class="row" style="flex-wrap:wrap;gap:10px;margin-top:8px">
-        <div class="field" style="min-width:150px"><label>Nom</label><input id="ag_nom" placeholder="Ex. Danse"></div>
+        <div class="field" style="flex:0;min-width:150px"><label>Type</label><select id="ag_type"><option value="activite">Activité</option><option value="evenement">Événement (temps fort)</option></select></div>
+        <div class="field" style="min-width:150px"><label>Nom</label><input id="ag_nom" placeholder="Ex. Danse / Fête de la musique"></div>
         <div class="field" style="flex:0;min-width:80px"><label>Emoji</label><input id="ag_emoji" placeholder="💃"></div>
-        <div class="field" style="min-width:150px"><label>Catégorie</label><input id="ag_cat" placeholder="Culture & loisirs"></div>
+        <div class="field" style="min-width:150px"><label>Catégorie</label><input id="ag_cat" placeholder="Culture & loisirs / Temps forts"></div>
         <div class="field" style="min-width:190px"><label>Description (courte)</label><input id="ag_desc" placeholder="Une ligne"></div>
         <div class="field" style="flex:0;min-width:95px"><label>Capacité</label><input id="ag_cap" type="number" min="0" value="20"></div>
-        <div class="field" style="flex:0;min-width:140px"><label>Statut</label><select id="ag_statut"><option value="ouvert">Ouvert</option><option value="bientot">Arrive bientôt</option></select></div>
+        <div class="field" style="flex:0;min-width:150px"><label>Date (événement)</label><input id="ag_date" type="date"></div>
+        <div class="field" style="min-width:160px"><label>Quand (si pas de date)</label><input id="ag_quand" placeholder="Ex. Septembre (à confirmer)"></div>
+        <div class="field" style="min-width:150px"><label>Lieu</label><input id="ag_lieu" placeholder="CASE Bois de Nèfles"></div>
+        <div class="field" style="min-width:200px"><label>Programme (événement)</label><input id="ag_programme" placeholder="Ce qui est prévu"></div>
+        <div class="field" style="flex:0;min-width:140px"><label>Statut</label><select id="ag_statut"><option value="ouvert">Ouvert</option><option value="bientot">Arrive bientôt</option><option value="archive">Archivé</option></select></div>
         <div class="field" style="flex:0;min-width:120px"><label>Sur le site ?</label><select id="ag_pub"><option value="1">Oui</option><option value="0">Non</option></select></div>
         <div class="field" style="flex:0;min-width:85px"><label>Ordre</label><input id="ag_ordre" type="number" value="0"></div>
-        <div class="field" style="flex:0"><label>&nbsp;</label><button class="btn" onclick="addActivite()">+ Créer</button></div>
+        <div class="field" style="flex:0"><label>&nbsp;</label><button class="btn" id="ag_btn" onclick="addActivite()">+ Créer</button></div>
       </div>
     </div>
     <div id="actgList"></div>
@@ -738,6 +752,25 @@
         <div class="field" style="flex:0"><label>&nbsp;</label><button class="btn" onclick="addEcheance()">Ajouter</button></div>
       </div>
       <div id="echeanceList" style="margin-top:12px"></div>
+    </div>
+    <div class="panel" style="border:2px solid var(--brand)">
+      <h2>🛡️ Assurance de l'association</h2>
+      <p class="hint">Toutes les infos du contrat d'assurance réunies pour le bureau. Les références ci-dessous ont été retrouvées dans les documents du CASE (compte-rendu du 13/06/2025, conditions générales Raqvam, écritures comptables 2026).</p>
+      <div class="kv"><span><strong>Assureur</strong></span><span>MAIF</span></div>
+      <div class="kv"><span><strong>Contrat</strong></span><span>Raqvam Associations / Collectivités — réf. produit M4202RACA</span></div>
+      <div class="kv"><span><strong>Date d'effet</strong></span><span>1ᵉʳ janvier 2024</span></div>
+      <div class="kv"><span><strong>Cotisation 2026</strong></span><span>1&nbsp;564,49&nbsp;€ — prélevée le 09/02/2026 (pièce FON-2026-01-0021)</span></div>
+      <div class="kv"><span><strong>Garanties couvertes</strong></span><span>Périscolaire, bénévoles, personnel permanent et occasionnel, contrats d'insertion</span></div>
+      <div class="kv"><span><strong>Contact MAIF</strong></span><span>Tél. 3442 · <a href="https://www.maif.fr" target="_blank" rel="noopener">maif.fr</a> · societaire@maif.fr</span></div>
+      <p class="hint" style="margin-top:16px"><strong>À compléter par le bureau</strong> — ces infos ne figurent dans aucun document, c'est à toi de les renseigner :</p>
+      <div class="row">
+        <div class="field"><label>N° de sociétaire / contrat</label><input id="as_num" placeholder="Sur l'attestation ou l'avis d'échéance MAIF" onchange="saveAssurance()"></div>
+        <div class="field"><label>Identifiant de l'espace en ligne (maif.fr)</label><input id="as_login" placeholder="L'identifiant de connexion" onchange="saveAssurance()"></div>
+      </div>
+      <div class="row" style="margin-top:10px">
+        <div class="field"><label>Mémo de connexion / notes</label><textarea id="as_memo" rows="3" style="width:100%;font:inherit;padding:10px;border:1px solid var(--line);border-radius:9px;resize:vertical" placeholder="Notes utiles : interlocuteur MAIF, n° de devis en cours, démarches…" onchange="saveAssurance()"></textarea></div>
+      </div>
+      <p class="hint" style="margin-top:6px">🔒 Pour le <strong>mot de passe</strong>, évite de l'écrire ici en clair : utilise plutôt un gestionnaire de mots de passe, ou la fonction « mot de passe oublié » sur maif.fr au moment de te connecter. <em>Action en cours (CR du 13/06/2025) : demander à la MAIF l'attestation 2025 et réactualiser le contrat selon les activités réelles.</em></p>
     </div>
     <div class="panel">
       <h2>✉️ Modèles de courriers</h2>
@@ -1198,7 +1231,7 @@ const uid = () => Date.now().toString(36)+Math.random().toString(36).slice(2,7);
 
 let db = load();
 function load(){ try{ return Object.assign(blank(), JSON.parse(localStorage.getItem(KEY))||{}); }catch(e){ return blank(); } }
-function blank(){ return {members:[],ops:[],projects:[],subventions:[],comptes:[],contacts:[],liens:[],docs:[],notes:[],echeances:[],reunions:[],incidents:[],dettes:[],recurrents:{},protocoles:[],contrats:[],accueilIntro:'',accompNotes:'',periscolaire:{enfants:[]}}; }
+function blank(){ return {members:[],ops:[],projects:[],subventions:[],comptes:[],contacts:[],liens:[],docs:[],notes:[],echeances:[],reunions:[],incidents:[],dettes:[],recurrents:{},protocoles:[],contrats:[],accueilIntro:'',accompNotes:'',assurance:{},periscolaire:{enfants:[]}}; }
 function save(){ jLog(); localStorage.setItem(KEY, JSON.stringify(db)); renderAll(); }
 
 /* ---- Historique (journal d'activité automatique, onglet réservé au bureau) ---- */
@@ -1277,6 +1310,10 @@ document.querySelectorAll('nav.tabs button').forEach(b=>{
 
 /* ---- Aide : « Demande à Zanana » (FAQ + assistant par mots-clés, sans IA) ---- */
 const FAQ=[
+  {cat:'🎒 Périscolaire',q:"Où je vois les dossiers d'inscription périscolaire déposés par les familles ?",kw:"periscolaire inscription dossier dossiers famille familles piece pieces caf assurance vaccin livret avis imposition justificatif domicile depose adherent matin soir rentree aout scan coffre",
+   a:"Onglet <b>🎒 Périscolaire</b>, panneau <b>📨 Dossiers d'inscription</b> (en bas). Chaque famille <b>adhérente</b> dépose son dossier depuis <b>son espace adhérent</b> : enfants (matin et/ou soir) et les pièces (attestation CAF de <b>moins de 3 mois</b>, avis d'imposition, justificatif de domicile, attestation d'assurance, vaccins à jour, livret de famille). Tu vois l'état des pièces, tu cliques pour <b>consulter</b> chacune, et tu marques le dossier <b>✅ Validé</b> ou <b>⚠️ Incomplet</b>. Seules les familles adhérentes (compte validé) peuvent déposer."},
+  {cat:'🧰 Secrétariat',q:"Où sont les informations de l'assurance (MAIF) pour se connecter ?",kw:"assurance maif raqvam contrat sociétaire societaire cotisation garantie connexion identifiant mot de passe attestation sinistre responsabilite civile rc secretariat",
+   a:"Onglet <b>🧰 Secrétariat</b>, panneau <b>🛡️ Assurance de l'association</b>. Tu y trouves les références retrouvées dans les documents du CASE : assureur <b>MAIF</b>, contrat <b>Raqvam Associations / Collectivités</b> (réf. M4202RACA), date d'effet 01/01/2024, cotisation 2026 de 1&nbsp;564,49&nbsp;€, les garanties couvertes et le <b>contact MAIF (tél. 3442, maif.fr)</b>. Plus bas, complète toi-même le <b>n° de sociétaire/contrat</b> et l'<b>identifiant de l'espace en ligne</b> (ils ne sont dans aucun document). 🔒 N'écris pas le mot de passe en clair : utilise un gestionnaire de mots de passe ou « mot de passe oublié » sur maif.fr."},
   {cat:'🤝 Accompagnement',q:"Où je retrouve l'accompagnement DLA, la Maison des Associations et la préparation des RDV ?",kw:"accompagnement dla charlotte verdure demele maison associations mda mdac aurelie gaudieux monbeig france active hexopee eclat elisfa neopale uniformation seance seances rdv rendez-vous diagnostic preparation suivi strategique conseillere",
    a:"Ouvre l'onglet <strong>🤝 Accompagnement</strong>. Tu y trouves : la fiche et la frise des 9 séances du <strong>DLA</strong> (Charlotte Verdure, Démêlé ESS), le diagnostic du CASE (séance 3) et le plan d'actions, la <strong>Maison Des Associations</strong>, les autres ressources (France Active, Hexopée, ELISFA, Uniformation…), et en bas le bloc <strong>Préparation du RDV</strong> avec le statut de tes actions, les demandes de Charlotte et une zone de notes de séance. Cet onglet est réservé au bureau."},
   {cat:'🎟️ Activités',q:"Comment afficher les places restantes et gérer les inscriptions sur le site ?",kw:"activite activites place places restantes capacite complet inscription inscriptions site public publier vitrine arrive bientot acm vepi danse musique",
@@ -1339,7 +1376,7 @@ const FAQ=[
    a:"Le bloc <b>🚨 Alertes importantes</b> du tableau de bord surveille tout seul : <b>solde négatif</b> (global, banque ou caisse), <b>échéances de dettes</b> à moins de 14 jours ou en retard (ex. URSSAF), et <b>fins d'aides au poste</b> (PEC) à moins de 90 jours pour anticiper le surcoût. Il n'apparaît que s'il y a quelque chose à traiter — pas de bloc = tout va bien."},
   {cat:'🔮 Prévisionnel',q:"À quoi sert le prévisionnel ?",kw:"previsionnel budget projection prevision fin annee estimer decembre recurrent futur anticiper",
    a:"Onglet <b>🔮 Prévisionnel</b> : Bob projette le budget jusqu'au 31 décembre. Coche <b>« récurrent »</b> pour les lignes qui reviennent chaque mois (loyer, charges…) : elles sont prolongées automatiquement. Les subventions à venir sont estimées selon leur statut."},
-  {cat:'🔮 Prévisionnel',q:"Comment savoir si la garderie du matin est rentable et combien ajouter à la grille tarifaire ?",kw:"simulateur garderie matin rentable rentabilite tarif supplement equilibre point mort enfants nouvelle activite cout calcul grille tarifaire quotient familial",
+  {cat:'🔮 Prévisionnel',q:"Comment savoir si le périscolaire du matin est rentable et combien ajouter à la grille tarifaire ?",kw:"simulateur garderie periscolaire matin rentable rentabilite tarif supplement equilibre point mort enfants nouvelle activite cout calcul grille tarifaire quotient familial",
    a:"Onglet <b>🔮 Prévisionnel</b>, panneau <b>📐 Simulateur</b> (tout en bas). Important : on ne compte que l'argent <b>nouveau</b> — un enfant déjà inscrit le soir qui vient aussi le matin ne rapporte que le <b>supplément matin</b> qu'on lui facture ; un <b>nouvel enfant</b> rapporte son tarif jour complet. Renseigne les deux groupes, les heures et le coût de l'animateur : Bob calcule le coût annuel, les recettes nouvelles, le résultat et le <b>supplément d'équilibre</b> à ajouter au tarif jour de la grille (3,14 € à 7,43 € selon quotient familial). Clique sur <b>« 💾 Garder ces hypothèses »</b> pour les partager avec le bureau. C'est une simulation : rien n'est écrit en compta."},
   {cat:'🧰 Secrétariat',q:"Où je note les choses à ne pas oublier (assurance, AG, déclarations) ?",kw:"secretariat echeancier general date oubli assurance ag declaration contrat rappel agenda memo penser",
    a:"Onglet <b>🧰 Secrétariat</b> → <b>Échéancier général</b> : note les dates importantes (renouvellement d'assurance, déclarations, AG, contrats…). Les échéances proches s'affichent aussi sur le tableau de bord. Le <b>Mémo du bureau</b> sert de pense-bête partagé."},
@@ -1409,8 +1446,14 @@ function renderFaqList(){
 
 /* ---- ✨ Quoi de neuf (nouveautés + notice chronologique) ---- */
 const NEWS=[
+  {id:'2026-06-17-peri-dossiers',date:'2026-06-17',tab:'🎒 Périscolaire',titre:'📨 Dossiers d\'inscription en ligne',
+   desc:"Les familles adhérentes déposent désormais leur dossier d'inscription au périscolaire (matin & soir, rentrée d'août) depuis leur espace adhérent : enfants + pièces (attestation CAF de moins de 3 mois, avis d'imposition, justificatif de domicile, assurance, vaccins, livret de famille), scannées depuis le téléphone. Tu les retrouves dans 🎒 Périscolaire → 📨 Dossiers d'inscription : consulte chaque pièce, marque le dossier ✅ Validé ou ⚠️ Incomplet. Seuls les adhérents (compte validé) peuvent déposer."},
+  {id:'2026-06-17-assurance',date:'2026-06-17',tab:'🧰 Secrétariat',titre:'🛡️ Fiche Assurance (MAIF)',
+   desc:"Nouveau panneau dans l'onglet 🧰 Secrétariat qui réunit les infos du contrat d'assurance : assureur MAIF, contrat Raqvam Associations (réf. M4202RACA), date d'effet 01/01/2024, cotisation 2026 (1 564,49 €), garanties couvertes et contact MAIF (3442 / maif.fr). À compléter par le bureau : le n° de sociétaire et l'identifiant de l'espace en ligne. Le mot de passe ne se met pas en clair (gestionnaire de mots de passe / « mot de passe oublié »)."},
   {id:'2026-06-17-accompagnement',date:'2026-06-17',tab:'🤝 Accompagnement',titre:'🤝 Nouvel onglet Accompagnement',
    desc:"Tout l'accompagnement du CASE réuni au même endroit : le DLA (Charlotte Verdure / Démêlé ESS) avec la frise des 9 séances et le diagnostic, la Maison Des Associations, et les autres ressources (France Active, Hexopée, ELISFA, Uniformation…). En bas : la préparation des rendez-vous (statut de tes actions, demandes de Charlotte, notes de séance). Réservé au bureau."},
+  {id:'2026-06-17-evenements',date:'2026-06-17',tab:'🎟️ Activités',titre:'📅 Événements (temps forts) dans la gestion',
+   desc:"L'onglet 🎟️ Activités gère aussi les ÉVÉNEMENTS : choisis le type « Événement », mets une date (ou « Quand » si pas encore fixée), un lieu et un programme. Ils s'affichent sur le site dans « Temps forts » (les passés se masquent tout seuls, les sans-date passent en « date à venir »). Bouton ✏️ Modifier pour éditer une fiche complète."},
   {id:'2026-06-16-activites',date:'2026-06-16',tab:'🎟️ Activités',titre:'🎟️ Activités & places restantes',
    desc:"Nouvel onglet pour gérer les activités proposées au public : fixe la capacité, publie sur le site, vois les inscriptions. Le site affiche en direct « X places restantes », « complet » ou « arrive bientôt » (ACM/VEPI). Les inscriptions du public arrivent automatiquement ici."},
   {id:'2026-06-16-peri',date:'2026-06-16',tab:'🎒 Périscolaire',titre:'🎒 Nouvel onglet Périscolaire',
@@ -1425,7 +1468,7 @@ const NEWS=[
    desc:"Dès qu'un exercice précédent contient des écritures, des colonnes N−1 et Évolution % apparaissent sur chaque ligne du bilan, et le résultat de l'an dernier s'affiche sous celui de l'année."},
   {id:'2026-06-12-ms',date:'2026-06-12',tab:'📒 Équipe',titre:'💰 Masse salariale',
    desc:"Saisis chaque salarié avec son bulletin (brut horaire, heures, % charges, aide PEC) : Bob calcule le coût employeur au mois et à l'année, le reste à charge réel de l'asso et le coût horaire chargé."},
-  {id:'2026-06-12-simu',date:'2026-06-12',tab:'🔮 Prévisionnel',titre:'📐 Simulateur garderie du matin',
+  {id:'2026-06-12-simu',date:'2026-06-12',tab:'🔮 Prévisionnel',titre:'📐 Simulateur périscolaire du matin',
    desc:"Est-ce rentable, et combien ajouter à la grille tarifaire ? Le simulateur ne compte que l'argent nouveau (supplément des déjà-inscrits + nouveaux enfants) et donne le supplément d'équilibre. Bouton 💾 pour partager tes hypothèses avec le bureau."},
 ];
 function newsLus(){ try{ return JSON.parse(localStorage.getItem('bob_news_lus')||'[]'); }catch(e){ return []; } }
@@ -2679,7 +2722,7 @@ function renderPrevisionnel(){
   renderSimuGarderie();
 }
 
-/* ---- Simulateur garderie du matin (onglet Prévisionnel) ---- */
+/* ---- Simulateur périscolaire du matin (onglet Prévisionnel) ---- */
 const SG_DEFAUTS={matins:4,duree:1,sem:36,anim:1,ch:14,aide:0,autres:0,enf:10,tarif:1.5,enfnew:0,tarifnew:4.5,caf:0};
 let sgCharge=false;
 function sgVals(){
@@ -2713,7 +2756,7 @@ function renderSimuGarderie(){
   let verdict;
   if(totEnf===0){ verdict=`Indique un nombre d'enfants (déjà inscrits et/ou nouveaux) pour lancer le calcul.`; }
   else if(res>=0){
-    verdict=`✅ <strong>À l'équilibre ou rentable</strong> : la garderie du matin dégage environ <strong>${euro(res)} / an</strong> avec ${v.enf>0?`<strong>${v.enf} déjà-inscrits</strong> payant un supplément de ${euro(v.tarif)} / matin`:''}${v.enf>0&&v.enfnew>0?' et ':''}${v.enfnew>0?`<strong>${v.enfnew} nouveaux enfants</strong> à ${euro(v.tarifnew)} / jour`:''}. Pour garder la logique sociale de la grille, le supplément peut être réparti en % du tarif jour de chaque tranche plutôt qu'en montant unique.`;
+    verdict=`✅ <strong>À l'équilibre ou rentable</strong> : le périscolaire du matin dégage environ <strong>${euro(res)} / an</strong> avec ${v.enf>0?`<strong>${v.enf} déjà-inscrits</strong> payant un supplément de ${euro(v.tarif)} / matin`:''}${v.enf>0&&v.enfnew>0?' et ':''}${v.enfnew>0?`<strong>${v.enfnew} nouveaux enfants</strong> à ${euro(v.tarifnew)} / jour`:''}. Pour garder la logique sociale de la grille, le supplément peut être réparti en % du tarif jour de chaque tranche plutôt qu'en montant unique.`;
   } else {
     verdict=`❌ <strong>Déficitaire de ${euro(-res)} / an</strong> dans ces conditions. Leviers pour atteindre l'équilibre : ${v.enf>0?`porter le supplément des déjà-inscrits à <strong>${euro(tarifEq)} / matin</strong>`:''}${v.enf>0&&newEq>0?', ou ':''}${newEq>0?`compter <strong>${newEq} nouveaux enfants</strong> au tarif saisi`:''}. Pense aussi à l'aide CAF (PSO) et au % d'aide PEC sur le poste : renseigne-les dès que les montants sont confirmés.`;
   }
@@ -2870,6 +2913,8 @@ function renderSalaries(){
 function saveAccueilIntro(){ db.accueilIntro=$('accueilIntro').value; save(); }
 function saveAccompNotes(){ db.accompNotes=$('accompNotes').value; save(); }
 function renderAccompagnement(){ const t=$('accompNotes'); if(t && document.activeElement!==t) t.value=db.accompNotes||''; }
+function saveAssurance(){ db.assurance=Object.assign({}, db.assurance, {num:($('as_num').value||'').trim(), login:($('as_login').value||'').trim(), memo:$('as_memo').value||''}); save(); }
+function renderAssurance(){ const a=db.assurance||{}; const f=(id,v)=>{ const el=$(id); if(el && document.activeElement!==el) el.value=v||''; }; f('as_num',a.num); f('as_login',a.login); f('as_memo',a.memo); }
 function addContrat(){
   const type=$('ct_type').value.trim(); if(!type){ alert('Indique le statut / contrat.'); return; }
   db.contrats=db.contrats||[]; db.contrats.push({id:uid(),type,description:$('ct_desc').value.trim()});
@@ -2909,7 +2954,7 @@ function renderProtocoles(){
 }
 function renderEquipe(){ const t=$('accueilIntro'); if(t && document.activeElement!==t) t.value=db.accueilIntro||''; renderSalaries(); renderContrats(); renderProtocoles(); }
 
-function renderAll(){ renderDashboard(); renderMembers(); renderRelances(); renderOps(); renderCaisse(); renderRapprochement(); renderProjects(); renderSubventions(); renderEcheancier(); renderBilan(); renderPrevisionnel(); renderEquipe(); renderRepertoire(); renderSecretariat(); renderReunions(); renderIncidents(); renderDettes(); renderOfficialLinks(); refreshComptes(); renderListParams(); renderJournal(); renderPeriscolaire(); renderFaqList(); renderNews(); renderAccompagnement(); }
+function renderAll(){ renderDashboard(); renderMembers(); renderRelances(); renderOps(); renderCaisse(); renderRapprochement(); renderProjects(); renderSubventions(); renderEcheancier(); renderBilan(); renderPrevisionnel(); renderEquipe(); renderRepertoire(); renderSecretariat(); renderAssurance(); renderReunions(); renderIncidents(); renderDettes(); renderOfficialLinks(); refreshComptes(); renderListParams(); renderJournal(); renderPeriscolaire(); renderFaqList(); renderNews(); renderAccompagnement(); }
 
 /* ---- Data import/export ---- */
 function exportJSON(){
@@ -3102,6 +3147,59 @@ renderAll();
   };
   window.setPartStatut=async function(id,st){ const {error}=await sbc.from('partenaires').update({statut:st}).eq('id',id); if(error){alert(error.message);return;} window.loadPartenaires(); };
 
+  // Dossiers d'inscription périscolaire déposés par les familles (table inscriptions_periscolaire + coffre dossiers-periscolaire)
+  const PERI_PIECES=[['caf','Attestation CAF'],['impots',"Avis d'imposition"],['domicile','Justif. domicile'],['assurance','Assurance'],['vaccin','Vaccins'],['livret','Livret de famille']];
+  const PERI_DOS_ST={brouillon:['#eef0ee','#5c7468','✏️ Brouillon'],depose:['#fff5da','#8a6400','📨 Déposé'],valide:['#dff5e9','#127a51','✅ Validé'],incomplet:['#ffe9e3','#b23a23','⚠️ Incomplet']};
+  window.periViewPiece=async function(path){
+    if(!path) return;
+    const {data,error}=await sbc.storage.from('dossiers-periscolaire').createSignedUrl(path,3600);
+    if(error||!data){ alert('Pièce introuvable : '+(error?error.message:'')); return; }
+    window.open(data.signedUrl,'_blank');
+  };
+  window.setDossierPeri=async function(id,statut){
+    const {error}=await sbc.from('inscriptions_periscolaire').update({statut}).eq('id',id);
+    if(error){ alert(error.message); return; }
+    loadDossiersPeri();
+  };
+  window.noteDossierPeri=async function(id){
+    const el=document.getElementById('dosnote_'+id); if(!el) return;
+    const {error}=await sbc.from('inscriptions_periscolaire').update({note_bureau:el.value}).eq('id',id);
+    setSync(error?('⚠️ '+error.message):'✓ note enregistrée', error?'#ffd9d0':'#dff5e9');
+  };
+  window.loadDossiersPeri=async function(){
+    const box=document.getElementById('periDossiersList'); if(!box) return;
+    const {data,error}=await sbc.from('inscriptions_periscolaire').select('*').order('updated_at',{ascending:false});
+    if(error){ box.innerHTML='<p class="hint" style="color:#c0392b">Erreur : '+esc(error.message)+'</p>'; return; }
+    if(!data||!data.length){ box.innerHTML='<p class="hint">Aucun dossier déposé pour l\'instant. Les familles adhérentes déposent depuis leur espace adhérent.</p>'; return; }
+    box.innerHTML=data.map(d=>{
+      const st=PERI_DOS_ST[d.statut]||PERI_DOS_ST.brouillon;
+      const enfants=(Array.isArray(d.enfants)?d.enfants:[]);
+      const enfHtml=enfants.length?enfants.map(e=>{
+        const f=[e.matin?'matin':null,e.soir?'soir':null].filter(Boolean).join(' & ')||'—';
+        return '<span class="pill" style="background:#eef3ef;color:#555;font-size:12px">'+esc(e.prenom||'?')+(e.classe?' · '+esc(e.classe):'')+' — '+f+'</span>';
+      }).join(' '):'<span class="hint">aucun enfant saisi</span>';
+      const pieces=(d.pieces&&typeof d.pieces==='object')?d.pieces:{};
+      const pieceHtml=PERI_PIECES.map(([k,lab])=>{
+        const p=pieces[k];
+        if(p&&p.path){ return '<button class="ghost btn" style="font-size:12px" onclick="periViewPiece(\''+esc(p.path)+'\')">✅ '+esc(lab)+' · voir</button>'; }
+        return '<span class="pill" style="background:#fbecea;color:#b23a23;font-size:12px">✖ '+esc(lab)+'</span>';
+      }).join(' ');
+      const ctrl=canWrite?('<div class="row" style="margin-top:10px;gap:6px;flex-wrap:wrap;align-items:center">'
+        +'<button class="btn" onclick="setDossierPeri(\''+d.id+'\',\'valide\')">✅ Valider</button>'
+        +'<button class="ghost btn" onclick="setDossierPeri(\''+d.id+'\',\'incomplet\')">⚠️ Incomplet</button>'
+        +'<input id="dosnote_'+d.id+'" placeholder="Note bureau (ce qui manque…)" value="'+esc(d.note_bureau||'')+'" style="flex:1;min-width:160px;padding:7px 10px;border:1px solid var(--line);border-radius:8px;font:inherit">'
+        +'<button class="ghost btn" onclick="noteDossierPeri(\''+d.id+'\')">💾 Note</button></div>'):'';
+      return '<div class="panel" style="margin:10px 0;border-left:4px solid '+st[1]+'">'
+        +'<div class="toolbar"><div><strong>'+esc(d.foyer||'Famille')+'</strong> '
+        +'<span class="pill" style="background:'+st[0]+';color:'+st[1]+';font-size:11px">'+st[2]+'</span>'
+        +((d.email||d.tel)?'<br><span class="muted" style="font-size:13px">'+esc(d.email||'')+((d.email&&d.tel)?' · ':'')+esc(d.tel||'')+'</span>':'')
+        +'</div><span class="muted" style="font-size:12px">'+esc((d.updated_at||'').slice(0,10))+'</span></div>'
+        +'<div style="margin-top:6px;display:flex;gap:5px;flex-wrap:wrap">'+enfHtml+'</div>'
+        +'<div style="margin-top:8px;display:flex;gap:5px;flex-wrap:wrap">'+pieceHtml+'</div>'
+        +ctrl+'</div>';
+    }).join('');
+  };
+
   // Ateliers participatifs — tables ateliers + atelier_inscriptions (hors coffre, comme partenaires)
   const AT_STATUTS={proposition:'💡 Proposition à étudier',inscriptions:'📝 Inscriptions ouvertes',ouvert:'✅ Atelier ouvert',archive:'📦 Archivé'};
   const AT_URL='https://pixiartpro.github.io/bob-demo/#ateliers';
@@ -3191,7 +3289,7 @@ renderAll();
       sbc.from('inscriptions_activite').select('*').order('created_at',{ascending:true})
     ]);
     if(ra.error){ box.innerHTML='<p class="hint" style="color:#c0392b">Erreur : '+esc(ra.error.message)+'</p>'; return; }
-    const acts=ra.data||[], byA={};
+    const acts=(ra.data||[]).slice().sort((a,b)=>((a.type==='evenement')!==(b.type==='evenement'))?(a.type==='evenement'?1:-1):((a.ordre||0)-(b.ordre||0))), byA={};
     (ri.data||[]).forEach(i=>{ (byA[i.activite_id]=byA[i.activite_id]||[]).push(i); });
     if(!acts.length){ box.innerHTML='<p class="hint">Aucune activité pour le moment. Crée la première ci-dessus 👆</p>'; return; }
     box.innerHTML=acts.map(a=>{
@@ -3211,37 +3309,49 @@ renderAll();
           +'<div class="field" style="flex:0;min-width:150px"><label>Statut</label><select onchange="setActivite(\''+a.id+'\',{statut:this.value})">'
             +['ouvert','bientot','archive'].map(s=>'<option value="'+s+'"'+(a.statut===s?' selected':'')+'>'+ACT_STATUTS[s]+'</option>').join('')+'</select></div>'
           +'<button class="ghost btn" onclick="setActivite(\''+a.id+'\',{publie:'+(a.publie?'false':'true')+'})">'+(a.publie?'🔒 Dépublier':'🌍 Publier sur le site')+'</button>'
-          +'<button class="ghost btn" onclick="renameActivite(\''+a.id+'\')">✏️ Renommer</button>'
+          +'<button class="ghost btn" onclick="editActivite(\''+a.id+'\')">✏️ Modifier</button>'
           +(myProfile && myProfile.role==='president'?'<button class="ghost btn" style="color:#c0392b" onclick="delActivite(\''+a.id+'\')">🗑️ Supprimer</button>':'')
           +'</div>';
       }
       return '<div class="panel" style="margin:10px 0;border-left:4px solid '+(complet?'#e0533d':(a.publie?'#1f9d6b':'#bbb'))+'">'
         +'<div class="toolbar"><div><strong>'+esc((a.emoji?a.emoji+' ':'')+(a.nom||'(sans nom)'))+'</strong> '
+        +'<span class="pill" style="font-size:11px;background:'+(a.type==='evenement'?'#efe6fb':'#eef3ef')+';color:'+(a.type==='evenement'?'#5b3a9c':'#555')+'">'+(a.type==='evenement'?'📅 Événement':'🎟️ Activité')+'</span> '
         +(a.categorie?'<span class="pill" style="background:#eef3ef;color:#555;font-size:11px">'+esc(a.categorie)+'</span> ':'')
         +'<span class="pill" style="background:'+(a.publie?'#dff5e9':'#f1f1f1')+';color:'+(a.publie?'#127a51':'#777')+';font-size:11px">'+(a.publie?'🌍 En ligne':'🔒 Interne')+'</span> '
         +'<span class="pill" style="font-size:11px;background:'+(a.statut==='bientot'?'#e6effb':(complet?'#ffe9e3':'#fff5da'))+';color:'+(a.statut==='bientot'?'#2a5aa0':(complet?'#b23a23':'#8a6400'))+'">'+(a.statut==='bientot'?'Arrive bientôt':(a.statut==='archive'?'Archivé':(complet?'Complet':places+' / '+(a.capacite||0)+' places')))+'</span>'
         +'</div></div>'
         +(a.description?'<p class="hint" style="margin:6px 0 0">'+esc(a.description)+'</p>':'')
+        +(a.type==='evenement'?'<p class="hint" style="margin:6px 0 0">📅 '+(a.date_event?esc(a.date_event):esc(a.quand||'date à venir'))+(a.lieu?' · 📍 '+esc(a.lieu):'')+'</p>'+(a.programme?'<p class="hint" style="margin:2px 0 0"><em>'+esc(a.programme)+'</em></p>':''):'')
         +'<p class="hint" style="margin:6px 0 0"><strong>'+(a.nb_inscrits||0)+'</strong> inscrit'+((a.nb_inscrits||0)>1?'s':'')+(a.statut==='ouvert'?' · '+places+' place'+(places>1?'s':'')+' restante'+(places>1?'s':''):'')+'</p>'
         +insHtml
         +ctrl
         +'</div>';
     }).join('');
   };
+  function agReset(){ const g=id=>document.getElementById(id); ['ag_id','ag_nom','ag_cat','ag_emoji','ag_desc','ag_date','ag_quand','ag_lieu','ag_programme'].forEach(k=>{ if(g(k)) g(k).value=''; }); if(g('ag_cap'))g('ag_cap').value='20'; if(g('ag_type'))g('ag_type').value='activite'; if(g('ag_statut'))g('ag_statut').value='ouvert'; if(g('ag_pub'))g('ag_pub').value='1'; if(g('ag_ordre'))g('ag_ordre').value='0'; const b=g('ag_btn'); if(b) b.textContent='+ Créer'; }
   window.addActivite=async function(){
     const g=id=>document.getElementById(id);
-    const nom=g('ag_nom').value.trim(); if(!nom){ alert('Indique le nom de l\'activité.'); return; }
-    const {error}=await sbc.from('activites').insert({
-      asso_id:myAsso, nom, categorie:g('ag_cat').value.trim(), emoji:g('ag_emoji').value.trim(),
+    const nom=g('ag_nom').value.trim(); if(!nom){ alert('Indique le nom.'); return; }
+    const rec={ asso_id:myAsso, nom, type:g('ag_type').value, categorie:g('ag_cat').value.trim(), emoji:g('ag_emoji').value.trim(),
       description:g('ag_desc').value.trim(), capacite:Math.max(0,parseInt(g('ag_cap').value,10)||0),
-      statut:g('ag_statut').value, publie:g('ag_pub').value==='1', ordre:parseInt(g('ag_ordre').value,10)||0
-    });
+      date_event:g('ag_date').value||null, quand:g('ag_quand').value.trim(), lieu:g('ag_lieu').value.trim(), programme:g('ag_programme').value.trim(),
+      statut:g('ag_statut').value, publie:g('ag_pub').value==='1', ordre:parseInt(g('ag_ordre').value,10)||0 };
+    const id=g('ag_id').value;
+    const {error}= id ? await sbc.from('activites').update(rec).eq('id',id) : await sbc.from('activites').insert(rec);
     if(error){ alert(error.message); return; }
-    ['ag_nom','ag_cat','ag_emoji','ag_desc'].forEach(id=>g(id).value=''); g('ag_cap').value='20';
-    loadActivitesGestion();
+    agReset(); loadActivitesGestion();
   };
   window.setActivite=async function(id,patch){ const {error}=await sbc.from('activites').update(patch).eq('id',id); if(error){alert(error.message);return;} loadActivitesGestion(); };
-  window.renameActivite=async function(id){ const nv=prompt('Nouveau nom de l\'activité :'); if(nv===null) return; const n=nv.trim(); if(!n) return; setActivite(id,{nom:n}); };
+  window.editActivite=async function(id){
+    const {data,error}=await sbc.from('activites').select('*').eq('id',id).single();
+    if(error||!data){ alert('Activité introuvable'); return; }
+    const g=k=>document.getElementById(k);
+    g('ag_id').value=data.id; g('ag_type').value=data.type||'activite'; g('ag_nom').value=data.nom||''; g('ag_emoji').value=data.emoji||'';
+    g('ag_cat').value=data.categorie||''; g('ag_desc').value=data.description||''; g('ag_cap').value=data.capacite||0;
+    g('ag_date').value=data.date_event||''; g('ag_quand').value=data.quand||''; g('ag_lieu').value=data.lieu||''; g('ag_programme').value=data.programme||'';
+    g('ag_statut').value=data.statut||'ouvert'; g('ag_pub').value=data.publie?'1':'0'; g('ag_ordre').value=data.ordre||0;
+    g('ag_btn').textContent='Enregistrer'; g('ag_nom').focus(); g('ag_nom').scrollIntoView({behavior:'smooth',block:'center'});
+  };
   window.delActivite=async function(id){ if(!confirm('Supprimer définitivement cette activité et ses inscriptions ?'))return; const {error}=await sbc.from('activites').delete().eq('id',id); if(error){alert(error.message);return;} loadActivitesGestion(); };
   window.delInscriptionActivite=async function(id){ if(!confirm('Retirer cette inscription ?'))return; const {error}=await sbc.from('inscriptions_activite').delete().eq('id',id); if(error){alert(error.message);return;} loadActivitesGestion(); };
 
@@ -3459,6 +3569,8 @@ renderAll();
     if(window.loadAteliers) loadAteliers();
     const cb=document.querySelector('nav.tabs button[data-tab="activites"]'); if(cb) cb.addEventListener('click',()=>{ if(window.loadActivitesGestion) loadActivitesGestion(); });
     if(window.loadActivitesGestion) loadActivitesGestion();
+    const peb=document.querySelector('nav.tabs button[data-tab="periscolaire"]'); if(peb) peb.addEventListener('click',()=>{ if(window.loadDossiersPeri) loadDossiersPeri(); });
+    if(window.loadDossiersPeri) loadDossiersPeri();
     addChatWidget(); addSuggestWidget();
     heartbeat(); if(window.loadPresence) loadPresence();
     setInterval(()=>{ heartbeat(); if(window.loadChat) loadChat(); if(window.loadPresence) loadPresence(); }, 10000);
