@@ -289,15 +289,8 @@
   <div class="wrap">
     <p class="eyebrow">Temps forts 2026</p>
     <h2 class="title">Les grands rendez-vous 🎉</h2>
-    <p class="sub">Plus de 2 400 participations attendues sur l'année.</p>
-    <div class="agenda">
-      <div class="ag-item"><span class="ag-ico">🎶</span><div><div class="ag-when">20 juin</div><div class="ag-name">Fête de la musique</div></div></div>
-      <div class="ag-item"><span class="ag-ico">💃</span><div><div class="ag-when">Juin &amp; décembre</div><div class="ag-name">Galas de danse</div></div></div>
-      <div class="ag-item"><span class="ag-ico">🎪</span><div><div class="ag-when">Août · Place Bancoul</div><div class="ag-name">Fêt nout kartyé (~1 500 pers.)</div></div></div>
-      <div class="ag-item"><span class="ag-ico">🪘</span><div><div class="ag-when">Octobre</div><div class="ag-name">Semaine créole &amp; ron maloya</div></div></div>
-      <div class="ag-item"><span class="ag-ico">⛰️</span><div><div class="ag-when">Septembre</div><div class="ag-name">Week-end famille · Plaine des Cafres</div></div></div>
-      <div class="ag-item"><span class="ag-ico">🎄</span><div><div class="ag-when">20 décembre</div><div class="ag-name">Fête de fin d'année</div></div></div>
-    </div>
+    <p class="sub">Les prochains rendez-vous du quartier. Cliquez pour le programme et pour vous inscrire.</p>
+    <div class="actlist" id="agendaList"></div>
   </div>
 </section>
 
@@ -619,7 +612,7 @@ function actRowHtml(a){
 }
 async function loadActivitesPubliques(){
   const box=document.getElementById('actList'); if(!box) return;
-  const {data,error}=await _sbPart.from('activites').select('*').eq('publie',true).neq('statut','archive').order('ordre',{ascending:true});
+  const {data,error}=await _sbPart.from('activites').select('*').eq('publie',true).eq('type','activite').neq('statut','archive').order('ordre',{ascending:true});
   if(error){ box.innerHTML='<p style="text-align:center;color:#c0392b">Impossible de charger les activités pour le moment.</p>'; return; }
   if(!data||!data.length){ box.innerHTML='<p style="text-align:center;color:var(--muted)">Nos activités arrivent très bientôt ici. 🍍</p>'; return; }
   const groups=[], map={};
@@ -628,15 +621,46 @@ async function loadActivitesPubliques(){
 }
 function actToggle(id){ const f=document.getElementById('actf_'+id); if(!f) return; f.style.display=(f.style.display==='none')?'block':'none'; if(f.style.display==='block'){ const n=document.getElementById('actn_'+id); if(n) n.focus(); } }
 async function actSend(id){
-  const nom=(document.getElementById('actn_'+id).value||'').trim();
+  const g=k=>{const el=document.getElementById(k+'_'+id); return el?(el.value||'').trim():'';};
+  const nom=g('actn');
   const info=document.getElementById('acti_'+id);
   if(!nom){ info.style.color='#c0392b'; info.textContent='Indique le nom.'; return; }
-  const {error}=await _sbPart.from('inscriptions_activite').insert({ activite_id:id, nom,
-    responsable:(document.getElementById('actr_'+id).value||'').trim(),
-    contact:(document.getElementById('actc_'+id).value||'').trim() });
-  if(error){ info.style.color='#c0392b'; info.textContent=(error.code==='23505')?'Déjà inscrit·e à cette activité 😉':"Oups : plus de place disponible, ou une erreur. Réessaie."; return; }
-  info.style.color='var(--vert-fonce)'; info.textContent='✅ Inscription enregistrée, merci ! Le CASE vous recontacte.';
-  setTimeout(loadActivitesPubliques, 1800);
+  const {error}=await _sbPart.from('inscriptions_activite').insert({ activite_id:id, nom, responsable:g('actr'), contact:g('actc') });
+  if(error){ info.style.color='#c0392b'; info.textContent=(error.code==='23505')?'Déjà inscrit·e 😉':"Oups : plus de place disponible, ou une erreur. Réessaie."; return; }
+  info.style.color='var(--vert-fonce)'; info.textContent='✅ C\'est noté, merci ! Le CASE vous recontacte.';
+  setTimeout(()=>{ loadActivitesPubliques(); loadEvenements(); }, 1800);
+}
+/* ===== Temps forts : agenda dynamique (événements à venir) ===== */
+function todayISO(){ return new Date().toISOString().slice(0,10); }
+function formatDateFr(iso){ if(!iso) return ''; const M=['janv.','févr.','mars','avr.','mai','juin','juil.','août','sept.','oct.','nov.','déc.']; const p=String(iso).split('-'); return parseInt(p[2],10)+' '+M[parseInt(p[1],10)-1]+' '+p[0]; }
+function evRowHtml(e){
+  const badge = e.date_event ? '<span class="ptag on">'+escP(formatDateFr(e.date_event))+'</span>' : '<span class="ptag soon">date à venir</span>';
+  return '<div class="actrow agclick" onclick="actToggle(\''+e.id+'\')" style="cursor:pointer">'
+      +'<span class="aico">'+(e.emoji||'📅')+'</span>'
+      +'<div class="abody"><b>'+escP(e.nom)+'</b><span>'+escP(e.quand||e.lieu||'')+'</span></div>'
+      +badge+'<span class="rgo">›</span>'
+    +'</div>'
+    +'<div class="actform" id="actf_'+e.id+'" style="display:none">'
+      +(e.programme?'<p style="margin:0 0 8px;font-size:14px"><b>Au programme :</b> '+escP(e.programme)+'</p>':'')
+      +(e.lieu?'<p style="margin:0 0 8px;font-size:13.5px;color:var(--muted)">📍 '+escP(e.lieu)+'</p>':'')
+      +'<input id="actn_'+e.id+'" placeholder="Votre nom *">'
+      +'<input id="actc_'+e.id+'" placeholder="Téléphone ou email">'
+      +'<button class="btn primary" style="width:100%;margin-top:4px" onclick="actSend(\''+e.id+'\')">'+(e.date_event?'Je m\'inscris':'Prévenez-moi de la date')+'</button>'
+      +'<p id="acti_'+e.id+'" style="margin:6px 0 0;font-size:13px;font-weight:700;text-align:center"></p>'
+    +'</div>';
+}
+async function loadEvenements(){
+  const box=document.getElementById('agendaList'); if(!box) return;
+  const {data,error}=await _sbPart.from('activites').select('*').eq('publie',true).eq('type','evenement').neq('statut','archive');
+  if(error){ box.innerHTML='<p style="text-align:center;color:#c0392b">Impossible de charger l\'agenda.</p>'; return; }
+  const today=todayISO();
+  const dated=(data||[]).filter(e=>e.date_event && e.date_event>=today).sort((a,b)=>a.date_event<b.date_event?-1:(a.date_event>b.date_event?1:0));
+  const undated=(data||[]).filter(e=>!e.date_event);
+  if(!dated.length && !undated.length){ box.innerHTML='<p style="text-align:center;color:var(--muted)">Les prochains rendez-vous arrivent bientôt. 🍍</p>'; return; }
+  let html='';
+  if(dated.length) html+='<div class="actcat">Prochains rendez-vous</div>'+dated.map(evRowHtml).join('');
+  if(undated.length) html+='<div class="actcat">Date à venir · inscris-toi pour être prévenu</div>'+undated.map(evRowHtml).join('');
+  box.innerHTML=html;
 }
 /* ===== Envoi réel par email (mailto) — contact + demande d'inscription ===== */
 function envoyerContact(){
@@ -674,6 +698,7 @@ function closePlan(){ document.getElementById('pmodal').classList.remove('open')
 document.addEventListener('keydown',e=>{ if(e.key==='Escape')closePlan(); });
 renderPlan();
 loadActivitesPubliques();
+loadEvenements();
 loadAteliersPublics();
 /* Bandeau actualité : fermeture mémorisée (réapparaît si on change data-news) */
 (function(){
