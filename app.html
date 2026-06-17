@@ -779,22 +779,24 @@
     </div>
     <div class="panel" style="border:2px solid var(--brand)">
       <h2>🛡️ Assurance de l'association</h2>
-      <p class="hint">Toutes les infos du contrat d'assurance réunies pour le bureau. Les références ci-dessous ont été retrouvées dans les documents du CASE (compte-rendu du 13/06/2025, conditions générales Raqvam, écritures comptables 2026).</p>
-      <div class="kv"><span><strong>Assureur</strong></span><span>MAIF</span></div>
-      <div class="kv"><span><strong>Contrat</strong></span><span>Raqvam Associations / Collectivités — réf. produit M4202RACA</span></div>
-      <div class="kv"><span><strong>Date d'effet</strong></span><span>1ᵉʳ janvier 2024</span></div>
-      <div class="kv"><span><strong>Cotisation 2026</strong></span><span>1&nbsp;564,49&nbsp;€ — prélevée le 09/02/2026 (pièce FON-2026-01-0021)</span></div>
-      <div class="kv"><span><strong>Garanties couvertes</strong></span><span>Périscolaire, bénévoles, personnel permanent et occasionnel, contrats d'insertion</span></div>
-      <div class="kv"><span><strong>Contact MAIF</strong></span><span>Tél. 3442 · <a href="https://www.maif.fr" target="_blank" rel="noopener">maif.fr</a> · societaire@maif.fr</span></div>
-      <p class="hint" style="margin-top:16px"><strong>À compléter par le bureau</strong> — ces infos ne figurent dans aucun document, c'est à toi de les renseigner :</p>
+      <p class="hint">Toutes les infos du contrat d'assurance réunies pour le bureau. Source : <strong>avis d'échéance MAIF 2026</strong> (rangé dans le dossier <code>CASE/BDN/2026/Maif</code>), complété par les comptes-rendus et la comptabilité du CASE.</p>
+      <div class="kv"><span><strong>Assureur</strong></span><span>MAIF — société d'assurance mutuelle (SIREN 775 709 702)</span></div>
+      <div class="kv"><span><strong>N° de sociétaire</strong></span><span><strong style="font-size:16px">2653651 T</strong> <span class="muted">(réf. document PM C21M - 2653651T)</span></span></div>
+      <div class="kv"><span><strong>Contrat</strong></span><span>Assurance multirisque <strong>Raqvam</strong> Associations / Collectivités (réf. produit M4202RACA)</span></div>
+      <div class="kv"><span><strong>Période / prélèvement</strong></span><span>1ᵉʳ janvier → 31 décembre 2026 · prélevé le 7 janvier (en 1 fois)</span></div>
+      <div class="kv"><span><strong>Cotisation 2026</strong></span><span>1&nbsp;514,10&nbsp;€ TTC <span class="muted">(Raqvam 1&nbsp;507,60&nbsp;€ + contribution solidarité 6,50&nbsp;€)</span></span></div>
+      <div class="kv"><span><strong>Sites assurés</strong></span><span>Place de la Fraternité · École primaire du Piton BDN · Salle polyvalente Bois de Nèfles · 18F chemin des Bringelliers</span></div>
+      <div class="kv"><span><strong>Garanties</strong></span><span>Bénévoles & administrateurs, personnel permanent et occasionnel, contrat insertion, CLSH / périscolaire, activités & sports, immobilier & biens</span></div>
+      <div class="kv"><span><strong>Espace en ligne</strong></span><span><a href="https://espacepersonnel.maif.fr" target="_blank" rel="noopener">espacepersonnel.maif.fr</a></span></div>
+      <div class="kv"><span><strong>Contact MAIF</strong></span><span>Tél. 09 78 97 98 99 (lun-ven 8h30-18h) · gestionsocietaire@maif.fr · Pôle Associations/Collectivités, Dijon</span></div>
+      <p class="hint" style="margin-top:16px"><strong>À compléter par le bureau</strong> — le n° de sociétaire est désormais connu (ci-dessus). Pour se connecter sur <strong>espacepersonnel.maif.fr</strong>, il reste l'identifiant personnel du compte en ligne :</p>
       <div class="row">
-        <div class="field"><label>N° de sociétaire / contrat</label><input id="as_num" placeholder="Sur l'attestation ou l'avis d'échéance MAIF" onchange="saveAssurance()"></div>
-        <div class="field"><label>Identifiant de l'espace en ligne (maif.fr)</label><input id="as_login" placeholder="L'identifiant de connexion" onchange="saveAssurance()"></div>
+        <div class="field"><label>Identifiant espacepersonnel.maif.fr</label><input id="as_login" placeholder="L'identifiant de connexion (créé par le bureau)" onchange="saveAssurance()"></div>
       </div>
       <div class="row" style="margin-top:10px">
-        <div class="field"><label>Mémo de connexion / notes</label><textarea id="as_memo" rows="3" style="width:100%;font:inherit;padding:10px;border:1px solid var(--line);border-radius:9px;resize:vertical" placeholder="Notes utiles : interlocuteur MAIF, n° de devis en cours, démarches…" onchange="saveAssurance()"></textarea></div>
+        <div class="field"><label>Mémo / notes</label><textarea id="as_memo" rows="3" style="width:100%;font:inherit;padding:10px;border:1px solid var(--line);border-radius:9px;resize:vertical" placeholder="Notes utiles : interlocuteur MAIF, n° de devis en cours, démarches…" onchange="saveAssurance()"></textarea></div>
       </div>
-      <p class="hint" style="margin-top:6px">🔒 Pour le <strong>mot de passe</strong>, évite de l'écrire ici en clair : utilise plutôt un gestionnaire de mots de passe, ou la fonction « mot de passe oublié » sur maif.fr au moment de te connecter. <em>Action en cours (CR du 13/06/2025) : demander à la MAIF l'attestation 2025 et réactualiser le contrat selon les activités réelles.</em></p>
+      <p class="hint" style="margin-top:6px">🔒 Pour le <strong>mot de passe</strong>, évite de l'écrire ici en clair : utilise plutôt un gestionnaire de mots de passe, ou « identifiant / mot de passe oublié » sur espacepersonnel.maif.fr. <em>Action en cours (CR du 13/06/2025) : demander l'attestation à jour et vérifier que le contrat colle aux activités réelles.</em></p>
     </div>
     <div class="panel">
       <h2>✉️ Modèles de courriers</h2>
@@ -1231,7 +1233,7 @@
       <table>
         <thead><tr><th>Point</th><th>État</th></tr></thead>
         <tbody>
-          <tr><td>Réunion du 12 juin</td><td><span class="pill ok">✅ CA tenu (avec Cynthia)</span> <span class="muted">— CR rédigé (projet à valider) ; le CA valide l'adoption de Bob</span></td></tr>
+          <tr><td>Conseil d'administration</td><td><span class="pill ok">✅ CA du 11/06</span> <span class="muted">— bureau complet, quorum, 5 résolutions à l'unanimité (service civique, « La Case Zado », samedi pérennisé, mercredi jeunesse, modèle éco intervenants) ; PV + dossier de séance rédigés, à signer. Le 12/06 = réunion de travail (périscolaire/inauguration).</span></td></tr>
           <tr><td>Agendas Gmail individuels</td><td><span class="pill wait">⏳ En cours</span></td></tr>
           <tr><td>Boîtes mail pro + domaine</td><td><span class="pill wait">⏳ Mise en place ce week-end + projet d'acheter un domaine propre au CASE</span></td></tr>
           <tr><td>Entretiens Kathy &amp; Sandrine</td><td><span class="pill wait">⏳ À caler dès le retour de Kathy (lundi prochain)</span></td></tr>
@@ -1408,7 +1410,7 @@ const FAQ=[
   {cat:'🎒 Périscolaire',q:"Où je vois les dossiers d'inscription périscolaire déposés par les familles ?",kw:"periscolaire inscription dossier dossiers famille familles piece pieces caf assurance vaccin livret avis imposition justificatif domicile depose adherent matin soir rentree aout scan coffre",
    a:"Onglet <b>🎒 Périscolaire</b>, panneau <b>📨 Dossiers d'inscription</b> (en bas). Chaque famille <b>adhérente</b> dépose son dossier depuis <b>son espace adhérent</b> : enfants (matin et/ou soir) et les pièces (attestation CAF de <b>moins de 3 mois</b>, avis d'imposition, justificatif de domicile, attestation d'assurance, vaccins à jour, livret de famille). Tu vois l'état des pièces, tu cliques pour <b>consulter</b> chacune, et tu marques le dossier <b>✅ Validé</b> ou <b>⚠️ Incomplet</b>. Seules les familles adhérentes (compte validé) peuvent déposer."},
   {cat:'🧰 Secrétariat',q:"Où sont les informations de l'assurance (MAIF) pour se connecter ?",kw:"assurance maif raqvam contrat sociétaire societaire cotisation garantie connexion identifiant mot de passe attestation sinistre responsabilite civile rc secretariat",
-   a:"Onglet <b>🧰 Secrétariat</b>, panneau <b>🛡️ Assurance de l'association</b>. Tu y trouves les références retrouvées dans les documents du CASE : assureur <b>MAIF</b>, contrat <b>Raqvam Associations / Collectivités</b> (réf. M4202RACA), date d'effet 01/01/2024, cotisation 2026 de 1&nbsp;564,49&nbsp;€, les garanties couvertes et le <b>contact MAIF (tél. 3442, maif.fr)</b>. Plus bas, complète toi-même le <b>n° de sociétaire/contrat</b> et l'<b>identifiant de l'espace en ligne</b> (ils ne sont dans aucun document). 🔒 N'écris pas le mot de passe en clair : utilise un gestionnaire de mots de passe ou « mot de passe oublié » sur maif.fr."},
+   a:"Onglet <b>🧰 Secrétariat</b>, panneau <b>🛡️ Assurance de l'association</b>. Tu y trouves tout le contrat : assureur <b>MAIF</b>, <b>n° de sociétaire 2653651 T</b>, contrat <b>Raqvam</b> (réf. M4202RACA), cotisation 2026 de 1&nbsp;514,10&nbsp;€, les 4 sites assurés, les garanties, l'espace <b>espacepersonnel.maif.fr</b> et le <b>contact MAIF (09 78 97 98 99, gestionsocietaire@maif.fr)</b>. Pour se connecter, il reste juste à renseigner l'<b>identifiant</b> du compte en ligne. 🔒 N'écris pas le mot de passe en clair : utilise un gestionnaire de mots de passe ou « identifiant/mot de passe oublié » sur le site MAIF. Source : avis d'échéance 2026 (dossier CASE/BDN/2026/Maif)."},
   {cat:'🤝 Accompagnement',q:"Où je retrouve l'accompagnement DLA, la Maison des Associations et la préparation des RDV ?",kw:"accompagnement dla charlotte verdure demele maison associations mda mdac aurelie gaudieux monbeig france active hexopee eclat elisfa neopale uniformation seance seances rdv rendez-vous diagnostic preparation suivi strategique conseillere",
    a:"Ouvre l'onglet <strong>🤝 Accompagnement</strong>. Tu y trouves : la fiche et la frise des 9 séances du <strong>DLA</strong> (Charlotte Verdure, Démêlé ESS), le diagnostic du CASE (séance 3) et le plan d'actions, la <strong>Maison Des Associations</strong>, les autres ressources (France Active, Hexopée, ELISFA, Uniformation…), et en bas le bloc <strong>Préparation du RDV</strong> avec le statut de tes actions, les demandes de Charlotte et une zone de notes de séance. Cet onglet est réservé au bureau."},
   {cat:'🎟️ Activités',q:"Comment afficher les places restantes et gérer les inscriptions sur le site ?",kw:"activite activites place places restantes capacite complet inscription inscriptions site public publier vitrine arrive bientot acm vepi danse musique",
@@ -1544,7 +1546,7 @@ const NEWS=[
   {id:'2026-06-17-peri-dossiers',date:'2026-06-17',tab:'🎒 Périscolaire',titre:'📨 Dossiers d\'inscription en ligne',
    desc:"Les familles adhérentes déposent désormais leur dossier d'inscription au périscolaire (matin & soir, rentrée d'août) depuis leur espace adhérent : enfants + pièces (attestation CAF de moins de 3 mois, avis d'imposition, justificatif de domicile, assurance, vaccins, livret de famille), scannées depuis le téléphone. Tu les retrouves dans 🎒 Périscolaire → 📨 Dossiers d'inscription : consulte chaque pièce, marque le dossier ✅ Validé ou ⚠️ Incomplet. Seuls les adhérents (compte validé) peuvent déposer."},
   {id:'2026-06-17-assurance',date:'2026-06-17',tab:'🧰 Secrétariat',titre:'🛡️ Fiche Assurance (MAIF)',
-   desc:"Nouveau panneau dans l'onglet 🧰 Secrétariat qui réunit les infos du contrat d'assurance : assureur MAIF, contrat Raqvam Associations (réf. M4202RACA), date d'effet 01/01/2024, cotisation 2026 (1 564,49 €), garanties couvertes et contact MAIF (3442 / maif.fr). À compléter par le bureau : le n° de sociétaire et l'identifiant de l'espace en ligne. Le mot de passe ne se met pas en clair (gestionnaire de mots de passe / « mot de passe oublié »)."},
+   desc:"Nouveau panneau dans l'onglet 🧰 Secrétariat qui réunit tout le contrat d'assurance, à partir de l'avis d'échéance MAIF 2026 : assureur MAIF, n° de sociétaire 2653651 T, contrat Raqvam (M4202RACA), cotisation 2026 (1 514,10 €), 4 sites assurés, garanties, espace espacepersonnel.maif.fr et contact (09 78 97 98 99 / gestionsocietaire@maif.fr). Pour se connecter, il reste à renseigner l'identifiant du compte en ligne (le mot de passe ne se met pas en clair)."},
   {id:'2026-06-17-accompagnement',date:'2026-06-17',tab:'🤝 Accompagnement',titre:'🤝 Nouvel onglet Accompagnement',
    desc:"Tout l'accompagnement du CASE réuni au même endroit : le DLA (Charlotte Verdure / Démêlé ESS) avec la frise des 9 séances et le diagnostic, la Maison Des Associations, et les autres ressources (France Active, Hexopée, ELISFA, Uniformation…). En bas : la préparation des rendez-vous (statut de tes actions, demandes de Charlotte, notes de séance). Réservé au bureau."},
   {id:'2026-06-17-evenements',date:'2026-06-17',tab:'🎟️ Activités',titre:'📅 Événements (temps forts) dans la gestion',
@@ -3008,8 +3010,8 @@ function renderSalaries(){
 function saveAccueilIntro(){ db.accueilIntro=$('accueilIntro').value; save(); }
 function saveAccompNotes(){ db.accompNotes=$('accompNotes').value; save(); }
 function renderAccompagnement(){ const t=$('accompNotes'); if(t && document.activeElement!==t) t.value=db.accompNotes||''; }
-function saveAssurance(){ db.assurance=Object.assign({}, db.assurance, {num:($('as_num').value||'').trim(), login:($('as_login').value||'').trim(), memo:$('as_memo').value||''}); save(); }
-function renderAssurance(){ const a=db.assurance||{}; const f=(id,v)=>{ const el=$(id); if(el && document.activeElement!==el) el.value=v||''; }; f('as_num',a.num); f('as_login',a.login); f('as_memo',a.memo); }
+function saveAssurance(){ const g=id=>{ const e=$(id); return e?(e.value||''):''; }; db.assurance=Object.assign({}, db.assurance, {login:g('as_login').trim(), memo:g('as_memo')}); save(); }
+function renderAssurance(){ const a=db.assurance||{}; const f=(id,v)=>{ const el=$(id); if(el && document.activeElement!==el) el.value=v||''; }; f('as_login',a.login); f('as_memo',a.memo); }
 function addContrat(){
   const type=$('ct_type').value.trim(); if(!type){ alert('Indique le statut / contrat.'); return; }
   db.contrats=db.contrats||[]; db.contrats.push({id:uid(),type,description:$('ct_desc').value.trim()});
