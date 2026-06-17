@@ -207,7 +207,7 @@
       <a href="#plan">Le projet</a>
       <a href="#activites">Nos activités</a>
       <a href="#ados">Ados</a>
-      <a href="#horaires">Horaires</a>
+      <a href="#lieux">Nos lieux</a>
       <a href="#ateliers">💡 Ateliers</a>
       <a href="#partenaires">🤝 Partenaires</a>
       <a href="#contact">Contact</a>
@@ -242,6 +242,35 @@
     <div class="hero-art">
       <img src="mascotte-hero.png" alt="Zanana, la mascotte du CASE Bois de Nèfles" onerror="this.style.display='none'">
       <p class="masc-name">🍍 Moi c'est <b>Zanana</b>, la mascotte du quartier !</p>
+    </div>
+  </div>
+</section>
+
+<!-- COMMUNICATION : INSCRIPTIONS PÉRISCOLAIRE (rentrée d'août) -->
+<section class="block" id="inscription-peri" style="background:linear-gradient(135deg,#fff3da,#ffe7c4)">
+  <div class="wrap">
+    <p class="eyebrow">Rentrée d'août</p>
+    <h2 class="title">🎒 Inscrivez vos enfants au périscolaire <span class="y">matin &amp; soir</span></h2>
+    <p class="sub" style="max-width:720px">Les inscriptions pour la rentrée d'août sont ouvertes. Le dépôt du dossier se fait dans votre <b>espace adhérent</b> : adhérez / connectez-vous, puis déposez vos pièces — vous pouvez les scanner directement depuis votre téléphone.</p>
+    <div style="display:flex;gap:18px;flex-wrap:wrap;align-items:flex-start;margin-top:6px">
+      <div style="flex:1;min-width:260px;background:#fff;border:1px solid #f1e2ad;border-radius:16px;padding:16px 18px">
+        <b style="color:var(--vert-fonce)">📋 Pièces à fournir</b>
+        <ul style="margin:8px 0 0;padding-left:18px;line-height:1.9;color:#5b4a2a">
+          <li><b>Attestation CAF</b> (quotient familial, <b>moins de 3 mois</b>)</li>
+          <li>Avis d'imposition</li>
+          <li>Justificatif de domicile</li>
+          <li>Attestation d'assurance (extrascolaire)</li>
+          <li>Vaccins à jour (photo du carnet)</li>
+          <li>Livret de famille</li>
+        </ul>
+      </div>
+      <div style="flex:1;min-width:240px">
+        <p style="margin:0 0 12px;color:#5b4a2a"><b>Comment faire ?</b><br>1. J'adhère / je me connecte à mon espace.<br>2. Je renseigne mes enfants (matin / soir).<br>3. Je dépose mes pièces. C'est tout !</p>
+        <div class="cta">
+          <a href="espace-adherent.html" class="btn primary">🎒 Déposer mon dossier</a>
+          <a href="#adhesion" class="btn ghost">Adhérer au CASE</a>
+        </div>
+      </div>
     </div>
   </div>
 </section>
@@ -294,17 +323,13 @@
   </div>
 </section>
 
-<!-- HORAIRES -->
-<section class="block bg-w" id="horaires">
+<!-- NOS LIEUX -->
+<section class="block bg-w" id="lieux">
   <div class="wrap">
-    <p class="eyebrow">Horaires & lieux</p>
-    <h2 class="title">Où et quand nous trouver 🕒</h2>
-    <p class="sub">Nos sites sont ouverts toute la semaine. Passez nous voir !</p>
-    <div class="hours">
-      <div class="hour"><div class="lieu">🏠 C.A.S.E Bois de Nèfles</div><div class="h">132 Route des Ananas, Sainte-Clotilde<br>Lun → Mer : 9h–12h30 & 14h–17h30<br>Jeu & Ven : 9h–16h30</div></div>
-      <div class="hour"><div class="lieu">📍 Local des Bringelliers</div><div class="h">En matinée en semaine<br>Activités enfance & familles</div></div>
-      <div class="hour"><div class="lieu">☕ Permanence du samedi</div><div class="h">Samedi matin · café offert<br>Accueil de tous les habitants</div></div>
-    </div>
+    <p class="eyebrow">Nos lieux</p>
+    <h2 class="title">Où nous trouver 🏠</h2>
+    <p class="sub">Nos locaux, leur état, et ce qui s'y passe. Passez nous voir !</p>
+    <div class="grid" id="lieuxList"></div>
   </div>
 </section>
 
@@ -662,6 +687,29 @@ async function loadEvenements(){
   if(undated.length) html+='<div class="actcat">Date à venir · inscris-toi pour être prévenu</div>'+undated.map(evRowHtml).join('');
   box.innerHTML=html;
 }
+/* ===== Nos lieux : fiches des locaux + liaison vers leurs activités ===== */
+async function loadLieux(){
+  const box=document.getElementById('lieuxList'); if(!box) return;
+  const [rl,ra]=await Promise.all([
+    _sbPart.from('lieux').select('*').eq('publie',true).order('ordre',{ascending:true}),
+    _sbPart.from('activites').select('nom,emoji,lieu').eq('publie',true).eq('type','activite')
+  ]);
+  if(rl.error||!rl.data||!rl.data.length){ box.innerHTML='<p style="grid-column:1/-1;text-align:center;color:var(--muted)">Nos lieux arrivent bientôt. 🍍</p>'; return; }
+  const acts=ra.data||[];
+  box.innerHTML=rl.data.map(L=>{
+    const mine=acts.filter(a=>(a.lieu||'')===L.nom);
+    const etatCls = /r[ée]nov|travaux/i.test(L.etat||'') ? 'work' : 'on';
+    return '<div class="card">'
+      +(L.photo_url?'<img src="'+escP(L.photo_url)+'" alt="" style="width:100%;height:150px;object-fit:cover;border-radius:12px;margin-bottom:10px">':'')
+      +'<h3 style="margin:0 0 4px">🏠 '+escP(L.nom)+'</h3>'
+      +(L.etat?'<span class="ptag '+etatCls+'">'+escP(L.etat)+'</span>':'')
+      +(L.description?'<p style="margin:8px 0 0;color:var(--muted);font-size:14.5px">'+escP(L.description)+'</p>':'')
+      +(L.adresse?'<p style="margin:8px 0 0;font-size:13.5px">📍 '+escP(L.adresse)+'</p>':'')
+      +(L.horaires?'<p style="margin:4px 0 0;font-size:13.5px;color:var(--muted)">🕒 '+escP(L.horaires)+'</p>':'')
+      +(mine.length?'<p style="margin:10px 0 0;font-size:13.5px"><b>On y propose :</b> '+mine.map(a=>escP((a.emoji?a.emoji+' ':'')+a.nom)).join(' · ')+'</p>':'')
+      +'</div>';
+  }).join('');
+}
 /* ===== Envoi réel par email (mailto) — contact + demande d'inscription ===== */
 function envoyerContact(){
   const nom=(document.getElementById('ct_nom').value||'').trim();
@@ -699,6 +747,7 @@ document.addEventListener('keydown',e=>{ if(e.key==='Escape')closePlan(); });
 renderPlan();
 loadActivitesPubliques();
 loadEvenements();
+loadLieux();
 loadAteliersPublics();
 /* Bandeau actualité : fermeture mémorisée (réapparaît si on change data-news) */
 (function(){
