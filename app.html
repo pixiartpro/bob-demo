@@ -116,6 +116,7 @@
   <nav class="tabs">
     <button data-tab="dashboard" class="active">📊 Tableau de bord</button>
     <button data-tab="members">👥 Adhérents</button>
+    <button data-tab="periscolaire">🎒 Périscolaire</button>
     <button data-tab="projects">📁 Projets</button>
     <button data-tab="subventions">🏛️ Subventions</button>
     <button data-tab="repertoire">🗂️ Répertoire</button>
@@ -560,6 +561,49 @@
     </div>
   </section>
 
+  <!-- PÉRISCOLAIRE -->
+  <section id="periscolaire" class="page">
+    <div class="panel">
+      <div class="toolbar"><div>
+        <h2 style="margin:0">🎒 Périscolaire</h2>
+        <p class="hint" style="margin:2px 0 0">Grille tarifaire par quotient familial, enfants inscrits et facturation automatique. <strong>Aujourd'hui : après-midi</strong> · <strong>rentrée d'août : + le matin</strong>. La grille est pré-remplie avec les tarifs 2024-2025 — <strong>réévalue-la pour août directement ici</strong>.</p>
+      </div></div>
+      <div class="cards" id="periKpis" style="margin-top:8px"></div>
+    </div>
+
+    <div class="panel">
+      <h2 style="margin:0 0 4px">💶 Grille tarifaire (tarif par jour, selon le quotient familial)</h2>
+      <p class="hint">Le tarif est <strong>par jour de présence</strong> : la facture du mois = tarif jour × nombre de jours dans le mois (≈ 16 en moyenne). Modifie une case puis clique 💾.</p>
+      <table><thead><tr><th>Tranche</th><th>Quotient familial</th><th class="num">Après-midi / jour</th></tr></thead>
+        <tbody id="periGrilleRows"></tbody></table>
+      <div class="toolbar" style="flex-wrap:wrap;gap:10px;margin-top:12px">
+        <div class="field" style="min-width:210px"><label>Supplément matin (€ / jour) — dès août</label><input type="number" id="peri_suppMatin" min="0" step="0.1"></div>
+        <div class="field" style="min-width:210px"><label>Remise par enfant supplémentaire (%)</label><input type="number" id="peri_remise" min="0" max="100" step="1"></div>
+        <div class="field" style="min-width:170px"><label>Jours / mois (moyenne)</label><input type="number" id="peri_jours" min="1" max="26" step="1"></div>
+      </div>
+      <div style="margin-top:10px"><button class="btn" onclick="savePeriGrille()">💾 Enregistrer la grille</button> <span class="hint" id="periGrilleSaved"></span></div>
+    </div>
+
+    <div class="panel">
+      <h2 style="margin:0 0 4px">👧 Enfants inscrits</h2>
+      <p class="hint">Ajoute un enfant : Bob calcule automatiquement ce que la famille doit par mois (tranche, matin/après-midi, remise fratrie).</p>
+      <input type="hidden" id="pe_id">
+      <div class="toolbar" style="flex-wrap:wrap;gap:10px">
+        <div class="field" style="min-width:160px"><label>Nom de l'enfant</label><input id="pe_nom" placeholder="Prénom Nom"></div>
+        <div class="field" style="min-width:150px"><label>Responsable</label><input id="pe_resp" placeholder="Parent"></div>
+        <div class="field" style="min-width:160px"><label>Téléphone / email</label><input id="pe_contact" placeholder=""></div>
+        <div class="field" style="min-width:170px"><label>Tranche (quotient)</label><select id="pe_tranche"></select></div>
+        <div class="field" style="min-width:110px"><label>Jours / mois</label><input type="number" id="pe_jours" min="1" max="26" step="1" value="16"></div>
+        <div class="field" style="min-width:120px"><label>Rang fratrie</label><select id="pe_rang"><option value="1">1er enfant</option><option value="2">2e enfant</option><option value="3">3e enfant</option><option value="4">4e enfant</option></select></div>
+        <div class="field" style="min-width:110px"><label>Après-midi ?</label><select id="pe_aprem"><option value="1">Oui</option><option value="0">Non</option></select></div>
+        <div class="field" style="min-width:110px"><label>Matin ?</label><select id="pe_matin"><option value="0">Non</option><option value="1">Oui</option></select></div>
+      </div>
+      <div style="margin-top:8px"><button class="btn" id="pe_btn" onclick="addEnfantPeri()">+ Ajouter l'enfant</button></div>
+      <table style="margin-top:12px"><thead><tr><th>Enfant</th><th>Responsable</th><th>Tranche</th><th>Formule</th><th class="num">Par mois</th><th></th></tr></thead>
+        <tbody id="periEnfRows"></tbody></table>
+    </div>
+  </section>
+
   <!-- BILAN -->
   <section id="bilan" class="page">
     <div class="panel">
@@ -897,7 +941,7 @@ const uid = () => Date.now().toString(36)+Math.random().toString(36).slice(2,7);
 
 let db = load();
 function load(){ try{ return Object.assign(blank(), JSON.parse(localStorage.getItem(KEY))||{}); }catch(e){ return blank(); } }
-function blank(){ return {members:[],ops:[],projects:[],subventions:[],comptes:[],contacts:[],liens:[],docs:[],notes:[],echeances:[],reunions:[],incidents:[],dettes:[],recurrents:{},protocoles:[],contrats:[],accueilIntro:''}; }
+function blank(){ return {members:[],ops:[],projects:[],subventions:[],comptes:[],contacts:[],liens:[],docs:[],notes:[],echeances:[],reunions:[],incidents:[],dettes:[],recurrents:{},protocoles:[],contrats:[],accueilIntro:'',periscolaire:{enfants:[]}}; }
 function save(){ jLog(); localStorage.setItem(KEY, JSON.stringify(db)); renderAll(); }
 
 /* ---- Historique (journal d'activité automatique, onglet réservé au bureau) ---- */
@@ -976,6 +1020,8 @@ document.querySelectorAll('nav.tabs button').forEach(b=>{
 
 /* ---- Aide : « Demande à Zanana » (FAQ + assistant par mots-clés, sans IA) ---- */
 const FAQ=[
+  {cat:'🎒 Périscolaire',q:"Comment gérer le périscolaire, les tarifs et ce que paient les familles ?",kw:"periscolaire garderie tarif grille quotient familial qf enfant inscription facture facturation matin apres-midi aprem fratrie remise extrascolaire acm vepi place",
+   a:"Onglet <b>🎒 Périscolaire</b>. La <b>grille tarifaire</b> est par <b>jour</b> selon le quotient familial (pré-remplie avec les tarifs 2024-2025) : modifie une case puis clique <b>💾 Enregistrer la grille</b> pour la réévaluer (ex. pour la rentrée d'août). Ajoute ensuite chaque <b>enfant</b> (tranche, matin et/ou après-midi, rang dans la fratrie) : Bob calcule tout seul ce qu'il doit par mois — <i>tarif jour × nombre de jours du mois, + supplément matin, − remise fratrie</i> — et le total des recettes attendues. C'est la gestion interne ; l'affichage des <b>places restantes</b> côté site public viendra ensuite."},
   {cat:'🚀 Démarrer',q:"Où je vois les nouveautés de Bob ?",kw:"nouveaute nouveau quoi de neuf notice changement evolution pastille rouge mise a jour decouvrir fonctionnalite",
    a:"Onglet <b>❓ Aide</b>, panneau <b>✨ Quoi de neuf</b> : chaque évolution de Bob y arrive avec sa date et l'onglet concerné. Une <b>pastille rouge</b> sur l'onglet Aide te prévient tant que tu n'as pas regardé ; une fois lues, les cartes restent — c'est la notice chronologique de Bob. La FAQ ci-dessous sert de notice par thème."},
   {cat:'🚀 Démarrer',q:"Comment je me connecte à Bob ?",kw:"connexion connecter login mot de passe identifiant entrer acceder ouvrir session",
@@ -1102,6 +1148,8 @@ function renderFaqList(){
 
 /* ---- ✨ Quoi de neuf (nouveautés + notice chronologique) ---- */
 const NEWS=[
+  {id:'2026-06-16-peri',date:'2026-06-16',tab:'🎒 Périscolaire',titre:'🎒 Nouvel onglet Périscolaire',
+   desc:"Gère la grille tarifaire par quotient familial (pré-remplie avec les tarifs 2024-2025, à réévaluer pour la rentrée d'août), inscris les enfants (matin et/ou après-midi, rang dans la fratrie) et Bob calcule tout seul ce que chaque famille doit par mois + les recettes attendues."},
   {id:'2026-06-12-news',date:'2026-06-12',tab:'❓ Aide',titre:'✨ Le panneau « Quoi de neuf »',
    desc:"Celui que tu lis ! À chaque évolution de Bob, une carte arrive ici et une pastille rouge s'affiche sur l'onglet Aide. Les cartes lues restent : c'est la notice de Bob au fil du temps."},
   {id:'2026-06-12-alertes',date:'2026-06-12',tab:'📊 Tableau de bord',titre:'🚨 Alertes importantes',
@@ -2411,6 +2459,98 @@ function saveSimuGarderie(){
   const el=$('sgSaved'); if(el){ el.textContent='Hypothèses enregistrées et partagées avec le bureau ✔'; setTimeout(()=>{ el.textContent=''; },4000); }
 }
 
+/* ---- Périscolaire : grille par quotient familial + enfants + facturation ---- */
+const PERI_DEFAUT={
+  tranches:[
+    {label:'Tranche 1', qf:'0 – 350,99 €', jour:3.14},
+    {label:'Tranche 2', qf:'351 – 450,99 €', jour:3.58},
+    {label:'Tranche 3', qf:'451 – 600,99 €', jour:4.13},
+    {label:'Tranche 4', qf:'601 – 800,99 €', jour:4.40},
+    {label:'Tranche 5', qf:'801 – 1 000,99 €', jour:4.95},
+    {label:'Tranche 6', qf:'1 001 – 1 250,99 €', jour:5.50},
+    {label:'Tranche 7', qf:'1 251 – 1 500,99 €', jour:6.05},
+    {label:'Tranche 8', qf:'1 501 – 2 000,99 €', jour:6.60},
+    {label:'Tranche 9', qf:'2 001 € et +', jour:7.43},
+    {label:'Hors commune', qf:'—', jour:8.25}
+  ],
+  suppMatin:1.5, remise:5, jours:16
+};
+function periDB(){
+  if(!db.periscolaire) db.periscolaire={};
+  const p=db.periscolaire;
+  if(!p.grille) p.grille=JSON.parse(JSON.stringify(PERI_DEFAUT));
+  if(!Array.isArray(p.enfants)) p.enfants=[];
+  if(p.grille.suppMatin==null) p.grille.suppMatin=1.5;
+  if(p.grille.remise==null) p.grille.remise=5;
+  if(p.grille.jours==null) p.grille.jours=16;
+  return p;
+}
+function periFacture(e){
+  const g=periDB().grille;
+  const t=g.tranches[e.trancheIdx]||g.tranches[0]||{jour:0};
+  const jours=(e.jours||g.jours||16);
+  const base=((e.aprem?(t.jour||0):0)+(e.matin?(g.suppMatin||0):0))*jours;
+  const remisePct=(g.remise||0)*Math.max(0,(e.rang||1)-1);
+  return { tarifJour:t.jour||0, jours, remisePct, total: base*(1-Math.min(remisePct,90)/100) };
+}
+function renderPeriscolaire(){
+  if(!$('periGrilleRows')) return;
+  const p=periDB(), g=p.grille;
+  $('periGrilleRows').innerHTML=g.tranches.map((t,i)=>
+    `<tr><td>${esc(t.label)}</td><td>${esc(t.qf)}</td><td class="num"><input type="number" min="0" step="0.01" value="${t.jour}" style="width:88px;text-align:right" oninput="periSetJour(${i},this.value)"> €</td></tr>`
+  ).join('');
+  $('peri_suppMatin').value=g.suppMatin; $('peri_remise').value=g.remise; $('peri_jours').value=g.jours;
+  const sel=$('pe_tranche'); if(sel && sel.options.length!==g.tranches.length){ sel.innerHTML=g.tranches.map((t,i)=>`<option value="${i}">${esc(t.label)}</option>`).join(''); }
+  const rows=p.enfants.map(e=>{ const f=periFacture(e); const t=g.tranches[e.trancheIdx]||{};
+    const formule=[e.aprem?'après-midi':null,e.matin?'matin':null].filter(Boolean).join(' + ')||'—';
+    return `<tr>
+      <td><strong>${esc(e.nom)}</strong></td>
+      <td>${esc(e.responsable||'—')}${e.contact?`<br><span class="muted" style="font-size:12px">${esc(e.contact)}</span>`:''}</td>
+      <td>${esc(t.label||'')}</td>
+      <td>${formule}${f.remisePct>0?` · <span class="muted">−${f.remisePct}% fratrie</span>`:''}</td>
+      <td class="num"><strong>${euro(f.total)}</strong></td>
+      <td style="white-space:nowrap"><button class="ghost btn" onclick="editEnfantPeri('${e.id}')" title="Modifier">✏️</button> <button class="ghost btn" onclick="delEnfantPeri('${e.id}')" title="Retirer">🗑</button></td></tr>`;
+  }).join('');
+  $('periEnfRows').innerHTML=rows||'<tr><td colspan="6" class="empty">Aucun enfant inscrit pour l\'instant. Ajoute le premier ci-dessus.</td></tr>';
+  const nb=p.enfants.length, nbMat=p.enfants.filter(e=>e.matin).length, nbApm=p.enfants.filter(e=>e.aprem).length;
+  const totMois=p.enfants.reduce((s,e)=>s+periFacture(e).total,0);
+  $('periKpis').innerHTML=
+      kpi('Enfants inscrits',nb,'',`${nbApm} après-midi · ${nbMat} matin`)
+    + kpi('Recettes / mois',euro(totMois),'green','selon la grille et les présences saisies')
+    + kpi("Sur l'année scolaire",euro(totMois*10),'green','estimation ~10 mois');
+}
+function periSetJour(i,v){ periDB().grille.tranches[i].jour=parseFloat(v)||0; }
+function savePeriGrille(){
+  const g=periDB().grille;
+  g.suppMatin=parseFloat($('peri_suppMatin').value)||0;
+  g.remise=parseFloat($('peri_remise').value)||0;
+  g.jours=parseInt($('peri_jours').value)||16;
+  save(); renderPeriscolaire();
+  const el=$('periGrilleSaved'); if(el){ el.textContent='Grille enregistrée ✔'; setTimeout(()=>{ el.textContent=''; },4000); }
+}
+function addEnfantPeri(){
+  const nom=($('pe_nom').value||'').trim(); if(!nom){ alert("Indique le nom de l'enfant."); return; }
+  const p=periDB();
+  const e={ id:$('pe_id').value||uid(), nom,
+    responsable:($('pe_resp').value||'').trim(), contact:($('pe_contact').value||'').trim(),
+    trancheIdx:parseInt($('pe_tranche').value)||0, jours:parseInt($('pe_jours').value)||16,
+    rang:parseInt($('pe_rang').value)||1, aprem:$('pe_aprem').value==='1', matin:$('pe_matin').value==='1' };
+  const i=p.enfants.findIndex(x=>x.id===e.id);
+  if(i>=0) p.enfants[i]=e; else p.enfants.push(e);
+  ['pe_id','pe_nom','pe_resp','pe_contact'].forEach(id=>{ const el=$(id); if(el) el.value=''; });
+  $('pe_jours').value=16; $('pe_rang').value='1'; $('pe_aprem').value='1'; $('pe_matin').value='0';
+  $('pe_btn').textContent="+ Ajouter l'enfant";
+  save(); renderPeriscolaire();
+}
+function editEnfantPeri(id){
+  const e=(periDB().enfants).find(x=>x.id===id); if(!e) return;
+  $('pe_id').value=e.id; $('pe_nom').value=e.nom||''; $('pe_resp').value=e.responsable||''; $('pe_contact').value=e.contact||'';
+  $('pe_tranche').value=e.trancheIdx||0; $('pe_jours').value=e.jours||16; $('pe_rang').value=e.rang||1;
+  $('pe_aprem').value=e.aprem?'1':'0'; $('pe_matin').value=e.matin?'1':'0';
+  $('pe_btn').textContent='Enregistrer'; $('pe_nom').focus();
+}
+function delEnfantPeri(id){ if(confirm('Retirer cet enfant ?')){ const p=periDB(); p.enfants=p.enfants.filter(x=>x.id!==id); save(); renderPeriscolaire(); } }
+
 /* ---- Équipe : masse salariale ---- */
 function msCalc(s){
   const hMois=(s.hsem||0)*52/12;                       // heures payées par mois (lissées)
@@ -2502,7 +2642,7 @@ function renderProtocoles(){
 }
 function renderEquipe(){ const t=$('accueilIntro'); if(t && document.activeElement!==t) t.value=db.accueilIntro||''; renderSalaries(); renderContrats(); renderProtocoles(); }
 
-function renderAll(){ renderDashboard(); renderMembers(); renderRelances(); renderOps(); renderCaisse(); renderRapprochement(); renderProjects(); renderSubventions(); renderEcheancier(); renderBilan(); renderPrevisionnel(); renderEquipe(); renderRepertoire(); renderSecretariat(); renderReunions(); renderIncidents(); renderDettes(); renderOfficialLinks(); refreshComptes(); renderListParams(); renderJournal(); renderFaqList(); renderNews(); }
+function renderAll(){ renderDashboard(); renderMembers(); renderRelances(); renderOps(); renderCaisse(); renderRapprochement(); renderProjects(); renderSubventions(); renderEcheancier(); renderBilan(); renderPrevisionnel(); renderEquipe(); renderRepertoire(); renderSecretariat(); renderReunions(); renderIncidents(); renderDettes(); renderOfficialLinks(); refreshComptes(); renderListParams(); renderJournal(); renderPeriscolaire(); renderFaqList(); renderNews(); }
 
 /* ---- Data import/export ---- */
 function exportJSON(){
