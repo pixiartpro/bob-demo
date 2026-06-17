@@ -186,12 +186,7 @@
   .actcat{max-width:780px;margin:18px auto 4px;font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:var(--vert);padding-left:2px}
   .actlist .actcat:first-child{margin-top:0}
   @media(max-width:520px){.actrow{flex-wrap:wrap}.actrow .abody{flex:1 1 auto}.actrow .btn{width:100%;margin-top:4px}}
-  /* Temps forts — agenda compact */
-  .agenda{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:10px;max-width:900px;margin:0 auto}
-  .ag-item{display:flex;gap:12px;align-items:center;background:#fff;border:1px solid var(--line);border-radius:14px;padding:11px 14px;box-shadow:var(--shadow)}
-  .ag-item .ag-ico{font-size:24px;flex:0 0 auto;width:30px;text-align:center}
-  .ag-item .ag-when{font-size:12.5px;font-weight:800;color:var(--vert)}
-  .ag-item .ag-name{font-weight:700;font-size:15px}
+  /* (ancien CSS agenda .agenda/.ag-item retiré — l'agenda utilise désormais .actrow/.actcat) */
   @media(max-width:680px){.contact-grid{grid-template-columns:1fr}.hero .deco{display:none}}
 </style>
 </head>
@@ -207,6 +202,7 @@
       <a href="#plan">Le projet</a>
       <a href="#activites">Nos activités</a>
       <a href="#ados">Ados</a>
+      <a href="#temps-forts">Temps forts</a>
       <a href="#lieux">Nos lieux</a>
       <a href="#ateliers">💡 Ateliers</a>
       <a href="#partenaires">🤝 Partenaires</a>
@@ -488,8 +484,8 @@ async function loadAteliersPublics(){
       +'<h3>'+escA(a.titre)+'</h3>'
       +(ouvert?'<p style="margin:0;color:var(--vert-fonce);font-weight:800">✅ Ça y est, l\'atelier ouvre ! Vous pouvez encore vous inscrire.</p>':'')
       +(cherche?'<p style="margin:0;color:#b23a23;font-weight:700;font-size:13.5px">🔍 On cherche un animateur / une animatrice !</p>':'')
-      +(a.description?'<p style="margin:0;color:var(--muted);font-size:14px">'+escA(a.description)+'</p>':'')
-      +'<div style="background:#eef3ef;border-radius:999px;height:10px;overflow:hidden"><div style="width:'+pct+'%;height:100%;background:var(--vert)"></div></div>'
+      +(a.description?'<p style="margin:8px 0 0;color:var(--muted);font-size:14px">'+escA(a.description)+'</p>':'')
+      +'<div style="margin:12px 0 6px;background:#eef3ef;border-radius:999px;height:10px;overflow:hidden"><div style="width:'+pct+'%;height:100%;background:var(--vert)"></div></div>'
       +'<p style="margin:0;font-size:13px;font-weight:700;color:var(--muted)">'+nbI+' / '+seuil+' intéressé·e·s'+(nbC?' · '+nbC+' prêt·e·s à animer':'')+'</p>'
       +'<div id="atf_'+a.id+'" style="display:none;margin-top:4px">'
         +'<input id="atn_'+a.id+'" placeholder="Votre nom *" style="width:100%;margin:3px 0;padding:9px 11px;border:1px solid var(--line);border-radius:10px;font:inherit">'
@@ -497,9 +493,9 @@ async function loadAteliersPublics(){
         +'<button class="btn primary" style="width:100%;margin-top:4px" onclick="atSend(\''+a.id+'\')">Valider mon inscription</button>'
       +'</div>'
       +'<p id="ati_'+a.id+'" style="margin:0;font-size:13px;font-weight:700;text-align:center"></p>'
-      +'<div class="foot" style="gap:6px;flex-wrap:wrap">'
-        +'<button class="btn win" onclick="atJoin(\''+a.id+'\',\'interesse\')">🙋 Ça m\'intéresse</button>'
-        +'<button class="btn use" onclick="atJoin(\''+a.id+'\',\'competent\')">🧑‍🏫 Je peux animer</button>'
+      +'<div class="foot" style="display:flex;gap:6px;flex-wrap:wrap;margin-top:10px">'
+        +'<button class="btn ghost" onclick="atJoin(\''+a.id+'\',\'interesse\')">🙋 Ça m\'intéresse</button>'
+        +'<button class="btn sun" onclick="atJoin(\''+a.id+'\',\'competent\')">🧑‍🏫 Je peux animer</button>'
       +'</div>'
       +(cherche?('<div style="display:flex;gap:10px;justify-content:center;margin-top:4px;font-size:13px;flex-wrap:wrap">'
         +'<span style="color:var(--muted);font-weight:700">Faites passer :</span>'
