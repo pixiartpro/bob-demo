@@ -4989,6 +4989,30 @@ renderAll();
     loadChat();
   };
 
+  /* ===== Multi-assos : l'identité affichée suit l'asso du compte connecté (CASE = défaut, inchangé) ===== */
+  const ASSO_IDENTITY = {
+    'd617489c-b18b-499b-ab17-c31656d0f08a': { // CASE — valeurs actuelles, inchangées
+      title:'Bob — secrétaire-directeur du CASE du Bois de Nèfles', appTitle:'Bob CASE',
+      h1:'Bob <span style="font-weight:500;opacity:.85">· secrétaire-directeur du CASE</span>',
+      sub:'La Bible du CASE du Bois de Nèfles : adhésions, comptabilité, subventions, répertoire',
+      footer:'Bob · secrétaire-directeur du CASE du Bois de Nèfles · données stockées localement dans votre navigateur'
+    },
+    '30cab5ff-fb7d-4734-8f2d-bac3100841ed': { // BOKAF
+      title:'Bob — association BOKAF', appTitle:'Bob BOKAF',
+      h1:'Bob <span style="font-weight:500;opacity:.85">· association BOKAF</span>',
+      sub:'Gestion de l\'association BOKAF : adhésions, comptabilité, projets',
+      footer:'Bob · association BOKAF · données gérées en ligne (Supabase, hébergement Paris · RGPD)'
+    }
+  };
+  function applyAssoIdentity(assoId){
+    const id = ASSO_IDENTITY[assoId] || ASSO_IDENTITY['d617489c-b18b-499b-ab17-c31656d0f08a'];
+    try{ document.title=id.title; }catch(e){}
+    try{ const m=document.querySelector('meta[name="apple-mobile-web-app-title"]'); if(m) m.setAttribute('content',id.appTitle); }catch(e){}
+    try{ const h=document.querySelector('header.top h1'); if(h) h.innerHTML=id.h1; }catch(e){}
+    try{ const p=document.querySelector('header.top p'); if(p) p.textContent=id.sub; }catch(e){}
+    try{ const f=document.querySelector('footer'); if(f) f.textContent=id.footer; }catch(e){}
+  }
+
   async function boot(){
     if(!window.supabase){ gate('<h2>Erreur de chargement</h2><p>Impossible de charger Supabase (connexion internet ?). Réessaie.</p>'); return; }
     sbc=window.supabase.createClient(SB_URL,SB_KEY);
@@ -4999,6 +5023,7 @@ renderAll();
     myProfile=prof;
     if(prof.statut!=='actif'){ gate('<h2>⏳ Accès en attente</h2><p>Ton accès doit être validé par un administrateur avant d\'entrer dans la gestion.</p><p style="margin-top:18px"><a href="connexion.html" style="background:#1f9d6b;color:#fff;text-decoration:none;padding:11px 18px;border-radius:999px;font-weight:800">→ Espace bureau</a></p>'); return; }
     myAsso=prof.asso_id;
+    try{ applyAssoIdentity(myAsso); }catch(e){}
     canWrite=['president','tresorier','bureau'].includes(prof.role);
     window._bobUser=(prof.full_name||prof.email||'').split('@')[0];
     // onglet Historique : réservé au bureau (retiré du navigateur pour les autres rôles)

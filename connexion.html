@@ -80,6 +80,33 @@ const SUPABASE_KEY='sb_publishable_HDfV-O2ION1Vw9v03aV_Qg_PkiAjLNo';
 const sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 
 const $=s=>document.querySelector(s);
+
+/* ===== Multi-assos : "porte" d'entrée (slug dans l'URL : ?asso=bokaf, /bokaf, ou /bokaf.html) ===== */
+const ASSO_DOORS = {
+  case:  { pine:'🍍', nom:'CASE', nom2:'Bois de Nèfles', titre:'Espace bureau — CASE du Bois de Nèfles' },
+  bokaf: { pine:'🎬', nom:'BOKAF', nom2:'',               titre:'Espace bureau — association BOKAF' }
+};
+function assoSlug(){
+  try{
+    const u=new URL(location.href);
+    let s=(u.searchParams.get('asso')||'').toLowerCase();
+    if(!s){ const m=location.pathname.toLowerCase().match(/(?:^|\/)(case|bokaf)(?:\/|\.html|$)/); if(m) s=m[1]; }
+    if(!s){ s=(localStorage.getItem('bob_asso')||'').toLowerCase(); }
+    if(!ASSO_DOORS[s]) s='case';
+    try{ localStorage.setItem('bob_asso',s); }catch(e){}
+    return s;
+  }catch(e){ return 'case'; }
+}
+const DOOR = assoSlug();
+(function(){
+  const d=ASSO_DOORS[DOOR]||ASSO_DOORS.case;
+  try{ document.title=d.titre; }catch(e){}
+  try{
+    const lg=$('.logo');
+    if(lg) lg.innerHTML='<span class="pine">'+d.pine+'</span><span><b>'+d.nom+'</b>'+(d.nom2?' <span>'+d.nom2+'</span>':'')+'</span>';
+  }catch(e){}
+})();
+
 const ROLES={
   president:{label:'Président — Super-administrateur',pill:'boss',perm:'Accès total · gère les accès · seul à pouvoir tout supprimer'},
   tresorier:{label:'Trésorier — Administrateur',pill:'boss',perm:'Accès total à la gestion · valide les demandes (ne peut pas supprimer)'},
@@ -104,7 +131,7 @@ async function signUp(){
   if(!nom||!email||!pw){toast('Indique ton nom, ton email et un mot de passe.');return}
   if(pw.length<6){toast('Le mot de passe doit faire au moins 6 caractères.');return}
   const btn=$('#r_btn'); btn.disabled=true; btn.textContent='Envoi…';
-  const {data,error}=await sb.auth.signUp({email,password:pw,options:{data:{full_name:nom}}});
+  const {data,error}=await sb.auth.signUp({email,password:pw,options:{data:{full_name:nom, asso_slug:DOOR}}});
   btn.disabled=false; btn.textContent='Envoyer ma demande';
   if(error){toast(error.message);return}
   if(data.session){ await refresh(); toast('Demande créée ✓ — en attente de validation.'); }
