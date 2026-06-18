@@ -482,6 +482,25 @@
       <p class="hint" style="margin:8px 0 0">💡 Le « coût horaire chargé » de la dernière colonne est exactement le chiffre à reporter dans le <strong>📐 Simulateur</strong> de l'onglet 🔮 Prévisionnel.</p>
     </div>
 
+    <div class="panel" id="contratsTravailPanel">
+      <h2 style="margin:0 0 4px">📄 Contrats de travail</h2>
+      <p class="hint">Chaque contrat signé (CDD, CDI, avenant…) avec ses points clés : qui, quoi, quand, le temps de travail, la convention et la rémunération. C'est la fiche de référence quand on cherche « que dit le contrat de… ». Le coût employeur global, lui, se lit dans 💰 Masse salariale juste au-dessus.</p>
+      <div class="toolbar" style="flex-wrap:wrap;gap:10px;margin-top:8px">
+        <input type="hidden" id="kt_id">
+        <div class="field" style="min-width:170px"><label>Salarié·e</label><input id="kt_salarie" placeholder="Ex. Kysy VICTOIRE"></div>
+        <div class="field" style="min-width:120px"><label>Type</label><input id="kt_type" list="ctTravailTypes" placeholder="CDD, CDI…">
+          <datalist id="ctTravailTypes"><option>CDD</option><option>CDD (remplacement)</option><option>CDI</option><option>Avenant</option><option>Service Civique</option><option>PEC</option><option>Stage</option></datalist></div>
+        <div class="field" style="min-width:170px"><label>Fonction</label><input id="kt_fonction" placeholder="Ex. Animatrice périscolaire"></div>
+        <div class="field" style="min-width:135px"><label>Début</label><input type="date" id="kt_debut"></div>
+        <div class="field" style="min-width:135px"><label>Fin (terme)</label><input type="date" id="kt_fin"></div>
+        <div class="field" style="min-width:100px"><label>h / sem</label><input type="number" id="kt_hsem" min="0" step="0.5"></div>
+        <div class="field" style="min-width:130px"><label>Brut / mois (€)</label><input type="number" id="kt_brutmois" min="0" step="0.01"></div>
+        <div class="field" style="flex:0"><label>&nbsp;</label><button class="btn" id="kt_btn" onclick="addContratTravail()">Ajouter</button></div>
+      </div>
+      <p class="hint" style="margin:6px 0 0">💡 Après l'ajout, clique sur ✏️ pour compléter le reste (motif, lieu, horaires détaillés, convention/coefficient, taux horaire, période d'essai, indemnités, lien du contrat).</p>
+      <div id="contratsTravailList" style="margin-top:10px"></div>
+    </div>
+
     <div class="panel">
       <h2 style="margin:0 0 4px">👋 Accueil des nouveaux arrivants</h2>
       <p class="hint">Le mot d'accueil et l'essentiel pour toute personne qui rejoint l'équipe.</p>
@@ -1728,6 +1747,8 @@ const FAQ=[
    a:"Onglet <strong>🗓️ Horaires</strong> (réservé au bureau). Choisis un salarié, puis remplis sa <strong>semaine type</strong> : pour chaque jour, l'heure de début/fin du matin et de l'après-midi (sélecteurs d'heure). Bob calcule automatiquement le <strong>total par jour et par semaine</strong>. Pour une période spéciale (ACM, vacances), clique <strong>« ➕ Semaine particulière »</strong>, choisis une date dans la semaine concernée et un motif : la semaine est pré-remplie avec la semaine type, tu n'ajustes que ce qui change. La liste des salariés se remplit toute seule depuis l'onglet 📒 Équipe."},
   {cat:'🧑‍💼 RH',q:"Où je gère les RH : organisation cible, fiches de poste, embauches ?",kw:"rh ressources humaines organisation cible fiche de poste fiches poste embauche embauches recrutement coordination kathy sandrine fabrice coefficient eclat pec direction bafd equipe salaries piliers projet embauche",
    a:"Onglet <strong>🧑‍💼 RH</strong> (réservé au bureau). Tu y trouves : l'<strong>organisation cible</strong> (zone modifiable — comment tu veux que ça tourne), les <strong>fiches de poste</strong> des salariés (missions + coefficient ÉCLAT) et les <strong>projets d'embauche</strong> (PEC matin, ACM été, service civique, direction). C'est un point de départ tiré du DLA : dis-moi ce que tu veux ajuster et je mets à jour."},
+  {cat:'📄 Contrats',q:"Où je retrouve le contrat de travail d'un salarié (dates, rémunération, convention) ?",kw:"contrat contrats travail cdd cdi avenant salarie salariee remplacement kissy kysy victoire periode essai precarite terme convention eclat coefficient remuneration brut taux horaire fin indemnite duree temps de travail signe",
+   a:"Onglet <strong>📒 Équipe</strong>, panneau <strong>📄 Contrats de travail</strong> (juste sous la masse salariale). Chaque contrat signé y est résumé : salarié·e, type (CDD/CDI/avenant), motif, fonction, période (avec un badge <b>● En cours</b> ou <b>Terminé</b>), temps de travail, convention/coefficient, rémunération, période d'essai et indemnités de fin. Clique sur ✏️ pour compléter ou corriger. Pour le <b>coût employeur</b> charges comprises, c'est le tableau 💰 Masse salariale juste au-dessus. Réservé au bureau."},
   {cat:'🤝 Accompagnement',q:"Où je retrouve l'accompagnement DLA, la Maison des Associations et la préparation des RDV ?",kw:"accompagnement dla charlotte verdure demele maison associations mda mdac aurelie gaudieux monbeig france active hexopee eclat elisfa neopale uniformation seance seances rdv rendez-vous diagnostic preparation suivi strategique conseillere",
    a:"Ouvre l'onglet <strong>🤝 Accompagnement</strong>. Tu y trouves : la fiche et la frise des 9 séances du <strong>DLA</strong> (Charlotte Verdure, Démêlé ESS), le diagnostic du CASE (séance 3) et le plan d'actions, la <strong>Maison Des Associations</strong>, les autres ressources (France Active, Hexopée, ELISFA, Uniformation…), et en bas le bloc <strong>Préparation du RDV</strong> avec le statut de tes actions, les demandes de Charlotte et une zone de notes de séance. Cet onglet est réservé au bureau."},
   {cat:'🎟️ Activités',q:"Comment afficher les places restantes et gérer les inscriptions sur le site ?",kw:"activite activites place places restantes capacite complet inscription inscriptions site public publier vitrine arrive bientot acm vepi danse musique",
@@ -1860,6 +1881,8 @@ function renderFaqList(){
 
 /* ---- ✨ Quoi de neuf (nouveautés + notice chronologique) ---- */
 const NEWS=[
+  {id:'2026-06-18-contrats-travail',date:'2026-06-18',tab:'📒 Équipe',titre:'📄 Nouvelle rubrique Contrats de travail',
+   desc:"Dans l'onglet 📒 Équipe, sous la masse salariale, une rubrique réunit désormais chaque contrat signé (CDD, CDI, avenant) avec ses points clés : salarié·e, type, motif, fonction, période (badge ● En cours / Terminé), temps de travail, convention/coefficient ÉCLAT, rémunération, période d'essai et indemnités de fin. Le CDD en cours de Kysy Victoire (animatrice périscolaire, remplacement) y est déjà saisi, et sa ligne a été ajoutée à la masse salariale. Clique sur ✏️ pour compléter ou corriger un contrat. Réservé au bureau."},
   {id:'2026-06-18-projet',date:'2026-06-18',tab:'🧭 Projet & orientations',titre:'🧭 Nouvel onglet Projet & orientations',
    desc:"Un écran pour l'identité du CASE : notre raison d'être (le projet associatif), nos valeurs, nos orientations stratégiques (axes issus du diagnostic / DLA) et un ORGANIGRAMME « rôles & postes » — la gouvernance bénévole (Président, Trésorier, Secrétaire) puis les pôles de l'équipe (Coordination, Périscolaire, Animation, Bringelliers, Média de quartier) avec responsable et mission. Tout est pré-rempli et modifiable : clique dans une case pour l'éditer, c'est enregistré dans le coffre. Idéal pour l'AG, la Mairie ou un partenaire."},
   {id:'2026-06-18-horaires',date:'2026-06-18',tab:'🗓️ Horaires',titre:'🗓️ Nouvel onglet Horaires des salariés',
@@ -2321,6 +2344,17 @@ const EDIT_SCHEMAS={
     {k:'montant',l:'Montant total (€)',t:'number'},{k:'date',l:'Date',t:'date'},{k:'echeance',l:'Échéance (date limite)',t:'date'}]},
   contrats:{coll:'contrats',title:'statut / contrat',f:[
     {k:'type',l:'Statut / contrat',t:'text'},{k:'description',l:'Spécificités',t:'textarea'}]},
+  contratsTravail:{coll:'contratsTravail',title:'contrat de travail',f:[
+    {k:'salarie',l:'Salarié·e',t:'text'},{k:'type',l:'Type de contrat',t:'list',dl:'ctTravailTypes'},
+    {k:'fonction',l:'Fonction / poste',t:'text'},{k:'motif',l:'Motif (remplacement, surcroît…)',t:'textarea'},
+    {k:'lieu',l:'Lieu de travail',t:'text'},
+    {k:'debut',l:'Début',t:'date'},{k:'fin',l:'Fin (terme)',t:'date'},
+    {k:'avenant',l:'Avenant / renouvellement',t:'text'},
+    {k:'hsem',l:'Heures / semaine',t:'number'},{k:'horaires',l:'Répartition horaire',t:'text'},
+    {k:'convention',l:'Convention / classification',t:'text'},
+    {k:'txhoraire',l:'Taux horaire brut (€)',t:'number'},{k:'brutmois',l:'Brut mensuel (€)',t:'number'},
+    {k:'essai',l:"Période d'essai",t:'text'},{k:'indemnites',l:'Indemnités de fin',t:'text'},
+    {k:'doc',l:'Lien du contrat (Drive…)',t:'text'},{k:'notes',l:'Notes',t:'textarea'}]},
   protocoles:{coll:'protocoles',title:'protocole',f:[
     {k:'titre',l:'Titre',t:'text'},{k:'categorie',l:'Catégorie',t:'text'},{k:'contenu',l:'Contenu / consignes',t:'textarea'},{k:'url',l:'Lien',t:'text'}]},
   contacts:{coll:'contacts',title:'contact',f:[
@@ -3552,6 +3586,47 @@ function renderContrats(){
       <button class="danger" onclick="delContrat('${c.id}')">Suppr.</button></div></div>
     ${c.description?'<p style="margin:6px 0 0;white-space:pre-wrap">'+esc(c.description)+'</p>':''}</div>`).join('');
 }
+/* ---- Contrats de travail (fiches par salarié·e) ---- */
+function addContratTravail(){
+  const salarie=$('kt_salarie').value.trim(); if(!salarie){ alert('Indique le ou la salarié·e.'); return; }
+  const rec={ id:$('kt_id').value||uid(), salarie,
+    type:$('kt_type').value.trim(), fonction:$('kt_fonction').value.trim(),
+    debut:$('kt_debut').value, fin:$('kt_fin').value,
+    hsem:parseFloat($('kt_hsem').value)||0, brutmois:parseFloat($('kt_brutmois').value)||0 };
+  db.contratsTravail=db.contratsTravail||[];
+  const i=db.contratsTravail.findIndex(x=>x.id===rec.id);
+  if(i>=0){ db.contratsTravail[i]=Object.assign({},db.contratsTravail[i],rec); } else { db.contratsTravail.push(rec); }
+  ['kt_id','kt_salarie','kt_type','kt_fonction','kt_debut','kt_fin','kt_hsem','kt_brutmois'].forEach(id=>$(id).value='');
+  $('kt_btn').textContent='Ajouter'; save();
+}
+function delContratTravail(id){ if(confirm('Supprimer ce contrat ?')){ db.contratsTravail=(db.contratsTravail||[]).filter(c=>c.id!==id); save(); } }
+function ctDateFR(s){ if(!s) return ''; const m=/^(\d{4})-(\d{2})-(\d{2})$/.exec(s); return m?(m[3]+'/'+m[2]+'/'+m[1]):s; }
+function renderContratsTravail(){
+  const box=$('contratsTravailList'); if(!box) return; const cs=(db.contratsTravail||[]).slice();
+  if(!cs.length){ box.innerHTML='<p class="hint" style="margin:0">Aucun contrat enregistré. Ajoute le premier ci-dessus.</p>'; return; }
+  cs.sort((a,b)=>String(b.debut||'').localeCompare(String(a.debut||'')));
+  const today=new Date().toISOString().slice(0,10);
+  const num=v=>(v==null?'':String(v).replace('.',','));
+  box.innerHTML=cs.map(c=>{
+    const actif=c.fin?(c.fin>=today):true;
+    const badge=actif?'<span class="pill ok">● En cours</span>':'<span class="pill">Terminé</span>';
+    const row=(l,v)=>v?('<div class="kv"><span class="muted">'+l+'</span><span>'+esc(String(v))+'</span></div>'):'';
+    const periode=(c.debut||c.fin)?((ctDateFR(c.debut)||'?')+' → '+(ctDateFR(c.fin)||'?')):'';
+    const rem=c.brutmois?(euro(c.brutmois)+' brut/mois'+(c.txhoraire?(' ('+num(c.txhoraire)+' €/h)'):'')):(c.txhoraire?(num(c.txhoraire)+' €/h'):'');
+    const tps=c.hsem?(num(c.hsem)+' h/sem'+(c.horaires?(' — '+c.horaires):'')):(c.horaires||'');
+    return '<div class="panel" style="padding:14px;margin:10px 0;border-left:4px solid var(--brand)">'
+      +'<div class="toolbar"><div><strong>'+esc(c.salarie)+'</strong> '+(c.type?'<span class="muted">· '+esc(c.type)+'</span> ':'')+badge+'</div>'
+      +'<div style="white-space:nowrap"><button class="ghost btn" style="padding:4px 9px;font-size:12px" onclick="openEdit(\'contratsTravail\',\''+c.id+'\')" title="Modifier / compléter">✏️</button> '
+      +'<button class="danger" onclick="delContratTravail(\''+c.id+'\')">Suppr.</button></div></div>'
+      +'<div style="margin-top:8px">'
+      +row('Fonction',c.fonction)+row('Motif',c.motif)+row('Période',periode)+row('Avenant',c.avenant)
+      +row('Temps de travail',tps)+row('Lieu',c.lieu)+row('Convention / classification',c.convention)
+      +row('Rémunération',rem)+row("Période d'essai",c.essai)+row('Indemnités de fin',c.indemnites)+row('Notes',c.notes)
+      +'</div>'
+      +(c.doc?'<div class="row" style="margin-top:8px"><a class="btn" style="padding:5px 14px;font-size:12px;text-decoration:none" href="'+esc(c.doc)+'" target="_blank" rel="noopener">📄 Ouvrir le contrat ↗</a></div>':'')
+      +'</div>';
+  }).join('');
+}
 function addProtocole(){
   const titre=$('pr_titre').value.trim(); if(!titre){ alert('Indique un titre.'); return; }
   db.protocoles=db.protocoles||[]; db.protocoles.push({id:uid(),titre,categorie:$('pr_cat').value.trim()||'Général',contenu:$('pr_contenu').value.trim(),url:$('pr_url').value.trim()});
@@ -3566,7 +3641,7 @@ function renderProtocoles(){
     +byCat[cat].map(p=>`<div class="kv"><span><strong>${esc(p.titre)}</strong>${p.contenu?'<br><span class="muted" style="font-size:13px;white-space:pre-wrap">'+esc(p.contenu)+'</span>':''}</span>
       <span style="white-space:nowrap">${p.url?'<a class="btn" style="padding:4px 12px;font-size:12px;text-decoration:none" href="'+esc(p.url)+'" target="_blank" rel="noopener">Ouvrir ↗</a> ':''}<button class="ghost btn" style="padding:4px 9px;font-size:12px" onclick="openEdit('protocoles','${p.id}')" title="Modifier">✏️</button> <button class="danger" onclick="delProtocole('${p.id}')">✕</button></span></div>`).join('')).join('');
 }
-function renderEquipe(){ const t=$('accueilIntro'); if(t && document.activeElement!==t) t.value=db.accueilIntro||''; renderSalaries(); renderContrats(); renderProtocoles(); }
+function renderEquipe(){ const t=$('accueilIntro'); if(t && document.activeElement!==t) t.value=db.accueilIntro||''; renderSalaries(); renderContratsTravail(); renderContrats(); renderProtocoles(); }
 
 function renderAll(){ renderDashboard(); renderMembers(); renderRelances(); renderOps(); renderCaisse(); renderRapprochement(); renderProjects(); renderSubventions(); renderEcheancier(); renderBilan(); renderPrevisionnel(); renderEquipe(); renderRepertoire(); renderSecretariat(); renderAssurance(); renderReunions(); renderIncidents(); renderDettes(); renderOfficialLinks(); refreshComptes(); renderListParams(); renderJournal(); renderPeriscolaire(); renderFaqList(); renderNews(); renderAccompagnement(); renderRH(); renderProjet(); renderActions(); renderConges(); renderHoraires(); }
 
