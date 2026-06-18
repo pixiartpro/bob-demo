@@ -1405,6 +1405,25 @@ GOUVERNANCE
       <div class="field" style="margin-top:10px"><label>📌 Suivi de la bascule (où on en est)</label><textarea id="bsc_notes" onchange="saveBasculeNotes()" style="width:100%;min-height:80px;font:inherit;padding:8px 10px;border:1px solid #e6ece7;border-radius:10px;resize:vertical" placeholder="Ex. Réponse Hexopée Q199179 reçue le 04/05 (ÉCLAT confirmé). En attente du chiffrage masse salariale (Julie Lauret) et de la note bénéfice/coût (Sabine Hamot) avant signature des avenants Kathy & Fabrice."></textarea></div>
     </div>
 
+    <div class="panel" id="docsRh">
+      <h3 style="margin:0 0 4px">📄 Documents RH — Modèles d'avenant (bascule ÉCLAT)</h3>
+      <p class="hint" style="margin:0 0 10px">Une <strong>base de travail</strong> pour les avenants de Kathy et Fabrice (changement de convention ALISFA → ÉCLAT avec <strong>maintien de salaire</strong>). Le texte est <strong>modifiable</strong> (enregistré dans le coffre du bureau) et <strong>imprimable</strong>. ⚠️ Modèle à faire <strong>valider par Hexopée / la paie</strong> avant signature — complète les champs entre crochets <code>[ ___ ]</code> (coefficient, rémunération, date d'effet…).</p>
+      <div style="margin-bottom:16px">
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:6px">
+          <strong>👤 Avenant — Kathy Maillot</strong>
+          <span style="display:flex;gap:6px"><button class="ghost btn" onclick="printAvenant('kathy')" title="Ouvrir une version imprimable / PDF">🖨️ Imprimer / PDF</button><button class="ghost btn" onclick="resetAvenant('kathy')" title="Revenir au modèle d'origine">↩️ Modèle</button></span>
+        </div>
+        <textarea id="av_kathy" onchange="saveAvenant('kathy')" style="width:100%;min-height:300px;font:13px/1.6 Georgia,'Times New Roman',serif;padding:14px 16px;border:1px solid #e6ece7;border-radius:10px;resize:vertical"></textarea>
+      </div>
+      <div>
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:6px">
+          <strong>👤 Avenant — Fabrice Ramin</strong>
+          <span style="display:flex;gap:6px"><button class="ghost btn" onclick="printAvenant('fabrice')" title="Ouvrir une version imprimable / PDF">🖨️ Imprimer / PDF</button><button class="ghost btn" onclick="resetAvenant('fabrice')" title="Revenir au modèle d'origine">↩️ Modèle</button></span>
+        </div>
+        <textarea id="av_fabrice" onchange="saveAvenant('fabrice')" style="width:100%;min-height:300px;font:13px/1.6 Georgia,'Times New Roman',serif;padding:14px 16px;border:1px solid #e6ece7;border-radius:10px;resize:vertical"></textarea>
+      </div>
+    </div>
+
     <div class="panel">
       <h3 style="margin:0 0 4px">📋 Projets d'embauche</h3>
       <table>
@@ -1928,6 +1947,8 @@ document.querySelectorAll('nav.tabs button').forEach(b=>{
 
 /* ---- Aide : « Demande à Zanana » (FAQ + assistant par mots-clés, sans IA) ---- */
 const FAQ=[
+  {cat:'🧑‍💼 RH',q:"Où trouver un modèle d'avenant pour la bascule ÉCLAT (Kathy, Fabrice) ?",kw:"avenant avenants modele modeles document documents contrat travail eclat alisfa bascule changement convention kathy fabrice imprimer pdf maintien salaire signature clause classification coefficient remuneration garantie base",
+   a:"Onglet <strong>🧑‍💼 RH</strong>, panneau <strong>📄 Documents RH — Modèles d'avenant</strong>. Tu y trouves un avenant <strong>pré-rempli pour Kathy et pour Fabrice</strong> (changement de convention ALISFA → ÉCLAT avec <strong>clause de maintien de salaire</strong>, sans rétroactivité). Le texte est <strong>modifiable</strong> (enregistré dans le coffre) et <strong>imprimable</strong> (bouton 🖨️ Imprimer / PDF ouvre une version propre). Le bouton ↩️ Modèle restaure le texte d'origine. ⚠️ C'est une <strong>base de travail</strong> : à faire valider par Hexopée / la paie (Julie Lauret) avant signature, et à compléter là où il y a des crochets [ ___ ] (SIRET, adresse, coefficient ÉCLAT, rémunération, date d'effet)."},
   {cat:'🧑‍💼 RH',q:"Comment gérer le passage de convention ÉLISFA à ÉCLAT sans baisser les salaires ?",kw:"bascule eclat elisfa alisfa convention collective changement passage salaire salaires maintien baisser baisse trop paye payes coefficient point valeur minimum grille plancher avenant differentiel complement kathy fabrice idcc 1518 1261 hexopee simulateur arret maladie prevoyance regularisation",
    a:"Onglet <strong>🧑‍💼 RH</strong>, panneau <strong>🔄 Bascule ÉLISFA → ÉCLAT</strong>. Le principe à retenir&nbsp;: la grille ÉCLAT (coefficient × valeur du point) donne un <strong>minimum</strong>, pas le salaire exact — on a le droit de payer <strong>au-dessus</strong> et on ne <strong>baisse jamais</strong> un salaire (c'est dans le contrat). Donc «&nbsp;ils sont trop payés&nbsp;» n'est pas un problème&nbsp;: ils sont juste au-dessus du plancher. Saisis le <strong>coefficient ÉCLAT visé</strong> et la <strong>valeur du point</strong> pour chaque salarié&nbsp;: Bob calcule le minimum, le compare au brut actuel et affiche le <strong>maintien (complément différentiel)</strong> à conserver — ou une alerte rouge si quelqu'un passait sous le minimum (là il faut le remonter). Le mécanisme légal&nbsp;: un <strong>avenant par salarié</strong> avec <strong>clause de maintien de salaire</strong>, sans rétroactivité. ⚠️ Le vrai surcoût n'est pas le salaire (maintenu) mais l'<strong>arrêt maladie</strong> (ÉCLAT est moins favorable qu'ALISFA → prévoyance de branche à souscrire). Simulation d'aide à la décision&nbsp;: le chiffrage officiel reste la paie (Julie Lauret) / Hexopée."},
   {cat:'🎒 Périscolaire',q:"Où je vois les dossiers d'inscription périscolaire déposés par les familles ?",kw:"periscolaire inscription dossier dossiers famille familles piece pieces caf assurance vaccin livret avis imposition justificatif domicile depose adherent matin soir rentree aout scan coffre",
@@ -2084,6 +2105,8 @@ function renderFaqList(){
 
 /* ---- ✨ Quoi de neuf (nouveautés + notice chronologique) ---- */
 const NEWS=[
+  {id:'2026-06-18-avenants-eclat',date:'2026-06-18',tab:'🧑‍💼 RH',titre:'📄 Modèles d\'avenant bascule ÉCLAT',
+   desc:"Dans l'onglet 🧑‍💼 RH, une partie « Documents RH » contient un modèle d'avenant pré-rempli pour Kathy et pour Fabrice (changement de convention ALISFA → ÉCLAT avec clause de maintien de salaire, sans rétroactivité, et adhésion prévoyance/santé ÉCLAT). Le texte est modifiable (enregistré dans le coffre) et imprimable en PDF (bouton 🖨️). Le bouton ↩️ Modèle restaure l'original. C'est une base de travail à faire valider par Hexopée / la paie avant signature : complète les champs entre crochets (SIRET, adresse, coefficient, rémunération, date d'effet)."},
   {id:'2026-06-18-bascule-eclat',date:'2026-06-18',tab:'🧑‍💼 RH',titre:'🔄 Simulateur bascule ÉLISFA → ÉCLAT',
    desc:"Dans l'onglet 🧑‍💼 RH, un simulateur t'aide à gérer le passage de convention sans baisser les salaires. La grille ÉCLAT donne un MINIMUM (un plancher), pas le salaire exact : on a le droit de payer au-dessus, et on ne baisse jamais un salaire. Saisis le coefficient ÉCLAT visé et la valeur du point pour chaque salarié : Bob calcule le minimum, le compare au brut actuel et affiche le maintien à conserver (complément différentiel), ou une alerte rouge si quelqu'un passait sous le minimum. Rappels intégrés : avenant + clause de maintien de salaire, pas de rétroactivité, et le vrai surcoût = l'arrêt maladie (prévoyance de branche ÉCLAT). Aide à la décision — chiffrage officiel = paie (Julie Lauret) / Hexopée."},
   {id:'2026-06-18-anciennete',date:'2026-06-18',tab:'🧑‍💼 RH',titre:'📅 Ancienneté de l\'équipe',
@@ -3622,7 +3645,7 @@ function renderAnciennete(){
     +'</tbody></table>'
     +'<p class="hint" style="margin:8px 0 0">Points = +2 par année révolue (déroulement de carrière ÉCLAT, reprise incluse si la date d\'entrée est antidatée). Prime/mois = points × 7,23 € (valeur du point V1 2026), proratisée au temps de travail. Repère indicatif — reprise plafonnée à 40 points, décompte exact validé par la paie / Hexopée.</p>';
 }
-function renderRH(){ const t=$('rhOrgCible'); if(t && db.rhOrgCible && document.activeElement!==t) t.value=db.rhOrgCible; renderAnciennete(); renderBascule(); }
+function renderRH(){ const t=$('rhOrgCible'); if(t && db.rhOrgCible && document.activeElement!==t) t.value=db.rhOrgCible; renderAnciennete(); renderBascule(); renderAvenants(); }
 
 /* ---- Bascule ÉLISFA → ÉCLAT : simulateur de maintien de salaire (RH) ---- */
 function bsCalc(s){
@@ -3675,6 +3698,116 @@ function renderBascule(){
   k+=kpi('Complément différentiel', totMaintien>0?'+'+fr(totMaintien)+' / mois':'—', 'green', 'à maintenir au-dessus de la grille');
   k+=kpi('Sous la grille', nbSous>0?(nbSous+' salarié'+(nbSous>1?'s':'')):'aucun', nbSous>0?'red':'green', nbSous>0?'à remonter au minimum ÉCLAT':'tout le monde au-dessus du plancher');
   const kk=$('basculeKpis'); if(kk) kk.innerHTML=k;
+}
+
+/* ---- Documents RH : modèles d'avenant bascule ÉCLAT (Kathy / Fabrice) ---- */
+function avInfo(key){
+  return key==='kathy'
+    ? {civ:'Mme', name:'Kathy MAILLOT', poste:'Coordination / animation', entree:'10/02/2019'}
+    : {civ:'M.',  name:'Fabrice RAMIN', poste:'Animation socioculturelle / conduite de projets', entree:'19/09/2017'};
+}
+function avenantTpl(key){
+  const o=avInfo(key);
+  return `AVENANT N° ____ AU CONTRAT DE TRAVAIL
+Changement de convention collective applicable — maintien de la rémunération
+
+ENTRE LES SOUSSIGNÉS
+
+L'association C.A.S.E — Centre d'Animation Socio-Éducatif du Bois de Nèfles,
+dont le siège est situé 132 place de la Fraternité, Route des Ananas, 97490 Sainte-Clotilde,
+identifiée sous le n° RNA W9R1001361, SIRET [ ______________ ],
+représentée par M. Guillaume BOULEVART, en sa qualité de Président,
+ci-après dénommée « l'employeur »,
+
+D'UNE PART,
+
+ET
+
+${o.civ} ${o.name}, demeurant [ adresse du / de la salarié(e) ],
+occupant le poste de ${o.poste},
+entré(e) dans l'association le ${o.entree},
+ci-après dénommé(e) « le / la salarié(e) »,
+
+D'AUTRE PART,
+
+PRÉAMBULE
+
+L'association a appliqué jusqu'à ce jour la convention collective nationale des
+acteurs du lien social et familial (ALISFA / ÉLISFA — IDCC 1261). La convention
+collective applicable est déterminée par l'activité réelle de la structure.
+L'activité du C.A.S.E (animation socioculturelle, périscolaire, accueil collectif
+de mineurs) relève de la Convention collective nationale de l'animation — ÉCLAT
+(IDCC 1518), ce qui a été confirmé par la branche professionnelle (Hexopée,
+saisine Q199179). Les parties conviennent en conséquence de régulariser la
+convention collective applicable au contrat de travail, sans aucune diminution
+de la rémunération du / de la salarié(e).
+
+IL A ÉTÉ CONVENU CE QUI SUIT
+
+ARTICLE 1 — CONVENTION COLLECTIVE APPLICABLE
+À compter du [ date d'effet ], la convention collective applicable au contrat de
+travail est la Convention collective nationale de l'animation — ÉCLAT (IDCC 1518),
+en remplacement de la convention ALISFA (IDCC 1261).
+
+ARTICLE 2 — CLASSIFICATION
+Le / la salarié(e) est positionné(e), dans la grille de classification ÉCLAT, au
+groupe [ ___ ] — coefficient [ ___ ]. L'ancienneté acquise est reprise et
+valorisée au titre des points de déroulement de carrière, dans les conditions
+prévues par la convention ÉCLAT.
+
+ARTICLE 3 — RÉMUNÉRATION ET MAINTIEN DE SALAIRE
+La rémunération brute mensuelle du / de la salarié(e) est maintenue à son niveau
+actuel, soit [ __________ ] € brut pour [ ____ ] heures hebdomadaires.
+Conformément au principe d'interdiction de toute baisse unilatérale de la
+rémunération, il est expressément garanti que cette rémunération ne pourra en
+aucun cas être réduite du fait du changement de convention collective. Dans
+l'hypothèse où le minimum conventionnel ÉCLAT résultant de la classification
+ci-dessus serait inférieur à cette rémunération, le / la salarié(e) conserve sa
+rémunération antérieure, l'écart étant maintenu à titre de complément (garantie
+individuelle de rémunération / indemnité différentielle).
+
+ARTICLE 4 — PRÉVOYANCE ET FRAIS DE SANTÉ
+Le / la salarié(e) bénéficie des régimes de prévoyance et de complémentaire santé
+prévus par la branche ÉCLAT, en remplacement des régimes antérieurs.
+
+ARTICLE 5 — AUTRES DISPOSITIONS
+Les autres clauses du contrat de travail demeurent inchangées. Le présent avenant
+prend effet à la date de sa signature et ne comporte aucun effet rétroactif.
+
+Fait à Saint-Denis, le ____________________, en deux exemplaires originaux.
+
+  L'employeur                                Le / la salarié(e)
+  M. Guillaume BOULEVART, Président          ${o.name}
+                                             (faire précéder la signature de la
+                                              mention « Lu et approuvé »)
+
+
+————————————————————————————————————————————————————————————
+⚠️ MODÈLE / BASE DE TRAVAIL — à faire valider par Hexopée et le gestionnaire de
+paie (Julie Lauret) avant signature. Champs à compléter : SIRET, adresse du / de
+la salarié(e), n° d'avenant, groupe et coefficient ÉCLAT, rémunération brute,
+nombre d'heures, date d'effet.`;
+}
+function saveAvenant(key){ if(!db.avenants) db.avenants={}; const el=$('av_'+key); if(el){ db.avenants[key]=el.value; save(); } }
+function resetAvenant(key){
+  if(!confirm('Revenir au modèle d\'origine ? Tes modifications de cet avenant seront perdues.')) return;
+  if(!db.avenants) db.avenants={}; delete db.avenants[key]; save();
+  const el=$('av_'+key); if(el) el.value=avenantTpl(key);
+}
+function printAvenant(key){
+  const el=$('av_'+key); const txt=el?el.value:avenantTpl(key);
+  const w=window.open('','_blank');
+  if(!w){ alert('Autorise les fenêtres pop-up pour ouvrir la version imprimable.'); return; }
+  w.document.write('<!doctype html><html><head><meta charset="utf-8"><title>Avenant — '+esc(avInfo(key).name)+'</title><style>body{font:14px/1.7 Georgia,\'Times New Roman\',serif;max-width:760px;margin:38px auto;padding:0 30px;color:#1a1a1a;white-space:pre-wrap}</style></head><body>'+esc(txt)+'</body></html>');
+  w.document.close(); w.focus(); setTimeout(function(){ try{ w.print(); }catch(e){} }, 350);
+}
+function renderAvenants(){
+  if(!db.avenants) db.avenants={};
+  ['kathy','fabrice'].forEach(function(key){
+    const el=$('av_'+key); if(!el || document.activeElement===el) return;
+    const v=db.avenants[key];
+    el.value=(v!=null && v!=='') ? v : avenantTpl(key);
+  });
 }
 
 /* ---- Projet & orientations (onglet 🧭) ---- */
