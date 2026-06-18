@@ -128,6 +128,8 @@
     <button data-tab="equipe">📒 Équipe</button>
     <button data-tab="accompagnement">🤝 Accompagnement</button>
     <button data-tab="rh">🧑‍💼 RH</button>
+    <button data-tab="suivi">✅ Suivi</button>
+    <button data-tab="conges">🏖️ Congés</button>
     <button data-tab="incidents">⚠️ Événements</button>
     <button data-tab="accounting">💶 Comptabilité</button>
     <button data-tab="caisse">💵 Caisse</button>
@@ -1343,6 +1345,48 @@ GOUVERNANCE
     </div>
   </section>
 
+  <!-- SUIVI DES ACTIONS -->
+  <section id="suivi" class="page">
+    <div class="panel" style="background:linear-gradient(135deg,#eef7f0,#f5fbf7);border:1px solid #cfe9da">
+      <h2 style="margin:0 0 4px">✅ Suivi des actions</h2>
+      <p class="hint" style="margin:0">Le suivi vivant des actions — la checklist du DLA (09/06) est pré-remplie. Change le statut, ajoute une note, ou crée une nouvelle action. Réservé au bureau.</p>
+    </div>
+    <div class="cards" id="actionsKpis"></div>
+    <div class="panel">
+      <div class="row" style="gap:8px;flex-wrap:nowrap;margin-bottom:12px">
+        <input id="act_new" placeholder="Nouvelle action à suivre…" style="flex:1" onkeydown="if(event.key==='Enter')addAction()">
+        <button class="btn" onclick="addAction()" style="flex:0 0 auto">+ Ajouter</button>
+      </div>
+      <table><thead><tr><th>Action</th><th style="width:140px">Statut</th><th>Note</th><th style="width:44px"></th></tr></thead>
+        <tbody id="actionsRows"></tbody></table>
+    </div>
+  </section>
+
+  <!-- CONGÉS -->
+  <section id="conges" class="page">
+    <div class="panel" style="background:linear-gradient(135deg,#fef6ec,#fffaf3);border:1px solid #f0dcc0">
+      <h2 style="margin:0 0 4px">🏖️ Congés</h2>
+      <p class="hint" style="margin:0">Demandes de congés et de récupération, et leur validation par le bureau. Réservé au bureau.</p>
+    </div>
+    <div class="panel" style="border-left:4px solid var(--amber)">
+      <p style="margin:0;font-size:14px">📌 <strong>Règle :</strong> les congés se demandent <strong>à l'avance</strong> (au moins 1 mois pour 5 jours ou plus, 1 semaine pour les congés courts) et ne sont acquis qu'<strong>une fois validés</strong> par le bureau.</p>
+    </div>
+    <div class="cards" id="congesKpis"></div>
+    <div class="panel">
+      <h3 style="margin:0 0 8px">Nouvelle demande</h3>
+      <div class="toolbar" style="flex-wrap:wrap;gap:10px">
+        <div class="field" style="min-width:150px"><label>Salarié·e</label><select id="cg_salarie"></select></div>
+        <div class="field" style="min-width:140px"><label>Type</label><select id="cg_type"></select></div>
+        <div class="field" style="min-width:140px"><label>Du</label><input type="date" id="cg_debut"></div>
+        <div class="field" style="min-width:140px"><label>Au</label><input type="date" id="cg_fin"></div>
+        <div class="field" style="min-width:180px"><label>Motif (facultatif)</label><input id="cg_motif" placeholder=""></div>
+      </div>
+      <div style="margin-top:8px"><button class="btn" onclick="addConge()">+ Enregistrer la demande</button></div>
+      <table style="margin-top:12px"><thead><tr><th>Salarié·e</th><th>Type</th><th>Période</th><th>Statut</th><th></th></tr></thead>
+        <tbody id="congesRows"></tbody></table>
+    </div>
+  </section>
+
   <section id="aide" class="page">
     <div class="panel" style="background:linear-gradient(135deg,#eafaf2,#f3fbf6);border:1px solid #cdeede">
       <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap">
@@ -1494,6 +1538,10 @@ const FAQ=[
    a:"Onglet <b>🎒 Périscolaire</b>, panneau <b>📨 Dossiers d'inscription</b> (en bas). Chaque famille <b>adhérente</b> dépose son dossier depuis <b>son espace adhérent</b> : enfants (matin et/ou soir) et les pièces (attestation CAF de <b>moins de 3 mois</b>, avis d'imposition, justificatif de domicile, attestation d'assurance, vaccins à jour, livret de famille). Tu vois l'état des pièces, tu cliques pour <b>consulter</b> chacune, et tu marques le dossier <b>✅ Validé</b> ou <b>⚠️ Incomplet</b>. Seules les familles adhérentes (compte validé) peuvent déposer."},
   {cat:'🧰 Secrétariat',q:"Où sont les informations de l'assurance (MAIF) pour se connecter ?",kw:"assurance maif raqvam contrat sociétaire societaire cotisation garantie connexion identifiant mot de passe attestation sinistre responsabilite civile rc secretariat",
    a:"Onglet <b>🧰 Secrétariat</b>, panneau <b>🛡️ Assurance de l'association</b>. Tu y trouves le contrat : assureur <b>MAIF</b>, contrat <b>Raqvam</b> (réf. M4202RACA), cotisation 2026 de 1&nbsp;514,10&nbsp;€, les 4 sites assurés, les garanties, l'espace <b>espacepersonnel.maif.fr</b> et le <b>contact MAIF (09 78 97 98 99, gestionsocietaire@maif.fr)</b>. Le <b>n° de sociétaire</b> et l'<b>identifiant</b> de connexion se saisissent par le bureau (rangés dans le coffre privé, jamais publiés) ; le numéro figure sur l'avis d'échéance MAIF (dossier CASE/BDN/2026/Maif). 🔒 N'écris pas le mot de passe en clair : gestionnaire de mots de passe ou « identifiant/mot de passe oublié » sur le site MAIF."},
+  {cat:'✅ Suivi',q:"Où je suis l'avancement des actions (checklist DLA) ?",kw:"suivi actions checklist dla 12 sujets statut avancement taches a faire en cours fait en attente kanban",
+   a:"Onglet <strong>✅ Suivi</strong> : la liste vivante des actions (la checklist du 09/06 est pré-remplie). Change le statut (à faire / en cours / en attente / fait), ajoute une note, ou crée une nouvelle action. Réservé au bureau."},
+  {cat:'🏖️ Congés',q:"Comment enregistrer et valider les demandes de congés ?",kw:"conges recuperation vacances demande validation salarie poser conge absence valider refuser sans solde regle delai",
+   a:"Onglet <strong>🏖️ Congés</strong> : enregistre une demande (salarié, type, dates, motif) puis <strong>Valide</strong> ou <strong>Refuse</strong>. La règle (demande à l'avance, acquis après validation) est rappelée en haut. Réservé au bureau. <em>(La saisie directe par le salarié depuis son espace viendra ensuite.)</em>"},
   {cat:'🧑‍💼 RH',q:"Où je gère les RH : organisation cible, fiches de poste, embauches ?",kw:"rh ressources humaines organisation cible fiche de poste fiches poste embauche embauches recrutement coordination kathy sandrine fabrice coefficient eclat pec direction bafd equipe salaries piliers projet embauche",
    a:"Onglet <strong>🧑‍💼 RH</strong> (réservé au bureau). Tu y trouves : l'<strong>organisation cible</strong> (zone modifiable — comment tu veux que ça tourne), les <strong>fiches de poste</strong> des salariés (missions + coefficient ÉCLAT) et les <strong>projets d'embauche</strong> (PEC matin, ACM été, service civique, direction). C'est un point de départ tiré du DLA : dis-moi ce que tu veux ajuster et je mets à jour."},
   {cat:'🤝 Accompagnement',q:"Où je retrouve l'accompagnement DLA, la Maison des Associations et la préparation des RDV ?",kw:"accompagnement dla charlotte verdure demele maison associations mda mdac aurelie gaudieux monbeig france active hexopee eclat elisfa neopale uniformation seance seances rdv rendez-vous diagnostic preparation suivi strategique conseillere",
@@ -1632,6 +1680,10 @@ const NEWS=[
    desc:"Les familles adhérentes déposent désormais leur dossier d'inscription au périscolaire (matin & soir, rentrée d'août) depuis leur espace adhérent : enfants + pièces (attestation CAF de moins de 3 mois, avis d'imposition, justificatif de domicile, assurance, vaccins, livret de famille), scannées depuis le téléphone. Tu les retrouves dans 🎒 Périscolaire → 📨 Dossiers d'inscription : consulte chaque pièce, marque le dossier ✅ Validé ou ⚠️ Incomplet. Seuls les adhérents (compte validé) peuvent déposer."},
   {id:'2026-06-17-assurance',date:'2026-06-17',tab:'🧰 Secrétariat',titre:'🛡️ Fiche Assurance (MAIF)',
    desc:"Nouveau panneau dans l'onglet 🧰 Secrétariat qui réunit le contrat d'assurance, à partir de l'avis d'échéance MAIF 2026 : assureur MAIF, contrat Raqvam (M4202RACA), cotisation 2026 (1 514,10 €), 4 sites assurés, garanties, espace espacepersonnel.maif.fr et contact (09 78 97 98 99 / gestionsocietaire@maif.fr). Le n° de sociétaire et l'identifiant de connexion se saisissent par le bureau et restent dans le coffre privé (jamais publiés) ; le mot de passe ne se met pas en clair."},
+  {id:'2026-06-17-suivi',date:'2026-06-17',tab:'✅ Suivi',titre:'✅ Nouvel onglet Suivi des actions',
+   desc:"La checklist du DLA (09/06) et toutes tes actions, en suivi vivant : change le statut, ajoute une note, crée des actions. Réservé au bureau."},
+  {id:'2026-06-17-conges',date:'2026-06-17',tab:'🏖️ Congés',titre:'🏖️ Nouvel onglet Congés',
+   desc:"Enregistre les demandes de congés / récupération et valide-les directement sur Bob, avec le rappel de la règle. Réservé au bureau."},
   {id:'2026-06-17-rh',date:'2026-06-17',tab:'🧑‍💼 RH',titre:'🧑‍💼 Nouvel onglet RH & Organisation',
    desc:"L'organisation que tu vises (zone modifiable), les fiches de poste des salariés (avec coefficients ÉCLAT) et les projets d'embauche (PEC matin, ACM été, service civique, direction). Point de départ tiré du DLA, à réajuster. Réservé au bureau."},
   {id:'2026-06-17-accompagnement',date:'2026-06-17',tab:'🤝 Accompagnement',titre:'🤝 Nouvel onglet Accompagnement',
@@ -3099,6 +3151,62 @@ function saveAccompNotes(){ db.accompNotes=$('accompNotes').value; save(); }
 function renderAccompagnement(){ const t=$('accompNotes'); if(t && document.activeElement!==t) t.value=db.accompNotes||''; }
 function saveRhOrgCible(){ db.rhOrgCible=$('rhOrgCible').value; save(); }
 function renderRH(){ const t=$('rhOrgCible'); if(t && db.rhOrgCible && document.activeElement!==t) t.value=db.rhOrgCible; }
+
+/* ---- Suivi des actions (checklist DLA + autres) ---- */
+const ACT_DEFAUT=[
+  {id:'a1',sujet:'Plannings temporaires validés + diffusés aux salariés (accusé de lecture)',statut:'En cours',note:''},
+  {id:'a2',sujet:'Boîtes mail pro individuelles (casebdn.re)',statut:'En cours',note:'Mise en place ce week-end'},
+  {id:'a3',sujet:'Agendas individuels + actions',statut:'En cours',note:''},
+  {id:'a4',sujet:'Réunions hebdo équipe (jeudi 11h)',statut:'En cours',note:'Démarre la semaine prochaine (retour Kathy)'},
+  {id:'a5',sujet:'Ouvertures & activités au CASE des Bringelliers',statut:'En cours',note:'Local ouvert (Guy)'},
+  {id:'a6',sujet:'Entretien des espaces verts (Bringelliers)',statut:'En cours',note:'Guy au quotidien ; projet jardin à mettre en place'},
+  {id:'a7',sujet:'Relance Intermettra (visites médicales 3 salariés)',statut:'En attente',note:'Retour Mme Lauret ; relance demain'},
+  {id:'a8',sujet:'Relance Uniformation (cotisation 2026 + formations)',statut:'En attente',note:'~2 720 € ; relance demain'},
+  {id:'a9',sujet:'Relance impayés parents',statut:'Fait',note:'Courriers envoyés + suivi sur Bob ; point Cathy lundi'},
+  {id:'a10',sujet:'Retour CAF subventions 2026',statut:'En attente',note:'Dossier transmis le 02/06'},
+  {id:'a11',sujet:'Révision des contrats avec Hexopée (coefficients ÉCLAT)',statut:'En cours',note:'Validation demain en séance DLA'},
+  {id:'a12',sujet:'Démarches service civique (Unis-Cité / Ôté Kartié)',statut:'Fait',note:'Rappeler Lucie'}
+];
+const ACT_STATUTS=['À faire','En cours','En attente','Fait'];
+function actionsDB(){ if(!Array.isArray(db.actionsSuivi)) db.actionsSuivi=JSON.parse(JSON.stringify(ACT_DEFAUT)); return db.actionsSuivi; }
+function renderActions(){
+  const box=$('actionsRows'); if(!box) return;
+  const a=actionsDB();
+  box.innerHTML=a.map(it=>'<tr><td>'+esc(it.sujet)+'</td>'
+    +'<td><select onchange="actSet(\''+it.id+'\',\'statut\',this.value)">'+ACT_STATUTS.map(s=>'<option '+(s===it.statut?'selected':'')+'>'+s+'</option>').join('')+'</select></td>'
+    +'<td><input value="'+esc(it.note||'')+'" placeholder="note…" onchange="actSet(\''+it.id+'\',\'note\',this.value)" style="width:100%"></td>'
+    +'<td><button class="danger" onclick="delAction(\''+it.id+'\')">🗑</button></td></tr>').join('');
+  const k=$('actionsKpis'); if(k){ const f=a.filter(x=>x.statut==='Fait').length, c=a.filter(x=>x.statut==='En cours').length, e=a.filter(x=>x.statut==='En attente').length;
+    k.innerHTML=kpi('Actions suivies',a.length,'','')+kpi('Faites',f,'green','')+kpi('En cours',c,'amber','')+kpi('En attente',e,'amber',''); }
+}
+function actSet(id,champ,val){ const it=actionsDB().find(x=>x.id===id); if(it){ it[champ]=val; save(); } }
+function addAction(){ const v=($('act_new').value||'').trim(); if(!v) return; actionsDB().push({id:uid(),sujet:v,statut:'À faire',note:''}); $('act_new').value=''; save(); }
+function delAction(id){ if(confirm('Supprimer cette action ?')){ db.actionsSuivi=actionsDB().filter(x=>x.id!==id); save(); } }
+
+/* ---- Congés (demandes + validation par le bureau) ---- */
+const CG_SALARIES=['Kathy Maillot','Sandrine Michel','Fabrice Ramin'];
+const CG_TYPES=['Congés payés','Récupération','Sans solde','Maladie','Autre'];
+const CG_PILL={'Demandé':'wait','Validé':'ok','Refusé':'no'};
+function congesDB(){ if(!Array.isArray(db.conges)) db.conges=[]; return db.conges; }
+function addConge(){
+  const debut=$('cg_debut').value, fin=$('cg_fin').value;
+  if(!debut||!fin){ alert('Indique les dates de début et de fin.'); return; }
+  congesDB().push({ id:uid(), salarie:$('cg_salarie').value, type:$('cg_type').value, debut:debut, fin:fin, motif:($('cg_motif').value||'').trim(), statut:'Demandé', demandeLe:today() });
+  $('cg_motif').value=''; $('cg_debut').value=''; $('cg_fin').value=''; save();
+}
+function setConge(id,statut){ const c=congesDB().find(x=>x.id===id); if(c){ c.statut=statut; save(); } }
+function delConge(id){ if(confirm('Supprimer cette demande ?')){ db.conges=congesDB().filter(x=>x.id!==id); save(); } }
+function renderConges(){
+  const box=$('congesRows'); if(!box) return;
+  const ssel=$('cg_salarie'); if(ssel && !ssel.options.length) ssel.innerHTML=CG_SALARIES.map(s=>'<option>'+esc(s)+'</option>').join('');
+  const tsel=$('cg_type'); if(tsel && !tsel.options.length) tsel.innerHTML=CG_TYPES.map(s=>'<option>'+esc(s)+'</option>').join('');
+  const c=congesDB().slice().sort((a,b)=>(b.demandeLe||'').localeCompare(a.demandeLe||''));
+  box.innerHTML=c.length?c.map(x=>'<tr><td><strong>'+esc(x.salarie)+'</strong></td><td>'+esc(x.type)+'</td>'
+    +'<td>'+fmtDate(x.debut)+' → '+fmtDate(x.fin)+(x.motif?'<br><span class="muted" style="font-size:12px">'+esc(x.motif)+'</span>':'')+'</td>'
+    +'<td><span class="pill '+(CG_PILL[x.statut]||'wait')+'">'+esc(x.statut)+'</span></td>'
+    +'<td style="white-space:nowrap">'+(x.statut!=='Validé'?'<button class="ghost btn" onclick="setConge(\''+x.id+'\',\'Validé\')">✅</button> ':'')+(x.statut!=='Refusé'?'<button class="ghost btn" onclick="setConge(\''+x.id+'\',\'Refusé\')">✋</button> ':'')+'<button class="danger" onclick="delConge(\''+x.id+'\')">🗑</button></td></tr>').join(''):'<tr><td colspan="5" class="empty">Aucune demande pour le moment.</td></tr>';
+  const k=$('congesKpis'); if(k){ const d=c.filter(x=>x.statut==='Demandé').length; k.innerHTML=kpi('Demandes',c.length,'','')+kpi('À valider',d,d>0?'amber':'green',''); }
+}
 function saveAssurance(){ const g=id=>{ const e=$(id); return e?(e.value||''):''; }; db.assurance=Object.assign({}, db.assurance, {num:g('as_num').trim(), login:g('as_login').trim(), memo:g('as_memo')}); save(); }
 function renderAssurance(){ const a=db.assurance||{}; const f=(id,v)=>{ const el=$(id); if(el && document.activeElement!==el) el.value=v||''; }; f('as_num',a.num); f('as_login',a.login); f('as_memo',a.memo); }
 function addContrat(){
@@ -3140,7 +3248,7 @@ function renderProtocoles(){
 }
 function renderEquipe(){ const t=$('accueilIntro'); if(t && document.activeElement!==t) t.value=db.accueilIntro||''; renderSalaries(); renderContrats(); renderProtocoles(); }
 
-function renderAll(){ renderDashboard(); renderMembers(); renderRelances(); renderOps(); renderCaisse(); renderRapprochement(); renderProjects(); renderSubventions(); renderEcheancier(); renderBilan(); renderPrevisionnel(); renderEquipe(); renderRepertoire(); renderSecretariat(); renderAssurance(); renderReunions(); renderIncidents(); renderDettes(); renderOfficialLinks(); refreshComptes(); renderListParams(); renderJournal(); renderPeriscolaire(); renderFaqList(); renderNews(); renderAccompagnement(); renderRH(); }
+function renderAll(){ renderDashboard(); renderMembers(); renderRelances(); renderOps(); renderCaisse(); renderRapprochement(); renderProjects(); renderSubventions(); renderEcheancier(); renderBilan(); renderPrevisionnel(); renderEquipe(); renderRepertoire(); renderSecretariat(); renderAssurance(); renderReunions(); renderIncidents(); renderDettes(); renderOfficialLinks(); refreshComptes(); renderListParams(); renderJournal(); renderPeriscolaire(); renderFaqList(); renderNews(); renderAccompagnement(); renderRH(); renderActions(); renderConges(); }
 
 /* ---- Data import/export ---- */
 function exportJSON(){
@@ -3233,6 +3341,7 @@ renderAll();
     if(!canWrite) perms.aide='cache'; // l'Aide « Demande à Zanana » est réservée au bureau
     if(!canWrite) perms.accompagnement='cache'; // Accompagnement : contenu sensible (RH, gouvernance) → bureau uniquement par défaut
     if(!canWrite) perms.rh='cache'; // RH & Organisation : contenu sensible → bureau uniquement par défaut
+    if(!canWrite){ perms.suivi='cache'; perms.conges='cache'; } // Suivi & Congés : bureau uniquement par défaut
     const css=[];
     document.querySelectorAll('nav.tabs button[data-tab]').forEach(b=>{
       const k=b.dataset.tab;
