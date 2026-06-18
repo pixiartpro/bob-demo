@@ -101,6 +101,20 @@
     #printArea td.num{text-align:right}
   }
   @media(max-width:600px){.field{min-width:100%}}
+  /* Organigramme */
+  .orga-band{background:linear-gradient(135deg,#127a51,#0f6b46);color:#fff;text-align:center;font-weight:700;padding:10px 14px;border-radius:12px;font-size:14px}
+  .orga-link{text-align:center;color:var(--brand);font-size:18px;line-height:1;margin:2px 0}
+  .orga-h{margin:6px 0 10px;font-size:14px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+  .orga-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+  .orga-card{border:1px solid #e6ece7;border-top:3px solid var(--brand);border-radius:12px;padding:12px 14px;background:#fbfdfc;position:relative}
+  .orga-card .orga-role{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--brand);margin-bottom:4px;display:flex;align-items:center;gap:6px}
+  .orga-card input,.orga-card textarea{width:100%;border:1px solid transparent;background:transparent;font:inherit;border-radius:7px;padding:3px 5px;resize:vertical}
+  .orga-card input:hover,.orga-card textarea:hover{background:#fff;border-color:#e6ece7}
+  .orga-card input:focus,.orga-card textarea:focus{background:#fff;border-color:var(--brand);outline:none}
+  .orga-card .orga-nom{font-weight:700;font-size:15px}
+  .orga-card .orga-mission{font-size:12.5px;color:var(--muted);min-height:34px}
+  .orga-card .orga-del{position:absolute;top:8px;right:8px;border:none;background:transparent;cursor:pointer;color:#c0392b;font-size:13px;opacity:.55}
+  .orga-card .orga-del:hover{opacity:1}
 </style>
 </head>
 <body>
@@ -116,6 +130,7 @@
   <nav class="tabs">
     <button data-tab="dashboard" class="active">📊 Tableau de bord</button>
     <button data-tab="presentation">🎤 Présentation</button>
+    <button data-tab="projet">🧭 Projet &amp; orientations</button>
     <button data-tab="members">👥 Adhérents</button>
     <button data-tab="periscolaire">🎒 Périscolaire</button>
     <button data-tab="activites">🎟️ Activités</button>
@@ -1392,6 +1407,95 @@ GOUVERNANCE
     </div>
   </section>
 
+  <!-- PROJET & ORIENTATIONS -->
+  <section id="projet" class="page">
+    <div class="panel" style="background:linear-gradient(135deg,#127a51,#0f6b46);color:#fff">
+      <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap">
+        <div style="font-size:42px;flex:0 0 auto">🧭</div>
+        <div style="flex:1;min-width:240px">
+          <h2 style="margin:0 0 4px;color:#fff">Notre projet associatif &amp; nos orientations</h2>
+          <p style="margin:0;opacity:.93;font-size:14px">Pourquoi le CASE existe, ce qu'il défend, où il veut aller — et qui fait quoi. Tout est <strong>pré-rempli</strong> à partir du travail mené (diagnostic, DLA, organisation des deux locaux) et <strong>modifiable&nbsp;: tes changements sont enregistrés dans le coffre du bureau</strong>.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h3 style="margin:0 0 4px">🌱 Notre raison d'être (le projet)</h3>
+      <p class="hint" style="margin:0 0 8px">La mission du CASE en quelques phrases — à montrer à un partenaire, à la Mairie, à la CAF ou en AG. Modifie librement.</p>
+      <textarea id="projetMission" onchange="saveProjet('projetMission')" style="width:100%;min-height:200px;font:inherit;padding:10px 12px;border:1px solid #e6ece7;border-radius:10px;resize:vertical;line-height:1.55">LE CASE DU BOIS DE NÈFLES — NOTRE PROJET (point de départ, à affiner)
+
+Le CASE du Bois de Nèfles est une association de quartier (loi 1901) d'animation sociale et d'éducation populaire, implantée à La Réunion. Sa raison d'être : faire vivre le lien social sur le quartier, accompagner les familles et donner aux enfants, aux jeunes et aux habitants un accès aux loisirs, à la culture et à l'entraide, au plus près de chez eux.
+
+CE QUE NOUS FAISONS
+• Accueil périscolaire (matin et soir) et accueils de loisirs (ACM / vacances) pour les enfants du quartier.
+• Animation jeunesse et adolescents, activités culturelles et temps forts (fête de la musique, fêtes de fin d'année, hors les murs…).
+• Soutien à la parentalité et ateliers pour les familles et les habitants (local des Bringelliers).
+• Un espace d'éducation populaire : accueil de structures et d'initiatives du quartier.
+
+POUR QUI
+Les enfants et les jeunes du Bois de Nèfles, leurs familles, et plus largement les habitants du quartier.
+
+NOTRE ANCRAGE
+Deux locaux complémentaires — le Bois de Nèfles (« le haut » : jeunesse, ados, culturel) et les Bringelliers (« le bas » : parentalité, ateliers) — portés par une petite équipe salariée et un bureau bénévole.</textarea>
+    </div>
+
+    <div class="panel">
+      <h3 style="margin:0 0 4px">💚 Nos valeurs</h3>
+      <p class="hint" style="margin:0 0 8px">Ce qui guide nos actions. Modifie librement.</p>
+      <textarea id="projetValeurs" onchange="saveProjet('projetValeurs')" style="width:100%;min-height:130px;font:inherit;padding:10px 12px;border:1px solid #e6ece7;border-radius:10px;resize:vertical;line-height:1.55">• Proximité — être un acteur du quartier, accessible à tous.
+• Éducation populaire — apprendre, transmettre et grandir ensemble, sans sélection.
+• Lien social & entraide — rompre l'isolement, accueillir, faire ensemble.
+• Accès aux loisirs et à la culture pour tous, à un tarif juste (quotient familial).
+• Respect, bienveillance et sécurité, en particulier envers les enfants.
+• Engagement bénévole et transparence dans la gestion.</textarea>
+    </div>
+
+    <div class="panel">
+      <h3 style="margin:0 0 4px">🎯 Nos orientations stratégiques</h3>
+      <p class="hint" style="margin:0 0 8px">Où l'on veut aller dans les 12-18 mois — axes issus du diagnostic et de l'accompagnement DLA. Modifie librement.</p>
+      <textarea id="projetOrientations" onchange="saveProjet('projetOrientations')" style="width:100%;min-height:230px;font:inherit;padding:10px 12px;border:1px solid #e6ece7;border-radius:10px;resize:vertical;line-height:1.55">NOS ORIENTATIONS (point de départ DLA — juin 2026, à valider en bureau)
+
+1. STRUCTURER LA GOUVERNANCE
+   Bureau élargi et complet, président recentré sur la stratégie et la représentation, CA tracé et formalisé, AG préparée. Statuts et règlement intérieur à jour.
+
+2. CLARIFIER « QUI FAIT QUOI »
+   Fiches de poste, rôles des bénévoles et des salariés posés noir sur blanc, organigramme partagé (ci-dessous). Plus de glissements de tâches.
+
+3. FIABILISER LES FINANCES
+   Échéanciers (URSSAF, DGFiP) tenus, dettes suivies et impayés relancés, comptabilité et paie fiabilisées, dossiers de subventions déposés et suivis.
+
+4. PROFESSIONNALISER LES RH
+   Convention ÉCLAT appliquée (coefficients), contrats révisés avec Hexopée, plan de formation, et à terme une direction (BAFD) pour décharger le président de l'opérationnel.
+
+5. FAIRE VIVRE LES DEUX LOCAUX
+   Ouvrir et animer le haut (jeunesse/ados/culturel) et le bas (parentalité/ateliers), avec un responsable identifié pour chacun.
+
+6. DÉVELOPPER L'AUTONOMIE DE L'ÉQUIPE
+   Réunions d'équipe régulières, outils collaboratifs (Bob, agendas, boîtes mail pro), montée en autonomie des salariés.
+
+7. RAYONNER SUR LE QUARTIER
+   Activités hors les murs, partenariats, média de quartier « Ôté Kartié », ouverture à de nouveaux publics et bénévoles.</textarea>
+    </div>
+
+    <div class="panel">
+      <h3 style="margin:0 0 4px">🗺️ Organigramme — rôles &amp; postes</h3>
+      <p class="hint" style="margin:0 0 10px">Qui fait quoi au CASE. Clique dans une case pour la modifier — c'est enregistré dans le coffre. La gouvernance est bénévole (le bureau) ; les pôles sont l'équipe de terrain.</p>
+
+      <div class="orga-band">🏛️ Assemblée générale &amp; Conseil d'administration</div>
+      <div class="orga-link">▼</div>
+      <h4 class="orga-h">Bureau (gouvernance bénévole)</h4>
+      <div id="orgaGov" class="orga-grid"></div>
+      <div class="row" style="margin:4px 0 14px"><button class="ghost btn" onclick="orgaAddGov()">＋ Ajouter un rôle de bureau</button></div>
+
+      <div class="orga-link">▼</div>
+      <h4 class="orga-h">Équipe de terrain (pôles &amp; postes)</h4>
+      <div id="orgaPoles" class="orga-grid"></div>
+      <div class="row" style="margin-top:8px"><button class="ghost btn" onclick="orgaAddPole()">＋ Ajouter un pôle / poste</button>
+        <button class="ghost btn" onclick="orgaReset()" title="Revenir à l'organigramme pré-rempli">↩︎ Réinitialiser</button></div>
+      <p class="hint" style="margin:10px 0 0">💡 Les salariés et leurs coefficients détaillés se gèrent dans 🧑‍💼 RH (fiches de poste) et 📒 Équipe (masse salariale). Ici, c'est la vue d'ensemble « qui fait quoi ».</p>
+    </div>
+  </section>
+
   <!-- SUIVI DES ACTIONS -->
   <section id="suivi" class="page">
     <div class="panel" style="background:linear-gradient(135deg,#eef7f0,#f5fbf7);border:1px solid #cfe9da">
@@ -1529,7 +1633,7 @@ const uid = () => Date.now().toString(36)+Math.random().toString(36).slice(2,7);
 
 let db = load();
 function load(){ try{ return Object.assign(blank(), JSON.parse(localStorage.getItem(KEY))||{}); }catch(e){ return blank(); } }
-function blank(){ return {members:[],ops:[],projects:[],subventions:[],comptes:[],contacts:[],liens:[],docs:[],notes:[],echeances:[],reunions:[],incidents:[],dettes:[],recurrents:{},protocoles:[],contrats:[],accueilIntro:'',accompNotes:'',rhOrgCible:'',assurance:{},periscolaire:{enfants:[]}}; }
+function blank(){ return {members:[],ops:[],projects:[],subventions:[],comptes:[],contacts:[],liens:[],docs:[],notes:[],echeances:[],reunions:[],incidents:[],dettes:[],recurrents:{},protocoles:[],contrats:[],accueilIntro:'',accompNotes:'',rhOrgCible:'',projetMission:'',projetValeurs:'',projetOrientations:'',orga:null,assurance:{},periscolaire:{enfants:[]}}; }
 function save(){ jLog(); localStorage.setItem(KEY, JSON.stringify(db)); renderAll(); }
 
 /* ---- Historique (journal d'activité automatique, onglet réservé au bureau) ---- */
@@ -1614,6 +1718,8 @@ const FAQ=[
    a:"Onglet <b>🧰 Secrétariat</b>, panneau <b>🛡️ Assurance de l'association</b>. Tu y trouves le contrat : assureur <b>MAIF</b>, contrat <b>Raqvam</b> (réf. M4202RACA), cotisation 2026 de 1&nbsp;514,10&nbsp;€, les 4 sites assurés, les garanties, l'espace <b>espacepersonnel.maif.fr</b> et le <b>contact MAIF (09 78 97 98 99, gestionsocietaire@maif.fr)</b>. Le <b>n° de sociétaire</b> et l'<b>identifiant</b> de connexion se saisissent par le bureau (rangés dans le coffre privé, jamais publiés) ; le numéro figure sur l'avis d'échéance MAIF (dossier CASE/BDN/2026/Maif). 🔒 N'écris pas le mot de passe en clair : gestionnaire de mots de passe ou « identifiant/mot de passe oublié » sur le site MAIF."},
   {cat:'🎤 Présentation',q:"Comment présenter Bob et nos avancées (au DLA, à un partenaire) ?",kw:"presentation presenter bob demo montrer avancees fonctionnalites tour visite guidee charlotte dla partenaire pitch fil ecran",
    a:"Ouvre l'onglet <strong>🎤 Présentation</strong> : sur un seul écran tu as le pitch de Bob, ce qu'on a fait avancer en 3 mois, la carte de toutes les fonctions, et le volet gouvernance. Déroule-le de haut en bas pour présenter, puis clique dans un onglet précis seulement si on te le demande."},
+  {cat:'🧭 Projet & orientations',q:"Où sont le projet associatif, nos valeurs, nos orientations et l'organigramme ?",kw:"projet associatif raison d'etre raison etre mission valeurs orientations strategiques strategie axes diagnostic organigramme organigram roles role qui fait quoi poste postes gouvernance bureau president tresorier secretaire poles equipe",
+   a:"Onglet <strong>🧭 Projet &amp; orientations</strong>. Tu y trouves, sur un seul écran&nbsp;: <strong>notre raison d'être</strong> (le projet du CASE), <strong>nos valeurs</strong>, <strong>nos orientations stratégiques</strong> (les axes issus du diagnostic / DLA) et l'<strong>organigramme</strong> (qui fait quoi&nbsp;: la gouvernance bénévole — Président, Trésorier, Secrétaire — puis les pôles de l'équipe avec leur responsable et leur mission). Tout est <strong>pré-rempli</strong> et <strong>modifiable&nbsp;: clique dans une case pour l'éditer</strong>, c'est enregistré dans le coffre du bureau. Pour les fiches de poste détaillées et les coefficients, va dans 🧑‍💼 RH ; pour la paie, dans 📒 Équipe."},
   {cat:'✅ Suivi',q:"Où je suis l'avancement des actions (checklist DLA) ?",kw:"suivi actions checklist dla 12 sujets statut avancement taches a faire en cours fait en attente kanban",
    a:"Onglet <strong>✅ Suivi</strong> : la liste vivante des actions (la checklist du 09/06 est pré-remplie). Change le statut (à faire / en cours / en attente / fait), ajoute une note, ou crée une nouvelle action. Réservé au bureau."},
   {cat:'🏖️ Congés',q:"Comment enregistrer et valider les demandes de congés ?",kw:"conges recuperation vacances demande validation salarie poser conge absence valider refuser sans solde regle delai",
@@ -1754,6 +1860,8 @@ function renderFaqList(){
 
 /* ---- ✨ Quoi de neuf (nouveautés + notice chronologique) ---- */
 const NEWS=[
+  {id:'2026-06-18-projet',date:'2026-06-18',tab:'🧭 Projet & orientations',titre:'🧭 Nouvel onglet Projet & orientations',
+   desc:"Un écran pour l'identité du CASE : notre raison d'être (le projet associatif), nos valeurs, nos orientations stratégiques (axes issus du diagnostic / DLA) et un ORGANIGRAMME « rôles & postes » — la gouvernance bénévole (Président, Trésorier, Secrétaire) puis les pôles de l'équipe (Coordination, Périscolaire, Animation, Bringelliers, Média de quartier) avec responsable et mission. Tout est pré-rempli et modifiable : clique dans une case pour l'éditer, c'est enregistré dans le coffre. Idéal pour l'AG, la Mairie ou un partenaire."},
   {id:'2026-06-18-horaires',date:'2026-06-18',tab:'🗓️ Horaires',titre:'🗓️ Nouvel onglet Horaires des salariés',
    desc:"Un onglet pour gérer les heures de travail de l'équipe. Choisis un salarié, remplis sa SEMAINE TYPE (matin + après-midi par jour, avec des sélecteurs d'heure) : Bob calcule le total par jour et par semaine. Pour les périodes spéciales (ACM été, vacances), clique « ➕ Semaine particulière » : elle est pré-remplie avec la semaine type, tu n'ajustes que ce qui change. La liste des salariés se remplit toute seule depuis l'onglet 📒 Équipe. Réservé au bureau."},
   {id:'2026-06-17-peri-dossiers',date:'2026-06-17',tab:'🎒 Périscolaire',titre:'📨 Dossiers d\'inscription en ligne',
@@ -3234,6 +3342,59 @@ function renderAccompagnement(){ const t=$('accompNotes'); if(t && document.acti
 function saveRhOrgCible(){ db.rhOrgCible=$('rhOrgCible').value; save(); }
 function renderRH(){ const t=$('rhOrgCible'); if(t && db.rhOrgCible && document.activeElement!==t) t.value=db.rhOrgCible; }
 
+/* ---- Projet & orientations (onglet 🧭) ---- */
+function saveProjet(key){ const el=$(key); if(el){ db[key]=el.value; save(); } }
+function renderProjet(){
+  ['projetMission','projetValeurs','projetOrientations'].forEach(k=>{
+    const t=$(k); if(t && db[k] && document.activeElement!==t) t.value=db[k];
+  });
+  renderOrga();
+}
+/* Organigramme : pré-rempli, éditable inline, rangé dans le coffre */
+const ORGA_DEFAUT={
+  gov:[
+    {id:'g1',role:'Président',nom:'',mission:'Stratégie, représentation, garant du projet associatif'},
+    {id:'g2',role:'Trésorier',nom:'Guy',mission:'Finances, budget, banque, subventions, suivi des dettes'},
+    {id:'g3',role:'Secrétaire',nom:'(à pourvoir)',mission:'Comptes-rendus, registres, convocations, archives'}
+  ],
+  poles:[
+    {id:'p1',emoji:'🧭',nom:'Coordination',resp:'Kathy Maillot',mission:'Coordonne l\'équipe et les actions, lien bureau ↔ terrain, appui administratif'},
+    {id:'p2',emoji:'🎒',nom:'Périscolaire & garderie',resp:'Sandrine Michel (+ PEC matin)',mission:'Accueil matin/soir, goûters, encadrement, lien avec les parents'},
+    {id:'p3',emoji:'🎨',nom:'Animation & projets',resp:'Fabrice Ramin',mission:'Animation socioculturelle, jeunesse/ados, hors les murs, temps forts'},
+    {id:'p4',emoji:'🏠',nom:'Local des Bringelliers',resp:'Kathy / Guy',mission:'Parentalité, ateliers (tricot…), ouverture et animation du « bas »'},
+    {id:'p5',emoji:'📡',nom:'Média de quartier « Ôté Kartié »',resp:'Service civique (binôme)',mission:'Média de proximité du quartier (via Unis-Cité)'}
+  ]
+};
+function orgaDB(){
+  if(!db.orga || typeof db.orga!=='object'){ db.orga=JSON.parse(JSON.stringify(ORGA_DEFAUT)); }
+  if(!Array.isArray(db.orga.gov)) db.orga.gov=[];
+  if(!Array.isArray(db.orga.poles)) db.orga.poles=[];
+  return db.orga;
+}
+function orgaSet(coll,id,field,val){ const o=orgaDB(); const it=(o[coll]||[]).find(x=>x.id===id); if(it){ it[field]=val; save(); } }
+function orgaAddGov(){ orgaDB().gov.push({id:uid(),role:'Nouveau rôle',nom:'',mission:''}); save(); }
+function orgaDelGov(id){ if(confirm('Retirer ce rôle du bureau ?')){ const o=orgaDB(); o.gov=o.gov.filter(x=>x.id!==id); save(); } }
+function orgaAddPole(){ orgaDB().poles.push({id:uid(),emoji:'•',nom:'Nouveau pôle',resp:'',mission:''}); save(); }
+function orgaDelPole(id){ if(confirm('Retirer ce pôle / poste ?')){ const o=orgaDB(); o.poles=o.poles.filter(x=>x.id!==id); save(); } }
+function orgaReset(){ if(confirm('Revenir à l\'organigramme pré-rempli ? Tes modifications seront remplacées.')){ db.orga=JSON.parse(JSON.stringify(ORGA_DEFAUT)); save(); } }
+function renderOrga(){
+  const o=orgaDB();
+  const g=$('orgaGov');
+  if(g){ g.innerHTML=o.gov.map(it=>'<div class="orga-card">'
+    +'<button class="orga-del" onclick="orgaDelGov(\''+it.id+'\')" title="Retirer">🗑</button>'
+    +'<div class="orga-role">🏛️ <input value="'+esc(it.role||'')+'" onchange="orgaSet(\'gov\',\''+it.id+'\',\'role\',this.value)" placeholder="Rôle"></div>'
+    +'<input class="orga-nom" value="'+esc(it.nom||'')+'" onchange="orgaSet(\'gov\',\''+it.id+'\',\'nom\',this.value)" placeholder="Nom (ou « à pourvoir »)">'
+    +'<textarea class="orga-mission" rows="2" onchange="orgaSet(\'gov\',\''+it.id+'\',\'mission\',this.value)" placeholder="Mission…">'+esc(it.mission||'')+'</textarea>'
+    +'</div>').join(''); }
+  const p=$('orgaPoles');
+  if(p){ p.innerHTML=o.poles.map(it=>'<div class="orga-card">'
+    +'<button class="orga-del" onclick="orgaDelPole(\''+it.id+'\')" title="Retirer">🗑</button>'
+    +'<div class="orga-role"><input style="width:36px;text-align:center" value="'+esc(it.emoji||'')+'" onchange="orgaSet(\'poles\',\''+it.id+'\',\'emoji\',this.value)" placeholder="•"> <input value="'+esc(it.nom||'')+'" onchange="orgaSet(\'poles\',\''+it.id+'\',\'nom\',this.value)" placeholder="Nom du pôle"></div>'
+    +'<input class="orga-nom" value="'+esc(it.resp||'')+'" onchange="orgaSet(\'poles\',\''+it.id+'\',\'resp\',this.value)" placeholder="Responsable / titulaire">'
+    +'<textarea class="orga-mission" rows="2" onchange="orgaSet(\'poles\',\''+it.id+'\',\'mission\',this.value)" placeholder="Mission…">'+esc(it.mission||'')+'</textarea>'
+    +'</div>').join(''); }
+}
+
 /* ---- Suivi des actions (checklist DLA + autres) ---- */
 const ACT_DEFAUT=[
   {id:'a1',sujet:'Plannings temporaires validés + diffusés aux salariés (accusé de lecture)',statut:'En cours',note:''},
@@ -3407,7 +3568,7 @@ function renderProtocoles(){
 }
 function renderEquipe(){ const t=$('accueilIntro'); if(t && document.activeElement!==t) t.value=db.accueilIntro||''; renderSalaries(); renderContrats(); renderProtocoles(); }
 
-function renderAll(){ renderDashboard(); renderMembers(); renderRelances(); renderOps(); renderCaisse(); renderRapprochement(); renderProjects(); renderSubventions(); renderEcheancier(); renderBilan(); renderPrevisionnel(); renderEquipe(); renderRepertoire(); renderSecretariat(); renderAssurance(); renderReunions(); renderIncidents(); renderDettes(); renderOfficialLinks(); refreshComptes(); renderListParams(); renderJournal(); renderPeriscolaire(); renderFaqList(); renderNews(); renderAccompagnement(); renderRH(); renderActions(); renderConges(); renderHoraires(); }
+function renderAll(){ renderDashboard(); renderMembers(); renderRelances(); renderOps(); renderCaisse(); renderRapprochement(); renderProjects(); renderSubventions(); renderEcheancier(); renderBilan(); renderPrevisionnel(); renderEquipe(); renderRepertoire(); renderSecretariat(); renderAssurance(); renderReunions(); renderIncidents(); renderDettes(); renderOfficialLinks(); refreshComptes(); renderListParams(); renderJournal(); renderPeriscolaire(); renderFaqList(); renderNews(); renderAccompagnement(); renderRH(); renderProjet(); renderActions(); renderConges(); renderHoraires(); }
 
 /* ---- Data import/export ---- */
 function exportJSON(){
