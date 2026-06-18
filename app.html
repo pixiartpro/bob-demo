@@ -115,6 +115,7 @@
 <div class="wrap">
   <nav class="tabs">
     <button data-tab="dashboard" class="active">📊 Tableau de bord</button>
+    <button data-tab="presentation">🎤 Présentation</button>
     <button data-tab="members">👥 Adhérents</button>
     <button data-tab="periscolaire">🎒 Périscolaire</button>
     <button data-tab="activites">🎟️ Activités</button>
@@ -1345,6 +1346,51 @@ GOUVERNANCE
     </div>
   </section>
 
+  <!-- PRÉSENTATION -->
+  <section id="presentation" class="page">
+    <div class="panel" style="background:linear-gradient(135deg,#127a51,#0f6b46);color:#fff">
+      <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap">
+        <div style="font-size:42px;flex:0 0 auto">🍍</div>
+        <div style="flex:1;min-width:240px">
+          <h2 style="margin:0 0 4px;color:#fff">Bob — l'outil de gestion du CASE</h2>
+          <p style="margin:0;opacity:.93;font-size:14px">Tout le pilotage de l'association en un seul endroit, en ligne et sécurisé (hébergé en France, RGPD). En quelques mois, on est passés d'un simple Drive à un vrai outil de gestion, de suivi et de visibilité.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h3 style="margin:0 0 6px">🏆 Ce qu'on a fait avancer (en 3 mois)</h3>
+      <div style="font-size:13.5px;line-height:1.6">
+        <p style="margin:6px 0 2px"><strong>🧰 Outils &amp; suivi</strong> — Bob + le site, le suivi des actions, les boîtes mail pro : fini le « tout sur un Drive ».</p>
+        <p style="margin:6px 0 2px"><strong>💶 Finances</strong> — échéanciers URSSAF &amp; DGFiP en place, dettes suivies, impayés relancés, dossiers de subventions déposés.</p>
+        <p style="margin:6px 0 2px"><strong>📑 RH &amp; conformité</strong> — convention ÉCLAT verrouillée, contrats en révision (Hexopée), fiches de poste, plan de formation.</p>
+        <p style="margin:6px 0 2px"><strong>🎯 Activités &amp; ouverture</strong> — permanence du samedi, travaux du local, projet ado, ACM été, inauguration de juillet en préparation.</p>
+        <p style="margin:6px 0 2px"><strong>🏛️ Gouvernance</strong> — statuts + règlement intérieur à jour, CA tracé et formalisé, AG en préparation.</p>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h3 style="margin:0 0 10px">🧭 Tout ce que Bob sait faire</h3>
+      <div class="cards">
+        <div class="card"><div class="label">📊 Pilotage</div><div class="sub" style="margin-top:6px;font-size:13px">Tableau de bord (alertes auto : trésorerie, dettes, fins d'aides) · Bilan (compte de résultat + N−1) · Prévisionnel (+ simulateur garderie du matin)</div></div>
+        <div class="card"><div class="label">💶 Finances</div><div class="sub" style="margin-top:6px;font-size:13px">Comptabilité · Caisse + rapprochement bancaire · Dettes &amp; créances (échéanciers) · Subventions · Échéancier</div></div>
+        <div class="card"><div class="label">👥 Public &amp; activités</div><div class="sub" style="margin-top:6px;font-size:13px">Adhérents (+ relances) · Périscolaire (grille au quotient familial + facturation auto) · Activités &amp; places · Lieux · Ateliers</div></div>
+        <div class="card"><div class="label">🧑‍💼 RH &amp; équipe</div><div class="sub" style="margin-top:6px;font-size:13px">Équipe (masse salariale, contrats) · RH &amp; Organisation · Suivi des actions · Congés (demande + validation)</div></div>
+        <div class="card"><div class="label">🤝 Accompagnement &amp; réseau</div><div class="sub" style="margin-top:6px;font-size:13px">Accompagnement (DLA, MDA, ressources expertes) · Partenaires · Répertoire · Secrétariat · Événements</div></div>
+        <div class="card"><div class="label">❓ Aide intégrée</div><div class="sub" style="margin-top:6px;font-size:13px">« Demande à Zanana » (questions / réponses) · « Quoi de neuf » (les nouveautés au fil du temps)</div></div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h3 style="margin:0 0 4px">📂 Et côté gouvernance, tout est prêt</h3>
+      <p class="hint" style="margin:0">Statuts vérifiés · règlement intérieur · dossier complet du CA (convocation, ordre du jour, feuille d'émargement, PV) · propositions pour l'AG · grille tarifaire · notes de service · plan de formation.</p>
+    </div>
+
+    <div class="panel" style="border-left:4px solid var(--brand);background:#f3fbf6">
+      <p style="margin:0;font-size:14px"><strong>Le message :</strong> en quelques mois, le CASE s'est doté d'<strong>outils</strong>, de <strong>suivi</strong> et d'un <strong>cadre</strong> — précisément les manques pointés au diagnostic. Bob centralise tout ça et le rend visible, partageable et durable.</p>
+    </div>
+  </section>
+
   <!-- SUIVI DES ACTIONS -->
   <section id="suivi" class="page">
     <div class="panel" style="background:linear-gradient(135deg,#eef7f0,#f5fbf7);border:1px solid #cfe9da">
@@ -1538,6 +1584,8 @@ const FAQ=[
    a:"Onglet <b>🎒 Périscolaire</b>, panneau <b>📨 Dossiers d'inscription</b> (en bas). Chaque famille <b>adhérente</b> dépose son dossier depuis <b>son espace adhérent</b> : enfants (matin et/ou soir) et les pièces (attestation CAF de <b>moins de 3 mois</b>, avis d'imposition, justificatif de domicile, attestation d'assurance, vaccins à jour, livret de famille). Tu vois l'état des pièces, tu cliques pour <b>consulter</b> chacune, et tu marques le dossier <b>✅ Validé</b> ou <b>⚠️ Incomplet</b>. Seules les familles adhérentes (compte validé) peuvent déposer."},
   {cat:'🧰 Secrétariat',q:"Où sont les informations de l'assurance (MAIF) pour se connecter ?",kw:"assurance maif raqvam contrat sociétaire societaire cotisation garantie connexion identifiant mot de passe attestation sinistre responsabilite civile rc secretariat",
    a:"Onglet <b>🧰 Secrétariat</b>, panneau <b>🛡️ Assurance de l'association</b>. Tu y trouves le contrat : assureur <b>MAIF</b>, contrat <b>Raqvam</b> (réf. M4202RACA), cotisation 2026 de 1&nbsp;514,10&nbsp;€, les 4 sites assurés, les garanties, l'espace <b>espacepersonnel.maif.fr</b> et le <b>contact MAIF (09 78 97 98 99, gestionsocietaire@maif.fr)</b>. Le <b>n° de sociétaire</b> et l'<b>identifiant</b> de connexion se saisissent par le bureau (rangés dans le coffre privé, jamais publiés) ; le numéro figure sur l'avis d'échéance MAIF (dossier CASE/BDN/2026/Maif). 🔒 N'écris pas le mot de passe en clair : gestionnaire de mots de passe ou « identifiant/mot de passe oublié » sur le site MAIF."},
+  {cat:'🎤 Présentation',q:"Comment présenter Bob et nos avancées (au DLA, à un partenaire) ?",kw:"presentation presenter bob demo montrer avancees fonctionnalites tour visite guidee charlotte dla partenaire pitch fil ecran",
+   a:"Ouvre l'onglet <strong>🎤 Présentation</strong> : sur un seul écran tu as le pitch de Bob, ce qu'on a fait avancer en 3 mois, la carte de toutes les fonctions, et le volet gouvernance. Déroule-le de haut en bas pour présenter, puis clique dans un onglet précis seulement si on te le demande."},
   {cat:'✅ Suivi',q:"Où je suis l'avancement des actions (checklist DLA) ?",kw:"suivi actions checklist dla 12 sujets statut avancement taches a faire en cours fait en attente kanban",
    a:"Onglet <strong>✅ Suivi</strong> : la liste vivante des actions (la checklist du 09/06 est pré-remplie). Change le statut (à faire / en cours / en attente / fait), ajoute une note, ou crée une nouvelle action. Réservé au bureau."},
   {cat:'🏖️ Congés',q:"Comment enregistrer et valider les demandes de congés ?",kw:"conges recuperation vacances demande validation salarie poser conge absence valider refuser sans solde regle delai",
@@ -1680,6 +1728,8 @@ const NEWS=[
    desc:"Les familles adhérentes déposent désormais leur dossier d'inscription au périscolaire (matin & soir, rentrée d'août) depuis leur espace adhérent : enfants + pièces (attestation CAF de moins de 3 mois, avis d'imposition, justificatif de domicile, assurance, vaccins, livret de famille), scannées depuis le téléphone. Tu les retrouves dans 🎒 Périscolaire → 📨 Dossiers d'inscription : consulte chaque pièce, marque le dossier ✅ Validé ou ⚠️ Incomplet. Seuls les adhérents (compte validé) peuvent déposer."},
   {id:'2026-06-17-assurance',date:'2026-06-17',tab:'🧰 Secrétariat',titre:'🛡️ Fiche Assurance (MAIF)',
    desc:"Nouveau panneau dans l'onglet 🧰 Secrétariat qui réunit le contrat d'assurance, à partir de l'avis d'échéance MAIF 2026 : assureur MAIF, contrat Raqvam (M4202RACA), cotisation 2026 (1 514,10 €), 4 sites assurés, garanties, espace espacepersonnel.maif.fr et contact (09 78 97 98 99 / gestionsocietaire@maif.fr). Le n° de sociétaire et l'identifiant de connexion se saisissent par le bureau et restent dans le coffre privé (jamais publiés) ; le mot de passe ne se met pas en clair."},
+  {id:'2026-06-17-presentation',date:'2026-06-17',tab:'🎤 Présentation',titre:'🎤 Nouvel onglet Présentation',
+   desc:"Un seul écran pour présenter Bob et les avancées : le pitch, le bilan en 3 mois, la carte de toutes les fonctionnalités, et le volet gouvernance. Idéal pour montrer au DLA ou à un partenaire sans flipper d'onglet en onglet."},
   {id:'2026-06-17-suivi',date:'2026-06-17',tab:'✅ Suivi',titre:'✅ Nouvel onglet Suivi des actions',
    desc:"La checklist du DLA (09/06) et toutes tes actions, en suivi vivant : change le statut, ajoute une note, crée des actions. Réservé au bureau."},
   {id:'2026-06-17-conges',date:'2026-06-17',tab:'🏖️ Congés',titre:'🏖️ Nouvel onglet Congés',
