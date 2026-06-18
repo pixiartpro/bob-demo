@@ -1391,10 +1391,12 @@ GOUVERNANCE
 
     <div class="panel" id="basculeEclat">
       <h3 style="margin:0 0 4px">🔄 Bascule ÉLISFA → ÉCLAT — maintien de salaire (simulateur)</h3>
-      <p class="hint" style="margin:0 0 8px">On régularise la convention applicable (ÉLISFA / ALISFA → <strong>ÉCLAT</strong>, base juridique verrouillée par Hexopée). La grille ÉCLAT donne un <strong>minimum</strong> (un plancher), pas le salaire exact : on a le droit de payer <strong>au-dessus</strong>, et on ne baisse <strong>jamais</strong> un salaire (clause de maintien dans l'avenant). Saisis le coefficient ÉCLAT visé pour chaque salarié : Bob calcule le minimum et l'écart avec la paie actuelle. <span class="muted">Aide à la décision — le chiffrage officiel reste Julie Lauret (paie) / Hexopée.</span></p>
-      <div style="display:flex;gap:14px;flex-wrap:wrap;align-items:flex-end;margin:0 0 6px">
-        <div class="field" style="min-width:170px"><label>Valeur du point ÉCLAT (€)</label><input type="number" id="bsc_vp" min="0" step="0.01" oninput="saveBasculeVp()" placeholder="7.23"></div>
-        <p class="hint" style="margin:0 0 6px;flex:1;min-width:200px">Au 1ᵉʳ janvier 2026 : <strong>V1 = 7,23 €</strong> · V2 = 6,81 €. La paie confirme la valeur appliquée (V1/V2 selon le coefficient).</p>
+      <p class="hint" style="margin:0 0 8px">Changement de convention <strong>ÉLISFA / ALISFA → ÉCLAT</strong>. La loi garantit qu'<strong>aucun salaire ne baisse</strong> (art. L2261-14 + clause de maintien). Pour chaque salarié, Bob compare le <strong>salaire ÉCLAT projeté</strong> (base + ancienneté + indemnité temps partiel) au <strong>brut actuel total</strong> (salaire de base + valorisation d'expérience ÉLISFA) — total contre total, <strong>sans cumuler</strong> l'expérience des deux conventions. Résultat : soit une <strong>↗ remontée</strong> (ÉCLAT plus haut), soit un <strong>🛡️ maintien</strong> (on garde le salaire actuel). <span class="muted">Aide à la décision — chiffrage officiel : paie (Julie Lauret) / Hexopée.</span></p>
+      <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;margin:0 0 6px">
+        <div class="field" style="min-width:120px"><label>Point ÉCLAT V1 (€)</label><input type="number" id="bsc_v1" min="0" step="0.01" oninput="saveBasculeParam()" placeholder="7.23"></div>
+        <div class="field" style="min-width:120px"><label>Point ÉCLAT V2 (€)</label><input type="number" id="bsc_v2" min="0" step="0.01" oninput="saveBasculeParam()" placeholder="6.81"></div>
+        <div class="field" style="min-width:120px"><label>Point ALISFA (€/an)</label><input type="number" id="bsc_pta" min="0" step="0.01" oninput="saveBasculeParam()" placeholder="55"></div>
+        <p class="hint" style="margin:0 0 6px;flex:1;min-width:200px">Au 1ᵉʳ janv. 2026 : base ÉCLAT = 257 × V1 + (coef − 257) × V2. <strong>V1 = 7,23 €</strong>, <strong>V2 = 6,81 €</strong>. Le point <strong>ALISFA = 55 €/an</strong> (÷ 12) sert à reconstituer la valorisation d'expérience actuelle.</p>
       </div>
       <div id="basculeList"></div>
       <div id="basculeKpis" class="cards" style="margin-top:10px"></div>
@@ -1949,8 +1951,8 @@ document.querySelectorAll('nav.tabs button').forEach(b=>{
 const FAQ=[
   {cat:'🧑‍💼 RH',q:"Où trouver un modèle d'avenant pour la bascule ÉCLAT (Kathy, Fabrice) ?",kw:"avenant avenants modele modeles document documents contrat travail eclat alisfa bascule changement convention kathy fabrice imprimer pdf maintien salaire signature clause classification coefficient remuneration garantie base",
    a:"Onglet <strong>🧑‍💼 RH</strong>, panneau <strong>📄 Documents RH — Modèles d'avenant</strong>. Tu y trouves un avenant <strong>pré-rempli pour Kathy et pour Fabrice</strong> (changement de convention ALISFA → ÉCLAT avec <strong>clause de maintien de salaire</strong>, sans rétroactivité). Le texte est <strong>modifiable</strong> (enregistré dans le coffre) et <strong>imprimable</strong> (bouton 🖨️ Imprimer / PDF ouvre une version propre). Le bouton ↩️ Modèle restaure le texte d'origine. ⚠️ C'est une <strong>base de travail</strong> : à faire valider par Hexopée / la paie (Julie Lauret) avant signature, et à compléter là où il y a des crochets [ ___ ] (SIRET, adresse, coefficient ÉCLAT, rémunération, date d'effet)."},
-  {cat:'🧑‍💼 RH',q:"Comment gérer le passage de convention ÉLISFA à ÉCLAT sans baisser les salaires ?",kw:"bascule eclat elisfa alisfa convention collective changement passage salaire salaires maintien baisser baisse trop paye payes coefficient point valeur minimum grille plancher avenant differentiel complement kathy fabrice idcc 1518 1261 hexopee simulateur arret maladie prevoyance regularisation",
-   a:"Onglet <strong>🧑‍💼 RH</strong>, panneau <strong>🔄 Bascule ÉLISFA → ÉCLAT</strong>. Le principe à retenir&nbsp;: la grille ÉCLAT (coefficient × valeur du point) donne un <strong>minimum</strong>, pas le salaire exact — on a le droit de payer <strong>au-dessus</strong> et on ne <strong>baisse jamais</strong> un salaire (c'est dans le contrat). Donc «&nbsp;ils sont trop payés&nbsp;» n'est pas un problème&nbsp;: ils sont juste au-dessus du plancher. Saisis le <strong>coefficient ÉCLAT visé</strong> et la <strong>valeur du point</strong> pour chaque salarié&nbsp;: Bob calcule le minimum, le compare au brut actuel et affiche le <strong>maintien (complément différentiel)</strong> à conserver — ou une alerte rouge si quelqu'un passait sous le minimum (là il faut le remonter). Le mécanisme légal&nbsp;: un <strong>avenant par salarié</strong> avec <strong>clause de maintien de salaire</strong>, sans rétroactivité. ⚠️ Le vrai surcoût n'est pas le salaire (maintenu) mais l'<strong>arrêt maladie</strong> (ÉCLAT est moins favorable qu'ALISFA → prévoyance de branche à souscrire). Simulation d'aide à la décision&nbsp;: le chiffrage officiel reste la paie (Julie Lauret) / Hexopée."},
+  {cat:'🧑‍💼 RH',q:"Comment gérer le passage de convention ÉLISFA à ÉCLAT sans baisser les salaires ?",kw:"bascule eclat elisfa alisfa convention collective changement passage salaire salaires maintien baisser baisse trop paye payes coefficient point valeur v1 v2 7.23 6.81 257 minimum grille plancher avenant differentiel complement remontee hausse valorisation experience indemnite temps partiel reconstitution carriere anciennete kathy fabrice sandrine idcc 1518 1261 hexopee simulateur arret maladie prevoyance regularisation",
+   a:"Onglet <strong>🧑‍💼 RH</strong>, panneau <strong>🔄 Bascule ÉLISFA → ÉCLAT</strong>. Bob compare, pour chaque salarié, le <strong>salaire ÉCLAT projeté</strong> au <strong>brut actuel total</strong>, et garantit qu'<strong>aucun salaire ne baisse</strong> (art. L2261-14 + clause de maintien). Calcul ÉCLAT 2026&nbsp;: salaire de base = <strong>257 × V1 + (coefficient − 257) × V2</strong> (V1 = 7,23 € jusqu'à 257, V2 = 6,81 € au-delà), + <strong>ancienneté</strong> (2 pts/an × V1) + <strong>indemnité temps partiel</strong> si &lt; 24 h/sem (8 pts × V1, forfaitaire). Le brut actuel = salaire de base + <strong>valorisation d'expérience ÉLISFA</strong> (1 pt/an × point ALISFA 55 € ÷ 12). ⚠️ On ne <strong>cumule pas</strong> l'expérience des deux conventions&nbsp;: la valo ÉLISFA disparaît, l'ancienneté ÉCLAT la remplace — on compare total contre total. Résultat affiché&nbsp;: <strong>↗ Remontée</strong> (ÉCLAT plus haut, hausse à payer) ou <strong>🛡️ Maintien</strong> (ÉCLAT plus bas, on garde le salaire actuel)&nbsp;; un coefficient sous <strong>257</strong> (plancher de branche) est signalé en rouge. ⚠️ Le vrai surcoût n'est pas le salaire (maintenu) mais l'<strong>arrêt maladie</strong> (ÉCLAT moins favorable qu'ALISFA → prévoyance de branche à souscrire). Aide à la décision&nbsp;: chiffrage officiel = paie (Julie Lauret) / Hexopée."},
   {cat:'🎒 Périscolaire',q:"Où je vois les dossiers d'inscription périscolaire déposés par les familles ?",kw:"periscolaire inscription dossier dossiers famille familles piece pieces caf assurance vaccin livret avis imposition justificatif domicile depose adherent matin soir rentree aout scan coffre",
    a:"Onglet <b>🎒 Périscolaire</b>, panneau <b>📨 Dossiers d'inscription</b> (en bas). Chaque famille <b>adhérente</b> dépose son dossier depuis <b>son espace adhérent</b> : enfants (matin et/ou soir) et les pièces (attestation CAF de <b>moins de 3 mois</b>, avis d'imposition, justificatif de domicile, attestation d'assurance, vaccins à jour, livret de famille). Tu vois l'état des pièces, tu cliques pour <b>consulter</b> chacune, et tu marques le dossier <b>✅ Validé</b> ou <b>⚠️ Incomplet</b>. Seules les familles adhérentes (compte validé) peuvent déposer."},
   {cat:'🧰 Secrétariat',q:"Où sont les informations de l'assurance (MAIF) pour se connecter ?",kw:"assurance maif raqvam contrat sociétaire societaire cotisation garantie connexion identifiant mot de passe attestation sinistre responsabilite civile rc secretariat",
@@ -2107,8 +2109,8 @@ function renderFaqList(){
 const NEWS=[
   {id:'2026-06-18-avenants-eclat',date:'2026-06-18',tab:'🧑‍💼 RH',titre:'📄 Modèles d\'avenant bascule ÉCLAT',
    desc:"Dans l'onglet 🧑‍💼 RH, une partie « Documents RH » contient un modèle d'avenant pré-rempli pour Kathy et pour Fabrice (changement de convention ALISFA → ÉCLAT avec clause de maintien de salaire, sans rétroactivité, et adhésion prévoyance/santé ÉCLAT). Le texte est modifiable (enregistré dans le coffre) et imprimable en PDF (bouton 🖨️). Le bouton ↩️ Modèle restaure l'original. C'est une base de travail à faire valider par Hexopée / la paie avant signature : complète les champs entre crochets (SIRET, adresse, coefficient, rémunération, date d'effet)."},
-  {id:'2026-06-18-bascule-eclat',date:'2026-06-18',tab:'🧑‍💼 RH',titre:'🔄 Simulateur bascule ÉLISFA → ÉCLAT',
-   desc:"Dans l'onglet 🧑‍💼 RH, un simulateur t'aide à gérer le passage de convention sans baisser les salaires. La grille ÉCLAT donne un MINIMUM (un plancher), pas le salaire exact : on a le droit de payer au-dessus, et on ne baisse jamais un salaire. Saisis le coefficient ÉCLAT visé et la valeur du point pour chaque salarié : Bob calcule le minimum, le compare au brut actuel et affiche le maintien à conserver (complément différentiel), ou une alerte rouge si quelqu'un passait sous le minimum. Rappels intégrés : avenant + clause de maintien de salaire, pas de rétroactivité, et le vrai surcoût = l'arrêt maladie (prévoyance de branche ÉCLAT). Aide à la décision — chiffrage officiel = paie (Julie Lauret) / Hexopée."},
+  {id:'2026-06-18-bascule-eclat-v2',date:'2026-06-18',tab:'🧑‍💼 RH',titre:'🔄 Simulateur bascule ÉLISFA → ÉCLAT (calcul fiabilisé)',
+   desc:"Le simulateur de bascule a été remis aux vraies règles ÉCLAT 2026 (vérifiées sur l'outil officiel Hexopée). Salaire de base ÉCLAT = 257 × V1 + (coef − 257) × V2, avec V1 = 7,23 € et V2 = 6,81 €, + ancienneté (2 pts/an × V1) + indemnité temps partiel si < 24 h/sem (8 pts × V1). Le brut actuel inclut désormais la valorisation d'expérience ÉLISFA (1 pt/an × 55 €/an ÷ 12) : on compare total contre total, sans cumuler l'expérience des deux conventions. Bob affiche pour chacun soit ↗ une Remontée (ÉCLAT plus haut), soit 🛡️ un Maintien (salaire inchangé), et signale tout coefficient sous le plancher de branche (257). Aide à la décision — chiffrage officiel : paie / Hexopée."},
   {id:'2026-06-18-anciennete',date:'2026-06-18',tab:'🧑‍💼 RH',titre:'📅 Ancienneté de l\'équipe',
    desc:"L'onglet 🧑‍💼 RH affiche maintenant l'ancienneté de chaque salarié, calculée en direct à partir de sa date d'entrée (années + mois, reprise d'ancienneté incluse). Les dates d'entrée sont déjà saisies : Kathy 10/02/2019, Fabrice 19/09/2017, Sandrine 31/12/2025, Kysy 04/06/2026. Pour modifier une date d'entrée, va dans 📒 Équipe (masse salariale) et clique ✏️ sur la ligne du salarié."},
   {id:'2026-06-18-projetados',date:'2026-06-18',tab:'🚀 Projet ados',titre:'🚀 Nouvel onglet Projet ados 2026-2030',
@@ -3618,7 +3620,7 @@ function anciennete(d){
   if(y) a.push(y+' an'+(y>1?'s':'')); if(mo) a.push(mo+' mois');
   return a.length?a.join(' et '):'moins d’un mois';
 }
-/* Points & prime d'ancienneté ÉCLAT pour un salarié (déroulement de carrière : +2 pts / an, prorata temps de travail) */
+/* Points & prime d'ancienneté ÉCLAT pour un salarié (ancienneté : +2 pts / an après 12 mois, valorisés à V1, prorata temps de travail) */
 function eclatAnc(s){
   const d=s&&s.dateEntree; if(!d) return null;
   const m=/^(\d{4})-(\d{2})-(\d{2})$/.exec(d); if(!m) return null;
@@ -3643,60 +3645,85 @@ function renderAnciennete(){
         return `<tr><td><strong>${esc(s.name)}</strong></td><td class="muted">${esc(s.poste||'')}</td><td>${ctDateFR(s.dateEntree)}</td><td><strong>${esc(anciennete(s.dateEntree))}</strong></td><td class="num">${pts}</td><td class="num">${prime}</td></tr>`;
       }).join('')
     +'</tbody></table>'
-    +'<p class="hint" style="margin:8px 0 0">Points = +2 par année révolue (déroulement de carrière ÉCLAT, reprise incluse si la date d\'entrée est antidatée). Prime/mois = points × 7,23 € (valeur du point V1 2026), proratisée au temps de travail. Repère indicatif — reprise plafonnée à 40 points, décompte exact validé par la paie / Hexopée.</p>';
+    +'<p class="hint" style="margin:8px 0 0">Points = +2 par année d\'ancienneté (après 12 mois de travail effectif), valorisés à la valeur du point <strong>V1 (7,23 € en 2026)</strong> et proratisés au temps de travail&nbsp;; <strong>sans plafond</strong>. ⚠️ À distinguer de la <em>reconstitution de carrière</em> (reprise de l\'expérience antérieure à l\'embauche, valorisée à V2, plafonnée à 40 points) — décompte exact validé par la paie / Hexopée.</p>';
 }
 function renderRH(){ const t=$('rhOrgCible'); if(t && db.rhOrgCible && document.activeElement!==t) t.value=db.rhOrgCible; renderAnciennete(); renderBascule(); renderAvenants(); }
 
 /* ---- Bascule ÉLISFA → ÉCLAT : simulateur de maintien de salaire (RH) ---- */
-function bsCalc(s){
+function bsParam(){
   if(!db.bascule) db.bascule={};
-  const vp=parseFloat(db.bascule.vp)||7.23;
+  return { V1:parseFloat(db.bascule.v1)||7.23, V2:parseFloat(db.bascule.v2)||6.81,
+           PTA:parseFloat(db.bascule.ptAlisfa)||55, COEFMIN:257 };
+}
+function bsCalc(s){
+  const P=bsParam();
   const coefRaw=(db.bascule.coef||{})[s.id];
   const e=eclatAnc(s);
-  const pts=(e&&!e.avenir)?e.pts:0;
+  const pts=(e&&!e.avenir)?e.pts:0;                 // points d'ancienneté ÉCLAT (2/an)
+  const ancYears=(e&&!e.avenir)?(e.years||0):0;
   let prorata=1; const h=parseFloat(s.hsem); if(h>0&&h<35) prorata=h/35;
-  const brutReel=msCalc(s).brutMois;
+  const etpF=prorata>=0.5?1:(prorata>=0.23?0.5:0.25);
+  // Brut ÉLISFA actuel = salaire de base + valorisation d'expérience ALISFA (1 pt/an × point ALISFA ÷ 12)
+  const baseReel=msCalc(s).brutMois;
+  const valoElisfa=ancYears*(P.PTA/12)*etpF;
+  const brutReel=baseReel+valoElisfa;
   const hasCoef=!(coefRaw===undefined||coefRaw===null||coefRaw===''||isNaN(parseFloat(coefRaw)));
-  if(!hasCoef) return {hasCoef:false,vp,pts,prorata,brutReel};
+  if(!hasCoef) return {hasCoef:false,P,pts,prorata,baseReel,valoElisfa,brutReel};
   const coef=parseFloat(coefRaw);
-  const miniTP=(coef+pts)*vp;          // minimum conventionnel temps plein = (coefficient + points d'ancienneté) × valeur du point
-  const mini=miniTP*prorata;           // proratisé au temps de travail
-  const ecart=brutReel-mini;           // > 0 = au-dessus de la grille (complément différentiel à maintenir)
-  return {hasCoef:true,coef,vp,pts,prorata,brutReel,miniTP,mini,ecart,sous:ecart<-0.5};
+  const sousMin=coef<P.COEFMIN;                      // coefficient sous le plancher de branche (257)
+  const coefEff=Math.max(coef,P.COEFMIN);
+  // Salaire de base ÉCLAT temps plein = 257 × V1 + (coef − 257) × V2 (double valeur de point)
+  const baseTP=P.COEFMIN*P.V1+(coefEff-P.COEFMIN)*P.V2;
+  const base=baseTP*prorata;                         // proratisé au temps de travail
+  const ancEcl=pts*P.V1*prorata;                     // ancienneté ÉCLAT (× V1), proratisée
+  const idxTP=(h>0&&h<24)?8*P.V1:0;                  // indemnité temps partiel <24h/sem : 8 pts × V1, forfaitaire (non proratisée)
+  const eclatTotal=base+ancEcl+idxTP;               // rémunération ÉCLAT projetée (total)
+  const diff=eclatTotal-brutReel;                    // >0 : ÉCLAT plus haut (remontée) ; <0 : ÉCLAT plus bas (maintien)
+  return {hasCoef:true,coef,sousMin,coefEff,P,pts,prorata,baseReel,valoElisfa,brutReel,
+          baseTP,base,ancEcl,idxTP,eclatTotal,diff,
+          remontee:diff>0.005?diff:0, maintien:diff<-0.005?-diff:0, paye:Math.max(eclatTotal,brutReel)};
 }
 function setBasculeCoef(id,val){ if(!db.bascule) db.bascule={}; if(!db.bascule.coef) db.bascule.coef={}; db.bascule.coef[id]=val; save(); renderBascule(); }
-function saveBasculeVp(){ if(!db.bascule) db.bascule={}; db.bascule.vp=$('bsc_vp').value; save(); renderBascule(); }
+function saveBasculeParam(){ if(!db.bascule) db.bascule={}; db.bascule.v1=$('bsc_v1').value; db.bascule.v2=$('bsc_v2').value; db.bascule.ptAlisfa=$('bsc_pta').value; save(); renderBascule(); }
 function saveBasculeNotes(){ if(!db.bascule) db.bascule={}; db.bascule.notes=$('bsc_notes').value; save(); }
 function renderBascule(){
-  if(!db.bascule) db.bascule={vp:7.23,coef:{},notes:''};
-  const vpEl=$('bsc_vp'); if(vpEl && document.activeElement!==vpEl) vpEl.value=(db.bascule.vp!=null&&db.bascule.vp!=='')?db.bascule.vp:7.23;
+  if(!db.bascule) db.bascule={coef:{},notes:''};
+  const e1=$('bsc_v1'); if(e1 && document.activeElement!==e1) e1.value=(db.bascule.v1!=null&&db.bascule.v1!=='')?db.bascule.v1:7.23;
+  const e2=$('bsc_v2'); if(e2 && document.activeElement!==e2) e2.value=(db.bascule.v2!=null&&db.bascule.v2!=='')?db.bascule.v2:6.81;
+  const e3=$('bsc_pta'); if(e3 && document.activeElement!==e3) e3.value=(db.bascule.ptAlisfa!=null&&db.bascule.ptAlisfa!=='')?db.bascule.ptAlisfa:55;
   const nEl=$('bsc_notes'); if(nEl && document.activeElement!==nEl) nEl.value=db.bascule.notes||'';
   const box=$('basculeList'); if(!box) return;
   const list=db.salaries||[];
   if(!list.length){ box.innerHTML='<p class="hint" style="margin:0">Renseigne d\'abord l\'équipe dans 📒 <strong>Équipe</strong> (masse salariale) — nom, heures/semaine, brut horaire, date d\'entrée — pour simuler la bascule ici.</p>'; const kk=$('basculeKpis'); if(kk) kk.innerHTML=''; return; }
   const fr=n=>n.toLocaleString('fr-FR',{minimumFractionDigits:2,maximumFractionDigits:2})+' €';
-  let totMaintien=0, nbSous=0, nbCoef=0;
-  box.innerHTML='<table><thead><tr><th>Salarié</th><th class="num">h/sem</th><th>Coeff ÉCLAT visé</th><th class="num">Pts anc.</th><th class="num">Minimum ÉCLAT / mois</th><th class="num">Brut actuel / mois</th><th class="num">Maintien (écart)</th><th>Situation</th></tr></thead><tbody>'
+  let totRemontee=0, totMaintien=0, nbCoef=0, nbSous=0;
+  box.innerHTML='<table><thead><tr><th>Salarié</th><th class="num">h/sem</th><th>Coeff ÉCLAT visé</th><th class="num">Salaire ÉCLAT projeté / mois</th><th class="num">Brut actuel / mois</th><th>Résultat</th></tr></thead><tbody>'
     + list.map(s=>{
         const c=bsCalc(s);
         const coefVal=(db.bascule.coef||{})[s.id];
-        const inp='<input type="number" min="0" step="1" value="'+(coefVal!=null?esc(String(coefVal)):'')+'" oninput="setBasculeCoef(\''+s.id+'\',this.value)" placeholder="ex. 285" style="width:90px;padding:4px 6px;border:1px solid #e6ece7;border-radius:8px;font:inherit">';
+        const inp='<input type="number" min="0" step="1" value="'+(coefVal!=null?esc(String(coefVal)):'')+'" oninput="setBasculeCoef(\''+s.id+'\',this.value)" placeholder="ex. 265" style="width:90px;padding:4px 6px;border:1px solid #e6ece7;border-radius:8px;font:inherit">';
         const nameCell='<td><strong>'+esc(s.name)+'</strong> <span class="muted" style="font-size:12px">'+esc(s.poste||'')+'</span></td>';
+        const brutCell='<td class="num" title="salaire de base '+fr(c.baseReel)+' + valorisation expérience ÉLISFA '+fr(c.valoElisfa)+'">'+fr(c.brutReel)+'</td>';
         if(!c.hasCoef){
-          return '<tr>'+nameCell+'<td class="num">'+(s.hsem||0)+'</td><td>'+inp+'</td><td class="num">'+(c.pts||0)+'</td><td class="num muted">—</td><td class="num">'+fr(c.brutReel)+'</td><td class="num muted">—</td><td><span class="pill wait">⏳ saisir le coefficient</span></td></tr>';
+          return '<tr>'+nameCell+'<td class="num">'+(s.hsem||0)+'</td><td>'+inp+'</td><td class="num muted">—</td>'+brutCell+'<td><span class="pill wait">⏳ saisir le coefficient</span></td></tr>';
         }
         nbCoef++;
-        let badge, maintienCell;
-        if(c.sous){ nbSous++; maintienCell='<strong class="red">'+fr(c.ecart)+'</strong>'; badge='<span class="pill" style="background:#fdecec;color:#b3261e">⛔ Sous la grille — remonter de '+fr(-c.ecart)+'</span>'; }
-        else { totMaintien+=c.ecart; maintienCell='<strong class="green">+'+fr(c.ecart)+'</strong>'; badge='<span class="pill ok">✅ Au-dessus — maintien OK</span>'; }
-        const ptsCell=c.pts+(c.prorata<1?' <span class="muted">·'+Math.round(c.prorata*100)+'%</span>':'');
-        return '<tr>'+nameCell+'<td class="num">'+(s.hsem||0)+'</td><td>'+inp+'</td><td class="num">'+ptsCell+'</td><td class="num">'+fr(c.mini)+'</td><td class="num">'+fr(c.brutReel)+'</td><td class="num">'+maintienCell+'</td><td>'+badge+'</td></tr>';
+        const eclatTitle='base '+fr(c.base)+(c.ancEcl>0?' + ancienneté '+fr(c.ancEcl):'')+(c.idxTP>0?' + indemnité temps partiel '+fr(c.idxTP):'');
+        let eclatCell='<td class="num" title="'+eclatTitle+'">'+fr(c.eclatTotal);
+        if(c.sousMin){ nbSous++; eclatCell+=' <span class="pill" style="background:#fdecec;color:#b3261e">coef &lt; 257 → 257</span>'; }
+        eclatCell+='</td>';
+        let res;
+        if(c.remontee>0.005){ totRemontee+=c.remontee; res='<span class="pill" style="background:#eef4ff;color:#0b62c4">↗ Remontée +'+fr(c.remontee)+'</span>'; }
+        else if(c.maintien>0.005){ totMaintien+=c.maintien; res='<span class="pill ok">🛡️ Maintien +'+fr(c.maintien)+'</span>'; }
+        else { res='<span class="pill ok">= Identique</span>'; }
+        return '<tr>'+nameCell+'<td class="num">'+(s.hsem||0)+'</td><td>'+inp+'</td>'+eclatCell+brutCell+'<td>'+res+'</td></tr>';
       }).join('')
     + '</tbody></table>';
   let k='';
   k+=kpi('Salariés simulés', nbCoef+' / '+list.length, '', 'coefficient ÉCLAT saisi');
-  k+=kpi('Complément différentiel', totMaintien>0?'+'+fr(totMaintien)+' / mois':'—', 'green', 'à maintenir au-dessus de la grille');
-  k+=kpi('Sous la grille', nbSous>0?(nbSous+' salarié'+(nbSous>1?'s':'')):'aucun', nbSous>0?'red':'green', nbSous>0?'à remonter au minimum ÉCLAT':'tout le monde au-dessus du plancher');
+  k+=kpi('Coût des remontées', totRemontee>0?'+'+fr(totRemontee)+' / mois':'—', totRemontee>0?'red':'green', 'hausses obligatoires (salaire ÉCLAT > actuel)');
+  k+=kpi('Maintiens de salaire', totMaintien>0?fr(totMaintien)+' / mois':'—', '', 'différentiel conservé (salaire inchangé)');
+  if(nbSous>0) k+=kpi('Coef sous le plancher', nbSous+' salarié'+(nbSous>1?'s':''), 'red', 'plancher de branche ÉCLAT = 257 (groupe A)');
   const kk=$('basculeKpis'); if(kk) kk.innerHTML=k;
 }
 
