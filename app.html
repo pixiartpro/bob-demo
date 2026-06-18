@@ -203,6 +203,16 @@
         <div class="field"><label>Statut</label>
           <select id="m_paid"><option value="1">✅ Cotisation à jour</option><option value="0">⏳ En attente</option></select>
         </div>
+        <div class="field"><label>Mode de paiement</label>
+          <select id="m_mode">
+            <option value="">— Mode de paiement</option>
+            <option value="especes">💵 Espèces</option>
+            <option value="cheque">🧾 Chèque</option>
+            <option value="virement">🏦 Virement</option>
+            <option value="carte">💳 Carte bancaire</option>
+            <option value="prelevement">🔁 Prélèvement</option>
+          </select>
+        </div>
         <div class="field" style="flex:0"><label>&nbsp;</label><button class="btn" onclick="addMember()">Ajouter</button></div>
       </div>
     </div>
@@ -237,8 +247,15 @@
       <div class="row" style="margin-top:10px">
         <div class="field"><label>Compte comptable</label><input id="q_compte" list="comptes" placeholder="Ex. 6061 - Eau, énergie"></div>
         <div class="field"><label>Catégorie</label><input id="q_cat" list="cats" placeholder="Ex. Subvention"></div>
-        <div class="field" style="flex:0;min-width:150px"><label>Moyen</label>
-          <select id="q_account"><option value="banque">🏦 Banque</option><option value="caisse">💵 Espèces</option></select></div>
+        <div class="field" style="flex:0;min-width:160px"><label>Mode de paiement</label>
+          <select id="q_mode">
+            <option value="">— Non précisé</option>
+            <option value="especes">💵 Espèces (caisse)</option>
+            <option value="cheque">🧾 Chèque</option>
+            <option value="virement">🏦 Virement</option>
+            <option value="carte">💳 Carte bancaire</option>
+            <option value="prelevement">🔁 Prélèvement</option>
+          </select></div>
         <div class="field"><label>Site</label><input id="q_site" list="sites" placeholder="Site"></div>
         <div class="field"><label>Action</label><input id="q_action" list="actions" placeholder="Action"></div>
         <div class="field" style="flex:0"><label>&nbsp;</label><button class="btn" onclick="quickAdd()">＋ Ajouter</button></div>
@@ -274,8 +291,15 @@
       <div class="row" style="margin-top:10px">
         <div class="field"><label>Montant total (€)</label><input id="a_amount" type="number" min="0" step="0.01" oninput="updateSplitSum()"></div>
         <div class="field"><label>Date</label><input id="a_date" type="date"></div>
-        <div class="field" style="flex:0;min-width:170px"><label>Moyen de paiement</label>
-          <select id="a_account"><option value="banque">🏦 Banque</option><option value="caisse">💵 Espèces (caisse)</option></select>
+        <div class="field" style="flex:0;min-width:180px"><label>Mode de paiement</label>
+          <select id="a_mode">
+            <option value="">— Non précisé</option>
+            <option value="especes">💵 Espèces (caisse)</option>
+            <option value="cheque">🧾 Chèque</option>
+            <option value="virement">🏦 Virement</option>
+            <option value="carte">💳 Carte bancaire</option>
+            <option value="prelevement">🔁 Prélèvement</option>
+          </select>
         </div>
         <div class="field"><label>Projet (optionnel)</label><select id="a_project"></select></div>
       </div>
@@ -1995,6 +2019,8 @@ const FAQ=[
    a:"Dans la liste des adhérents, clique sur le crayon <b>✏️</b> de la ligne concernée. Change ce qu'il faut dans la fenêtre, puis <b>« Enregistrer »</b>."},
   {cat:'👥 Adhérents',q:"À quoi servent les champs « Type d'adhésion » et « Site » ?",kw:"type adhesion site membre danse periscolaire vepi acm bringelliers categorie classer",
    a:"Ils servent à <b>classer</b> tes adhérents : « Type d'adhésion » (Membre, Danse, Périscolaire, ACM…) et « Site » (Case BDN, Bringelliers…). Tu choisis les valeurs disponibles dans <b>⚙️ Données</b>."},
+  {cat:'👥 Adhérents',q:"Comment je note qu'un adhérent a payé en espèces, par chèque… ?",kw:"mode moyen reglement especes liquide cash cheque carte bancaire payer cotisation comment a paye adherent",
+   a:"En haut de l'onglet <b>👥 Adhérents</b>, le menu <b>Mode de paiement</b> permet de choisir <b>💵 Espèces, 🧾 Chèque, 🏦 Virement, 💳 Carte bancaire</b> ou <b>🔁 Prélèvement</b>. Pour un adhérent déjà enregistré, clique sur le crayon <b>✏️</b> de sa ligne pour le renseigner ou le corriger. Le mode s'affiche sous le montant dans la liste, sur le <b>🧾 reçu de cotisation</b> et dans l'export CSV."},
   {cat:'📁 Projets & 🏛️ Subventions',q:"Comment je joins un document à un projet ou une subvention ?",kw:"piece jointe joindre document fichier pdf attacher ajouter projet subvention telecharger televerser",
    a:"Ouvre le projet ou la subvention, clique sur le bouton <b>📎 Documents</b>, puis sur <b>« Joindre un fichier »</b> et choisis ton document (PDF, image, tableau…). Il est rangé dans le coffre sécurisé et tu peux le rouvrir à tout moment."},
   {cat:'📁 Projets & 🏛️ Subventions',q:"Comment je crée un projet ou une subvention ?",kw:"creer ajouter projet subvention nouveau enregistrer financeur",
@@ -2005,6 +2031,8 @@ const FAQ=[
    a:"Onglet <b>💶 Comptabilité</b> : utilise <b>« Nouvelle opération »</b> pour une écriture détaillée, ou <b>« Saisie rapide »</b> pour enchaîner beaucoup de factures vite. Choisis Recette ou Dépense, le montant, la date, la catégorie…"},
   {cat:'💶 Comptabilité',q:"C'est quoi la « saisie rapide » ?",kw:"saisie rapide beaucoup factures vite enchainer compta rapide plusieurs",
    a:"C'est un mode pour <b>entrer beaucoup d'écritures rapidement</b> les unes après les autres (idéal pour un paquet de factures). Tu remplis l'essentiel et tu valides ; la ligne suivante s'enchaîne."},
+  {cat:'💶 Comptabilité',q:"Comment j'indique comment une opération a été payée (espèces, chèque, virement…) ?",kw:"mode moyen reglement payee operation ecriture cheque virement carte prelevement banque caisse choisir",
+   a:"Dans <b>« Nouvelle opération »</b> comme dans la <b>« Saisie rapide »</b>, choisis le <b>Mode de paiement</b> : 💵 Espèces, 🧾 Chèque, 🏦 Virement, 💳 Carte bancaire ou 🔁 Prélèvement. Si tu choisis <b>Espèces</b>, Bob range tout seul l'opération dans la <b>💵 caisse</b> ; tous les autres modes vont sur la <b>🏦 banque</b>. Un seul menu suffit, plus besoin de choisir « banque ou caisse » à part."},
   {cat:'💶 Comptabilité',q:"Comment je trie ou filtre le journal des opérations ?",kw:"trier filtrer classer journal operations colonnes date montant rechercher chercher tri",
    a:"Dans le <b>Journal des opérations</b>, clique sur l'<b>en-tête d'une colonne</b> (Date, Libellé, Montant…) pour trier. La barre de recherche permet de filtrer par libellé, site, action… Tu peux aussi choisir l'<b>exercice comptable</b> (l'année)."},
   {cat:'💶 Comptabilité',q:"Comment j'exporte la compta pour le comptable ?",kw:"export exporter comptable journal csv excel envoyer transmettre exercice annee",
@@ -2107,6 +2135,8 @@ function renderFaqList(){
 
 /* ---- ✨ Quoi de neuf (nouveautés + notice chronologique) ---- */
 const NEWS=[
+  {id:'2026-06-18-mode-paiement',date:'2026-06-18',tab:'👥 Adhérents & 💶 Comptabilité',titre:'💳 Mode de paiement (espèces, chèque, virement…)',
+   desc:"On peut maintenant noter COMMENT c'est payé. Sur la fiche adhérent (onglet 👥 Adhérents) un menu « Mode de paiement » propose Espèces, Chèque, Virement, Carte bancaire et Prélèvement — le mode apparaît dans la liste, sur le reçu de cotisation et à l'export. En comptabilité, l'ancien choix « Banque / Espèces » est remplacé par ce même menu : si tu choisis « Espèces », l'opération part automatiquement dans la caisse, tous les autres modes vont sur la banque. Un seul menu au lieu de deux, et les anciennes écritures restent justes (caisse = Espèces, banque = non précisé)."},
   {id:'2026-06-18-avenants-eclat',date:'2026-06-18',tab:'🧑‍💼 RH',titre:'📄 Modèles d\'avenant bascule ÉCLAT',
    desc:"Dans l'onglet 🧑‍💼 RH, une partie « Documents RH » contient un modèle d'avenant pré-rempli pour Kathy et pour Fabrice (changement de convention ALISFA → ÉCLAT avec clause de maintien de salaire, sans rétroactivité, et adhésion prévoyance/santé ÉCLAT). Le texte est modifiable (enregistré dans le coffre) et imprimable en PDF (bouton 🖨️). Le bouton ↩️ Modèle restaure l'original. C'est une base de travail à faire valider par Hexopée / la paie avant signature : complète les champs entre crochets (SIRET, adresse, coefficient, rémunération, date d'effet)."},
   {id:'2026-06-18-bascule-eclat-v2',date:'2026-06-18',tab:'🧑‍💼 RH',titre:'🔄 Simulateur bascule ÉLISFA → ÉCLAT (calcul fiabilisé)',
@@ -2206,8 +2236,8 @@ function addMember(){
   if(!name){ alert('Indique au moins le nom de l\'adhérent.'); return; }
   db.members.push({id:uid(), name, typeAdh:$('m_typeAdh').value.trim(), site:$('m_site').value.trim(), email:$('m_email').value.trim(), phone:$('m_phone').value.trim(),
     addr:$('m_addr').value.trim(), cp:$('m_cp').value.trim(), city:$('m_city').value.trim(),
-    amount:parseFloat($('m_amount').value)||0, date:$('m_date').value||today(), paid:$('m_paid').value==='1'});
-  $('m_name').value=$('m_typeAdh').value=$('m_site').value=$('m_email').value=$('m_phone').value=$('m_addr').value=$('m_cp').value=$('m_city').value=''; $('m_amount').value=10; $('m_date').value='';
+    amount:parseFloat($('m_amount').value)||0, date:$('m_date').value||today(), paid:$('m_paid').value==='1', mode:$('m_mode').value});
+  $('m_name').value=$('m_typeAdh').value=$('m_site').value=$('m_email').value=$('m_phone').value=$('m_addr').value=$('m_cp').value=$('m_city').value=''; $('m_amount').value=10; $('m_date').value=''; $('m_mode').value='';
   save();
 }
 function togglePaid(id){ const m=db.members.find(x=>x.id===id); if(m){m.paid=!m.paid; save();} }
@@ -2222,7 +2252,7 @@ function renderMembers(){
     <td style="font-size:13px">${esc(m.email||'—')}<br><span class="muted">${esc(m.phone||'')}</span></td>
     <td style="font-size:13px">${esc(m.addr||'—')}<br><span class="muted">${esc(((m.cp||'')+' '+(m.city||'')).trim())}</span></td>
     <td>${fmtDate(m.date)}</td>
-    <td class="num">${euro(m.amount)}</td>
+    <td class="num">${euro(m.amount)}${m.mode?'<br><span class="muted" style="font-size:11px">'+esc(modeLabel(m.mode))+'</span>':''}</td>
     <td><span class="pill ${m.paid?'ok':'wait'}" style="cursor:pointer" onclick="togglePaid('${m.id}')">${m.paid?'À jour':'En attente'}</span></td>
     <td style="white-space:nowrap"><button class="ghost btn" style="padding:4px 9px;font-size:12px" onclick="openEdit('members','${m.id}')" title="Modifier">✏️</button>
       <button class="ghost btn" style="padding:4px 9px;font-size:12px" onclick="memberReceipt('${m.id}')">🧾 Reçu</button>
@@ -2236,6 +2266,15 @@ function getSplits(o){
   return [{site:o.site||'', action:o.action||'', amount:o.amount}]; // compat anciennes données
 }
 function getAccount(o){ return o.account||'banque'; }
+/* ---- Modes de paiement (espèces / chèque / virement / carte / prélèvement) ----
+   Le « mode » dit COMMENT on a payé ; l'« account » (caisse/banque) dit OÙ l'argent atterrit.
+   Règle : espèces → caisse ; tout le reste → banque. La mécanique caisse/rapprochement
+   continue de s'appuyer sur getAccount() (account reste la source de vérité). */
+const PAY_MODES=[['especes','💵 Espèces'],['cheque','🧾 Chèque'],['virement','🏦 Virement'],['carte','💳 Carte bancaire'],['prelevement','🔁 Prélèvement']];
+function modeLabel(c){ const f=PAY_MODES.find(m=>m[0]===c); return f?f[1]:''; }            // avec emoji (UI)
+function modeText(c){ return modeLabel(c).replace(/^\S+\s/,''); }                          // sans emoji (CSV/reçu)
+function modeFromAccount(o){ return o.mode || (getAccount(o)==='caisse'?'especes':''); }   // compat anciennes données
+function accountFromMode(mode){ return mode==='especes'?'caisse':'banque'; }
 /* photo justificatif : compressée avant stockage pour ne pas saturer la mémoire */
 let pendingPhoto=null;
 function handlePhoto(e){
@@ -2304,13 +2343,14 @@ function addOp(){
     if(Math.abs(sum-total)>0.01 &&
        !confirm('La répartition ('+euro(sum)+') ne correspond pas au montant total ('+euro(total)+').\nEnregistrer quand même ?')) return;
   }
+  const mode=$('a_mode').value;
   const data={type:$('a_type').value, label, cat:$('a_cat').value.trim(), compte:$('a_compte').value.trim(),
     amount:total, date:$('a_date').value||today(), project:$('a_project').value||'',
-    account:$('a_account').value, photo:pendingPhoto||'', splits};
+    mode, account:accountFromMode(mode), photo:pendingPhoto||'', splits};
   if(editingId){ Object.assign(db.ops.find(x=>x.id===editingId), data); cancelEdit(); }
   else db.ops.push({id:uid(), ...data});
   $('a_label').value=$('a_cat').value=$('a_compte').value=$('a_amount').value=''; $('a_date').value=today();
-  $('a_account').value='banque'; $('a_photo').value=''; $('a_photoInfo').textContent=''; pendingPhoto=null;
+  $('a_mode').value=''; $('a_photo').value=''; $('a_photoInfo').textContent=''; pendingPhoto=null;
   resetSplitRows();
   save();
 }
@@ -2319,7 +2359,7 @@ function editOp(id){
   const o=db.ops.find(x=>x.id===id); if(!o) return;
   editingId=id;
   $('a_type').value=o.type; $('a_label').value=o.label; $('a_cat').value=o.cat||''; $('a_compte').value=o.compte||'';
-  $('a_amount').value=o.amount; $('a_date').value=o.date; $('a_account').value=getAccount(o); $('a_project').value=o.project||'';
+  $('a_amount').value=o.amount; $('a_date').value=o.date; $('a_mode').value=modeFromAccount(o); $('a_project').value=o.project||'';
   pendingPhoto=o.photo||null;
   $('a_photoInfo').innerHTML = o.photo?'<span class="muted">Photo conservée (choisis un fichier pour la remplacer)</span>':'';
   $('splitRows').innerHTML=''; getSplits(o).forEach(s=>addSplitRow(s.site,s.action,s.amount)); updateSplitSum();
@@ -2331,7 +2371,7 @@ function editOp(id){
 function cancelEdit(){
   editingId=null; $('opBtn').textContent="Enregistrer l'opération"; $('editInfo').textContent='';
   $('a_label').value=$('a_cat').value=$('a_compte').value=$('a_amount').value=''; $('a_date').value=today();
-  $('a_account').value='banque'; $('a_photo').value=''; $('a_photoInfo').textContent=''; pendingPhoto=null;
+  $('a_mode').value=''; $('a_photo').value=''; $('a_photoInfo').textContent=''; pendingPhoto=null;
   resetSplitRows();
 }
 /* saisie rapide : conserve date/type/site/action/compte/moyen d'une ligne à l'autre */
@@ -2339,8 +2379,9 @@ function quickAdd(){
   const label=$('q_label').value.trim();
   const amount=parseFloat($('q_amount').value);
   if(!label || !(amount>0)){ $('q_info').innerHTML='<span class="red">Indique un libellé et un montant.</span>'; return; }
+  const qmode=$('q_mode').value;
   db.ops.push({id:uid(), type:$('q_type').value, label, cat:$('q_cat').value.trim(), compte:$('q_compte').value.trim(),
-    amount, date:$('q_date').value||today(), project:'', account:$('q_account').value, photo:'',
+    amount, date:$('q_date').value||today(), project:'', mode:qmode, account:accountFromMode(qmode), photo:'',
     splits:[{site:$('q_site').value.trim(), action:$('q_action').value.trim(), amount}]});
   $('q_info').innerHTML='<span class="green">✓ « '+esc(label)+' » ('+euro(amount)+') ajouté. Enchaîne la facture suivante.</span>';
   $('q_label').value=''; $('q_amount').value=''; $('q_label').focus();
@@ -2473,7 +2514,10 @@ async function openOpDetail(id){
   let photoSrc=o.photo||''; if(photoSrc && window.bobPhotoSrc) photoSrc=await window.bobPhotoSrc(photoSrc);
   const sp=getSplits(o);
   const splitRows=sp.map(s=>`<div class="kv"><span class="k">${esc(s.site||'(site non précisé)')} · ${esc(s.action||'(action non précisée)')}</span><span><strong>${euro(s.amount)}</strong></span></div>`).join('');
-  const acc=getAccount(o)==='caisse'?'<span class="tag cash">💵 Espèces (caisse)</span>':'<span class="tag bank">🏦 Banque</span>';
+  const _mc=modeFromAccount(o);
+  const acc=_mc
+    ? modeLabel(_mc)+(_mc==='especes'?' <span class="muted">(caisse)</span>':' <span class="muted">(banque)</span>')
+    : (getAccount(o)==='caisse'?'<span class="tag cash">💵 Espèces (caisse)</span>':'<span class="tag bank">🏦 Banque</span>');
   $('md_title').textContent=o.label;
   $('md_body').innerHTML=`
     <div class="kv"><span class="k">Type</span><span class="${o.type==='in'?'green':'red'}"><strong>${o.type==='in'?'Recette ➕':'Dépense ➖'} ${euro(o.amount)}</strong></span></div>
@@ -2564,7 +2608,7 @@ const EDIT_SCHEMAS={
     {k:'name',l:'Nom et prénom',t:'text'},{k:'typeAdh',l:"Type d'adhésion",t:'list',dl:'typesAdh'},{k:'site',l:'Site',t:'list',dl:'sites'},
     {k:'email',l:'Email',t:'text'},{k:'phone',l:'Téléphone',t:'text'},{k:'addr',l:'Adresse',t:'text'},
     {k:'cp',l:'Code postal',t:'text'},{k:'city',l:'Ville',t:'text'},{k:'amount',l:'Cotisation (€)',t:'number'},
-    {k:'date',l:"Date d'adhésion",t:'date'},{k:'paid',l:'Cotisation à jour',t:'bool'}]},
+    {k:'date',l:"Date d'adhésion",t:'date'},{k:'paid',l:'Cotisation à jour',t:'bool'},{k:'mode',l:'Mode de paiement',t:'select',optsKV:PAY_MODES}]},
   projects:{coll:'projects',title:'projet',f:[
     {k:'name',l:'Nom du projet',t:'text'},{k:'budget',l:'Budget prévu (€)',t:'number'},
     {k:'status',l:'Statut',t:'select',opts:['À venir','En cours','Terminé']}]},
@@ -2615,6 +2659,7 @@ function openEdit(entity,id){
   const body=sch.f.map(f=>{
     const sval=rec[f.k]==null?'':rec[f.k];
     if(f.t==='bool') return `<div class="field"><label>${f.l}</label><select id="ed_${f.k}"><option value="1"${rec[f.k]?' selected':''}>Oui</option><option value="0"${!rec[f.k]?' selected':''}>Non</option></select></div>`;
+    if(f.t==='select' && f.optsKV){ return `<div class="field"><label>${f.l}</label><select id="ed_${f.k}"><option value="">— Non précisé</option>${f.optsKV.map(o=>`<option value="${o[0]}"${o[0]===sval?' selected':''}>${esc(o[1])}</option>`).join('')}</select></div>`; }
     if(f.t==='select'){ const opts=[...f.opts]; if(sval&&!opts.includes(sval))opts.unshift(sval); return `<div class="field"><label>${f.l}</label><select id="ed_${f.k}">${opts.map(o=>`<option${o===sval?' selected':''}>${esc(o)}</option>`).join('')}</select></div>`; }
     if(f.t==='textarea') return `<div class="field"><label>${f.l}</label><textarea id="ed_${f.k}" rows="3" style="width:100%;font:inherit;padding:8px;border:1px solid var(--line);border-radius:8px;resize:vertical">${esc(sval)}</textarea></div>`;
     const list=f.dl?` list="${f.dl}"`:''; const type=f.t==='number'?'number':f.t==='date'?'date':'text'; const step=f.t==='number'?' step="0.01"':'';
@@ -2973,6 +3018,7 @@ function memberReceipt(id){
     <table><tbody>
       <tr><td>Montant de la cotisation</td><td class="num"><strong>${euro(m.amount)}</strong></td></tr>
       <tr><td>Statut du règlement</td><td class="num">${m.paid?'Réglée ✓':'En attente'}</td></tr>
+      ${m.mode?`<tr><td>Mode de paiement</td><td class="num">${modeText(m.mode)}</td></tr>`:''}
       <tr><td>Date d'adhésion</td><td class="num">${fmtDate(m.date)}</td></tr>
     </tbody></table>
     <p style="margin-top:40px">Fait à Saint-Denis, le ${fmtDate(today())}.</p>
@@ -4122,8 +4168,8 @@ function importJSON(e){
 }
 function csvRow(arr){ return arr.map(v=>'"'+String(v==null?'':v).replace(/"/g,'""')+'"').join(';'); }
 function exportMembersCSV(){
-  const rows=[csvRow(['Nom','Email','Téléphone','Adresse','Code postal','Ville','Cotisation','Date adhésion','À jour'])]
-    .concat(db.members.map(m=>csvRow([m.name,m.email,m.phone,m.addr,m.cp,m.city,m.amount,m.date,m.paid?'Oui':'Non'])));
+  const rows=[csvRow(['Nom','Email','Téléphone','Adresse','Code postal','Ville','Cotisation','Date adhésion','À jour','Mode de paiement'])]
+    .concat(db.members.map(m=>csvRow([m.name,m.email,m.phone,m.addr,m.cp,m.city,m.amount,m.date,m.paid?'Oui':'Non',modeText(m.mode)])));
   download(new Blob(['﻿'+rows.join('\n')],{type:'text/csv'}),'adherents-CASE.csv');
 }
 function exportOpsCSV(){
@@ -4131,8 +4177,8 @@ function exportOpsCSV(){
   const tLabel=o=>o.type==='in'?'Recette':o.type==='out'?'Dépense':'Remise en banque';
   const yr=curExercice();
   const rows=[csvRow(['Date','Type','Libellé','Catégorie','Compte comptable','Moyen','Site','Action','Projet','Montant'])]
-    .concat(db.ops.filter(o=>!yr||(o.date||'').slice(0,4)===yr).map(o=>{ const sp=getSplits(o);
-      return csvRow([o.date,tLabel(o),o.label,o.cat,o.compte||'',o.type==='transfer'?'Caisse→Banque':(getAccount(o)==='caisse'?'Espèces':'Banque'),
+    .concat(db.ops.filter(o=>!yr||(o.date||'').slice(0,4)===yr).map(o=>{ const sp=getSplits(o); const _m=modeFromAccount(o);
+      return csvRow([o.date,tLabel(o),o.label,o.cat,o.compte||'',o.type==='transfer'?'Caisse→Banque':(_m?modeText(_m):'Banque'),
         o.type==='transfer'?'':fmt(sp,'site'),o.type==='transfer'?'':fmt(sp,'action'),projName(o.project),o.amount]); }));
   download(new Blob(['﻿'+rows.join('\n')],{type:'text/csv'}),'comptabilite-CASE'+(yr?'-'+yr:'')+'.csv');
 }
@@ -4143,7 +4189,7 @@ function exportComptaCSV(){
   if(!lignes.length){ alert('Aucune écriture pour '+(yr?('l\'exercice '+yr):'cette sélection')+'.'); return; }
   const rows=[csvRow(['Date','Compte comptable','Libellé','Catégorie','Site','Action','Débit (dépense)','Crédit (recette)','Moyen de paiement'])];
   lignes.slice().sort((a,b)=>(a.date||'').localeCompare(b.date||'')).forEach(o=>{
-    const moyen = o.mode || (getAccount(o)==='caisse'?'Espèces':'Banque');
+    const _m=modeFromAccount(o); const moyen = _m?modeText(_m):'Banque';
     getSplits(o).forEach(s=>{
       rows.push(csvRow([o.date, o.compte||'', o.label, o.cat||'', s.site||'', s.action||'',
         o.type==='out'?s.amount:'', o.type==='in'?s.amount:'', moyen]));
