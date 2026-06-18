@@ -30,7 +30,15 @@
   header.top h1{font-size:18px;margin:0;font-weight:800}
   header.top p{margin:0;font-size:12.5px;color:var(--muted)}
   .wrap{max-width:1100px;margin:0 auto;padding:20px}
-  nav.tabs{display:flex;gap:4px;flex-wrap:nowrap;overflow-x:auto;margin:14px 0;padding-bottom:4px;scrollbar-width:thin}
+  .navwrap{position:sticky;top:var(--barH,0);z-index:40;background:var(--bg);margin:14px 0;padding:6px 0}
+  nav.famtabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px}
+  nav.famtabs button{border:1px solid var(--line);background:var(--card);color:var(--ink);padding:8px 14px;
+       border-radius:999px;font-size:13.5px;font-weight:700;cursor:pointer;white-space:nowrap;transition:.15s}
+  nav.famtabs button:hover{border-color:var(--brand)}
+  nav.famtabs button.on{background:var(--brand);color:#fff;border-color:var(--brand)}
+  nav.tabs{display:block;margin:0}
+  nav.tabs .tabgroup{display:none;gap:4px;flex-wrap:wrap}
+  nav.tabs .tabgroup.show{display:flex}
   nav.tabs button{border:none;background:transparent;color:var(--muted);padding:9px 14px;
        border-radius:999px;font-size:13.5px;font-weight:600;cursor:pointer;white-space:nowrap;
        transition:.15s}
@@ -133,37 +141,59 @@
 </header>
 
 <div class="wrap">
-  <nav class="tabs">
-    <button data-tab="dashboard" class="active">📊 Tableau de bord</button>
-    <button data-tab="presentation">🎤 Présentation</button>
-    <button data-tab="projet">🧭 Projet &amp; orientations</button>
-    <button data-tab="projetados">🚀 Projet ados</button>
-    <button data-tab="members">👥 Adhérents</button>
-    <button data-tab="periscolaire">🎒 Périscolaire</button>
-    <button data-tab="activites">🎟️ Activités</button>
-    <button data-tab="lieux">🏠 Lieux</button>
-    <button data-tab="projects">📁 Projets</button>
-    <button data-tab="subventions">🏛️ Subventions</button>
-    <button data-tab="repertoire">🗂️ Répertoire</button>
-    <button data-tab="partenaires">🤝 Partenaires</button>
-    <button data-tab="ateliers">💡 Ateliers</button>
-    <button data-tab="secretariat">🧰 Secrétariat</button>
-    <button data-tab="equipe">📒 Équipe</button>
-    <button data-tab="accompagnement">🤝 Accompagnement</button>
-    <button data-tab="rh">🧑‍💼 RH</button>
-    <button data-tab="suivi">✅ Suivi</button>
-    <button data-tab="conges">🏖️ Congés</button>
-    <button data-tab="horaires">🗓️ Horaires</button>
-    <button data-tab="incidents">⚠️ Événements</button>
-    <button data-tab="accounting">💶 Comptabilité</button>
-    <button data-tab="caisse">💵 Caisse</button>
-    <button data-tab="dettes">💳 Dettes & créances</button>
-    <button data-tab="bilan">📈 Bilan</button>
-    <button data-tab="previsionnel">🔮 Prévisionnel</button>
-    <button data-tab="aide">❓ Aide</button>
-    <button data-tab="journal" style="display:none">🕘 Historique</button>
-    <button data-tab="data" style="margin-left:auto">⚙️ Données</button>
+  <div class="navwrap">
+  <nav class="famtabs" aria-label="Familles d'onglets">
+    <button class="fam on" data-group="accueil">🏠 Accueil</button>
+    <button class="fam" data-group="adherents">👥 Adhérents &amp; activités</button>
+    <button class="fam" data-group="projets">📁 Projets &amp; partenaires</button>
+    <button class="fam" data-group="equipe">🧑‍💼 Équipe &amp; RH</button>
+    <button class="fam" data-group="finances">💶 Finances</button>
+    <button class="fam" data-group="outils">🧰 Outils</button>
   </nav>
+  <nav class="tabs">
+    <div class="tabgroup show" data-group="accueil">
+      <button data-tab="dashboard" class="active">📊 Tableau de bord</button>
+      <button data-tab="presentation">🎤 Présentation</button>
+      <button data-tab="projet">🧭 Projet &amp; orientations</button>
+      <button data-tab="projetados">🚀 Projet ados</button>
+    </div>
+    <div class="tabgroup" data-group="adherents">
+      <button data-tab="members">👥 Adhérents</button>
+      <button data-tab="periscolaire">🎒 Périscolaire</button>
+      <button data-tab="activites">🎟️ Activités</button>
+      <button data-tab="lieux">🏠 Lieux</button>
+    </div>
+    <div class="tabgroup" data-group="projets">
+      <button data-tab="projects">📁 Projets</button>
+      <button data-tab="subventions">🏛️ Subventions</button>
+      <button data-tab="repertoire">🗂️ Répertoire</button>
+      <button data-tab="partenaires">🤝 Partenaires</button>
+      <button data-tab="ateliers">💡 Ateliers</button>
+    </div>
+    <div class="tabgroup" data-group="equipe">
+      <button data-tab="equipe">📒 Équipe</button>
+      <button data-tab="accompagnement">🧑‍🏫 Accompagnement</button>
+      <button data-tab="rh">🧑‍💼 RH</button>
+      <button data-tab="suivi">✅ Suivi</button>
+      <button data-tab="conges">🏖️ Congés</button>
+      <button data-tab="horaires">🗓️ Horaires</button>
+      <button data-tab="incidents">⚠️ Événements</button>
+    </div>
+    <div class="tabgroup" data-group="finances">
+      <button data-tab="accounting">💶 Comptabilité</button>
+      <button data-tab="caisse">💵 Caisse</button>
+      <button data-tab="dettes">💳 Dettes & créances</button>
+      <button data-tab="bilan">📈 Bilan</button>
+      <button data-tab="previsionnel">🔮 Prévisionnel</button>
+    </div>
+    <div class="tabgroup" data-group="outils">
+      <button data-tab="secretariat">🧰 Secrétariat</button>
+      <button data-tab="aide">❓ Aide</button>
+      <button data-tab="journal" style="display:none">🕘 Historique</button>
+      <button data-tab="data">⚙️ Données</button>
+    </div>
+  </nav>
+  </div>
 
   <!-- DASHBOARD -->
   <section id="dashboard" class="page active">
@@ -597,10 +627,11 @@
     </div>
 
     <div class="panel">
-      <h2 style="margin:0 0 12px">📅 Mois par mois</h2>
-      <table><thead><tr><th>Mois</th><th class="num">Recettes</th><th class="num">Dépenses</th><th class="num">Solde du mois</th><th class="num">Trésorerie cumulée</th></tr></thead>
-        <tbody id="prevMonthRows"></tbody></table>
-      <p class="hint" style="margin:8px 0 0">Les mois <strong>déjà saisis</strong> reprennent les chiffres réels ; les mois à venir sont une projection (en italique).</p>
+      <h2 style="margin:0 0 4px">📅 Budget mensuel détaillé — par code comptable <span class="muted" style="font-size:12px;font-weight:400">(montants en €)</span></h2>
+      <p class="hint" id="prevMatrixHint" style="margin:2px 0 10px"></p>
+      <div style="overflow-x:auto;-webkit-overflow-scrolling:touch">
+        <table id="prevMatrix" style="min-width:780px;font-size:12.5px"></table>
+      </div>
     </div>
 
     <div class="panel" id="simuGarderie">
@@ -1989,6 +2020,22 @@ document.querySelectorAll('nav.tabs button').forEach(b=>{
   };
 });
 
+/* ---- Menu par familles : on range les 29 onglets dans 6 tiroirs, sans changer leur fonctionnement ---- */
+(function(){
+  const famNav=document.querySelector('nav.famtabs'); if(!famNav) return;
+  const groups=document.querySelectorAll('nav.tabs .tabgroup');
+  function openGroup(g){
+    famNav.querySelectorAll('button').forEach(x=>x.classList.toggle('on', x.dataset.group===g));
+    groups.forEach(d=>d.classList.toggle('show', d.dataset.group===g));
+  }
+  window.openTabGroup=openGroup;
+  famNav.querySelectorAll('button').forEach(b=> b.addEventListener('click', ()=>openGroup(b.dataset.group)) );
+  // un clic d'onglet (réel OU programmatique via .click()) ouvre aussi sa famille
+  document.querySelectorAll('nav.tabs button[data-tab]').forEach(b=>{
+    const g=b.closest('.tabgroup'); if(g) b.addEventListener('click', ()=>openGroup(g.dataset.group));
+  });
+})();
+
 /* ---- Aide : « Demande à Zanana » (FAQ + assistant par mots-clés, sans IA) ---- */
 const FAQ=[
   {cat:'🧑‍💼 RH',q:"Où trouver un modèle d'avenant pour la bascule ÉCLAT (Kathy, Fabrice) ?",kw:"avenant avenants modele modeles document documents contrat travail eclat alisfa bascule changement convention kathy fabrice imprimer pdf maintien salaire signature clause classification coefficient remuneration garantie base",
@@ -2087,6 +2134,8 @@ const FAQ=[
    a:"Le bloc <b>🚨 Alertes importantes</b> du tableau de bord surveille tout seul : <b>solde négatif</b> (global, banque ou caisse), <b>échéances de dettes</b> à moins de 14 jours ou en retard (ex. URSSAF), et <b>fins d'aides au poste</b> (PEC) à moins de 90 jours pour anticiper le surcoût. Il n'apparaît que s'il y a quelque chose à traiter — pas de bloc = tout va bien."},
   {cat:'🔮 Prévisionnel',q:"À quoi sert le prévisionnel ?",kw:"previsionnel budget projection prevision fin annee estimer decembre recurrent futur anticiper",
    a:"Onglet <b>🔮 Prévisionnel</b> : Bob projette le budget jusqu'au 31 décembre. Coche <b>« récurrent »</b> pour les lignes qui reviennent chaque mois (loyer, charges…) : elles sont prolongées automatiquement. Les subventions à venir sont estimées selon leur statut."},
+  {cat:'🔮 Prévisionnel',q:"Où je vois le budget mois par mois, détaillé par code comptable ?",kw:"tableau mensuel mois colonnes code comptable detail grand livre recettes depenses solde variation cumule treso ligne par ligne mensuel matrice janvier decembre",
+   a:"Onglet <b>🔮 Prévisionnel</b>, tableau <b>📅 Budget mensuel détaillé — par code comptable</b> : les <b>mois sont en colonnes</b> (janv.→déc.) et chaque <b>code du plan comptable</b> est une ligne. Tu y lis les recettes par code puis le <b>total recettes du mois</b>, les dépenses par code puis le <b>total dépenses</b>, la ligne <b>Recettes − Dépenses</b> (solde du mois) et la ligne <b>Variation</b> (le solde cumulé qui progresse mois après mois). Les mois déjà saisis sont réels, les suivants (marqués <em>*</em>, en italique) sont projetés. Une colonne <b>Total an</b> récapitule à droite."},
   {cat:'🔮 Prévisionnel',q:"Comment savoir si le périscolaire du matin est rentable et combien ajouter à la grille tarifaire ?",kw:"simulateur garderie periscolaire matin rentable rentabilite tarif supplement equilibre point mort enfants nouvelle activite cout calcul grille tarifaire quotient familial",
    a:"Onglet <b>🔮 Prévisionnel</b>, panneau <b>📐 Simulateur</b> (tout en bas). Important : on ne compte que l'argent <b>nouveau</b> — un enfant déjà inscrit le soir qui vient aussi le matin ne rapporte que le <b>supplément matin</b> qu'on lui facture ; un <b>nouvel enfant</b> rapporte son tarif jour complet. Renseigne les deux groupes, les heures et le coût de l'animateur : Bob calcule le coût annuel, les recettes nouvelles, le résultat et le <b>supplément d'équilibre</b> à ajouter au tarif jour de la grille (3,14 € à 7,43 € selon quotient familial). Clique sur <b>« 💾 Garder ces hypothèses »</b> pour les partager avec le bureau. C'est une simulation : rien n'est écrit en compta."},
   {cat:'🧰 Secrétariat',q:"Où je note les choses à ne pas oublier (assurance, AG, déclarations) ?",kw:"secretariat echeancier general date oubli assurance ag declaration contrat rappel agenda memo penser",
@@ -2157,6 +2206,8 @@ function renderFaqList(){
 
 /* ---- ✨ Quoi de neuf (nouveautés + notice chronologique) ---- */
 const NEWS=[
+  {id:'2026-06-18-budget-mensuel',date:'2026-06-18',tab:'🔮 Prévisionnel',titre:'📅 Budget mensuel détaillé par code comptable',
+   desc:"L'onglet 🔮 Prévisionnel a un nouveau grand tableau : les mois (janv.→déc.) sont en COLONNES et chaque code du plan comptable est en LIGNE. On y lit les recettes par code et leur total mensuel, les dépenses par code et leur total, la ligne Recettes − Dépenses (solde du mois) et la ligne Variation (le solde cumulé qui progresse mois après mois), plus une colonne Total an à droite. Les mois déjà saisis sont réels ; les mois à venir (marqués d'un *) sont projetés, comme le reste de l'onglet. Le tableau défile horizontalement si l'écran est étroit."},
   {id:'2026-06-18-projection-eclat',date:'2026-06-18',tab:'🧑‍💼 RH',titre:'⚠️ Ancienneté : repère « projection ÉCLAT »',
    desc:"Dans l'onglet 🧑‍💼 RH, les points et la prime d'ancienneté affichés (panneaux 📅 Ancienneté de l'équipe et 🧮 Ancienneté ÉCLAT) sont calculés selon la FUTURE convention ÉCLAT (2 pts/an × V1 7,23 €). Or les bulletins de paie sont encore en ALISFA : les montants affichés ne correspondent donc pas encore au bulletin (ex. Fabrice ≈ 115,68 € projeté ÉCLAT vs 36,67 € sur le bulletin ALISFA). Un bandeau « Projection ÉCLAT — bulletins encore en ALISFA » a été ajouté pour éviter toute confusion. C'est uniquement un repère d'affichage : aucun calcul n'a changé. Chiffrage officiel : paie (Julie Lauret) / Hexopée."},
   {id:'2026-06-18-fermetures',date:'2026-06-18',tab:'🏖️ Congés',titre:'🔒 Fermetures de la structure (congés imposés)',
@@ -2218,6 +2269,9 @@ function newsBadge(){
   let s=b.querySelector('.newsdot');
   if(!s){ s=document.createElement('span'); s.className='newsdot'; s.style.cssText='display:inline-block;margin-left:6px;background:var(--red);color:#fff;border-radius:10px;padding:0 7px;font-size:11px;font-weight:700'; b.appendChild(s); }
   s.style.display=nb?'inline-block':'none'; s.textContent=nb;
+  // report du badge sur la famille « Outils » (qui contient l'Aide), visible tiroir fermé
+  const fb=document.querySelector('nav.famtabs button[data-group="outils"]');
+  if(fb){ let fs=fb.querySelector('.newsdot'); if(!fs){ fs=document.createElement('span'); fs.className='newsdot'; fs.style.cssText='display:inline-block;margin-left:6px;background:var(--red);color:#fff;border-radius:10px;padding:0 7px;font-size:11px;font-weight:700'; fb.appendChild(fs); } fs.style.display=nb?'inline-block':'none'; fs.textContent=nb; }
 }
 function renderNews(){
   const el=$('newsList'); if(!el) return;
@@ -3450,22 +3504,68 @@ function renderPrevisionnel(){
   $('prevRecRows').innerHTML=recHtml+'<tr style="border-top:2px solid #cdd8d0"><td><strong>Total recettes</strong></td><td></td><td></td><td class="num green"><strong>'+euro(totRec)+'</strong></td></tr>';
   $('prevDepRows').innerHTML=depHtml+'<tr style="border-top:2px solid #cdd8d0"><td><strong>Total dépenses</strong></td><td></td><td></td><td class="num red"><strong>'+euro(totDep)+'</strong></td></tr>';
 
-  // ---- mois par mois ----
+  // ---- budget mensuel détaillé par code comptable (mois en colonnes) ----
   const MOIS=['janv.','févr.','mars','avr.','mai','juin','juil.','août','sept.','oct.','nov.','déc.'];
-  let rows='', run=balance();
-  for(let m=1;m<=12;m++){
-    const isReal = m<=refM;
-    const dep = isReal ? realOut[m] : avgOutRec;
-    const recM = (isReal ? (realNonSub[m]+realSub[m]) : avgInRec) + fluxByMonth[m];
-    let cumulTxt='<span class="muted">—</span>';
-    if(m>refM){ run += (recM-dep); cumulTxt=euro(run); }
-    const it = isReal ? '' : 'font-style:italic;color:#6b7488';
-    rows += `<tr><td style="${it}">${MOIS[m-1]} ${Y}${isReal?'':' <span class="pill" style="background:#eef0f5;color:#6b7488;font-size:10px">prévu</span>'}</td>
-      <td class="num" style="${it}">${euro(recM)}</td><td class="num" style="${it}">${euro(dep)}</td>
-      <td class="num ${(recM-dep)>=0?'green':'red'}" style="${it}">${euro(recM-dep)}</td>
-      <td class="num" style="${it}">${cumulTxt}</td></tr>`;
-  }
-  $('prevMonthRows').innerHTML=rows;
+  const m2 = n => (n||0).toLocaleString('fr-FR',{minimumFractionDigits:2,maximumFractionDigits:2});
+
+  // réel par code et par mois
+  const recCodeReal={}, depCodeReal={};
+  const ens=(o,k)=>{ if(!o[k]) o[k]=Array(13).fill(0); return o[k]; };
+  opsY.forEach(o=>{ const m=mIdx(o); if(m<1||m>12) return; const code=(o.compte||'').trim()||'(sans code)';
+    if(o.type==='out') ens(depCodeReal,code)[m]+=o.amount;
+    else if(o.type==='in') ens(recCodeReal,code)[m]+=o.amount; });
+
+  // base de projection : montants des catégories « récurrentes » ventilés par code (mois saisis)
+  const recCodeRec={}, depCodeRec={};
+  opsY.forEach(o=>{ const m=mIdx(o); if(m<1||m>refM) return; const code=(o.compte||'').trim()||'(sans code)'; const cat=(o.cat||'').trim()||'(sans catégorie)';
+    if(o.type==='out'){ if(prevIsRecurrent(cat,'out')) depCodeRec[code]=(depCodeRec[code]||0)+o.amount; }
+    else if(o.type==='in'){ if(cat!=='Subvention' && prevIsRecurrent(cat,'in')) recCodeRec[code]=(recCodeRec[code]||0)+o.amount; } });
+
+  // code comptable qui porte les subventions (le plus utilisé, sinon 740)
+  const subCnt={}; opsY.forEach(o=>{ if(o.type==='in' && (o.cat||'').trim()==='Subvention'){ const c=(o.compte||'').trim()||"740 - Subventions d'exploitation"; subCnt[c]=(subCnt[c]||0)+1; } });
+  const subCode=Object.keys(subCnt).sort((a,b)=>subCnt[b]-subCnt[a])[0] || "740 - Subventions d'exploitation";
+  if(subFutureY>0.005) ens(recCodeReal,subCode); // garantir la ligne subvention si flux à venir
+
+  // série 12 mois pour un code : réel (mois saisis) puis projeté (mois à venir)
+  const serie=(code,real,recur,isSub)=>{ const a=Array(13).fill(0);
+    for(let m=1;m<=12;m++){ a[m]= (m<=refM) ? (real?real[m]:0)
+      : ((refM>0?(recur[code]||0)/refM:0) + (isSub?fluxByMonth[m]:0)); }
+    return a; };
+
+  const recCodes=[...new Set([...Object.keys(recCodeReal),...Object.keys(recCodeRec)])].sort((a,b)=>a.localeCompare(b,'fr',{numeric:true}));
+  const depCodes=[...new Set([...Object.keys(depCodeReal),...Object.keys(depCodeRec)])].sort((a,b)=>a.localeCompare(b,'fr',{numeric:true}));
+  const recSeries=recCodes.map(c=>({code:c,a:serie(c,recCodeReal[c],recCodeRec,c===subCode)}));
+  const depSeries=depCodes.map(c=>({code:c,a:serie(c,depCodeReal[c],depCodeRec,false)}));
+
+  const sumM=(series,m)=>series.reduce((s,r)=>s+r.a[m],0);
+  const recTotM=Array(13).fill(0), depTotM=Array(13).fill(0), netM=Array(13).fill(0), cumM=Array(13).fill(0);
+  let run=balance();
+  for(let m=1;m<=12;m++){ recTotM[m]=sumM(recSeries,m); depTotM[m]=sumM(depSeries,m); netM[m]=recTotM[m]-depTotM[m]; cumM[m]=(m>1?cumM[m-1]:0)+netM[m]; if(m>refM) run+=netM[m]; }
+
+  // rendu du tableau
+  const yTot=a=>{ let s=0; for(let m=1;m<=12;m++) s+=a[m]; return s; };
+  const fut=m=>m>refM;
+  const colH=m=>`<th class="num" style="${fut(m)?'color:#6b7488':''}">${MOIS[m-1]}${fut(m)?' *':''}</th>`;
+  const cCell=(v,m,cls)=>`<td class="num ${cls||''}" style="${fut(m)?'font-style:italic;color:#6b7488':''}">${v?m2(v):'<span class="muted">·</span>'}</td>`;
+  const codeRow=(r,cls)=>`<tr><td style="white-space:nowrap">${esc(r.code)}</td>`+[...Array(12)].map((_,i)=>cCell(r.a[i+1],i+1,cls)).join('')+`<td class="num"><strong>${m2(yTot(r.a))}</strong></td></tr>`;
+  const totRow=(label,arr,cls)=>`<tr style="border-top:2px solid #cdd8d0;background:#f7faf8"><td><strong>${label}</strong></td>`+[...Array(12)].map((_,i)=>`<td class="num ${cls||''}" style="${fut(i+1)?'font-style:italic':''}"><strong>${arr[i+1]?m2(arr[i+1]):'·'}</strong></td>`).join('')+`<td class="num ${cls||''}"><strong>${m2(yTot(arr))}</strong></td></tr>`;
+  const signRow=(label,arr,bg,withTot)=>`<tr style="${bg}"><td><strong>${label}</strong></td>`+[...Array(12)].map((_,i)=>{const v=arr[i+1];return `<td class="num ${v>=0?'green':'red'}" style="${fut(i+1)?'font-style:italic':''}"><strong>${m2(v)}</strong></td>`;}).join('')+(withTot?`<td class="num ${yTot(arr)>=0?'green':'red'}"><strong>${m2(yTot(arr))}</strong></td>`:'<td></td>')+`</tr>`;
+  const secRow=(label,color)=>`<tr><td colspan="14" style="background:${color};color:#fff;font-weight:700;font-size:12px;letter-spacing:.03em">${label}</td></tr>`;
+
+  let mh='<thead><tr><th style="text-align:left">Code comptable</th>'+[...Array(12)].map((_,i)=>colH(i+1)).join('')+'<th class="num">Total an</th></tr></thead><tbody>';
+  mh+=secRow('➕ RECETTES','#127a51');
+  mh+= recSeries.length ? recSeries.map(r=>codeRow(r,'green')).join('') : '<tr><td colspan="14" class="empty">Aucune recette saisie.</td></tr>';
+  mh+=totRow('= Total recettes',recTotM,'green');
+  mh+=secRow('➖ DÉPENSES','#c0392b');
+  mh+= depSeries.length ? depSeries.map(r=>codeRow(r,'red')).join('') : '<tr><td colspan="14" class="empty">Aucune dépense saisie.</td></tr>';
+  mh+=totRow('= Total dépenses',depTotM,'red');
+  mh+=signRow('Recettes − Dépenses (solde du mois)',netM,'border-top:2px solid #cdd8d0',true);
+  mh+=signRow('Variation (solde cumulé)',cumM,'background:#eef4ff',false);
+  mh+='</tbody>';
+  $('prevMatrix').innerHTML=mh;
+  $('prevMatrixHint').innerHTML = refM>0
+    ? `Mois en colonnes, codes du plan comptable en lignes. Les colonnes <strong>janv.→${MOIS[refM-1]}</strong> sont réelles&nbsp;; les suivantes (marquées <em>*</em>, en italique) sont <strong>projetées</strong> — codes récurrents à leur moyenne mensuelle, subventions placées selon leur calendrier. La ligne <strong>Variation</strong> = solde cumulé qui progresse mois après mois.`
+    : `Aucune opération saisie pour ${Y}. Saisis des écritures dans la Comptabilité (avec leur code comptable) pour remplir ce tableau.`;
 
   const resultat=totRec-totDep;
   $('prevKpis').innerHTML =
@@ -4320,6 +4420,8 @@ renderAll();
       +'<button onclick="cloudLogout()" style="cursor:pointer;border:none;border-radius:999px;padding:6px 12px;font:inherit;background:#fff;color:#127a51">Déconnexion</button>'
       +'</span>';
     document.body.insertBefore(bar, document.body.firstChild);
+    const setBarH=()=>document.documentElement.style.setProperty('--barH', bar.offsetHeight+'px');
+    setBarH(); window.addEventListener('resize', setBarH);
   }
 
   function applyPerms(){
@@ -4342,6 +4444,12 @@ renderAll();
     });
     const old=document.getElementById('permsStyle'); if(old)old.remove();
     if(css.length){ const st=document.createElement('style'); st.id='permsStyle'; st.textContent=css.join('\n'); document.head.appendChild(st); }
+    // masquer une famille dont TOUS les onglets sont cachés (ex. lecture seule)
+    document.querySelectorAll('nav.famtabs button[data-group]').forEach(fb=>{
+      const tabs=[...document.querySelectorAll('nav.tabs .tabgroup[data-group="'+fb.dataset.group+'"] button[data-tab]')];
+      const anyVis=tabs.some(b=>(perms[b.dataset.tab]||(canWrite?'gestion':'lecture'))!=='cache');
+      fb.style.display=anyVis?'':'none';
+    });
     // si l'onglet actif est caché, bascule sur la première rubrique visible
     const vis=[...document.querySelectorAll('nav.tabs button[data-tab]')].filter(b=>(perms[b.dataset.tab]||(canWrite?'gestion':'lecture'))!=='cache');
     const active=document.querySelector('nav.tabs button.active');
