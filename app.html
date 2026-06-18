@@ -482,6 +482,7 @@
         <div class="field" style="min-width:150px"><label>Charges patronales (%)</label><input type="number" id="ms_charges" min="0" max="100" step="1" placeholder="Ex. 25"></div>
         <div class="field" style="min-width:140px"><label>Aide sur le poste (%)</label><input type="number" id="ms_aide" min="0" max="100" step="5" placeholder="Ex. PEC 60"></div>
         <div class="field" style="min-width:130px"><label>Fin de l'aide</label><input id="ms_aidefin" placeholder="Ex. 02/2027"></div>
+        <div class="field" style="min-width:140px"><label>Date d'entrée</label><input type="date" id="ms_dateentree" title="Date d'entrée dans l'association — sert à calculer l'ancienneté (onglet RH)"></div>
         <div class="field" style="flex:0"><label>&nbsp;</label><button class="btn" onclick="addSalarie()" id="ms_btn">Ajouter</button></div>
       </div>
       <table style="margin-top:10px"><thead><tr><th>Salarié</th><th>Contrat</th><th class="num">h / sem</th><th class="num">Brut / mois</th><th class="num">Coût employeur / mois</th><th class="num">Aide / mois</th><th class="num">Reste à charge / an</th><th class="num">Coût horaire chargé</th><th></th></tr></thead>
@@ -1372,6 +1373,12 @@ GOUVERNANCE
     </div>
 
     <div class="panel">
+      <h3 style="margin:0 0 4px">📅 Ancienneté de l'équipe</h3>
+      <p class="hint" style="margin:0 0 10px">Calculée automatiquement à partir de la <strong>date d'entrée</strong> de chaque salarié (saisie dans 📒 Équipe), reprise d'ancienneté incluse. Du plus ancien au plus récent.</p>
+      <div id="ancienneteList"></div>
+    </div>
+
+    <div class="panel">
       <h3 style="margin:0 0 4px">📋 Projets d'embauche</h3>
       <table>
         <thead><tr><th>Projet</th><th>Pour quoi</th><th>Échéance / statut</th></tr></thead>
@@ -1641,21 +1648,40 @@ Deux locaux complémentaires — le Bois de Nèfles (« le haut » : jeunesse, a
     <div class="panel">
       <h3 style="margin:0 0 4px">✏️ Suivi du projet ados (bureau)</h3>
       <p class="hint" style="margin:0 0 8px">Zone de travail du bureau&nbsp;: où en est chaque chantier, prochaines échéances, décisions. Pré-rempli, modifiable, enregistré dans le coffre.</p>
-      <textarea id="projetAdosSuivi" onchange="saveProjetAdosSuivi()" style="width:100%;min-height:170px;font:inherit;padding:10px 12px;border:1px solid #e6ece7;border-radius:10px;resize:vertical;line-height:1.55">SUIVI DU PROJET ADOS (à tenir à jour en bureau)
+      <textarea id="projetAdosSuivi" onchange="saveProjetAdosSuivi()" style="width:100%;min-height:170px;font:inherit;padding:10px 12px;border:1px solid #e6ece7;border-radius:10px;resize:vertical;line-height:1.55">SUIVI DU PROJET ADOS — état au 18/06/2026 (à tenir à jour en bureau)
 
-CHANTIERS PRIORITAIRES
-• Média « Ôté Kartié » : binôme service civique en cours de montage (via Unis-Cité).
-• La Kaz Zados : définir l'espace dans le local + convention « accueil de jeunes » avec les services de l'État (jeunesse).
-• Conventions de partenariat : collège Bois de Nèfles + lycée polyvalent Nord (audiovisuel).
-• Organisation de l'équipe / fonction de direction : en arbitrage dans le cadre du DLA.
-• Budget prévisionnel du secteur : à finaliser avec l'accompagnement DLA.
+🔧 MÉDIA « ÔTÉ KARTIÉ » / SERVICE CIVIQUE — engagé, pas encore opérationnel
+• Démarches Unis-Cité lancées (« on avance » au 11/06) ; principe voté au CA du 11/06 (PV à signer).
+• Fiche de mission + délibération CA encore à l'état de projet (modèles non finalisés) ; binôme pas recruté. Tuteur pressenti : Fabrice (suppléante Kathy).
+➡️ Rappeler Lucie (Unis-Cité) pour le calendrier · finaliser la fiche de mission · signer la convention d'intermédiation · recruter le binôme.
 
-À COMPLÉTER (administratif)
-• N° de déclaration d'organisateur + service instructeur.
-• Adresse et capacité du local, effectifs et taux d'encadrement de la 1re période.
+🧱 LA KAZ ZADOS — à construire (ouverture visée 2027)
+• Principe voté au CA du 11/06 (PV à signer). Pas d'espace ouvert ni de convention « accueil de jeunes » signée.
+• 2026 = aménager un premier coin convivial ; travaux du local à programmer côté Ville.
+➡️ Définir l'espace dans le local + engager la convention « accueil de jeunes » avec les services de l'État (jeunesse), avec l'appui du DLA.
 
-PROCHAINE ÉCHÉANCE
-• …</textarea>
+🧱 CONVENTIONS COLLÈGE & LYCÉE POLYVALENT NORD — à initier
+• Chantier prioritaire, mais aucun contact / RDV / convention tracé à ce jour. 2026 = premiers contacts ; conventions visées 2027.
+➡️ Prendre un 1er RDV au collège Bois de Nèfles (vie scolaire / prof. documentaliste / FSE) et au lycée (équipe audiovisuelle / BTS / Maison des lycéens).
+
+🔧 ÉQUIPE & FONCTION DE DIRECTION (DLA) — engagé, pas stabilisé
+• Encadrement ados non tranché : responsable pressenti Fabrice « si maintien » (maintien non acquis). Fiches de poste cibles présentées en séance DLA du 04/06 (en validation).
+• Direction qualifiée (BAFD) = cap 12-18 mois ; dépendance à un seul BAFD (Kathy) à traiter.
+➡️ Entretiens Kathy & Sandrine (dès le retour de Kathy le 19/06) · trancher le cas Fabrice · valider les coefficients avec Hexopée.
+
+💶 BUDGET & FINANCEMENTS — en cours
+• Mairie « ACM Adolescents » 2026 : 16 547 € demandés → 5 070 € accordés (4 056 € versés, ~1 014 € à venir).
+• CAF / organismes sociaux : dossier transmis le 02/06, en attente de réponse.
+• DRAJES : accueil de Noël (janv. 2026) déclaré ; été (27/07–07/08) et petites vacances oct/nov à confirmer/déclarer.
+• Budget prévisionnel propre au projet 2026-2030 : à finaliser avec le DLA.
+➡️ Relancer la CAF · mail à F. Payet (Mairie) sur la réévaluation + sessions été/vacances (brouillon prêt le 17/06).
+
+🔧 MERCREDI JEUNESSE (ADOS 11-17) — en cours d'installation
+• Principe voté au CA du 11/06 ; pas encore déclaré comme accueil ados.
+• ⚠️ Ne pas confondre avec le « mercredi jeunesse » ENFANTS 6-11 (périscolaire, demande Mairie 8 684 €, reconduction).
+➡️ Déposer la déclaration d'accueil ados (organisateur + fiche pédagogique de période) auprès des services de l'État jeunesse, pour la rentrée.
+
+À COMPLÉTER (administratif) — n° de déclaration d'organisateur + service instructeur · adresse et capacité du local · effectifs et taux d'encadrement de la 1re période · budget prévisionnel chiffré du secteur.</textarea>
     </div>
   </section>
 
@@ -1892,7 +1918,9 @@ const FAQ=[
   {cat:'🗓️ Horaires',q:"Où sont les horaires (planning) des salariés ?",kw:"horaires horaire planning plannings heures emploi du temps temps de travail semaine type recurrente acm matin apres-midi total hebdomadaire salarie equipe quand travaille",
    a:"Onglet <strong>🗓️ Horaires</strong> (réservé au bureau). Choisis un salarié, puis remplis sa <strong>semaine type</strong> : pour chaque jour, l'heure de début/fin du matin et de l'après-midi (sélecteurs d'heure). Bob calcule automatiquement le <strong>total par jour et par semaine</strong>. Pour une période spéciale (ACM, vacances), clique <strong>« ➕ Semaine particulière »</strong>, choisis une date dans la semaine concernée et un motif : la semaine est pré-remplie avec la semaine type, tu n'ajustes que ce qui change. La liste des salariés se remplit toute seule depuis l'onglet 📒 Équipe."},
   {cat:'🧑‍💼 RH',q:"Où je gère les RH : organisation cible, fiches de poste, embauches ?",kw:"rh ressources humaines organisation cible fiche de poste fiches poste embauche embauches recrutement coordination kathy sandrine fabrice coefficient eclat pec direction bafd equipe salaries piliers projet embauche",
-   a:"Onglet <strong>🧑‍💼 RH</strong> (réservé au bureau). Tu y trouves : l'<strong>organisation cible</strong> (zone modifiable — comment tu veux que ça tourne), les <strong>fiches de poste</strong> des salariés (missions + coefficient ÉCLAT) et les <strong>projets d'embauche</strong> (PEC matin, ACM été, service civique, direction). C'est un point de départ tiré du DLA : dis-moi ce que tu veux ajuster et je mets à jour."},
+   a:"Onglet <strong>🧑‍💼 RH</strong> (réservé au bureau). Tu y trouves : l'<strong>organisation cible</strong> (zone modifiable — comment tu veux que ça tourne), les <strong>fiches de poste</strong> des salariés (missions + coefficient ÉCLAT), l'<strong>ancienneté de l'équipe</strong> et les <strong>projets d'embauche</strong> (PEC matin, ACM été, service civique, direction). C'est un point de départ tiré du DLA : dis-moi ce que tu veux ajuster et je mets à jour."},
+  {cat:'🧑‍💼 RH',q:"Où je vois l'ancienneté des salariés ?",kw:"anciennete annees mois date entree embauche depuis combien temps salarie reprise calcul",
+   a:"Onglet <strong>🧑‍💼 RH</strong>, panneau <strong>📅 Ancienneté de l'équipe</strong>. Pour chaque salarié, Bob calcule l'ancienneté <strong>en direct</strong> à partir de sa <strong>date d'entrée</strong> (en années et mois, reprise d'ancienneté incluse), du plus ancien au plus récent. La date d'entrée se saisit dans 📒 Équipe (masse salariale) : clique ✏️ sur la ligne du salarié, renseigne « Date d'entrée », enregistre. Réservé au bureau."},
   {cat:'📄 Contrats',q:"Où je retrouve le contrat de travail d'un salarié (dates, rémunération, convention) ?",kw:"contrat contrats travail cdd cdi avenant salarie salariee remplacement kissy kysy victoire periode essai precarite terme convention eclat coefficient remuneration brut taux horaire fin indemnite duree temps de travail signe",
    a:"Onglet <strong>📒 Équipe</strong>, panneau <strong>📄 Contrats de travail</strong> (juste sous la masse salariale). Chaque contrat signé y est résumé : salarié·e, type (CDD/CDI/avenant), motif, fonction, période (avec un badge <b>● En cours</b> ou <b>Terminé</b>), temps de travail, convention/coefficient, rémunération, période d'essai et indemnités de fin. Clique sur ✏️ pour compléter ou corriger. Pour le <b>coût employeur</b> charges comprises, c'est le tableau 💰 Masse salariale juste au-dessus. Réservé au bureau."},
   {cat:'🤝 Accompagnement',q:"Où je retrouve l'accompagnement DLA, la Maison des Associations et la préparation des RDV ?",kw:"accompagnement dla charlotte verdure demele maison associations mda mdac aurelie gaudieux monbeig france active hexopee eclat elisfa neopale uniformation seance seances rdv rendez-vous diagnostic preparation suivi strategique conseillere",
@@ -2027,6 +2055,8 @@ function renderFaqList(){
 
 /* ---- ✨ Quoi de neuf (nouveautés + notice chronologique) ---- */
 const NEWS=[
+  {id:'2026-06-18-anciennete',date:'2026-06-18',tab:'🧑‍💼 RH',titre:'📅 Ancienneté de l\'équipe',
+   desc:"L'onglet 🧑‍💼 RH affiche maintenant l'ancienneté de chaque salarié, calculée en direct à partir de sa date d'entrée (années + mois, reprise d'ancienneté incluse). Les dates d'entrée sont déjà saisies : Kathy 10/02/2019, Fabrice 19/09/2017, Sandrine 31/12/2025, Kysy 04/06/2026. Pour modifier une date d'entrée, va dans 📒 Équipe (masse salariale) et clique ✏️ sur la ligne du salarié."},
   {id:'2026-06-18-projetados',date:'2026-06-18',tab:'🚀 Projet ados',titre:'🚀 Nouvel onglet Projet ados 2026-2030',
    desc:"Le projet pédagogique du secteur adolescents (11-17 ans) pour 2026-2030 est intégré : l'intention (les ados deviennent acteurs), les 4 axes pédagogiques, les deux marqueurs « La Kaz Zados » (un lieu géré par les jeunes) et « Ôté Kartié » (le média de quartier en service civique), la continuité avec le collège et le lycée polyvalent Nord (audiovisuel), la trajectoire année par année jusqu'en 2030, les partenaires et les indicateurs. Une zone « Suivi du bureau » est modifiable (coffre), et un bouton ouvre le projet complet en PDF. Idéal pour la CAF, les services de l'État (jeunesse), la Ville et les établissements."},
   {id:'2026-06-18-contrats-travail',date:'2026-06-18',tab:'📒 Équipe',titre:'📄 Nouvelle rubrique Contrats de travail',
@@ -3480,18 +3510,19 @@ function addSalarie(){
   const name=$('ms_name').value.trim(); if(!name){ alert('Indique au moins le nom.'); return; }
   const s={id:$('ms_id').value||uid(),name,poste:$('ms_poste').value.trim(),contrat:$('ms_contrat').value.trim(),
     hsem:parseFloat($('ms_hsem').value)||0,bruth:parseFloat($('ms_bruth').value)||0,
-    charges:parseFloat($('ms_charges').value)||0,aide:parseFloat($('ms_aide').value)||0,aidefin:$('ms_aidefin').value.trim()};
+    charges:parseFloat($('ms_charges').value)||0,aide:parseFloat($('ms_aide').value)||0,aidefin:$('ms_aidefin').value.trim(),
+    dateEntree:$('ms_dateentree').value};
   db.salaries=db.salaries||[];
   const i=db.salaries.findIndex(x=>x.id===s.id);
   if(i>=0) db.salaries[i]=s; else db.salaries.push(s);
-  ['ms_id','ms_name','ms_poste','ms_contrat','ms_hsem','ms_bruth','ms_charges','ms_aide','ms_aidefin'].forEach(id=>$(id).value='');
+  ['ms_id','ms_name','ms_poste','ms_contrat','ms_hsem','ms_bruth','ms_charges','ms_aide','ms_aidefin','ms_dateentree'].forEach(id=>$(id).value='');
   $('ms_btn').textContent='Ajouter';
   save();
 }
 function editSalarie(id){
   const s=(db.salaries||[]).find(x=>x.id===id); if(!s) return;
   $('ms_id').value=s.id; $('ms_name').value=s.name||''; $('ms_poste').value=s.poste||''; $('ms_contrat').value=s.contrat||'';
-  $('ms_hsem').value=s.hsem||''; $('ms_bruth').value=s.bruth||''; $('ms_charges').value=s.charges||''; $('ms_aide').value=s.aide||''; $('ms_aidefin').value=s.aidefin||'';
+  $('ms_hsem').value=s.hsem||''; $('ms_bruth').value=s.bruth||''; $('ms_charges').value=s.charges||''; $('ms_aide').value=s.aide||''; $('ms_aidefin').value=s.aidefin||''; $('ms_dateentree').value=s.dateEntree||'';
   $('ms_btn').textContent='Enregistrer'; $('ms_name').focus();
 }
 function delSalarie(id){ if(confirm('Retirer ce salarié du tableau ?')){ db.salaries=(db.salaries||[]).filter(x=>x.id!==id); save(); } }
@@ -3522,7 +3553,27 @@ function saveAccueilIntro(){ db.accueilIntro=$('accueilIntro').value; save(); }
 function saveAccompNotes(){ db.accompNotes=$('accompNotes').value; save(); }
 function renderAccompagnement(){ const t=$('accompNotes'); if(t && document.activeElement!==t) t.value=db.accompNotes||''; }
 function saveRhOrgCible(){ db.rhOrgCible=$('rhOrgCible').value; save(); }
-function renderRH(){ const t=$('rhOrgCible'); if(t && db.rhOrgCible && document.activeElement!==t) t.value=db.rhOrgCible; }
+function anciennete(d){
+  if(!d) return '';
+  const m=/^(\d{4})-(\d{2})-(\d{2})$/.exec(d); if(!m) return '';
+  const start=new Date(+m[1],+m[2]-1,+m[3]), now=new Date();
+  let months=(now.getFullYear()-start.getFullYear())*12+(now.getMonth()-start.getMonth());
+  if(now.getDate()<start.getDate()) months--;
+  if(months<0) return 'à venir';
+  const y=Math.floor(months/12), mo=months%12, a=[];
+  if(y) a.push(y+' an'+(y>1?'s':'')); if(mo) a.push(mo+' mois');
+  return a.length?a.join(' et '):'moins d’un mois';
+}
+function renderAnciennete(){
+  const box=$('ancienneteList'); if(!box) return;
+  const list=(db.salaries||[]).filter(s=>s.dateEntree).slice()
+    .sort((a,b)=>String(a.dateEntree).localeCompare(String(b.dateEntree)));
+  if(!list.length){ box.innerHTML='<p class="hint" style="margin:0">Renseigne la <strong>date d\'entrée</strong> d\'un salarié dans 📒 Équipe (masse salariale) — clique ✏️ sur sa ligne — pour voir son ancienneté ici.</p>'; return; }
+  box.innerHTML='<table><thead><tr><th>Salarié</th><th>Poste</th><th>Date d\'entrée</th><th>Ancienneté</th></tr></thead><tbody>'
+    +list.map(s=>`<tr><td><strong>${esc(s.name)}</strong></td><td class="muted">${esc(s.poste||'')}</td><td>${ctDateFR(s.dateEntree)}</td><td><strong>${esc(anciennete(s.dateEntree))}</strong></td></tr>`).join('')
+    +'</tbody></table>';
+}
+function renderRH(){ const t=$('rhOrgCible'); if(t && db.rhOrgCible && document.activeElement!==t) t.value=db.rhOrgCible; renderAnciennete(); }
 
 /* ---- Projet & orientations (onglet 🧭) ---- */
 function saveProjet(key){ const el=$(key); if(el){ db[key]=el.value; save(); } }
