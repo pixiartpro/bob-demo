@@ -131,6 +131,7 @@
     <button data-tab="rh">🧑‍💼 RH</button>
     <button data-tab="suivi">✅ Suivi</button>
     <button data-tab="conges">🏖️ Congés</button>
+    <button data-tab="horaires">🗓️ Horaires</button>
     <button data-tab="incidents">⚠️ Événements</button>
     <button data-tab="accounting">💶 Comptabilité</button>
     <button data-tab="caisse">💵 Caisse</button>
@@ -1433,6 +1434,33 @@ GOUVERNANCE
     </div>
   </section>
 
+  <section id="horaires" class="page">
+    <div class="panel" style="background:linear-gradient(135deg,#eef3fb,#f5f8fe);border:1px solid #d4e0f2">
+      <h2 style="margin:0 0 4px">🗓️ Horaires des salariés</h2>
+      <p class="hint" style="margin:0">Les heures de travail de chaque salarié. Choisis la personne, remplis sa <strong>semaine type</strong> (celle qui revient chaque semaine) ; pour les périodes spéciales (ACM, vacances), crée une <strong>semaine particulière</strong> datée qui la remplace. Bob calcule les totaux tout seul. Réservé au bureau.</p>
+    </div>
+    <div class="panel">
+      <div class="toolbar" style="flex-wrap:wrap;gap:10px;align-items:flex-end">
+        <div class="field" style="min-width:180px"><label>Salarié·e</label><select id="hor_salarie" onchange="horPick()"></select></div>
+        <div class="field" style="min-width:240px"><label>Quelle semaine ?</label><select id="hor_ctx" onchange="renderHorGrid()"></select></div>
+        <div><button class="btn" onclick="horNewExc()">➕ Semaine particulière</button></div>
+      </div>
+      <p class="hint" id="hor_ctxInfo" style="margin:8px 0 0"></p>
+    </div>
+    <div class="panel" id="hor_newExcPanel" style="display:none;border-left:4px solid var(--brand)">
+      <h3 style="margin:0 0 8px">Nouvelle semaine particulière</h3>
+      <div class="toolbar" style="flex-wrap:wrap;gap:10px;align-items:flex-end">
+        <div class="field" style="min-width:180px"><label>Une date dans la semaine</label><input type="date" id="hor_excDate"></div>
+        <div class="field" style="min-width:180px"><label>Motif</label><select id="hor_excMotif"></select></div>
+        <div><button class="btn" onclick="horCreateExc()">Créer la semaine</button> <button class="ghost btn" onclick="$('hor_newExcPanel').style.display='none'">Annuler</button></div>
+      </div>
+      <p class="hint" style="margin:8px 0 0">La semaine sera pré-remplie avec la semaine type du salarié — tu n'as plus qu'à ajuster les jours qui changent.</p>
+    </div>
+    <div class="panel">
+      <div id="horGridWrap"></div>
+    </div>
+  </section>
+
   <section id="aide" class="page">
     <div class="panel" style="background:linear-gradient(135deg,#eafaf2,#f3fbf6);border:1px solid #cdeede">
       <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap">
@@ -1590,6 +1618,8 @@ const FAQ=[
    a:"Onglet <strong>✅ Suivi</strong> : la liste vivante des actions (la checklist du 09/06 est pré-remplie). Change le statut (à faire / en cours / en attente / fait), ajoute une note, ou crée une nouvelle action. Réservé au bureau."},
   {cat:'🏖️ Congés',q:"Comment enregistrer et valider les demandes de congés ?",kw:"conges recuperation vacances demande validation salarie poser conge absence valider refuser sans solde regle delai",
    a:"Onglet <strong>🏖️ Congés</strong> : enregistre une demande (salarié, type, dates, motif) puis <strong>Valide</strong> ou <strong>Refuse</strong>. La règle (demande à l'avance, acquis après validation) est rappelée en haut. Réservé au bureau. <em>(La saisie directe par le salarié depuis son espace viendra ensuite.)</em>"},
+  {cat:'🗓️ Horaires',q:"Où sont les horaires (planning) des salariés ?",kw:"horaires horaire planning plannings heures emploi du temps temps de travail semaine type recurrente acm matin apres-midi total hebdomadaire salarie equipe quand travaille",
+   a:"Onglet <strong>🗓️ Horaires</strong> (réservé au bureau). Choisis un salarié, puis remplis sa <strong>semaine type</strong> : pour chaque jour, l'heure de début/fin du matin et de l'après-midi (sélecteurs d'heure). Bob calcule automatiquement le <strong>total par jour et par semaine</strong>. Pour une période spéciale (ACM, vacances), clique <strong>« ➕ Semaine particulière »</strong>, choisis une date dans la semaine concernée et un motif : la semaine est pré-remplie avec la semaine type, tu n'ajustes que ce qui change. La liste des salariés se remplit toute seule depuis l'onglet 📒 Équipe."},
   {cat:'🧑‍💼 RH',q:"Où je gère les RH : organisation cible, fiches de poste, embauches ?",kw:"rh ressources humaines organisation cible fiche de poste fiches poste embauche embauches recrutement coordination kathy sandrine fabrice coefficient eclat pec direction bafd equipe salaries piliers projet embauche",
    a:"Onglet <strong>🧑‍💼 RH</strong> (réservé au bureau). Tu y trouves : l'<strong>organisation cible</strong> (zone modifiable — comment tu veux que ça tourne), les <strong>fiches de poste</strong> des salariés (missions + coefficient ÉCLAT) et les <strong>projets d'embauche</strong> (PEC matin, ACM été, service civique, direction). C'est un point de départ tiré du DLA : dis-moi ce que tu veux ajuster et je mets à jour."},
   {cat:'🤝 Accompagnement',q:"Où je retrouve l'accompagnement DLA, la Maison des Associations et la préparation des RDV ?",kw:"accompagnement dla charlotte verdure demele maison associations mda mdac aurelie gaudieux monbeig france active hexopee eclat elisfa neopale uniformation seance seances rdv rendez-vous diagnostic preparation suivi strategique conseillere",
@@ -1724,6 +1754,8 @@ function renderFaqList(){
 
 /* ---- ✨ Quoi de neuf (nouveautés + notice chronologique) ---- */
 const NEWS=[
+  {id:'2026-06-18-horaires',date:'2026-06-18',tab:'🗓️ Horaires',titre:'🗓️ Nouvel onglet Horaires des salariés',
+   desc:"Un onglet pour gérer les heures de travail de l'équipe. Choisis un salarié, remplis sa SEMAINE TYPE (matin + après-midi par jour, avec des sélecteurs d'heure) : Bob calcule le total par jour et par semaine. Pour les périodes spéciales (ACM été, vacances), clique « ➕ Semaine particulière » : elle est pré-remplie avec la semaine type, tu n'ajustes que ce qui change. La liste des salariés se remplit toute seule depuis l'onglet 📒 Équipe. Réservé au bureau."},
   {id:'2026-06-17-peri-dossiers',date:'2026-06-17',tab:'🎒 Périscolaire',titre:'📨 Dossiers d\'inscription en ligne',
    desc:"Les familles adhérentes déposent désormais leur dossier d'inscription au périscolaire (matin & soir, rentrée d'août) depuis leur espace adhérent : enfants + pièces (attestation CAF de moins de 3 mois, avis d'imposition, justificatif de domicile, assurance, vaccins, livret de famille), scannées depuis le téléphone. Tu les retrouves dans 🎒 Périscolaire → 📨 Dossiers d'inscription : consulte chaque pièce, marque le dossier ✅ Validé ou ⚠️ Incomplet. Seuls les adhérents (compte validé) peuvent déposer."},
   {id:'2026-06-17-assurance',date:'2026-06-17',tab:'🧰 Secrétariat',titre:'🛡️ Fiche Assurance (MAIF)',
@@ -3257,6 +3289,83 @@ function renderConges(){
     +'<td style="white-space:nowrap">'+(x.statut!=='Validé'?'<button class="ghost btn" onclick="setConge(\''+x.id+'\',\'Validé\')">✅</button> ':'')+(x.statut!=='Refusé'?'<button class="ghost btn" onclick="setConge(\''+x.id+'\',\'Refusé\')">✋</button> ':'')+'<button class="danger" onclick="delConge(\''+x.id+'\')">🗑</button></td></tr>').join(''):'<tr><td colspan="5" class="empty">Aucune demande pour le moment.</td></tr>';
   const k=$('congesKpis'); if(k){ const d=c.filter(x=>x.statut==='Demandé').length; k.innerHTML=kpi('Demandes',c.length,'','')+kpi('À valider',d,d>0?'amber':'green',''); }
 }
+
+/* ---- Horaires des salariés (semaine type récurrente + semaines particulières datées) ---- */
+const HOR_JOURS=[['lun','Lundi'],['mar','Mardi'],['mer','Mercredi'],['jeu','Jeudi'],['ven','Vendredi'],['sam','Samedi'],['dim','Dimanche']];
+const HOR_MOTIFS=['ACM été','Vacances octobre','Vacances novembre','Vacances de Noël','Vacances scolaires','Semaine spéciale','Autre'];
+function horDB(){ if(!db.horaires||typeof db.horaires!=='object') db.horaires={base:{},exceptions:[]}; if(!db.horaires.base||typeof db.horaires.base!=='object') db.horaires.base={}; if(!Array.isArray(db.horaires.exceptions)) db.horaires.exceptions=[]; return db.horaires; }
+function horSalaries(){ const a=(db.salaries||[]).map(s=>s.name).filter(Boolean); return a.length?a:CG_SALARIES.slice(); }
+function horEmptyDay(){ return {m1:'',m2:'',a1:'',a2:''}; }
+function horEmptyWeek(){ const w={}; HOR_JOURS.forEach(([k])=>w[k]=horEmptyDay()); return w; }
+function horMin(t){ if(!t||!/^\d{1,2}:\d{2}$/.test(t)) return null; const p=t.split(':'); return (+p[0])*60+(+p[1]); }
+function horDayMin(d){ d=d||{}; let tot=0; const seg=(a,b)=>{ const x=horMin(a),y=horMin(b); if(x!=null&&y!=null&&y>x) tot+=y-x; }; seg(d.m1,d.m2); seg(d.a1,d.a2); return tot; }
+function horFmt(min){ if(!min) return '—'; const h=Math.floor(min/60),m=min%60; return h+'h'+(m?String(m).padStart(2,'0'):''); }
+function horMonday(dateStr){ const d=new Date(dateStr+'T12:00:00'); const off=(d.getDay()+6)%7; d.setDate(d.getDate()-off); return d.toISOString().slice(0,10); }
+function horCurrent(){
+  const sal=$('hor_salarie')?$('hor_salarie').value:''; const ctx=$('hor_ctx')?$('hor_ctx').value:'base'; const H=horDB();
+  if(ctx==='base'||!ctx){ if(!H.base[sal]) H.base[sal]=horEmptyWeek(); return {sal,ctx:'base',jours:H.base[sal],exc:null}; }
+  const exc=H.exceptions.find(e=>e.id===ctx);
+  if(!exc){ if(!H.base[sal]) H.base[sal]=horEmptyWeek(); return {sal,ctx:'base',jours:H.base[sal],exc:null}; }
+  if(!exc.jours) exc.jours=horEmptyWeek();
+  return {sal,ctx,jours:exc.jours,exc};
+}
+function setHorCell(day,slot,val){ const c=horCurrent(); if(!c.jours[day]) c.jours[day]=horEmptyDay(); c.jours[day][slot]=val; save(); }
+function horPick(){ renderHorCtxOptions(); renderHorGrid(); }
+function renderHorCtxOptions(){
+  const sel=$('hor_ctx'); if(!sel) return; const sal=$('hor_salarie')?$('hor_salarie').value:''; const keep=sel.value;
+  const excs=horDB().exceptions.filter(e=>e.salarie===sal).sort((a,b)=>(a.semaine||'').localeCompare(b.semaine||''));
+  sel.innerHTML='<option value="base">Semaine type (toutes les semaines)</option>'+excs.map(e=>'<option value="'+e.id+'">Semaine du '+fmtDate(e.semaine)+' — '+esc(e.motif||'spéciale')+'</option>').join('');
+  if([...sel.options].some(o=>o.value===keep)) sel.value=keep; else sel.value='base';
+}
+function horNewExc(){
+  const sal=$('hor_salarie')?$('hor_salarie').value:''; if(!sal){ alert('Choisis d\'abord un salarié.'); return; }
+  const m=$('hor_excMotif'); if(m && !m.options.length) m.innerHTML=HOR_MOTIFS.map(x=>'<option>'+esc(x)+'</option>').join('');
+  const p=$('hor_newExcPanel'); if(p) p.style.display='block';
+}
+function horCreateExc(){
+  const sal=$('hor_salarie').value; const d=$('hor_excDate').value; if(!d){ alert('Choisis une date dans la semaine concernée.'); return; }
+  const semaine=horMonday(d); const motif=$('hor_excMotif').value||'Semaine spéciale'; const H=horDB();
+  let exc=H.exceptions.find(e=>e.salarie===sal && e.semaine===semaine);
+  if(!exc){
+    const base=H.base[sal]||horEmptyWeek(); const jours={}; HOR_JOURS.forEach(([k])=>jours[k]=Object.assign(horEmptyDay(),base[k]||{}));
+    exc={id:uid(),salarie:sal,semaine,motif,jours}; H.exceptions.push(exc);
+  } else { exc.motif=motif; }
+  $('hor_newExcPanel').style.display='none'; $('hor_excDate').value=''; save();
+  renderHorCtxOptions(); if($('hor_ctx')) $('hor_ctx').value=exc.id; renderHorGrid();
+}
+function horDelExc(){
+  const c=horCurrent(); if(!c.exc) return;
+  if(confirm('Supprimer cette semaine particulière ? Le salarié reviendra à sa semaine type pour cette semaine.')){
+    const H=horDB(); H.exceptions=H.exceptions.filter(e=>e.id!==c.exc.id); save();
+    renderHorCtxOptions(); if($('hor_ctx')) $('hor_ctx').value='base'; renderHorGrid();
+  }
+}
+function renderHoraires(){
+  const ssel=$('hor_salarie'); if(!ssel) return;
+  const names=horSalaries(); const cur=ssel.value; const sig=names.join('|');
+  if(ssel.dataset.sig!==sig){ ssel.innerHTML=names.map(n=>'<option>'+esc(n)+'</option>').join(''); ssel.dataset.sig=sig; }
+  if(cur && names.includes(cur)) ssel.value=cur;
+  renderHorCtxOptions(); renderHorGrid();
+}
+function renderHorGrid(){
+  const wrap=$('horGridWrap'); if(!wrap) return; const c=horCurrent(); const info=$('hor_ctxInfo');
+  if(!c.sal){ wrap.innerHTML='<div class="empty">Ajoute des salariés dans l\'onglet 📒 Équipe pour gérer leurs horaires.</div>'; if(info) info.textContent=''; return; }
+  if(info){ info.innerHTML = c.exc
+    ? '📅 Semaine particulière du <strong>'+fmtDate(c.exc.semaine)+'</strong> — '+esc(c.exc.motif||'')+'. Elle remplace la semaine type pour cette semaine-là.'
+    : '🔁 <strong>Semaine type</strong> : ces horaires se répètent chaque semaine, sauf semaines particulières.'; }
+  let weekMin=0;
+  const rows=HOR_JOURS.map(([k,lbl])=>{
+    const d=c.jours[k]||horEmptyDay(); const dm=horDayMin(d); weekMin+=dm;
+    const inp=slot=>'<input type="time" value="'+esc(d[slot]||'')+'" onchange="setHorCell(\''+k+'\',\''+slot+'\',this.value)" style="width:108px">';
+    return '<tr><td><strong>'+lbl+'</strong></td>'
+      +'<td>'+inp('m1')+' <span class="muted">→</span> '+inp('m2')+'</td>'
+      +'<td>'+inp('a1')+' <span class="muted">→</span> '+inp('a2')+'</td>'
+      +'<td class="num">'+(dm?horFmt(dm):'<span class="muted">repos</span>')+'</td></tr>';
+  }).join('');
+  wrap.innerHTML='<table><thead><tr><th>Jour</th><th>Matin</th><th>Après-midi</th><th class="num">Total</th></tr></thead><tbody>'+rows
+    +'</tbody><tfoot><tr><th>Total semaine</th><th></th><th></th><th class="num">'+horFmt(weekMin)+'</th></tr></tfoot></table>'
+    +(c.exc?'<div style="margin-top:10px"><button class="danger" onclick="horDelExc()">🗑 Supprimer cette semaine particulière</button></div>':'');
+}
 function saveAssurance(){ const g=id=>{ const e=$(id); return e?(e.value||''):''; }; db.assurance=Object.assign({}, db.assurance, {num:g('as_num').trim(), login:g('as_login').trim(), memo:g('as_memo')}); save(); }
 function renderAssurance(){ const a=db.assurance||{}; const f=(id,v)=>{ const el=$(id); if(el && document.activeElement!==el) el.value=v||''; }; f('as_num',a.num); f('as_login',a.login); f('as_memo',a.memo); }
 function addContrat(){
@@ -3298,7 +3407,7 @@ function renderProtocoles(){
 }
 function renderEquipe(){ const t=$('accueilIntro'); if(t && document.activeElement!==t) t.value=db.accueilIntro||''; renderSalaries(); renderContrats(); renderProtocoles(); }
 
-function renderAll(){ renderDashboard(); renderMembers(); renderRelances(); renderOps(); renderCaisse(); renderRapprochement(); renderProjects(); renderSubventions(); renderEcheancier(); renderBilan(); renderPrevisionnel(); renderEquipe(); renderRepertoire(); renderSecretariat(); renderAssurance(); renderReunions(); renderIncidents(); renderDettes(); renderOfficialLinks(); refreshComptes(); renderListParams(); renderJournal(); renderPeriscolaire(); renderFaqList(); renderNews(); renderAccompagnement(); renderRH(); renderActions(); renderConges(); }
+function renderAll(){ renderDashboard(); renderMembers(); renderRelances(); renderOps(); renderCaisse(); renderRapprochement(); renderProjects(); renderSubventions(); renderEcheancier(); renderBilan(); renderPrevisionnel(); renderEquipe(); renderRepertoire(); renderSecretariat(); renderAssurance(); renderReunions(); renderIncidents(); renderDettes(); renderOfficialLinks(); refreshComptes(); renderListParams(); renderJournal(); renderPeriscolaire(); renderFaqList(); renderNews(); renderAccompagnement(); renderRH(); renderActions(); renderConges(); renderHoraires(); }
 
 /* ---- Data import/export ---- */
 function exportJSON(){
@@ -3391,7 +3500,7 @@ renderAll();
     if(!canWrite) perms.aide='cache'; // l'Aide « Demande à Zanana » est réservée au bureau
     if(!canWrite) perms.accompagnement='cache'; // Accompagnement : contenu sensible (RH, gouvernance) → bureau uniquement par défaut
     if(!canWrite) perms.rh='cache'; // RH & Organisation : contenu sensible → bureau uniquement par défaut
-    if(!canWrite){ perms.suivi='cache'; perms.conges='cache'; } // Suivi & Congés : bureau uniquement par défaut
+    if(!canWrite){ perms.suivi='cache'; perms.conges='cache'; perms.horaires='cache'; } // Suivi, Congés & Horaires : bureau uniquement par défaut
     const css=[];
     document.querySelectorAll('nav.tabs button[data-tab]').forEach(b=>{
       const k=b.dataset.tab;
