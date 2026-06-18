@@ -115,6 +115,12 @@
   .orga-card .orga-mission{font-size:12.5px;color:var(--muted);min-height:34px}
   .orga-card .orga-del{position:absolute;top:8px;right:8px;border:none;background:transparent;cursor:pointer;color:#c0392b;font-size:13px;opacity:.55}
   .orga-card .orga-del:hover{opacity:1}
+  /* Frise projet ados 2026-2030 */
+  .ados-time{display:flex;flex-direction:column;gap:0}
+  .ados-year{display:flex;gap:14px;align-items:flex-start;padding:0 0 16px 0;position:relative}
+  .ados-year:not(:last-child)::before{content:"";position:absolute;left:27px;top:34px;bottom:0;width:2px;background:#dbe3f5}
+  .ados-y{flex:0 0 auto;width:56px;height:34px;border-radius:8px;background:#2a55c4;color:#fff;font-weight:800;font-size:14px;display:flex;align-items:center;justify-content:center;z-index:1}
+  .ados-t{flex:1;font-size:13.5px;line-height:1.55;padding-top:5px}
 </style>
 </head>
 <body>
@@ -131,6 +137,7 @@
     <button data-tab="dashboard" class="active">📊 Tableau de bord</button>
     <button data-tab="presentation">🎤 Présentation</button>
     <button data-tab="projet">🧭 Projet &amp; orientations</button>
+    <button data-tab="projetados">🚀 Projet ados</button>
     <button data-tab="members">👥 Adhérents</button>
     <button data-tab="periscolaire">🎒 Périscolaire</button>
     <button data-tab="activites">🎟️ Activités</button>
@@ -1515,6 +1522,143 @@ Deux locaux complémentaires — le Bois de Nèfles (« le haut » : jeunesse, a
     </div>
   </section>
 
+  <!-- PROJET ADOS 2026-2030 -->
+  <section id="projetados" class="page">
+    <div class="panel" style="background:linear-gradient(135deg,#1d3b8b,#2a55c4);color:#fff">
+      <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap">
+        <div style="font-size:42px;flex:0 0 auto">🚀</div>
+        <div style="flex:1;min-width:260px">
+          <h2 style="margin:0 0 4px;color:#fff">Projet phare — Secteur ados (11-17 ans) · 2026-2030</h2>
+          <p style="margin:0;opacity:.94;font-size:14px">Accueil de loisirs ados&nbsp;: mercredis « jeunesse », vacances scolaires, <strong>« La Kaz Zados »</strong> et le média de quartier <strong>« Ôté Kartié »</strong>. Un fil rouge tient tout le projet&nbsp;: <strong>les adolescents deviennent acteurs</strong> — jusqu'à gérer eux-mêmes leur propre espace.</p>
+        </div>
+        <div style="flex:0 0 auto"><a class="btn" style="background:#fff;color:#1d3b8b;text-decoration:none;font-weight:700" href="projet-ados-2026-2030.pdf" target="_blank" rel="noopener">📄 Lire le projet complet (PDF)</a></div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <p style="margin:0 0 12px;font-size:14px;line-height:1.6">La C.A.S.E accueille déjà des ados, mais pour les <strong>11-17 ans</strong> l'offre dédiée reste mince&nbsp;: il manque un cap, une régularité, et surtout <strong>un endroit qui soit vraiment le leur</strong>. Ce projet pédagogique de secteur pose noir sur blanc ce qu'on veut faire avec les jeunes du quartier, comment, et où on veut en être en 2030.</p>
+      <p class="hint" style="margin:0 0 12px">👥 <strong>Public</strong>&nbsp;: les <strong>11-17 ans</strong> de Bois de Nèfles et des environs, en <strong>deux groupes d'âge souples</strong> (collège / lycée) qui se retrouvent sur les temps forts. On démarre sur <strong>une douzaine à une quinzaine</strong> de jeunes réguliers, avec une montée en charge sur la durée. Accueil <strong>inclusif</strong>&nbsp;: filles et garçons à égalité, jeunes en situation de handicap bienvenus avec les aménagements nécessaires.</p>
+      <h3 style="margin:0 0 10px">📍 Où en est-on, concrètement</h3>
+      <div class="cards">
+        <div class="card" style="border-top:3px solid #2e9e63"><div class="label">✅ Déjà là</div><div class="sub" style="margin-top:6px;font-size:13px">Accueil ados · activités (danse) · mercredi jeunesse en cours d'installation · éducation à l'image active · local rénové qui rouvre.</div></div>
+        <div class="card" style="border-top:3px solid #d99100"><div class="label">🔧 Engagé</div><div class="sub" style="margin-top:6px;font-size:13px">Média de quartier « Ôté Kartié » en cours de montage (service civique) · organisation de l'équipe en arbitrage (DLA).</div></div>
+        <div class="card" style="border-top:3px solid #c0392b"><div class="label">🧱 À construire</div><div class="sub" style="margin-top:6px;font-size:13px">« La Kaz Zados » · conventions avec le collège et le lycée · fonction de direction · budget prévisionnel.</div></div>
+      </div>
+      <p class="hint" style="margin:12px 0 0">C'est une <strong>feuille de route</strong>, pas un état des lieux. Réglementairement, ce texte fait office de <strong>projet pédagogique de secteur</strong> pour le public ados, décliné en fiches opérationnelles à chaque période déclarée.</p>
+    </div>
+
+    <div class="panel">
+      <h3 style="margin:0 0 4px">🧭 Notre posture — « on ne fait pas d'occupationnel »</h3>
+      <p class="hint" style="margin:0 0 10px">Accueillir des ados, ce n'est pas remplir leur temps, c'est leur donner prise sur leur vie. Quatre convictions guident tout le projet.</p>
+      <div class="cards">
+        <div class="card"><div class="label">🗣️ Des personnes qui ont leur mot à dire</div><div class="sub" style="margin-top:6px;font-size:13px">On propose, on cadre, mais on laisse de la place pour qu'ils décident, se trompent, recommencent. Le programme se construit <strong>avec</strong> eux, pas seulement pour eux.</div></div>
+        <div class="card"><div class="label">🏘️ Tout ancré dans le quartier</div><div class="sub" style="margin-top:6px;font-size:13px">Le quartier n'est pas le décor, c'est la matière&nbsp;: on filme ses habitants, on raconte son histoire, on l'embellit. Regarder Bois de Nèfles autrement, c'est se regarder soi-même autrement.</div></div>
+        <div class="card"><div class="label">🎯 Relier le loisir et l'avenir</div><div class="sub" style="margin-top:6px;font-size:13px">Sans transformer l'accueil en agence pour l'emploi&nbsp;: laisser des traces utiles — compétences, confiance, connaissance des filières (à commencer par le lycée d'à côté).</div></div>
+        <div class="card"><div class="label">💚 Prendre soin</div><div class="sub" style="margin-top:6px;font-size:13px">Santé physique et mentale, rapport au corps, aux écrans, aux autres&nbsp;: des sujets centraux, abordés sans dramatiser et sans détourner le regard, avec les bons partenaires.</div></div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h3 style="margin:0 0 4px">🎯 Nos 4 axes pédagogiques</h3>
+      <p class="hint" style="margin:0 0 10px">Quatre axes, qui ne se vivent pas en silos&nbsp;: un même reportage de quartier peut faire travailler la parole, la citoyenneté et l'ouverture en même temps.</p>
+      <div class="cards">
+        <div class="card"><div class="label">🎤 1 · Prendre la parole et la maîtriser</div><div class="sub" style="margin-top:6px;font-size:13px">Notre signature. Éducation à l'image et au son comme fil conducteur&nbsp;: écriture, prise de vue, interviews d'habitants, montage, podcast, plateau filmé, esprit critique face aux réseaux. Productions valorisées via le média de quartier.</div></div>
+        <div class="card"><div class="label">🗳️ 2 · Trouver sa place — citoyenneté, engagement & orientation</div><div class="sub" style="margin-top:6px;font-size:13px">Vie démocratique du groupe (on débat, on vote, responsabilités tournantes), conseil des jeunes, information sur les droits, découverte des métiers et des parcours, engagement (dont service civique).</div></div>
+        <div class="card"><div class="label">💚 3 · Prendre soin de soi et des autres</div><div class="sub" style="margin-top:6px;font-size:13px">Santé sans morale ni peur&nbsp;: alimentation, sommeil, sport, écrans, santé mentale, vie affective. Activités sportives, ateliers estime de soi, orientation discrète vers les bons interlocuteurs.</div></div>
+        <div class="card"><div class="label">🌍 4 · Ouvrir le champ des possibles</div><div class="sub" style="margin-top:6px;font-size:13px">Faire sortir (sorties culture & nature, mini-séjours, bivouacs, inter-quartiers) et faire entrer (artistes, intervenants, aînés). Au moins un grand projet annuel mené de bout en bout par les jeunes.</div></div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h3 style="margin:0 0 10px">⭐ Les deux marqueurs du projet</h3>
+      <div class="cards">
+        <div class="card" style="border-top:3px solid #2a55c4">
+          <div class="label">🏠 « La Kaz Zados » — un lieu à eux, géré par eux</div>
+          <div class="sub" style="margin-top:6px;font-size:13px">Un espace jeunes dans le local de la C.A.S.E&nbsp;: baby-foot, coin pour se poser, musique, devoirs, montage vidéo. On y entre <strong>librement</strong>. Ce sont les jeunes qui le font vivre (règles, planning, budget, tournois). Cadre réglementaire&nbsp;: <strong>accueil de jeunes</strong> (dès 14 ans, convention avec l'État). Montée en autonomie&nbsp;: jusqu'à un <strong>bureau des jeunes</strong>, voire une junior association.</div>
+        </div>
+        <div class="card" style="border-top:3px solid #2a55c4">
+          <div class="label">📡 « Ôté Kartié » — le média des ados du quartier</div>
+          <div class="sub" style="margin-top:6px;font-size:13px">Le fil rouge. Un média de quartier animé par un binôme en <strong>service civique</strong>&nbsp;: les ados deviennent <strong>reporters de leur propre quartier</strong> (sujets, interviews, tournage, montage, diffusion). Ils apprennent un métier, gagnent en assurance, donnent une image fière de Bois de Nèfles. Contenus propriété de l'association, droit à l'image respecté, autorisation parentale systématique.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h3 style="margin:0 0 4px">⏰ Comment ça marche concrètement</h3>
+      <p class="hint" style="margin:0 0 10px">Le secteur vit sur plusieurs rythmes&nbsp;: le <strong>mercredi « jeunesse »</strong> (rendez-vous régulier en période scolaire), les <strong>vacances scolaires</strong> (temps forts, sorties, séjours) et, en fil rouge, <strong>« La Kaz Zados »</strong> sur des créneaux réguliers, notamment en fin de journée après les cours. Chaque période accueillie fait l'objet d'une déclaration et d'une fiche propre.</p>
+      <h4 style="margin:6px 0 8px;font-size:14px">Une demi-journée type au mercredi jeunesse</h4>
+      <ol style="margin:0;padding-left:18px;font-size:13.5px;line-height:1.75">
+        <li><strong>Accueil échelonné</strong> — arrivée libre, temps informel, on prend des nouvelles. C'est souvent là que se disent les choses importantes.</li>
+        <li><strong>Lancement collectif</strong> — point sur les projets, on décide, on répartit les rôles&nbsp;; la parole circule, les jeunes pilotent.</li>
+        <li><strong>Atelier / projet</strong> — temps de travail principal&nbsp;: tournage, montage, sport, atelier ou sortie, selon le programme co-construit.</li>
+        <li><strong>Pause &amp; vie de groupe</strong> — goûter, Kaz Zados, jeu libre, discussion. Le lien se tisse aussi ici.</li>
+        <li><strong>Bilan &amp; rangement</strong> — on regarde ce qu'on a produit, on dit ce qui a marché, on range ensemble&nbsp;; départ échelonné.</li>
+      </ol>
+      <p style="margin:12px 0 0;font-size:13.5px;line-height:1.55"><strong>La place de l'ado&nbsp;:</strong> le programme n'est pas figé d'avance, il se construit avec les jeunes. Des <strong>responsabilités tournantes</strong> (accueil, communication, régie, intendance) leur sont confiées pour de vrai, et un <strong>conseil des jeunes</strong> se réunit régulièrement pour décider d'une part du budget, du règlement, des projets et des sorties.</p>
+      <p class="hint" style="margin:8px 0 0">📜 <strong>Règles de vie</strong>&nbsp;: un règlement simple, écrit avec les jeunes (respect de chacun, des lieux et du matériel, engagement vis-à-vis du collectif). Les sanctions, quand elles sont nécessaires, sont expliquées, proportionnées et tournées vers la <strong>réparation plutôt que l'exclusion</strong>.</p>
+    </div>
+
+    <div class="panel">
+      <h3 style="margin:0 0 4px">🛡️ Encadrement, sécurité &amp; cadre réglementaire</h3>
+      <div class="kv"><span><strong>Accueil de loisirs (mercredis, vacances)</strong><br><span class="muted" style="font-size:13px">Direction assurée par une personne titulaire d'un diplôme permettant d'exercer les fonctions de direction&nbsp;; animation majoritairement qualifiée, dans le respect des taux d'encadrement réglementaires (au minimum 1 animateur pour 12 mineurs de plus de 6 ans en extrascolaire). Animateurs occasionnels recrutés en contrat d'engagement éducatif (CEE).</span></span></div>
+      <div class="kv"><span><strong>« La Kaz Zados »</strong><br><span class="muted" style="font-size:13px">Relève de l'« accueil de jeunes »&nbsp;: modalités d'encadrement plus souples, définies par convention avec les services de l'État chargés de la jeunesse, autour d'un animateur référent — c'est ce cadre qui rend possible la co-gestion.</span></span></div>
+      <p class="hint" style="margin:8px 0 0">Chaque accueil est déclaré dans les délais, avec les assurances requises, la vérification de l'honorabilité des encadrants, un protocole sanitaire et de premiers secours, et un encadrement strict du droit à l'image (autorisation écrite des représentants légaux, droit de retrait). Ces éléments sont en cours de finalisation avec l'accompagnement DLA.</p>
+    </div>
+
+    <div class="panel">
+      <h3 style="margin:0 0 4px">🎓 Dans la continuité du collège & du lycée</h3>
+      <p class="hint" style="margin:0 0 10px">À quelques pas du local&nbsp;: l'école de Piton, le collège Bois de Nèfles et le tout nouveau lycée polyvalent Nord. Un même bassin de vie&nbsp;: on veut en faire une vraie continuité éducative, hors temps scolaire.</p>
+      <div class="kv"><span><strong>🏫 Collège Bois de Nèfles</strong> <span class="muted">(~900 élèves)</span><br><span class="muted" style="font-size:13px">Déjà investi sur l'éducation aux médias et la prévention du harcèlement. Actions communes d'éducation à l'image, accueil des collégiens après les cours, relais décrochage, lien vie scolaire / foyer socio-éducatif.</span></span></div>
+      <div class="kv"><span><strong>🎬 Lycée polyvalent Nord</strong> <span class="muted">(dominante audiovisuelle · BTS Métiers de l'audiovisuel)</span><br><span class="muted" style="font-size:13px">À 100 m, un établissement entièrement tourné vers nos métiers. Le parcours devient concret&nbsp;: prendre une caméra à 12 ans avec « Ôté Kartié » → se former → viser le BTS audiovisuel d'à côté. Interventions croisées, stages, lien Maison des lycéens.</span></span></div>
+      <p class="hint" style="margin:10px 0 0">⚠️ <strong>Chantier prioritaire</strong>&nbsp;: formaliser les <strong>conventions de partenariat</strong> avec les deux établissements.</p>
+    </div>
+
+    <div class="panel">
+      <h3 style="margin:0 0 10px">🗺️ La trajectoire 2026-2030</h3>
+      <p class="hint" style="margin:0 0 10px">On avance par étapes, pour ne pas promettre plus que ce qu'on peut tenir avec une équipe qui se reconstruit. Cap réévalué chaque année.</p>
+      <div class="ados-time">
+        <div class="ados-year"><div class="ados-y">2026</div><div class="ados-t"><strong>Amorçage</strong> — Installer le mercredi jeunesse dans la durée, lancer le média de quartier, aménager un premier coin convivial préfigurant La Kaz Zados, accueillir une première période de vacances structurée, nouer les premiers contacts collège/lycée.</div></div>
+        <div class="ados-year"><div class="ados-y">2027</div><div class="ados-t"><strong>Consolidation</strong> — Ouvrir La Kaz Zados en gestion partagée (accueil de jeunes), signer les premières conventions collège/lycée, stabiliser un groupe régulier, mener un premier grand projet annuel porté par les jeunes.</div></div>
+        <div class="ados-year"><div class="ados-y">2028</div><div class="ados-t"><strong>Élargissement</strong> — Faire émerger un bureau des jeunes, structurer les passerelles d'orientation avec le lycée audiovisuel, élargir l'offre (séjours, inter-quartiers), faire du média un rendez-vous reconnu.</div></div>
+        <div class="ados-year"><div class="ados-y">2029</div><div class="ados-t"><strong>Autonomisation</strong> — La Kaz Zados largement co-gérée, des parcours d'engagement et de premières vocations, un secteur ancré dans le projet de l'association et dans la vie des établissements.</div></div>
+        <div class="ados-year"><div class="ados-y">2030</div><div class="ados-t"><strong>Bilan & cap suivant</strong> — Évaluer le cycle, mesurer l'impact sur les jeunes et le quartier, écrire le projet du cycle suivant à partir de ce qu'on aura appris.</div></div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="cards">
+        <div class="card">
+          <div class="label">🤝 Avec qui on le fait</div>
+          <div class="sub" style="margin-top:6px;font-size:13px">Collège Bois de Nèfles & lycée polyvalent Nord · Ville de Saint-Denis (pôle périscolaire) · CAF · services de l'État chargés de la jeunesse et des sports · réseau information jeunesse · Groupe de santé Clinifutur (Clinique Sainte-Clotilde) · dispositif service civique · commerçants, artistes & associations du quartier.</div>
+        </div>
+        <div class="card">
+          <div class="label">✅ Comment on saura si ça marche</div>
+          <div class="sub" style="margin-top:6px;font-size:13px">Fréquentation & régularité (capacité à toucher les plus éloignés) · vie réelle de La Kaz Zados (co-gestion, bureau des jeunes) · projets menés à terme (productions du média) · passerelles concrètes collège/lycée & orientations · ressenti des jeunes et des familles. Bilan écrit chaque année, partagé.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h3 style="margin:0 0 4px">✏️ Suivi du projet ados (bureau)</h3>
+      <p class="hint" style="margin:0 0 8px">Zone de travail du bureau&nbsp;: où en est chaque chantier, prochaines échéances, décisions. Pré-rempli, modifiable, enregistré dans le coffre.</p>
+      <textarea id="projetAdosSuivi" onchange="saveProjetAdosSuivi()" style="width:100%;min-height:170px;font:inherit;padding:10px 12px;border:1px solid #e6ece7;border-radius:10px;resize:vertical;line-height:1.55">SUIVI DU PROJET ADOS (à tenir à jour en bureau)
+
+CHANTIERS PRIORITAIRES
+• Média « Ôté Kartié » : binôme service civique en cours de montage (via Unis-Cité).
+• La Kaz Zados : définir l'espace dans le local + convention « accueil de jeunes » avec les services de l'État (jeunesse).
+• Conventions de partenariat : collège Bois de Nèfles + lycée polyvalent Nord (audiovisuel).
+• Organisation de l'équipe / fonction de direction : en arbitrage dans le cadre du DLA.
+• Budget prévisionnel du secteur : à finaliser avec l'accompagnement DLA.
+
+À COMPLÉTER (administratif)
+• N° de déclaration d'organisateur + service instructeur.
+• Adresse et capacité du local, effectifs et taux d'encadrement de la 1re période.
+
+PROCHAINE ÉCHÉANCE
+• …</textarea>
+    </div>
+  </section>
+
   <!-- SUIVI DES ACTIONS -->
   <section id="suivi" class="page">
     <div class="panel" style="background:linear-gradient(135deg,#eef7f0,#f5fbf7);border:1px solid #cfe9da">
@@ -1652,7 +1796,7 @@ const uid = () => Date.now().toString(36)+Math.random().toString(36).slice(2,7);
 
 let db = load();
 function load(){ try{ return Object.assign(blank(), JSON.parse(localStorage.getItem(KEY))||{}); }catch(e){ return blank(); } }
-function blank(){ return {members:[],ops:[],projects:[],subventions:[],comptes:[],contacts:[],liens:[],docs:[],notes:[],echeances:[],reunions:[],incidents:[],dettes:[],recurrents:{},protocoles:[],contrats:[],accueilIntro:'',accompNotes:'',rhOrgCible:'',projetMission:'',projetValeurs:'',projetOrientations:'',orga:null,assurance:{},periscolaire:{enfants:[]}}; }
+function blank(){ return {members:[],ops:[],projects:[],subventions:[],comptes:[],contacts:[],liens:[],docs:[],notes:[],echeances:[],reunions:[],incidents:[],dettes:[],recurrents:{},protocoles:[],contrats:[],accueilIntro:'',accompNotes:'',rhOrgCible:'',projetMission:'',projetValeurs:'',projetOrientations:'',orga:null,projetAdosSuivi:'',assurance:{},periscolaire:{enfants:[]}}; }
 function save(){ jLog(); localStorage.setItem(KEY, JSON.stringify(db)); renderAll(); }
 
 /* ---- Historique (journal d'activité automatique, onglet réservé au bureau) ---- */
@@ -1739,6 +1883,8 @@ const FAQ=[
    a:"Ouvre l'onglet <strong>🎤 Présentation</strong> : sur un seul écran tu as le pitch de Bob, ce qu'on a fait avancer en 3 mois, la carte de toutes les fonctions, et le volet gouvernance. Déroule-le de haut en bas pour présenter, puis clique dans un onglet précis seulement si on te le demande."},
   {cat:'🧭 Projet & orientations',q:"Où sont le projet associatif, nos valeurs, nos orientations et l'organigramme ?",kw:"projet associatif raison d'etre raison etre mission valeurs orientations strategiques strategie axes diagnostic organigramme organigram roles role qui fait quoi poste postes gouvernance bureau president tresorier secretaire poles equipe",
    a:"Onglet <strong>🧭 Projet &amp; orientations</strong>. Tu y trouves, sur un seul écran&nbsp;: <strong>notre raison d'être</strong> (le projet du CASE), <strong>nos valeurs</strong>, <strong>nos orientations stratégiques</strong> (les axes issus du diagnostic / DLA) et l'<strong>organigramme</strong> (qui fait quoi&nbsp;: la gouvernance bénévole — Président, Trésorier, Secrétaire — puis les pôles de l'équipe avec leur responsable et leur mission). Tout est <strong>pré-rempli</strong> et <strong>modifiable&nbsp;: clique dans une case pour l'éditer</strong>, c'est enregistré dans le coffre du bureau. Pour les fiches de poste détaillées et les coefficients, va dans 🧑‍💼 RH ; pour la paie, dans 📒 Équipe."},
+  {cat:'🚀 Projet ados',q:"Où est le projet ados 2026-2030 (La Kaz Zados, Ôté Kartié, collège & lycée) ?",kw:"projet ado ados adolescent adolescents jeunesse 11 17 ans 2026 2030 kaz zados kaz-zados accueil de jeunes ote kartie media quartier webradio service civique college lycee polyvalent nord audiovisuel bts mercredi jeunesse axes pedagogique trajectoire continuite parcours",
+   a:"Onglet <strong>🚀 Projet ados</strong>. C'est le projet pédagogique du secteur adolescents (11-17 ans) pour <strong>2026-2030</strong>&nbsp;: l'intention (les ados deviennent acteurs), les <strong>4 axes</strong> (parole/image, citoyenneté & orientation, prendre soin, ouverture), les deux marqueurs — <strong>« La Kaz Zados »</strong> (un lieu géré par les jeunes, cadre « accueil de jeunes ») et <strong>« Ôté Kartié »</strong> (le média de quartier porté en service civique) —, la <strong>continuité collège / lycée polyvalent Nord</strong> (audiovisuel), la <strong>trajectoire année par année 2026→2030</strong>, les partenaires et les indicateurs. En bas, une zone <strong>Suivi du bureau</strong> modifiable (enregistrée dans le coffre), et le bouton <strong>📄 Lire le projet complet (PDF)</strong>."},
   {cat:'✅ Suivi',q:"Où je suis l'avancement des actions (checklist DLA) ?",kw:"suivi actions checklist dla 12 sujets statut avancement taches a faire en cours fait en attente kanban",
    a:"Onglet <strong>✅ Suivi</strong> : la liste vivante des actions (la checklist du 09/06 est pré-remplie). Change le statut (à faire / en cours / en attente / fait), ajoute une note, ou crée une nouvelle action. Réservé au bureau."},
   {cat:'🏖️ Congés',q:"Comment enregistrer et valider les demandes de congés ?",kw:"conges recuperation vacances demande validation salarie poser conge absence valider refuser sans solde regle delai",
@@ -1881,6 +2027,8 @@ function renderFaqList(){
 
 /* ---- ✨ Quoi de neuf (nouveautés + notice chronologique) ---- */
 const NEWS=[
+  {id:'2026-06-18-projetados',date:'2026-06-18',tab:'🚀 Projet ados',titre:'🚀 Nouvel onglet Projet ados 2026-2030',
+   desc:"Le projet pédagogique du secteur adolescents (11-17 ans) pour 2026-2030 est intégré : l'intention (les ados deviennent acteurs), les 4 axes pédagogiques, les deux marqueurs « La Kaz Zados » (un lieu géré par les jeunes) et « Ôté Kartié » (le média de quartier en service civique), la continuité avec le collège et le lycée polyvalent Nord (audiovisuel), la trajectoire année par année jusqu'en 2030, les partenaires et les indicateurs. Une zone « Suivi du bureau » est modifiable (coffre), et un bouton ouvre le projet complet en PDF. Idéal pour la CAF, les services de l'État (jeunesse), la Ville et les établissements."},
   {id:'2026-06-18-contrats-travail',date:'2026-06-18',tab:'📒 Équipe',titre:'📄 Nouvelle rubrique Contrats de travail',
    desc:"Dans l'onglet 📒 Équipe, sous la masse salariale, une rubrique réunit désormais chaque contrat signé (CDD, CDI, avenant) avec ses points clés : salarié·e, type, motif, fonction, période (badge ● En cours / Terminé), temps de travail, convention/coefficient ÉCLAT, rémunération, période d'essai et indemnités de fin. Le CDD en cours de Kysy Victoire (animatrice périscolaire, remplacement) y est déjà saisi, et sa ligne a été ajoutée à la masse salariale. Clique sur ✏️ pour compléter ou corriger un contrat. Réservé au bureau."},
   {id:'2026-06-18-projet',date:'2026-06-18',tab:'🧭 Projet & orientations',titre:'🧭 Nouvel onglet Projet & orientations',
@@ -3384,6 +3532,9 @@ function renderProjet(){
   });
   renderOrga();
 }
+/* ---- Projet ados 2026-2030 (onglet 🚀) ---- */
+function saveProjetAdosSuivi(){ const el=$('projetAdosSuivi'); if(el){ db.projetAdosSuivi=el.value; save(); } }
+function renderProjetAdos(){ const t=$('projetAdosSuivi'); if(t && db.projetAdosSuivi && document.activeElement!==t) t.value=db.projetAdosSuivi; }
 /* Organigramme : pré-rempli, éditable inline, rangé dans le coffre */
 const ORGA_DEFAUT={
   gov:[
@@ -3643,7 +3794,7 @@ function renderProtocoles(){
 }
 function renderEquipe(){ const t=$('accueilIntro'); if(t && document.activeElement!==t) t.value=db.accueilIntro||''; renderSalaries(); renderContratsTravail(); renderContrats(); renderProtocoles(); }
 
-function renderAll(){ renderDashboard(); renderMembers(); renderRelances(); renderOps(); renderCaisse(); renderRapprochement(); renderProjects(); renderSubventions(); renderEcheancier(); renderBilan(); renderPrevisionnel(); renderEquipe(); renderRepertoire(); renderSecretariat(); renderAssurance(); renderReunions(); renderIncidents(); renderDettes(); renderOfficialLinks(); refreshComptes(); renderListParams(); renderJournal(); renderPeriscolaire(); renderFaqList(); renderNews(); renderAccompagnement(); renderRH(); renderProjet(); renderActions(); renderConges(); renderHoraires(); }
+function renderAll(){ renderDashboard(); renderMembers(); renderRelances(); renderOps(); renderCaisse(); renderRapprochement(); renderProjects(); renderSubventions(); renderEcheancier(); renderBilan(); renderPrevisionnel(); renderEquipe(); renderRepertoire(); renderSecretariat(); renderAssurance(); renderReunions(); renderIncidents(); renderDettes(); renderOfficialLinks(); refreshComptes(); renderListParams(); renderJournal(); renderPeriscolaire(); renderFaqList(); renderNews(); renderAccompagnement(); renderRH(); renderProjet(); renderProjetAdos(); renderActions(); renderConges(); renderHoraires(); }
 
 /* ---- Data import/export ---- */
 function exportJSON(){
