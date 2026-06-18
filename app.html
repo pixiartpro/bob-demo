@@ -1380,18 +1380,13 @@ GOUVERNANCE
 
     <div class="panel">
       <h3 style="margin:0 0 4px">🧮 Ancienneté ÉCLAT — le calcul des points (pour info)</h3>
-      <p class="hint" style="margin:0 0 10px">Convention ÉCLAT (IDCC 1518). Les points d'ancienneté <strong>s'ajoutent</strong> au coefficient de base&nbsp;; leur valeur en euros = nombre de points × valeur du point. L'ancienneté de chaque salarié est calculée dans le panneau <strong>📅 Ancienneté de l'équipe</strong> ci-dessus. Calcul indicatif — le décompte exact se confirme avec Hexopée / la gestionnaire de paie.</p>
+      <p class="hint" style="margin:0 0 10px">Convention ÉCLAT (IDCC 1518). Les points d'ancienneté <strong>s'ajoutent</strong> au coefficient de base&nbsp;; leur valeur en euros = nombre de points × valeur du point. Le détail par salarié (<strong>points + prime/mois</strong>) est affiché dans le panneau <strong>📅 Ancienneté de l'équipe</strong> ci-dessus.</p>
       <div class="cards">
         <div class="card"><div class="label">⏳ Ancienneté qui court (déroulement de carrière)</div><div class="sub" style="margin-top:6px;font-size:13px"><strong>+2 points tous les 12 mois</strong> de travail effectif (soit ~2 points par an), versés chaque mois. Proratisés au temps de travail. <span class="muted">(Annexe I, art. 1.7.2)</span></div></div>
         <div class="card"><div class="label">↩️ Reprise à l'embauche (reconstitution de carrière)</div><div class="sub" style="margin-top:6px;font-size:13px">L'expérience antérieure transférable est reprise <strong>sur justificatifs</strong> (bulletins / certificats), dans la limite de <strong>40 points</strong>. Concerne notamment <strong>Kathy</strong> et <strong>Fabrice</strong>.</div></div>
         <div class="card"><div class="label">💶 Valeur du point 2026</div><div class="sub" style="margin-top:6px;font-size:13px"><strong>V1 = 7,23 €</strong> · V2 = 6,81 € (au 1ᵉʳ janvier 2026). Le salaire de base se calcule selon le coefficient et V1/V2&nbsp;; la prime d'ancienneté s'y <strong>ajoute</strong>.</div></div>
       </div>
-      <div class="toolbar" style="flex-wrap:wrap;gap:10px;margin-top:12px">
-        <div class="field" style="min-width:180px"><label>Ancienneté (années révolues)</label><input type="number" id="ec_annees" min="0" step="1" value="5" oninput="calcEclatAnc()"></div>
-        <div class="field" style="min-width:150px"><label>Temps de travail (%)</label><input type="number" id="ec_temps" min="1" max="100" step="1" value="100" oninput="calcEclatAnc()"></div>
-      </div>
-      <p id="ec_res" style="margin:10px 0 0;font-size:14px;padding:10px 12px;background:#f3fbf6;border-radius:8px"><strong>10 points</strong> d'ancienneté → <strong>72,30 € / mois</strong> · 867,60 € / an <span class="muted">(au point V1 7,23 €, temps plein)</span></p>
-      <p class="hint" style="margin:8px 0 0">Exemple lu ci-dessus&nbsp;: 5 ans → 2 × 5 = 10 points → 10 × 7,23 = 72,30 €/mois. La <strong>reprise d'ancienneté</strong> à l'embauche s'ajoute (plafond 40 points). ⚠️ Repère indicatif&nbsp;: la valeur exacte (point V1/V2 appliqué, plafond, prorata) est validée par la paie / Hexopée.</p>
+      <p class="hint" style="margin:10px 0 0;padding:8px 12px;background:#f3fbf6;border-radius:8px">Exemple&nbsp;: 5 ans → 2 × 5 = <strong>10 points</strong> → 10 × 7,23 = <strong>72,30 €/mois</strong> (à temps plein). ⚠️ Repère indicatif&nbsp;: la valeur exacte (point V1/V2 appliqué, plafond de reprise à 40 points, prorata) est validée par la paie / Hexopée.</p>
     </div>
 
     <div class="panel">
@@ -3580,14 +3575,32 @@ function anciennete(d){
   if(y) a.push(y+' an'+(y>1?'s':'')); if(mo) a.push(mo+' mois');
   return a.length?a.join(' et '):'moins d’un mois';
 }
+/* Points & prime d'ancienneté ÉCLAT pour un salarié (déroulement de carrière : +2 pts / an, prorata temps de travail) */
+function eclatAnc(s){
+  const d=s&&s.dateEntree; if(!d) return null;
+  const m=/^(\d{4})-(\d{2})-(\d{2})$/.exec(d); if(!m) return null;
+  const start=new Date(+m[1],+m[2]-1,+m[3]), now=new Date();
+  let months=(now.getFullYear()-start.getFullYear())*12+(now.getMonth()-start.getMonth());
+  if(now.getDate()<start.getDate()) months--;
+  if(months<0) return {avenir:true,pts:0,prime:0,prorata:1};
+  const years=Math.floor(months/12), pts=2*years;
+  let prorata=1; const h=parseFloat(s.hsem); if(h>0&&h<35) prorata=h/35;
+  return {avenir:false,years:years,pts:pts,prorata:prorata,prime:pts*7.23*prorata};
+}
 function renderAnciennete(){
   const box=$('ancienneteList'); if(!box) return;
   const list=(db.salaries||[]).filter(s=>s.dateEntree).slice()
     .sort((a,b)=>String(a.dateEntree).localeCompare(String(b.dateEntree)));
   if(!list.length){ box.innerHTML='<p class="hint" style="margin:0">Renseigne la <strong>date d\'entrée</strong> d\'un salarié dans 📒 Équipe (masse salariale) — clique ✏️ sur sa ligne — pour voir son ancienneté ici.</p>'; return; }
-  box.innerHTML='<table><thead><tr><th>Salarié</th><th>Poste</th><th>Date d\'entrée</th><th>Ancienneté</th></tr></thead><tbody>'
-    +list.map(s=>`<tr><td><strong>${esc(s.name)}</strong></td><td class="muted">${esc(s.poste||'')}</td><td>${ctDateFR(s.dateEntree)}</td><td><strong>${esc(anciennete(s.dateEntree))}</strong></td></tr>`).join('')
-    +'</tbody></table>';
+  const fr=n=>n.toLocaleString('fr-FR',{minimumFractionDigits:2,maximumFractionDigits:2})+' €';
+  box.innerHTML='<table><thead><tr><th>Salarié</th><th>Poste</th><th>Date d\'entrée</th><th>Ancienneté</th><th class="num">Points ÉCLAT</th><th class="num">Prime ancienneté / mois</th></tr></thead><tbody>'
+    +list.map(s=>{ const e=eclatAnc(s), av=!e||e.avenir;
+        const pts=av?'<span class="muted">—</span>':'<strong>'+e.pts+'</strong>'+(e.prorata<1?' <span class="muted">·'+Math.round(e.prorata*100)+'%</span>':'');
+        const prime=av?'<span class="muted">—</span>':fr(e.prime);
+        return `<tr><td><strong>${esc(s.name)}</strong></td><td class="muted">${esc(s.poste||'')}</td><td>${ctDateFR(s.dateEntree)}</td><td><strong>${esc(anciennete(s.dateEntree))}</strong></td><td class="num">${pts}</td><td class="num">${prime}</td></tr>`;
+      }).join('')
+    +'</tbody></table>'
+    +'<p class="hint" style="margin:8px 0 0">Points = +2 par année révolue (déroulement de carrière ÉCLAT, reprise incluse si la date d\'entrée est antidatée). Prime/mois = points × 7,23 € (valeur du point V1 2026), proratisée au temps de travail. Repère indicatif — reprise plafonnée à 40 points, décompte exact validé par la paie / Hexopée.</p>';
 }
 function renderRH(){ const t=$('rhOrgCible'); if(t && db.rhOrgCible && document.activeElement!==t) t.value=db.rhOrgCible; renderAnciennete(); }
 
@@ -3602,17 +3615,6 @@ function renderProjet(){
 /* ---- Projet ados 2026-2030 (onglet 🚀) ---- */
 function saveProjetAdosSuivi(){ const el=$('projetAdosSuivi'); if(el){ db.projetAdosSuivi=el.value; save(); } }
 function renderProjetAdos(){ const t=$('projetAdosSuivi'); if(t && db.projetAdosSuivi && document.activeElement!==t) t.value=db.projetAdosSuivi; }
-/* ---- Calculateur points d'ancienneté ÉCLAT (RH, pour info) ---- */
-function calcEclatAnc(){
-  const V1=7.23; // valeur du point V1 au 01/01/2026
-  const ya=$('ec_annees'), yt=$('ec_temps'), r=$('ec_res'); if(!r) return;
-  let a=Math.floor(parseFloat(ya&&ya.value)||0); if(a<0)a=0;
-  let t=parseFloat(yt&&yt.value); if(!(t>0))t=100; if(t>100)t=100;
-  const pts=2*a, mois=pts*V1*t/100, an=mois*12;
-  const f=n=>n.toLocaleString('fr-FR',{minimumFractionDigits:2,maximumFractionDigits:2})+' €';
-  r.innerHTML='<strong>'+pts+' points</strong> d\'ancienneté → <strong>'+f(mois)+' / mois</strong> · '+f(an)+' / an '
-    +'<span class="muted">(au point V1 7,23 €'+(t<100?', prorata '+t+'%':', temps plein')+')</span>';
-}
 /* Organigramme : pré-rempli, éditable inline, rangé dans le coffre */
 const ORGA_DEFAUT={
   gov:[
