@@ -1784,6 +1784,20 @@ Deux locaux complémentaires — le Bois de Nèfles (« le haut » : jeunesse, a
       <p style="margin:0;font-size:14px">📌 <strong>Règle :</strong> les congés se demandent <strong>à l'avance</strong> (au moins 1 mois pour 5 jours ou plus, 1 semaine pour les congés courts) et ne sont acquis qu'<strong>une fois validés</strong> par le bureau.</p>
     </div>
     <div class="cards" id="congesKpis"></div>
+    <div class="panel" style="border-left:4px solid #d9488a">
+      <h3 style="margin:0 0 4px">🔒 Fermetures de la structure <span class="muted" style="font-weight:400;font-size:13px">— congés imposés à toute l'équipe</span></h3>
+      <p class="hint" style="margin:0 0 8px">Déclare une période où le CASE <strong>ferme</strong> (ex. vacances de décembre). En cliquant <strong>« 👥 Appliquer à toute l'équipe »</strong>, Bob crée un congé <strong>« Imposé » déjà validé</strong> pour chaque salarié·e sur ces dates, et affiche un bandeau. Réservé au bureau.</p>
+      <div id="fermBanner"></div>
+      <div class="toolbar" style="flex-wrap:wrap;gap:10px;align-items:flex-end">
+        <div class="field" style="min-width:230px"><label>Nom de la fermeture</label><input id="fm_nom" placeholder="Ex. Fermeture vacances de décembre"></div>
+        <div class="field" style="min-width:150px"><label>Du (1er jour fermé)</label><input type="date" id="fm_debut"></div>
+        <div class="field" style="min-width:170px"><label>Au (dernier jour fermé)</label><input type="date" id="fm_fin"></div>
+        <div><button class="ghost btn" onclick="fermPrefillDecembre()">⛄ Pré-remplir décembre</button></div>
+        <div><button class="btn" onclick="addFermeture()">+ Enregistrer la fermeture</button></div>
+      </div>
+      <table style="margin-top:12px"><thead><tr><th>Fermeture</th><th>Période</th><th>État</th><th></th></tr></thead>
+        <tbody id="fermRows"></tbody></table>
+    </div>
     <div class="panel">
       <h3 style="margin:0 0 8px">Nouvelle demande</h3>
       <div class="toolbar" style="flex-wrap:wrap;gap:10px">
@@ -1989,6 +2003,8 @@ const FAQ=[
    a:"Onglet <strong>🚀 Projet ados</strong>. C'est le projet pédagogique du secteur adolescents (11-17 ans) pour <strong>2026-2030</strong>&nbsp;: l'intention (les ados deviennent acteurs), les <strong>4 axes</strong> (parole/image, citoyenneté & orientation, prendre soin, ouverture), les deux marqueurs — <strong>« La Kaz Zados »</strong> (un lieu géré par les jeunes, cadre « accueil de jeunes ») et <strong>« Ôté Kartié »</strong> (le média de quartier porté en service civique) —, la <strong>continuité collège / lycée polyvalent Nord</strong> (audiovisuel), la <strong>trajectoire année par année 2026→2030</strong>, les partenaires et les indicateurs. En bas, une zone <strong>Suivi du bureau</strong> modifiable (enregistrée dans le coffre), et le bouton <strong>📄 Lire le projet complet (PDF)</strong>."},
   {cat:'✅ Suivi',q:"Où je suis l'avancement des actions (checklist DLA) ?",kw:"suivi actions checklist dla 12 sujets statut avancement taches a faire en cours fait en attente kanban",
    a:"Onglet <strong>✅ Suivi</strong> : la liste vivante des actions (la checklist du 09/06 est pré-remplie). Change le statut (à faire / en cours / en attente / fait), ajoute une note, ou crée une nouvelle action. Réservé au bureau."},
+  {cat:'🏖️ Congés',q:"Comment poser une fermeture de la structure (congés imposés à toute l'équipe) ?",kw:"fermeture fermetures imposes impose obligation obligatoire structure ferme fermer ferme decembre noel toute equipe collectif appliquer reprise ados pont conges imposes pendant les vacances banc",
+   a:"Onglet <strong>🏖️ Congés</strong>, bloc <strong>🔒 Fermetures de la structure</strong> : donne un <strong>nom</strong> (ex. « Fermeture vacances de décembre »), le <strong>1er</strong> et le <strong>dernier jour fermé</strong>, puis clique <strong>« 👥 Appliquer à toute l'équipe »</strong>. Bob crée alors un congé <strong>« Imposé » déjà validé</strong> pour chaque salarié·e sur ces dates (visible dans la liste des demandes), et affiche un <strong>bandeau de fermeture</strong>. Le bouton <strong>⛄ Pré-remplir décembre</strong> met le nom et le 15 décembre tout seul ; tu n'ajoutes que la date de reprise. « ↩︎ Retirer » défait l'application, 🗑 supprime la fermeture et ses congés. Réservé au bureau."},
   {cat:'🏖️ Congés',q:"Comment enregistrer et valider les demandes de congés ?",kw:"conges recuperation vacances demande validation salarie poser conge absence valider refuser sans solde regle delai",
    a:"Onglet <strong>🏖️ Congés</strong> : enregistre une demande (salarié, type, dates, motif) puis <strong>Valide</strong> ou <strong>Refuse</strong>. La règle (demande à l'avance, acquis après validation) est rappelée en haut. Réservé au bureau. <em>(La saisie directe par le salarié depuis son espace viendra ensuite.)</em>"},
   {cat:'🗓️ Horaires',q:"Où sont les horaires (planning) des salariés ?",kw:"horaires horaire planning plannings heures emploi du temps temps de travail semaine type recurrente acm matin apres-midi total hebdomadaire salarie equipe quand travaille",
@@ -2135,6 +2151,8 @@ function renderFaqList(){
 
 /* ---- ✨ Quoi de neuf (nouveautés + notice chronologique) ---- */
 const NEWS=[
+  {id:'2026-06-18-fermetures',date:'2026-06-18',tab:'🏖️ Congés',titre:'🔒 Fermetures de la structure (congés imposés)',
+   desc:"Dans l'onglet 🏖️ Congés, un nouveau bloc « 🔒 Fermetures de la structure » permet de déclarer une période où le CASE ferme (ex. vacances de décembre). En un clic « 👥 Appliquer à toute l'équipe », Bob crée un congé « Imposé » déjà validé pour chaque salarié·e sur la période, et affiche un bandeau de fermeture. Le bouton ⛄ pré-remplit le nom et le 15 décembre : tu n'ajoutes que la date de reprise. Réservé au bureau."},
   {id:'2026-06-18-mode-paiement',date:'2026-06-18',tab:'👥 Adhérents & 💶 Comptabilité',titre:'💳 Mode de paiement (espèces, chèque, virement…)',
    desc:"On peut maintenant noter COMMENT c'est payé. Sur la fiche adhérent (onglet 👥 Adhérents) un menu « Mode de paiement » propose Espèces, Chèque, Virement, Carte bancaire et Prélèvement — le mode apparaît dans la liste, sur le reçu de cotisation et à l'export. En comptabilité, l'ancien choix « Banque / Espèces » est remplacé par ce même menu : si tu choisis « Espèces », l'opération part automatiquement dans la caisse, tous les autres modes vont sur la banque. Un seul menu au lieu de deux, et les anciennes écritures restent justes (caisse = Espèces, banque = non précisé)."},
   {id:'2026-06-18-avenants-eclat',date:'2026-06-18',tab:'🧑‍💼 RH',titre:'📄 Modèles d\'avenant bascule ÉCLAT',
@@ -3972,7 +3990,7 @@ function delAction(id){ if(confirm('Supprimer cette action ?')){ db.actionsSuivi
 
 /* ---- Congés (demandes + validation par le bureau) ---- */
 const CG_SALARIES=['Kathy Maillot','Sandrine Michel','Fabrice Ramin'];
-const CG_TYPES=['Congés payés','Récupération','Sans solde','Maladie','Autre'];
+const CG_TYPES=['Congés payés','Récupération','Sans solde','Maladie','Congés imposés','Autre'];
 const CG_PILL={'Demandé':'wait','Validé':'ok','Refusé':'no'};
 function congesDB(){ if(!Array.isArray(db.conges)) db.conges=[]; return db.conges; }
 function addConge(){
@@ -3993,6 +4011,61 @@ function renderConges(){
     +'<td><span class="pill '+(CG_PILL[x.statut]||'wait')+'">'+esc(x.statut)+'</span></td>'
     +'<td style="white-space:nowrap">'+(x.statut!=='Validé'?'<button class="ghost btn" onclick="setConge(\''+x.id+'\',\'Validé\')">✅</button> ':'')+(x.statut!=='Refusé'?'<button class="ghost btn" onclick="setConge(\''+x.id+'\',\'Refusé\')">✋</button> ':'')+'<button class="danger" onclick="delConge(\''+x.id+'\')">🗑</button></td></tr>').join(''):'<tr><td colspan="5" class="empty">Aucune demande pour le moment.</td></tr>';
   const k=$('congesKpis'); if(k){ const d=c.filter(x=>x.statut==='Demandé').length; k.innerHTML=kpi('Demandes',c.length,'','')+kpi('À valider',d,d>0?'amber':'green',''); }
+}
+
+/* ---- Fermetures de la structure (congés imposés à toute l'équipe) ---- */
+function fermDB(){ if(!Array.isArray(db.fermetures)) db.fermetures=[]; return db.fermetures; }
+function fermPrefillDecembre(){
+  const y=new Date().getFullYear();
+  if($('fm_nom')) $('fm_nom').value='Fermeture vacances de décembre '+y;
+  if($('fm_debut')) $('fm_debut').value=y+'-12-15';
+  if($('fm_fin')) $('fm_fin').focus();
+}
+function addFermeture(){
+  const nom=($('fm_nom').value||'').trim(), debut=$('fm_debut').value, fin=$('fm_fin').value;
+  if(!nom){ alert('Donne un nom à la fermeture (ex. Fermeture vacances de décembre).'); return; }
+  if(!debut||!fin){ alert('Indique le 1er et le dernier jour de fermeture.'); return; }
+  if(fin<debut){ alert('Le dernier jour doit être après le premier.'); return; }
+  fermDB().push({ id:uid(), nom:nom, debut:debut, fin:fin, applique:false, creeLe:today() });
+  $('fm_nom').value=''; $('fm_debut').value=''; $('fm_fin').value=''; save();
+}
+function applyFermeture(id){
+  const f=fermDB().find(x=>x.id===id); if(!f) return;
+  if(!confirm('Créer un congé « Imposé » déjà validé pour '+CG_SALARIES.length+' salarié·es, du '+fmtDate(f.debut)+' au '+fmtDate(f.fin)+' ?')) return;
+  db.conges=congesDB().filter(c=>c.fermetureId!==id);
+  CG_SALARIES.forEach(s=>{
+    congesDB().push({ id:uid(), salarie:s, type:'Congés imposés', debut:f.debut, fin:f.fin, motif:f.nom, statut:'Validé', demandeLe:today(), fermetureId:id });
+  });
+  f.applique=true; save();
+}
+function unapplyFermeture(id){
+  if(!confirm('Retirer les congés imposés générés pour cette fermeture ? La fermeture reste déclarée.')) return;
+  const f=fermDB().find(x=>x.id===id); if(f) f.applique=false;
+  db.conges=congesDB().filter(c=>c.fermetureId!==id); save();
+}
+function delFermeture(id){
+  if(!confirm('Supprimer cette fermeture ? Les congés imposés liés seront aussi retirés.')) return;
+  db.conges=congesDB().filter(c=>c.fermetureId!==id);
+  db.fermetures=fermDB().filter(x=>x.id!==id); save();
+}
+function renderFermetures(){
+  const box=$('fermRows'); if(!box) return;
+  const f=fermDB().slice().sort((a,b)=>(a.debut||'').localeCompare(b.debut||''));
+  box.innerHTML=f.length?f.map(x=>{
+    const etat=x.applique?'<span class="pill ok">✅ Appliqué ('+CG_SALARIES.length+' salarié·es)</span>':'<span class="pill wait">À appliquer</span>';
+    const btn=x.applique
+      ? '<button class="ghost btn" onclick="unapplyFermeture(\''+x.id+'\')" title="Retirer les congés imposés générés">↩︎ Retirer</button> '
+      : '<button class="btn" onclick="applyFermeture(\''+x.id+'\')">👥 Appliquer à toute l\'équipe</button> ';
+    return '<tr><td><strong>'+esc(x.nom)+'</strong></td>'
+      +'<td>'+fmtDate(x.debut)+' → '+fmtDate(x.fin)+'</td>'
+      +'<td>'+etat+'</td>'
+      +'<td style="white-space:nowrap">'+btn+'<button class="danger" onclick="delFermeture(\''+x.id+'\')">🗑</button></td></tr>';
+  }).join(''):'<tr><td colspan="4" class="empty">Aucune fermeture déclarée. Clique ⛄ pour pré-remplir décembre.</td></tr>';
+  const ban=$('fermBanner'); if(ban){
+    const t=today();
+    const active=f.filter(x=>x.applique && (x.fin||'')>=t).sort((a,b)=>(a.debut||'').localeCompare(b.debut||''))[0];
+    ban.innerHTML=active?'<div class="panel" style="margin:0 0 10px;background:#fdeef5;border:1px solid #f3c5dd"><strong>🔒 '+esc(active.nom)+'</strong> — structure fermée du <strong>'+fmtDate(active.debut)+'</strong> au <strong>'+fmtDate(active.fin)+'</strong>, congés imposés à toute l\'équipe.</div>':'';
+  }
 }
 
 /* ---- Horaires des salariés (semaine type récurrente + semaines particulières datées) ---- */
@@ -4153,7 +4226,7 @@ function renderProtocoles(){
 }
 function renderEquipe(){ const t=$('accueilIntro'); if(t && document.activeElement!==t) t.value=db.accueilIntro||''; renderSalaries(); renderContratsTravail(); renderContrats(); renderProtocoles(); }
 
-function renderAll(){ renderDashboard(); renderMembers(); renderRelances(); renderOps(); renderCaisse(); renderRapprochement(); renderProjects(); renderSubventions(); renderEcheancier(); renderBilan(); renderPrevisionnel(); renderEquipe(); renderRepertoire(); renderSecretariat(); renderAssurance(); renderReunions(); renderIncidents(); renderDettes(); renderOfficialLinks(); refreshComptes(); renderListParams(); renderJournal(); renderPeriscolaire(); renderFaqList(); renderNews(); renderAccompagnement(); renderRH(); renderProjet(); renderProjetAdos(); renderActions(); renderConges(); renderHoraires(); }
+function renderAll(){ renderDashboard(); renderMembers(); renderRelances(); renderOps(); renderCaisse(); renderRapprochement(); renderProjects(); renderSubventions(); renderEcheancier(); renderBilan(); renderPrevisionnel(); renderEquipe(); renderRepertoire(); renderSecretariat(); renderAssurance(); renderReunions(); renderIncidents(); renderDettes(); renderOfficialLinks(); refreshComptes(); renderListParams(); renderJournal(); renderPeriscolaire(); renderFaqList(); renderNews(); renderAccompagnement(); renderRH(); renderProjet(); renderProjetAdos(); renderActions(); renderConges(); renderFermetures(); renderHoraires(); }
 
 /* ---- Data import/export ---- */
 function exportJSON(){
