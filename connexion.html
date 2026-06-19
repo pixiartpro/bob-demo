@@ -64,7 +64,7 @@
 <div class="wrap">
   <h1 class="t">🔐 Espace bureau</h1>
   <p class="sub">Connexion réservée à l'équipe et au bureau. Crée une demande d'accès ; un administrateur la validera.</p>
-  <div style="text-align:center;margin:4px 0 16px">
+  <div id="welcomeMascot" style="text-align:center;margin:4px 0 16px">
     <img src="zanana-wave.png" onerror="this.style.display='none'" alt="Zanana" style="width:92px;height:auto;filter:drop-shadow(0 8px 14px rgba(16,60,40,.18))">
     <p style="margin:6px auto 0;font-weight:700;color:#3a5246;font-size:14.5px;max-width:420px">Salut, c'est <b style="color:#e8a32c">Zanana</b> ! Connecte-toi pour accéder à la gestion 🔐</p>
   </div>
@@ -83,8 +83,10 @@ const $=s=>document.querySelector(s);
 
 /* ===== Multi-assos : "porte" d'entrée (slug dans l'URL : ?asso=bokaf, /bokaf, ou /bokaf.html) ===== */
 const ASSO_DOORS = {
-  case:  { pine:'🍍', nom:'CASE', nom2:'Bois de Nèfles', titre:'Espace bureau — CASE du Bois de Nèfles' },
-  bokaf: { pine:'🎬', nom:'BOKAF', nom2:'',               titre:'Espace bureau — association BOKAF' }
+  case:  { pine:'🍍', nom:'CASE', nom2:'Bois de Nèfles', titre:'Espace bureau — CASE du Bois de Nèfles',
+           theme:{ vert:'#1f9d6b', vertFonce:'#127a51' } },
+  bokaf: { pine:'🎬', nom:'BOKAF', nom2:'', titre:'Espace bureau — association BOKAF', logoImg:'bokaf-logo.png',
+           theme:{ vert:'#d81e5b', vertFonce:'#b3134a', dark:true, headerBg:'linear-gradient(100deg,#141318,#26182e 55%,#141318)', flagBg:'#221826', flagInk:'#f1c6d8' } }
 };
 function assoSlug(){
   try{
@@ -103,8 +105,25 @@ const DOOR = assoSlug();
   try{ document.title=d.titre; }catch(e){}
   try{
     const lg=$('.logo');
-    if(lg) lg.innerHTML='<span class="pine">'+d.pine+'</span><span><b>'+d.nom+'</b>'+(d.nom2?' <span>'+d.nom2+'</span>':'')+'</span>';
+    if(lg){
+      const mark = d.logoImg ? '<img src="'+d.logoImg+'" alt="'+d.nom+'" style="width:34px;height:34px;border-radius:9px;object-fit:cover;vertical-align:middle;margin-right:4px">' : '<span class="pine">'+d.pine+'</span>';
+      lg.innerHTML = mark+'<span><b>'+d.nom+'</b>'+(d.nom2?' <span>'+d.nom2+'</span>':'')+'</span>';
+    }
   }catch(e){}
+  /* habillage par porte : CASE = no-op (valeurs actuelles), BOKAF = sombre + spectre */
+  const t=d.theme;
+  if(t){
+    try{ const rs=document.documentElement.style; rs.setProperty('--vert',t.vert); rs.setProperty('--vert-fonce',t.vertFonce); }catch(e){}
+    if(t.dark){
+      try{ const hd=document.querySelector('header'); if(hd) hd.style.background=t.headerBg; }catch(e){}
+      try{ const lb=document.querySelector('.logo b'); if(lb) lb.style.color='#fff'; }catch(e){}
+      try{ const na=document.querySelector('header nav a'); if(na) na.style.color='#cbd0da'; }catch(e){}
+      try{ const sf=document.querySelector('.secure-flag'); if(sf){ sf.style.background=t.flagBg; sf.style.color=t.flagInk; } }catch(e){}
+      try{ const mm=document.getElementById('welcomeMascot'); if(mm) mm.style.display='none'; }catch(e){}
+      /* bouton secondaire : remplace le jaune CASE par un bleu du spectre BOKAF (couvre aussi les boutons rendus après coup) */
+      try{ const st=document.createElement('style'); st.textContent='.btn.s{background:#2f6fdb !important;color:#fff !important}'; document.head.appendChild(st); }catch(e){}
+    }
+  }
 })();
 
 const ROLES={

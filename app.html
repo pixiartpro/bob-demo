@@ -2232,6 +2232,8 @@ function renderFaqList(){
 
 /* ---- ✨ Quoi de neuf (nouveautés + notice chronologique) ---- */
 const NEWS=[
+  {id:'2026-06-19-multi-asso',date:'2026-06-19',tab:'🔐 Connexion',titre:"🏛️ Bob peut accueillir une 2ᵉ association",
+   desc:"Bob sait désormais héberger plusieurs associations de façon totalement étanche : chaque association ne voit QUE ses propres données (adhérents, comptabilité, projets…) — c'est verrouillé au niveau de la base, pas seulement à l'écran. L'habillage (nom, couleurs, logo) s'adapte automatiquement à la porte d'entrée. Pour le CASE, rien ne change. Première invitée en test : l'association BOKAF (en-tête sombre + couleurs propres)."},
   {id:'2026-06-19-avenant-sandrine',date:'2026-06-19',tab:'🧑‍💼 RH',titre:"📄 Avenant ÉCLAT de Sandrine ajouté",
    desc:"Le panneau « Documents RH — Modèles d'avenant » de l'onglet 🧑‍💼 RH propose désormais un 3ᵉ modèle, pour Sandrine Michel, au même format que Kathy et Fabrice (changement ALISFA → ÉCLAT avec clause de maintien de salaire, modifiable et imprimable). À compléter (coef 257 + indemnité temps partiel, contrat PEC, 21 h) et à faire valider par Hexopée avant signature."},
   {id:'2026-06-19-reorg-3poles',date:'2026-06-19',tab:'🧭 Projet & orientations',titre:"🧭 Réorganisation en 3 pôles, valeurs & procédures",
@@ -5027,13 +5029,15 @@ renderAll();
       title:'Bob — secrétaire-directeur du CASE du Bois de Nèfles', appTitle:'Bob CASE',
       h1:'Bob <span style="font-weight:500;opacity:.85">· secrétaire-directeur du CASE</span>',
       sub:'La Bible du CASE du Bois de Nèfles : adhésions, comptabilité, subventions, répertoire',
-      footer:'Bob · secrétaire-directeur du CASE du Bois de Nèfles · données stockées localement dans votre navigateur'
+      footer:'Bob · secrétaire-directeur du CASE du Bois de Nèfles · données stockées localement dans votre navigateur',
+      theme:{ brand:'#127a51', brandDk:'#0f6b46', headerBg:'#ffffff', headerInk:'#16302a', headerSub:'#62756b', logoBg:'#127a51', logoHtml:'🤖', themeColor:'#127a51' }
     },
     '30cab5ff-fb7d-4734-8f2d-bac3100841ed': { // BOKAF
       title:'Bob — association BOKAF', appTitle:'Bob BOKAF',
       h1:'Bob <span style="font-weight:500;opacity:.85">· association BOKAF</span>',
       sub:'Gestion de l\'association BOKAF : adhésions, comptabilité, projets',
-      footer:'Bob · association BOKAF · données gérées en ligne (Supabase, hébergement Paris · RGPD)'
+      footer:'Bob · association BOKAF · MÉDIA · ÉVÈNEMENT · PRODUCTION · données en ligne (Supabase, hébergement Paris · RGPD)',
+      theme:{ brand:'#d81e5b', brandDk:'#b3134a', headerBg:'linear-gradient(100deg,#141318 0%,#26182e 52%,#141318 100%)', headerInk:'#ffffff', headerSub:'#bcc2d0', logoBg:'#0e0e12', logoHtml:'<img src="bokaf-logo.png" alt="BOKAF" style="width:100%;height:100%;object-fit:cover;border-radius:inherit">', themeColor:'#141318' }
     }
   };
   function applyAssoIdentity(assoId){
@@ -5043,6 +5047,16 @@ renderAll();
     try{ const h=document.querySelector('header.top h1'); if(h) h.innerHTML=id.h1; }catch(e){}
     try{ const p=document.querySelector('header.top p'); if(p) p.textContent=id.sub; }catch(e){}
     try{ const f=document.querySelector('footer'); if(f) f.textContent=id.footer; }catch(e){}
+    /* habillage par asso : couleurs + en-tête + logo (CASE = défaut inchangé) */
+    const t=id.theme;
+    if(t){
+      try{ const rs=document.documentElement.style; rs.setProperty('--brand',t.brand); rs.setProperty('--brand-dk',t.brandDk); }catch(e){}
+      try{ const hd=document.querySelector('header.top'); if(hd){ hd.style.background=t.headerBg; hd.style.color=t.headerInk; } }catch(e){}
+      try{ const h=document.querySelector('header.top h1'); if(h) h.style.color=t.headerInk; }catch(e){}
+      try{ const p=document.querySelector('header.top p'); if(p) p.style.color=t.headerSub; }catch(e){}
+      try{ const lg=document.querySelector('header.top .logo'); if(lg){ lg.style.background=t.logoBg; lg.style.overflow='hidden'; lg.innerHTML=t.logoHtml; } }catch(e){}
+      try{ const mc=document.querySelector('meta[name="theme-color"]'); if(mc) mc.setAttribute('content',t.themeColor); }catch(e){}
+    }
   }
 
   async function boot(){
