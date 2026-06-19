@@ -1966,12 +1966,15 @@ const J_COLLS={
   protocoles:{lbl:'Protocole',mod:'Équipe',name:x=>x.titre}
 };
 const J_LISTS={comptes:{lbl:'Compte comptable'},sites:{lbl:'Site'},actions:{lbl:'Action',f:1},cats:{lbl:'Catégorie',f:1},typesAdh:{lbl:"Type d'adhésion"}};
+const J_NESTED={'periscolaire.enfants':{lbl:'Enfant (périscolaire)',mod:'Périscolaire',name:x=>x.nom}};
+function jNestedArr(path){ let o=db; for(const k of path.split('.')){ if(o==null) return []; o=o[k]; } return Array.isArray(o)?o:[]; }
 const jAcc=(f,verbe)=>verbe+(f?'e':'');
 let _jPrev=null;
 function jSnap(){
   const s={};
   for(const k in J_COLLS){ const m={}; (db[k]||[]).forEach(it=>{ if(it&&it.id) m[it.id]=JSON.stringify(it); }); s[k]=m; }
   for(const k in J_LISTS){ s['#'+k]=(db[k]||[]).slice(); }
+  for(const k in J_NESTED){ const m={}; jNestedArr(k).forEach(it=>{ if(it&&it.id) m[it.id]=JSON.stringify(it); }); s['@'+k]=m; }
   return s;
 }
 function jEntry(mod,txt){ return {t:new Date().toISOString(), u:window._bobUser||'', mod, txt}; }
@@ -1990,6 +1993,14 @@ function jLog(){
     const p=_jPrev['#'+k]||[], c=now['#'+k]||[], L=J_LISTS[k];
     c.filter(v=>!p.includes(v)).forEach(v=>entries.push(jEntry('Données','➕ '+L.lbl+' '+jAcc(L.f,'ajouté')+' : '+v)));
     p.filter(v=>!c.includes(v)).forEach(v=>entries.push(jEntry('Données','🗑️ '+L.lbl+' '+jAcc(L.f,'supprimé')+' : '+v)));
+  }
+  for(const k in J_NESTED){
+    const prev=_jPrev['@'+k]||{}, cur=now['@'+k]||{}, C=J_NESTED[k];
+    for(const id in cur){
+      if(!(id in prev)) entries.push(jEntry(C.mod,'➕ '+C.lbl+' '+jAcc(C.f,'ajouté')+' : '+(C.name(JSON.parse(cur[id]))||'(sans nom)')));
+      else if(prev[id]!==cur[id]) entries.push(jEntry(C.mod,'✏️ '+C.lbl+' '+jAcc(C.f,'modifié')+' : '+(C.name(JSON.parse(cur[id]))||'(sans nom)')));
+    }
+    for(const id in prev){ if(!(id in cur)) entries.push(jEntry(C.mod,'🗑️ '+C.lbl+' '+jAcc(C.f,'supprimé')+' : '+(C.name(JSON.parse(prev[id]))||'(sans nom)'))); }
   }
   _jPrev=now;
   if(entries.length) db.journal=(db.journal||[]).concat(entries).slice(-500);
@@ -2168,8 +2179,8 @@ const FAQ=[
    a:"Clique sur <b>« ↻ Rafraîchir »</b> en haut de Bob pour recharger la dernière version en ligne. Si quelqu'un d'autre vient de modifier, ça récupère ses changements. (En tout dernier recours, recharge la page.)"},
   {cat:'🔧 Astuces & cas concrets',q:"Je me suis trompé / j'ai fait une fausse manipulation, comment revenir en arrière ?",kw:"erreur trompe fausse manipulation annuler revenir arriere retablir restaurer reparer supprime par erreur catastrophe",
    a:"Deux filets de sécurité : 1) l'<b>🕘 Historique</b> indique qui a modifié quoi et quand ; 2) si tu as une <b>sauvegarde</b> (⚙️ Données → Exporter), tu peux la réimporter pour revenir à cet état. D'où l'intérêt d'exporter régulièrement avant les grosses saisies."},
-  {cat:'🔧 Astuces & cas concrets',q:"L'Historique garde-t-il une trace de qui modifie les salaires, contrats, protocoles ?",kw:"historique trace tracer audit qui a modifie modification modifications changement changements suppression ajout fait quoi quand salaire salaires masse salariale contrat contrats protocole protocoles journal activite preuve suivi securite",
-   a:"Oui. L'<b>🕘 Historique</b> (réservé au bureau) note automatiquement chaque ajout, modification et suppression avec la <b>personne</b>, l'action et la date. Il couvre les adhérents, la comptabilité, les subventions, les projets, le répertoire, le secrétariat, les dettes — et désormais aussi la <b>💰 masse salariale (salaires)</b>, les <b>contrats de travail</b>, les statuts d'emploi et les <b>protocoles</b>. Tu peux filtrer par personne ou par rubrique ; il garde les 500 dernières actions."},
+  {cat:'🔧 Astuces & cas concrets',q:"L'Historique garde-t-il une trace de qui modifie les salaires, contrats, protocoles ?",kw:"historique trace tracer audit qui a modifie modification modifications changement changements suppression ajout fait quoi quand salaire salaires masse salariale contrat contrats protocole protocoles journal activite preuve suivi securite enfant enfants periscolaire",
+   a:"Oui. L'<b>🕘 Historique</b> (réservé au bureau) note automatiquement chaque ajout, modification et suppression avec la <b>personne</b>, l'action et la date. Il couvre les adhérents, la comptabilité, les subventions, les projets, le répertoire, le secrétariat, les dettes — et désormais aussi la <b>💰 masse salariale (salaires)</b>, les <b>contrats de travail</b>, les statuts d'emploi, les <b>protocoles</b> et les <b>fiches enfants du périscolaire</b>. Tu peux filtrer par personne ou par rubrique ; il garde les 500 dernières actions."},
   {cat:'🔧 Astuces & cas concrets',q:"Comment je supprime une opération ou une fiche ?",kw:"supprimer effacer enlever retirer operation fiche ligne ecriture adherent corbeille delete",
    a:"Sur la ligne concernée (opération, adhérent, subvention…), clique sur le bouton <b>« Suppr. »</b> (ou la corbeille 🗑️) et confirme. La suppression est tracée dans l'🕘 Historique. Si tu supprimes une subvention liée à une recette, Bob te prévient."},
   {cat:'🔧 Astuces & cas concrets',q:"C'est quoi la ventilation par site et par action ?",kw:"ventilation site action repartir repartition affecter analytique bringelliers case detail depense recette par",
@@ -2213,7 +2224,7 @@ function renderFaqList(){
 /* ---- ✨ Quoi de neuf (nouveautés + notice chronologique) ---- */
 const NEWS=[
   {id:'2026-06-19-historique-salaires',date:'2026-06-19',tab:'🕘 Historique',titre:"🔎 Salaires, contrats et protocoles tracés dans l'Historique",
-   desc:"L'🕘 Historique note désormais aussi les ajouts, modifications et suppressions de la 💰 masse salariale (salaires), des contrats de travail, des statuts d'emploi et des protocoles/procédures — avec qui l'a fait, quoi et quand, comme pour le reste. But : garder une trace claire des données les plus sensibles. Réservé au bureau."},
+   desc:"L'🕘 Historique note désormais aussi les ajouts, modifications et suppressions de la 💰 masse salariale (salaires), des contrats de travail, des statuts d'emploi, des protocoles/procédures et des fiches enfants du périscolaire — avec qui l'a fait, quoi et quand, comme pour le reste. But : garder une trace claire des données les plus sensibles. Réservé au bureau."},
   {id:'2026-06-18-export-auto',date:'2026-06-18',tab:'⚙️ Données',titre:'💾 Sauvegarde automatique avant import / remise à zéro',
    desc:"Nouveau filet de sécurité : quand tu importes une sauvegarde ou que tu fais une remise à zéro (onglet ⚙️ Données), Bob télécharge maintenant AUTOMATIQUEMENT une sauvegarde de l'état actuel AVANT de remplacer ou d'effacer quoi que ce soit, et affiche un avertissement plus clair (l'opération remplace les données de toute l'association en ligne). En cas de fausse manip, tu retrouves toujours un fichier de secours dans tes téléchargements (sauvegarde-CASE-avant-import-… ou …-avant-remise-a-zero-…), à réimporter pour revenir en arrière."},
   {id:'2026-06-18-budget-mensuel',date:'2026-06-18',tab:'🔮 Prévisionnel',titre:'📅 Budget mensuel détaillé par code comptable',
