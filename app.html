@@ -1416,13 +1416,13 @@ GOUVERNANCE
 
     <div class="panel">
       <h3 style="margin:0 0 4px">🪪 Fiches de poste (salariés)</h3>
-      <p class="hint" style="margin:0 0 10px">Coefficients ÉCLAT en cours de validation avec Hexopée (cf. onglet Accompagnement).</p>
+      <p class="hint" style="margin:0 0 10px">Réorganisation en <strong>3 pôles</strong> (séance DLA du 18/06, à ratifier en CA). Coefficients ÉCLAT <strong>en cours de validation avec Hexopée</strong> (cf. onglet Accompagnement) — les intitulés ci-dessous sont les rôles cibles.</p>
       <table>
         <thead><tr><th>Poste</th><th>Titulaire</th><th>Missions principales</th><th>Coeff ÉCLAT</th><th>Statut</th></tr></thead>
         <tbody>
-          <tr><td>Coordination</td><td>Kathy Maillot</td><td>Coordination de l'équipe et des actions, lien bureau/extérieur, appui administratif</td><td>265 <span class="muted">(confirmé)</span></td><td><span class="pill ok">En poste, à conforter</span></td></tr>
-          <tr><td>Référent·e périscolaire</td><td>Sandrine Michel</td><td>Programmation et encadrement périscolaire, goûters, lien avec les parents</td><td>257 → 265 <span class="muted">(PEC)</span></td><td><span class="pill ok">En poste (PEC)</span></td></tr>
-          <tr><td>Animation / projets</td><td>Fabrice Ramin</td><td>Animation socioculturelle, conduite de projets</td><td>265 <span class="muted">(confirmé)</span></td><td><span class="pill wait">Positionnement à statuer</span></td></tr>
+          <tr><td>Coordinatrice d'association</td><td>Kathy Maillot</td><td>Coordination générale (périscolaire, ACM, ados), encadrement de l'équipe, suivi des projets pédagogiques, gestion administrative, lien partenaires (CAF, mairie)</td><td>à valider <span class="muted">(coordination · ~285 + ancienneté, proj. 305 en 2027)</span></td><td><span class="pill ok">Réf. Pôle 1 · à conforter</span></td></tr>
+          <tr><td>Animatrice enfance-jeunesse</td><td>Sandrine Michel</td><td>Animation périscolaire et de loisirs, référence périscolaire, appui ACM, lien familles / écoles</td><td>257 <span class="muted">(à valider · PEC)</span></td><td><span class="pill ok">Appui pôles 1 &amp; 2 (PEC)</span></td></tr>
+          <tr><td>Coordinateur / animateur socioculturel</td><td>Fabrice Ramin</td><td>Animation socioculturelle, conduite de projets, médiation et lien social sur le quartier, événementiel</td><td>à arbitrer <span class="muted">(B 265 ou C 285)</span></td><td><span class="pill wait">Réf. Pôle 2 · avenir à statuer</span></td></tr>
         </tbody>
       </table>
     </div>
@@ -2053,6 +2053,8 @@ document.querySelectorAll('nav.tabs button').forEach(b=>{
 
 /* ---- Aide : « Demande à Zanana » (FAQ + assistant par mots-clés, sans IA) ---- */
 const FAQ=[
+  {cat:'🧭 Organisation',q:"Comment est organisé le CASE (pôles, valeurs, procédures) ?",kw:"organisation organigramme pole poles 3 trois valeurs valeur orientations procedure procedures protocole protocoles caisse facture factures comptabilite fonctionnement structure reorganisation reorg dla mission proximite lien social education populaire",
+   a:"Depuis la réunion DLA du 18/06/2026, le CASE s'organise en <strong>3 pôles</strong> : Pôle 1 — Vie éducative &amp; jeunesse, Pôle 2 — Culture, lien social &amp; animation, Pôle 3 — Insertion, droits &amp; territoires (déploiement 2027). L'organigramme, les <strong>3 valeurs</strong> (Proximité · Lien social · Éducation populaire), les orientations et l'organisation cible sont dans l'onglet <strong>🧭 Projet &amp; orientations</strong>. Les <strong>procédures internes</strong> (caisse, factures, comptabilité, RH, actions) sont dans l'onglet <strong>📒 Équipe</strong>. Cette organisation est à ratifier formellement en CA."},
   {cat:'🧑‍💼 RH',q:"Où trouver un modèle d'avenant pour la bascule ÉCLAT (Kathy, Fabrice) ?",kw:"avenant avenants modele modeles document documents contrat travail eclat alisfa bascule changement convention kathy fabrice imprimer pdf maintien salaire signature clause classification coefficient remuneration garantie base",
    a:"Onglet <strong>🧑‍💼 RH</strong>, panneau <strong>📄 Documents RH — Modèles d'avenant</strong>. Tu y trouves un avenant <strong>pré-rempli pour Kathy et pour Fabrice</strong> (changement de convention ALISFA → ÉCLAT avec <strong>clause de maintien de salaire</strong>, sans rétroactivité). Le texte est <strong>modifiable</strong> (enregistré dans le coffre) et <strong>imprimable</strong> (bouton 🖨️ Imprimer / PDF ouvre une version propre). Le bouton ↩️ Modèle restaure le texte d'origine. ⚠️ C'est une <strong>base de travail</strong> : à faire valider par Hexopée / la paie (Julie Lauret) avant signature, et à compléter là où il y a des crochets [ ___ ] (SIRET, adresse, coefficient ÉCLAT, rémunération, date d'effet)."},
   {cat:'🧑‍💼 RH',q:"Comment gérer le passage de convention ÉLISFA à ÉCLAT sans baisser les salaires ?",kw:"bascule eclat elisfa alisfa convention collective changement passage salaire salaires maintien baisser baisse trop paye payes coefficient point valeur v1 v2 7.23 6.81 257 minimum grille plancher avenant differentiel complement remontee hausse valorisation experience indemnite temps partiel reconstitution carriere anciennete kathy fabrice sandrine idcc 1518 1261 hexopee simulateur arret maladie prevoyance regularisation",
@@ -2223,6 +2225,8 @@ function renderFaqList(){
 
 /* ---- ✨ Quoi de neuf (nouveautés + notice chronologique) ---- */
 const NEWS=[
+  {id:'2026-06-19-reorg-3poles',date:'2026-06-19',tab:'🧭 Projet & orientations',titre:"🧭 Réorganisation en 3 pôles, valeurs & procédures",
+   desc:"Suite à la réunion DLA du 18/06 : l'organigramme passe à 3 pôles (Pôle 1 — Vie éducative & jeunesse, Pôle 2 — Culture, lien social & animation, Pôle 3 — Insertion, droits & territoires, déployé en 2027). Les 3 valeurs cardinales (Proximité · Lien social · Éducation populaire), les orientations et l'organisation cible sont posées dans l'onglet 🧭 Projet & orientations. Six procédures internes (caisse, factures fournisseurs, comptabilité, RH congés, RH hebdo, conduite d'actions) sont disponibles dans 📒 Équipe. Les fiches de poste affichent les nouveaux rôles — coefficients ÉCLAT encore en validation Hexopée. Décision « 3 pôles » à ratifier formellement en CA."},
   {id:'2026-06-19-historique-salaires',date:'2026-06-19',tab:'🕘 Historique',titre:"🔎 Salaires, contrats et protocoles tracés dans l'Historique",
    desc:"L'🕘 Historique note désormais aussi les ajouts, modifications et suppressions de la 💰 masse salariale (salaires), des contrats de travail, des statuts d'emploi, des protocoles/procédures et des fiches enfants du périscolaire — avec qui l'a fait, quoi et quand, comme pour le reste. But : garder une trace claire des données les plus sensibles. Réservé au bureau."},
   {id:'2026-06-18-export-auto',date:'2026-06-18',tab:'⚙️ Données',titre:'💾 Sauvegarde automatique avant import / remise à zéro',
