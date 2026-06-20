@@ -684,8 +684,25 @@ async function kidsLoad(){
   const {data,error}=await _sbAt.from('enfants').select('*').eq('parent_id', ACM.uid).order('created_at',{ascending:true});
   KIDS.list = (error?[]:(data||[]));
 }
+function kidSummary(k){
+  const who=((kidEsc(k.nom||'')+' '+kidEsc(k.prenom||'')).trim())||'(enfant)';
+  const bits=[]; if(k.classe) bits.push(kidEsc(k.classe)); if(k.naissance) bits.push('né(e) le '+kidEsc(k.naissance));
+  const tags=[]; if(k.allergies) tags.push('🌰 '+kidEsc(k.allergies)); if(k.sante) tags.push('🩺 '+kidEsc(k.sante));
+  const nAut=(Array.isArray(k.autorises_json)?k.autorises_json:[]).length; if(nAut) tags.push('🔐 '+nAut+' autorisé'+(nAut>1?'s':''));
+  if(k.depart_seul) tags.push('🚶 part seul');
+  return '<div class="card" style="box-shadow:none;border:1px solid var(--line);gap:4px" data-kid="'+k.id+'">'
+    +'<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">'
+    +'<b style="font-size:15px">👧 '+who+'</b>'
+    +(bits.length?'<span style="color:var(--muted);font-size:13.5px">'+bits.join(' · ')+'</span>':'')
+    +'<span style="margin-left:auto"><button class="btn use" style="padding:6px 12px" onclick="kidEdit(\''+k.id+'\')">✏️ Modifier</button></span>'
+    +'</div>'
+    +(tags.length?'<div style="font-size:13px;color:#8a6400">'+tags.join(' · ')+'</div>':'')
+    +'</div>';
+}
+window.kidEdit=function(id){ kidsCaptureEdits(); const k=KIDS.list.find(x=>x.id===id); if(k) k._edit=true; kidsRender(); };
 function kidCard(k){
   const id=k.id; const dp=kidDateParts(k.naissance);
+  if(!k._edit && (k.prenom||'').trim()) return kidSummary(k);
   return '<div class="card" style="box-shadow:none;border:1px solid var(--line);gap:8px" data-kid="'+id+'" oninput="kidDirty(\''+id+'\')" onchange="kidDirty(\''+id+'\')">'
     +'<div style="display:flex;gap:8px;flex-wrap:wrap">'
     +'<input id="k_nom_'+id+'" value="'+kidEsc(k.nom||'')+'" placeholder="Nom de l\'enfant" style="flex:1;min-width:130px;padding:9px 11px;border:1px solid var(--line);border-radius:10px;font:inherit">'
@@ -726,6 +743,7 @@ function kidsRender(){
 function kidsCaptureEdits(){
   document.querySelectorAll('#kidsBody [data-kid]').forEach(function(card){
     const id=card.getAttribute('data-kid'); const k=KIDS.list.find(x=>x.id===id); if(!k) return;
+    if(!document.getElementById('k_prenom_'+id)) return; // carte repliée (résumé) : ne rien capturer
     const v=f=>{const el=document.getElementById('k_'+f+'_'+id); return el?el.value:undefined;};
     if(v('nom')!==undefined) k.nom=v('nom');
     if(v('prenom')!==undefined) k.prenom=v('prenom');
@@ -758,8 +776,8 @@ window.kidSave=async function(id){
   const {data,error}=await _sbAt.from('enfants').update(payload).eq('id',id).select().single();
   if(error){ if(msg){msg.style.color='#c0392b'; msg.textContent='Échec : '+(error.message||error);} return; }
   const i=KIDS.list.findIndex(x=>x.id===id); if(i>=0) KIDS.list[i]=data;
-  if(msg){ msg.style.color='var(--vert-fonce)'; msg.textContent='✅ Enregistré'; }
   toast('✅ Fiche enregistrée');
+  kidsRender();
 };
 window.kidDelete=async function(id){
   if(!confirm('Supprimer cette fiche enfant ?')) return;
