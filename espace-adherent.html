@@ -265,6 +265,8 @@ loadAteliersAdh();
 
 /* ---- Aide adhérent : « Demande à Zanana » (FAQ jetons, sans IA) ---- */
 const AQ=[
+  {cat:'📅 Rendez-vous',q:"Comment je prends un rendez-vous au CASE ?",kw:"rendez vous rdv creneau plage horaire reserver accompagnement aide scanner remplir vepi agenda calendrier google",
+   a:"Dans <b>📅 Prendre rendez-vous</b>, clique sur <b>« Réserver un créneau »</b> : choisis <b>pour quoi</b> (périscolaire, vacances/ACM, VEPI, ou autre) puis un <b>créneau libre</b>. C'est réservé tout de suite, et tu peux l'<b>ajouter à ton agenda</b> (Google, Apple, Outlook) en un clic. Besoin d'aide pour remplir ou scanner un dossier ? Réserve un créneau et on fait tout ensemble au CASE. 🍍"},
   {cat:'💡 Ateliers',q:"C'est quoi les « ateliers en préparation » ?",kw:"atelier preparation interesse animer ouvrir seuil idee participatif futur bientot",
    a:"Ce sont des ateliers qui <b>ouvrent dès qu'il y a assez d'inscrits</b>. Dis si ça t'intéresse (<b>🙋 Ça m'intéresse</b>) ou si tu sais animer (<b>🧑‍🏫 Je peux animer</b>). Quand le seuil est atteint, l'atelier ouvre ! 🍍"},
   {cat:'💡 Ateliers',q:"Comment je dis qu'un atelier m'intéresse ?",kw:"interesse atelier signaler envie vouloir inscrire preparation bouton ca minteresse",
@@ -754,29 +756,40 @@ async function rdvBoot(){
   }catch(e){ body.innerHTML='<p class="sub" style="color:#b23a23">Impossible de charger les créneaux.</p>'; return; }
   rdvRender();
 }
+function rdvUtcStamp(jour,heure,addMin){ const p=(jour||'').split('-').map(Number); const hp=(heure||'00:00').split(':').map(Number); const dt=new Date(Date.UTC(p[0],p[1]-1,p[2],hp[0]-4,hp[1]+(addMin||0))); const z=n=>String(n).padStart(2,'0'); return dt.getUTCFullYear()+z(dt.getUTCMonth()+1)+z(dt.getUTCDate())+'T'+z(dt.getUTCHours())+z(dt.getUTCMinutes())+'00Z'; }
+function rdvGcalUrl(m){ const s=rdvUtcStamp(m.jour,m.heure,0), e=rdvUtcStamp(m.jour,m.heure,m.duree||30); return 'https://calendar.google.com/calendar/render?action=TEMPLATE&text='+encodeURIComponent('RDV — CASE Bois de Nèfles'+(m.motif?' ('+m.motif+')':''))+'&dates='+s+'/'+e+'&details='+encodeURIComponent('Rendez-vous au CASE du Bois de Nèfles.'+(m.motif?' Motif : '+m.motif:''))+'&location='+encodeURIComponent('CASE du Bois de Nèfles'); }
+function rdvIcsHref(m){ const s=rdvUtcStamp(m.jour,m.heure,0), e=rdvUtcStamp(m.jour,m.heure,m.duree||30); const ics=['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//CASE BDN//Bob//FR','BEGIN:VEVENT','UID:'+(m.id||'rdv')+'@case-bdn','DTSTART:'+s,'DTEND:'+e,'SUMMARY:RDV - CASE Bois de Nefles'+(m.motif?' ('+m.motif+')':''),'LOCATION:CASE du Bois de Nefles','DESCRIPTION:Rendez-vous au CASE'+(m.motif?' - '+m.motif:''),'END:VEVENT','END:VCALENDAR'].join('\r\n'); return 'data:text/calendar;charset=utf-8,'+encodeURIComponent(ics); }
+function rdvAgendaLinks(m){ return ' <a href="'+rdvGcalUrl(m)+'" target="_blank" rel="noopener" style="color:var(--vert-fonce);font-weight:700;text-decoration:none">➕ Agenda</a> <a href="'+rdvIcsHref(m)+'" download="rdv-case.ics" style="color:#6b7280;font-size:12px;text-decoration:none">.ics</a>'; }
 function rdvRender(){
   const body=document.getElementById('rdvBody'); if(!body) return; let html='';
   if(RDV.mine.length){
-    html+='<div style="margin-bottom:8px">'+RDV.mine.map(m=>'<div style="background:#eef7f2;border:1px solid #cfe6da;border-radius:10px;padding:7px 11px;margin-top:5px;font-size:13px">📅 <b>'+rdvFrDate(m.jour)+' à '+acmEsc(m.heure)+'</b>'+(m.motif?' · '+acmEsc(m.motif):'')+' <button class="reset" style="float:right" onclick="rdvCancel(\''+m.id+'\')">annuler</button></div>').join('')+'</div>';
+    html+='<div style="margin-bottom:8px">'+RDV.mine.map(m=>'<div style="background:#eef7f2;border:1px solid #cfe6da;border-radius:10px;padding:7px 11px;margin-top:5px;font-size:13px">📅 <b>'+rdvFrDate(m.jour)+' à '+acmEsc(m.heure)+'</b>'+(m.motif?' · '+acmEsc(m.motif):'')+rdvAgendaLinks(m)+' <button class="reset" style="float:right" onclick="rdvCancel(\''+m.id+'\')">annuler</button></div>').join('')+'</div>';
   }
   if(!RDV.regles.length){ html+='<p class="sub" style="margin:0">Le CASE n\'a pas encore ouvert de créneaux — le bureau vous recontactera.</p>'; body.innerHTML=html; return; }
   const slots=rdvComputeSlots(4);
   const byJour={}; slots.forEach(s=>{ (byJour[s.jour]=byJour[s.jour]||[]).push(s); });
-  const inner = slots.length
-    ? Object.keys(byJour).slice(0,8).map(j=>'<div style="margin-bottom:8px"><div style="font-weight:700;font-size:13.5px">'+rdvFrDate(j)+'</div><div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:4px">'+byJour[j].map(s=>'<button class="btn use" style="padding:6px 11px;font-size:13px" onclick="rdvBook(\''+s.jour+'\',\''+s.heure+'\','+s.duree+',\''+encodeURIComponent(s.label||'')+'\')">'+acmEsc(s.heure)+'</button>').join('')+'</div></div>').join('')
+  const slotsHtml = slots.length
+    ? Object.keys(byJour).slice(0,8).map(j=>'<div style="margin-bottom:8px"><div style="font-weight:700;font-size:13.5px">'+rdvFrDate(j)+'</div><div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:4px">'+byJour[j].map(s=>'<button type="button" style="padding:6px 11px;font-size:13px;background:#eef7f2;border:1px solid var(--vert);color:var(--vert-fonce);border-radius:8px;cursor:pointer;font-weight:700" onclick="rdvBook(\''+s.jour+'\',\''+s.heure+'\','+s.duree+')">'+acmEsc(s.heure)+'</button>').join('')+'</div></div>').join('')
     : '<p class="sub" style="margin:0">Aucun créneau libre pour le moment. Réessayez plus tard.</p>';
-  html+='<button class="btn use" type="button" onclick="rdvOpenPicker()">📅 '+(RDV.mine.length?'Prendre un autre créneau':'Réserver un créneau')+'</button>';
+  const motifOpts=['Accompagnement — périscolaire','Accompagnement — vacances / ACM','VEPI — dépôt de dossier'];
+  const motifSel='<div style="margin-bottom:12px"><label style="font-weight:700;font-size:13.5px;display:block;margin-bottom:4px">C\'est pour quoi ?</label>'
+    +'<select id="rdvMotifSel" onchange="rdvMotifToggle()" style="width:100%;padding:9px;border:1px solid var(--line);border-radius:8px;font-size:14px">'
+    +motifOpts.map(o=>'<option>'+o+'</option>').join('')+'<option value="__autre">Autre (à préciser)</option></select>'
+    +'<input id="rdvMotifAutre" placeholder="Précisez le motif…" style="display:none;width:100%;margin-top:6px;padding:9px;border:1px solid var(--line);border-radius:8px;font-size:14px"></div>';
+  html+='<button type="button" onclick="rdvOpenPicker()" style="background:#fff;border:2px solid var(--vert);color:var(--vert-fonce);padding:9px 16px;border-radius:10px;font-weight:800;cursor:pointer;font-size:14px">📅 '+(RDV.mine.length?'Prendre un autre créneau':'Réserver un créneau')+'</button>';
   html+='<div id="rdvPickerModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;padding:18px;align-items:center;justify-content:center" onclick="if(event.target===this)rdvClosePicker()">'
-    +'<div style="background:#fff;border-radius:16px;max-width:520px;width:100%;max-height:80vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.3)">'
-    +'<div style="padding:12px 16px;border-bottom:1px solid var(--line);font-weight:800;display:flex;justify-content:space-between;align-items:center">📅 Choisissez un créneau <button class="reset" type="button" onclick="rdvClosePicker()">✕</button></div>'
-    +'<div style="padding:14px 16px;overflow-y:auto;flex:1">'+inner+'</div></div></div>';
+    +'<div style="background:#fff;border-radius:16px;max-width:520px;width:100%;max-height:82vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.3)">'
+    +'<div style="padding:12px 16px;border-bottom:1px solid var(--line);font-weight:800;display:flex;justify-content:space-between;align-items:center">📅 Prendre rendez-vous <button class="reset" type="button" onclick="rdvClosePicker()">✕</button></div>'
+    +'<div style="padding:14px 16px;overflow-y:auto;flex:1">'+motifSel+slotsHtml+'</div></div></div>';
   body.innerHTML=html;
 }
+window.rdvMotifToggle=function(){ const s=document.getElementById('rdvMotifSel'), a=document.getElementById('rdvMotifAutre'); if(s&&a) a.style.display = s.value==='__autre' ? 'block':'none'; };
 window.rdvOpenPicker=function(){ const m=document.getElementById('rdvPickerModal'); if(m) m.style.display='flex'; };
 window.rdvClosePicker=function(){ const m=document.getElementById('rdvPickerModal'); if(m) m.style.display='none'; };
-window.rdvBook=async function(jour, heure, duree, labelEnc){
-  const label=decodeURIComponent(labelEnc||'');
-  const {error}=await _sbAt.from('rdv').insert({jour, heure, duree:duree||20, motif:label, user_id:ACM.uid});
+window.rdvBook=async function(jour, heure, duree){
+  const sel=document.getElementById('rdvMotifSel'); let motif= sel ? sel.value : '';
+  if(motif==='__autre'){ motif=((document.getElementById('rdvMotifAutre')||{}).value||'').trim() || 'Autre'; }
+  const {error}=await _sbAt.from('rdv').insert({jour, heure, duree:duree||30, motif, user_id:ACM.uid});
   if(error){ toast(error.code==='23505'?'Ce créneau vient d\'être pris, choisissez-en un autre.':'Erreur : '+(error.message||error)); await rdvBoot(); if(error.code==='23505') rdvOpenPicker(); return; }
   toast('📅 Rendez-vous réservé !'); rdvClosePicker(); await rdvBoot();
 };
