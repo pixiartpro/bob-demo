@@ -306,6 +306,10 @@
       <div class="actrow"><span class="aico">💃</span><div class="abody"><b>Danse &amp; créations</b><span>Danse, expression et activités menées avec les ados</span></div></div>
       <div class="actrow"><span class="aico">📅</span><div class="abody"><b>Mercredi, samedi &amp; vacances</b><span>Un accueil régulier pour les 11–17 ans toute l'année</span></div></div>
     </div>
+    <div style="text-align:center;margin-top:20px">
+      <a class="btn primary" style="text-decoration:none" href="espace-adherent.html">🌴 Réserver une place (ACM, sorties) → Mon espace famille</a>
+      <p class="sub" style="margin:10px 0 0">Connectez-vous ou créez votre compte famille en 2 minutes. <b>Un parent adhérent</b> (10 €/an, du 1ᵉʳ août au 31 juillet) = <b>tous vos enfants</b> ont droit.</p>
+    </div>
   </div>
 </section>
 
@@ -350,20 +354,13 @@
       <span class="zg-bulle">Adhère en ligne en 2 minutes, je te montre ! ✏️</span>
     </div>
     <div class="panel">
-      <div class="field"><label>Nom et prénom</label><input id="adh_nom" placeholder="Votre nom"></div>
-      <div class="field"><label>Email</label><input id="adh_email" type="email" placeholder="vous@exemple.re"></div>
-      <div class="field"><label>Activité souhaitée</label>
-        <select id="adh_activite">
-          <option>Adhésion simple (10 €)</option>
-          <option>Danse</option>
-          <option>Musique</option>
-          <option>Périscolaire</option>
-          <option>Accueil de loisirs (ACM)</option>
-          <option>VEPI</option>
-          <option>Secteur ados (11–17 ans)</option>
-        </select></div>
-      <button class="btn primary" style="width:100%" onclick="envoyerInscription()">Envoyer ma demande d'inscription</button>
-      <p class="note">Votre demande arrive directement au CASE. Le règlement se fait sur place (paiement en ligne bientôt).</p>
+      <p style="margin:0 0 16px;color:var(--muted);font-size:15px">L'adhésion (<b>10 €</b>, valable du <b>1ᵉʳ août au 31 juillet</b>) ouvre l'accès aux activités — et <b>un seul parent adhérent suffit pour tous les enfants</b>. Créez votre <b>compte famille</b> : vous pourrez déposer votre dossier périscolaire et réserver vos activités en ligne, puis régulariser l'adhésion avec le bureau.</p>
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <a class="btn primary" style="text-decoration:none;text-align:center" href="espace-adherent.html">🎒 Inscrire mon enfant au périscolaire</a>
+        <a class="btn primary" style="text-decoration:none;text-align:center" href="espace-adherent.html">🌴 Réserver une activité / l'ACM</a>
+        <a class="btn ghost" style="text-decoration:none;text-align:center" href="connexion.html">👨‍👩‍👧 Créer mon compte famille / Me connecter</a>
+      </div>
+      <p class="note">Tout se passe dans votre espace famille. Le règlement de l'adhésion se fait avec le bureau (paiement en ligne bientôt).</p>
     </div>
   </div>
 </section>
@@ -641,7 +638,10 @@ function actRowHtml(a){
   const badge = bientot ? '<span class="ptag soon">arrive bientôt</span>'
               : complet ? '<span class="ptag work">complet</span>'
               : '<span class="ptag on">'+places+' place'+(places>1?'s':'')+' restante'+(places>1?'s':'')+'</span>';
-  const btn = (bientot||complet) ? '' : '<button class="btn primary" onclick="actToggle(\''+a.id+'\')">S\'inscrire</button>';
+  const famille=(a.categorie||'')==='Péri & extrascolaire';   // périscolaire / ACM / VEPI → passent par le compte famille (adhésion + suivi)
+  const btn = (bientot||complet) ? ''
+    : famille ? '<a class="btn primary" style="text-decoration:none" href="espace-adherent.html">Réserver →</a>'
+    : '<button class="btn primary" onclick="actToggle(\''+a.id+'\')">S\'inscrire</button>';
   return '<div class="actrow">'
       +'<span class="aico">'+(a.emoji||'•')+'</span>'
       +'<div class="abody"><b>'+escP(a.nom)+'</b><span>'+escP(a.description||'')+'</span></div>'

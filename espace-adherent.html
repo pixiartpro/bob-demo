@@ -59,7 +59,7 @@
 </style>
 </head>
 <body>
-<div class="demo-flag">🍍 Espace adhérent — déposez votre <b>dossier d'inscription périscolaire</b> ci-dessous (réservé aux adhérents). Plus bas, la partie « jetons » est une démonstration.</div>
+<div class="demo-flag">🍍 Espace famille — déposez votre <b>dossier périscolaire</b> et réservez vos <b>activités (ACM, sorties)</b> ci-dessous. Plus bas, la partie « jetons » est une démonstration.</div>
 <header>
   <div class="bar">
     <a href="vitrine.html" class="logo"><span class="pine">🍍</span> <span><b>CASE</b> <span>Bois de Nèfles</span></span></a>
@@ -77,6 +77,17 @@
       <h2 class="title" style="font-size:20px">🎒 Inscription au périscolaire <small>— matin &amp; soir · rentrée d'août</small></h2>
       <p class="sub" style="margin:2px 0 10px">Année scolaire <b>2026–2027</b> · adhésion annuelle <b>10 €</b> (valable du <b>1ᵉʳ août au 31 juillet</b>).</p>
       <div id="periBody"><p class="sub">Chargement…</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- MES ACTIVITÉS & SORTIES (ACM) — réservation reliée au compte famille -->
+<section class="block" id="acmSection" style="padding:8px 0 6px">
+  <div class="wrap">
+    <div class="card" style="border-left:5px solid var(--vert);background:#f3faf6">
+      <h2 class="title" style="font-size:20px">🌴 Mes activités &amp; sorties <small>— ACM, vacances, accueil ados</small></h2>
+      <p class="sub" style="margin:2px 0 10px">Réservez une place pour vos enfants. <b>Un parent adhérent</b> (10 € / an, du 1ᵉʳ août au 31 juillet) suffit pour <b>tous vos enfants</b>.</p>
+      <div id="acmBody"><p class="sub">Chargement…</p></div>
     </div>
   </div>
 </section>
@@ -320,8 +331,12 @@ const AQ=[
    a:"Dans <b>💡 Ateliers en préparation</b>, clique sur <b>« 🙋 Ça m'intéresse »</b>, indique ton nom (et un contact si tu veux), et valide. Le CASE te tiendra au courant dès que l'atelier ouvre."},
   {cat:'📜 Mon espace',q:"Où je vois mon solde et mon historique ?",kw:"solde historique voir mes jetons combien reste mouvement compte suivre total",
    a:"Ton <b>solde de jetons</b> est affiché tout en haut de la page. Plus bas, <b>📜 Mon historique</b> liste tous tes mouvements (jetons gagnés et utilisés)."},
-  {cat:'📜 Mon espace',q:"Comment j'adhère au CASE ?",kw:"adherer adhesion inscription devenir membre cotisation rejoindre carte adherent",
-   a:"L'adhésion se fait auprès du <b>bureau du CASE</b> (à l'accueil). En adhérant, tu reçois <b>+2 jetons offerts</b> 🎁 pour démarrer. Demande au bureau pour les modalités (cotisation, papiers…)."}
+  {cat:'📜 Mon espace',q:"Comment j'adhère au CASE ?",kw:"adherer adhesion inscription devenir membre cotisation rejoindre carte adherent 10 euros",
+   a:"L'adhésion (<b>10 €</b>, valable du <b>1ᵉʳ août au 31 juillet</b>) se règle auprès du <b>bureau du CASE</b>. <b>Un seul parent adhérent suffit pour tous les enfants.</b> Vous pouvez déjà créer votre compte, déposer votre dossier périscolaire et réserver vos activités en ligne — le bureau régularise l'adhésion. 🎁 +2 jetons offerts à l'adhésion !"},
+  {cat:'🌴 Activités & ACM',q:"Comment je réserve une place à l'ACM ?",kw:"acm reserver place activite sortie vacances ado inscrire reservation ete enfant",
+   a:"Dans <b>🌴 Mes activités & sorties</b> (en haut de votre espace), choisissez l'activité, cliquez <b>« 🌴 Réserver une place »</b>, indiquez le prénom de votre enfant et validez. La réservation est reliée à votre famille ; le bureau confirme (et régularise l'adhésion si besoin)."},
+  {cat:'🌴 Activités & ACM',q:"Faut-il être adhérent pour l'ACM ?",kw:"adherent adhesion obligatoire acm activite droit famille parent assurance payer venir",
+   a:"Oui : pour participer, la famille doit être <b>adhérente</b> (10 €/an, du 1ᵉʳ août au 31 juillet) — c'est aussi l'assurance. <b>Un seul parent adhérent suffit pour tous les enfants.</b> Vous pouvez réserver en ligne tout de suite ; le règlement des 10 € se fait avec le bureau."}
 ];
 function aqNorm(s){return (s||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^a-z0-9 ]/g,' ').replace(/\s+/g,' ').trim();}
 const AQ_STOP=new Set("le la les un une des de du au aux et ou a a je tu il on en y ce que qui quoi est sont pour dans sur mes mon ma ta ton se sa ses comment est-ce faire fait puis peux peut nous vous me te".split(' '));
@@ -394,13 +409,15 @@ async function periBoot(){
   const body=document.getElementById('periBody'); if(!body) return;
   let session=null;
   try{ session=(await _sbAt.auth.getSession()).data.session; }catch(e){ session=null; }
-  if(!session){ periRenderLocked('connexion'); return; }
+  if(!session){ ACM.uid=null; ACM.profile=null; ACM.asso=null; acmBoot(); periRenderLocked('connexion'); return; }
   PERI.uid=session.user.id;
   const {data:prof}=await _sbAt.from('profiles').select('full_name,email,statut,role,asso_id').eq('id',PERI.uid).maybeSingle();
   PERI.profile=prof||null;
+  // Contexte partagé pour la réservation d'activités/ACM (même compte famille)
+  ACM.uid=PERI.uid; ACM.profile=prof||null; ACM.asso=prof?prof.asso_id:null; acmBoot();
   if(!prof){ periRenderLocked('noprofile'); return; }
-  if(prof.statut!=='actif'){ periRenderLocked('pending'); return; }
   PERI.asso=prof.asso_id;
+  PERI.statut=prof.statut;
   const {data:row}=await _sbAt.from('inscriptions_periscolaire').select('*').eq('user_id',PERI.uid).eq('annee',PERI.ANNEE).maybeSingle();
   PERI.row = row || {foyer:prof.full_name||'', email:prof.email||'', tel:'', enfants:[], pieces:{}, statut:'brouillon', annee:PERI.ANNEE};
   if(!Array.isArray(PERI.row.enfants)) PERI.row.enfants=[];
@@ -463,6 +480,7 @@ function periRenderForm(){
   const stLabel={brouillon:'✏️ Brouillon (non déposé)',depose:'📨 Déposé — en attente de validation',valide:'✅ Validé par le bureau',incomplet:'⚠️ Incomplet — voir la note du bureau'}[r.statut]||'';
   body.innerHTML=
     '<p class="sub" style="margin:0 0 12px">Bonjour '+periEsc((PERI.profile&&PERI.profile.full_name)||'')+' 👋 Renseignez vos enfants et déposez vos pièces. Vous pouvez enregistrer en brouillon et revenir plus tard.</p>'
+    +((PERI.statut&&PERI.statut!=='actif')?'<div style="background:#fff5da;border:1px solid #f1e2ad;color:#8a6400;border-radius:12px;padding:10px 14px;margin:0 0 12px;font-weight:600">🪪 Votre <b>adhésion (10 €)</b> reste à régulariser auprès du bureau (un seul parent adhérent suffit pour tous vos enfants). Vous pouvez <b>déjà préparer et déposer votre dossier</b> dès maintenant.</div>':'')
     +(stLabel?'<div style="display:inline-block;background:#fff;border:1px solid var(--line);border-radius:999px;padding:6px 14px;font-weight:800;margin-bottom:12px">'+stLabel+'</div>':'')
     +((r.statut==='incomplet'&&r.note_bureau)?'<div style="background:#ffe9e3;border:1px solid #f3c4ba;color:#b23a23;border-radius:12px;padding:10px 14px;margin-bottom:12px">📝 Bureau : '+periEsc(r.note_bureau)+'</div>':'')
     +'<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px">'
@@ -518,11 +536,12 @@ window.periViewMyPiece=async function(key){
 window.periSave=async function(depose){
   const saved=document.getElementById('periSaved');
   const payload={annee:PERI.ANNEE, foyer:periField('peri_foyer'), email:periField('peri_email'), tel:periField('peri_tel'), enfants:periReadChildren(), pieces:PERI.row.pieces||{}};
+  let missLabels=[];
   if(depose){
     const okEnf=payload.enfants.some(e=>e.prenom&&(e.matin||e.soir));
     if(!okEnf){ if(saved){saved.style.color='#b23a23'; saved.textContent='Ajoutez au moins un enfant avec le matin et/ou le soir.';} return; }
-    const miss=PERI.PIECES.filter(p=>!(payload.pieces[p.k]&&payload.pieces[p.k].path)).map(p=>p.lab);
-    if(miss.length){ if(saved){saved.style.color='#b23a23'; saved.textContent='Pièces manquantes : '+miss.join(', ')+'. Vous pouvez enregistrer en brouillon en attendant.';} return; }
+    // Pièces assouplies au lancement : on peut déposer même incomplet, le bureau réclamera le reste.
+    missLabels=PERI.PIECES.filter(p=>!(payload.pieces[p.k]&&payload.pieces[p.k].path)).map(p=>p.lab);
     payload.statut='depose';
   } else {
     payload.statut='brouillon';
@@ -533,10 +552,66 @@ window.periSave=async function(depose){
     else { res=await _sbAt.from('inscriptions_periscolaire').insert(payload).select().single(); }
     if(res.error) throw res.error;
     PERI.row=res.data; if(!Array.isArray(PERI.row.enfants)) PERI.row.enfants=[periEmptyChild()]; if(!PERI.row.pieces) PERI.row.pieces={};
-    if(saved){ saved.style.color='var(--vert-fonce)'; saved.textContent=depose?'📨 Dossier déposé ! Le bureau va le vérifier. Merci 🍍':'💾 Enregistré. Vous pourrez revenir plus tard.'; }
+    if(saved){
+      saved.style.color='var(--vert-fonce)';
+      if(depose){ saved.textContent='📨 Dossier déposé ! Le bureau va le vérifier. Merci 🍍'+(missLabels.length?(' À fournir bientôt : '+missLabels.join(', ')+' — vous pourrez les ajouter ici quand vous voulez.'):''); }
+      else { saved.textContent='💾 Enregistré. Vous pourrez revenir plus tard.'; }
+    }
     periRenderForm();
   }catch(e){ if(saved){ saved.style.color='#b23a23'; saved.textContent='Échec : '+(e.message||e); } }
 };
+/* ===== Mes activités & sorties (ACM) — réservation reliée au compte famille ===== */
+const ACM = { uid:null, profile:null, asso:null };
+function acmEsc(s){return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+async function acmBoot(){
+  const body=document.getElementById('acmBody'); if(!body) return;
+  if(!ACM.uid){
+    body.innerHTML='<p class="sub" style="margin:0">Connectez-vous à votre compte famille pour réserver une place. <a href="connexion.html" style="color:var(--vert-fonce);font-weight:800">Se connecter / créer mon compte →</a></p>';
+    return;
+  }
+  body.innerHTML='<p class="sub">Chargement…</p>';
+  let acts=[], mine=[];
+  try{
+    const [ra,rm]=await Promise.all([
+      _sbAt.from('activites').select('*').eq('publie',true).eq('type','activite').eq('statut','ouvert').order('ordre',{ascending:true}),
+      _sbAt.from('inscriptions_activite').select('*').eq('user_id',ACM.uid)
+    ]);
+    acts=(ra.data||[]).filter(a=>!/p[ée]riscol/i.test(a.nom||''));
+    mine=rm.data||[];
+  }catch(e){ body.innerHTML='<p class="sub" style="color:#b23a23">Impossible de charger les activités pour le moment.</p>'; return; }
+  const byAct={}; mine.forEach(m=>{ (byAct[m.activite_id]=byAct[m.activite_id]||[]).push(m); });
+  if(!acts.length){ body.innerHTML='<p class="sub" style="margin:0">Aucune activité ouverte à la réservation pour le moment. 🍍</p>'; return; }
+  body.innerHTML='<div class="grid">'+acts.map(a=>{
+    const places=Math.max(0,(a.capacite||0)-(a.nb_inscrits||0));
+    const complet=places<=0;
+    const myK=byAct[a.id]||[];
+    return '<div class="card" style="box-shadow:none;border:1px solid var(--line);gap:6px">'
+      +'<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px">'
+      +'<div><div style="font-size:24px">'+(a.emoji||'🎫')+'</div><b>'+acmEsc(a.nom)+'</b>'
+      +(a.quand?'<div class="when">'+acmEsc(a.quand)+'</div>':'')+'</div>'
+      +'<span style="flex:0 0 auto;font-weight:800;font-size:13px;color:'+(complet?'#b23a23':'var(--vert-fonce)')+'">'+(complet?'Complet':places+' place'+(places>1?'s':''))+'</span>'
+      +'</div>'
+      +(myK.length?('<div style="background:#eef7f2;border:1px solid #cfe6da;border-radius:10px;padding:6px 10px;font-size:13px;font-weight:700;color:var(--vert-fonce)">✅ Réservé : '+myK.map(m=>acmEsc(m.nom)).join(', ')+'</div>'):'')
+      +(complet?'':'<div id="acmf_'+a.id+'" style="display:none">'
+        +'<input id="acmn_'+a.id+'" placeholder="Prénom de l\'enfant *" style="width:100%;margin:3px 0;padding:9px 11px;border:1px solid var(--line);border-radius:10px;font:inherit">'
+        +'<button class="btn win" style="width:100%;margin-top:4px" onclick="acmReserve(\''+a.id+'\')">Valider la réservation</button></div>')
+      +'<p id="acmi_'+a.id+'" style="margin:2px 0 0;font-size:13px;font-weight:700;text-align:center"></p>'
+      +(complet?'':'<button class="btn use" style="align-self:flex-start" onclick="acmOpen(\''+a.id+'\')">🌴 Réserver une place</button>')
+      +'</div>';
+  }).join('')+'</div>';
+}
+window.acmOpen=function(id){ const f=document.getElementById('acmf_'+id); if(!f) return; f.style.display='block'; const n=document.getElementById('acmn_'+id); if(n) n.focus(); };
+window.acmReserve=async function(id){
+  const n=document.getElementById('acmn_'+id); const info=document.getElementById('acmi_'+id);
+  const nom=n?n.value.trim():'';
+  if(!nom){ if(info){info.style.color='#c0392b'; info.textContent='Indiquez le prénom de l\'enfant.';} return; }
+  const resp=(ACM.profile&&ACM.profile.full_name)||''; const contact=(ACM.profile&&ACM.profile.email)||'';
+  const {error}=await _sbAt.from('inscriptions_activite').insert({activite_id:id, nom, responsable:resp, contact, user_id:ACM.uid});
+  if(error){ if(info){info.style.color='#c0392b'; info.textContent=(error.code==='23505')?'Déjà réservé pour cet enfant 😉':'Oups : plus de place, ou une erreur. Réessayez.';} return; }
+  if(info){ info.style.color='var(--vert-fonce)'; info.textContent='✅ Place réservée ! Le bureau confirmera (et l\'adhésion si besoin).'; }
+  setTimeout(acmBoot, 1400);
+};
+
 _sbAt.auth.onAuthStateChange(()=>{ periBoot(); });
 periBoot();
 </script>
