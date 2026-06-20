@@ -153,8 +153,9 @@ async function signUp(){
   const pw=$('#r_pw').value;
   if(!prenom||!nom||!email||!pw){toast('Indique ton prénom, ton nom, ton email et un mot de passe.');return}
   if(pw.length<6){toast('Le mot de passe doit faire au moins 6 caractères.');return}
+  const cgu=$('#r_cgu'); if(!cgu||!cgu.checked){toast('Merci d\'accepter le règlement (et de garder vos identifiants confidentiels) pour créer le compte.');return}
   const btn=$('#r_btn'); btn.disabled=true; btn.textContent='Envoi…';
-  const {data,error}=await sb.auth.signUp({email,password:pw,options:{emailRedirectTo:location.origin+location.pathname, data:{full_name:fullName, asso_slug:DOOR}}});
+  const {data,error}=await sb.auth.signUp({email,password:pw,options:{emailRedirectTo:location.origin+location.pathname, data:{full_name:fullName, asso_slug:DOOR, cgu_accepted:true}}});
   btn.disabled=false; btn.textContent='Envoyer ma demande';
   if(error){toast(error.message);return}
   if(data.session){ await refresh(); toast('Demande créée ✓ — en attente de validation.'); }
@@ -260,6 +261,7 @@ function renderLoggedOut(){
       </div>
       <div class="field"><label>Email</label><input id="r_email" type="email" placeholder="ton@email.fr"></div>
       <div class="field"><label>Mot de passe (min. 6 caractères)</label><input id="r_pw" type="password" placeholder="••••••••"></div>
+      <label style="display:flex;gap:8px;align-items:flex-start;font-size:13px;color:var(--muted);margin:4px 0 10px"><input type="checkbox" id="r_cgu" style="margin-top:3px;flex:0 0 auto"> <span>J'accepte le <b>règlement</b> et je m'engage à <b>garder mes identifiants confidentiels</b> : je suis responsable de mon compte et des informations que j'y saisis (enfants, personnes autorisées…).</span></label>
       <button id="r_btn" class="btn s" style="width:100%" onclick="signUp()">Envoyer ma demande</button>
     </div>
   </div>`;
