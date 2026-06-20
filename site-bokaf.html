@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BOKAF — Média · Évènement · Production</title>
+<meta name="description" content="BOKAF, association culturelle et audiovisuelle à La Réunion : web TV de quartier, captations, production et ateliers image.">
+<meta name="theme-color" content="#0d0d11">
+<link rel="icon" type="image/png" sizes="32x32" href="bokaf-logo.png">
+<link rel="apple-touch-icon" href="bokaf-logo.png">
+<style>
+  :root{
+    --bg:#0d0d11; --bg2:#15141a; --bg3:#1c1a24; --ink:#f4f5f8; --muted:#9aa0ad;
+    --line:#272430; --magenta:#d81e5b; --magenta-dk:#b3134a; --blue:#2f6fdb;
+    --spectrum:linear-gradient(90deg,#e23b6d,#f0892f,#f2c84b,#39c46a,#2f9fe0,#7b4ff0,#e23b6d);
+    --shadow:0 10px 40px rgba(0,0,0,.45);
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+       background:var(--bg);color:var(--ink);line-height:1.6;-webkit-font-smoothing:antialiased}
+  a{color:inherit;text-decoration:none}
+  .wrap{max-width:1080px;margin:0 auto;padding:0 22px}
+  .spectrum-text{background:var(--spectrum);-webkit-background-clip:text;background-clip:text;color:transparent}
+  /* ---- Nav ---- */
+  header.nav{position:sticky;top:0;z-index:50;background:rgba(13,13,17,.82);backdrop-filter:saturate(140%) blur(10px);border-bottom:1px solid var(--line)}
+  header.nav .in{display:flex;align-items:center;gap:14px;max-width:1080px;margin:0 auto;padding:11px 22px}
+  .brand{display:flex;align-items:center;gap:11px;font-weight:800;letter-spacing:.5px}
+  .brand img{width:38px;height:38px;border-radius:10px;object-fit:cover}
+  header.nav nav{margin-left:auto;display:flex;gap:6px;align-items:center}
+  header.nav nav a{padding:8px 13px;border-radius:999px;font-size:14px;font-weight:600;color:var(--muted)}
+  header.nav nav a:hover{color:var(--ink);background:#ffffff10}
+  .btn{display:inline-block;border:none;cursor:pointer;font:inherit;font-weight:800;border-radius:999px;
+       padding:11px 20px;font-size:14.5px;transition:.16s;text-align:center}
+  .btn.p{background:var(--magenta);color:#fff}
+  .btn.p:hover{background:var(--magenta-dk)}
+  .btn.s{background:var(--blue);color:#fff}
+  .btn.s:hover{filter:brightness(1.08)}
+  .btn.ghost{background:#ffffff12;color:var(--ink);border:1px solid var(--line)}
+  .btn.ghost:hover{background:#ffffff1e}
+  .bureau-link{margin-left:4px}
+  @media(max-width:720px){ header.nav nav a.hideS{display:none} }
+  /* ---- Hero ---- */
+  .hero{position:relative;overflow:hidden;border-bottom:1px solid var(--line)}
+  .hero .bgimg{position:absolute;inset:0;background:#000 center/cover no-repeat;opacity:.20;filter:saturate(120%)}
+  .hero .veil{position:absolute;inset:0;background:radial-gradient(1100px 460px at 50% -10%,#ffffff14,transparent 60%),linear-gradient(180deg,#0d0d1166,#0d0d11 92%)}
+  .hero .in{position:relative;text-align:center;padding:74px 22px 64px}
+  .hero img.logo{width:118px;height:118px;border-radius:24px;object-fit:cover;box-shadow:var(--shadow);margin-bottom:22px}
+  .hero h1{font-size:clamp(30px,6vw,52px);margin:0 0 6px;font-weight:900;letter-spacing:-.5px}
+  .hero .tag{font-size:13.5px;font-weight:800;letter-spacing:3px;margin:0 0 16px}
+  .hero p.lead{max-width:620px;margin:0 auto 26px;color:#d7dae2;font-size:17px}
+  .hero .cta{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+  /* ---- Sections ---- */
+  section{padding:60px 0}
+  .eyebrow{font-size:12.5px;font-weight:800;letter-spacing:2.5px;text-transform:uppercase;margin:0 0 8px}
+  h2.sec{font-size:clamp(23px,4vw,32px);margin:0 0 8px;font-weight:850;letter-spacing:-.3px}
+  .sec-sub{color:var(--muted);margin:0 0 30px;max-width:620px}
+  .grid{display:grid;gap:16px}
+  .g4{grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}
+  .g3{grid-template-columns:repeat(auto-fit,minmax(260px,1fr))}
+  .card{background:var(--bg2);border:1px solid var(--line);border-radius:16px;padding:22px;transition:.16s}
+  .card:hover{border-color:#3a3550;transform:translateY(-2px)}
+  .card .ic{font-size:26px}
+  .card h3{margin:12px 0 5px;font-size:17px}
+  .card p{margin:0;color:var(--muted);font-size:14.5px}
+  /* projets pills */
+  .projets{display:flex;flex-wrap:wrap;gap:11px}
+  .proj{background:var(--bg2);border:1px solid var(--line);border-radius:13px;padding:13px 16px;min-width:190px;flex:1}
+  .proj b{display:block;font-size:15px}
+  .proj span{color:var(--muted);font-size:13px}
+  /* showreel */
+  .reel{display:grid;gap:16px;grid-template-columns:repeat(auto-fit,minmax(260px,1fr))}
+  .tile{position:relative;aspect-ratio:16/9;border-radius:16px;border:1px solid var(--line);overflow:hidden;
+        background:linear-gradient(135deg,#1a1822,#241a2b);display:grid;place-items:center}
+  .tile::before{content:"";position:absolute;inset:0;background:var(--spectrum);opacity:.10}
+  .tile .play{width:58px;height:58px;border-radius:50%;background:#ffffff14;border:1px solid #ffffff33;display:grid;place-items:center;font-size:22px;color:#fff}
+  .tile .lbl{position:absolute;bottom:12px;left:14px;font-size:12.5px;font-weight:700;color:#cfd3dc}
+  .reel-note{margin-top:16px;color:var(--muted);font-size:13.5px}
+  /* contact */
+  .contact{background:var(--bg2);border:1px solid var(--line);border-radius:20px;padding:30px;display:flex;
+           gap:26px;flex-wrap:wrap;align-items:center;justify-content:space-between}
+  .contact .kv{display:flex;flex-direction:column;gap:3px}
+  .contact .kv .k{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:1px}
+  .contact .kv .v{font-size:16px;font-weight:700}
+  .contact .acts{display:flex;gap:12px;flex-wrap:wrap}
+  /* footer */
+  footer.ft{border-top:1px solid var(--line);padding:30px 22px;color:var(--muted);font-size:13px;text-align:center}
+  footer.ft .ft-tag{font-weight:800;letter-spacing:2px;color:#cfd3dc}
+</style>
+</head>
+<body>
+
+<header class="nav"><div class="in">
+  <a class="brand" href="#top"><img src="bokaf-logo.png" alt="BOKAF"><span>BOKAF</span></a>
+  <nav>
+    <a class="hideS" href="#faire">Ce qu'on fait</a>
+    <a class="hideS" href="#projets">Projets</a>
+    <a class="hideS" href="#reel">Showreel</a>
+    <a class="hideS" href="#contact">Contact</a>
+    <a class="btn ghost bureau-link" href="bokaf.html">Espace bureau →</a>
+  </nav>
+</div></header>
+
+<a id="top"></a>
+<div class="hero">
+  <div class="bgimg" style="background-image:url('bokaf-banner.png')"></div>
+  <div class="veil"></div>
+  <div class="in">
+    <img class="logo" src="bokaf-logo.png" alt="Logo BOKAF">
+    <h1>BOKAF</h1>
+    <p class="tag spectrum-text">MÉDIA · ÉVÈNEMENT · PRODUCTION</p>
+    <p class="lead">Association culturelle et audiovisuelle à La Réunion. On fabrique de l'image avec et pour le quartier : web TV, captations, production et transmission.</p>
+    <div class="cta">
+      <a class="btn p" href="#contact">Travailler avec nous</a>
+      <a class="btn ghost" href="#projets">Voir nos projets</a>
+    </div>
+  </div>
+</div>
+
+<section id="faire"><div class="wrap">
+  <p class="eyebrow spectrum-text">Ce qu'on fait</p>
+  <h2 class="sec">De l'idée à l'image livrée</h2>
+  <p class="sec-sub">Une association de production audiovisuelle ancrée dans son territoire, de l'ESS.</p>
+  <div class="grid g4">
+    <div class="card"><div class="ic">📺</div><h3>Web TV de quartier</h3><p>« Ôté Kartié », notre web TV en coproduction avec le CASE du Bois de Nèfles : la parole du quartier, en images.</p></div>
+    <div class="card"><div class="ic">🎥</div><h3>Captations d'événements</h3><p>On filme la vie locale : sport, culture, vie associative — par exemple la boxe avec le GFTC.</p></div>
+    <div class="card"><div class="ic">🎬</div><h3>Production & événementiel</h3><p>Reportages, formats courts, captations multi-caméras : de l'écriture au montage final.</p></div>
+    <div class="card"><div class="ic">📸</div><h3>Ateliers audiovisuel & photo</h3><p>Transmettre l'image : ateliers vidéo et photo pour la jeunesse et les acteurs de l'ESS.</p></div>
+  </div>
+</div></section>
+
+<section id="reel" style="background:var(--bg2)"><div class="wrap">
+  <p class="eyebrow spectrum-text">Showreel</p>
+  <h2 class="sec">Nos productions</h2>
+  <p class="sec-sub">Nos films et captations arrivent bientôt ici. En attendant, écrivez-nous pour voir nos réalisations.</p>
+  <div class="reel">
+    <div class="tile"><div class="play">▶</div><span class="lbl">Bientôt en ligne</span></div>
+    <div class="tile"><div class="play">▶</div><span class="lbl">Bientôt en ligne</span></div>
+    <div class="tile"><div class="play">▶</div><span class="lbl">Bientôt en ligne</span></div>
+  </div>
+  <p class="reel-note">🎬 Cet espace accueillera bientôt nos vidéos (web TV, captations, reportages).</p>
+</div></section>
+
+<section id="projets"><div class="wrap">
+  <p class="eyebrow spectrum-text">Nos projets</p>
+  <h2 class="sec">Ce sur quoi on travaille</h2>
+  <p class="sec-sub">Des projets de média, de transmission et d'événement, portés par l'association.</p>
+  <div class="projets">
+    <div class="proj"><b>Ôté Kartié</b><span>Web TV de quartier · coproduction avec le CASE</span></div>
+    <div class="proj"><b>À travers le miroir</b><span>Projet audiovisuel</span></div>
+    <div class="proj"><b>Ôté Travay</b><span>Audiovisuel & droit à l'image</span></div>
+    <div class="proj"><b>Jeunes Vidéo ESS 2026</b><span>Transmission & jeunesse</span></div>
+    <div class="proj"><b>Ateliers audiovisuel / photo</b><span>Initiation à l'image</span></div>
+    <div class="proj"><b>Captations</b><span>Événements & sport (ex. boxe GFTC)</span></div>
+  </div>
+</div></section>
+
+<section id="contact"><div class="wrap">
+  <p class="eyebrow spectrum-text">Rejoindre / nous écrire</p>
+  <h2 class="sec">On discute de votre projet ?</h2>
+  <p class="sec-sub">Adhésion à l'association : 30 €. Pour une captation, un partenariat ou rejoindre l'aventure, écrivez-nous.</p>
+  <div class="contact">
+    <div class="kv"><span class="k">Email</span><span class="v">asso.bokaf@gmail.com</span></div>
+    <div class="kv"><span class="k">Siège</span><span class="v">Sainte-Clotilde · La Réunion</span></div>
+    <div class="kv"><span class="k">Adhésion</span><span class="v">30 € / an</span></div>
+    <div class="acts">
+      <a class="btn p" href="mailto:asso.bokaf@gmail.com?subject=Contact%20BOKAF">Nous écrire</a>
+      <a class="btn s" href="bokaf.html">Espace bureau</a>
+    </div>
+  </div>
+</div></section>
+
+<footer class="ft">
+  <p class="ft-tag spectrum-text">MÉDIA · ÉVÈNEMENT · PRODUCTION</p>
+  <p>BOKAF · Association loi 1901 culturelle &amp; audiovisuelle (ESS) · Sainte-Clotilde, La Réunion<br>
+  SIREN 480 088 855 · RNA W9R1003647</p>
+</footer>
+
+</body>
+</html>

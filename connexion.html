@@ -117,9 +117,9 @@ const DOOR = assoSlug();
     if(t.dark){
       try{ const hd=document.querySelector('header'); if(hd) hd.style.background=t.headerBg; }catch(e){}
       try{ const lb=document.querySelector('.logo b'); if(lb) lb.style.color='#fff'; }catch(e){}
-      /* le site public BOKAF n'existe pas encore : on neutralise le lien (sinon il mène au site du CASE) */
-      try{ const la=document.querySelector('a.logo'); if(la){ la.removeAttribute('href'); la.style.cursor='default'; } }catch(e){}
-      try{ const nv=document.querySelector('header nav'); if(nv) nv.innerHTML='<span style="padding:8px 12px;font-size:13px;color:#aab0bd">🚧 Site public en préparation</span>'; }catch(e){}
+      /* le site public BOKAF existe : logo + lien « Site public » pointent dessus (et plus vers le site du CASE) */
+      try{ const la=document.querySelector('a.logo'); if(la) la.setAttribute('href','site-bokaf.html'); }catch(e){}
+      try{ const na=document.querySelector('header nav a'); if(na){ na.setAttribute('href','site-bokaf.html'); na.style.color='#cbd0da'; } }catch(e){}
       try{ const sf=document.querySelector('.secure-flag'); if(sf){ sf.style.background=t.flagBg; sf.style.color=t.flagInk; } }catch(e){}
       try{ const mm=document.getElementById('welcomeMascot'); if(mm) mm.style.display='none'; }catch(e){}
       /* bouton secondaire : remplace le jaune CASE par un bleu du spectre BOKAF (couvre aussi les boutons rendus après coup) */
