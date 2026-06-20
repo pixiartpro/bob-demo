@@ -161,6 +161,7 @@
       <button data-tab="members">👥 Adhérents</button>
       <button data-tab="periscolaire">🎒 Périscolaire</button>
       <button data-tab="activites">🎟️ Activités</button>
+      <button data-tab="acmvac">🌴 Vacances</button>
       <button data-tab="lieux">🏠 Lieux</button>
     </div>
     <div class="tabgroup" data-group="projets">
@@ -746,6 +747,16 @@
   </section>
 
   <!-- LIEUX (gestion) -->
+<section id="acmvac" class="page">
+    <h2>🌴 Vacances — préparation des programmes</h2>
+    <p class="hint">Le catalogue d'activités, réutilisable d'une session à l'autre : leur origine (🏠 maison / 🤝 partenaire / 💶 payant), le contact de l'intervenant, et où en est la démarche. Pioche dedans, place-les sur les jours d'une session. Objectif : au moins 5 activités par session, dont une majorité « maison ».</p>
+    <div id="acmSessionBar" class="row" style="gap:8px;flex-wrap:wrap;align-items:center;margin:12px 0"></div>
+    <div id="acmObjectif" style="margin:10px 0"></div>
+    <div class="row" style="margin:10px 0"><button class="btn" onclick="acmToggleForm()">+ Ajouter une activité au catalogue</button></div>
+    <div id="acmForm" style="display:none"></div>
+    <div id="acmCatalogue" style="margin-top:12px"></div>
+  </section>
+
   <section id="lieux" class="page">
     <div class="panel">
       <div class="toolbar"><div>
@@ -2096,6 +2107,8 @@ const FAQ=[
    a:"Ouvre l'onglet <strong>🤝 Accompagnement</strong>. Tu y trouves : la fiche et la frise des 9 séances du <strong>DLA</strong> (Charlotte Verdure, Démêlé ESS), le diagnostic du CASE (séance 3) et le plan d'actions, la <strong>Maison Des Associations</strong>, les autres ressources (France Active, Hexopée, ELISFA, Uniformation…), et en bas le bloc <strong>Préparation du RDV</strong> avec le statut de tes actions, les demandes de Charlotte et une zone de notes de séance. Cet onglet est réservé au bureau."},
   {cat:'🎟️ Activités',q:"Comment afficher les places restantes et gérer les inscriptions sur le site ?",kw:"activite activites place places restantes capacite complet inscription inscriptions site public publier vitrine arrive bientot acm vepi danse musique programme ados vacances ete sortie",
    a:"Onglet <b>🎟️ Activités</b>. Crée chaque activité (nom, emoji, catégorie, description), fixe sa <b>capacité</b>, choisis le statut (<b>Ouvert</b> / <b>Arrive bientôt</b> / Archivé) et clique <b>🌍 Publier sur le site</b>. Sur le site public, « Nos activités » affiche alors en direct <b>« X places restantes »</b>, <b>« complet »</b> quand la capacité est atteinte, ou <b>« arrive bientôt »</b>. Quand une famille s'inscrit depuis le site, son inscription <b>arrive automatiquement ici</b> (tu vois le nom, le responsable, le contact) et le nombre de places se met à jour tout seul. Tu peux retirer une inscription avec ✕. Astuce : si tu remplis le champ <b>Programme</b> d'une activité, il s'affiche sur la carte du site quand une famille clique dessus (parfait pour détailler l'ACM des vacances)."},
+  {cat:'🌴 Vacances',q:"Comment préparer le programme des vacances (ACM) et suivre les intervenants ?",kw:"vacances acm ados programme catalogue activites origine maison partenaire payant intervenant contact statut appeler attente confirme objectif session jour planning sortie prepa preparation outil interne",
+   a:"Onglet <b>🌴 Vacances</b> (réservé au bureau). Tu y tiens un <b>catalogue d'activités réutilisable</b> (il reste d'une session à l'autre) : pour chaque activité, son <b>origine</b> (🏠 maison / 🤝 partenaire / 💶 payant), l'<b>intervenant + téléphone</b>, et le <b>statut de la démarche</b> (💡 idée · 📞 à appeler · ⏳ en attente · ✅ confirmé · ❌ non) — pour voir d'un coup d'œil ce qui avance. Crée une <b>session</b> (ex : Été 2026) avec ses jours, puis pour chaque activité choisis un <b>jour</b> (ou « Réserve »). L'<b>objectif</b> s'affiche en haut : au moins 5 activités, dont une majorité « maison »."},
   {cat:'🎒 Périscolaire',q:"Comment gérer le périscolaire, les tarifs et ce que paient les familles ?",kw:"periscolaire garderie tarif grille quotient familial qf enfant inscription facture facturation matin apres-midi aprem fratrie remise extrascolaire acm vepi place",
    a:"Onglet <b>🎒 Périscolaire</b>. La <b>grille tarifaire</b> est par <b>jour</b> selon le quotient familial (pré-remplie avec les tarifs 2024-2025) : modifie une case puis clique <b>💾 Enregistrer la grille</b> pour la réévaluer (ex. pour la rentrée d'août). Ajoute ensuite chaque <b>enfant</b> (tranche, matin et/ou après-midi, rang dans la fratrie) : Bob calcule tout seul ce qu'il doit par mois — <i>tarif jour × nombre de jours du mois, + supplément matin, − remise fratrie</i> — et le total des recettes attendues. C'est la gestion interne ; l'affichage des <b>places restantes</b> côté site public viendra ensuite."},
   {cat:'🚀 Démarrer',q:"Où je vois les nouveautés de Bob ?",kw:"nouveaute nouveau quoi de neuf notice changement evolution pastille rouge mise a jour decouvrir fonctionnalite",
@@ -2232,6 +2245,8 @@ function renderFaqList(){
 
 /* ---- ✨ Quoi de neuf (nouveautés + notice chronologique) ---- */
 const NEWS=[
+  {id:'2026-06-20-vacances',date:'2026-06-20',tab:'🌴 Vacances',titre:"🌴 Nouvel onglet « Vacances » (programmation ACM)",
+   desc:"Un outil interne pour préparer les programmes de vacances sans repartir de zéro : un catalogue d'activités réutilisable, classé par origine (🏠 maison / 🤝 partenaire / 💶 payant), avec le contact de l'intervenant et le statut de la démarche (à appeler / en attente / confirmé). On crée une session (ex : Été 2026), on pose les activités sur les jours, et un objectif rappelle la cible : 5 activités minimum, dont une majorité « maison ». Réservé au bureau."},
   {id:'2026-06-20-acm-ados',date:'2026-06-20',tab:'🎟️ Activités',titre:"🏕️ ACM Ados — Été 2026 en ligne",
    desc:"La carte « Accueil de loisirs (ACM) » devient « ACM Ados — Été 2026 » (27 juil. → 7 août · 11-17 ans) : programme complet (média/podcast, cuisine, randonnée du Pic Adam, sport, self-défense…) et inscriptions ouvertes (16 places, modifiable). Nouveau : les cartes d'activité affichent maintenant leur programme quand on clique dessus sur le site. Pour relancer la com d'un prochain ACM, modifie la date, le message et la capacité ici puis republie."},
   {id:'2026-06-19-multi-asso',date:'2026-06-19',tab:'🔐 Connexion',titre:"🏛️ Bob peut accueillir une 2ᵉ association",
@@ -4372,7 +4387,113 @@ function renderProtocoles(){
 }
 function renderEquipe(){ const t=$('accueilIntro'); if(t && document.activeElement!==t) t.value=db.accueilIntro||''; renderSalaries(); renderContratsTravail(); renderContrats(); renderProtocoles(); }
 
-function renderAll(){ renderDashboard(); renderMembers(); renderRelances(); renderOps(); renderCaisse(); renderRapprochement(); renderProjects(); renderSubventions(); renderEcheancier(); renderBilan(); renderPrevisionnel(); renderEquipe(); renderRepertoire(); renderSecretariat(); renderAssurance(); renderReunions(); renderIncidents(); renderDettes(); renderOfficialLinks(); refreshComptes(); renderListParams(); renderJournal(); renderPeriscolaire(); renderFaqList(); renderNews(); renderAccompagnement(); renderRH(); renderProjet(); renderProjetAdos(); renderActions(); renderConges(); renderFermetures(); renderHoraires(); }
+/* ===== 🌴 Vacances — catalogue d'activités + mini-CRM intervenants + sessions (coffre db.acmVac) ===== */
+const ACM_ORIG=[{k:'maison',l:'🏠 Maison',bg:'#e3f5e9',fg:'#1d7a3f'},{k:'partenaire',l:'🤝 Partenaire',bg:'#e5eefc',fg:'#2b5fb0'},{k:'payant',l:'💶 Payant',bg:'#fdeccb',fg:'#8a5a00'}];
+const ACM_STAT=[{k:'idee',l:'💡 Idée',bg:'#eceff3',fg:'#555'},{k:'appeler',l:'📞 À appeler',bg:'#fdeccb',fg:'#8a5a00'},{k:'attente',l:'⏳ En attente',bg:'#e5eefc',fg:'#2b5fb0'},{k:'confirme',l:'✅ Confirmé',bg:'#e3f5e9',fg:'#1d7a3f'},{k:'non',l:'❌ Non',bg:'#fbe4e4',fg:'#b02a2a'}];
+const ACM_POLES=['🎙️ Média & expression','🍲 Cuisine','⛰️ Dehors & territoire','🏀 Sport · danse · musique','🥋 Voisinage','🎮 Détente','💶 Sortie','Autre'];
+function acmEsc(s){ return (s==null?'':String(s)).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function acmDb(){ if(!db.acmVac) db.acmVac={fiches:[],sessions:[],cur:null}; return db.acmVac; }
+function acmOrig(k){ return ACM_ORIG.find(o=>o.k===k)||ACM_ORIG[0]; }
+function acmStat(k){ return ACM_STAT.find(o=>o.k===k)||ACM_STAT[0]; }
+function acmBadge(o){ return '<span style="display:inline-block;padding:2px 9px;border-radius:999px;font-size:12px;font-weight:700;background:'+o.bg+';color:'+o.fg+'">'+o.l+'</span>'; }
+function acmCurSession(){ const a=acmDb(); return a.sessions.find(s=>s.id===a.cur)||null; }
+function renderAcmVac(){
+  if(!$('acmvac')) return;
+  const a=acmDb(), cs=acmCurSession();
+  const bar=$('acmSessionBar');
+  if(bar){
+    let h='<b>Session :</b> ';
+    if(a.sessions.length){ h+='<select onchange="acmSelectSession(this.value)" style="padding:6px 8px">'+a.sessions.map(s=>'<option value="'+s.id+'"'+(s.id===a.cur?' selected':'')+'>'+acmEsc(s.nom)+'</option>').join('')+'</select>'; }
+    else { h+='<span class="hint">aucune session — créez-en une pour poser les activités sur des jours</span>'; }
+    h+=' <button class="ghost btn" onclick="acmNewSession()">+ Nouvelle session</button>';
+    if(cs) h+=' <button class="ghost btn" style="color:#c0392b" onclick="acmDelSession()">🗑️ Session</button>';
+    bar.innerHTML=h;
+  }
+  const obj=$('acmObjectif');
+  if(obj){
+    if(!cs){ obj.innerHTML=''; }
+    else {
+      const plan=cs.plan||{};
+      const inS=a.fiches.filter(f=>plan[f.id]&&plan[f.id]!=='—');
+      const nb=inS.length, maison=inS.filter(f=>f.origine==='maison').length, dated=inS.filter(f=>plan[f.id]!=='reserve').length;
+      const okNb=nb>=5, okMaison=nb>0&&maison*2>nb;
+      obj.innerHTML='<div class="card" style="border-left:4px solid '+((okNb&&okMaison)?'#27ae60':'#f6b400')+'"><b>🎯 Objectif de la session « '+acmEsc(cs.nom)+' »</b><br>'
+        +'<span style="font-size:22px;font-weight:800">'+nb+'</span> activité'+(nb>1?'s':'')+' retenue'+(nb>1?'s':'')+' <span class="hint">(objectif : 5)</span> '+(okNb?'✅':'')
+        +' · dont <b>'+maison+' 🏠 maison</b> '+(okMaison?'✅ majorité maison':'<span class="hint">(vise la majorité maison)</span>')
+        +' · <span class="hint">'+dated+' posée'+(dated>1?'s':'')+' sur un jour</span></div>';
+    }
+  }
+  const cat=$('acmCatalogue');
+  if(cat){
+    if(!a.fiches.length){ cat.innerHTML='<p class="hint">Catalogue vide. Ajoute une première activité — elle restera disponible pour toutes les prochaines vacances.</p>'; }
+    else {
+      const plan=cs?(cs.plan||{}):null;
+      const sorted=a.fiches.slice().sort((x,y)=>((x.origine||'')+(x.nom||'')).localeCompare((y.origine||'')+(y.nom||'')));
+      cat.innerHTML=sorted.map(f=>acmFicheHtml(f,cs,plan)).join('');
+    }
+  }
+}
+function acmFicheHtml(f,cs,plan){
+  const o=acmOrig(f.origine), st=acmStat(f.statut);
+  let jourSel='';
+  if(cs){
+    const cur=(plan&&plan[f.id])||'—';
+    const opts=['—','reserve'].concat(cs.jours||[]);
+    jourSel='<select onchange="acmSetJour(\''+f.id+'\',this.value)" style="padding:5px 7px;margin-left:auto">'+opts.map(j=>{ const lab=(j==='—')?'— (hors session)':(j==='reserve'?'📦 Réserve':j); return '<option value="'+acmEsc(j)+'"'+(j===cur?' selected':'')+'>'+acmEsc(lab)+'</option>'; }).join('')+'</select>';
+  }
+  const lignes=[];
+  if(f.intervenant||f.tel) lignes.push('👤 '+acmEsc(f.intervenant||'')+(f.tel?' · 📞 '+acmEsc(f.tel):''));
+  if(f.lieu) lignes.push('📍 '+acmEsc(f.lieu));
+  if(f.cout) lignes.push('💰 '+acmEsc(f.cout));
+  return '<div class="card" style="margin-bottom:8px"><div class="row" style="align-items:center;gap:8px;flex-wrap:wrap">'
+    +'<span style="font-size:18px">'+acmEsc(f.emoji||'•')+'</span><b>'+acmEsc(f.nom)+'</b>'
+    +acmBadge(o)+acmBadge(st)+(f.pole?'<span class="hint">'+acmEsc(f.pole)+'</span>':'')+jourSel+'</div>'
+    +(lignes.length?'<p class="hint" style="margin:6px 0 0">'+lignes.join(' &nbsp;·&nbsp; ')+'</p>':'')
+    +(f.note?'<p class="hint" style="margin:4px 0 0">'+acmEsc(f.note)+'</p>':'')
+    +'<div class="row" style="margin-top:7px;gap:6px"><button class="ghost btn" onclick="acmEditFiche(\''+f.id+'\')">✏️ Modifier</button><button class="ghost btn" style="color:#c0392b" onclick="acmDelFiche(\''+f.id+'\')">🗑️</button></div></div>';
+}
+function acmToggleForm(){ const f=$('acmForm'); if(!f)return; if(f.style.display==='none'){ acmRenderForm(null); f.style.display='block'; f.scrollIntoView({block:'center'}); } else { f.style.display='none'; } }
+function acmRenderForm(editId){
+  const f=$('acmForm'); if(!f)return;
+  const e=editId?acmDb().fiches.find(x=>x.id===editId):null;
+  const val=v=>v?acmEsc(v):'';
+  f.innerHTML='<div class="card"><div class="row" style="gap:8px;flex-wrap:wrap">'
+    +'<input id="acm_nom" placeholder="Nom de l\'activité *" style="flex:2;min-width:160px" value="'+val(e&&e.nom)+'">'
+    +'<input id="acm_emoji" placeholder="Emoji" maxlength="4" style="width:70px" value="'+val(e&&e.emoji)+'">'
+    +'<select id="acm_pole" style="flex:1;min-width:150px">'+ACM_POLES.map(p=>'<option'+(e&&e.pole===p?' selected':'')+'>'+p+'</option>').join('')+'</select></div>'
+    +'<div class="row" style="gap:8px;flex-wrap:wrap;margin-top:8px">'
+    +'<select id="acm_orig" style="flex:1;min-width:130px">'+ACM_ORIG.map(o=>'<option value="'+o.k+'"'+(e&&e.origine===o.k?' selected':'')+'>'+o.l+'</option>').join('')+'</select>'
+    +'<select id="acm_stat" style="flex:1;min-width:130px">'+ACM_STAT.map(s=>'<option value="'+s.k+'"'+(e&&e.statut===s.k?' selected':'')+'>'+s.l+'</option>').join('')+'</select>'
+    +'<input id="acm_cout" placeholder="Coût (gratuit, 8€/jeune…)" style="flex:1;min-width:140px" value="'+val(e&&e.cout)+'"></div>'
+    +'<div class="row" style="gap:8px;flex-wrap:wrap;margin-top:8px">'
+    +'<input id="acm_interv" placeholder="Intervenant / contact" style="flex:1;min-width:150px" value="'+val(e&&e.intervenant)+'">'
+    +'<input id="acm_tel" placeholder="Téléphone / email" style="flex:1;min-width:140px" value="'+val(e&&e.tel)+'">'
+    +'<input id="acm_lieu" placeholder="Lieu" style="flex:1;min-width:120px" value="'+val(e&&e.lieu)+'"></div>'
+    +'<textarea id="acm_note" placeholder="Note (facultatif)" style="width:100%;margin-top:8px;min-height:46px">'+(e&&e.note?acmEsc(e.note):'')+'</textarea>'
+    +'<div class="row" style="margin-top:8px;gap:6px"><button class="btn" onclick="acmSaveFiche(\''+(editId||'')+'\')">'+(e?'Enregistrer':'+ Ajouter au catalogue')+'</button><button class="ghost btn" onclick="acmToggleForm()">Annuler</button></div></div>';
+}
+function acmSaveFiche(editId){
+  const gv=id=>{ const el=$('acm_'+id); return el?(el.value||'').trim():''; };
+  const nom=gv('nom'); if(!nom){ alert('Donne un nom à l\'activité.'); return; }
+  const a=acmDb();
+  const rec={ nom, emoji:gv('emoji'), pole:$('acm_pole').value, origine:$('acm_orig').value, statut:$('acm_stat').value, cout:gv('cout'), intervenant:gv('interv'), tel:gv('tel'), lieu:gv('lieu'), note:gv('note') };
+  if(editId){ const f=a.fiches.find(x=>x.id===editId); if(f) Object.assign(f,rec); }
+  else { rec.id=uid(); a.fiches.push(rec); }
+  const fm=$('acmForm'); if(fm) fm.style.display='none';
+  save();
+}
+function acmEditFiche(id){ acmRenderForm(id); const f=$('acmForm'); if(f){ f.style.display='block'; f.scrollIntoView({block:'center'}); } }
+function acmDelFiche(id){ if(!confirm('Supprimer cette activité du catalogue ?'))return; const a=acmDb(); a.fiches=a.fiches.filter(f=>f.id!==id); a.sessions.forEach(s=>{ if(s.plan) delete s.plan[id]; }); save(); }
+function acmSetJour(id,v){ const cs=acmCurSession(); if(!cs)return; if(!cs.plan)cs.plan={}; cs.plan[id]=v; save(); }
+function acmSelectSession(id){ acmDb().cur=id; save(); }
+function acmNewSession(){
+  const nom=prompt('Nom de la session (ex : Été 2026, Toussaint 2026) :'); if(!nom||!nom.trim())return;
+  const nb=Math.max(1,Math.min(40,parseInt(prompt('Combien de jours ? (ex : 10)','10'),10)||10));
+  const jours=[]; for(let i=1;i<=nb;i++) jours.push('Jour '+i);
+  const s={id:uid(),nom:nom.trim(),jours,plan:{}}; const a=acmDb(); a.sessions.push(s); a.cur=s.id; save();
+}
+function acmDelSession(){ const cs=acmCurSession(); if(!cs)return; if(!confirm('Supprimer la session « '+cs.nom+' » ? (le catalogue est conservé)'))return; const a=acmDb(); a.sessions=a.sessions.filter(s=>s.id!==cs.id); a.cur=a.sessions[0]?a.sessions[0].id:null; save(); }
+function renderAll(){ renderDashboard(); renderMembers(); renderRelances(); renderOps(); renderCaisse(); renderRapprochement(); renderProjects(); renderSubventions(); renderEcheancier(); renderBilan(); renderPrevisionnel(); renderEquipe(); renderRepertoire(); renderSecretariat(); renderAssurance(); renderReunions(); renderIncidents(); renderDettes(); renderOfficialLinks(); refreshComptes(); renderListParams(); renderJournal(); renderPeriscolaire(); renderFaqList(); renderNews(); renderAccompagnement(); renderRH(); renderProjet(); renderProjetAdos(); renderActions(); renderConges(); renderFermetures(); renderHoraires(); renderAcmVac(); }
 
 /* ---- Data import/export ---- */
 function exportJSON(motif){
@@ -4477,6 +4598,7 @@ renderAll();
     if(!canWrite) perms.accompagnement='cache'; // Accompagnement : contenu sensible (RH, gouvernance) → bureau uniquement par défaut
     if(!canWrite) perms.rh='cache'; // RH & Organisation : contenu sensible → bureau uniquement par défaut
     if(!canWrite){ perms.suivi='cache'; perms.conges='cache'; perms.horaires='cache'; } // Suivi, Congés & Horaires : bureau uniquement par défaut
+    if(!canWrite) perms.acmvac='cache'; // 🌴 Vacances : outil interne de programmation → bureau uniquement
     const css=[];
     document.querySelectorAll('nav.tabs button[data-tab]').forEach(b=>{
       const k=b.dataset.tab;
