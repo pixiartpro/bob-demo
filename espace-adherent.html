@@ -613,10 +613,30 @@ window.acmReserve=async function(id, override){
 
 /* ===== 👧 Mes enfants — fiches réutilisables (table enfants) ===== */
 const KIDS = { list:[] };
+const KID_ALLERG=['Arachides','Fruits à coque','Lait','Œufs','Gluten','Poisson / fruits de mer'];
+const KID_SANTE=['Asthme','PAI en place','Traitement régulier'];
 function kidEsc(s){return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 function kidsClasseOptions(sel){
   const opts=['','TPS','PS','MS','GS','CP','CE1','CE2','CM1','CM2','Autre'];
   return opts.map(o=>'<option value="'+o+'"'+(o===(sel||'')?' selected':'')+'>'+(o||'— Classe —')+'</option>').join('');
+}
+function kidDayOptions(sel){ let o='<option value="">Jour</option>'; for(let d=1;d<=31;d++){const v=String(d).padStart(2,'0'); o+='<option value="'+v+'"'+(v===sel?' selected':'')+'>'+d+'</option>';} return o; }
+function kidMonthOptions(sel){ const M=['Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre']; let o='<option value="">Mois</option>'; for(let i=0;i<12;i++){const v=String(i+1).padStart(2,'0'); o+='<option value="'+v+'"'+(v===sel?' selected':'')+'>'+M[i]+'</option>';} return o; }
+function kidYearOptions(sel){ let o='<option value="">Année</option>'; let now=2026; try{now=new Date().getFullYear();}catch(e){} for(let y=now;y>=now-20;y--){ o+='<option value="'+y+'"'+(String(y)===sel?' selected':'')+'>'+y+'</option>'; } return o; }
+function kidDateParts(d){ const p=(d||'').split('-'); return {y:p[0]||'', m:p[1]||'', d:p[2]||''}; }
+function kidSplitTags(text, known){ const items=(text||'').split(',').map(s=>s.trim()).filter(Boolean); return { checked: items.filter(i=>known.indexOf(i)>=0), autre: items.filter(i=>known.indexOf(i)<0).join(', ') }; }
+function kidTagsBlock(id, kind, label, options, stored){
+  const sp=kidSplitTags(stored, options);
+  return '<div style="font-size:13.5px;font-weight:700;margin-top:2px">'+label+'</div>'
+    +'<div style="display:flex;flex-wrap:wrap;gap:6px 14px;margin:2px 0">'
+    +options.map(o=>'<label style="font-size:14px;font-weight:500"><input type="checkbox" data-'+kind+'="'+id+'" data-label="'+kidEsc(o)+'" '+(sp.checked.indexOf(o)>=0?'checked':'')+'> '+kidEsc(o)+'</label>').join('')
+    +'</div>'
+    +'<input id="k_'+kind+'_autre_'+id+'" value="'+kidEsc(sp.autre)+'" placeholder="Autre (précisez)" style="width:100%;padding:8px 11px;border:1px solid var(--line);border-radius:10px;font:inherit">';
+}
+function kidReadTags(id, kind){
+  const checked=[].slice.call(document.querySelectorAll('[data-'+kind+'="'+id+'"]:checked')).map(c=>c.getAttribute('data-label'));
+  const el=document.getElementById('k_'+kind+'_autre_'+id); const autre=el?el.value.trim():'';
+  return checked.concat(autre?[autre]:[]).filter(Boolean).join(', ');
 }
 async function kidsLoad(){
   if(!ACM.uid){ KIDS.list=[]; return; }
@@ -624,19 +644,24 @@ async function kidsLoad(){
   KIDS.list = (error?[]:(data||[]));
 }
 function kidCard(k){
-  const id=k.id;
+  const id=k.id; const dp=kidDateParts(k.naissance);
   return '<div class="card" style="box-shadow:none;border:1px solid var(--line);gap:8px" data-kid="'+id+'">'
     +'<div style="display:flex;gap:8px;flex-wrap:wrap">'
     +'<input id="k_nom_'+id+'" value="'+kidEsc(k.nom||'')+'" placeholder="Nom de l\'enfant" style="flex:1;min-width:130px;padding:9px 11px;border:1px solid var(--line);border-radius:10px;font:inherit">'
     +'<input id="k_prenom_'+id+'" value="'+kidEsc(k.prenom||'')+'" placeholder="Prénom de l\'enfant *" style="flex:1;min-width:130px;padding:9px 11px;border:1px solid var(--line);border-radius:10px;font:inherit">'
     +'</div>'
+    +'<div style="font-size:13px;color:var(--muted)">Date de naissance</div>'
+    +'<div style="display:flex;gap:6px;flex-wrap:wrap">'
+    +'<select id="k_naissance_d_'+id+'" style="flex:1;min-width:80px;padding:9px 8px;border:1px solid var(--line);border-radius:10px;font:inherit">'+kidDayOptions(dp.d)+'</select>'
+    +'<select id="k_naissance_m_'+id+'" style="flex:2;min-width:120px;padding:9px 8px;border:1px solid var(--line);border-radius:10px;font:inherit">'+kidMonthOptions(dp.m)+'</select>'
+    +'<select id="k_naissance_y_'+id+'" style="flex:1;min-width:90px;padding:9px 8px;border:1px solid var(--line);border-radius:10px;font:inherit">'+kidYearOptions(dp.y)+'</select>'
+    +'</div>'
     +'<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">'
-    +'<input id="k_naissance_'+id+'" type="date" value="'+kidEsc(k.naissance||'')+'" style="flex:1;min-width:150px;padding:9px 11px;border:1px solid var(--line);border-radius:10px;font:inherit">'
     +'<select id="k_classe_'+id+'" style="flex:1;min-width:120px;padding:9px 11px;border:1px solid var(--line);border-radius:10px;font:inherit">'+kidsClasseOptions(k.classe)+'</select>'
     +'<span style="flex:1;min-width:140px;color:var(--muted);font-size:13.5px">🏫 '+kidEsc(k.ecole||PERI.ECOLE)+'</span>'
     +'</div>'
-    +'<input id="k_allergies_'+id+'" value="'+kidEsc(k.allergies||'')+'" placeholder="🌰 Allergies (optionnel)" style="width:100%;padding:9px 11px;border:1px solid var(--line);border-radius:10px;font:inherit">'
-    +'<input id="k_sante_'+id+'" value="'+kidEsc(k.sante||'')+'" placeholder="🩺 Infos santé / PAI (optionnel)" style="width:100%;padding:9px 11px;border:1px solid var(--line);border-radius:10px;font:inherit">'
+    +kidTagsBlock(id,'allerg','🌰 Allergies',KID_ALLERG,k.allergies)
+    +kidTagsBlock(id,'sante','🩺 Santé / PAI',KID_SANTE,k.sante)
     +'<input id="k_autorises_'+id+'" value="'+kidEsc(k.autorises||'')+'" placeholder="🔐 Personnes autorisées à venir le chercher (optionnel)" style="width:100%;padding:9px 11px;border:1px solid var(--line);border-radius:10px;font:inherit">'
     +'<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">'
     +'<button class="btn win" onclick="kidSave(\''+id+'\')">💾 Enregistrer la fiche</button>'
@@ -653,21 +678,36 @@ function kidsRender(){
   html+='<div style="margin-top:12px"><button class="btn use" onclick="kidAdd()">+ Ajouter un enfant</button></div>';
   box.innerHTML=html;
 }
+function kidsCaptureEdits(){
+  document.querySelectorAll('#kidsBody [data-kid]').forEach(function(card){
+    const id=card.getAttribute('data-kid'); const k=KIDS.list.find(x=>x.id===id); if(!k) return;
+    const v=f=>{const el=document.getElementById('k_'+f+'_'+id); return el?el.value:undefined;};
+    if(v('nom')!==undefined) k.nom=v('nom');
+    if(v('prenom')!==undefined) k.prenom=v('prenom');
+    const y=v('naissance_y'),m=v('naissance_m'),d=v('naissance_d');
+    if(y!==undefined||m!==undefined||d!==undefined) k.naissance=(y&&m&&d)?(y+'-'+m+'-'+d):'';
+    if(v('classe')!==undefined) k.classe=v('classe');
+    k.allergies=kidReadTags(id,'allerg');
+    k.sante=kidReadTags(id,'sante');
+    if(v('autorises')!==undefined) k.autorises=v('autorises');
+  });
+}
 window.kidAdd=async function(){
   if(!ACM.uid) return;
+  kidsCaptureEdits();
   const {data,error}=await _sbAt.from('enfants').insert({prenom:'', nom:'', ecole:PERI.ECOLE}).select().single();
   if(error){ toast('Erreur : '+(error.message||error)); return; }
   KIDS.list.push(data); kidsRender();
 };
 window.kidSave=async function(id){
-  const g=f=>{const el=document.getElementById('k_'+f+'_'+id); return el?el.value:'';};
-  const msg=document.getElementById('k_msg_'+id);
-  const prenom=(g('prenom')||'').trim();
-  if(!prenom){ if(msg){msg.style.color='#c0392b'; msg.textContent='Le prénom est obligatoire.';} return; }
-  const payload={ nom:(g('nom')||'').trim(), prenom, naissance:((g('naissance')||'')||null), classe:g('classe')||'', ecole:PERI.ECOLE, allergies:(g('allergies')||'').trim(), sante:(g('sante')||'').trim(), autorises:(g('autorises')||'').trim() };
+  kidsCaptureEdits();
+  const k=KIDS.list.find(x=>x.id===id); const msg=document.getElementById('k_msg_'+id);
+  if(!k) return;
+  if(!(k.prenom||'').trim()){ if(msg){msg.style.color='#c0392b'; msg.textContent='Le prénom est obligatoire.';} return; }
+  const payload={ nom:(k.nom||'').trim(), prenom:(k.prenom||'').trim(), naissance:(k.naissance||null), classe:k.classe||'', ecole:PERI.ECOLE, allergies:k.allergies||'', sante:k.sante||'', autorises:(k.autorises||'').trim() };
   const {data,error}=await _sbAt.from('enfants').update(payload).eq('id',id).select().single();
   if(error){ if(msg){msg.style.color='#c0392b'; msg.textContent='Échec : '+(error.message||error);} return; }
-  const i=KIDS.list.findIndex(k=>k.id===id); if(i>=0) KIDS.list[i]=data;
+  const i=KIDS.list.findIndex(x=>x.id===id); if(i>=0) KIDS.list[i]=data;
   if(msg){ msg.style.color='var(--vert-fonce)'; msg.textContent='✅ Enregistré'; }
   toast('✅ Fiche enregistrée');
 };
@@ -733,7 +773,7 @@ window.calcRun=function(){
     +'</div>';
 };
 
-_sbAt.auth.onAuthStateChange(()=>{ periBoot(); });
+_sbAt.auth.onAuthStateChange((event)=>{ if(event==='SIGNED_IN'||event==='SIGNED_OUT') periBoot(); });
 periBoot();
 </script>
 </body>
