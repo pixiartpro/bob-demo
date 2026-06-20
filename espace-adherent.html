@@ -109,6 +109,17 @@
   </div>
 </section>
 
+<!-- 📅 PRENDRE RENDEZ-VOUS (créneaux récurrents) -->
+<section class="block" id="rdvSection" style="padding:8px 0 6px">
+  <div class="wrap">
+    <div class="card" style="border-left:5px solid var(--jaune);background:#fffdf5">
+      <h2 class="title" style="font-size:20px">📅 Prendre rendez-vous <small>— accompagnement, VEPI…</small></h2>
+      <p class="sub" style="margin:2px 0 10px">Besoin d'aide pour remplir / scanner, ou pour le VEPI ? <b>Réservez un créneau</b> et venez au CASE — on fait tout ensemble.</p>
+      <div id="rdvBody"><p class="sub">Chargement…</p></div>
+    </div>
+  </div>
+</section>
+
 <!-- Démo « jetons » retirée de l'espace famille (focus périscolaire/extrascolaire) ; code conservé dans Bob.html hors-ligne. -->
 
 <!-- ATELIERS PARTICIPATIFS (données réelles, via le site) -->
@@ -340,12 +351,12 @@ async function periBoot(){
   const body=document.getElementById('periBody'); if(!body) return;
   let session=null;
   try{ session=(await _sbAt.auth.getSession()).data.session; }catch(e){ session=null; }
-  if(!session){ ACM.uid=null; ACM.profile=null; ACM.asso=null; acmBoot(); KIDS.list=[]; kidsRender(); periRenderLocked('connexion'); return; }
+  if(!session){ ACM.uid=null; ACM.profile=null; ACM.asso=null; acmBoot(); rdvBoot(); KIDS.list=[]; kidsRender(); periRenderLocked('connexion'); return; }
   PERI.uid=session.user.id;
   const {data:prof}=await _sbAt.from('profiles').select('full_name,email,statut,role,asso_id').eq('id',PERI.uid).maybeSingle();
   PERI.profile=prof||null;
   // Contexte partagé pour la réservation d'activités/ACM (même compte famille)
-  ACM.uid=PERI.uid; ACM.profile=prof||null; ACM.asso=prof?prof.asso_id:null; acmBoot();
+  ACM.uid=PERI.uid; ACM.profile=prof||null; ACM.asso=prof?prof.asso_id:null; acmBoot(); rdvBoot();
   if(!prof){ periRenderLocked('noprofile'); return; }
   PERI.asso=prof.asso_id;
   PERI.statut=prof.statut;
@@ -494,8 +505,10 @@ window.periBesoinAide=async function(){
     const {error}=await _sbAt.from('inscriptions_periscolaire').update({besoin_aide:true}).eq('id',id);
     if(error) throw error;
     PERI.row.besoin_aide=true;
-    PERI.flash='🙋 Demande envoyée ! Le bureau vous recontactera pour fixer un rendez-vous au CASE (on remplira tout ensemble, scan sur place).';
-    periRenderForm(); toast('🙋 Demande envoyée');
+    PERI.flash='🙋 C\'est noté ! Réservez votre créneau ci-dessous dans « 📅 Prendre rendez-vous » — on remplira tout ensemble au CASE.';
+    periRenderForm();
+    const el=document.getElementById('rdvSection'); if(el) setTimeout(function(){ el.scrollIntoView({behavior:'smooth',block:'start'}); },300);
+    toast('🙋 Pensez à réserver un créneau');
   }catch(e){ toast('Erreur : '+(e.message||e)); }
 };
 
@@ -696,7 +709,77 @@ window.acmDepose=async function(insId){
 window.acmBesoinAide=async function(insId){
   const {error}=await _sbAt.from('inscriptions_activite').update({besoin_aide:true}).eq('id',insId);
   if(error){ toast('Erreur : '+(error.message||error)); return; }
-  toast('🙋 Aide demandée'); setTimeout(acmBoot,800);
+  toast('🙋 Pensez à réserver un créneau ci-dessous (📅)');
+  const el=document.getElementById('rdvSection'); if(el) el.scrollIntoView({behavior:'smooth',block:'start'});
+  setTimeout(acmBoot,800);
+};
+
+/* ===== 📅 Prendre rendez-vous (créneaux récurrents) ===== */
+const RDV = { regles:[], mine:[], pris:[] };
+const RDV_JOURS=['','Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi','Dimanche'];
+function rdvPad(n){ return String(n).padStart(2,'0'); }
+function rdvDateStr(d){ return d.getFullYear()+'-'+rdvPad(d.getMonth()+1)+'-'+rdvPad(d.getDate()); }
+function rdvFrDate(jour){ const p=(jour||'').split('-'); if(p.length<3) return jour; const M=['janv.','févr.','mars','avr.','mai','juin','juil.','août','sept.','oct.','nov.','déc.']; const dt=new Date(+p[0],+p[1]-1,+p[2]); return RDV_JOURS[((dt.getDay()+6)%7)+1]+' '+(+p[2])+' '+M[+p[1]-1]; }
+function rdvComputeSlots(weeks){
+  const slots=[]; const now=new Date(); const takenSet=new Set((RDV.pris||[]).map(b=>b.jour+'T'+b.heure));
+  const todayIso=((now.getDay()+6)%7)+1;
+  (RDV.regles||[]).forEach(r=>{
+    if(!r.actif) return; const offset=((r.jour - todayIso + 7) % 7);
+    for(let w=0; w<weeks; w++){
+      const d=new Date(now.getFullYear(),now.getMonth(),now.getDate()); d.setDate(d.getDate()+offset+w*7);
+      const jour=rdvDateStr(d);
+      const dp=(r.debut||'14:00').split(':').map(Number), fp=(r.fin||'17:00').split(':').map(Number);
+      let t=dp[0]*60+dp[1]; const end=fp[0]*60+fp[1]; const dur=r.duree||20;
+      while(t+dur<=end){
+        const heure=rdvPad(Math.floor(t/60))+':'+rdvPad(t%60);
+        const dt=new Date(d.getFullYear(),d.getMonth(),d.getDate(),Math.floor(t/60),t%60);
+        if(dt.getTime()>now.getTime()+30*60000 && !takenSet.has(jour+'T'+heure)) slots.push({jour,heure,duree:dur,label:r.label});
+        t+=dur;
+      }
+    }
+  });
+  slots.sort((a,b)=>(a.jour+a.heure)<(b.jour+b.heure)?-1:1);
+  return slots;
+}
+async function rdvBoot(){
+  const body=document.getElementById('rdvBody'); if(!body) return;
+  if(!ACM.uid){ body.innerHTML='<p class="sub" style="margin:0">Connectez-vous pour prendre rendez-vous.</p>'; return; }
+  try{
+    const [rr,rm,rp]=await Promise.all([
+      _sbAt.from('rdv_regles').select('*').eq('actif',true),
+      _sbAt.from('rdv').select('*').eq('user_id',ACM.uid).order('jour',{ascending:true}),
+      _sbAt.rpc('rdv_pris')
+    ]);
+    RDV.regles=rr.data||[]; RDV.mine=rm.data||[]; RDV.pris=rp.data||[];
+  }catch(e){ body.innerHTML='<p class="sub" style="color:#b23a23">Impossible de charger les créneaux.</p>'; return; }
+  rdvRender();
+}
+function rdvRender(){
+  const body=document.getElementById('rdvBody'); if(!body) return; let html='';
+  if(RDV.mine.length){
+    html+='<div style="margin-bottom:10px"><b>Vos rendez-vous :</b>'+RDV.mine.map(m=>'<div style="background:#eef7f2;border:1px solid #cfe6da;border-radius:10px;padding:7px 11px;margin-top:5px;font-size:13px">📅 <b>'+rdvFrDate(m.jour)+' à '+acmEsc(m.heure)+'</b>'+(m.motif?' · '+acmEsc(m.motif):'')+' <button class="reset" style="float:right" onclick="rdvCancel(\''+m.id+'\')">annuler</button></div>').join('')+'</div>';
+  }
+  if(!RDV.regles.length){ html+='<p class="sub" style="margin:0">Le CASE n\'a pas encore ouvert de créneaux — le bureau vous recontactera.</p>'; body.innerHTML=html; return; }
+  const slots=rdvComputeSlots(4);
+  if(!slots.length){ html+='<p class="sub" style="margin:0">Aucun créneau libre pour le moment. Réessayez plus tard.</p>'; body.innerHTML=html; return; }
+  const byJour={}; slots.forEach(s=>{ (byJour[s.jour]=byJour[s.jour]||[]).push(s); });
+  html+='<p class="sub" style="margin:0 0 8px">Choisissez un créneau (réservation immédiate) :</p>';
+  html+=Object.keys(byJour).slice(0,8).map(j=>'<div style="margin-bottom:8px"><div style="font-weight:700;font-size:13.5px">'+rdvFrDate(j)+'</div><div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:4px">'
+    +byJour[j].map(s=>'<button class="btn use" style="padding:6px 11px;font-size:13px" onclick="rdvBook(\''+s.jour+'\',\''+s.heure+'\','+s.duree+',\''+encodeURIComponent(s.label||'')+'\')">'+acmEsc(s.heure)+'</button>').join('')
+    +'</div></div>').join('');
+  body.innerHTML=html;
+}
+window.rdvBook=async function(jour, heure, duree, labelEnc){
+  const label=decodeURIComponent(labelEnc||'');
+  const {error}=await _sbAt.from('rdv').insert({jour, heure, duree:duree||20, motif:label, user_id:ACM.uid});
+  if(error){ toast(error.code==='23505'?'Ce créneau vient d\'être pris, choisissez-en un autre.':'Erreur : '+(error.message||error)); rdvBoot(); return; }
+  toast('📅 Rendez-vous réservé !'); rdvBoot();
+};
+window.rdvCancel=async function(id){
+  if(!confirm('Annuler ce rendez-vous ?')) return;
+  const {error}=await _sbAt.from('rdv').delete().eq('id',id);
+  if(error){ toast('Erreur : '+(error.message||error)); return; }
+  toast('Rendez-vous annulé'); rdvBoot();
 };
 
 /* ===== 👧 Mes enfants — fiches réutilisables (table enfants) ===== */

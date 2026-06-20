@@ -762,6 +762,13 @@
       </div>
     </div>
     <div id="actgList"></div>
+    <div class="panel" style="margin-top:14px">
+      <div class="toolbar"><div>
+        <h2 style="margin:0">📅 Rendez-vous</h2>
+        <p class="hint" style="margin:2px 0 0">Tes <strong>plages récurrentes</strong> (les familles réservent un créneau dedans) et les <strong>rendez-vous pris</strong>. <button class="ghost btn" onclick="if(window.loadRdvAdmin)loadRdvAdmin()">↻ Rafraîchir</button></p>
+      </div></div>
+      <div id="rdvAdminBody"><p class="hint">Chargement…</p></div>
+    </div>
   </section>
 
   <!-- LIEUX (gestion) -->
@@ -5010,6 +5017,7 @@ renderAll();
         +ctrl
         +'</div>';
     }).join('');
+    if(window.loadRdvAdmin) loadRdvAdmin();
   };
   function bureauActInsCard(a, i){
     const who=esc(i.nom||''); const st=i.statut||'reserve';
@@ -5069,6 +5077,33 @@ renderAll();
   };
   window.delActivite=async function(id){ if(!confirm('Supprimer définitivement cette activité et ses inscriptions ?'))return; const {error}=await sbc.from('activites').delete().eq('id',id); if(error){alert(error.message);return;} loadActivitesGestion(); };
   window.delInscriptionActivite=async function(id){ if(!confirm('Retirer cette inscription ?'))return; const {error}=await sbc.from('inscriptions_activite').delete().eq('id',id); if(error){alert(error.message);return;} loadActivitesGestion(); };
+  const RDV_JOURS_ADM=['','Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi','Dimanche'];
+  window.loadRdvAdmin=async function(){
+    const box=document.getElementById('rdvAdminBody'); if(!box) return;
+    const [rr,rb]=await Promise.all([ sbc.from('rdv_regles').select('*').order('jour'), sbc.from('rdv').select('*').order('jour',{ascending:true}) ]);
+    const regles=rr.data||[], book=rb.data||[];
+    let h='<h3 style="margin:8px 0 4px;font-size:15px">🗓️ Mes plages récurrentes</h3>';
+    h+= regles.length ? regles.map(r=>'<div class="kv"><span><b>'+RDV_JOURS_ADM[r.jour||0]+'</b> '+esc(r.debut||'')+'–'+esc(r.fin||'')+' · créneaux de '+(r.duree||20)+' min · <span class="muted">'+esc(r.label||'')+'</span></span><button class="ghost btn" onclick="delRdvRegle(\''+r.id+'\')">🗑</button></div>').join('') : '<p class="hint">Aucune plage. Ajoute-en une 👇</p>';
+    h+='<div class="row" style="gap:8px;flex-wrap:wrap;align-items:flex-end;margin-top:8px">'
+      +'<div class="field" style="flex:0;min-width:120px"><label>Jour</label><select id="rr_jour">'+[1,2,3,4,5,6,7].map(j=>'<option value="'+j+'">'+RDV_JOURS_ADM[j]+'</option>').join('')+'</select></div>'
+      +'<div class="field" style="flex:0;min-width:90px"><label>De</label><input id="rr_debut" type="time" value="14:00"></div>'
+      +'<div class="field" style="flex:0;min-width:90px"><label>À</label><input id="rr_fin" type="time" value="17:00"></div>'
+      +'<div class="field" style="flex:0;min-width:110px"><label>Créneau (min)</label><input id="rr_duree" type="number" value="20" min="5"></div>'
+      +'<div class="field" style="min-width:160px"><label>Libellé</label><input id="rr_label" value="Accompagnement / dépôt de dossier"></div>'
+      +'<button class="btn" onclick="addRdvRegle()">+ Ajouter la plage</button></div>';
+    const t=new Date(); const todayStr=t.getFullYear()+'-'+String(t.getMonth()+1).padStart(2,'0')+'-'+String(t.getDate()).padStart(2,'0');
+    const up=book.filter(b=>(b.jour||'')>=todayStr);
+    h+='<h3 style="margin:14px 0 4px;font-size:15px">📋 Rendez-vous pris ('+up.length+')</h3>';
+    h+= up.length ? '<table><thead><tr><th>Quand</th><th>Motif</th><th>Réf.</th><th></th></tr></thead><tbody>'+up.map(b=>'<tr><td><b>'+esc(b.jour||'')+'</b> '+esc(b.heure||'')+'</td><td>'+esc(b.motif||'')+'</td><td>'+esc(b.ref||b.enfant||'')+'</td><td><button class="ghost btn" onclick="delRdv(\''+b.id+'\')">✕</button></td></tr>').join('')+'</tbody></table>' : '<p class="hint">Aucun rendez-vous à venir.</p>';
+    box.innerHTML=h;
+  };
+  window.addRdvRegle=async function(){
+    const g=id=>document.getElementById(id);
+    const rec={ asso_id:myAsso, jour:parseInt(g('rr_jour').value)||1, debut:g('rr_debut').value||'14:00', fin:g('rr_fin').value||'17:00', duree:Math.max(5,parseInt(g('rr_duree').value)||20), label:(g('rr_label').value||'').trim()||'Rendez-vous', actif:true };
+    const {error}=await sbc.from('rdv_regles').insert(rec); if(error){alert(error.message);return;} loadRdvAdmin();
+  };
+  window.delRdvRegle=async function(id){ if(!confirm('Supprimer cette plage ?'))return; const {error}=await sbc.from('rdv_regles').delete().eq('id',id); if(error){alert(error.message);return;} loadRdvAdmin(); };
+  window.delRdv=async function(id){ if(!confirm('Annuler ce rendez-vous ?'))return; const {error}=await sbc.from('rdv').delete().eq('id',id); if(error){alert(error.message);return;} loadRdvAdmin(); };
 
   /* ---- Gestion des Lieux (table lieux) + liaison vers les activités ---- */
   window.loadLieuxGestion=async function(){
