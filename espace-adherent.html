@@ -561,6 +561,7 @@ async function acmBoot(){
       +'</div>'
       +(myK.length?('<div style="background:#eef7f2;border:1px solid #cfe6da;border-radius:10px;padding:6px 10px;font-size:13px;font-weight:700;color:var(--vert-fonce)">✅ Réservé : '+myK.map(m=>acmEsc(m.nom)).join(', ')+'</div>'):'')
       +(complet?'':'<div id="acmf_'+a.id+'" style="display:none">'
+        +'<div id="acmkids_'+a.id+'" style="display:flex;flex-wrap:wrap;gap:6px;margin:2px 0 6px"></div>'
         +'<input id="acmn_'+a.id+'" placeholder="Prénom de l\'enfant *" style="width:100%;margin:3px 0;padding:9px 11px;border:1px solid var(--line);border-radius:10px;font:inherit">'
         +'<button class="btn win" style="width:100%;margin-top:4px" onclick="acmReserve(\''+a.id+'\')">Valider la réservation</button></div>')
       +'<p id="acmi_'+a.id+'" style="margin:2px 0 0;font-size:13px;font-weight:700;text-align:center"></p>'
@@ -568,10 +569,27 @@ async function acmBoot(){
       +'</div>';
   }).join('')+'</div>';
 }
-window.acmOpen=function(id){ const f=document.getElementById('acmf_'+id); if(!f) return; f.style.display='block'; const n=document.getElementById('acmn_'+id); if(n) n.focus(); };
-window.acmReserve=async function(id){
+window.acmOpen=function(id){
+  const f=document.getElementById('acmf_'+id); if(!f) return; f.style.display='block';
+  const box=document.getElementById('acmkids_'+id);
+  const kids=(PERI.row&&Array.isArray(PERI.row.enfants)?PERI.row.enfants:[]).filter(e=>e.prenom);
+  if(box){
+    box.innerHTML = kids.length
+      ? '<span style="font-size:13px;color:var(--muted);width:100%">Pour quel enfant ? (un clic suffit)</span>'
+        +kids.map((e,i)=>'<button class="btn use" style="padding:7px 12px" onclick="acmPickKid(\''+id+'\','+i+')">👧 '+acmEsc(((e.nom||'')+' '+(e.prenom||'')).trim())+'</button>').join('')
+        +'<span style="font-size:13px;color:var(--muted);width:100%">ou un autre enfant :</span>'
+      : '';
+  }
+  const n=document.getElementById('acmn_'+id); if(n && !kids.length) n.focus();
+};
+window.acmPickKid=function(id, idx){
+  const kids=(PERI.row&&Array.isArray(PERI.row.enfants)?PERI.row.enfants:[]).filter(e=>e.prenom);
+  const e=kids[idx]; if(!e) return;
+  acmReserve(id, ((e.nom||'')+' '+(e.prenom||'')).trim());
+};
+window.acmReserve=async function(id, override){
   const n=document.getElementById('acmn_'+id); const info=document.getElementById('acmi_'+id);
-  const nom=n?n.value.trim():'';
+  const nom=(override!=null && override!=='')?override:(n?n.value.trim():'');
   if(!nom){ if(info){info.style.color='#c0392b'; info.textContent='Indiquez le prénom de l\'enfant.';} return; }
   const resp=(ACM.profile&&ACM.profile.full_name)||''; const contact=(ACM.profile&&ACM.profile.email)||'';
   const {error}=await _sbAt.from('inscriptions_activite').insert({activite_id:id, nom, responsable:resp, contact, user_id:ACM.uid});
@@ -605,7 +623,7 @@ function calcInit(){
   b.innerHTML=
     '<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end">'
     +'<div style="flex:1;min-width:160px"><label style="font-weight:700;font-size:14px">Votre quotient familial (CAF)</label><input id="calc_qf" type="number" min="0" step="1" placeholder="ex. 700" oninput="calcRun()" style="width:100%;padding:9px 11px;border:1px solid var(--line);border-radius:10px;font:inherit"></div>'
-    +'<div style="min-width:150px"><label style="font-weight:700;font-size:14px">Rang de l\'enfant</label><select id="calc_rang" onchange="calcRun()" style="width:100%;padding:9px 11px;border:1px solid var(--line);border-radius:10px;font:inherit"><option value="1">1er enfant</option><option value="2">2e enfant</option><option value="3">3e enfant</option><option value="4">4e enfant</option></select></div>'
+    +'<div style="min-width:180px"><label style="font-weight:700;font-size:14px">Combien d\'enfants au périscolaire ?</label><select id="calc_nb" onchange="calcRun()" style="width:100%;padding:9px 11px;border:1px solid var(--line);border-radius:10px;font:inherit"><option value="1">1 enfant</option><option value="2">2 enfants</option><option value="3">3 enfants</option><option value="4">4 enfants</option><option value="5">5 enfants</option></select></div>'
     +'</div>'
     +'<div style="display:flex;gap:16px;flex-wrap:wrap;margin-top:10px;align-items:center">'
     +'<label style="font-weight:700"><input type="checkbox" id="calc_soir" checked onchange="calcRun()"> 🌆 Soir (après l\'école)</label>'
@@ -621,17 +639,18 @@ window.calcRun=function(){
   const gv=id=>document.getElementById(id);
   const qf=parseFloat((gv('calc_qf')||{}).value)||0;
   const hors=(gv('calc_hors')||{}).checked, matin=(gv('calc_matin')||{}).checked, soir=(gv('calc_soir')||{}).checked;
-  const rang=parseInt((gv('calc_rang')||{}).value)||1;
+  const nb=parseInt((gv('calc_nb')||{}).value)||1;
   if(!matin && !soir){ res.innerHTML='<div style="color:var(--muted);font-weight:700">Cochez au moins « Soir » ou « Matin ».</div>'; return; }
   let jour, lab;
   if(hors){ jour=CALC_HORS; lab='Hors commune'; }
   else { const t=CALC_TR.find(t=>qf<=t.max)||CALC_TR[CALC_TR.length-1]; jour=t.jour; lab=t.lab; }
   const base=((soir?jour:0)+(matin?CALC_SUPP:0))*CALC_JOURS;
-  const remPct=CALC_REM*Math.max(0,rang-1);
-  const total=base*(1-Math.min(remPct,90)/100);
+  let total=0; const parts=[];
+  for(let k=1;k<=nb;k++){ const rem=Math.min(CALC_REM*(k-1),90); const t=base*(1-rem/100); total+=t; parts.push(calcEuro(t)+(rem?' (−'+rem+'%)':'')); }
   res.innerHTML='<div style="background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px 14px">'
-    +'<div style="font-size:13px;color:var(--muted)">'+lab+(soir?' · soir '+calcEuro(jour):'')+(matin?' · matin +'+calcEuro(CALC_SUPP):'')+(remPct?' · −'+remPct+'% fratrie':'')+'</div>'
-    +'<div style="font-size:26px;font-weight:900;color:var(--vert-fonce);margin-top:4px">≈ '+calcEuro(total)+' <span style="font-size:15px;font-weight:700;color:var(--muted)">/ mois</span></div>'
+    +'<div style="font-size:13px;color:var(--muted)">'+lab+(soir?' · soir '+calcEuro(jour):'')+(matin?' · matin +'+calcEuro(CALC_SUPP):'')+' · '+nb+' enfant'+(nb>1?'s':'')+'</div>'
+    +'<div style="font-size:26px;font-weight:900;color:var(--vert-fonce);margin-top:4px">≈ '+calcEuro(total)+' <span style="font-size:15px;font-weight:700;color:var(--muted)">/ mois pour la famille</span></div>'
+    +(nb>1?'<div style="font-size:12.5px;color:var(--muted);margin-top:4px">Détail : '+parts.join(' + ')+'</div>':'')
     +'</div>';
 };
 
