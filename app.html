@@ -161,6 +161,7 @@
       <button data-tab="members">👥 Adhérents</button>
       <button data-tab="periscolaire">🎒 Périscolaire</button>
       <button data-tab="activites">🎟️ Activités</button>
+      <button data-tab="rdv">📅 Rendez-vous</button>
       <button data-tab="acmvac">🌴 Vacances</button>
       <button data-tab="lieux">🏠 Lieux</button>
     </div>
@@ -169,7 +170,6 @@
       <button data-tab="subventions">🏛️ Subventions</button>
       <button data-tab="repertoire">🗂️ Répertoire</button>
       <button data-tab="partenaires">🤝 Partenaires</button>
-      <button data-tab="soutiens">🎗️ Soutiens &amp; financeurs</button>
       <button data-tab="ateliers">💡 Ateliers</button>
     </div>
     <div class="tabgroup" data-group="equipe">
@@ -763,10 +763,14 @@
       </div>
     </div>
     <div id="actgList"></div>
-    <div class="panel" style="margin-top:14px">
+  </section>
+
+  <!-- RENDEZ-VOUS (agenda à créneaux récurrents) -->
+  <section id="rdv" class="page">
+    <div class="panel">
       <div class="toolbar"><div>
         <h2 style="margin:0">📅 Rendez-vous</h2>
-        <p class="hint" style="margin:2px 0 0">Tes <strong>plages récurrentes</strong> (les familles réservent un créneau dedans) et les <strong>rendez-vous pris</strong>. <button class="ghost btn" onclick="if(window.loadRdvAdmin)loadRdvAdmin()">↻ Rafraîchir</button></p>
+        <p class="hint" style="margin:2px 0 0">Tes <strong>plages récurrentes</strong> (les familles réservent un créneau dedans, comme chez le coiffeur) et les <strong>rendez-vous pris</strong>. <button class="ghost btn" onclick="if(window.loadRdvAdmin)loadRdvAdmin()">↻ Rafraîchir</button></p>
       </div></div>
       <div id="rdvAdminBody"><p class="hint">Chargement…</p></div>
     </div>
@@ -1003,43 +1007,6 @@
       </div>
     </div>
     <div id="incidentList"></div>
-  </section>
-
-  <!-- SOUTIENS & FINANCEURS (logos officiels affichés sur le site public) -->
-  <section id="soutiens" class="page">
-    <div class="panel">
-      <h2>🎗️ Soutiens &amp; financeurs</h2>
-      <p class="hint">Les <strong>logos officiels</strong> (Ville de Saint-Denis, CAF, État, Région, partenaires…) qui s'afficheront sur le site public, <strong>sous le nom du CASE</strong>. C'est <strong>le CASE</strong> qui décide ce qu'il affiche — Bob ne fait que le ranger ici.</p>
-      <div class="panel" style="background:#fff7e6;border:1px solid #f0d28a;margin:10px 0">
-        <p style="margin:0;font-size:13.5px"><strong>⚠️ Avant d'afficher un logo :</strong> demande l'<strong>autorisation écrite</strong> au service Communication du financeur et récupère sa <strong>charte graphique</strong> — le logo d'une collectivité est protégé, l'afficher sans accord est interdit, <u>même quand on est subventionné</u>. Ne coche « Prêt à publier » qu'une fois l'accord obtenu.</p>
-      </div>
-      <p class="hint" style="margin:0 0 8px">💡 <strong>Logo imposé par une convention de subvention</strong> (obligation du CASE, on l'affiche, ce n'est pas payant) ou <strong>logo souhaité sans financement</strong> (mise en avant à négocier) ? Clique sur <strong>❓ Aide</strong> pour ne pas te tromper de cas.</p>
-      <input type="hidden" id="fin_id">
-      <div class="row">
-        <div class="field" style="flex:2"><label>Nom du soutien *</label><input id="fin_nom" placeholder="Ex. Ville de Saint-Denis, CAF de La Réunion, État…"></div>
-        <div class="field"><label>Mention</label><input id="fin_mention" list="finMentions" placeholder="Avec le soutien de…">
-          <datalist id="finMentions"><option>Avec le soutien de</option><option>En partenariat avec</option><option>Financé par</option><option>Cofinancé par l'Union européenne</option><option>Membre du réseau</option></datalist></div>
-      </div>
-      <div class="row" style="margin-top:8px">
-        <div class="field" style="flex:2"><label>Lien (optionnel)</label><input id="fin_lien" placeholder="https://… (site du financeur)"></div>
-        <div class="field" style="flex:0;min-width:90px"><label>Ordre</label><input id="fin_ordre" type="number" value="0" title="Range les logos de gauche à droite (0 d'abord)"></div>
-      </div>
-      <div class="row" style="margin-top:8px;align-items:center">
-        <div class="field"><label>Logo (image)</label><input id="fin_file" type="file" accept="image/*" onchange="financeurLogoPick(this)"></div>
-        <div class="field" style="flex:0"><img id="fin_logo_prev" alt="" style="display:none;max-height:46px;max-width:120px;border:1px solid var(--line);border-radius:8px;padding:4px;background:#fff"></div>
-        <div class="field" style="flex:0;white-space:nowrap"><label style="display:flex;align-items:center;gap:6px;font-weight:600;cursor:pointer;margin-top:18px"><input type="checkbox" id="fin_pub"> ✅ Prêt à publier</label></div>
-        <div class="field" style="flex:0"><label>&nbsp;</label><button class="btn" onclick="addFinanceur()">💾 Enregistrer</button></div>
-        <div class="field" style="flex:0"><label>&nbsp;</label><button class="ghost btn" onclick="finResetForm()">Annuler</button></div>
-      </div>
-      <p class="hint" style="margin:6px 0 0">Le logo est réduit automatiquement (≤ 220 px) pour rester léger.</p>
-      <div class="toolbar" style="margin-top:16px"><h2 style="margin:0;font-size:15px">Soutiens enregistrés</h2></div>
-      <div id="finList"></div>
-    </div>
-    <div class="panel">
-      <h2>👁️ Aperçu du bloc public</h2>
-      <p class="hint">Voici comment le bloc apparaîtra : la marque du CASE au-dessus, les soutiens « Prêts à publier » au milieu, la signature Bob discrète en bas. <strong>La mise en ligne sur le vrai site public est l'étape suivante</strong> (elle nécessite ton feu vert + l'accord écrit des financeurs).</p>
-      <div id="finPreview"></div>
-    </div>
   </section>
 
   <!-- DATA -->
@@ -2026,7 +1993,7 @@ const uid = () => Date.now().toString(36)+Math.random().toString(36).slice(2,7);
 
 let db = load();
 function load(){ try{ return Object.assign(blank(), JSON.parse(localStorage.getItem(KEY))||{}); }catch(e){ return blank(); } }
-function blank(){ return {members:[],ops:[],projects:[],subventions:[],comptes:[],contacts:[],liens:[],docs:[],notes:[],echeances:[],reunions:[],incidents:[],dettes:[],recurrents:{},protocoles:[],contrats:[],financeurs:[],accueilIntro:'',accompNotes:'',rhOrgCible:'',projetMission:'',projetValeurs:'',projetOrientations:'',orga:null,projetAdosSuivi:'',assurance:{},periscolaire:{enfants:[]}}; }
+function blank(){ return {members:[],ops:[],projects:[],subventions:[],comptes:[],contacts:[],liens:[],docs:[],notes:[],echeances:[],reunions:[],incidents:[],dettes:[],recurrents:{},protocoles:[],contrats:[],accueilIntro:'',accompNotes:'',rhOrgCible:'',projetMission:'',projetValeurs:'',projetOrientations:'',orga:null,projetAdosSuivi:'',assurance:{},periscolaire:{enfants:[]}}; }
 function save(){ jLog(); localStorage.setItem(KEY, JSON.stringify(db)); renderAll(); }
 
 /* ---- Historique (journal d'activité automatique, onglet réservé au bureau) ---- */
@@ -2046,8 +2013,7 @@ const J_COLLS={
   salaries:{lbl:'Salaire',mod:'Masse salariale',name:x=>x.name},
   contratsTravail:{lbl:'Contrat de travail',mod:'Équipe',name:x=>(x.salarie||'')+(x.type?' ('+x.type+')':'')},
   contrats:{lbl:"Statut d'emploi",mod:'Équipe',name:x=>x.type},
-  protocoles:{lbl:'Protocole',mod:'Équipe',name:x=>x.titre},
-  financeurs:{lbl:'Soutien/financeur',mod:'Soutiens & financeurs',name:x=>x.nom}
+  protocoles:{lbl:'Protocole',mod:'Équipe',name:x=>x.titre}
 };
 const J_LISTS={comptes:{lbl:'Compte comptable'},sites:{lbl:'Site'},actions:{lbl:'Action',f:1},cats:{lbl:'Catégorie',f:1},typesAdh:{lbl:"Type d'adhésion"}};
 const J_NESTED={'periscolaire.enfants':{lbl:'Enfant (périscolaire)',mod:'Périscolaire',name:x=>x.nom}};
@@ -2174,7 +2140,7 @@ const FAQ=[
    a:"Ouvre l'onglet <strong>🤝 Accompagnement</strong>. Tu y trouves : la fiche et la frise des 9 séances du <strong>DLA</strong> (Charlotte Verdure, Démêlé ESS), le diagnostic du CASE (séance 3) et le plan d'actions, la <strong>Maison Des Associations</strong>, les autres ressources (France Active, Hexopée, ELISFA, Uniformation…), et en bas le bloc <strong>Préparation du RDV</strong> avec le statut de tes actions, les demandes de Charlotte et une zone de notes de séance. Cet onglet est réservé au bureau."},
   {cat:'🎟️ Activités',q:"Comment afficher les places restantes et gérer les inscriptions sur le site ?",kw:"activite activites place places restantes capacite complet inscription inscriptions site public publier vitrine arrive bientot acm vepi danse musique programme ados vacances ete sortie",
    a:"Onglet <b>🎟️ Activités</b>. Crée chaque activité (nom, emoji, catégorie, description), fixe sa <b>capacité</b>, choisis le statut (<b>Ouvert</b> / <b>Arrive bientôt</b> / Archivé) et clique <b>🌍 Publier sur le site</b>. Sur le site public, « Nos activités » affiche alors en direct <b>« X places restantes »</b>, <b>« complet »</b> quand la capacité est atteinte, ou <b>« arrive bientôt »</b>. Quand une famille s'inscrit, son inscription <b>arrive automatiquement ici</b> (tu vois le nom, le responsable, le contact) et le nombre de places se met à jour tout seul. Tu peux retirer une inscription avec ✕. <b>Nouveau :</b> pour le <b>périscolaire, l'ACM et le VEPI</b>, la réservation se fait depuis le <b>compte famille</b> (espace famille) et reste <b>reliée à la famille</b> ; les <b>événements / temps forts</b> restent ouverts à tous directement sur le site. Astuce : si tu remplis le champ <b>Programme</b> d'une activité, il s'affiche sur la carte du site quand une famille clique dessus (parfait pour détailler l'ACM des vacances)."},
-  {cat:'🎟️ Activités',q:"Comment proposer des rendez-vous (créneaux) aux familles ?",kw:"rendez vous rdv creneau creneaux plage plages horaire recurrent recurrente agenda coiffeur accompagnement vepi reserver disponibilite dispo heure",
+  {cat:'📅 Rendez-vous',q:"Comment proposer des rendez-vous (créneaux) aux familles ?",kw:"rendez vous rdv creneau creneaux plage plages horaire recurrent recurrente agenda coiffeur accompagnement vepi reserver disponibilite dispo heure",
    a:"En bas de l'onglet <b>🎟️ Activités</b>, panneau <b>« 📅 Rendez-vous »</b>. Tu définis tes <b>plages récurrentes</b> : un <b>jour</b> (ex : mardi), <b>de … à …</b> (ex : 14h-17h), la <b>durée d'un créneau</b> (30 min par défaut) et un <b>libellé</b>. Les familles voient alors uniquement les <b>créneaux LIBRES</b> dans l'espace famille (📅 Prendre rendez-vous) et en réservent un elles-mêmes — <b>tu n'as plus à rappeler</b>. Tu retrouves ici la liste des <b>rendez-vous pris</b> (date, heure, motif). Pour supprimer une plage : 🗑. Deux plages sont déjà posées par défaut, ajuste-les à ta convenance."},
   {cat:'🌴 Vacances',q:"Comment préparer le programme des vacances (ACM) et suivre les intervenants ?",kw:"vacances acm ados programme catalogue activites origine maison partenaire payant intervenant contact statut appeler attente confirme objectif session jour planning sortie prepa preparation outil interne",
    a:"Onglet <b>🌴 Vacances</b> (réservé au bureau). Tu y tiens un <b>catalogue d'activités réutilisable</b> (il reste d'une session à l'autre) : pour chaque activité, son <b>origine</b> (🏠 maison / 🤝 partenaire / 💶 payant), l'<b>intervenant + téléphone</b>, et le <b>statut de la démarche</b> (💡 idée · 📞 à appeler · ⏳ en attente · ✅ confirmé · ❌ non) — pour voir d'un coup d'œil ce qui avance. Crée une <b>session</b> (ex : Été 2026) avec ses jours, puis pour chaque activité choisis un <b>jour</b> (ou « Réserve »). L'<b>objectif</b> s'affiche en haut : au moins 5 activités, dont une majorité « maison ». Le bouton <b>🌍 Carte publique</b> pousse le programme de la session (jour par jour) vers une carte du site — <b>seuls l'emoji + le nom</b> des activités sont publiés, jamais les contacts, notes ou coûts internes."},
@@ -2258,8 +2224,8 @@ const FAQ=[
    a:"Onglet <b>⚠️ Événements</b> → <b>Déclarer un événement indésirable</b> : renseigne les faits (accident, chute, blessure, conflit…). Bob génère automatiquement la fiche de déclaration que tu peux imprimer ou archiver."},
   {cat:'🤝 Partenaires',q:"Où je vois les commerçants qui veulent devenir partenaires ?",kw:"partenaire commercant demande quartier formulaire devenir partenaire site public contact entreprise",
    a:"Onglet <b>🤝 Partenaires</b> : les commerçants et acteurs du quartier qui remplissent le formulaire « Devenir partenaire » sur le site public apparaissent ici. Tu peux suivre leur statut (contacté, partenaire, refusé…)."},
-  {cat:'🎗️ Soutiens & financeurs',q:"Comment ajouter le logo de la Ville, de la CAF ou d'un financeur sur le site ?",kw:"soutien soutiens financeur financeurs logo logos ville saint-denis mairie caf etat region partenaire officiel subvention convention autorisation charte graphique afficher site public bloc qui paie obligatoire prestige sponsor europe fse feder signature bob",
-   a:"Onglet <b>🎗️ Soutiens &amp; financeurs</b> (groupe 📁 Projets &amp; partenaires). Tu y ranges les <b>logos officiels</b> (Ville de Saint-Denis, CAF, État…) qui s'afficheront sur le site public, <b>sous le nom du CASE</b> : nom, mention (« Avec le soutien de… »), logo (réduit automatiquement) et lien. Coche <b>« Prêt à publier »</b> seulement une fois l'<b>autorisation écrite</b> du financeur obtenue — afficher le logo d'une collectivité sans accord est interdit, même quand on est subventionné. <b>Ne pas confondre :</b> si une <b>convention de subvention</b> impose le logo, c'est une <b>obligation du CASE</b> (on l'affiche, ce n'est pas payant) ; si la Ville veut juste son logo <b>sans financer</b> ce support, c'est une <b>mise en avant à négocier</b>. L'<b>aperçu</b> montre le rendu ; la mise en ligne sur le vrai site est l'étape suivante. La petite signature <b>« Ce site vous est confié par Bob »</b> en bas de page, elle, est normale (comme un « propulsé par ») et reste discrète."},
+  {cat:'ℹ️ À propos',q:"C'est quoi le « Ce site vous est confié par Bob » tout en bas des pages ?",kw:"confie bob signature bas page footer propulse powered by marque logo bob pourquoi mention site public app financeur ville",
+   a:"C'est la <b>signature de Bob</b>, l'outil qui fait tourner votre site et votre gestion — comme le « propulsé par » qu'on voit en bas de beaucoup de sites. Elle est <b>volontairement discrète</b> et ne gêne pas la marque du CASE (qui reste en haut). Rien à faire de votre côté. Un jour, si un partenaire finance Bob — ou si la Ville passe par Bob via un contrat —, son logo pourra venir s'ajouter à côté ; ça se décidera à ce moment-là. Tant que ce n'est pas le cas, sur le site du CASE on n'affiche que le logo du CASE."},
   {cat:'🗂️ Répertoire',q:"Où je range mes contacts, liens utiles et documents clés ?",kw:"repertoire contact carnet adresse lien internet site document cle rib statuts recepisse fournisseur financeur",
    a:"Onglet <b>🗂️ Répertoire</b> : trois carnets — <b>Contacts</b> (comptable, financeurs, fournisseurs…), <b>Liens & adresses internet</b> (portails de subvention, démarches en ligne…) et <b>Documents clés</b> (statuts, RIB, récépissé de préfecture…)."},
   {cat:'⚙️ Données',q:"Comment je choisis l'année (l'exercice comptable) ?",kw:"exercice comptable annee choisir selectionner periode 2025 2026 ecritures filtrer annee comptable",
@@ -2337,9 +2303,9 @@ function pageHelpGotoAide(){ pageHelpClose(); const b=document.querySelector('na
 
 /* ---- ✨ Quoi de neuf (nouveautés + notice chronologique) ---- */
 const NEWS=[
-  {id:'2026-06-20-soutiens-financeurs',date:'2026-06-20',tab:'🎗️ Soutiens & financeurs',titre:"🎗️ Onglet « Soutiens & financeurs » + signature Bob",
-   desc:"Deux nouveautés. (1) Un onglet 🎗️ Soutiens & financeurs (groupe 📁 Projets & partenaires) pour ranger les logos officiels (Ville de Saint-Denis, CAF, État, partenaires…) qui s'afficheront sur le site public, SOUS le nom du CASE : nom, mention « Avec le soutien de… », logo (réduit automatiquement) et lien, avec une case « Prêt à publier » à ne cocher qu'une fois l'autorisation écrite du financeur obtenue. Un aperçu montre le rendu ; la mise en ligne sur le vrai site est l'étape suivante. (2) Une signature discrète « Ce site vous est confié par Bob » est désormais en bas du site public, de l'espace adhérent et de l'app — comme un « propulsé par », sans gêner la marque du CASE."},
-  {id:'2026-06-20-rdv-creneaux',date:'2026-06-20',tab:'🎟️ Activités',titre:"📅 Rendez-vous à créneaux (comme chez le coiffeur)",
+  {id:'2026-06-20-signature-bob',date:'2026-06-20',tab:'🌍 Site public',titre:"🤖 Signature « Ce site vous est confié par Bob »",
+   desc:"Une petite signature discrète « Ce site vous est confié par Bob » apparaît désormais tout en bas du site public, de l'espace adhérent et de l'app — comme un « propulsé par », sans gêner la marque du CASE (qui reste en haut). Au passage, le bas de l'app affichait par erreur « données stockées localement » : corrigé en « données sécurisées en ligne, hébergement Paris · RGPD »."},
+  {id:'2026-06-20-rdv-creneaux',date:'2026-06-20',tab:'📅 Rendez-vous',titre:"📅 Rendez-vous à créneaux (comme chez le coiffeur)",
    desc:"Dans l'onglet 🎟️ Activités, un panneau « 📅 Rendez-vous » : tu définis tes PLAGES RÉCURRENTES (jour + de telle heure à telle heure + durée du créneau, 30 min par défaut), et les familles réservent elles-mêmes un créneau LIBRE dedans (4 semaines à l'avance) — plus besoin de rappeler tout le monde. Tu vois la liste des rendez-vous pris (quand + motif : périscolaire, vacances/ACM, VEPI ou autre). Côté famille, après réservation, un clic « ➕ Ajouter à mon agenda » (Google, Apple, Outlook). 2 plages sont déjà posées (mardi 14h-17h, jeudi 9h-12h), à toi de les ajuster."},
   {id:'2026-06-20-inscriptions-famille',date:'2026-06-20',tab:'🎒 Périscolaire',titre:"👨‍👩‍👧 Inscriptions en ligne : un seul « espace famille »",
    desc:"Les familles s'inscrivent désormais en ligne depuis un seul espace. Périscolaire : la famille peut déposer son dossier (enfants + pièces) DÈS la création de son compte, sans attendre — c'est le DOSSIER que tu valides ici (✅ Validé / ⚠️ Incomplet), et le dépôt est possible même s'il manque une pièce (tu la réclames via « Incomplet »). ACM & activités : la réservation de place se fait depuis le compte famille et reste reliée à la famille. Rappel adhésion : 10 €, du 1ᵉʳ août au 31 juillet, un seul parent adhérent suffit pour tous les enfants — à régulariser avec le bureau. Sur la vitrine, la section ados et l'espace « adhésion » pointent maintenant vers l'espace famille (fini le formulaire e-mail qui se perdait)."},
@@ -4630,81 +4596,7 @@ function acmNewSession(){
   const s={id:uid(),nom:nom.trim(),jours,plan:{}}; const a=acmDb(); a.sessions.push(s); a.cur=s.id; save();
 }
 function acmDelSession(){ const cs=acmCurSession(); if(!cs)return; if(!confirm('Supprimer la session « '+cs.nom+' » ? (le catalogue est conservé)'))return; const a=acmDb(); a.sessions=a.sessions.filter(s=>s.id!==cs.id); a.cur=a.sessions[0]?a.sessions[0].id:null; save(); }
-function renderAll(){ renderDashboard(); renderMembers(); renderRelances(); renderOps(); renderCaisse(); renderRapprochement(); renderProjects(); renderSubventions(); renderEcheancier(); renderBilan(); renderPrevisionnel(); renderEquipe(); renderRepertoire(); renderSecretariat(); renderAssurance(); renderReunions(); renderIncidents(); renderDettes(); renderOfficialLinks(); refreshComptes(); renderListParams(); renderJournal(); renderPeriscolaire(); renderFaqList(); renderNews(); renderAccompagnement(); renderRH(); renderProjet(); renderProjetAdos(); renderActions(); renderConges(); renderFermetures(); renderHoraires(); renderAcmVac(); renderSoutiens(); }
-
-/* ===== 🎗️ Soutiens & financeurs (logos officiels du site public) — coffre db.financeurs ===== */
-let _finLogo='';
-function financeurLogoPick(input){
-  const f=input.files&&input.files[0]; if(!f) return;
-  const r=new FileReader();
-  r.onload=ev=>{ const img=new Image(); img.onload=()=>{
-      const max=220; let w=img.width||max,h=img.height||max;
-      if(w>max||h>max){ const s=Math.min(max/w,max/h); w=Math.round(w*s); h=Math.round(h*s); }
-      const c=document.createElement('canvas'); c.width=w; c.height=h;
-      try{ c.getContext('2d').drawImage(img,0,0,w,h); _finLogo=c.toDataURL('image/png'); }
-      catch(e){ _finLogo=ev.target.result; }
-      const p=$('fin_logo_prev'); if(p){ p.src=_finLogo; p.style.display='block'; }
-    }; img.src=ev.target.result; };
-  r.readAsDataURL(f);
-}
-function finResetForm(){ ['fin_id','fin_nom','fin_mention','fin_lien'].forEach(i=>{const e=$(i); if(e)e.value='';}); const o=$('fin_ordre'); if(o)o.value='0'; const fp=$('fin_pub'); if(fp)fp.checked=false; const ff=$('fin_file'); if(ff)ff.value=''; _finLogo=''; const pv=$('fin_logo_prev'); if(pv){pv.style.display='none'; pv.src='';} }
-function addFinanceur(){
-  const nom=($('fin_nom').value||'').trim(); if(!nom){ alert('Donne au moins le nom du soutien (ex. Ville de Saint-Denis).'); return; }
-  db.financeurs=db.financeurs||[];
-  const id=$('fin_id').value;
-  const rec={ nom, mention:($('fin_mention').value||'').trim(), lien:($('fin_lien').value||'').trim(), logo:_finLogo||'', ordre:parseInt($('fin_ordre').value,10)||0, publie:!!($('fin_pub')||{}).checked };
-  if(id){ const it=db.financeurs.find(x=>x.id===id); if(it){ if(!_finLogo) rec.logo=it.logo||''; Object.assign(it,rec); } }
-  else { rec.id=uid(); db.financeurs.push(rec); }
-  finResetForm(); save();
-}
-function editFinanceur(id){
-  const it=(db.financeurs||[]).find(x=>x.id===id); if(!it) return;
-  $('fin_id').value=it.id; $('fin_nom').value=it.nom||''; $('fin_mention').value=it.mention||''; $('fin_lien').value=it.lien||''; $('fin_ordre').value=it.ordre||0; const fp=$('fin_pub'); if(fp)fp.checked=!!it.publie;
-  _finLogo=it.logo||''; const pv=$('fin_logo_prev'); if(pv){ if(_finLogo){pv.src=_finLogo; pv.style.display='block';} else {pv.style.display='none';} }
-  const ff=$('fin_file'); if(ff)ff.value='';
-  try{ document.getElementById('soutiens').scrollIntoView({behavior:'smooth',block:'start'}); }catch(e){}
-}
-function delFinanceur(id){ const it=(db.financeurs||[]).find(x=>x.id===id); if(!it) return; if(!confirm('Supprimer « '+(it.nom||'')+' » des soutiens ?')) return; db.financeurs=(db.financeurs||[]).filter(x=>x.id!==id); save(); }
-function toggleFinanceurPub(id){ const it=(db.financeurs||[]).find(x=>x.id===id); if(!it) return; it.publie=!it.publie; save(); }
-function _finSorted(){ return (db.financeurs||[]).slice().sort((a,b)=>(a.ordre||0)-(b.ordre||0)||(a.nom||'').localeCompare(b.nom||'')); }
-function renderSoutiens(){
-  const list=$('finList');
-  if(list){
-    const arr=_finSorted();
-    if(!arr.length){ list.innerHTML='<p class="empty">Aucun soutien enregistré. Ajoute la Ville, la CAF, l\'État… avec leur logo, une fois l\'autorisation obtenue.</p>'; }
-    else{ list.innerHTML=arr.map(f=>{
-      const logo=f.logo?'<img src="'+f.logo+'" alt="" style="max-height:40px;max-width:110px;vertical-align:middle;background:#fff;border:1px solid var(--line);border-radius:6px;padding:3px">':'<span class="muted" style="font-size:12px">(pas de logo)</span>';
-      const badge=f.publie?'<span class="pill" style="background:#dff5e9;color:#127a51;font-size:11px">✅ Prêt à publier</span>':'<span class="pill" style="background:#f1f1f1;color:#777;font-size:11px">🔒 Brouillon</span>';
-      return '<div class="panel" style="margin:8px 0;display:flex;gap:12px;align-items:center;flex-wrap:wrap;border-left:4px solid '+(f.publie?'#1f9d6b':'#bbb')+'">'
-        +'<div style="flex:0">'+logo+'</div>'
-        +'<div style="flex:1;min-width:160px"><strong>'+esc(f.nom||'')+'</strong>'+(f.mention?'<div class="muted" style="font-size:12.5px">'+esc(f.mention)+'</div>':'')+(f.lien?'<div style="font-size:12px"><a href="'+esc(f.lien)+'" target="_blank" rel="noopener">'+esc(f.lien)+'</a></div>':'')+'</div>'
-        +'<div style="flex:0">'+badge+'</div>'
-        +'<div style="flex:0;display:flex;gap:6px;flex-wrap:wrap"><button class="ghost btn" onclick="toggleFinanceurPub(\''+f.id+'\')">'+(f.publie?'🔒 Brouillon':'✅ Marquer prêt')+'</button>'
-        +'<button class="ghost btn" onclick="editFinanceur(\''+f.id+'\')">✏️</button>'
-        +'<button class="ghost btn" onclick="delFinanceur(\''+f.id+'\')">🗑️</button></div>'
-        +'</div>';
-    }).join(''); }
-  }
-  const prev=$('finPreview');
-  if(prev){
-    const pub=_finSorted().filter(f=>f.publie);
-    const asso=(window._bobAssoNom||'CASE du Bois de Nèfles');
-    let inner='<div style="text-align:center;padding:20px;background:#0f3d2e;color:#dff3e9;border-radius:14px">'
-      +'<div style="font-size:30px">🍍</div>'
-      +'<div style="font-weight:800;font-size:18px;margin-top:4px">'+esc(asso)+'</div>'
-      +'<div style="opacity:.85;font-size:13px">Centre social associatif · Saint-Denis · La Réunion</div>';
-    if(pub.length){
-      inner+='<div style="margin-top:14px;font-size:12px;letter-spacing:.5px;text-transform:uppercase;opacity:.8">Nos soutiens &amp; partenaires</div>'
-        +'<div style="display:flex;gap:14px;flex-wrap:wrap;justify-content:center;align-items:center;margin-top:8px;background:#fff;border-radius:10px;padding:12px 14px">'
-        +pub.map(f=>f.logo?'<img src="'+f.logo+'" alt="'+esc(f.nom)+'" title="'+esc((f.mention?f.mention+' ':'')+f.nom)+'" style="max-height:42px;max-width:120px">':'<span style="color:#0f3d2e;font-weight:700;font-size:13px">'+esc(f.nom)+'</span>').join('')
-        +'</div>';
-    } else {
-      inner+='<div style="margin-top:14px;font-size:13px;opacity:.7;font-style:italic">(aucun logo « Prêt à publier » — le bloc soutiens reste masqué)</div>';
-    }
-    inner+='<div style="margin-top:16px;font-size:12px;opacity:.7">Ce site vous est confié par Bob 🤖</div></div>';
-    prev.innerHTML=inner;
-  }
-}
+function renderAll(){ renderDashboard(); renderMembers(); renderRelances(); renderOps(); renderCaisse(); renderRapprochement(); renderProjects(); renderSubventions(); renderEcheancier(); renderBilan(); renderPrevisionnel(); renderEquipe(); renderRepertoire(); renderSecretariat(); renderAssurance(); renderReunions(); renderIncidents(); renderDettes(); renderOfficialLinks(); refreshComptes(); renderListParams(); renderJournal(); renderPeriscolaire(); renderFaqList(); renderNews(); renderAccompagnement(); renderRH(); renderProjet(); renderProjetAdos(); renderActions(); renderConges(); renderFermetures(); renderHoraires(); renderAcmVac(); }
 
 /* ---- Data import/export ---- */
 function exportJSON(motif){
@@ -4810,6 +4702,7 @@ renderAll();
     if(!canWrite) perms.rh='cache'; // RH & Organisation : contenu sensible → bureau uniquement par défaut
     if(!canWrite){ perms.suivi='cache'; perms.conges='cache'; perms.horaires='cache'; } // Suivi, Congés & Horaires : bureau uniquement par défaut
     if(!canWrite) perms.acmvac='cache'; // 🌴 Vacances : outil interne de programmation → bureau uniquement
+    if(!canWrite) perms.rdv='cache'; // 📅 Rendez-vous : gestion des plages/créneaux → bureau uniquement
     const css=[];
     document.querySelectorAll('nav.tabs button[data-tab]').forEach(b=>{
       const k=b.dataset.tab;
@@ -5141,7 +5034,6 @@ renderAll();
         +ctrl
         +'</div>';
     }).join('');
-    if(window.loadRdvAdmin) loadRdvAdmin();
   };
   function bureauActInsCard(a, i){
     const who=esc(i.nom||''); const st=i.statut||'reserve';
@@ -5532,6 +5424,7 @@ renderAll();
     const ab=document.querySelector('nav.tabs button[data-tab="ateliers"]'); if(ab) ab.addEventListener('click',()=>{ if(window.loadAteliers) loadAteliers(); });
     if(window.loadAteliers) loadAteliers();
     const cb=document.querySelector('nav.tabs button[data-tab="activites"]'); if(cb) cb.addEventListener('click',()=>{ if(window.loadActivitesGestion) loadActivitesGestion(); });
+    const rb=document.querySelector('nav.tabs button[data-tab="rdv"]'); if(rb) rb.addEventListener('click',()=>{ if(window.loadRdvAdmin) loadRdvAdmin(); });
     const lgb=document.querySelector('nav.tabs button[data-tab="lieux"]'); if(lgb) lgb.addEventListener('click',()=>{ if(window.loadLieuxGestion) loadLieuxGestion(); });
     if(window.loadLieuxGestion) loadLieuxGestion();
     if(window.loadActivitesGestion) loadActivitesGestion();
