@@ -59,7 +59,7 @@
 </style>
 </head>
 <body>
-<div class="demo-flag">🍍 Espace famille — déposez votre <b>dossier périscolaire</b> et réservez vos <b>activités (ACM, sorties)</b> ci-dessous. Plus bas, la partie « jetons » est une démonstration.</div>
+<div class="demo-flag">🍍 Espace famille — votre <b>dossier périscolaire</b> et vos <b>activités extrascolaires</b> (ACM, sorties) en un seul endroit.</div>
 <header>
   <div class="bar">
     <a href="vitrine.html" class="logo"><span class="pine">🍍</span> <span><b>CASE</b> <span>Bois de Nèfles</span></span></a>
@@ -96,71 +96,7 @@
   </div>
 </section>
 
-<section class="hero">
-  <div class="wrap">
-    <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:6px">
-      <img src="zanana-wave.png" onerror="this.style.display='none'" alt="Zanana" style="width:84px;height:auto;flex:0 0 auto;filter:drop-shadow(0 8px 14px rgba(16,60,40,.18))">
-      <p class="hello" style="margin:0">Bonjour Marie 👋<br><span style="font-weight:600;font-size:14px;color:#3a5246">Zanana est content de te voir ! 🍍</span></p>
-    </div>
-    <div class="wallet">
-      <span class="coin">🪙</span>
-      <div>
-        <div class="lab">Mon solde de jetons</div>
-        <div class="big"><span id="solde">6</span> jetons</div>
-      </div>
-    </div>
-    <div class="explain"><span>💪 J'aide le CASE → je gagne</span><span>·</span><span>🎟️ Je participe → j'utilise</span></div>
-  </div>
-</section>
-
-<!-- COMMENT ÇA MARCHE -->
-<section class="block">
-  <div class="wrap">
-    <div class="card" style="border-left:5px solid var(--vert);background:#f3faf6">
-      <h2 class="title" style="font-size:19px">🪙 Comment marchent les jetons ?</h2>
-      <p style="margin:6px 0 0;color:var(--muted)">Le principe (inspiré des <b>Accorderies</b>) : <b>1 heure d'engagement = 1 jeton</b>, et l'heure de chacun vaut autant. Les jetons ne sont pas de l'argent — c'est une reconnaissance de ta participation.</p>
-      <div class="grid" style="margin-top:14px">
-        <div class="card" style="box-shadow:none;border:1px solid var(--line)">
-          <b style="color:var(--vert-fonce)">💪 Gagner des jetons</b>
-          <div style="font-size:14px;color:var(--muted);margin-top:6px;line-height:1.7">
-            • 1 heure de coup de main = <b>1 jeton</b><br>
-            • Peu importe la tâche (jardin, événement, accueil…)<br>
-            • Une demi-heure = ½ jeton<br>
-            • <b>+2 jetons offerts</b> à l'adhésion 🎁
-          </div>
-        </div>
-        <div class="card" style="box-shadow:none;border:1px solid var(--line)">
-          <b style="color:var(--ananas)">🎟️ Utiliser des jetons</b>
-          <div style="font-size:14px;color:var(--muted);margin-top:6px;line-height:1.7">
-            • Atelier (cuisine, bien-être…) : <b>1 jeton</b><br>
-            • Sortie demi-journée (ciné, parc) : <b>2 jetons</b><br>
-            • Sortie journée (plage, rando) : <b>3 jetons</b><br>
-            • Grand événement / séjour : <b>5 jetons</b>
-          </div>
-        </div>
-      </div>
-      <p style="margin:12px 0 0;font-size:13px;color:var(--muted)">🤝 <b>Ouvert à tous :</b> beaucoup d'activités restent accessibles <b>sans jetons</b> — les jetons donnent accès à des « plus » et récompensent l'engagement, ils n'excluent personne. <span style="display:inline-block;background:#fff5da;color:#8a6400;font-weight:700;font-size:12px;padding:3px 10px;border-radius:999px;border:1px solid #f1e2ad">PROPOSITION</span> barème ajustable par le CASE.</p>
-    </div>
-  </div>
-</section>
-
-<!-- COUPS DE MAIN -->
-<section class="block">
-  <div class="wrap">
-    <h2 class="title">💪 Coups de main <small>— j'aide le CASE, je gagne des jetons</small></h2>
-    <p class="sub">1 heure d'aide = 1 jeton. Inscris-toi, et tes jetons sont crédités après ta participation.</p>
-    <div class="grid" id="missions"></div>
-  </div>
-</section>
-
-<!-- ACTIVITÉS -->
-<section class="block alt">
-  <div class="wrap">
-    <h2 class="title">🎟️ Activités <small>— je participe en utilisant mes jetons</small></h2>
-    <p class="sub">Réserve ta place avec tes jetons. S'il n'y en a pas assez, donne un coup de main !</p>
-    <div class="grid" id="activites"></div>
-  </div>
-</section>
+<!-- Démo « jetons » retirée de l'espace famille (focus périscolaire/extrascolaire) ; code conservé dans Bob.html hors-ligne. -->
 
 <!-- ATELIERS PARTICIPATIFS (données réelles, via le site) -->
 <section class="block">
@@ -171,14 +107,6 @@
   </div>
 </section>
 
-<!-- HISTORIQUE -->
-<section class="block">
-  <div class="wrap">
-    <h2 class="title">📜 Mon historique</h2>
-    <div class="hist" id="hist"></div>
-    <p style="text-align:center;margin-top:14px"><button class="reset" onclick="resetDemo()">↺ Réinitialiser la démo</button></p>
-  </div>
-</section>
 
 <!-- AIDE / FAQ ADHÉRENT -->
 <section class="block alt">
@@ -188,7 +116,7 @@
         <img src="zanana-wave.png" onerror="this.style.display='none'" alt="Zanana" style="width:64px;height:auto;flex:0 0 auto">
         <div style="flex:1;min-width:200px">
           <h2 class="title" style="font-size:19px;margin:0">❓ Une question ? Demande à Zanana</h2>
-          <p class="sub" style="margin:4px 0 0">Écris ta question avec tes mots — « Comment je gagne des jetons ? », « C'est payant ? » — Zanana te répond.</p>
+          <p class="sub" style="margin:4px 0 0">Écris ta question avec tes mots — « Comment inscrire mon enfant ? », « C'est combien ? » — Zanana te répond.</p>
         </div>
       </div>
       <div style="display:flex;gap:8px;margin-top:14px">
@@ -252,7 +180,7 @@ function render(){
       <button class="btn use" ${f?'disabled':''} onclick="doActivite('${a.id}')">${f?'✓ Inscrit':'Participer'}</button></div></div>`}).join('');
   $('#hist').innerHTML=state.hist.length?state.hist.map(h=>`<div class="row"><span>${h.t}</span><span class="${h.d[0]==='+'?'plus':'minus'}">${h.d} 🪙</span></div>`).join(''):'<div class="empty">Aucun mouvement.</div>';
 }
-render();
+/* Démo « jetons » désactivée dans l'espace famille (focus périscolaire/extrascolaire). Le code reste pour réactivation éventuelle ; on ne l'exécute plus au chargement. */
 </script>
 <!-- Ateliers participatifs : vraies données (table ateliers de Bob, lecture publique) -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -313,30 +241,12 @@ loadAteliersAdh();
 
 /* ---- Aide adhérent : « Demande à Zanana » (FAQ jetons, sans IA) ---- */
 const AQ=[
-  {cat:'🪙 Les jetons',q:"C'est quoi les jetons ?",kw:"jeton c'est quoi principe accorderie monnaie comprendre fonctionne marche",
-   a:"Les jetons sont une <b>reconnaissance de ta participation</b> (inspirée des Accorderies) : <b>1 heure d'engagement = 1 jeton</b>, et l'heure de chacun vaut autant. Ce n'est <b>pas de l'argent</b> : ça récompense ton coup de main et te donne accès à des « plus »."},
-  {cat:'🪙 Les jetons',q:"Comment je gagne des jetons ?",kw:"gagner jeton coup de main aider participer mission tache heure credit obtenir",
-   a:"Tu gagnes des jetons en <b>donnant un coup de main</b> au CASE : 1 heure d'aide = 1 jeton (une demi-heure = ½ jeton), peu importe la tâche (jardin, événement, accueil…). Va dans <b>💪 Coups de main</b>, inscris-toi, et tes jetons sont crédités après ta participation. 🎁 <b>+2 jetons offerts</b> à l'adhésion !"},
-  {cat:'🪙 Les jetons',q:"Comment j'utilise mes jetons ?",kw:"utiliser depenser jeton activite atelier sortie participer payer reserver place",
-   a:"Dans <b>🎟️ Activités</b>, réserve ta place avec tes jetons : atelier = 1 jeton, sortie demi-journée = 2 jetons, sortie journée = 3 jetons, grand événement/séjour = 5 jetons. Clique sur <b>« Participer »</b> sur l'activité qui te plaît."},
-  {cat:'🪙 Les jetons',q:"Je n'ai pas assez de jetons, je fais quoi ?",kw:"pas assez jeton manque insuffisant vide zero negatif faire plus gagner encore",
-   a:"Pas de souci : <b>donne un coup de main</b> ! Va dans <b>💪 Coups de main</b>, participe à une mission, et tu gagnes des jetons que tu pourras utiliser ensuite. 💪"},
-  {cat:'🪙 Les jetons',q:"Les jetons, c'est de l'argent ?",kw:"jeton argent euro valeur acheter vendre cash money payer reel",
-   a:"<b>Non</b>, ce n'est pas de l'argent et ça ne s'achète pas. C'est juste une façon de reconnaître et d'encourager l'engagement de chacun. L'heure de tout le monde a la même valeur."},
-  {cat:'🎟️ Participer',q:"Est-ce que tout est payant en jetons ?",kw:"payant gratuit jeton obligatoire tout acces ouvert reserve cout sans",
-   a:"<b>Non !</b> Beaucoup d'activités restent <b>accessibles sans jetons</b>. Les jetons donnent accès à des « plus » et récompensent l'engagement, mais ils n'excluent personne."},
-  {cat:'🎟️ Participer',q:"Comment je m'inscris à un coup de main ?",kw:"inscrire coup de main mission participer aider je participe bouton sinscrire",
-   a:"Dans <b>💪 Coups de main</b>, repère la mission qui t'intéresse et clique sur <b>« Je participe »</b>. Une fois ta participation faite, tes jetons sont crédités. ✅"},
-  {cat:'🎟️ Participer',q:"Comment je participe à une activité ?",kw:"participer activite sortie atelier inscrire reserver place bouton participer",
-   a:"Dans <b>🎟️ Activités</b>, clique sur <b>« Participer »</b> sous l'activité choisie. Le nombre de jetons nécessaire est retiré de ton solde et tu es inscrit·e."},
   {cat:'💡 Ateliers',q:"C'est quoi les « ateliers en préparation » ?",kw:"atelier preparation interesse animer ouvrir seuil idee participatif futur bientot",
    a:"Ce sont des ateliers qui <b>ouvrent dès qu'il y a assez d'inscrits</b>. Dis si ça t'intéresse (<b>🙋 Ça m'intéresse</b>) ou si tu sais animer (<b>🧑‍🏫 Je peux animer</b>). Quand le seuil est atteint, l'atelier ouvre ! 🍍"},
   {cat:'💡 Ateliers',q:"Comment je dis qu'un atelier m'intéresse ?",kw:"interesse atelier signaler envie vouloir inscrire preparation bouton ca minteresse",
    a:"Dans <b>💡 Ateliers en préparation</b>, clique sur <b>« 🙋 Ça m'intéresse »</b>, indique ton nom (et un contact si tu veux), et valide. Le CASE te tiendra au courant dès que l'atelier ouvre."},
-  {cat:'📜 Mon espace',q:"Où je vois mon solde et mon historique ?",kw:"solde historique voir mes jetons combien reste mouvement compte suivre total",
-   a:"Ton <b>solde de jetons</b> est affiché tout en haut de la page. Plus bas, <b>📜 Mon historique</b> liste tous tes mouvements (jetons gagnés et utilisés)."},
   {cat:'📜 Mon espace',q:"Comment j'adhère au CASE ?",kw:"adherer adhesion inscription devenir membre cotisation rejoindre carte adherent 10 euros",
-   a:"L'adhésion (<b>10 €</b>, valable du <b>1ᵉʳ août au 31 juillet</b>) se règle auprès du <b>bureau du CASE</b>. <b>Un seul parent adhérent suffit pour tous les enfants.</b> Vous pouvez déjà créer votre compte, déposer votre dossier périscolaire et réserver vos activités en ligne — le bureau régularise l'adhésion. 🎁 +2 jetons offerts à l'adhésion !"},
+   a:"L'adhésion (<b>10 €</b>, valable du <b>1ᵉʳ août au 31 juillet</b>) se règle auprès du <b>bureau du CASE</b>. <b>Un seul parent adhérent suffit pour tous les enfants.</b> Vous pouvez déjà créer votre compte, déposer votre dossier périscolaire et réserver vos activités en ligne — le bureau régularise l'adhésion."},
   {cat:'🌴 Activités & ACM',q:"Comment je réserve une place à l'ACM ?",kw:"acm reserver place activite sortie vacances ado inscrire reservation ete enfant",
    a:"Dans <b>🌴 Mes activités & sorties</b> (en haut de votre espace), choisissez l'activité, cliquez <b>« 🌴 Réserver une place »</b>, indiquez le prénom de votre enfant et validez. La réservation est reliée à votre famille ; le bureau confirme (et régularise l'adhésion si besoin)."},
   {cat:'🌴 Activités & ACM',q:"Faut-il être adhérent pour l'ACM ?",kw:"adherent adhesion obligatoire acm activite droit famille parent assurance payer venir",
@@ -634,7 +544,7 @@ async function acmBoot(){
       _sbAt.from('activites').select('*').eq('publie',true).eq('type','activite').eq('statut','ouvert').order('ordre',{ascending:true}),
       _sbAt.from('inscriptions_activite').select('*').eq('user_id',ACM.uid)
     ]);
-    acts=(ra.data||[]).filter(a=>!/p[ée]riscol/i.test(a.nom||''));
+    acts=(ra.data||[]).filter(a=>(a.categorie||'')==='Péri & extrascolaire' && !/p[ée]riscol/i.test(a.nom||''));
     mine=rm.data||[];
   }catch(e){ body.innerHTML='<p class="sub" style="color:#b23a23">Impossible de charger les activités pour le moment.</p>'; return; }
   const byAct={}; mine.forEach(m=>{ (byAct[m.activite_id]=byAct[m.activite_id]||[]).push(m); });
