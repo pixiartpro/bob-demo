@@ -2246,7 +2246,7 @@ function renderFaqList(){
 /* ---- ✨ Quoi de neuf (nouveautés + notice chronologique) ---- */
 const NEWS=[
   {id:'2026-06-20-vacances',date:'2026-06-20',tab:'🌴 Vacances',titre:"🌴 Nouvel onglet « Vacances » (programmation ACM)",
-   desc:"Un outil interne pour préparer les programmes de vacances sans repartir de zéro : un catalogue d'activités réutilisable, classé par origine (🏠 maison / 🤝 partenaire / 💶 payant), avec le contact de l'intervenant et le statut de la démarche (à appeler / en attente / confirmé). On crée une session (ex : Été 2026), on pose les activités sur les jours, et un objectif rappelle la cible : 5 activités minimum, dont une majorité « maison ». Réservé au bureau."},
+   desc:"Un outil interne pour préparer les programmes de vacances sans repartir de zéro : un catalogue d'activités réutilisable, classé par origine (🏠 maison / 🤝 partenaire / 💶 payant), avec le contact de l'intervenant et le statut de la démarche (à appeler / en attente / confirmé). On crée une session (ex : Été 2026), on pose les activités sur les jours, et un objectif rappelle la cible : 5 activités minimum, dont une majorité « maison ». Les jours d'une session peuvent être datés (ex : Lun 27/07), les week-ends sont sautés automatiquement. Réservé au bureau."},
   {id:'2026-06-20-acm-ados',date:'2026-06-20',tab:'🎟️ Activités',titre:"🏕️ ACM Ados — Été 2026 en ligne",
    desc:"La carte « Accueil de loisirs (ACM) » devient « ACM Ados — Été 2026 » (27 juil. → 7 août · 11-17 ans) : programme complet (média/podcast, cuisine, randonnée du Pic Adam, sport, self-défense…) et inscriptions ouvertes (16 places, modifiable). Nouveau : les cartes d'activité affichent maintenant leur programme quand on clique dessus sur le site. Pour relancer la com d'un prochain ACM, modifie la date, le message et la capacité ici puis republie."},
   {id:'2026-06-19-multi-asso',date:'2026-06-19',tab:'🔐 Connexion',titre:"🏛️ Bob peut accueillir une 2ᵉ association",
@@ -4486,10 +4486,19 @@ function acmEditFiche(id){ acmRenderForm(id); const f=$('acmForm'); if(f){ f.sty
 function acmDelFiche(id){ if(!confirm('Supprimer cette activité du catalogue ?'))return; const a=acmDb(); a.fiches=a.fiches.filter(f=>f.id!==id); a.sessions.forEach(s=>{ if(s.plan) delete s.plan[id]; }); save(); }
 function acmSetJour(id,v){ const cs=acmCurSession(); if(!cs)return; if(!cs.plan)cs.plan={}; cs.plan[id]=v; save(); }
 function acmSelectSession(id){ acmDb().cur=id; save(); }
+function acmGenJours(startStr,nb){
+  const J=['Dim','Lun','Mar','Mer','Jeu','Ven','Sam']; let d=null;
+  if(startStr){ const m=String(startStr).trim().match(/^(\d{1,2})\/(\d{1,2})\/(\d{2,4})$/); if(m){ let y=+m[3]; if(y<100)y+=2000; d=new Date(y,+m[2]-1,+m[1]); } }
+  const out=[];
+  if(d && !isNaN(d.getTime())){ let guard=0; while(out.length<nb && guard++<400){ const wd=d.getDay(); if(wd!==0&&wd!==6){ out.push(J[wd]+' '+String(d.getDate()).padStart(2,'0')+'/'+String(d.getMonth()+1).padStart(2,'0')); } d.setDate(d.getDate()+1); } }
+  else { for(let i=1;i<=nb;i++) out.push('Jour '+i); }
+  return out;
+}
 function acmNewSession(){
   const nom=prompt('Nom de la session (ex : Été 2026, Toussaint 2026) :'); if(!nom||!nom.trim())return;
-  const nb=Math.max(1,Math.min(40,parseInt(prompt('Combien de jours ? (ex : 10)','10'),10)||10));
-  const jours=[]; for(let i=1;i<=nb;i++) jours.push('Jour '+i);
+  const start=prompt('Date du 1er jour (JJ/MM/AAAA) — laisse vide pour « Jour 1, 2, 3… ». Les week-ends sont sautés automatiquement.','');
+  const nb=Math.max(1,Math.min(40,parseInt(prompt('Combien de jours d\'accueil ? (ex : 10)','10'),10)||10));
+  const jours=acmGenJours(start,nb);
   const s={id:uid(),nom:nom.trim(),jours,plan:{}}; const a=acmDb(); a.sessions.push(s); a.cur=s.id; save();
 }
 function acmDelSession(){ const cs=acmCurSession(); if(!cs)return; if(!confirm('Supprimer la session « '+cs.nom+' » ? (le catalogue est conservé)'))return; const a=acmDb(); a.sessions=a.sessions.filter(s=>s.id!==cs.id); a.cur=a.sessions[0]?a.sessions[0].id:null; save(); }
