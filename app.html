@@ -2303,6 +2303,8 @@ function pageHelpGotoAide(){ pageHelpClose(); const b=document.querySelector('na
 
 /* ---- ✨ Quoi de neuf (nouveautés + notice chronologique) ---- */
 const NEWS=[
+  {id:'2026-06-20-securite-acces',date:'2026-06-20',tab:'❓ Aide',titre:"🔒 Sécurité : la gestion est réservée au bureau + anti-perte de saisie",
+   desc:"Deux renforts discrets côté coulisses. (1) L'espace de gestion est désormais réservé au bureau (président, trésorier, bureau) : un compte famille qui arriverait ici est renvoyé vers son espace, et personne d'autre ne peut voir la gestion — même en connaissant l'adresse. (2) Anti-perte de saisie : si tu te déconnectes ou fermes l'onglet juste après une modif, Bob l'enregistre avant de partir, et te prévient s'il reste quelque chose de non sauvegardé. Rien ne change dans ton usage quotidien."},
   {id:'2026-06-20-signature-bob',date:'2026-06-20',tab:'🌍 Site public',titre:"🤖 Signature « Ce site vous est confié par Bob »",
    desc:"Une petite signature discrète « Ce site vous est confié par Bob » apparaît désormais tout en bas du site public, de l'espace adhérent et de l'app — comme un « propulsé par », sans gêner la marque du CASE (qui reste en haut). Au passage, le bas de l'app affichait par erreur « données stockées localement » : corrigé en « données sécurisées en ligne, hébergement Paris · RGPD »."},
   {id:'2026-06-20-rdv-creneaux',date:'2026-06-20',tab:'📅 Rendez-vous',titre:"📅 Rendez-vous à créneaux (comme chez le coiffeur)",
@@ -4749,7 +4751,10 @@ renderAll();
   function schedulePush(){ if(!canWrite)return; dirty=true; setSync('… modifications en attente'); clearTimeout(pushTimer); pushTimer=setTimeout(pushNow,800); }
 
   // exposées globalement pour les boutons du bandeau
-  window.cloudLogout=async function(){ await sbc.auth.signOut(); location.href='connexion.html'; };
+  // P2 (20/06/2026) — flush avant de partir : on enregistre la modif en attente AVANT la déconnexion (sinon perte dans la fenêtre 800 ms)
+  window.cloudLogout=async function(){ try{ clearTimeout(pushTimer); if(dirty) await pushNow(); }catch(e){} await sbc.auth.signOut(); location.href='connexion.html'; };
+  // P2 — garde-fou fermeture d'onglet : prévient l'utilisateur si une modif n'est pas encore enregistrée
+  window.addEventListener('beforeunload',function(e){ if(dirty){ e.preventDefault(); e.returnValue=''; } });
   window.cloudRefresh=async function(){
     const {data:st}=await sbc.from('app_state').select('data,updated_at').eq('asso_id',myAsso).maybeSingle();
     db = Object.assign(blank(), (st&&st.data&&typeof st.data==='object')?st.data:{});
@@ -5399,6 +5404,14 @@ renderAll();
     if(!prof){ gate('<h2>Profil introuvable</h2><p>Contacte le Président.</p><p><a href="connexion.html">→ Espace bureau</a></p>'); return; }
     myProfile=prof;
     if(prof.statut!=='actif'){ gate('<h2>⏳ Accès en attente</h2><p>Ton accès doit être validé par un administrateur avant d\'entrer dans la gestion.</p><p style="margin-top:18px"><a href="connexion.html" style="background:#1f9d6b;color:#fff;text-decoration:none;padding:11px 18px;border-radius:999px;font-weight:800">→ Espace bureau</a></p>'); return; }
+    // P1 (20/06/2026) — gate par RÔLE : la gestion est réservée au bureau (président/trésorier/bureau).
+    // Un compte famille est renvoyé vers son espace ; un rôle sans espace dédié (personnel/intervenant) est arrêté ici.
+    const GESTION_ROLES=['president','tresorier','bureau'];
+    if(!GESTION_ROLES.includes(prof.role)){
+      if(prof.role==='adherent'){ location.replace('espace-adherent.html'); return; }
+      gate('<h2>🔒 Accès réservé au bureau</h2><p>Cet espace de gestion est réservé au bureau. Ton espace dédié n\'est pas encore disponible — pour toute question, contacte le bureau.</p><p style="margin-top:18px"><a href="connexion.html" style="background:#1f9d6b;color:#fff;text-decoration:none;padding:11px 18px;border-radius:999px;font-weight:800">→ Retour</a></p>');
+      return;
+    }
     myAsso=prof.asso_id;
     try{ applyAssoIdentity(myAsso); }catch(e){}
     canWrite=['president','tresorier','bureau'].includes(prof.role);
