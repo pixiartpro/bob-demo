@@ -648,6 +648,7 @@ function actRowHtml(a){
       +badge+btn
     +'</div>'
     +'<div class="actform" id="actf_'+a.id+'" style="display:none">'
+      +(a.programme?'<p style="margin:0 0 10px;font-size:14px;line-height:1.55;white-space:pre-line"><b>📋 Au programme :</b><br>'+escP(a.programme)+'</p>':'')
       +'<input id="actn_'+a.id+'" placeholder="Nom de l\'enfant / participant *">'
       +'<input id="actr_'+a.id+'" placeholder="Responsable (parent)">'
       +'<input id="actc_'+a.id+'" placeholder="Téléphone ou email">'
