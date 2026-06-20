@@ -85,6 +85,17 @@
   </div>
 </section>
 
+<!-- 👧 MES ENFANTS — fiches réutilisables -->
+<section class="block" id="kidsSection" style="padding:8px 0 6px">
+  <div class="wrap">
+    <div class="card" style="border-left:5px solid var(--ananas);background:#fffaf2">
+      <h2 class="title" style="font-size:20px">👧 Mes enfants <small>— leurs fiches, réutilisées partout</small></h2>
+      <p class="sub" style="margin:2px 0 10px">Renseignez vos enfants <b>une fois</b> (identité, allergies, infos santé). Ils seront proposés automatiquement pour le périscolaire et l'ACM — plus besoin de les retaper.</p>
+      <div id="kidsBody"><p class="sub">Chargement…</p></div>
+    </div>
+  </div>
+</section>
+
 <!-- MES ACTIVITÉS & SORTIES (ACM) — réservation reliée au compte famille -->
 <section class="block" id="acmSection" style="padding:8px 0 6px">
   <div class="wrap">
@@ -329,12 +340,12 @@ async function periBoot(){
   const body=document.getElementById('periBody'); if(!body) return;
   let session=null;
   try{ session=(await _sbAt.auth.getSession()).data.session; }catch(e){ session=null; }
-  if(!session){ ACM.uid=null; ACM.profile=null; ACM.asso=null; acmBoot(); periRenderLocked('connexion'); return; }
+  if(!session){ ACM.uid=null; ACM.profile=null; ACM.asso=null; acmBoot(); KIDS.list=[]; kidsRender(); periRenderLocked('connexion'); return; }
   PERI.uid=session.user.id;
   const {data:prof}=await _sbAt.from('profiles').select('full_name,email,statut,role,asso_id').eq('id',PERI.uid).maybeSingle();
   PERI.profile=prof||null;
   // Contexte partagé pour la réservation d'activités/ACM (même compte famille)
-  ACM.uid=PERI.uid; ACM.profile=prof||null; ACM.asso=prof?prof.asso_id:null; acmBoot();
+  ACM.uid=PERI.uid; ACM.profile=prof||null; ACM.asso=prof?prof.asso_id:null; acmBoot(); kidsLoad().then(kidsRender);
   if(!prof){ periRenderLocked('noprofile'); return; }
   PERI.asso=prof.asso_id;
   PERI.statut=prof.statut;
@@ -598,6 +609,73 @@ window.acmReserve=async function(id, override){
   if(info){ info.style.color='var(--vert-fonce)'; info.textContent='✅ Place réservée ! Le bureau confirmera (et l\'adhésion si besoin).'; }
   toast('✅ Place réservée !');
   setTimeout(acmBoot, 1400);
+};
+
+/* ===== 👧 Mes enfants — fiches réutilisables (table enfants) ===== */
+const KIDS = { list:[] };
+function kidEsc(s){return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+function kidsClasseOptions(sel){
+  const opts=['','TPS','PS','MS','GS','CP','CE1','CE2','CM1','CM2','Autre'];
+  return opts.map(o=>'<option value="'+o+'"'+(o===(sel||'')?' selected':'')+'>'+(o||'— Classe —')+'</option>').join('');
+}
+async function kidsLoad(){
+  if(!ACM.uid){ KIDS.list=[]; return; }
+  const {data,error}=await _sbAt.from('enfants').select('*').order('created_at',{ascending:true});
+  KIDS.list = (error?[]:(data||[]));
+}
+function kidCard(k){
+  const id=k.id;
+  return '<div class="card" style="box-shadow:none;border:1px solid var(--line);gap:8px" data-kid="'+id+'">'
+    +'<div style="display:flex;gap:8px;flex-wrap:wrap">'
+    +'<input id="k_nom_'+id+'" value="'+kidEsc(k.nom||'')+'" placeholder="Nom de l\'enfant" style="flex:1;min-width:130px;padding:9px 11px;border:1px solid var(--line);border-radius:10px;font:inherit">'
+    +'<input id="k_prenom_'+id+'" value="'+kidEsc(k.prenom||'')+'" placeholder="Prénom de l\'enfant *" style="flex:1;min-width:130px;padding:9px 11px;border:1px solid var(--line);border-radius:10px;font:inherit">'
+    +'</div>'
+    +'<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">'
+    +'<input id="k_naissance_'+id+'" type="date" value="'+kidEsc(k.naissance||'')+'" style="flex:1;min-width:150px;padding:9px 11px;border:1px solid var(--line);border-radius:10px;font:inherit">'
+    +'<select id="k_classe_'+id+'" style="flex:1;min-width:120px;padding:9px 11px;border:1px solid var(--line);border-radius:10px;font:inherit">'+kidsClasseOptions(k.classe)+'</select>'
+    +'<span style="flex:1;min-width:140px;color:var(--muted);font-size:13.5px">🏫 '+kidEsc(k.ecole||PERI.ECOLE)+'</span>'
+    +'</div>'
+    +'<input id="k_allergies_'+id+'" value="'+kidEsc(k.allergies||'')+'" placeholder="🌰 Allergies (optionnel)" style="width:100%;padding:9px 11px;border:1px solid var(--line);border-radius:10px;font:inherit">'
+    +'<input id="k_sante_'+id+'" value="'+kidEsc(k.sante||'')+'" placeholder="🩺 Infos santé / PAI (optionnel)" style="width:100%;padding:9px 11px;border:1px solid var(--line);border-radius:10px;font:inherit">'
+    +'<input id="k_autorises_'+id+'" value="'+kidEsc(k.autorises||'')+'" placeholder="🔐 Personnes autorisées à venir le chercher (optionnel)" style="width:100%;padding:9px 11px;border:1px solid var(--line);border-radius:10px;font:inherit">'
+    +'<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">'
+    +'<button class="btn win" onclick="kidSave(\''+id+'\')">💾 Enregistrer la fiche</button>'
+    +'<button class="reset" style="margin-left:auto" onclick="kidDelete(\''+id+'\')">🗑 Supprimer</button>'
+    +'<span id="k_msg_'+id+'" style="font-size:13px;font-weight:700"></span>'
+    +'</div></div>';
+}
+function kidsRender(){
+  const box=document.getElementById('kidsBody'); if(!box) return;
+  if(!ACM.uid){ box.innerHTML='<p class="sub" style="margin:0">Connectez-vous pour gérer vos enfants. <a href="connexion.html" style="color:var(--vert-fonce);font-weight:800">Se connecter →</a></p>'; return; }
+  let html='';
+  if(!KIDS.list.length){ html+='<p class="sub" style="margin:0 0 10px">Aucun enfant pour l\'instant. Ajoutez-les : ils seront réutilisés pour le périscolaire et l\'ACM.</p>'; }
+  else html+='<div style="display:flex;flex-direction:column;gap:10px">'+KIDS.list.map(kidCard).join('')+'</div>';
+  html+='<div style="margin-top:12px"><button class="btn use" onclick="kidAdd()">+ Ajouter un enfant</button></div>';
+  box.innerHTML=html;
+}
+window.kidAdd=async function(){
+  if(!ACM.uid) return;
+  const {data,error}=await _sbAt.from('enfants').insert({prenom:'', nom:'', ecole:PERI.ECOLE}).select().single();
+  if(error){ toast('Erreur : '+(error.message||error)); return; }
+  KIDS.list.push(data); kidsRender();
+};
+window.kidSave=async function(id){
+  const g=f=>{const el=document.getElementById('k_'+f+'_'+id); return el?el.value:'';};
+  const msg=document.getElementById('k_msg_'+id);
+  const prenom=(g('prenom')||'').trim();
+  if(!prenom){ if(msg){msg.style.color='#c0392b'; msg.textContent='Le prénom est obligatoire.';} return; }
+  const payload={ nom:(g('nom')||'').trim(), prenom, naissance:((g('naissance')||'')||null), classe:g('classe')||'', ecole:PERI.ECOLE, allergies:(g('allergies')||'').trim(), sante:(g('sante')||'').trim(), autorises:(g('autorises')||'').trim() };
+  const {data,error}=await _sbAt.from('enfants').update(payload).eq('id',id).select().single();
+  if(error){ if(msg){msg.style.color='#c0392b'; msg.textContent='Échec : '+(error.message||error);} return; }
+  const i=KIDS.list.findIndex(k=>k.id===id); if(i>=0) KIDS.list[i]=data;
+  if(msg){ msg.style.color='var(--vert-fonce)'; msg.textContent='✅ Enregistré'; }
+  toast('✅ Fiche enregistrée');
+};
+window.kidDelete=async function(id){
+  if(!confirm('Supprimer cette fiche enfant ?')) return;
+  const {error}=await _sbAt.from('enfants').delete().eq('id',id);
+  if(error){ toast('Erreur : '+(error.message||error)); return; }
+  KIDS.list=KIDS.list.filter(k=>k.id!==id); kidsRender();
 };
 
 /* ===== Calculateur de tarif périscolaire (grille officielle au quotient familial) ===== */
