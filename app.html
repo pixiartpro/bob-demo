@@ -752,6 +752,8 @@
     <p class="hint">Le catalogue d'activités, réutilisable d'une session à l'autre : leur origine (🏠 maison / 🤝 partenaire / 💶 payant), le contact de l'intervenant, et où en est la démarche. Pioche dedans, place-les sur les jours d'une session. Objectif : au moins 5 activités par session, dont une majorité « maison ».</p>
     <div id="acmSessionBar" class="row" style="gap:8px;flex-wrap:wrap;align-items:center;margin:12px 0"></div>
     <div id="acmObjectif" style="margin:10px 0"></div>
+    <div id="acmBoard" style="margin:10px 0"></div>
+    <h3 style="margin:18px 0 4px">🗂️ Le catalogue <span class="hint" style="font-weight:400;font-size:13px">— la bibliothèque, réutilisable d'une session à l'autre</span></h3>
     <div class="row" style="margin:10px 0"><button class="btn" onclick="acmToggleForm()">+ Ajouter une activité au catalogue</button></div>
     <div id="acmForm" style="display:none"></div>
     <div id="acmCatalogue" style="margin-top:12px"></div>
@@ -2246,7 +2248,7 @@ function renderFaqList(){
 /* ---- ✨ Quoi de neuf (nouveautés + notice chronologique) ---- */
 const NEWS=[
   {id:'2026-06-20-vacances',date:'2026-06-20',tab:'🌴 Vacances',titre:"🌴 Nouvel onglet « Vacances » (programmation ACM)",
-   desc:"Un outil interne pour préparer les programmes de vacances sans repartir de zéro : un catalogue d'activités réutilisable, classé par origine (🏠 maison / 🤝 partenaire / 💶 payant), avec le contact de l'intervenant et le statut de la démarche (à appeler / en attente / confirmé). On crée une session (ex : Été 2026), on pose les activités sur les jours, et un objectif rappelle la cible : 5 activités minimum, dont une majorité « maison ». Les jours d'une session peuvent être datés (ex : Lun 27/07), les week-ends sont sautés automatiquement. Réservé au bureau."},
+   desc:"Un outil interne pour préparer les programmes de vacances sans repartir de zéro : un catalogue d'activités réutilisable, classé par origine (🏠 maison / 🤝 partenaire / 💶 payant), avec le contact de l'intervenant et le statut de la démarche (à appeler / en attente / confirmé). On crée une session (ex : Été 2026), on pose les activités sur les jours, et un objectif rappelle la cible : 5 activités minimum, dont une majorité « maison ». Les jours d'une session peuvent être datés (ex : Lun 27/07), les week-ends sont sautés automatiquement. Un planning visuel permet de glisser-déposer les activités sur les jours (menu « Jour » en secours sur mobile). Réservé au bureau."},
   {id:'2026-06-20-acm-ados',date:'2026-06-20',tab:'🎟️ Activités',titre:"🏕️ ACM Ados — Été 2026 en ligne",
    desc:"La carte « Accueil de loisirs (ACM) » devient « ACM Ados — Été 2026 » (27 juil. → 7 août · 11-17 ans) : programme complet (média/podcast, cuisine, randonnée du Pic Adam, sport, self-défense…) et inscriptions ouvertes (16 places, modifiable). Nouveau : les cartes d'activité affichent maintenant leur programme quand on clique dessus sur le site. Pour relancer la com d'un prochain ACM, modifie la date, le message et la capacité ici puis republie."},
   {id:'2026-06-19-multi-asso',date:'2026-06-19',tab:'🔐 Connexion',titre:"🏛️ Bob peut accueillir une 2ᵉ association",
@@ -4397,6 +4399,23 @@ function acmOrig(k){ return ACM_ORIG.find(o=>o.k===k)||ACM_ORIG[0]; }
 function acmStat(k){ return ACM_STAT.find(o=>o.k===k)||ACM_STAT[0]; }
 function acmBadge(o){ return '<span style="display:inline-block;padding:2px 9px;border-radius:999px;font-size:12px;font-weight:700;background:'+o.bg+';color:'+o.fg+'">'+o.l+'</span>'; }
 function acmCurSession(){ const a=acmDb(); return a.sessions.find(s=>s.id===a.cur)||null; }
+let _acmDrag=null;
+function acmDragStart(ev,id){ _acmDrag=id; try{ ev.dataTransfer.setData('text/plain',id); ev.dataTransfer.effectAllowed='move'; }catch(e){} }
+function acmDragOver(ev){ ev.preventDefault(); try{ ev.dataTransfer.dropEffect='move'; }catch(e){} }
+function acmDrop(ev,col){ ev.preventDefault(); let id=_acmDrag; try{ if(!id) id=ev.dataTransfer.getData('text/plain'); }catch(e){} if(!id)return; const cs=acmCurSession(); if(!cs)return; if(!cs.plan)cs.plan={}; cs.plan[id]=col; _acmDrag=null; save(); }
+function acmBoardHtml(cs,plan){
+  const a=acmDb();
+  const cols=[{key:'—',label:'🗂️ À placer'},{key:'reserve',label:'📦 Réserve'}];
+  (cs.jours||[]).forEach(j=>cols.push({key:j,label:j}));
+  const chip=f=>{ const o=acmOrig(f.origine); return '<div draggable="true" ondragstart="acmDragStart(event,\''+f.id+'\')" style="background:#fff;border:1px solid #e2e7ec;border-left:4px solid '+o.fg+';border-radius:8px;padding:5px 8px;margin:5px 0;font-size:13px;cursor:grab">'+acmEsc(f.emoji||'•')+' '+acmEsc(f.nom)+'</div>'; };
+  return '<div style="display:flex;gap:8px;overflow-x:auto;padding:4px 0 8px">'+cols.map(c=>{
+    const fs=a.fiches.filter(f=>((plan[f.id]||'—')===c.key));
+    return '<div ondragover="acmDragOver(event)" ondrop="acmDrop(event,\''+c.key+'\')" style="min-width:152px;flex:0 0 auto;background:#f4f6f8;border:1px solid #e7ebf0;border-radius:10px;padding:8px;min-height:80px">'
+      +'<div style="font-weight:700;font-size:12.5px;margin-bottom:2px">'+acmEsc(c.label)+' <span class="hint" style="font-weight:400">'+fs.length+'</span></div>'
+      +(fs.length?fs.map(chip).join(''):'<div class="hint" style="font-size:12px;text-align:center;padding:10px 0;opacity:.7">déposer ici</div>')
+      +'</div>';
+  }).join('')+'</div>';
+}
 function renderAcmVac(){
   if(!$('acmvac')) return;
   const a=acmDb(), cs=acmCurSession();
@@ -4422,6 +4441,11 @@ function renderAcmVac(){
         +' · dont <b>'+maison+' 🏠 maison</b> '+(okMaison?'✅ majorité maison':'<span class="hint">(vise la majorité maison)</span>')
         +' · <span class="hint">'+dated+' posée'+(dated>1?'s':'')+' sur un jour</span></div>';
     }
+  }
+  const board=$('acmBoard');
+  if(board){
+    if(!cs){ board.innerHTML='<p class="hint">Crée une session pour bâtir le planning et glisser les activités sur les jours.</p>'; }
+    else { board.innerHTML='<h3 style="margin:8px 0 2px">📅 Le planning — « '+acmEsc(cs.nom)+' »</h3><p class="hint" style="margin:0 0 6px">Glisse une activité d\'une colonne à l\'autre pour la poser sur un jour. (Sur téléphone : utilise le menu « Jour » dans le catalogue plus bas.)</p>'+acmBoardHtml(cs, cs.plan||{}); }
   }
   const cat=$('acmCatalogue');
   if(cat){
