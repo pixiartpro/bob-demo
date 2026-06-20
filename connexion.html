@@ -146,13 +146,15 @@ function isAdmin(p){return p&&(p.role==='president'||p.role==='tresorier')}
 
 /* ---- Inscription = demande d'accès ---- */
 async function signUp(){
+  const prenom=$('#r_prenom').value.trim();
   const nom=$('#r_nom').value.trim();
+  const fullName=(prenom+' '+nom).trim();
   const email=$('#r_email').value.trim();
   const pw=$('#r_pw').value;
-  if(!nom||!email||!pw){toast('Indique ton nom, ton email et un mot de passe.');return}
+  if(!prenom||!nom||!email||!pw){toast('Indique ton prénom, ton nom, ton email et un mot de passe.');return}
   if(pw.length<6){toast('Le mot de passe doit faire au moins 6 caractères.');return}
   const btn=$('#r_btn'); btn.disabled=true; btn.textContent='Envoi…';
-  const {data,error}=await sb.auth.signUp({email,password:pw,options:{data:{full_name:nom, asso_slug:DOOR}}});
+  const {data,error}=await sb.auth.signUp({email,password:pw,options:{emailRedirectTo:location.origin+location.pathname, data:{full_name:fullName, asso_slug:DOOR}}});
   btn.disabled=false; btn.textContent='Envoyer ma demande';
   if(error){toast(error.message);return}
   if(data.session){ await refresh(); toast('Demande créée ✓ — en attente de validation.'); }
@@ -252,7 +254,10 @@ function renderLoggedOut(){
     <div class="card">
       <h2>Demander un accès</h2>
       <p class="h">Crée ton compte. Ta demande arrive en « en attente » et un administrateur t'accrédite.</p>
-      <div class="field"><label>Nom et prénom</label><input id="r_nom" placeholder="ex. Guy Robert"></div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap">
+        <div class="field" style="flex:1;min-width:130px"><label>Prénom</label><input id="r_prenom" placeholder="ex. Guy"></div>
+        <div class="field" style="flex:1;min-width:130px"><label>Nom</label><input id="r_nom" placeholder="ex. Robert"></div>
+      </div>
       <div class="field"><label>Email</label><input id="r_email" type="email" placeholder="ton@email.fr"></div>
       <div class="field"><label>Mot de passe (min. 6 caractères)</label><input id="r_pw" type="password" placeholder="••••••••"></div>
       <button id="r_btn" class="btn s" style="width:100%" onclick="signUp()">Envoyer ma demande</button>
