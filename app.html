@@ -2303,6 +2303,8 @@ function pageHelpGotoAide(){ pageHelpClose(); const b=document.querySelector('na
 
 /* ---- ✨ Quoi de neuf (nouveautés + notice chronologique) ---- */
 const NEWS=[
+  {id:'2026-06-20-anti-ecrasement',date:'2026-06-20',tab:'❓ Aide',titre:"🛟 Anti-écrasement : on ne perd plus le travail à plusieurs",
+   desc:"Quand deux personnes du bureau enregistrent en même temps, plus de risque d'effacer le travail de l'autre par accident. Si un collègue a enregistré entre-temps, Bob te propose un choix clair — « ↻ Recharger sa version » (recommandé) ou « écraser quand même » — au lieu de l'ancien message piège. En coulisses, Bob garde aussi une copie horaire du coffre : même en cas de fausse manœuvre, on peut revenir en arrière."},
   {id:'2026-06-20-securite-acces',date:'2026-06-20',tab:'❓ Aide',titre:"🔒 Sécurité : la gestion est réservée au bureau + anti-perte de saisie",
    desc:"Deux renforts discrets côté coulisses. (1) L'espace de gestion est désormais réservé au bureau (président, trésorier, bureau) : un compte famille qui arriverait ici est renvoyé vers son espace, et personne d'autre ne peut voir la gestion — même en connaissant l'adresse. (2) Anti-perte de saisie : si tu te déconnectes ou fermes l'onglet juste après une modif, Bob l'enregistre avant de partir, et te prévient s'il reste quelque chose de non sauvegardé. Rien ne change dans ton usage quotidien."},
   {id:'2026-06-20-signature-bob',date:'2026-06-20',tab:'🌍 Site public',titre:"🤖 Signature « Ce site vous est confié par Bob »",
@@ -4736,17 +4738,39 @@ renderAll();
   async function pushNow(){
     if(!myAsso||!canWrite)return;
     setSync('… enregistrement');
-    // garde-fou anti-écrasement : un collègue a-t-il enregistré depuis notre dernier chargement ?
-    const {data:rem}=await sbc.from('app_state').select('updated_at').eq('asso_id',myAsso).maybeSingle();
-    if(rem && rem.updated_at && lastSyncTs && new Date(rem.updated_at) > new Date(lastSyncTs)){
-      if(!confirm('⚠️ Un collègue a enregistré des modifications entre-temps.\n\nOK = écraser avec TA version (ses changements récents seront perdus).\nAnnuler = recharger SA version (tes changements non enregistrés seront perdus).')){
-        await window.cloudRefresh(); return;
-      }
+    // P3 (20/06/2026) — enregistrement atomique avec verrou serveur (RPC save_state) :
+    // le serveur REFUSE d'écraser une version plus récente que celle qu'on croyait à jour.
+    const {data:ts,error}=await sbc.rpc('save_state',{p_data:db,p_expected:lastSyncTs});
+    if(error){
+      if((error.message||'').indexOf('stale')>=0 || error.code==='55000'){ bobConflict(); return; }
+      setSync('⚠️ '+error.message,'#ffd9d0'); return;
     }
-    const ts=new Date().toISOString();
-    const {error}=await sbc.from('app_state').upsert({asso_id:myAsso,data:db,updated_at:ts,updated_by:myProfile.id});
-    if(!error){ lastSyncTs=ts; dirty=false; }
-    setSync(error?('⚠️ '+error.message):'✓ enregistré en ligne', error?'#ffd9d0':'#dff5e9');
+    lastSyncTs=ts; dirty=false;
+    setSync('✓ enregistré en ligne','#dff5e9');
+  }
+  // P3 — conflit d'enregistrement : choix clair, « recharger la version du collègue » par défaut (sûr)
+  function bobConflict(){
+    setSync('⚠️ un collègue a enregistré — choisis','#ffd9d0');
+    if(document.getElementById('bobConflictModal')) return;
+    const o=document.createElement('div'); o.id='bobConflictModal';
+    o.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:99999;display:flex;align-items:center;justify-content:center;padding:20px';
+    o.innerHTML='<div style="background:#fff;max-width:440px;border-radius:16px;padding:22px 24px;box-shadow:0 12px 40px rgba(0,0,0,.3)">'
+      +'<h2 style="margin:0 0 10px;font-size:19px">⚠️ Un collègue a enregistré entre-temps</h2>'
+      +'<p style="margin:0 0 18px;color:#444;line-height:1.5">Pour ne rien écraser par accident, recharge d\'abord sa version (recommandé), puis refais ta saisie si besoin.</p>'
+      +'<div style="display:flex;flex-direction:column;gap:10px">'
+      +'<button id="bobConfReload" style="background:#1f9d6b;color:#fff;border:0;padding:12px 16px;border-radius:999px;font-weight:800;font-size:15px;cursor:pointer">↻ Recharger la version du collègue (sûr)</button>'
+      +'<button id="bobConfForce" style="background:#fff;color:#c0392b;border:1px solid #e3b4ad;padding:10px 16px;border-radius:999px;font-weight:700;font-size:13px;cursor:pointer">Écraser quand même avec ma version</button>'
+      +'</div></div>';
+    document.body.appendChild(o);
+    document.getElementById('bobConfReload').onclick=async()=>{ o.remove(); await window.cloudRefresh(); };
+    document.getElementById('bobConfForce').onclick=async()=>{ o.remove(); await bobForceOverwrite(); };
+  }
+  async function bobForceOverwrite(){
+    setSync('… enregistrement (ta version)');
+    const {data:rem}=await sbc.from('app_state').select('updated_at').eq('asso_id',myAsso).maybeSingle();
+    const {data:ts,error}=await sbc.rpc('save_state',{p_data:db,p_expected:rem?rem.updated_at:null});
+    if(error){ setSync('⚠️ '+error.message,'#ffd9d0'); return; }
+    lastSyncTs=ts; dirty=false; setSync('✓ enregistré (ta version)','#dff5e9');
   }
   function schedulePush(){ if(!canWrite)return; dirty=true; setSync('… modifications en attente'); clearTimeout(pushTimer); pushTimer=setTimeout(pushNow,800); }
 
