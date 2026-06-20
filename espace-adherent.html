@@ -490,9 +490,12 @@ function periRenderForm(){
   const body=document.getElementById('periBody'); const r=PERI.row;
   const _fy=(r.foyer||'').trim().split(/\s+/).filter(Boolean);
   const respNom=_fy.length?_fy[0]:''; const respPrenom=_fy.length>1?_fy.slice(1).join(' '):'';
+  const _flash=PERI.flash; PERI.flash=null;
+  const flashHtml=_flash?'<div style="background:#dff5e9;border:1px solid #a9e0c4;color:#127a51;border-radius:12px;padding:12px 14px;margin:0 0 12px;font-weight:800;font-size:15px">'+periEsc(_flash)+'</div>':'';
   const stLabel={brouillon:'✏️ Brouillon (non déposé)',depose:'📨 Déposé — en attente de validation',valide:'✅ Validé par le bureau',incomplet:'⚠️ Incomplet — voir la note du bureau'}[r.statut]||'';
   body.innerHTML=
-    '<p class="sub" style="margin:0 0 12px">Bonjour '+periEsc((PERI.profile&&PERI.profile.full_name)||'')+' 👋 Renseignez vos enfants et déposez vos pièces. Vous pouvez enregistrer en brouillon et revenir plus tard.</p>'
+    flashHtml
+    +'<p class="sub" style="margin:0 0 12px">Bonjour '+periEsc((PERI.profile&&PERI.profile.full_name)||'')+' 👋 Renseignez vos enfants et déposez vos pièces. Vous pouvez enregistrer en brouillon et revenir plus tard.</p>'
     +((PERI.statut&&PERI.statut!=='actif')?'<div style="background:#fff5da;border:1px solid #f1e2ad;color:#8a6400;border-radius:12px;padding:10px 14px;margin:0 0 12px;font-weight:600">🪪 Votre <b>adhésion (10 €)</b> reste à régulariser auprès du bureau (un seul parent adhérent suffit pour tous vos enfants). Vous pouvez <b>déjà préparer et déposer votre dossier</b> dès maintenant.</div>':'')
     +(stLabel?'<div style="display:inline-block;background:#fff;border:1px solid var(--line);border-radius:999px;padding:6px 14px;font-weight:800;margin-bottom:12px">'+stLabel+'</div>':'')
     +((r.statut==='incomplet'&&r.note_bureau)?'<div style="background:#ffe9e3;border:1px solid #f3c4ba;color:#b23a23;border-radius:12px;padding:10px 14px;margin-bottom:12px">📝 Bureau : '+periEsc(r.note_bureau)+'</div>':'')
@@ -569,12 +572,11 @@ window.periSave=async function(depose){
     else { res=await _sbAt.from('inscriptions_periscolaire').insert(payload).select().single(); }
     if(res.error) throw res.error;
     PERI.row=res.data; if(!Array.isArray(PERI.row.enfants)) PERI.row.enfants=[periEmptyChild()]; if(!PERI.row.pieces) PERI.row.pieces={};
-    if(saved){
-      saved.style.color='var(--vert-fonce)';
-      if(depose){ saved.textContent='📨 Dossier déposé ! Le bureau va le vérifier. Merci 🍍'+(missLabels.length?(' À fournir bientôt : '+missLabels.join(', ')+' — vous pourrez les ajouter ici quand vous voulez.'):''); }
-      else { saved.textContent='💾 Enregistré. Vous pourrez revenir plus tard.'; }
-    }
+    PERI.flash = depose
+      ? '📨 Votre dossier a bien été déposé ! Le bureau du CASE va le vérifier.'+(missLabels.length?(' (À compléter quand vous voulez : '+missLabels.join(', ')+'.)'):' Toutes vos pièces sont là, parfait. 🍍')
+      : '💾 C\'est enregistré ✓ Vos informations sont gardées — vous pourrez revenir les compléter quand vous voulez.';
     periRenderForm();
+    toast(depose?'✅ Dossier déposé !':'💾 Enregistré ✓');
   }catch(e){ if(saved){ saved.style.color='#b23a23'; saved.textContent='Échec : '+(e.message||e); } }
 };
 /* ===== Mes activités & sorties (ACM) — réservation reliée au compte famille ===== */
@@ -626,6 +628,7 @@ window.acmReserve=async function(id){
   const {error}=await _sbAt.from('inscriptions_activite').insert({activite_id:id, nom, responsable:resp, contact, user_id:ACM.uid});
   if(error){ if(info){info.style.color='#c0392b'; info.textContent=(error.code==='23505')?'Déjà réservé pour cet enfant 😉':'Oups : plus de place, ou une erreur. Réessayez.';} return; }
   if(info){ info.style.color='var(--vert-fonce)'; info.textContent='✅ Place réservée ! Le bureau confirmera (et l\'adhésion si besoin).'; }
+  toast('✅ Place réservée !');
   setTimeout(acmBoot, 1400);
 };
 
