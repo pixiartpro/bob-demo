@@ -331,7 +331,6 @@ const PERI = {
 };
 function periEsc(s){return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 function periField(id){ const el=document.getElementById(id); return el?el.value.trim():''; }
-function periEmptyChild(){ return {nom:'',prenom:'',naissance:'',classe:'',ecole:PERI.ECOLE,matin:false,soir:false,autorises:''}; }
 function periClasseOptions(sel){
   const opts=['','TPS','PS','MS','GS','CP','CE1','CE2','CM1','CM2','Autre'];
   return opts.map(o=>'<option value="'+o+'"'+(o===(sel||'')?' selected':'')+'>'+(o||'— Classe —')+'</option>').join('');
@@ -346,15 +345,15 @@ async function periBoot(){
   const {data:prof}=await _sbAt.from('profiles').select('full_name,email,statut,role,asso_id').eq('id',PERI.uid).maybeSingle();
   PERI.profile=prof||null;
   // Contexte partagé pour la réservation d'activités/ACM (même compte famille)
-  ACM.uid=PERI.uid; ACM.profile=prof||null; ACM.asso=prof?prof.asso_id:null; acmBoot(); kidsLoad().then(kidsRender);
+  ACM.uid=PERI.uid; ACM.profile=prof||null; ACM.asso=prof?prof.asso_id:null; acmBoot();
   if(!prof){ periRenderLocked('noprofile'); return; }
   PERI.asso=prof.asso_id;
   PERI.statut=prof.statut;
+  await kidsLoad(); kidsRender();
   const {data:row}=await _sbAt.from('inscriptions_periscolaire').select('*').eq('user_id',PERI.uid).eq('annee',PERI.ANNEE).maybeSingle();
   PERI.row = row || {foyer:prof.full_name||'', email:prof.email||'', tel:'', enfants:[], pieces:{}, statut:'brouillon', annee:PERI.ANNEE};
   if(!Array.isArray(PERI.row.enfants)) PERI.row.enfants=[];
   if(!PERI.row.pieces||typeof PERI.row.pieces!=='object') PERI.row.pieces={};
-  if(!PERI.row.enfants.length) PERI.row.enfants=[periEmptyChild()];
   PERI.editMode=false;
   periRenderForm();
 }
@@ -372,32 +371,35 @@ function periRenderLocked(kind){
     +'<a class="btn win" style="text-decoration:none" href="connexion.html">'+(kind==='connexion'?'Se connecter / Adhérer →':'→ Mon compte')+'</a>';
 }
 
-function periChildRow(e,i){
-  return '<div class="card" style="box-shadow:none;border:1px solid var(--line);gap:8px" data-child="'+i+'">'
-    +'<div style="display:flex;gap:8px;flex-wrap:wrap">'
-    +'<input data-f="nom" value="'+periEsc(e.nom||'')+'" placeholder="Nom de l\'enfant" style="flex:1;min-width:130px;padding:9px 11px;border:1px solid var(--line);border-radius:10px;font:inherit">'
-    +'<input data-f="prenom" value="'+periEsc(e.prenom||'')+'" placeholder="Prénom de l\'enfant" style="flex:1;min-width:130px;padding:9px 11px;border:1px solid var(--line);border-radius:10px;font:inherit">'
-    +'</div>'
-    +'<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">'
-    +'<input data-f="naissance" type="date" value="'+periEsc(e.naissance||'')+'" style="flex:1;min-width:150px;padding:9px 11px;border:1px solid var(--line);border-radius:10px;font:inherit">'
-    +'<select data-f="classe" style="flex:1;min-width:120px;padding:9px 11px;border:1px solid var(--line);border-radius:10px;font:inherit">'+periClasseOptions(e.classe)+'</select>'
-    +'<span style="flex:1;min-width:140px;color:var(--muted);font-size:13.5px">🏫 '+periEsc(e.ecole||PERI.ECOLE)+'</span>'
-    +'</div>'
-    +'<div style="display:flex;gap:16px;align-items:center;flex-wrap:wrap">'
-    +'<label style="font-weight:700"><input type="checkbox" data-f="matin" '+(e.matin?'checked':'')+'> 🌅 Matin</label>'
-    +'<label style="font-weight:700"><input type="checkbox" data-f="soir" '+(e.soir?'checked':'')+'> 🌆 Soir</label>'
-    +'<button class="reset" style="margin-left:auto" onclick="periRemoveChild('+i+')">✕ retirer</button>'
-    +'</div>'
-    +'<input data-f="autorises" value="'+periEsc(e.autorises||'')+'" placeholder="🔐 Personnes autorisées à venir le chercher (nom + tél) — optionnel" style="width:100%;padding:9px 11px;border:1px solid var(--line);border-radius:10px;font:inherit">'
-    +'</div>';
+/* periChildRow / saisie inline retirés : la sélection se fait via periKidsPickHtml depuis les fiches enfant. */
+function periKidsPickHtml(r){
+  if(!KIDS.list.length) return '<p class="sub" style="margin:4px 0">Vous n\'avez pas encore d\'enfant. Ajoutez-en dans <b>👧 Mes enfants</b> (plus bas) — ils apparaîtront ici.</p>';
+  const sel={}; (Array.isArray(r.enfants)?r.enfants:[]).forEach(e=>{ if(e.enfant_id) sel[e.enfant_id]={matin:!!e.matin, soir:!!e.soir, on:true}; });
+  return KIDS.list.map(k=>{
+    const s=sel[k.id]||{matin:false,soir:false,on:false};
+    const who=((periEsc(k.nom||'')+' '+periEsc(k.prenom||'')).trim())||'(enfant)';
+    return '<div class="card" style="box-shadow:none;border:1px solid var(--line);gap:6px" data-pk="'+k.id+'">'
+      +'<label style="font-weight:700;font-size:15px"><input type="checkbox" data-pf="on" '+(s.on?'checked':'')+'> '+who+(k.classe?' <span style="color:var(--muted);font-weight:500">· '+periEsc(k.classe)+'</span>':'')+'</label>'
+      +'<div style="display:flex;gap:16px;align-items:center;flex-wrap:wrap;padding-left:24px">'
+      +'<label style="font-weight:600"><input type="checkbox" data-pf="matin" '+(s.matin?'checked':'')+' onchange="periPickOn(this)"> 🌅 Matin</label>'
+      +'<label style="font-weight:600"><input type="checkbox" data-pf="soir" '+(s.soir?'checked':'')+' onchange="periPickOn(this)"> 🌆 Soir</label>'
+      +'</div></div>';
+  }).join('');
 }
 function periReadChildren(){
   const arr=[];
-  document.querySelectorAll('#periChildren [data-child]').forEach(r=>{
-    const g=f=>r.querySelector('[data-f="'+f+'"]');
-    arr.push({nom:g('nom')?g('nom').value.trim():'', prenom:g('prenom').value.trim(), naissance:g('naissance').value, classe:g('classe')?g('classe').value:'', ecole:PERI.ECOLE, matin:g('matin').checked, soir:g('soir').checked, autorises:g('autorises')?g('autorises').value.trim():''});
+  document.querySelectorAll('#periChildren [data-pk]').forEach(row=>{
+    const on=row.querySelector('[data-pf="on"]'); if(!on||!on.checked) return;
+    const id=row.getAttribute('data-pk'); const k=KIDS.list.find(x=>x.id===id)||{};
+    const matin=row.querySelector('[data-pf="matin"]'); const soir=row.querySelector('[data-pf="soir"]');
+    arr.push({enfant_id:id, nom:k.nom||'', prenom:k.prenom||'', classe:k.classe||'', ecole:k.ecole||PERI.ECOLE, naissance:k.naissance||'', matin:!!(matin&&matin.checked), soir:!!(soir&&soir.checked)});
   });
   return arr;
+}
+function periRefreshKids(){
+  const box=document.getElementById('periChildren'); if(!box) return;
+  if(PERI.row) PERI.row.enfants=periReadChildren();
+  box.innerHTML=periKidsPickHtml(PERI.row||{enfants:[]});
 }
 function periPieceRow(p){
   const got=PERI.row.pieces&&PERI.row.pieces[p.k];
@@ -438,9 +440,10 @@ function periRenderForm(){
     +'<input id="peri_email" value="'+periEsc(r.email||'')+'" placeholder="Email" style="flex:1;min-width:150px;padding:10px 12px;border:1px solid var(--line);border-radius:10px;font:inherit">'
     +'<input id="peri_tel" value="'+periEsc(r.tel||'')+'" placeholder="Téléphone" style="flex:1;min-width:130px;padding:10px 12px;border:1px solid var(--line);border-radius:10px;font:inherit">'
     +'</div>'
-    +'<h3 style="margin:0 0 4px;font-size:16px">👧 Mes enfants <span style="font-weight:600;color:var(--muted);font-size:13.5px">· 🏫 '+periEsc(PERI.ECOLE)+'</span></h3>'
-    +'<div id="periChildren" style="display:flex;flex-direction:column;gap:10px">'+r.enfants.map((e,i)=>periChildRow(e,i)).join('')+'</div>'
-    +'<div style="margin:8px 0 18px"><button class="btn use" onclick="periAddChild()">+ Ajouter un enfant</button></div>'
+    +'<h3 style="margin:0 0 4px;font-size:16px">👧 Enfants au périscolaire</h3>'
+    +'<p class="sub" style="margin:0 0 8px;font-size:13px">Cochez les enfants concernés et leur formule. L\'identité, les allergies et la santé se gèrent dans <b>👧 Mes enfants</b> (plus bas) — pas besoin de les retaper.</p>'
+    +'<div id="periChildren" style="display:flex;flex-direction:column;gap:8px">'+periKidsPickHtml(r)+'</div>'
+    +'<div style="margin:6px 0 18px"><button class="btn use" type="button" onclick="periGotoKids()">+ Ajouter / gérer mes enfants</button></div>'
     +'<h3 style="margin:0 0 8px;font-size:16px">📎 Mes pièces</h3>'
     +'<p class="sub" style="margin:0 0 10px">L\'attestation CAF doit dater de <b>moins de 3 mois</b>. Touchez « Scanner » pour prendre la photo avec votre téléphone, ou choisir un fichier déjà enregistré.</p>'
     +'<div class="grid">'+PERI.PIECES.map(p=>periPieceRow(p)).join('')+'</div>'
@@ -455,11 +458,13 @@ function periRecapHtml(r, respNom, respPrenom){
   const enf=(Array.isArray(r.enfants)?r.enfants:[]);
   const enfHtml=enf.length?enf.map(e=>{
     const f=[e.matin?'🌅 Matin':null,e.soir?'🌆 Soir':null].filter(Boolean).join(' + ')||'—';
-    const who=((periEsc(e.nom||'')+' '+periEsc(e.prenom||'')).trim())||'(enfant sans nom)';
+    const k=(e.enfant_id?KIDS.list.find(x=>x.id===e.enfant_id):null)||{};
+    const who=((periEsc(e.nom||k.nom||'')+' '+periEsc(e.prenom||k.prenom||'')).trim())||'(enfant)';
+    const extra=[]; if(k.allergies) extra.push('🌰 '+periEsc(k.allergies)); if(k.autorises) extra.push('🔐 '+periEsc(k.autorises));
     return '<div style="padding:8px 0;border-top:1px solid var(--line)"><b>'+who+'</b> '
-      +'<span style="color:var(--muted);font-size:14px">· '+(e.classe?periEsc(e.classe)+' · ':'')+'🏫 '+periEsc(e.ecole||PERI.ECOLE)+' · '+f+'</span>'
-      +(e.autorises?'<br><span style="font-size:13px;color:#8a6400">🔐 Autorisé(s) : '+periEsc(e.autorises)+'</span>':'')+'</div>';
-  }).join(''):'<p class="sub" style="margin:6px 0">Aucun enfant renseigné.</p>';
+      +'<span style="color:var(--muted);font-size:14px">· '+((e.classe||k.classe)?periEsc(e.classe||k.classe)+' · ':'')+'🏫 '+periEsc(e.ecole||k.ecole||PERI.ECOLE)+' · '+f+'</span>'
+      +(extra.length?'<br><span style="font-size:13px;color:#8a6400">'+extra.join(' · ')+'</span>':'')+'</div>';
+  }).join(''):'<p class="sub" style="margin:6px 0">Aucun enfant au périscolaire.</p>';
   const pieces=(r.pieces&&typeof r.pieces==='object')?r.pieces:{};
   const nbOk=PERI.PIECES.filter(p=>pieces[p.k]&&pieces[p.k].path).length;
   const pieceHtml=PERI.PIECES.map(p=>{
@@ -480,8 +485,8 @@ function periRecapHtml(r, respNom, respPrenom){
 }
 window.periEdit=function(){ PERI.editMode=true; periRenderForm(); };
 window.periBackToRecap=function(){ PERI.editMode=false; periRenderForm(); };
-window.periAddChild=function(){ PERI.row.enfants=periReadChildren(); PERI.row.enfants.push(periEmptyChild()); periRenderForm(); };
-window.periRemoveChild=function(i){ const arr=periReadChildren().filter((_,j)=>j!==i); PERI.row.enfants=arr.length?arr:[periEmptyChild()]; periRenderForm(); };
+window.periPickOn=function(el){ if(!el||!el.checked) return; const card=el.closest('[data-pk]'); if(card){ const on=card.querySelector('[data-pf="on"]'); if(on) on.checked=true; } };
+window.periGotoKids=function(){ const el=document.getElementById('kidsSection'); if(el) el.scrollIntoView({behavior:'smooth',block:'start'}); };
 
 async function periEnsureRow(){
   if(PERI.row && PERI.row.id) return PERI.row.id;
@@ -519,8 +524,10 @@ window.periSave=async function(depose){
   const payload={annee:PERI.ANNEE, foyer:(periField('peri_nom')+' '+periField('peri_prenom')).trim(), email:periField('peri_email'), tel:periField('peri_tel'), enfants:periReadChildren(), pieces:PERI.row.pieces||{}};
   let missLabels=[];
   if(depose){
-    const okEnf=payload.enfants.some(e=>e.prenom&&(e.matin||e.soir));
-    if(!okEnf){ if(saved){saved.style.color='#b23a23'; saved.textContent='Ajoutez au moins un enfant avec le matin et/ou le soir.';} return; }
+    const coches=payload.enfants.filter(e=>e.matin||e.soir);
+    if(!coches.length){ if(saved){saved.style.color='#b23a23'; saved.textContent='Cochez au moins un enfant avec le matin et/ou le soir.';} return; }
+    const sansNom=coches.filter(e=>!(e.prenom||'').trim());
+    if(sansNom.length){ if(saved){saved.style.color='#b23a23'; saved.textContent='Complétez le prénom de l\'enfant dans « 👧 Mes enfants » avant de déposer.';} return; }
     // Pièces assouplies au lancement : on peut déposer même incomplet, le bureau réclamera le reste.
     missLabels=PERI.PIECES.filter(p=>!(payload.pieces[p.k]&&payload.pieces[p.k].path)).map(p=>p.lab);
     payload.statut='depose';
@@ -532,7 +539,7 @@ window.periSave=async function(depose){
     if(PERI.row.id){ res=await _sbAt.from('inscriptions_periscolaire').update(payload).eq('id',PERI.row.id).select().single(); }
     else { res=await _sbAt.from('inscriptions_periscolaire').insert(payload).select().single(); }
     if(res.error) throw res.error;
-    PERI.row=res.data; if(!Array.isArray(PERI.row.enfants)) PERI.row.enfants=[periEmptyChild()]; if(!PERI.row.pieces) PERI.row.pieces={};
+    PERI.row=res.data; if(!Array.isArray(PERI.row.enfants)) PERI.row.enfants=[]; if(!PERI.row.pieces) PERI.row.pieces={};
     PERI.flash = depose
       ? '📨 Votre dossier a bien été déposé ! Le bureau du CASE va le vérifier.'+(missLabels.length?(' (À compléter quand vous voulez : '+missLabels.join(', ')+'.)'):' Toutes vos pièces sont là, parfait. 🍍')
       : '💾 C\'est enregistré ✓ Vos informations sont gardées — vous pourrez revenir les compléter quand vous voulez.';
@@ -585,7 +592,7 @@ async function acmBoot(){
 window.acmOpen=function(id){
   const f=document.getElementById('acmf_'+id); if(!f) return; f.style.display='block';
   const box=document.getElementById('acmkids_'+id);
-  const kids=(PERI.row&&Array.isArray(PERI.row.enfants)?PERI.row.enfants:[]).filter(e=>e.prenom);
+  const kids=KIDS.list.filter(e=>e.prenom);
   if(box){
     box.innerHTML = kids.length
       ? '<span style="font-size:13px;color:var(--muted);width:100%">Pour quel enfant ? (un clic suffit)</span>'
@@ -596,16 +603,16 @@ window.acmOpen=function(id){
   const n=document.getElementById('acmn_'+id); if(n && !kids.length) n.focus();
 };
 window.acmPickKid=function(id, idx){
-  const kids=(PERI.row&&Array.isArray(PERI.row.enfants)?PERI.row.enfants:[]).filter(e=>e.prenom);
+  const kids=KIDS.list.filter(e=>e.prenom);
   const e=kids[idx]; if(!e) return;
-  acmReserve(id, ((e.nom||'')+' '+(e.prenom||'')).trim());
+  acmReserve(id, ((e.nom||'')+' '+(e.prenom||'')).trim(), e.id);
 };
-window.acmReserve=async function(id, override){
+window.acmReserve=async function(id, override, enfantId){
   const n=document.getElementById('acmn_'+id); const info=document.getElementById('acmi_'+id);
   const nom=(override!=null && override!=='')?override:(n?n.value.trim():'');
   if(!nom){ if(info){info.style.color='#c0392b'; info.textContent='Indiquez le prénom de l\'enfant.';} return; }
   const resp=(ACM.profile&&ACM.profile.full_name)||''; const contact=(ACM.profile&&ACM.profile.email)||'';
-  const {error}=await _sbAt.from('inscriptions_activite').insert({activite_id:id, nom, responsable:resp, contact, user_id:ACM.uid});
+  const {error}=await _sbAt.from('inscriptions_activite').insert({activite_id:id, nom, responsable:resp, contact, user_id:ACM.uid, enfant_id:(enfantId||null)});
   if(error){ if(info){info.style.color='#c0392b'; info.textContent=(error.code==='23505')?'Déjà réservé pour cet enfant 😉':'Oups : plus de place, ou une erreur. Réessayez.';} return; }
   if(info){ info.style.color='var(--vert-fonce)'; info.textContent='✅ Place réservée ! Le bureau confirmera (et l\'adhésion si besoin).'; }
   toast('✅ Place réservée !');
@@ -671,7 +678,7 @@ window.kidAutRemove=function(id, idx){
 };
 async function kidsLoad(){
   if(!ACM.uid){ KIDS.list=[]; return; }
-  const {data,error}=await _sbAt.from('enfants').select('*').order('created_at',{ascending:true});
+  const {data,error}=await _sbAt.from('enfants').select('*').eq('parent_id', ACM.uid).order('created_at',{ascending:true});
   KIDS.list = (error?[]:(data||[]));
 }
 function kidCard(k){
@@ -711,6 +718,7 @@ function kidsRender(){
   else html+='<div style="display:flex;flex-direction:column;gap:10px">'+KIDS.list.map(kidCard).join('')+'</div>';
   html+='<div style="margin-top:12px"><button class="btn use" onclick="kidAdd()">+ Ajouter un enfant</button></div>';
   box.innerHTML=html;
+  periRefreshKids();
 }
 function kidsCaptureEdits(){
   document.querySelectorAll('#kidsBody [data-kid]').forEach(function(card){

@@ -4809,19 +4809,29 @@ renderAll();
   };
   window.loadDossiersPeri=async function(){
     const box=document.getElementById('periDossiersList'); if(!box) return;
-    const {data,error}=await sbc.from('inscriptions_periscolaire').select('*').order('updated_at',{ascending:false});
-    if(error){ box.innerHTML='<p class="hint" style="color:#c0392b">Erreur : '+esc(error.message)+'</p>'; return; }
+    const [rd, rf]=await Promise.all([
+      sbc.from('inscriptions_periscolaire').select('*').order('updated_at',{ascending:false}),
+      sbc.from('enfants').select('*')
+    ]);
+    if(rd.error){ box.innerHTML='<p class="hint" style="color:#c0392b">Erreur : '+esc(rd.error.message)+'</p>'; return; }
+    const data=rd.data; const fmap={}; (rf.data||[]).forEach(f=>{ fmap[f.id]=f; });
     if(!data||!data.length){ box.innerHTML='<p class="hint">Aucun dossier déposé pour l\'instant. Les familles adhérentes déposent depuis leur espace adhérent.</p>'; return; }
     box.innerHTML=data.map(d=>{
       const st=PERI_DOS_ST[d.statut]||PERI_DOS_ST.brouillon;
       const enfants=(Array.isArray(d.enfants)?d.enfants:[]);
       const enfHtml=enfants.length?enfants.map(e=>{
         const f=[e.matin?'matin':null,e.soir?'soir':null].filter(Boolean).join(' & ')||'—';
-        const who=((esc(e.nom||'')+' '+esc(e.prenom||'')).trim())||'?';
-        const meta=[e.classe?esc(e.classe):'', e.ecole?'🏫 '+esc(e.ecole):'', f].filter(Boolean).join(' · ');
+        const k=(e.enfant_id?fmap[e.enfant_id]:null)||{};
+        const who=((esc(e.nom||k.nom||'')+' '+esc(e.prenom||k.prenom||'')).trim())||'?';
+        const meta=[(e.classe||k.classe)?esc(e.classe||k.classe):'', (e.ecole||k.ecole)?'🏫 '+esc(e.ecole||k.ecole):'', f].filter(Boolean).join(' · ');
+        const lines=[];
+        if(k.allergies) lines.push('🌰 Allergies : '+esc(k.allergies));
+        if(k.sante) lines.push('🩺 Santé : '+esc(k.sante));
+        if(k.autorises) lines.push('🔐 Autorisé(s) : '+esc(k.autorises));
+        if(k.depart_seul) lines.push('🚶 Autorisé à partir seul');
         return '<div class="pill" style="background:#eef3ef;color:#444;font-size:12px;display:inline-block;padding:4px 9px;line-height:1.5">'
           +'<b>'+who+'</b>'+(meta?' — '+meta:'')
-          +(e.autorises?'<br><span style="color:#8a6400">🔐 Autorisé(s) : '+esc(e.autorises)+'</span>':'')
+          +(lines.length?'<br><span style="color:#8a6400">'+lines.join('<br>')+'</span>':'')
           +'</div>';
       }).join(' '):'<span class="hint">aucun enfant saisi</span>';
       const pieces=(d.pieces&&typeof d.pieces==='object')?d.pieces:{};
