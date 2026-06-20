@@ -144,6 +144,35 @@ function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('show');cl
 function esc(s){return (s==null?'':String(s)).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 function isAdmin(p){return p&&(p.role==='president'||p.role==='tresorier')}
 
+/* ---- Règlement : lecture obligatoire jusqu'en bas avant acceptation ---- */
+let __cguAccepted=false;
+const REGLEMENT_HTML = `
+<h3 style="margin:0 0 10px">Règlement de l'espace famille en ligne — CASE du Bois de Nèfles</h3>
+<p style="font-size:13.5px;line-height:1.6">
+<b>1. Objet.</b> Cet espace permet aux familles d'inscrire leurs enfants au périscolaire et à l'ACM, et de gérer leurs fiches.<br><br>
+<b>2. Compte &amp; identifiants.</b> Le compte est personnel. Vous gardez votre mot de passe confidentiel et êtes responsable de toute action effectuée depuis votre compte.<br><br>
+<b>3. Exactitude.</b> Vous vous engagez à fournir des informations exactes et à jour (identité, allergies / santé, personnes autorisées).<br><br>
+<b>4. Personnes autorisées.</b> Les personnes autorisées à récupérer l'enfant sont déclarées sous votre responsabilité. Une pièce d'identité leur sera demandée sur place. Toute personne non inscrite ne se verra pas confier l'enfant (sauf autorisation écrite ponctuelle des parents).<br><br>
+<b>5. Adhésion.</b> La participation suppose l'adhésion au CASE (10 € / an, du 1ᵉʳ août au 31 juillet), réglée auprès du bureau. Un seul parent adhérent couvre tous les enfants.<br><br>
+<b>6. Validation.</b> Les dossiers et réservations sont validés par le bureau du CASE.<br><br>
+<b>7. Données personnelles (RGPD).</b> Vos données (y compris de santé) sont hébergées dans l'Union européenne, utilisées uniquement pour la gestion des activités, et conservées le temps nécessaire. Vous disposez d'un droit d'accès, de rectification et de suppression : case.bdn@gmail.com.<br><br>
+<i>Brouillon — en cours de validation. Version du 20/06/2026.</i>
+</p>`;
+function openReglement(){
+  const m=document.getElementById('regModal'), body=document.getElementById('regBody'); if(!m||!body) return;
+  body.innerHTML=REGLEMENT_HTML; body.scrollTop=0; m.style.display='flex';
+  const btn=document.getElementById('regAcceptBtn'), hint=document.getElementById('regHint');
+  const setState=ok=>{ btn.disabled=!ok; btn.style.opacity=ok?'1':'.5'; if(hint) hint.textContent=ok?'✅ Vous pouvez accepter.':'⬇︎ Faites défiler jusqu\'en bas pour pouvoir accepter.'; };
+  setState(false);
+  const check=()=>{ if(body.scrollTop+body.clientHeight >= body.scrollHeight-8) setState(true); };
+  body.onscroll=check; setTimeout(check, 60);
+}
+function closeReglement(){ const m=document.getElementById('regModal'); if(m) m.style.display='none'; }
+function acceptReglement(){
+  __cguAccepted=true; closeReglement();
+  const b=document.getElementById('r_cgu_btn'); if(b){ b.textContent='✅ Règlement lu et accepté'; }
+  const s=document.getElementById('r_cgu_status'); if(s){ s.textContent='✅ Vous pouvez créer votre compte.'; s.style.color='var(--vert-fonce)'; }
+}
 /* ---- Inscription = demande d'accès ---- */
 async function signUp(){
   const prenom=$('#r_prenom').value.trim();
@@ -153,7 +182,7 @@ async function signUp(){
   const pw=$('#r_pw').value;
   if(!prenom||!nom||!email||!pw){toast('Indique ton prénom, ton nom, ton email et un mot de passe.');return}
   if(pw.length<6){toast('Le mot de passe doit faire au moins 6 caractères.');return}
-  const cgu=$('#r_cgu'); if(!cgu||!cgu.checked){toast('Merci d\'accepter le règlement (et de garder vos identifiants confidentiels) pour créer le compte.');return}
+  if(!__cguAccepted){toast('Merci de lire le règlement jusqu\'en bas et de l\'accepter pour créer le compte.'); openReglement(); return}
   const btn=$('#r_btn'); btn.disabled=true; btn.textContent='Envoi…';
   const {data,error}=await sb.auth.signUp({email,password:pw,options:{emailRedirectTo:location.origin+location.pathname, data:{full_name:fullName, asso_slug:DOOR, cgu_accepted:true}}});
   btn.disabled=false; btn.textContent='Envoyer ma demande';
@@ -261,8 +290,22 @@ function renderLoggedOut(){
       </div>
       <div class="field"><label>Email</label><input id="r_email" type="email" placeholder="ton@email.fr"></div>
       <div class="field"><label>Mot de passe (min. 6 caractères)</label><input id="r_pw" type="password" placeholder="••••••••"></div>
-      <label style="display:flex;gap:8px;align-items:flex-start;font-size:13px;color:var(--muted);margin:4px 0 10px"><input type="checkbox" id="r_cgu" style="margin-top:3px;flex:0 0 auto"> <span>J'accepte le <b>règlement</b> et je m'engage à <b>garder mes identifiants confidentiels</b> : je suis responsable de mon compte et des informations que j'y saisis (enfants, personnes autorisées…).</span></label>
+      <div style="margin:6px 0 10px">
+        <button type="button" id="r_cgu_btn" class="btn g" style="width:100%" onclick="openReglement()">📜 Lire et accepter le règlement (obligatoire)</button>
+        <p id="r_cgu_status" style="font-size:12.5px;margin:6px 0 0;text-align:center;color:var(--muted)">Confidentialité des identifiants · responsabilité du compte · RGPD</p>
+      </div>
       <button id="r_btn" class="btn s" style="width:100%" onclick="signUp()">Envoyer ma demande</button>
+    </div>
+  </div>
+  <div id="regModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;padding:18px;align-items:center;justify-content:center">
+    <div style="background:#fff;border-radius:16px;max-width:640px;width:100%;max-height:85vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.3)">
+      <div style="padding:14px 18px;border-bottom:1px solid var(--line);font-weight:800">📜 Règlement à lire</div>
+      <div id="regBody" style="padding:16px 18px;overflow-y:auto;flex:1"></div>
+      <div style="padding:12px 18px;border-top:1px solid var(--line);display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+        <span id="regHint" style="font-size:12.5px;color:var(--muted);flex:1;min-width:160px">⬇︎ Faites défiler jusqu'en bas pour pouvoir accepter.</span>
+        <button class="btn g" type="button" onclick="closeReglement()">Fermer</button>
+        <button id="regAcceptBtn" class="btn p" type="button" disabled onclick="acceptReglement()">J'ai lu — j'accepte</button>
+      </div>
     </div>
   </div>`;
 }
