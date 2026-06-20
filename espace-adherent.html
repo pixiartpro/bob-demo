@@ -113,8 +113,8 @@
 <section class="block" id="rdvSection" style="padding:8px 0 6px">
   <div class="wrap">
     <div class="card" style="border-left:5px solid var(--jaune);background:#fffdf5">
-      <h2 class="title" style="font-size:20px">📅 Prendre rendez-vous <small>— accompagnement, VEPI…</small></h2>
-      <p class="sub" style="margin:2px 0 10px">Besoin d'aide pour remplir / scanner, ou pour le VEPI ? <b>Réservez un créneau</b> et venez au CASE — on fait tout ensemble.</p>
+      <h2 class="title" style="font-size:20px">📅 Mes rendez-vous <small>— agenda &amp; accompagnement</small></h2>
+      <p class="sub" style="margin:2px 0 10px">Vos rendez-vous au CASE, en un seul endroit. Besoin d'aide pour remplir / scanner, ou un RDV pour le VEPI ? <b>Réservez un créneau</b> — on fait tout ensemble.</p>
       <div id="rdvBody"><p class="sub">Chargement…</p></div>
     </div>
   </div>
@@ -507,10 +507,10 @@ window.periBesoinAide=async function(){
     const {error}=await _sbAt.from('inscriptions_periscolaire').update({besoin_aide:true}).eq('id',id);
     if(error) throw error;
     PERI.row.besoin_aide=true;
-    PERI.flash='🙋 C\'est noté ! Réservez votre créneau ci-dessous dans « 📅 Prendre rendez-vous » — on remplira tout ensemble au CASE.';
+    PERI.flash='🙋 C\'est noté ! Choisissez votre créneau — on remplira tout ensemble au CASE.';
     periRenderForm();
-    const el=document.getElementById('rdvSection'); if(el) setTimeout(function(){ el.scrollIntoView({behavior:'smooth',block:'start'}); },300);
-    toast('🙋 Pensez à réserver un créneau');
+    rdvFromActivity('Accompagnement — périscolaire','');
+    toast('🙋 Choisissez un créneau');
   }catch(e){ toast('Erreur : '+(e.message||e)); }
 };
 
@@ -607,9 +607,7 @@ async function acmBoot(){
       +'</div>'
       +(myK.length?'<div style="display:flex;flex-direction:column;gap:6px">'+acmStatusHtml(a,myK)+'</div>':'')
       +(complet?'':'<div id="acmf_'+a.id+'" style="display:none">'
-        +'<div id="acmkids_'+a.id+'" style="display:flex;flex-wrap:wrap;gap:6px;margin:2px 0 6px"></div>'
-        +'<input id="acmn_'+a.id+'" placeholder="Prénom de l\'enfant *" style="width:100%;margin:3px 0;padding:9px 11px;border:1px solid var(--line);border-radius:10px;font:inherit">'
-        +'<button class="btn win" style="width:100%;margin-top:4px" onclick="acmReserve(\''+a.id+'\')">Valider la réservation</button></div>')
+        +'<div id="acmkids_'+a.id+'" style="display:flex;flex-wrap:wrap;gap:6px;margin:2px 0 6px"></div></div>')
       +'<p id="acmi_'+a.id+'" style="margin:2px 0 0;font-size:13px;font-weight:700;text-align:center"></p>'
       +(complet?'':'<button class="btn use" style="align-self:flex-start" onclick="acmOpen(\''+a.id+'\')">🌴 Réserver une place</button>')
       +'</div>';
@@ -623,11 +621,11 @@ window.acmOpen=function(id){
     box.innerHTML = kids.length
       ? '<span style="font-size:13px;color:var(--muted);width:100%">Pour quel enfant ? (un clic suffit)</span>'
         +kids.map((e,i)=>'<button class="btn use" style="padding:7px 12px" onclick="acmPickKid(\''+id+'\','+i+')">👧 '+acmEsc(((e.nom||'')+' '+(e.prenom||'')).trim())+'</button>').join('')
-        +'<span style="font-size:13px;color:var(--muted);width:100%">ou un autre enfant :</span>'
-      : '';
+        +'<button type="button" style="width:100%;margin-top:4px;background:none;border:none;color:var(--vert-fonce);font-weight:700;font-size:13px;cursor:pointer;text-align:left" onclick="kidsGoAdd()">➕ Un autre enfant ? Ajoutez sa fiche</button>'
+      : '<div style="width:100%;font-size:13px;color:var(--muted)">Vous n\'avez pas encore de fiche enfant.<br><button type="button" style="margin-top:6px;background:#fff;border:2px solid var(--vert);color:var(--vert-fonce);padding:7px 13px;border-radius:9px;font-weight:800;cursor:pointer" onclick="kidsGoAdd()">👧 Ajouter une fiche enfant</button></div>';
   }
-  const n=document.getElementById('acmn_'+id); if(n && !kids.length) n.focus();
 };
+window.kidsGoAdd=function(){ const el=document.getElementById('kidsSection'); if(el) el.scrollIntoView({behavior:'smooth',block:'start'}); setTimeout(function(){ try{ if(window.kidAdd) kidAdd(); }catch(e){} },400); };
 window.acmPickKid=function(id, idx){
   const kids=KIDS.list.filter(e=>e.prenom);
   const e=kids[idx]; if(!e) return;
@@ -649,14 +647,16 @@ function acmStatusHtml(a, myK){
     const who=acmEsc(m.nom||''); const st=m.statut||'reserve';
     if(a.mode==='rdv'){
       let txt;
-      if(st==='reserve'||st==='demande') txt='📅 Demande enregistrée. Le bureau vous proposera un <b>RDV pour récupérer</b> le dossier.';
+      if(st==='reserve'||st==='demande') txt='📅 Demande enregistrée. Réservez un <b>créneau pour récupérer</b> le dossier.';
       else if(st==='rdv_recup') txt='📅 RDV pour <b>récupérer</b> le dossier : <b>'+acmEsc(m.rdv_recup||'à confirmer')+'</b>.';
-      else if(st==='recupere') txt='📄 Dossier <b>récupéré</b>. Remplissez-le ; un <b>RDV de dépôt</b> sera fixé.';
+      else if(st==='recupere') txt='📄 Dossier <b>récupéré</b>. Remplissez-le, puis réservez un <b>créneau de dépôt</b>.';
       else if(st==='rdv_depot') txt='📅 RDV pour <b>déposer</b> le dossier : <b>'+acmEsc(m.rdv_depot||'à confirmer')+'</b>.';
       else if(st==='depose') txt='📨 Dossier <b>déposé</b>, en attente de validation.';
       else if(st==='valide') txt='✅ <b>Inscription validée</b>.';
       else txt='📅 '+acmEsc(st);
-      return '<div style="background:#eef7f2;border:1px solid #cfe6da;border-radius:10px;padding:7px 11px;font-size:13px"><b>👧 '+who+'</b> · 🧒 VEPI (sur rendez-vous)<br>'+txt+(m.note_bureau?'<br><span style="color:#8a6400">📝 '+acmEsc(m.note_bureau)+'</span>':'')+'</div>';
+      const needRdv=(st==='reserve'||st==='demande'||st==='recupere');
+      const rdvBtn=needRdv?'<div style="margin-top:6px"><button type="button" style="background:#fff;border:1.5px solid var(--vert);color:var(--vert-fonce);padding:5px 11px;border-radius:8px;font-weight:700;font-size:12.5px;cursor:pointer" onclick="rdvFromActivity(\'VEPI — dépôt de dossier\',\''+(m.enfant_id||'')+'\')">📅 Prendre un créneau</button></div>':'';
+      return '<div style="background:#eef7f2;border:1px solid #cfe6da;border-radius:10px;padding:7px 11px;font-size:13px"><b>👧 '+who+'</b> · 🧒 VEPI (sur rendez-vous)<br>'+txt+rdvBtn+(m.note_bureau?'<br><span style="color:#8a6400">📝 '+acmEsc(m.note_bureau)+'</span>':'')+'</div>';
     }
     if(a.mode==='dossier'){
       const pieces=(m.pieces&&typeof m.pieces==='object')?m.pieces:{};
@@ -672,7 +672,7 @@ function acmStatusHtml(a, myK){
           +(hasFiche?' <button class="reset" onclick="acmViewPiece(\''+m.id+'\')">voir</button>':'')
           +'<div id="acmup_'+m.id+'" class="when"></div>'
           +((hasFiche&&st!=='depose')?'<button class="btn win" style="margin-top:4px;font-size:12px;padding:6px 12px" onclick="acmDepose(\''+m.id+'\')">📨 Déposer le dossier</button>':'')
-          +'<div style="margin-top:4px;font-size:12px">'+(m.besoin_aide?'<span style="color:var(--vert-fonce);font-weight:700">🙋 Aide demandée — le bureau vous recontacte pour un RDV au CASE.</span>':'<button class="reset" onclick="acmBesoinAide(\''+m.id+'\')">🙋 Pas à l\'aise pour scanner ? Le faire au CASE (rendez-vous)</button>')+'</div>'
+          +'<div style="margin-top:4px;font-size:12px">'+(m.besoin_aide?'<span style="color:var(--vert-fonce);font-weight:700">🙋 Aide demandée — votre créneau est dans 📅 Mes rendez-vous.</span>':'<button class="reset" onclick="acmBesoinAide(\''+m.id+'\',\''+(m.enfant_id||'')+'\')">🙋 Pas à l\'aise pour scanner ? Le faire au CASE (créneau)</button>')+'</div>'
           +'</div>'):'')
         +'</div>';
     }
@@ -708,12 +708,11 @@ window.acmDepose=async function(insId){
   if(error){ toast('Erreur : '+(error.message||error)); return; }
   toast('📨 Dossier déposé !'); setTimeout(acmBoot,800);
 };
-window.acmBesoinAide=async function(insId){
+window.acmBesoinAide=async function(insId, kidId){
   const {error}=await _sbAt.from('inscriptions_activite').update({besoin_aide:true}).eq('id',insId);
   if(error){ toast('Erreur : '+(error.message||error)); return; }
-  toast('🙋 Pensez à réserver un créneau ci-dessous (📅)');
-  const el=document.getElementById('rdvSection'); if(el) el.scrollIntoView({behavior:'smooth',block:'start'});
-  setTimeout(acmBoot,800);
+  rdvFromActivity('Accompagnement — vacances / ACM', kidId||'');
+  setTimeout(acmBoot,1500);
 };
 
 /* ===== 📅 Prendre rendez-vous (créneaux récurrents) ===== */
@@ -763,7 +762,7 @@ function rdvAgendaLinks(m){ return ' <a href="'+rdvGcalUrl(m)+'" target="_blank"
 function rdvRender(){
   const body=document.getElementById('rdvBody'); if(!body) return; let html='';
   if(RDV.mine.length){
-    html+='<div style="margin-bottom:8px">'+RDV.mine.map(m=>'<div style="background:#eef7f2;border:1px solid #cfe6da;border-radius:10px;padding:7px 11px;margin-top:5px;font-size:13px">📅 <b>'+rdvFrDate(m.jour)+' à '+acmEsc(m.heure)+'</b>'+(m.motif?' · '+acmEsc(m.motif):'')+rdvAgendaLinks(m)+' <button class="reset" style="float:right" onclick="rdvCancel(\''+m.id+'\')">annuler</button></div>').join('')+'</div>';
+    html+='<div style="margin-bottom:8px">'+RDV.mine.map(m=>'<div style="background:#eef7f2;border:1px solid #cfe6da;border-radius:10px;padding:7px 11px;margin-top:5px;font-size:13px">📅 <b>'+rdvFrDate(m.jour)+' à '+acmEsc(m.heure)+'</b>'+(m.enfant?' · 👧 '+acmEsc(m.enfant):'')+(m.motif?' · '+acmEsc(m.motif):'')+rdvAgendaLinks(m)+' <button class="reset" style="float:right" onclick="rdvCancel(\''+m.id+'\')">annuler</button></div>').join('')+'</div>';
   }
   if(!RDV.regles.length){ html+='<p class="sub" style="margin:0">Le CASE n\'a pas encore ouvert de créneaux — le bureau vous recontactera.</p>'; body.innerHTML=html; return; }
   const slots=rdvComputeSlots(4);
@@ -772,6 +771,13 @@ function rdvRender(){
     ? Object.keys(byJour).slice(0,8).map(j=>'<div style="margin-bottom:8px"><div style="font-weight:700;font-size:13.5px">'+rdvFrDate(j)+'</div><div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:4px">'+byJour[j].map(s=>'<button type="button" style="padding:6px 11px;font-size:13px;background:#eef7f2;border:1px solid var(--vert);color:var(--vert-fonce);border-radius:8px;cursor:pointer;font-weight:700" onclick="rdvBook(\''+s.jour+'\',\''+s.heure+'\','+s.duree+')">'+acmEsc(s.heure)+'</button>').join('')+'</div></div>').join('')
     : '<p class="sub" style="margin:0">Aucun créneau libre pour le moment. Réessayez plus tard.</p>';
   const motifOpts=['Accompagnement — périscolaire','Accompagnement — vacances / ACM','VEPI — dépôt de dossier'];
+  const kidsOk=(KIDS.list||[]).filter(k=>k.prenom);
+  const childSel = kidsOk.length
+    ? '<div style="margin-bottom:12px"><label style="font-weight:700;font-size:13.5px;display:block;margin-bottom:4px">Pour quel enfant ?</label>'
+      +'<select id="rdvKidSel" style="width:100%;padding:9px;border:1px solid var(--line);border-radius:8px;font-size:14px">'
+      +kidsOk.map(k=>'<option value="'+k.id+'">'+acmEsc((k.prenom+' '+(k.nom||'')).trim())+'</option>').join('')
+      +'<option value="">— Aucun / autre —</option></select></div>'
+    : '';
   const motifSel='<div style="margin-bottom:12px"><label style="font-weight:700;font-size:13.5px;display:block;margin-bottom:4px">C\'est pour quoi ?</label>'
     +'<select id="rdvMotifSel" onchange="rdvMotifToggle()" style="width:100%;padding:9px;border:1px solid var(--line);border-radius:8px;font-size:14px">'
     +motifOpts.map(o=>'<option>'+o+'</option>').join('')+'<option value="__autre">Autre (à préciser)</option></select>'
@@ -780,16 +786,23 @@ function rdvRender(){
   html+='<div id="rdvPickerModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;padding:18px;align-items:center;justify-content:center" onclick="if(event.target===this)rdvClosePicker()">'
     +'<div style="background:#fff;border-radius:16px;max-width:520px;width:100%;max-height:82vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.3)">'
     +'<div style="padding:12px 16px;border-bottom:1px solid var(--line);font-weight:800;display:flex;justify-content:space-between;align-items:center">📅 Prendre rendez-vous <button class="reset" type="button" onclick="rdvClosePicker()">✕</button></div>'
-    +'<div style="padding:14px 16px;overflow-y:auto;flex:1">'+motifSel+slotsHtml+'</div></div></div>';
+    +'<div style="padding:14px 16px;overflow-y:auto;flex:1">'+childSel+motifSel+slotsHtml+'</div></div></div>';
   body.innerHTML=html;
 }
 window.rdvMotifToggle=function(){ const s=document.getElementById('rdvMotifSel'), a=document.getElementById('rdvMotifAutre'); if(s&&a) a.style.display = s.value==='__autre' ? 'block':'none'; };
-window.rdvOpenPicker=function(){ const m=document.getElementById('rdvPickerModal'); if(m) m.style.display='flex'; };
+window.rdvOpenPicker=function(presetMotif, presetKidId){
+  const m=document.getElementById('rdvPickerModal'); if(!m) return; m.style.display='flex';
+  if(presetMotif){ const s=document.getElementById('rdvMotifSel'); if(s){ const o=[...s.options].find(x=>x.value===presetMotif||x.text===presetMotif); if(o){ s.value=o.value; rdvMotifToggle(); } } }
+  if(presetKidId!==undefined && presetKidId!==null){ const k=document.getElementById('rdvKidSel'); if(k){ k.value=presetKidId; } }
+};
+window.rdvFromActivity=function(motif, kidId){ const el=document.getElementById('rdvSection'); if(el) el.scrollIntoView({behavior:'smooth',block:'start'}); setTimeout(function(){ rdvOpenPicker(motif, kidId||''); },350); };
 window.rdvClosePicker=function(){ const m=document.getElementById('rdvPickerModal'); if(m) m.style.display='none'; };
 window.rdvBook=async function(jour, heure, duree){
   const sel=document.getElementById('rdvMotifSel'); let motif= sel ? sel.value : '';
   if(motif==='__autre'){ motif=((document.getElementById('rdvMotifAutre')||{}).value||'').trim() || 'Autre'; }
-  const {error}=await _sbAt.from('rdv').insert({jour, heure, duree:duree||30, motif, user_id:ACM.uid});
+  const ks=document.getElementById('rdvKidSel'); let enfant='', ref='';
+  if(ks && ks.value){ const k=(KIDS.list||[]).find(x=>x.id===ks.value); if(k){ enfant=(k.prenom+' '+(k.nom||'')).trim(); ref='enfant:'+k.id; } }
+  const {error}=await _sbAt.from('rdv').insert({jour, heure, duree:duree||30, motif, enfant, ref, user_id:ACM.uid});
   if(error){ toast(error.code==='23505'?'Ce créneau vient d\'être pris, choisissez-en un autre.':'Erreur : '+(error.message||error)); await rdvBoot(); if(error.code==='23505') rdvOpenPicker(); return; }
   toast('📅 Rendez-vous réservé !'); rdvClosePicker(); await rdvBoot();
 };
