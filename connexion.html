@@ -279,13 +279,17 @@ async function renderLoggedIn(user){
       <span class="role-pill pill ${r.pill}">${r.label}</span>
       <span class="role-pill pill ${st.pill}">${st.label}</span></div>
     <div style="margin-left:auto;display:flex;gap:8px;flex-wrap:wrap">
-      ${p.statut==='actif'?(p.role==='adherent'?`<a class="btn p" style="text-decoration:none" href="espace-adherent.html">Mon espace adhérent →</a>`:`<a class="btn p" style="text-decoration:none" href="app.html">Entrer dans la gestion →</a>`):''}
+      ${p.role==='adherent'?(p.statut!=='suspendu'?`<a class="btn p" style="text-decoration:none" href="espace-adherent.html">Mon espace famille →</a>`:''):(p.statut==='actif'?`<a class="btn p" style="text-decoration:none" href="app.html">Entrer dans la gestion →</a>`:'')}
       <button class="btn g" onclick="changePwd()">Mot de passe</button>
       <button class="btn g" onclick="signOut()">Déconnexion</button>
     </div></div>`;
 
   if(p.statut==='en_attente'){
-    html+=`<div class="notice">⏳ <b>Ton accès est en attente de validation.</b> Un administrateur (Président ou Trésorier) doit valider ta demande et t'attribuer un rôle. Tu seras alors autorisé à entrer dans la gestion.</div>`;
+    if(p.role==='adherent'){
+      html+=`<div class="notice">👨‍👩‍👧 <b>Bienvenue dans ton espace famille !</b> Tu peux déjà <b>déposer ton dossier périscolaire</b> et <b>réserver tes activités</b> — clique sur « Mon espace famille → » ci-dessus. L'adhésion (10 €, un seul parent suffit pour tous les enfants) sera régularisée avec le bureau du CASE.</div>`;
+    } else {
+      html+=`<div class="notice">⏳ <b>Ton accès est en attente de validation.</b> Un administrateur (Président ou Trésorier) doit valider ta demande et t'attribuer un rôle. Tu seras alors autorisé à entrer dans la gestion.</div>`;
+    }
   } else if(p.statut==='suspendu'){
     html+=`<div class="notice" style="background:#fdeeea;border-color:#f3c4ba">🚫 <b>Ton accès est suspendu.</b> Contacte le Président pour le rétablir.</div>`;
   } else {
