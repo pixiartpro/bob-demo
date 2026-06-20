@@ -4817,7 +4817,12 @@ renderAll();
       const enfants=(Array.isArray(d.enfants)?d.enfants:[]);
       const enfHtml=enfants.length?enfants.map(e=>{
         const f=[e.matin?'matin':null,e.soir?'soir':null].filter(Boolean).join(' & ')||'—';
-        return '<span class="pill" style="background:#eef3ef;color:#555;font-size:12px">'+esc(e.prenom||'?')+(e.classe?' · '+esc(e.classe):'')+' — '+f+'</span>';
+        const who=((esc(e.nom||'')+' '+esc(e.prenom||'')).trim())||'?';
+        const meta=[e.classe?esc(e.classe):'', e.ecole?'🏫 '+esc(e.ecole):'', f].filter(Boolean).join(' · ');
+        return '<div class="pill" style="background:#eef3ef;color:#444;font-size:12px;display:inline-block;padding:4px 9px;line-height:1.5">'
+          +'<b>'+who+'</b>'+(meta?' — '+meta:'')
+          +(e.autorises?'<br><span style="color:#8a6400">🔐 Autorisé(s) : '+esc(e.autorises)+'</span>':'')
+          +'</div>';
       }).join(' '):'<span class="hint">aucun enfant saisi</span>';
       const pieces=(d.pieces&&typeof d.pieces==='object')?d.pieces:{};
       const pieceHtml=PERI_PIECES.map(([k,lab])=>{

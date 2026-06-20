@@ -390,6 +390,7 @@ renderAqList();
 /* ===== Inscription périscolaire (réel — Supabase Auth + coffre privé dossiers-periscolaire) ===== */
 const PERI = {
   ANNEE: '2026-2027',
+  ECOLE: 'École du Piton',
   uid:null, profile:null, asso:null,
   row:{foyer:'',email:'',tel:'',enfants:[],pieces:{},statut:'brouillon',annee:'2026'},
   PIECES:[
@@ -403,7 +404,11 @@ const PERI = {
 };
 function periEsc(s){return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 function periField(id){ const el=document.getElementById(id); return el?el.value.trim():''; }
-function periEmptyChild(){ return {prenom:'',naissance:'',classe:'',matin:false,soir:false}; }
+function periEmptyChild(){ return {nom:'',prenom:'',naissance:'',classe:'',ecole:PERI.ECOLE,matin:false,soir:false,autorises:''}; }
+function periClasseOptions(sel){
+  const opts=['','TPS','PS','MS','GS','CP','CE1','CE2','CM1','CM2','Autre'];
+  return opts.map(o=>'<option value="'+o+'"'+(o===(sel||'')?' selected':'')+'>'+(o||'— Classe —')+'</option>').join('');
+}
 
 async function periBoot(){
   const body=document.getElementById('periBody'); if(!body) return;
@@ -442,21 +447,27 @@ function periRenderLocked(kind){
 function periChildRow(e,i){
   return '<div class="card" style="box-shadow:none;border:1px solid var(--line);gap:8px" data-child="'+i+'">'
     +'<div style="display:flex;gap:8px;flex-wrap:wrap">'
-    +'<input data-f="prenom" value="'+periEsc(e.prenom||'')+'" placeholder="Prénom de l\'enfant" style="flex:2;min-width:140px;padding:9px 11px;border:1px solid var(--line);border-radius:10px;font:inherit">'
+    +'<input data-f="nom" value="'+periEsc(e.nom||'')+'" placeholder="Nom de l\'enfant" style="flex:1;min-width:130px;padding:9px 11px;border:1px solid var(--line);border-radius:10px;font:inherit">'
+    +'<input data-f="prenom" value="'+periEsc(e.prenom||'')+'" placeholder="Prénom de l\'enfant" style="flex:1;min-width:130px;padding:9px 11px;border:1px solid var(--line);border-radius:10px;font:inherit">'
+    +'</div>'
+    +'<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">'
     +'<input data-f="naissance" type="date" value="'+periEsc(e.naissance||'')+'" style="flex:1;min-width:150px;padding:9px 11px;border:1px solid var(--line);border-radius:10px;font:inherit">'
-    +'<input data-f="classe" value="'+periEsc(e.classe||'')+'" placeholder="Classe (ex. CE2)" style="flex:1;min-width:110px;padding:9px 11px;border:1px solid var(--line);border-radius:10px;font:inherit">'
+    +'<select data-f="classe" style="flex:1;min-width:120px;padding:9px 11px;border:1px solid var(--line);border-radius:10px;font:inherit">'+periClasseOptions(e.classe)+'</select>'
+    +'<span style="flex:1;min-width:140px;color:var(--muted);font-size:13.5px">🏫 '+periEsc(e.ecole||PERI.ECOLE)+'</span>'
     +'</div>'
     +'<div style="display:flex;gap:16px;align-items:center;flex-wrap:wrap">'
     +'<label style="font-weight:700"><input type="checkbox" data-f="matin" '+(e.matin?'checked':'')+'> 🌅 Matin</label>'
     +'<label style="font-weight:700"><input type="checkbox" data-f="soir" '+(e.soir?'checked':'')+'> 🌆 Soir</label>'
     +'<button class="reset" style="margin-left:auto" onclick="periRemoveChild('+i+')">✕ retirer</button>'
-    +'</div></div>';
+    +'</div>'
+    +'<input data-f="autorises" value="'+periEsc(e.autorises||'')+'" placeholder="🔐 Personnes autorisées à venir le chercher (nom + tél) — optionnel" style="width:100%;padding:9px 11px;border:1px solid var(--line);border-radius:10px;font:inherit">'
+    +'</div>';
 }
 function periReadChildren(){
   const arr=[];
   document.querySelectorAll('#periChildren [data-child]').forEach(r=>{
     const g=f=>r.querySelector('[data-f="'+f+'"]');
-    arr.push({prenom:g('prenom').value.trim(), naissance:g('naissance').value, classe:g('classe').value.trim(), matin:g('matin').checked, soir:g('soir').checked});
+    arr.push({nom:g('nom')?g('nom').value.trim():'', prenom:g('prenom').value.trim(), naissance:g('naissance').value, classe:g('classe')?g('classe').value:'', ecole:PERI.ECOLE, matin:g('matin').checked, soir:g('soir').checked, autorises:g('autorises')?g('autorises').value.trim():''});
   });
   return arr;
 }
@@ -477,18 +488,24 @@ function periPieceRow(p){
 }
 function periRenderForm(){
   const body=document.getElementById('periBody'); const r=PERI.row;
+  const _fy=(r.foyer||'').trim().split(/\s+/).filter(Boolean);
+  const respNom=_fy.length?_fy[0]:''; const respPrenom=_fy.length>1?_fy.slice(1).join(' '):'';
   const stLabel={brouillon:'✏️ Brouillon (non déposé)',depose:'📨 Déposé — en attente de validation',valide:'✅ Validé par le bureau',incomplet:'⚠️ Incomplet — voir la note du bureau'}[r.statut]||'';
   body.innerHTML=
     '<p class="sub" style="margin:0 0 12px">Bonjour '+periEsc((PERI.profile&&PERI.profile.full_name)||'')+' 👋 Renseignez vos enfants et déposez vos pièces. Vous pouvez enregistrer en brouillon et revenir plus tard.</p>'
     +((PERI.statut&&PERI.statut!=='actif')?'<div style="background:#fff5da;border:1px solid #f1e2ad;color:#8a6400;border-radius:12px;padding:10px 14px;margin:0 0 12px;font-weight:600">🪪 Votre <b>adhésion (10 €)</b> reste à régulariser auprès du bureau (un seul parent adhérent suffit pour tous vos enfants). Vous pouvez <b>déjà préparer et déposer votre dossier</b> dès maintenant.</div>':'')
     +(stLabel?'<div style="display:inline-block;background:#fff;border:1px solid var(--line);border-radius:999px;padding:6px 14px;font-weight:800;margin-bottom:12px">'+stLabel+'</div>':'')
     +((r.statut==='incomplet'&&r.note_bureau)?'<div style="background:#ffe9e3;border:1px solid #f3c4ba;color:#b23a23;border-radius:12px;padding:10px 14px;margin-bottom:12px">📝 Bureau : '+periEsc(r.note_bureau)+'</div>':'')
+    +'<h3 style="margin:0 0 8px;font-size:16px">👤 Responsable (parent)</h3>'
+    +'<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px">'
+    +'<input id="peri_nom" value="'+periEsc(respNom)+'" placeholder="Nom du parent" style="flex:1;min-width:140px;padding:10px 12px;border:1px solid var(--line);border-radius:10px;font:inherit">'
+    +'<input id="peri_prenom" value="'+periEsc(respPrenom)+'" placeholder="Prénom du parent" style="flex:1;min-width:140px;padding:10px 12px;border:1px solid var(--line);border-radius:10px;font:inherit">'
+    +'</div>'
     +'<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px">'
-    +'<input id="peri_foyer" value="'+periEsc(r.foyer||'')+'" placeholder="Nom du responsable / foyer" style="flex:2;min-width:180px;padding:10px 12px;border:1px solid var(--line);border-radius:10px;font:inherit">'
     +'<input id="peri_email" value="'+periEsc(r.email||'')+'" placeholder="Email" style="flex:1;min-width:150px;padding:10px 12px;border:1px solid var(--line);border-radius:10px;font:inherit">'
     +'<input id="peri_tel" value="'+periEsc(r.tel||'')+'" placeholder="Téléphone" style="flex:1;min-width:130px;padding:10px 12px;border:1px solid var(--line);border-radius:10px;font:inherit">'
     +'</div>'
-    +'<h3 style="margin:0 0 8px;font-size:16px">👧 Mes enfants</h3>'
+    +'<h3 style="margin:0 0 4px;font-size:16px">👧 Mes enfants <span style="font-weight:600;color:var(--muted);font-size:13.5px">· 🏫 '+periEsc(PERI.ECOLE)+'</span></h3>'
     +'<div id="periChildren" style="display:flex;flex-direction:column;gap:10px">'+r.enfants.map((e,i)=>periChildRow(e,i)).join('')+'</div>'
     +'<div style="margin:8px 0 18px"><button class="btn use" onclick="periAddChild()">+ Ajouter un enfant</button></div>'
     +'<h3 style="margin:0 0 8px;font-size:16px">📎 Mes pièces</h3>'
@@ -504,7 +521,7 @@ window.periRemoveChild=function(i){ const arr=periReadChildren().filter((_,j)=>j
 
 async function periEnsureRow(){
   if(PERI.row && PERI.row.id) return PERI.row.id;
-  const payload={annee:PERI.ANNEE, foyer:periField('peri_foyer'), email:periField('peri_email'), tel:periField('peri_tel'), enfants:periReadChildren(), pieces:PERI.row.pieces||{}, statut:'brouillon'};
+  const payload={annee:PERI.ANNEE, foyer:(periField('peri_nom')+' '+periField('peri_prenom')).trim(), email:periField('peri_email'), tel:periField('peri_tel'), enfants:periReadChildren(), pieces:PERI.row.pieces||{}, statut:'brouillon'};
   const {data,error}=await _sbAt.from('inscriptions_periscolaire').insert(payload).select().single();
   if(error) throw error;
   PERI.row=data; if(!PERI.row.pieces||typeof PERI.row.pieces!=='object') PERI.row.pieces={};
@@ -535,7 +552,7 @@ window.periViewMyPiece=async function(key){
 };
 window.periSave=async function(depose){
   const saved=document.getElementById('periSaved');
-  const payload={annee:PERI.ANNEE, foyer:periField('peri_foyer'), email:periField('peri_email'), tel:periField('peri_tel'), enfants:periReadChildren(), pieces:PERI.row.pieces||{}};
+  const payload={annee:PERI.ANNEE, foyer:(periField('peri_nom')+' '+periField('peri_prenom')).trim(), email:periField('peri_email'), tel:periField('peri_tel'), enfants:periReadChildren(), pieces:PERI.row.pieces||{}};
   let missLabels=[];
   if(depose){
     const okEnf=payload.enfants.some(e=>e.prenom&&(e.matin||e.soir));
