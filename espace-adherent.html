@@ -638,6 +638,36 @@ function kidReadTags(id, kind){
   const el=document.getElementById('k_'+kind+'_autre_'+id); const autre=el?el.value.trim():'';
   return checked.concat(autre?[autre]:[]).filter(Boolean).join(', ');
 }
+function kidAutRows(k){
+  const list=Array.isArray(k.autorises_json)?k.autorises_json:[];
+  if(!list.length) return '<p class="sub" style="margin:2px 0;font-size:13px">Aucune personne ajoutée (optionnel).</p>';
+  return list.map((p,i)=>'<div data-autrow="'+i+'" style="display:flex;gap:6px;flex-wrap:wrap;margin:3px 0">'
+    +'<input data-af="nom" value="'+kidEsc(p.nom||'')+'" placeholder="Nom" style="flex:2;min-width:110px;padding:8px 10px;border:1px solid var(--line);border-radius:10px;font:inherit">'
+    +'<input data-af="lien" value="'+kidEsc(p.lien||'')+'" placeholder="Lien (mère, grand-père…)" style="flex:1;min-width:110px;padding:8px 10px;border:1px solid var(--line);border-radius:10px;font:inherit">'
+    +'<input data-af="tel" value="'+kidEsc(p.tel||'')+'" placeholder="Téléphone" style="flex:1;min-width:100px;padding:8px 10px;border:1px solid var(--line);border-radius:10px;font:inherit">'
+    +'<button class="reset" onclick="kidAutRemove(\''+k.id+'\','+i+')">✕</button>'
+    +'</div>').join('');
+}
+function kidReadAut(id){
+  const box=document.getElementById('k_aut_'+id); if(!box) return [];
+  return [].slice.call(box.querySelectorAll('[data-autrow]')).map(function(row){
+    const g=f=>{const el=row.querySelector('[data-af="'+f+'"]'); return el?el.value.trim():'';};
+    return {nom:g('nom'), lien:g('lien'), tel:g('tel')};
+  }).filter(p=>p.nom||p.lien||p.tel);
+}
+window.kidAutAdd=function(id){
+  kidsCaptureEdits();
+  const k=KIDS.list.find(x=>x.id===id); if(!k) return;
+  if(!Array.isArray(k.autorises_json)) k.autorises_json=[];
+  k.autorises_json.push({nom:'',lien:'',tel:''});
+  kidsRender();
+};
+window.kidAutRemove=function(id, idx){
+  kidsCaptureEdits();
+  const k=KIDS.list.find(x=>x.id===id); if(!k) return;
+  if(Array.isArray(k.autorises_json)) k.autorises_json.splice(idx,1);
+  kidsRender();
+};
 async function kidsLoad(){
   if(!ACM.uid){ KIDS.list=[]; return; }
   const {data,error}=await _sbAt.from('enfants').select('*').order('created_at',{ascending:true});
@@ -662,7 +692,10 @@ function kidCard(k){
     +'</div>'
     +kidTagsBlock(id,'allerg','🌰 Allergies',KID_ALLERG,k.allergies)
     +kidTagsBlock(id,'sante','🩺 Santé / PAI',KID_SANTE,k.sante)
-    +'<input id="k_autorises_'+id+'" value="'+kidEsc(k.autorises||'')+'" placeholder="🔐 Personnes autorisées à venir le chercher (optionnel)" style="width:100%;padding:9px 11px;border:1px solid var(--line);border-radius:10px;font:inherit">'
+    +'<div style="font-size:13.5px;font-weight:700;margin-top:2px">🔐 Personnes autorisées à venir le chercher</div>'
+    +'<div id="k_aut_'+id+'">'+kidAutRows(k)+'</div>'
+    +'<button class="reset" style="align-self:flex-start" onclick="kidAutAdd(\''+id+'\')">+ ajouter une personne</button>'
+    +'<label style="font-weight:600;font-size:14px;margin-top:2px"><input type="checkbox" id="k_seul_'+id+'" '+(k.depart_seul?'checked':'')+'> 🚶 Autorise l\'enfant à partir seul (selon l\'âge / le règlement)</label>'
     +'<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">'
     +'<button class="btn win" onclick="kidSave(\''+id+'\')">💾 Enregistrer la fiche</button>'
     +'<button class="reset" style="margin-left:auto" onclick="kidDelete(\''+id+'\')">🗑 Supprimer</button>'
@@ -689,7 +722,8 @@ function kidsCaptureEdits(){
     if(v('classe')!==undefined) k.classe=v('classe');
     k.allergies=kidReadTags(id,'allerg');
     k.sante=kidReadTags(id,'sante');
-    if(v('autorises')!==undefined) k.autorises=v('autorises');
+    k.autorises_json=kidReadAut(id);
+    const seul=document.getElementById('k_seul_'+id); if(seul) k.depart_seul=seul.checked;
   });
 }
 window.kidAdd=async function(){
@@ -704,7 +738,9 @@ window.kidSave=async function(id){
   const k=KIDS.list.find(x=>x.id===id); const msg=document.getElementById('k_msg_'+id);
   if(!k) return;
   if(!(k.prenom||'').trim()){ if(msg){msg.style.color='#c0392b'; msg.textContent='Le prénom est obligatoire.';} return; }
-  const payload={ nom:(k.nom||'').trim(), prenom:(k.prenom||'').trim(), naissance:(k.naissance||null), classe:k.classe||'', ecole:PERI.ECOLE, allergies:k.allergies||'', sante:k.sante||'', autorises:(k.autorises||'').trim() };
+  const autList=Array.isArray(k.autorises_json)?k.autorises_json:[];
+  const autText=autList.map(p=>[p.nom,p.lien?('('+p.lien+')'):'',p.tel].filter(Boolean).join(' ')).join(' ; ');
+  const payload={ nom:(k.nom||'').trim(), prenom:(k.prenom||'').trim(), naissance:(k.naissance||null), classe:k.classe||'', ecole:PERI.ECOLE, allergies:k.allergies||'', sante:k.sante||'', autorises:autText, autorises_json:autList, depart_seul:!!k.depart_seul };
   const {data,error}=await _sbAt.from('enfants').update(payload).eq('id',id).select().single();
   if(error){ if(msg){msg.style.color='#c0392b'; msg.textContent='Échec : '+(error.message||error);} return; }
   const i=KIDS.list.findIndex(x=>x.id===id); if(i>=0) KIDS.list[i]=data;
