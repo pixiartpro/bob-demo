@@ -549,7 +549,7 @@ window.periSave=async function(depose){
   }catch(e){ if(saved){ saved.style.color='#b23a23'; saved.textContent='Échec : '+(e.message||e); } }
 };
 /* ===== Mes activités & sorties (ACM) — réservation reliée au compte famille ===== */
-const ACM = { uid:null, profile:null, asso:null };
+const ACM = { uid:null, profile:null, asso:null, mineById:{} };
 function acmEsc(s){return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 async function acmBoot(){
   const body=document.getElementById('acmBody'); if(!body) return;
@@ -567,7 +567,7 @@ async function acmBoot(){
     acts=(ra.data||[]).filter(a=>(a.categorie||'')==='Péri & extrascolaire' && !/p[ée]riscol/i.test(a.nom||''));
     mine=rm.data||[];
   }catch(e){ body.innerHTML='<p class="sub" style="color:#b23a23">Impossible de charger les activités pour le moment.</p>'; return; }
-  const byAct={}; mine.forEach(m=>{ (byAct[m.activite_id]=byAct[m.activite_id]||[]).push(m); });
+  const byAct={}; ACM.mineById={}; mine.forEach(m=>{ ACM.mineById[m.id]=m; (byAct[m.activite_id]=byAct[m.activite_id]||[]).push(m); });
   if(!acts.length){ body.innerHTML='<p class="sub" style="margin:0">Aucune activité ouverte à la réservation pour le moment. 🍍</p>'; return; }
   body.innerHTML='<div class="grid">'+acts.map(a=>{
     const places=Math.max(0,(a.capacite||0)-(a.nb_inscrits||0));
@@ -579,7 +579,7 @@ async function acmBoot(){
       +(a.quand?'<div class="when">'+acmEsc(a.quand)+'</div>':'')+'</div>'
       +'<span style="flex:0 0 auto;font-weight:800;font-size:13px;color:'+(complet?'#b23a23':'var(--vert-fonce)')+'">'+(complet?'Complet':places+' place'+(places>1?'s':''))+'</span>'
       +'</div>'
-      +(myK.length?('<div style="background:#eef7f2;border:1px solid #cfe6da;border-radius:10px;padding:6px 10px;font-size:13px;font-weight:700;color:var(--vert-fonce)">✅ Réservé : '+myK.map(m=>acmEsc(m.nom)).join(', ')+'</div>'):'')
+      +(myK.length?'<div style="display:flex;flex-direction:column;gap:6px">'+acmStatusHtml(a,myK)+'</div>':'')
       +(complet?'':'<div id="acmf_'+a.id+'" style="display:none">'
         +'<div id="acmkids_'+a.id+'" style="display:flex;flex-wrap:wrap;gap:6px;margin:2px 0 6px"></div>'
         +'<input id="acmn_'+a.id+'" placeholder="Prénom de l\'enfant *" style="width:100%;margin:3px 0;padding:9px 11px;border:1px solid var(--line);border-radius:10px;font:inherit">'
@@ -617,6 +617,69 @@ window.acmReserve=async function(id, override, enfantId){
   if(info){ info.style.color='var(--vert-fonce)'; info.textContent='✅ Place réservée ! Le bureau confirmera (et l\'adhésion si besoin).'; }
   toast('✅ Place réservée !');
   setTimeout(acmBoot, 1400);
+};
+function acmStatusHtml(a, myK){
+  return myK.map(function(m){
+    const who=acmEsc(m.nom||''); const st=m.statut||'reserve';
+    if(a.mode==='rdv'){
+      let txt;
+      if(st==='reserve'||st==='demande') txt='📅 Demande enregistrée. Le bureau vous proposera un <b>RDV pour récupérer</b> le dossier.';
+      else if(st==='rdv_recup') txt='📅 RDV pour <b>récupérer</b> le dossier : <b>'+acmEsc(m.rdv_recup||'à confirmer')+'</b>.';
+      else if(st==='recupere') txt='📄 Dossier <b>récupéré</b>. Remplissez-le ; un <b>RDV de dépôt</b> sera fixé.';
+      else if(st==='rdv_depot') txt='📅 RDV pour <b>déposer</b> le dossier : <b>'+acmEsc(m.rdv_depot||'à confirmer')+'</b>.';
+      else if(st==='depose') txt='📨 Dossier <b>déposé</b>, en attente de validation.';
+      else if(st==='valide') txt='✅ <b>Inscription validée</b>.';
+      else txt='📅 '+acmEsc(st);
+      return '<div style="background:#eef7f2;border:1px solid #cfe6da;border-radius:10px;padding:7px 11px;font-size:13px"><b>👧 '+who+'</b> · 🧒 VEPI (sur rendez-vous)<br>'+txt+(m.note_bureau?'<br><span style="color:#8a6400">📝 '+acmEsc(m.note_bureau)+'</span>':'')+'</div>';
+    }
+    if(a.mode==='dossier'){
+      const pieces=(m.pieces&&typeof m.pieces==='object')?m.pieces:{};
+      const hasFiche=pieces.sanitaire&&pieces.sanitaire.path; let txt;
+      if(st==='valide') txt='✅ <b>Dossier validé</b>.';
+      else if(st==='depose') txt='📨 <b>Dossier déposé</b>, en attente de validation.';
+      else if(st==='incomplet') txt='⚠️ <b>Dossier incomplet</b>'+(m.note_bureau?' : '+acmEsc(m.note_bureau):'')+'. Complétez puis redéposez.';
+      else txt='📋 <b>Dossier à compléter</b> : déposez la <b>fiche sanitaire de liaison</b>.';
+      const showForm=(st!=='valide');
+      return '<div style="background:#fff8ec;border:1px solid #f1e2ad;border-radius:10px;padding:8px 11px;font-size:13px"><b>👧 '+who+'</b> · 🌴 ACM (dossier en ligne)<br>'+txt
+        +(showForm?('<div style="margin-top:6px">'
+          +'<label class="btn use" style="cursor:pointer;font-size:12px;padding:6px 10px">📷 '+(hasFiche?'Remplacer':'Déposer')+' la fiche sanitaire<input type="file" accept="image/*,application/pdf" style="display:none" onchange="acmUpload(\''+m.id+'\',this)"></label>'
+          +(hasFiche?' <button class="reset" onclick="acmViewPiece(\''+m.id+'\')">voir</button>':'')
+          +'<div id="acmup_'+m.id+'" class="when"></div>'
+          +((hasFiche&&st!=='depose')?'<button class="btn win" style="margin-top:4px;font-size:12px;padding:6px 12px" onclick="acmDepose(\''+m.id+'\')">📨 Déposer le dossier</button>':'')
+          +'</div>'):'')
+        +'</div>';
+    }
+    const txt=(st==='valide')?'✅ <b>Confirmé</b> par le bureau.':'✅ <b>Réservé</b>. Le bureau confirmera.';
+    return '<div style="background:#eef7f2;border:1px solid #cfe6da;border-radius:10px;padding:7px 11px;font-size:13px"><b>👧 '+who+'</b> · '+txt+'</div>';
+  }).join('');
+}
+window.acmUpload=async function(insId, input){
+  const info=document.getElementById('acmup_'+insId);
+  const file=input.files&&input.files[0]; if(!file) return;
+  if(file.size>10*1024*1024){ if(info){info.style.color='#b23a23'; info.textContent='Fichier trop lourd (max 10 Mo).';} input.value=''; return; }
+  if(info){ info.style.color='var(--muted)'; info.textContent='Envoi…'; }
+  try{
+    const mm=(file.name||'').match(/\.[a-z0-9]+$/i); const ext=mm?mm[0].toLowerCase():'';
+    const path=ACM.asso+'/'+ACM.uid+'/acm-'+insId+'-sanitaire'+ext;
+    const {error:upErr}=await _sbAt.storage.from('dossiers-periscolaire').upload(path, file, {contentType:file.type||'application/octet-stream', upsert:true});
+    if(upErr) throw upErr;
+    const {error}=await _sbAt.from('inscriptions_activite').update({pieces:{sanitaire:{path, name:file.name||''}}}).eq('id',insId);
+    if(error) throw error;
+    if(info){ info.style.color='var(--vert-fonce)'; info.textContent='✅ '+(file.name||'fiche')+' déposé'; }
+    setTimeout(acmBoot, 1200);
+  }catch(e){ if(info){info.style.color='#b23a23'; info.textContent='Échec : '+(e.message||e);} }
+};
+window.acmViewPiece=async function(insId){
+  const m=ACM.mineById&&ACM.mineById[insId]; const p=m&&m.pieces&&m.pieces.sanitaire;
+  if(!p||!p.path) return;
+  const {data,error}=await _sbAt.storage.from('dossiers-periscolaire').createSignedUrl(p.path,3600);
+  if(error||!data){ toast('Impossible d\'ouvrir la pièce.'); return; }
+  window.open(data.signedUrl,'_blank');
+};
+window.acmDepose=async function(insId){
+  const {error}=await _sbAt.from('inscriptions_activite').update({statut:'depose'}).eq('id',insId);
+  if(error){ toast('Erreur : '+(error.message||error)); return; }
+  toast('📨 Dossier déposé !'); setTimeout(acmBoot,800);
 };
 
 /* ===== 👧 Mes enfants — fiches réutilisables (table enfants) ===== */

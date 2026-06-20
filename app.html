@@ -4973,11 +4973,14 @@ renderAll();
       const list=byA[a.id]||[];
       const places=Math.max(0,(a.capacite||0)-(a.nb_inscrits||0));
       const complet=a.statut==='ouvert'&&places<=0;
+      const isWorkflow=canWrite && (a.mode==='dossier'||a.mode==='rdv');
       const insHtml=list.length
-        ? '<table style="margin-top:10px"><thead><tr><th>Nom</th><th>Responsable</th><th>Contact</th><th>Date</th>'+(canWrite?'<th></th>':'')+'</tr></thead><tbody>'
-          +list.map(i=>'<tr><td>'+esc(i.nom||'')+'</td><td>'+esc(i.responsable||'')+'</td><td>'+esc(i.contact||'')+'</td><td>'+esc((i.created_at||'').slice(0,10))+'</td>'
-            +(canWrite?'<td><button class="ghost btn" title="Retirer" onclick="delInscriptionActivite(\''+i.id+'\')">✕</button></td>':'')+'</tr>').join('')
-          +'</tbody></table>'
+        ? (isWorkflow
+          ? list.map(i=>bureauActInsCard(a,i)).join('')
+          : '<table style="margin-top:10px"><thead><tr><th>Nom</th><th>Responsable</th><th>Contact</th><th>Date</th>'+(canWrite?'<th></th>':'')+'</tr></thead><tbody>'
+            +list.map(i=>'<tr><td>'+esc(i.nom||'')+'</td><td>'+esc(i.responsable||'')+'</td><td>'+esc(i.contact||'')+'</td><td>'+esc((i.created_at||'').slice(0,10))+'</td>'
+              +(canWrite?'<td><button class="ghost btn" title="Retirer" onclick="delInscriptionActivite(\''+i.id+'\')">✕</button></td>':'')+'</tr>').join('')
+            +'</tbody></table>')
         : '<p class="hint" style="margin:8px 0 0">Personne d\'inscrit pour l\'instant.</p>';
       let ctrl='';
       if(canWrite){
@@ -4985,6 +4988,8 @@ renderAll();
           +'<div class="field" style="flex:0;min-width:110px"><label>Capacité</label><input type="number" min="0" value="'+(a.capacite||0)+'" onchange="setActivite(\''+a.id+'\',{capacite:Math.max(0,parseInt(this.value)||0)})"></div>'
           +'<div class="field" style="flex:0;min-width:150px"><label>Statut</label><select onchange="setActivite(\''+a.id+'\',{statut:this.value})">'
             +['ouvert','bientot','archive'].map(s=>'<option value="'+s+'"'+(a.statut===s?' selected':'')+'>'+ACT_STATUTS[s]+'</option>').join('')+'</select></div>'
+          +'<div class="field" style="flex:0;min-width:175px"><label>Inscription</label><select onchange="setActivite(\''+a.id+'\',{mode:this.value})">'
+            +['reservation','dossier','rdv'].map(s=>'<option value="'+s+'"'+((a.mode||'reservation')===s?' selected':'')+'>'+({reservation:'Réservation simple',dossier:'Dossier en ligne',rdv:'Sur rendez-vous (VEPI)'}[s])+'</option>').join('')+'</select></div>'
           +'<button class="ghost btn" onclick="setActivite(\''+a.id+'\',{publie:'+(a.publie?'false':'true')+'})">'+(a.publie?'🔒 Dépublier':'🌍 Publier sur le site')+'</button>'
           +'<button class="ghost btn" onclick="editActivite(\''+a.id+'\')">✏️ Modifier</button>'
           +(myProfile && myProfile.role==='president'?'<button class="ghost btn" style="color:#c0392b" onclick="delActivite(\''+a.id+'\')">🗑️ Supprimer</button>':'')
@@ -5005,6 +5010,37 @@ renderAll();
         +'</div>';
     }).join('');
   };
+  function bureauActInsCard(a, i){
+    const who=esc(i.nom||''); const st=i.statut||'reserve';
+    const pieces=(i.pieces&&typeof i.pieces==='object')?i.pieces:{};
+    const fiche=pieces.sanitaire&&pieces.sanitaire.path;
+    let bodyh='';
+    if(a.mode==='dossier'){
+      const stLab={reserve:'📋 à compléter',depose:'📨 déposé',valide:'✅ validé',incomplet:'⚠️ incomplet'}[st]||st;
+      bodyh='<div style="font-size:13px;color:#555">Dossier : <b>'+stLab+'</b>'+(fiche?' · <button class="ghost btn" style="font-size:12px" onclick="bureauActViewPiece(\''+esc(pieces.sanitaire.path)+'\')">📄 voir fiche sanitaire</button>':' · <i>aucune pièce</i>')+'</div>'
+        +'<div class="row" style="gap:6px;flex-wrap:wrap;margin-top:6px">'
+        +'<button class="btn" style="font-size:12px;padding:6px 10px" onclick="setInsact(\''+i.id+'\',{statut:\'valide\'})">✅ Valider</button>'
+        +'<button class="ghost btn" style="font-size:12px;padding:6px 10px" onclick="setInsact(\''+i.id+'\',{statut:\'incomplet\'})">⚠️ Incomplet</button></div>';
+    } else if(a.mode==='rdv'){
+      const stLab={reserve:'📅 demande reçue',demande:'📅 demande reçue',rdv_recup:'📅 RDV récup fixé',recupere:'📄 récupéré',rdv_depot:'📅 RDV dépôt fixé',depose:'📨 déposé',valide:'✅ validé'}[st]||st;
+      bodyh='<div style="font-size:13px;color:#555">VEPI : <b>'+stLab+'</b>'+(i.rdv_recup?' · récup '+esc(i.rdv_recup):'')+(i.rdv_depot?' · dépôt '+esc(i.rdv_depot):'')+'</div>'
+        +'<div class="row" style="gap:6px;flex-wrap:wrap;margin-top:6px;align-items:center">'
+        +'<input type="date" id="rdvr_'+i.id+'" style="padding:5px 8px"><button class="ghost btn" style="font-size:12px" onclick="setInsactRdv(\''+i.id+'\',\'recup\')">📅 RDV récup</button>'
+        +'<button class="ghost btn" style="font-size:12px" onclick="setInsact(\''+i.id+'\',{statut:\'recupere\'})">✅ Récupéré</button>'
+        +'<input type="date" id="rdvd_'+i.id+'" style="padding:5px 8px"><button class="ghost btn" style="font-size:12px" onclick="setInsactRdv(\''+i.id+'\',\'depot\')">📅 RDV dépôt</button>'
+        +'<button class="ghost btn" style="font-size:12px" onclick="setInsact(\''+i.id+'\',{statut:\'depose\'})">📨 Déposé</button>'
+        +'<button class="btn" style="font-size:12px;padding:6px 10px" onclick="setInsact(\''+i.id+'\',{statut:\'valide\'})">✅ Valider</button></div>';
+    }
+    return '<div class="panel" style="margin:8px 0;padding:10px 12px;border-left:3px solid #1f9d6b">'
+      +'<div><b>👧 '+who+'</b> <span class="muted" style="font-size:12px">'+esc(i.responsable||'')+(i.contact?' · '+esc(i.contact):'')+'</span> <button class="ghost btn" style="float:right;font-size:12px" onclick="delInscriptionActivite(\''+i.id+'\')">✕</button></div>'
+      +bodyh
+      +'<div class="row" style="gap:6px;margin-top:6px"><input id="insnote_'+i.id+'" value="'+esc(i.note_bureau||'')+'" placeholder="Note (ce qui manque, précisions RDV…)" style="flex:1;padding:6px 9px;border:1px solid var(--line);border-radius:8px;font:inherit;font-size:13px"><button class="ghost btn" style="font-size:12px" onclick="insactNote(\''+i.id+'\')">💾</button></div>'
+      +'</div>';
+  }
+  window.setInsact=async function(id,patch){ const {error}=await sbc.from('inscriptions_activite').update(patch).eq('id',id); if(error){alert(error.message);return;} loadActivitesGestion(); };
+  window.setInsactRdv=function(id,kind){ const el=document.getElementById((kind==='recup'?'rdvr_':'rdvd_')+id); const v=el?el.value:''; if(!v){alert('Choisis une date.');return;} setInsact(id, kind==='recup'?{rdv_recup:v,statut:'rdv_recup'}:{rdv_depot:v,statut:'rdv_depot'}); };
+  window.insactNote=async function(id){ const el=document.getElementById('insnote_'+id); const {error}=await sbc.from('inscriptions_activite').update({note_bureau:el?el.value:''}).eq('id',id); setSync(error?('⚠️ '+error.message):'✓ note enregistrée', error?'#ffd9d0':'#dff5e9'); };
+  window.bureauActViewPiece=async function(path){ if(!path)return; const {data,error}=await sbc.storage.from('dossiers-periscolaire').createSignedUrl(path,3600); if(error||!data){alert('Pièce introuvable.');return;} window.open(data.signedUrl,'_blank'); };
   function agReset(){ const g=id=>document.getElementById(id); ['ag_id','ag_nom','ag_cat','ag_emoji','ag_desc','ag_date','ag_quand','ag_lieu','ag_programme'].forEach(k=>{ if(g(k)) g(k).value=''; }); if(g('ag_cap'))g('ag_cap').value='20'; if(g('ag_type'))g('ag_type').value='activite'; if(g('ag_statut'))g('ag_statut').value='ouvert'; if(g('ag_pub'))g('ag_pub').value='1'; if(g('ag_ordre'))g('ag_ordre').value='0'; const b=g('ag_btn'); if(b) b.textContent='+ Créer'; }
   window.addActivite=async function(){
     const g=id=>document.getElementById(id);
