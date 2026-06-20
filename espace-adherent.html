@@ -78,6 +78,10 @@
       <p class="sub" style="margin:2px 0 10px">Année scolaire <b>2026–2027</b> · adhésion annuelle <b>10 €</b> (valable du <b>1ᵉʳ août au 31 juillet</b>).</p>
       <div id="periBody"><p class="sub">Chargement…</p></div>
     </div>
+    <div class="card" style="border-left:5px solid var(--jaune);background:#fffdf5;margin-top:12px">
+      <h2 class="title" style="font-size:18px;cursor:pointer;user-select:none" onclick="calcToggle()">💶 Estimez votre tarif <small>— selon votre quotient familial</small> <span id="calcChev" style="float:right">▾</span></h2>
+      <div id="calcBody" style="display:none;margin-top:8px"></div>
+    </div>
   </div>
 </section>
 
@@ -428,6 +432,7 @@ async function periBoot(){
   if(!Array.isArray(PERI.row.enfants)) PERI.row.enfants=[];
   if(!PERI.row.pieces||typeof PERI.row.pieces!=='object') PERI.row.pieces={};
   if(!PERI.row.enfants.length) PERI.row.enfants=[periEmptyChild()];
+  PERI.editMode=false;
   periRenderForm();
 }
 
@@ -492,6 +497,7 @@ function periRenderForm(){
   const respNom=_fy.length?_fy[0]:''; const respPrenom=_fy.length>1?_fy.slice(1).join(' '):'';
   const _flash=PERI.flash; PERI.flash=null;
   const flashHtml=_flash?'<div style="background:#dff5e9;border:1px solid #a9e0c4;color:#127a51;border-radius:12px;padding:12px 14px;margin:0 0 12px;font-weight:800;font-size:15px">'+periEsc(_flash)+'</div>':'';
+  if((r.statut==='depose'||r.statut==='valide') && !PERI.editMode){ body.innerHTML=flashHtml+periRecapHtml(r,respNom,respPrenom); return; }
   const stLabel={brouillon:'✏️ Brouillon (non déposé)',depose:'📨 Déposé — en attente de validation',valide:'✅ Validé par le bureau',incomplet:'⚠️ Incomplet — voir la note du bureau'}[r.statut]||'';
   body.innerHTML=
     flashHtml
@@ -499,6 +505,7 @@ function periRenderForm(){
     +((PERI.statut&&PERI.statut!=='actif')?'<div style="background:#fff5da;border:1px solid #f1e2ad;color:#8a6400;border-radius:12px;padding:10px 14px;margin:0 0 12px;font-weight:600">🪪 Votre <b>adhésion (10 €)</b> reste à régulariser auprès du bureau (un seul parent adhérent suffit pour tous vos enfants). Vous pouvez <b>déjà préparer et déposer votre dossier</b> dès maintenant.</div>':'')
     +(stLabel?'<div style="display:inline-block;background:#fff;border:1px solid var(--line);border-radius:999px;padding:6px 14px;font-weight:800;margin-bottom:12px">'+stLabel+'</div>':'')
     +((r.statut==='incomplet'&&r.note_bureau)?'<div style="background:#ffe9e3;border:1px solid #f3c4ba;color:#b23a23;border-radius:12px;padding:10px 14px;margin-bottom:12px">📝 Bureau : '+periEsc(r.note_bureau)+'</div>':'')
+    +(((r.statut==='depose'||r.statut==='valide'))?'<div style="margin:0 0 12px"><button class="reset" onclick="periBackToRecap()">← Retour au récapitulatif</button></div>':'')
     +'<h3 style="margin:0 0 8px;font-size:16px">👤 Responsable (parent)</h3>'
     +'<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px">'
     +'<input id="peri_nom" value="'+periEsc(respNom)+'" placeholder="Nom du parent" style="flex:1;min-width:140px;padding:10px 12px;border:1px solid var(--line);border-radius:10px;font:inherit">'
@@ -519,6 +526,37 @@ function periRenderForm(){
     +'<button class="btn use" onclick="periSave(true)">📨 Déposer mon dossier</button>'
     +'</div><p id="periSaved" class="when" style="margin-top:8px"></p>';
 }
+function periRecapHtml(r, respNom, respPrenom){
+  const stMap={depose:['#fff5da','#8a6400','📨 Dossier déposé — en attente de validation par le bureau'],valide:['#dff5e9','#127a51','✅ Dossier validé par le bureau']};
+  const st=stMap[r.statut]||stMap.depose;
+  const enf=(Array.isArray(r.enfants)?r.enfants:[]);
+  const enfHtml=enf.length?enf.map(e=>{
+    const f=[e.matin?'🌅 Matin':null,e.soir?'🌆 Soir':null].filter(Boolean).join(' + ')||'—';
+    const who=((periEsc(e.nom||'')+' '+periEsc(e.prenom||'')).trim())||'(enfant sans nom)';
+    return '<div style="padding:8px 0;border-top:1px solid var(--line)"><b>'+who+'</b> '
+      +'<span style="color:var(--muted);font-size:14px">· '+(e.classe?periEsc(e.classe)+' · ':'')+'🏫 '+periEsc(e.ecole||PERI.ECOLE)+' · '+f+'</span>'
+      +(e.autorises?'<br><span style="font-size:13px;color:#8a6400">🔐 Autorisé(s) : '+periEsc(e.autorises)+'</span>':'')+'</div>';
+  }).join(''):'<p class="sub" style="margin:6px 0">Aucun enfant renseigné.</p>';
+  const pieces=(r.pieces&&typeof r.pieces==='object')?r.pieces:{};
+  const nbOk=PERI.PIECES.filter(p=>pieces[p.k]&&pieces[p.k].path).length;
+  const pieceHtml=PERI.PIECES.map(p=>{
+    const got=pieces[p.k]&&pieces[p.k].path;
+    return '<span style="display:inline-block;font-size:13px;font-weight:700;padding:3px 9px;border-radius:999px;margin:2px;background:'+(got?'#dff5e9':'#fbecea')+';color:'+(got?'#127a51':'#b23a23')+'">'+(got?'✅ ':'✖ ')+periEsc(p.lab)+'</span>';
+  }).join(' ');
+  const noteHtml=(r.statut==='incomplet'&&r.note_bureau)?'<div style="background:#ffe9e3;border:1px solid #f3c4ba;color:#b23a23;border-radius:12px;padding:10px 14px;margin:0 0 12px">📝 Bureau : '+periEsc(r.note_bureau)+'</div>':'';
+  return noteHtml
+    +'<div style="background:'+st[0]+';border:1px solid '+st[1]+'55;color:'+st[1]+';border-radius:14px;padding:14px 16px;margin:0 0 14px;font-weight:800;font-size:16px">'+st[2]+'</div>'
+    +'<p class="sub" style="margin:0 0 10px">Voici le dossier que le CASE a bien reçu — vérifiez qu\'il est correct. Vous pouvez le modifier si besoin.</p>'
+    +'<div class="card" style="box-shadow:none;border:1px solid var(--line);gap:4px">'
+      +'<div style="font-weight:800">👤 '+(((periEsc(respNom)+' '+periEsc(respPrenom)).trim())||'Responsable')+'</div>'
+      +'<div style="color:var(--muted);font-size:14px">'+periEsc(r.email||'')+(r.tel?' · '+periEsc(r.tel):'')+'</div>'
+      +'<div style="margin-top:10px;font-weight:800">👧 Enfant(s)</div>'+enfHtml
+      +'<div style="margin-top:12px;font-weight:800">📎 Pièces ('+nbOk+'/'+PERI.PIECES.length+')</div><div style="margin-top:4px">'+pieceHtml+'</div>'
+    +'</div>'
+    +'<div style="margin-top:14px"><button class="btn use" onclick="periEdit()">✏️ Modifier mon dossier</button></div>';
+}
+window.periEdit=function(){ PERI.editMode=true; periRenderForm(); };
+window.periBackToRecap=function(){ PERI.editMode=false; periRenderForm(); };
 window.periAddChild=function(){ PERI.row.enfants=periReadChildren(); PERI.row.enfants.push(periEmptyChild()); periRenderForm(); };
 window.periRemoveChild=function(i){ const arr=periReadChildren().filter((_,j)=>j!==i); PERI.row.enfants=arr.length?arr:[periEmptyChild()]; periRenderForm(); };
 
@@ -575,6 +613,7 @@ window.periSave=async function(depose){
     PERI.flash = depose
       ? '📨 Votre dossier a bien été déposé ! Le bureau du CASE va le vérifier.'+(missLabels.length?(' (À compléter quand vous voulez : '+missLabels.join(', ')+'.)'):' Toutes vos pièces sont là, parfait. 🍍')
       : '💾 C\'est enregistré ✓ Vos informations sont gardées — vous pourrez revenir les compléter quand vous voulez.';
+    if(depose) PERI.editMode=false;
     periRenderForm();
     toast(depose?'✅ Dossier déposé !':'💾 Enregistré ✓');
   }catch(e){ if(saved){ saved.style.color='#b23a23'; saved.textContent='Échec : '+(e.message||e); } }
@@ -630,6 +669,60 @@ window.acmReserve=async function(id){
   if(info){ info.style.color='var(--vert-fonce)'; info.textContent='✅ Place réservée ! Le bureau confirmera (et l\'adhésion si besoin).'; }
   toast('✅ Place réservée !');
   setTimeout(acmBoot, 1400);
+};
+
+/* ===== Calculateur de tarif périscolaire (grille officielle au quotient familial) ===== */
+const CALC_TR=[
+  {max:350.99,jour:3.14,lab:'Tranche 1 (QF 0–350,99 €)'},
+  {max:450.99,jour:3.58,lab:'Tranche 2 (351–450,99 €)'},
+  {max:600.99,jour:4.13,lab:'Tranche 3 (451–600,99 €)'},
+  {max:800.99,jour:4.40,lab:'Tranche 4 (601–800,99 €)'},
+  {max:1000.99,jour:4.95,lab:'Tranche 5 (801–1 000,99 €)'},
+  {max:1250.99,jour:5.50,lab:'Tranche 6 (1 001–1 250,99 €)'},
+  {max:1500.99,jour:6.05,lab:'Tranche 7 (1 251–1 500,99 €)'},
+  {max:2000.99,jour:6.60,lab:'Tranche 8 (1 501–2 000,99 €)'},
+  {max:Infinity,jour:7.43,lab:'Tranche 9 (2 001 € et +)'}
+];
+const CALC_SUPP=1.5, CALC_REM=5, CALC_JOURS=16, CALC_HORS=8.25;
+function calcEuro(n){ return n.toLocaleString('fr-FR',{minimumFractionDigits:2,maximumFractionDigits:2})+' €'; }
+window.calcToggle=function(){
+  const b=document.getElementById('calcBody'),c=document.getElementById('calcChev'); if(!b) return;
+  const open=b.style.display==='none'; b.style.display=open?'block':'none'; if(c)c.textContent=open?'▴':'▾';
+  if(open && !b.dataset.init){ calcInit(); b.dataset.init='1'; }
+};
+function calcInit(){
+  const b=document.getElementById('calcBody'); if(!b) return;
+  b.innerHTML=
+    '<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end">'
+    +'<div style="flex:1;min-width:160px"><label style="font-weight:700;font-size:14px">Votre quotient familial (CAF)</label><input id="calc_qf" type="number" min="0" step="1" placeholder="ex. 700" oninput="calcRun()" style="width:100%;padding:9px 11px;border:1px solid var(--line);border-radius:10px;font:inherit"></div>'
+    +'<div style="min-width:150px"><label style="font-weight:700;font-size:14px">Rang de l\'enfant</label><select id="calc_rang" onchange="calcRun()" style="width:100%;padding:9px 11px;border:1px solid var(--line);border-radius:10px;font:inherit"><option value="1">1er enfant</option><option value="2">2e enfant</option><option value="3">3e enfant</option><option value="4">4e enfant</option></select></div>'
+    +'</div>'
+    +'<div style="display:flex;gap:16px;flex-wrap:wrap;margin-top:10px;align-items:center">'
+    +'<label style="font-weight:700"><input type="checkbox" id="calc_soir" checked onchange="calcRun()"> 🌆 Soir (après l\'école)</label>'
+    +'<label style="font-weight:700"><input type="checkbox" id="calc_matin" onchange="calcRun()"> 🌅 Matin</label>'
+    +'<label style="font-weight:700"><input type="checkbox" id="calc_hors" onchange="calcRun()"> Hors commune</label>'
+    +'</div>'
+    +'<div id="calc_res" style="margin-top:12px"></div>'
+    +'<p class="sub" style="margin:10px 0 0;font-size:12.5px">Estimation indicative (grille au quotient familial, ≈ 16 jours/mois, −5 % par enfant supplémentaire). Le tarif définitif est calculé avec le bureau d\'après votre attestation CAF.</p>';
+  calcRun();
+}
+window.calcRun=function(){
+  const res=document.getElementById('calc_res'); if(!res) return;
+  const gv=id=>document.getElementById(id);
+  const qf=parseFloat((gv('calc_qf')||{}).value)||0;
+  const hors=(gv('calc_hors')||{}).checked, matin=(gv('calc_matin')||{}).checked, soir=(gv('calc_soir')||{}).checked;
+  const rang=parseInt((gv('calc_rang')||{}).value)||1;
+  if(!matin && !soir){ res.innerHTML='<div style="color:var(--muted);font-weight:700">Cochez au moins « Soir » ou « Matin ».</div>'; return; }
+  let jour, lab;
+  if(hors){ jour=CALC_HORS; lab='Hors commune'; }
+  else { const t=CALC_TR.find(t=>qf<=t.max)||CALC_TR[CALC_TR.length-1]; jour=t.jour; lab=t.lab; }
+  const base=((soir?jour:0)+(matin?CALC_SUPP:0))*CALC_JOURS;
+  const remPct=CALC_REM*Math.max(0,rang-1);
+  const total=base*(1-Math.min(remPct,90)/100);
+  res.innerHTML='<div style="background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px 14px">'
+    +'<div style="font-size:13px;color:var(--muted)">'+lab+(soir?' · soir '+calcEuro(jour):'')+(matin?' · matin +'+calcEuro(CALC_SUPP):'')+(remPct?' · −'+remPct+'% fratrie':'')+'</div>'
+    +'<div style="font-size:26px;font-weight:900;color:var(--vert-fonce);margin-top:4px">≈ '+calcEuro(total)+' <span style="font-size:15px;font-weight:700;color:var(--muted)">/ mois</span></div>'
+    +'</div>';
 };
 
 _sbAt.auth.onAuthStateChange(()=>{ periBoot(); });
