@@ -209,6 +209,24 @@
   </section>
 
   <!-- MEMBERS -->
+<button id="pageHelpBtn" onclick="pageHelp()" title="Comprendre cette page" style="position:fixed;right:18px;bottom:18px;z-index:1200;border:none;border-radius:999px;padding:11px 16px;background:#1d7a3f;color:#fff;font-weight:700;font-size:14px;box-shadow:0 4px 14px rgba(0,0,0,.22);cursor:pointer">❓ Aide</button>
+  <div id="pageHelpModal" onclick="if(event.target===this)pageHelpClose()" style="display:none;position:fixed;inset:0;z-index:1201;background:rgba(0,0,0,.45);align-items:flex-start;justify-content:center;padding:36px 14px;overflow:auto">
+    <div style="background:#fff;max-width:640px;width:100%;border-radius:16px;padding:18px 20px 20px;box-shadow:0 12px 44px rgba(0,0,0,.3)">
+      <div class="row" style="justify-content:space-between;align-items:center;gap:10px">
+        <div class="row" style="align-items:center;gap:10px">
+          <img src="zanana-point.png" alt="" onerror="this.style.display='none'" style="height:42px">
+          <h3 style="margin:0">🍍 Zanana t'explique cette page</h3>
+        </div>
+        <button class="ghost btn" onclick="pageHelpClose()">✕</button>
+      </div>
+      <div id="pageHelpBody" style="margin-top:14px"></div>
+      <div style="margin-top:14px;border-top:1px solid #eee;padding-top:12px">
+        <span class="muted" style="font-size:13px">Une question précise, ou envie de chercher plus loin ?</span>
+        <button class="btn" style="margin-left:8px" onclick="pageHelpGotoAide()">🔎 Poser une question · toute l'aide</button>
+      </div>
+    </div>
+  </div>
+
   <section id="members" class="page">
     <div class="panel">
       <h2>Ajouter un adhérent</h2>
@@ -2244,6 +2262,27 @@ function renderFaqList(){
   const box=$('faqList'); if(!box) return;
   box.innerHTML=FAQ.map(it=>faqCard(it,false)).join('');
 }
+/* ---- Aide contextuelle : « Comment marche cette page » (réutilise la FAQ Zanana, 1 bouton générique pour TOUS les onglets) ---- */
+function pageHelpNorm(s){ return (s||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^a-z0-9]+/g,' ').trim(); }
+function pageHelpItems(){
+  const b=document.querySelector('nav.tabs button.active');
+  const label=b?(b.textContent||'').trim():'';
+  const words=pageHelpNorm(label).split(' ').filter(w=>w.length>=4);
+  const items=(typeof FAQ!=='undefined'?FAQ:[]).filter(it=>{ const c=pageHelpNorm(it.cat); return words.some(w=>c.indexOf(w)>=0); });
+  return {label,items};
+}
+function pageHelp(){
+  const box=$('pageHelpBody'); if(!box) return;
+  const r=pageHelpItems();
+  let h='';
+  if(!r.label){ h='<p class="muted">Ouvre une page pour voir son aide.</p>'; }
+  else if(!r.items.length){ h='<p class="muted">Pas encore d\'explication dédiée pour <b>'+esc(r.label)+'</b>. Pose ta question à Zanana 👇</p>'; }
+  else { h='<p class="muted" style="margin:0 0 8px">Voici comment marche <b>'+esc(r.label)+'</b> :</p>'+r.items.map((it,i)=>faqCard(it,i===0)).join(''); }
+  box.innerHTML=h;
+  const m=$('pageHelpModal'); if(m) m.style.display='flex';
+}
+function pageHelpClose(){ const m=$('pageHelpModal'); if(m) m.style.display='none'; }
+function pageHelpGotoAide(){ pageHelpClose(); const b=document.querySelector('nav.tabs button[data-tab="aide"]'); if(b){ b.click(); const f=$('faqAsk'); if(f) setTimeout(()=>{ try{ f.focus(); }catch(e){} },60); } else { alert('L\'aide complète est dans l\'onglet ❓ Aide.'); } }
 
 /* ---- ✨ Quoi de neuf (nouveautés + notice chronologique) ---- */
 const NEWS=[
