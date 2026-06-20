@@ -4848,6 +4848,7 @@ renderAll();
       return '<div class="panel" style="margin:10px 0;border-left:4px solid '+st[1]+'">'
         +'<div class="toolbar"><div><strong>'+esc(d.foyer||'Famille')+'</strong> '
         +'<span class="pill" style="background:'+st[0]+';color:'+st[1]+';font-size:11px">'+st[2]+'</span>'
+        +(d.besoin_aide?' <span class="pill" style="background:#fff5da;color:#8a6400;font-size:11px">🙋 Aide demandée (RDV)</span>':'')
         +((d.email||d.tel)?'<br><span class="muted" style="font-size:13px">'+esc(d.email||'')+((d.email&&d.tel)?' · ':'')+esc(d.tel||'')+'</span>':'')
         +'</div><span class="muted" style="font-size:12px">'+esc((d.updated_at||'').slice(0,10))+'</span></div>'
         +'<div style="margin-top:6px;display:flex;gap:5px;flex-wrap:wrap">'+enfHtml+'</div>'
@@ -5034,6 +5035,7 @@ renderAll();
     return '<div class="panel" style="margin:8px 0;padding:10px 12px;border-left:3px solid #1f9d6b">'
       +'<div><b>👧 '+who+'</b> <span class="muted" style="font-size:12px">'+esc(i.responsable||'')+(i.contact?' · '+esc(i.contact):'')+'</span> <button class="ghost btn" style="float:right;font-size:12px" onclick="delInscriptionActivite(\''+i.id+'\')">✕</button></div>'
       +bodyh
+      +(i.besoin_aide?'<div style="font-size:12px;color:#8a6400;font-weight:700;margin-top:4px">🙋 La famille demande de l\'aide (RDV au CASE)</div>':'')
       +'<div class="row" style="gap:6px;margin-top:6px"><input id="insnote_'+i.id+'" value="'+esc(i.note_bureau||'')+'" placeholder="Note (ce qui manque, précisions RDV…)" style="flex:1;padding:6px 9px;border:1px solid var(--line);border-radius:8px;font:inherit;font-size:13px"><button class="ghost btn" style="font-size:12px" onclick="insactNote(\''+i.id+'\')">💾</button></div>'
       +'</div>';
   }

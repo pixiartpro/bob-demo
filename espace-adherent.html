@@ -444,6 +444,7 @@ function periRenderForm(){
     +'<p class="sub" style="margin:0 0 8px;font-size:13px">Cochez les enfants concernés et leur formule. L\'identité, les allergies et la santé se gèrent dans <b>👧 Mes enfants</b> (plus bas) — pas besoin de les retaper.</p>'
     +'<div id="periChildren" style="display:flex;flex-direction:column;gap:8px">'+periKidsPickHtml(r)+'</div>'
     +'<div style="margin:6px 0 18px"><button class="btn use" type="button" onclick="periGotoKids()">+ Ajouter / gérer mes enfants</button></div>'
+    +'<div style="background:#eef7f2;border:1px solid #cfe6da;border-radius:10px;padding:8px 12px;margin:0 0 12px;font-size:13px">🙋 <b>Pas à l\'aise pour scanner / remplir en ligne ?</b> '+(r.besoin_aide?'<span style="color:var(--vert-fonce);font-weight:700">✅ Demande envoyée — le bureau vous recontacte pour un rendez-vous au CASE.</span>':'<button class="btn use" style="font-size:12px;padding:6px 10px" type="button" onclick="periBesoinAide()">Le faire au CASE avec de l\'aide</button>')+'</div>'
     +'<h3 style="margin:0 0 8px;font-size:16px">📎 Mes pièces</h3>'
     +'<p class="sub" style="margin:0 0 10px">L\'attestation CAF doit dater de <b>moins de 3 mois</b>. Touchez « Scanner » pour prendre la photo avec votre téléphone, ou choisir un fichier déjà enregistré.</p>'
     +'<div class="grid">'+PERI.PIECES.map(p=>periPieceRow(p)).join('')+'</div>'
@@ -487,6 +488,16 @@ window.periEdit=function(){ PERI.editMode=true; periRenderForm(); };
 window.periBackToRecap=function(){ PERI.editMode=false; periRenderForm(); };
 window.periPickOn=function(el){ if(!el||!el.checked) return; const card=el.closest('[data-pk]'); if(card){ const on=card.querySelector('[data-pf="on"]'); if(on) on.checked=true; } };
 window.periGotoKids=function(){ const el=document.getElementById('kidsSection'); if(el) el.scrollIntoView({behavior:'smooth',block:'start'}); };
+window.periBesoinAide=async function(){
+  try{
+    const id=await periEnsureRow();
+    const {error}=await _sbAt.from('inscriptions_periscolaire').update({besoin_aide:true}).eq('id',id);
+    if(error) throw error;
+    PERI.row.besoin_aide=true;
+    PERI.flash='🙋 Demande envoyée ! Le bureau vous recontactera pour fixer un rendez-vous au CASE (on remplira tout ensemble, scan sur place).';
+    periRenderForm(); toast('🙋 Demande envoyée');
+  }catch(e){ toast('Erreur : '+(e.message||e)); }
+};
 
 async function periEnsureRow(){
   if(PERI.row && PERI.row.id) return PERI.row.id;
@@ -646,6 +657,7 @@ function acmStatusHtml(a, myK){
           +(hasFiche?' <button class="reset" onclick="acmViewPiece(\''+m.id+'\')">voir</button>':'')
           +'<div id="acmup_'+m.id+'" class="when"></div>'
           +((hasFiche&&st!=='depose')?'<button class="btn win" style="margin-top:4px;font-size:12px;padding:6px 12px" onclick="acmDepose(\''+m.id+'\')">📨 Déposer le dossier</button>':'')
+          +'<div style="margin-top:4px;font-size:12px">'+(m.besoin_aide?'<span style="color:var(--vert-fonce);font-weight:700">🙋 Aide demandée — le bureau vous recontacte pour un RDV au CASE.</span>':'<button class="reset" onclick="acmBesoinAide(\''+m.id+'\')">🙋 Pas à l\'aise pour scanner ? Le faire au CASE (rendez-vous)</button>')+'</div>'
           +'</div>'):'')
         +'</div>';
     }
@@ -680,6 +692,11 @@ window.acmDepose=async function(insId){
   const {error}=await _sbAt.from('inscriptions_activite').update({statut:'depose'}).eq('id',insId);
   if(error){ toast('Erreur : '+(error.message||error)); return; }
   toast('📨 Dossier déposé !'); setTimeout(acmBoot,800);
+};
+window.acmBesoinAide=async function(insId){
+  const {error}=await _sbAt.from('inscriptions_activite').update({besoin_aide:true}).eq('id',insId);
+  if(error){ toast('Erreur : '+(error.message||error)); return; }
+  toast('🙋 Aide demandée'); setTimeout(acmBoot,800);
 };
 
 /* ===== 👧 Mes enfants — fiches réutilisables (table enfants) ===== */
