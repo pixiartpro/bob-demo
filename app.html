@@ -4822,6 +4822,20 @@ renderAll();
     setBarH(); window.addEventListener('resize', setBarH);
   }
 
+  // === Catalogue abonnement : chaque onglet → son bouquet de fonctions. Les onglets ABSENTS de cette table
+  //     (tableau de bord, présentation, projet, projet ados, secrétariat, aide, historique, admin, données)
+  //     sont le SOCLE : jamais gatés par l'abonnement (seul le rôle peut les masquer). ===
+  const BOB_TAB_PACK={
+    members:'f_adherents', repertoire:'f_adherents',
+    accounting:'f_compta_base', caisse:'f_compta_base',
+    dettes:'f_compta_avancee', bilan:'f_compta_avancee', previsionnel:'f_compta_avancee',
+    subventions:'f_subventions',
+    projects:'f_projets',
+    ateliers:'f_ateliers_partenaires', partenaires:'f_ateliers_partenaires',
+    equipe:'f_rh_equipe', accompagnement:'f_rh_equipe', rh:'f_rh_equipe', personnel:'f_rh_equipe',
+    suivi:'f_rh_equipe', conges:'f_rh_equipe', horaires:'f_rh_equipe', incidents:'f_rh_equipe',
+    periscolaire:'f_metier_acm', activites:'f_metier_acm', rdv:'f_metier_acm', acmvac:'f_metier_acm', lieux:'f_metier_acm'
+  };
   function applyPerms(){
     const perms=Object.assign({}, (myProfile.perms&&typeof myProfile.perms==='object')?myProfile.perms:{});
     if(!canWrite) perms.aide='cache'; // l'Aide « Demande à Zanana » est réservée au bureau
@@ -4830,10 +4844,14 @@ renderAll();
     if(!canWrite){ perms.suivi='cache'; perms.conges='cache'; perms.horaires='cache'; } // Suivi, Congés & Horaires : bureau uniquement par défaut
     if(!canWrite) perms.acmvac='cache'; // 🌴 Vacances : outil interne de programmation → bureau uniquement
     if(!canWrite) perms.rdv='cache'; // 📅 Rendez-vous : gestion des plages/créneaux → bureau uniquement
+    // === Abonnement (OPT-OUT) : un onglet est caché si SA fonction vaut explicitement false. Absent ou true = visible.
+    //     Le CASE a des fonctions vides {} → rien n'est false → il garde TOUT (aucune donnée touchée). ===
+    const feats=(window.bobFeatures&&window.bobFeatures())||{};
+    const lvlOf=(k)=>{ let l=perms[k]||(canWrite?'gestion':'lecture'); const p=BOB_TAB_PACK[k]; if(p&&feats[p]===false) l='cache'; return l; };
     const css=[];
     document.querySelectorAll('nav.tabs button[data-tab]').forEach(b=>{
       const k=b.dataset.tab;
-      const lvl=perms[k]||(canWrite?'gestion':'lecture');
+      const lvl=lvlOf(k);
       if(lvl==='cache'){
         css.push('nav.tabs button[data-tab="'+k+'"]{display:none!important}');
         css.push('#'+k+'{display:none!important}');
@@ -4844,18 +4862,18 @@ renderAll();
     });
     const old=document.getElementById('permsStyle'); if(old)old.remove();
     if(css.length){ const st=document.createElement('style'); st.id='permsStyle'; st.textContent=css.join('\n'); document.head.appendChild(st); }
-    // masquer une famille dont TOUS les onglets sont cachés (ex. lecture seule)
+    // masquer une famille dont TOUS les onglets sont cachés (lecture seule OU bouquet éteint)
     document.querySelectorAll('nav.famtabs button[data-group]').forEach(fb=>{
       const tabs=[...document.querySelectorAll('nav.tabs .tabgroup[data-group="'+fb.dataset.group+'"] button[data-tab]')];
-      const anyVis=tabs.some(b=>(perms[b.dataset.tab]||(canWrite?'gestion':'lecture'))!=='cache');
+      const anyVis=tabs.some(b=>lvlOf(b.dataset.tab)!=='cache');
       fb.style.display=anyVis?'':'none';
     });
     // si l'onglet actif est caché, bascule sur la première rubrique visible
-    const vis=[...document.querySelectorAll('nav.tabs button[data-tab]')].filter(b=>(perms[b.dataset.tab]||(canWrite?'gestion':'lecture'))!=='cache');
+    const vis=[...document.querySelectorAll('nav.tabs button[data-tab]')].filter(b=>lvlOf(b.dataset.tab)!=='cache');
     const active=document.querySelector('nav.tabs button.active');
     let want=null;
     if(!window._bobTabRestored){ window._bobTabRestored=true; try{ const lt=localStorage.getItem('bob_last_tab'); if(lt) want=vis.find(b=>b.dataset.tab===lt); }catch(e){} }
-    if(vis.length){ if(want) want.click(); else if(!active || (perms[active.dataset.tab]||'')==='cache') vis[0].click(); }
+    if(vis.length){ if(want) want.click(); else if(!active || lvlOf(active.dataset.tab)==='cache') vis[0].click(); }
   }
 
   async function pushNow(){
@@ -5677,24 +5695,15 @@ renderAll();
   window.bobMe=function(){ try{ return myProfile?((myProfile.full_name||myProfile.email||'').split('@')[0]):''; }catch(e){ return ''; } };
   window.bobFeatures=function(){ return window.__bobFeatures||{}; };
   window.bobIsAdmin=function(){ try{ return !!(myProfile&&myProfile.super_admin); }catch(e){ return false; } };
+  // La console super-admin (fonctions & formules par association) vit désormais sur UNE seule page dédiée,
+  // bob.re/admin, pour éviter deux outils qui se désynchronisent. Cet onglet n'est plus qu'un raccourci.
   window.bobLoadAdmin=async function(){
     const box=document.getElementById('adminConsole'); if(!box) return;
     if(!(myProfile&&myProfile.super_admin)){ box.innerHTML='<div class="empty">Réservé au super-admin.</div>'; return; }
-    box.innerHTML='<p class="hint">Chargement…</p>';
-    const {data,error}=await sbc.rpc('admin_list_assos');
-    if(error){ box.innerHTML='<div class="empty">Erreur : '+esc(error.message)+'</div>'; return; }
-    const plans=['','Découverte','Essentiel','Trésorier','Structure'];
-    box.innerHTML='<div class="panel" style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:14px">'
-      +'<tr style="text-align:left"><th style="padding:8px 10px">Association</th><th>Comptes</th><th>Adhérents</th><th>Gestion de projet</th><th>Formule</th></tr>'
-      +(data||[]).map(function(a){ var on=a.features&&a.features.gestion_projet===true;
-        return '<tr style="border-top:1px solid var(--line)"><td style="padding:8px 10px"><b>'+esc(a.name||a.slug)+'</b><br><span class="muted" style="font-size:12px">'+esc(a.slug)+'</span></td>'
-          +'<td style="text-align:center">'+a.nb_comptes+'</td><td style="text-align:center">'+a.nb_adherents+'</td>'
-          +'<td><label style="cursor:pointer;display:inline-flex;align-items:center;gap:6px"><input type="checkbox" '+(on?'checked':'')+' onchange="window.bobAdminToggle(\''+a.id+'\',\'gestion_projet\',this.checked)"> '+(on?'activé':'éteint')+'</label></td>'
-          +'<td><select onchange="window.bobAdminPlan(\''+a.id+'\',this.value)">'+plans.map(function(p){return '<option'+((p||'')===(a.plan||'')?' selected':'')+'>'+(esc(p)||'—')+'</option>';}).join('')+'</select></td></tr>';
-      }).join('')+'</table></div><p class="hint" style="margin-top:8px">Tu autorises ici les fonctions de chaque association. La console ne montre jamais les données privées des assos.</p>';
+    box.innerHTML='<div class="panel"><h2 style="margin-top:0">🛠️ Console super-admin</h2>'
+      +'<p class="hint">Le pilotage des fonctions et des formules de chaque association se fait sur la console dédiée.</p>'
+      +'<p style="margin-top:14px"><a href="https://bob.re/admin.html" target="_blank" rel="noopener" style="display:inline-block;background:#127a51;color:#fff;text-decoration:none;padding:11px 18px;border-radius:999px;font-weight:800">→ Ouvrir la console bob.re/admin</a></p></div>';
   };
-  window.bobAdminToggle=async function(assoId,key,val){ const {error}=await sbc.rpc('admin_set_feature',{p_asso:assoId,p_key:key,p_value:val}); if(error){ alert(error.message); } window.bobLoadAdmin(); };
-  window.bobAdminPlan=async function(assoId,plan){ const {error}=await sbc.rpc('admin_set_plan',{p_asso:assoId,p_plan:(plan==='—'?null:plan)}); if(error){ alert(error.message); } };
 
   async function boot(){
     if(!window.supabase){ gate('<h2>Erreur de chargement</h2><p>Impossible de charger Supabase (connexion internet ?). Réessaie.</p>'); return; }
