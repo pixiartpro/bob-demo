@@ -1990,6 +1990,14 @@ Deux locaux complémentaires — le Bois de Nèfles (« le haut » : jeunesse, a
       <p class="hint">Journal automatique : chaque ajout, modification ou suppression est noté ici avec la date, l'heure et la personne connectée. Réservé au bureau. L'historique démarre à la mise en place de cette fonction — les changements antérieurs n'ont pas pu être enregistrés.</p>
       <div id="journalRows"></div>
     </div>
+    <div class="panel">
+      <div class="toolbar" style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
+        <h2 style="margin:0">📓 Journal des actions</h2>
+        <div class="field" style="max-width:280px;flex:1"><input id="ja_search" placeholder="🔍 Filtrer (qui, rubrique, action…)" oninput="renderJournalActions()"></div>
+      </div>
+      <p class="hint">Qui a fait quoi, en direct sur les activités, inscriptions, congés et fiches enfants/personnel — <b>salariés compris</b>. Avec la date, l'heure et la personne. Réservé au bureau, infalsifiable.</p>
+      <div id="journalActionsRows"><p class="hint">Ouvre cet onglet pour charger le journal…</p></div>
+    </div>
   </section>
 </div>
 
@@ -2128,6 +2136,8 @@ document.querySelectorAll('nav.tabs button').forEach(b=>{
 
 /* ---- Aide : « Demande à Zanana » (FAQ + assistant par mots-clés, sans IA) ---- */
 const FAQ=[
+  {cat:'🕘 Historique',q:"Comment voir qui a fait quoi (activités, inscriptions, congés, salariés) ?",kw:"journal trace tracabilite qui fait quoi action actions historique modif modification suppression salarie salaries activite inscription conges enfant personnel surveiller controle audit log savoir verifier",
+   a:"Onglet <b>🕘 Historique</b>, panneau <b>📓 Journal des actions</b>. Tu y vois, du plus récent au plus ancien, chaque <b>création / modification / suppression</b> faite sur les activités, inscriptions, congés et fiches enfants/personnel — avec la <b>date, l'heure et la personne</b> (salariés compris). Tape dans le champ 🔍 pour filtrer par personne, rubrique ou type d'action. C'est réservé au bureau et ne peut pas être modifié : c'est ton filet pour savoir qui a touché à quoi."},
   {cat:'👥 Personnel',q:"Comment donner à un salarié l'accès à son espace salarié ?",kw:"salarie salaries personnel espace acces compte lier connexion fiche conges documents planning employe dossier rh donner creer importer masse salariale partage interne",
    a:"Onglet <b>👥 Personnel</b>. 1) Le salarié crée d'abord son compte sur la page de connexion. 2) Tu valides son accès en rôle <b>personnel</b> (validation des accès). 3) Dans 👥 Personnel, crée ou ouvre sa <b>fiche</b> (bouton ✏️) puis « <b>Lier ce compte</b> » avec son email. Ensuite, depuis son <b>espace salarié</b>, il voit uniquement sa fiche, ses <b>documents partagés</b>, son <b>planning</b>, et peut <b>demander ses congés</b> (que tu valides ici). Les documents marqués « interne RH » lui restent invisibles. Astuce : « Importer depuis la masse salariale » crée les fiches d'un clic."},
   {cat:'🧭 Organisation',q:"Comment est organisé le CASE (pôles, valeurs, procédures) ?",kw:"organisation organigramme pole poles 3 trois valeurs valeur orientations procedure procedures protocole protocoles caisse facture factures comptabilite fonctionnement structure reorganisation reorg dla mission proximite lien social education populaire",
@@ -2331,6 +2341,8 @@ function pageHelpGotoAide(){ pageHelpClose(); const b=document.querySelector('na
 
 /* ---- ✨ Quoi de neuf (nouveautés + notice chronologique) ---- */
 const NEWS=[
+  {id:'2026-06-21-journal-actions',date:'2026-06-21',tab:'🕘 Historique',titre:"📓 Journal des actions : qui a fait quoi",
+   desc:"L'onglet 🕘 Historique a maintenant un second journal « 📓 Journal des actions » : chaque création, modification ou suppression sur les activités, inscriptions, congés et fiches enfants/personnel y est tracée avec la date, l'heure et la personne — salariés compris. Réservé au bureau et infalsifiable : pratique pour vérifier d'un coup d'œil qui a touché à quoi."},
   {id:'2026-06-21-gestion-projet',date:'2026-06-21',tab:'📁 Projets',titre:"🗂️ Gestion de projet : équipe, tâches & discussion",
    desc:"Chaque projet a maintenant un bouton « 🗂️ Gérer le projet » : désigne un référent, ajoute les personnes qui sont dessus, crée des tâches assignées avec une échéance (à cocher quand c'est fait), et discute en équipe dans un fil propre au projet. Idéal pour que chacun sache ce qu'il a à faire."},
   {id:'2026-06-21-a-traiter',date:'2026-06-21',tab:'🏠 Accueil',titre:"🔔 Tableau de bord « À traiter » sur l'accueil",
@@ -5263,6 +5275,32 @@ renderAll();
   };
   window.delActivite=async function(id){ if(!confirm('Supprimer définitivement cette activité et ses inscriptions ?'))return; const {error}=await sbc.from('activites').delete().eq('id',id); if(error){alert(error.message);return;} loadActivitesGestion(); };
   window.delInscriptionActivite=async function(id){ if(!confirm('Retirer cette inscription ?'))return; const {error}=await sbc.from('inscriptions_activite').delete().eq('id',id); if(error){alert(error.message);return;} loadActivitesGestion(); };
+
+  /* ---- 📓 Journal des actions (table journal_actions, lecture bureau seulement) ---- */
+  let JA_ROWS=[];
+  const JA_TABLES={activites:'🎟️ Activités',inscriptions_activite:'📝 Inscription activité',inscriptions_periscolaire:'🏫 Inscription périscolaire',conges:'🏖️ Congés',enfants:'👧 Fiche enfant',ateliers:'🛠️ Ateliers',atelier_inscriptions:'📝 Inscription atelier',personnel:'🧑‍💼 Personnel'};
+  const JA_ACTS={INSERT:'➕ Création',UPDATE:'✏️ Modification',DELETE:'🗑️ Suppression'};
+  window.loadJournalActions=async function(){
+    const box=document.getElementById('journalActionsRows'); if(!box) return;
+    box.innerHTML='<p class="hint">Chargement…</p>';
+    const {data,error}=await sbc.from('journal_actions').select('*').order('created_at',{ascending:false}).limit(500);
+    if(error){ box.innerHTML='<p class="hint" style="color:#c0392b">Erreur : '+esc(error.message)+'</p>'; return; }
+    JA_ROWS=data||[]; renderJournalActions();
+  };
+  window.renderJournalActions=function(){
+    const box=document.getElementById('journalActionsRows'); if(!box) return;
+    const sEl=document.getElementById('ja_search'); const qn=(sEl?sEl.value:'').trim().toLowerCase();
+    let rows=JA_ROWS;
+    if(qn){ rows=rows.filter(r=>((r.user_email||'')+' '+(r.user_role||'')+' '+(JA_TABLES[r.table_cible]||r.table_cible||'')+' '+(JA_ACTS[r.action]||r.action||'')).toLowerCase().includes(qn)); }
+    if(!rows.length){ box.innerHTML='<p class="hint">Aucune action enregistrée'+(qn?' pour ce filtre':' pour l\'instant')+'.</p>'; return; }
+    box.innerHTML='<table><thead><tr><th>Quand</th><th>Qui</th><th>Action</th><th>Rubrique</th></tr></thead><tbody>'
+      +rows.map(function(r){
+        let when=''; try{ const d=new Date(r.created_at); when=d.toLocaleDateString('fr-FR')+' '+d.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'}); }catch(e){ when=(r.created_at||'').slice(0,16); }
+        const who=esc(r.user_email||'—')+(r.user_role?' <span class="pill" style="font-size:10px;background:#eef3ef;color:#555">'+esc(r.user_role)+'</span>':'');
+        return '<tr><td style="white-space:nowrap">'+esc(when)+'</td><td>'+who+'</td><td>'+esc(JA_ACTS[r.action]||r.action||'')+'</td><td>'+esc(JA_TABLES[r.table_cible]||r.table_cible||'')+'</td></tr>';
+      }).join('')
+      +'</tbody></table>';
+  };
   const RDV_JOURS_ADM=['','Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi','Dimanche'];
   window.loadRdvAdmin=async function(){
     const box=document.getElementById('rdvAdminBody'); if(!box) return;
@@ -5756,6 +5794,7 @@ renderAll();
     const peb=document.querySelector('nav.tabs button[data-tab="periscolaire"]'); if(peb) peb.addEventListener('click',()=>{ if(window.loadDossiersPeri) loadDossiersPeri(); });
     if(window.loadDossiersPeri) loadDossiersPeri();
     const perb=document.querySelector('nav.tabs button[data-tab="personnel"]'); if(perb) perb.addEventListener('click',()=>{ if(window.loadPersonnel) loadPersonnel(); });
+    const jab=document.querySelector('nav.tabs button[data-tab="journal"]'); if(jab) jab.addEventListener('click',()=>{ if(window.loadJournalActions) loadJournalActions(); });
     if(prof.super_admin){ const adb=document.querySelector('nav.tabs button[data-tab="admin"]'); if(adb){ adb.style.display=''; adb.addEventListener('click',()=>{ if(window.bobLoadAdmin) window.bobLoadAdmin(); }); } }
     const dtb=document.querySelector('nav.tabs button[data-tab="dashboard"]'); if(dtb) dtb.addEventListener('click',()=>{ if(window.loadTodo) loadTodo(); });
     if(window.loadTodo) loadTodo();
