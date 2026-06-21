@@ -127,6 +127,17 @@ const DOOR = assoSlug();
     }
   }
 })();
+/* P13 (21/06/2026) — arrivée en « mode famille » (depuis la vitrine) : on retire le vocabulaire « bureau », rassurant pour un parent */
+(function(){
+  try{
+    const u=new URL(location.href);
+    if((u.searchParams.get('role')||'').toLowerCase()!=='famille') return;
+    const h=document.querySelector('h1.t'); if(h) h.textContent='👨‍👩‍👧 Créer mon compte famille';
+    const s=document.querySelector('p.sub'); if(s) s.innerHTML='Créez votre compte en 2 minutes pour inscrire vos enfants au <b>périscolaire</b> et à l\'<b>ACM</b>, et réserver vos activités. <b>Un parent adhérent</b> (10 €/an) suffit pour tous les enfants. Déjà un compte ? Connectez-vous ci-dessous.';
+    const m=document.querySelector('#welcomeMascot p'); if(m) m.innerHTML="Salut, c'est <b style=\"color:#e8a32c\">Zanana</b> ! Crée ton <b>compte famille</b> pour inscrire tes enfants 👨‍👩‍👧";
+    const sf=document.querySelector('.secure-flag'); if(sf) sf.textContent='🔒 Espace sécurisé — vos données sont chiffrées et hébergées en France (RGPD).';
+  }catch(e){}
+})();
 
 const ROLES={
   president:{label:'Président — Super-administrateur',pill:'boss',perm:'Accès total · gère les accès · seul à pouvoir tout supprimer'},

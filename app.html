@@ -2303,6 +2303,8 @@ function pageHelpGotoAide(){ pageHelpClose(); const b=document.querySelector('na
 
 /* ---- ✨ Quoi de neuf (nouveautés + notice chronologique) ---- */
 const NEWS=[
+  {id:'2026-06-21-grille-familles',date:'2026-06-21',tab:'🎒 Périscolaire',titre:"💶 La grille tarifaire est désormais reliée aux familles",
+   desc:"Quand tu cliques « 💾 Enregistrer la grille » dans le périscolaire, le calculateur de tarif de l'espace famille est mis à jour automatiquement — fini la double grille qui pouvait afficher de vieux prix. Tu modifies les tarifs à UN seul endroit (ici), les familles voient toujours les bons. Au passage : supprimer en compta l'opération d'un versement de subvention remet bien à jour le solde de la subvention (avant, elle restait marquée « versée » à tort)."},
   {id:'2026-06-20-anti-ecrasement',date:'2026-06-20',tab:'❓ Aide',titre:"🛟 Anti-écrasement : on ne perd plus le travail à plusieurs",
    desc:"Quand deux personnes du bureau enregistrent en même temps, plus de risque d'effacer le travail de l'autre par accident. Si un collègue a enregistré entre-temps, Bob te propose un choix clair — « ↻ Recharger sa version » (recommandé) ou « écraser quand même » — au lieu de l'ancien message piège. En coulisses, Bob garde aussi une copie horaire du coffre : même en cas de fausse manœuvre, on peut revenir en arrière."},
   {id:'2026-06-20-securite-acces',date:'2026-06-20',tab:'❓ Aide',titre:"🔒 Sécurité : la gestion est réservée au bureau + anti-perte de saisie",
@@ -2660,7 +2662,19 @@ function runImport(ncol){
   save();
   alert('Import terminé ✅\n'+ok+' opération(s) importée(s).'+(skip?'\n'+skip+' ligne(s) ignorée(s) (montant manquant ou nul).':''));
 }
-function delOp(id){ if(confirm('Supprimer cette opération ?')){ db.ops=db.ops.filter(x=>x.id!==id); save(); } }
+function delOp(id){
+  if(!confirm('Supprimer cette opération ?')) return;
+  // P7 (21/06) — si cette op est le versement d'une subvention, on resynchronise la subvention (sinon elle reste marquée versée à tort)
+  if(Array.isArray(db.subventions)){
+    for(const s of db.subventions){
+      if(!Array.isArray(s.versements)) continue;
+      const idx=s.versements.findIndex(v=>v.opId===id);
+      if(idx>=0){ s.verse=Math.max(0,(s.verse||0)-(s.versements[idx].montant||0)); s.versements.splice(idx,1); }
+    }
+  }
+  db.ops=db.ops.filter(x=>x.id!==id);
+  save();
+}
 function totalIn(){ return db.ops.filter(o=>o.type==='in').reduce((s,o)=>s+o.amount,0); }
 function totalOut(){ return db.ops.filter(o=>o.type==='out').reduce((s,o)=>s+o.amount,0); }
 function balance(){ return totalIn()-totalOut(); } // les remises (transfer) ne changent pas le solde total
@@ -3815,13 +3829,26 @@ function renderPeriscolaire(){
     + kpi("Sur l'année scolaire",euro(totMois*10),'green','estimation ~10 mois');
 }
 function periSetJour(i,v){ periDB().grille.tranches[i].jour=parseFloat(v)||0; }
+// P7 (21/06/2026) — publie une COPIE PUBLIQUE de la grille (table tarifs_publics) que lit le calculateur des familles.
+// Seuils QF officiels (stables) mappés par index sur les 9 tranches ; la 10e ligne = hors commune.
+const PERI_THRESHOLDS=[350.99,450.99,600.99,800.99,1000.99,1250.99,1500.99,2000.99,null];
+async function publishTarifs(){
+  try{
+    if(!myAsso||!canWrite||!sbc) return;
+    const g=periDB().grille;
+    const tr=PERI_THRESHOLDS.map((max,i)=>({max:max, jour:(g.tranches[i]&&g.tranches[i].jour)||0}));
+    const hc=g.tranches.find(t=>/hors/i.test(t.label||''));
+    const payload={ tranches:tr, horsCommune:(hc?hc.jour:8.25), suppMatin:(g.suppMatin||0), remise:(g.remise||0), jours:(g.jours||16) };
+    await sbc.from('tarifs_publics').upsert({asso_id:myAsso, data:payload, updated_at:new Date().toISOString()});
+  }catch(e){ console.warn('publishTarifs', e); }
+}
 function savePeriGrille(){
   const g=periDB().grille;
   g.suppMatin=parseFloat($('peri_suppMatin').value)||0;
   g.remise=parseFloat($('peri_remise').value)||0;
   g.jours=parseInt($('peri_jours').value)||16;
-  save(); renderPeriscolaire();
-  const el=$('periGrilleSaved'); if(el){ el.textContent='Grille enregistrée ✔'; setTimeout(()=>{ el.textContent=''; },4000); }
+  save(); renderPeriscolaire(); publishTarifs();
+  const el=$('periGrilleSaved'); if(el){ el.textContent='Grille enregistrée ✔ (familles mises à jour)'; setTimeout(()=>{ el.textContent=''; },4000); }
 }
 function addEnfantPeri(){
   const nom=($('pe_nom').value||'').trim(); if(!nom){ alert("Indique le nom de l'enfant."); return; }

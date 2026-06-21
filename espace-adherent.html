@@ -431,11 +431,9 @@ function periPieceRow(p){
 }
 function periRenderForm(){
   const body=document.getElementById('periBody'); const r=PERI.row;
-  const _fy=(r.foyer||'').trim().split(/\s+/).filter(Boolean);
-  const respNom=_fy.length?_fy[0]:''; const respPrenom=_fy.length>1?_fy.slice(1).join(' '):'';
   const _flash=PERI.flash; PERI.flash=null;
   const flashHtml=_flash?'<div style="background:#dff5e9;border:1px solid #a9e0c4;color:#127a51;border-radius:12px;padding:12px 14px;margin:0 0 12px;font-weight:800;font-size:15px">'+periEsc(_flash)+'</div>':'';
-  if((r.statut==='depose'||r.statut==='valide') && !PERI.editMode){ body.innerHTML=flashHtml+periRecapHtml(r,respNom,respPrenom); return; }
+  if((r.statut==='depose'||r.statut==='valide') && !PERI.editMode){ body.innerHTML=flashHtml+periRecapHtml(r); return; }
   const stLabel={brouillon:'✏️ Brouillon (non déposé)',depose:'📨 Déposé — en attente de validation',valide:'✅ Validé par le bureau',incomplet:'⚠️ Incomplet — voir la note du bureau'}[r.statut]||'';
   body.innerHTML=
     flashHtml
@@ -444,13 +442,13 @@ function periRenderForm(){
     +(stLabel?'<div style="display:inline-block;background:#fff;border:1px solid var(--line);border-radius:999px;padding:6px 14px;font-weight:800;margin-bottom:12px">'+stLabel+'</div>':'')
     +((r.statut==='incomplet'&&r.note_bureau)?'<div style="background:#ffe9e3;border:1px solid #f3c4ba;color:#b23a23;border-radius:12px;padding:10px 14px;margin-bottom:12px">📝 Bureau : '+periEsc(r.note_bureau)+'</div>':'')
     +(((r.statut==='depose'||r.statut==='valide'))?'<div style="margin:0 0 12px"><button class="reset" onclick="periBackToRecap()">← Retour au récapitulatif</button></div>':'')
-    +'<h3 style="margin:0 0 8px;font-size:16px">👤 Responsable (parent)</h3>'
+    +'<h3 style="margin:0 0 6px;font-size:16px">👤 Responsable (parent)</h3>'
+    +'<p class="sub" style="margin:0 0 8px;font-size:13px">Pré-rempli depuis votre compte — modifiable si besoin. Il ne reste que le <b>téléphone</b> à ajouter.</p>'
     +'<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px">'
-    +'<input id="peri_nom" value="'+periEsc(respNom)+'" placeholder="Nom du parent" style="flex:1;min-width:140px;padding:10px 12px;border:1px solid var(--line);border-radius:10px;font:inherit">'
-    +'<input id="peri_prenom" value="'+periEsc(respPrenom)+'" placeholder="Prénom du parent" style="flex:1;min-width:140px;padding:10px 12px;border:1px solid var(--line);border-radius:10px;font:inherit">'
+    +'<input id="peri_foyer" value="'+periEsc(r.foyer||(PERI.profile&&PERI.profile.full_name)||'')+'" placeholder="Nom et prénom du parent" style="flex:1;min-width:220px;padding:10px 12px;border:1px solid var(--line);border-radius:10px;font:inherit">'
     +'</div>'
     +'<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px">'
-    +'<input id="peri_email" value="'+periEsc(r.email||'')+'" placeholder="Email" style="flex:1;min-width:150px;padding:10px 12px;border:1px solid var(--line);border-radius:10px;font:inherit">'
+    +'<input id="peri_email" value="'+periEsc(r.email||(PERI.profile&&PERI.profile.email)||'')+'" placeholder="Email" style="flex:1;min-width:150px;padding:10px 12px;border:1px solid var(--line);border-radius:10px;font:inherit">'
     +'<input id="peri_tel" value="'+periEsc(r.tel||'')+'" placeholder="Téléphone" style="flex:1;min-width:130px;padding:10px 12px;border:1px solid var(--line);border-radius:10px;font:inherit">'
     +'</div>'
     +'<h3 style="margin:0 0 4px;font-size:16px">👧 Enfants au périscolaire</h3>'
@@ -466,7 +464,7 @@ function periRenderForm(){
     +'<button class="btn use" onclick="periSave(true)">📨 Déposer mon dossier</button>'
     +'</div><p id="periSaved" class="when" style="margin-top:8px"></p>';
 }
-function periRecapHtml(r, respNom, respPrenom){
+function periRecapHtml(r){
   const stMap={depose:['#fff5da','#8a6400','📨 Dossier déposé — en attente de validation par le bureau'],valide:['#dff5e9','#127a51','✅ Dossier validé par le bureau']};
   const st=stMap[r.statut]||stMap.depose;
   const enf=(Array.isArray(r.enfants)?r.enfants:[]);
@@ -490,7 +488,7 @@ function periRecapHtml(r, respNom, respPrenom){
     +'<div style="background:'+st[0]+';border:1px solid '+st[1]+'55;color:'+st[1]+';border-radius:14px;padding:14px 16px;margin:0 0 14px;font-weight:800;font-size:16px">'+st[2]+'</div>'
     +'<p class="sub" style="margin:0 0 10px">Voici le dossier que le CASE a bien reçu — vérifiez qu\'il est correct. Vous pouvez le modifier si besoin.</p>'
     +'<div class="card" style="box-shadow:none;border:1px solid var(--line);gap:4px">'
-      +'<div style="font-weight:800">👤 '+(((periEsc(respNom)+' '+periEsc(respPrenom)).trim())||'Responsable')+'</div>'
+      +'<div style="font-weight:800">👤 '+(periEsc(r.foyer||'')||'Responsable')+'</div>'
       +'<div style="color:var(--muted);font-size:14px">'+periEsc(r.email||'')+(r.tel?' · '+periEsc(r.tel):'')+'</div>'
       +'<div style="margin-top:10px;font-weight:800">👧 Enfant(s)</div>'+enfHtml
       +'<div style="margin-top:12px;font-weight:800">📎 Pièces ('+nbOk+'/'+PERI.PIECES.length+')</div><div style="margin-top:4px">'+pieceHtml+'</div>'
@@ -516,7 +514,7 @@ window.periBesoinAide=async function(){
 
 async function periEnsureRow(){
   if(PERI.row && PERI.row.id) return PERI.row.id;
-  const payload={annee:PERI.ANNEE, foyer:(periField('peri_nom')+' '+periField('peri_prenom')).trim(), email:periField('peri_email'), tel:periField('peri_tel'), enfants:periReadChildren(), pieces:PERI.row.pieces||{}, statut:'brouillon'};
+  const payload={annee:PERI.ANNEE, foyer:periField('peri_foyer'), email:periField('peri_email'), tel:periField('peri_tel'), enfants:periReadChildren(), pieces:PERI.row.pieces||{}, statut:'brouillon'};
   const {data,error}=await _sbAt.from('inscriptions_periscolaire').insert(payload).select().single();
   if(error) throw error;
   PERI.row=data; if(!PERI.row.pieces||typeof PERI.row.pieces!=='object') PERI.row.pieces={};
@@ -547,7 +545,7 @@ window.periViewMyPiece=async function(key){
 };
 window.periSave=async function(depose){
   const saved=document.getElementById('periSaved');
-  const payload={annee:PERI.ANNEE, foyer:(periField('peri_nom')+' '+periField('peri_prenom')).trim(), email:periField('peri_email'), tel:periField('peri_tel'), enfants:periReadChildren(), pieces:PERI.row.pieces||{}};
+  const payload={annee:PERI.ANNEE, foyer:periField('peri_foyer'), email:periField('peri_email'), tel:periField('peri_tel'), enfants:periReadChildren(), pieces:PERI.row.pieces||{}};
   let missLabels=[];
   if(depose){
     const coches=payload.enfants.filter(e=>e.matin||e.soir);
@@ -993,6 +991,24 @@ const CALC_TR=[
   {max:Infinity,jour:7.43,lab:'Tranche 9 (2 001 € et +)'}
 ];
 const CALC_SUPP=1.5, CALC_REM=5, CALC_JOURS=16, CALC_HORS=8.25;
+// P7 (21/06/2026) — grille à SOURCE UNIQUE : on lit la « vitrine des tarifs » publique (mise à jour par le bureau),
+// avec REPLI sur la grille en dur ci-dessus si la lecture échoue (jamais d'écran vide / jamais de blocage).
+const CALC_ASSO='d617489c-b18b-499b-ab17-c31656d0f08a';
+let PUBTARIF=null;
+async function calcLoadTarifs(){
+  try{
+    const {data}=await _sbAt.from('tarifs_publics').select('data').eq('asso_id',CALC_ASSO).maybeSingle();
+    if(data&&data.data&&Array.isArray(data.data.tranches)&&data.data.tranches.length){ PUBTARIF=data.data; if(typeof window.calcRun==='function') window.calcRun(); }
+  }catch(e){ /* repli silencieux sur la grille en dur */ }
+}
+function calcGrille(){
+  if(PUBTARIF){ return {
+    tranches: PUBTARIF.tranches.map((t,i)=>({max:(t.max==null?Infinity:t.max), jour:t.jour, lab:(CALC_TR[i]&&CALC_TR[i].lab)||('Tranche '+(i+1))})),
+    supp:(PUBTARIF.suppMatin!=null?PUBTARIF.suppMatin:CALC_SUPP), rem:(PUBTARIF.remise!=null?PUBTARIF.remise:CALC_REM),
+    jours:(PUBTARIF.jours!=null?PUBTARIF.jours:CALC_JOURS), hors:(PUBTARIF.horsCommune!=null?PUBTARIF.horsCommune:CALC_HORS) };
+  }
+  return { tranches:CALC_TR, supp:CALC_SUPP, rem:CALC_REM, jours:CALC_JOURS, hors:CALC_HORS };
+}
 function calcEuro(n){ return n.toLocaleString('fr-FR',{minimumFractionDigits:2,maximumFractionDigits:2})+' €'; }
 window.calcToggle=function(){
   const b=document.getElementById('calcBody'),c=document.getElementById('calcChev'); if(!b) return;
@@ -1013,23 +1029,24 @@ function calcInit(){
     +'</div>'
     +'<div id="calc_res" style="margin-top:12px"></div>'
     +'<p class="sub" style="margin:10px 0 0;font-size:12.5px">Estimation indicative (grille au quotient familial, ≈ 16 jours/mois, −5 % par enfant supplémentaire). Le tarif définitif est calculé avec le bureau d\'après votre attestation CAF.</p>';
-  calcRun();
+  calcRun(); calcLoadTarifs();
 }
 window.calcRun=function(){
   const res=document.getElementById('calc_res'); if(!res) return;
+  const G=calcGrille();
   const gv=id=>document.getElementById(id);
   const qf=parseFloat((gv('calc_qf')||{}).value)||0;
   const hors=(gv('calc_hors')||{}).checked, matin=(gv('calc_matin')||{}).checked, soir=(gv('calc_soir')||{}).checked;
   const nb=parseInt((gv('calc_nb')||{}).value)||1;
   if(!matin && !soir){ res.innerHTML='<div style="color:var(--muted);font-weight:700">Cochez au moins « Soir » ou « Matin ».</div>'; return; }
   let jour, lab;
-  if(hors){ jour=CALC_HORS; lab='Hors commune'; }
-  else { const t=CALC_TR.find(t=>qf<=t.max)||CALC_TR[CALC_TR.length-1]; jour=t.jour; lab=t.lab; }
-  const base=((soir?jour:0)+(matin?CALC_SUPP:0))*CALC_JOURS;
+  if(hors){ jour=G.hors; lab='Hors commune'; }
+  else { const t=G.tranches.find(t=>qf<=t.max)||G.tranches[G.tranches.length-1]; jour=t.jour; lab=t.lab; }
+  const base=((soir?jour:0)+(matin?G.supp:0))*G.jours;
   let total=0; const parts=[];
-  for(let k=1;k<=nb;k++){ const rem=Math.min(CALC_REM*(k-1),90); const t=base*(1-rem/100); total+=t; parts.push(calcEuro(t)+(rem?' (−'+rem+'%)':'')); }
+  for(let k=1;k<=nb;k++){ const rem=Math.min(G.rem*(k-1),90); const t=base*(1-rem/100); total+=t; parts.push(calcEuro(t)+(rem?' (−'+rem+'%)':'')); }
   res.innerHTML='<div style="background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px 14px">'
-    +'<div style="font-size:13px;color:var(--muted)">'+lab+(soir?' · soir '+calcEuro(jour):'')+(matin?' · matin +'+calcEuro(CALC_SUPP):'')+' · '+nb+' enfant'+(nb>1?'s':'')+'</div>'
+    +'<div style="font-size:13px;color:var(--muted)">'+lab+(soir?' · soir '+calcEuro(jour):'')+(matin?' · matin +'+calcEuro(G.supp):'')+' · '+nb+' enfant'+(nb>1?'s':'')+'</div>'
     +'<div style="font-size:26px;font-weight:900;color:var(--vert-fonce);margin-top:4px">≈ '+calcEuro(total)+' <span style="font-size:15px;font-weight:700;color:var(--muted)">/ mois pour la famille</span></div>'
     +(nb>1?'<div style="font-size:12.5px;color:var(--muted);margin-top:4px">Détail : '+parts.join(' + ')+'</div>':'')
     +'</div>';
