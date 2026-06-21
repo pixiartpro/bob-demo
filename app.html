@@ -200,6 +200,7 @@
 
   <!-- DASHBOARD -->
   <section id="dashboard" class="page active">
+    <div id="dashTodo"></div>
     <div class="cards" id="kpis"></div>
     <div id="dashAlerts"></div>
     <div class="panel">
@@ -2184,6 +2185,8 @@ const FAQ=[
    a:"En haut de l'onglet <b>👥 Adhérents</b>, le menu <b>Mode de paiement</b> permet de choisir <b>💵 Espèces, 🧾 Chèque, 🏦 Virement, 💳 Carte bancaire</b> ou <b>🔁 Prélèvement</b>. Pour un adhérent déjà enregistré, clique sur le crayon <b>✏️</b> de sa ligne pour le renseigner ou le corriger. Le mode s'affiche sous le montant dans la liste, sur le <b>🧾 reçu de cotisation</b> et dans l'export CSV."},
   {cat:'📁 Projets & 🏛️ Subventions',q:"Comment je joins un document à un projet ou une subvention ?",kw:"piece jointe joindre document fichier pdf attacher ajouter projet subvention telecharger televerser",
    a:"Ouvre le projet ou la subvention, clique sur le bouton <b>📎 Documents</b>, puis sur <b>« Joindre un fichier »</b> et choisis ton document (PDF, image, tableau…). Il est rangé dans le coffre sécurisé et tu peux le rouvrir à tout moment."},
+  {cat:'📁 Projets & 🏛️ Subventions',q:"Comment je gère un projet (équipe, tâches, discussion) ?",kw:"gestion projet gerer equipe referent tache taches assigner qui fait quoi discussion message echeance avancement collaboratif suivi qui fait",
+   a:"Dans l'onglet <b>📁 Projets</b>, clique sur <b>« 🗂️ Gérer le projet »</b> sous un projet. Tu y trouves trois blocs : <b>Équipe &amp; référent</b> (qui pilote, qui est sur le projet), <b>Tâches</b> (ajoute une tâche, assigne-la à quelqu'un, mets une échéance, coche quand c'est fait) et <b>Discussion</b> (un fil de messages propre au projet). Chaque personne connectée voit les projets et peut participer ; les messages sont signés automatiquement à ton nom."},
   {cat:'📁 Projets & 🏛️ Subventions',q:"Comment je crée un projet ou une subvention ?",kw:"creer ajouter projet subvention nouveau enregistrer financeur",
    a:"Va dans <b>📁 Projets</b> ou <b>🏛️ Subventions</b>, remplis les champs en haut (nom, budget/montant, etc.) et clique sur <b>« Ajouter »</b>."},
   {cat:'📁 Projets & 🏛️ Subventions',q:"Comment j'enregistre un versement de subvention reçu ?",kw:"versement subvention recu recette compta encaisser solde verser argent recu",
@@ -2323,6 +2326,10 @@ function pageHelpGotoAide(){ pageHelpClose(); const b=document.querySelector('na
 
 /* ---- ✨ Quoi de neuf (nouveautés + notice chronologique) ---- */
 const NEWS=[
+  {id:'2026-06-21-gestion-projet',date:'2026-06-21',tab:'📁 Projets',titre:"🗂️ Gestion de projet : équipe, tâches & discussion",
+   desc:"Chaque projet a maintenant un bouton « 🗂️ Gérer le projet » : désigne un référent, ajoute les personnes qui sont dessus, crée des tâches assignées avec une échéance (à cocher quand c'est fait), et discute en équipe dans un fil propre au projet. Idéal pour que chacun sache ce qu'il a à faire."},
+  {id:'2026-06-21-a-traiter',date:'2026-06-21',tab:'🏠 Accueil',titre:"🔔 Tableau de bord « À traiter » sur l'accueil",
+   desc:"En haut de l'accueil, un panneau « À traiter » regroupe d'un coup d'œil TOUTES les demandes en attente : congés à valider, dossiers périscolaire déposés, comptes en attente, demandes de partenariat, questions d'adhérents, propositions d'atelier. Chaque ligne a un bouton « Voir → » qui t'emmène au bon endroit. Toi et Guy le voyez tous les deux — plus rien ne se perd."},
   {id:'2026-06-21-espace-salarie',date:'2026-06-21',tab:'👥 Personnel',titre:"👥 Espace salarié : chaque salarié a désormais son accès",
    desc:"Nouvel onglet 👥 Personnel : crée la fiche de chaque salarié, lie son compte, dépose ses documents (partagés avec lui ou internes RH) et valide ses demandes de congés. De son côté, le salarié se connecte à SON espace et voit seulement sa fiche, ses documents partagés, son planning et ses congés. Astuce : « Importer depuis la masse salariale » crée les fiches d'un clic, puis tu complètes."},
   {id:'2026-06-21-grille-familles',date:'2026-06-21',tab:'🎒 Périscolaire',titre:"💶 La grille tarifaire est désormais reliée aux familles",
@@ -3103,14 +3110,68 @@ function projIn(id){ return db.ops.filter(o=>o.project===id&&o.type==='in').redu
 function renderProjects(){
   const el=$('projectList');
   if(!db.projects.length){ el.innerHTML='<div class="panel"><div class="empty">Aucun projet pour le moment.</div></div>'; return; }
-  el.innerHTML = db.projects.map(p=>{
+  window._projOpen = window._projOpen || {};
+  const people=[...new Set((db.members||[]).map(m=>m.name).filter(Boolean))];
+  const dl='<datalist id="dlProjPeople">'+people.map(n=>`<option value="${esc(n)}">`).join('')+'</datalist>';
+  el.innerHTML = dl + db.projects.map(p=>{
+    p.team=p.team||[]; p.tasks=p.tasks||[]; p.discussion=p.discussion||[];
     const spent=projSpent(p.id), inc=projIn(p.id), pct=p.budget>0?Math.min(100,Math.round(spent/p.budget*100)):0;
     const over=p.budget>0&&spent>p.budget;
     const sCls=p.status==='Terminé'?'ok':p.status==='À venir'?'wait':'in';
+    const open=!!window._projOpen[p.id];
+    const todo=p.tasks.filter(t=>!t.fait).length, doneN=p.tasks.filter(t=>t.fait).length;
+    const manage = !open ? '' : `
+      <div style="border-top:1px solid var(--line);margin-top:12px;padding-top:14px;display:grid;gap:18px">
+        <div>
+          <div style="font-weight:700;margin-bottom:8px">👥 Équipe &amp; référent</div>
+          <div class="row" style="gap:8px;align-items:center;margin-bottom:8px">
+            <span class="muted" style="font-size:13px">Référent&nbsp;:</span>
+            <input id="pf_ref_${p.id}" list="dlProjPeople" value="${esc(p.referent||'')}" placeholder="qui pilote ?" style="flex:0 0 220px">
+            <button class="ghost btn" onclick="projSetReferent('${p.id}')">Définir</button>
+          </div>
+          <div style="display:flex;flex-wrap:wrap;gap:6px;align-items:center">
+            ${p.team.map((n,i)=>`<span class="pill" style="background:#eef0f7">${esc(n)} <a href="#" onclick="projDelTeam('${p.id}',${i});return false" style="color:#b3261e;text-decoration:none;font-weight:700">×</a></span>`).join('')||'<span class="muted" style="font-size:13px">Personne sur le projet pour l\'instant.</span>'}
+          </div>
+          <div class="row" style="gap:8px;margin-top:8px">
+            <input id="pf_team_${p.id}" list="dlProjPeople" placeholder="ajouter une personne" style="flex:0 0 220px">
+            <button class="ghost btn" onclick="projAddTeam('${p.id}')">+ Ajouter</button>
+          </div>
+        </div>
+        <div>
+          <div style="font-weight:700;margin-bottom:8px">✅ Tâches <span class="muted" style="font-weight:400;font-size:12px">(${todo} à faire · ${doneN} faite${doneN>1?'s':''})</span></div>
+          <div style="display:grid;gap:5px">
+            ${p.tasks.map(t=>`<div class="row" style="gap:8px;align-items:center;background:#fff;border:1px solid var(--line);border-radius:8px;padding:6px 10px">
+              <input type="checkbox" ${t.fait?'checked':''} onchange="projToggleTask('${p.id}','${t.id}')">
+              <span style="flex:1;${t.fait?'text-decoration:line-through;color:#9aa0ad':''}">${esc(t.titre)}</span>
+              ${t.assigne?`<span class="pill" style="background:#e8f1ff;font-size:11px">${esc(t.assigne)}</span>`:''}
+              ${t.echeance?`<span class="muted" style="font-size:12px">⏰ ${esc(t.echeance)}</span>`:''}
+              <a href="#" onclick="projDelTask('${p.id}','${t.id}');return false" style="color:#b3261e;text-decoration:none;font-weight:700">×</a>
+            </div>`).join('')||'<span class="muted" style="font-size:13px">Aucune tâche pour l\'instant.</span>'}
+          </div>
+          <div class="row" style="gap:8px;margin-top:8px;flex-wrap:wrap">
+            <input id="pf_task_t_${p.id}" placeholder="nouvelle tâche…" style="flex:1;min-width:160px" onkeydown="if(event.key==='Enter')projAddTask('${p.id}')">
+            <input id="pf_task_a_${p.id}" list="dlProjPeople" placeholder="assignée à" style="flex:0 0 150px">
+            <input id="pf_task_d_${p.id}" type="date" title="échéance" style="flex:0 0 150px">
+            <button class="btn" onclick="projAddTask('${p.id}')">+ Tâche</button>
+          </div>
+        </div>
+        <div>
+          <div style="font-weight:700;margin-bottom:8px">💬 Discussion</div>
+          <div style="display:grid;gap:6px;max-height:240px;overflow:auto">
+            ${p.discussion.map(m=>`<div style="background:#fff;border:1px solid var(--line);border-radius:8px;padding:7px 10px"><div style="font-size:12px;color:var(--muted)"><b>${esc(m.author||'?')}</b> · ${esc(m.date||'')}</div><div>${esc(m.body)}</div></div>`).join('')||'<span class="muted" style="font-size:13px">Aucun message — lance la discussion 👇</span>'}
+          </div>
+          <div class="row" style="gap:8px;margin-top:8px">
+            <input id="pf_msg_${p.id}" placeholder="écrire un message…" style="flex:1" onkeydown="if(event.key==='Enter')projPostMsg('${p.id}')">
+            <button class="btn" onclick="projPostMsg('${p.id}')">Envoyer</button>
+          </div>
+        </div>
+      </div>`;
     return `<div class="panel">
       <div class="toolbar">
-        <div><h2 style="margin:0">${esc(p.name)} <span class="pill ${sCls}" style="font-size:11px;vertical-align:middle">${esc(p.status)}</span></h2></div>
-        <div style="white-space:nowrap"><button class="ghost btn" onclick="openDocs('projects','${p.id}')" title="Pièces jointes du projet">📎 Documents${(p.files&&p.files.length)?' ('+p.files.length+')':''}</button>
+        <div><h2 style="margin:0">${esc(p.name)} <span class="pill ${sCls}" style="font-size:11px;vertical-align:middle">${esc(p.status)}</span></h2>
+        ${(p.referent||p.team.length||p.tasks.length)?`<div class="muted" style="font-size:12px;margin-top:2px">${p.referent?'Référent : '+esc(p.referent):''}${p.team.length?(p.referent?' · ':'')+p.team.length+' perso.':''}${p.tasks.length?' · '+todo+' tâche'+(todo>1?'s':'')+' à faire':''}</div>`:''}</div>
+        <div style="white-space:nowrap"><button class="ghost btn" onclick="projToggleManage('${p.id}')">${open?'▲ Réduire':'🗂️ Gérer le projet'}</button>
+        <button class="ghost btn" onclick="openDocs('projects','${p.id}')" title="Pièces jointes du projet">📎 Documents${(p.files&&p.files.length)?' ('+p.files.length+')':''}</button>
         <button class="ghost btn" onclick="openEdit('projects','${p.id}')">✏️ Modifier</button>
         <button class="danger" onclick="delProject('${p.id}')">Supprimer</button></div>
       </div>
@@ -3122,6 +3183,7 @@ function renderProjects(){
       </div>
       <div class="bar ${over?'over':''}"><span style="width:${pct}%"></span></div>
       <p class="hint" style="margin:6px 0 0">${pct}% du budget consommé${over?' ⚠️ dépassement !':''}</p>
+      ${manage}
     </div>`;
   }).join('');
   // refresh project selector in accounting
@@ -3129,6 +3191,16 @@ function renderProjects(){
   sel.innerHTML='<option value="">— Aucun —</option>'+db.projects.map(p=>`<option value="${p.id}">${esc(p.name)}</option>`).join('');
   sel.value=cur;
 }
+/* ---- Gestion de projet collaborative (équipe, tâches, discussion — dans le coffre) ---- */
+function _proj(pid){ return (db.projects||[]).find(x=>x.id===pid); }
+function projToggleManage(pid){ window._projOpen=window._projOpen||{}; window._projOpen[pid]=!window._projOpen[pid]; renderProjects(); }
+function projSetReferent(pid){ const p=_proj(pid); if(!p)return; p.referent=(($('pf_ref_'+pid)||{}).value||'').trim(); save(); }
+function projAddTeam(pid){ const p=_proj(pid); if(!p)return; const v=(($('pf_team_'+pid)||{}).value||'').trim(); if(!v)return; p.team=p.team||[]; if(!p.team.includes(v))p.team.push(v); save(); }
+function projDelTeam(pid,i){ const p=_proj(pid); if(!p)return; p.team=p.team||[]; p.team.splice(i,1); save(); }
+function projAddTask(pid){ const p=_proj(pid); if(!p)return; const t=(($('pf_task_t_'+pid)||{}).value||'').trim(); if(!t){ alert('Donne un intitulé à la tâche.'); return; } p.tasks=p.tasks||[]; p.tasks.push({id:uid(),titre:t,assigne:(($('pf_task_a_'+pid)||{}).value||'').trim(),echeance:($('pf_task_d_'+pid)||{}).value||'',fait:false}); save(); }
+function projToggleTask(pid,tid){ const p=_proj(pid); if(!p)return; const t=(p.tasks||[]).find(x=>x.id===tid); if(t){ t.fait=!t.fait; save(); } }
+function projDelTask(pid,tid){ const p=_proj(pid); if(!p)return; p.tasks=(p.tasks||[]).filter(x=>x.id!==tid); save(); }
+function projPostMsg(pid){ const p=_proj(pid); if(!p)return; const inp=$('pf_msg_'+pid); const b=((inp||{}).value||'').trim(); if(!b)return; const author=(window.bobMe&&window.bobMe())||'Moi'; p.discussion=p.discussion||[]; p.discussion.push({id:uid(),author,body:b,date:new Date().toLocaleDateString('fr-FR')}); if(inp)inp.value=''; save(); }
 
 /* ---- Dashboard ---- */
 function renderDashboard(){
@@ -5487,7 +5559,7 @@ renderAll();
   function renderPersonnel(){
     const box=$('persList'); if(!box) return;
     const pend=PERS.conges.filter(c=>c.statut==='demande'); const dbox=$('persDemandes');
-    if(dbox){ dbox.innerHTML = pend.length ? ('<div class="card" style="border:1px solid #f1e2ad;background:#fffaf0;margin-bottom:6px"><b>🏖️ '+pend.length+' demande(s) de congé à traiter</b>'+pend.map(c=>{ const f=PERS.list.find(x=>x.id===c.personnel_id)||{}; return '<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;justify-content:space-between;padding:8px 0;border-top:1px dashed #e7efe9"><span>'+esc(persName(f))+' — <b>'+esc(c.type||'CP')+'</b> du '+esc(c.date_debut||'?')+' au '+esc(c.date_fin||'?')+(c.nb_jours?' ('+c.nb_jours+' j)':'')+(c.motif?' · '+esc(c.motif):'')+'</span><span style="white-space:nowrap"><button class="btn" style="padding:5px 10px" onclick="congeSet(\''+c.id+'\',\'valide\')">✅ Valider</button> <button class="ghost btn" style="padding:5px 10px" onclick="congeSet(\''+c.id+'\',\'refuse\')">Refuser</button></span></div>'; }).join('')+'</div>') : ''; }
+    if(dbox){ dbox.innerHTML = pend.length ? ('<div class="card" style="border:1px solid #f1e2ad;background:#fffaf0;margin-bottom:6px"><b>🏖️ '+pend.length+' demande(s) de congé à traiter</b>'+pend.map(c=>{ const f=PERS.list.find(x=>x.id===c.personnel_id)||{}; return '<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;justify-content:space-between;padding:8px 0;border-top:1px dashed #e7efe9"><span>'+esc(persName(f))+' — <b>'+esc(c.type||'CP')+'</b> du '+esc(c.date_debut||'?')+' au '+esc(c.date_fin||'?')+(c.nb_jours?' ('+c.nb_jours+' j)':'')+(c.motif?' · '+esc(c.motif):'')+(c.piece&&c.piece.path?' · <button class="ghost btn" style="padding:2px 8px;font-size:12px" onclick="congePiece(\''+c.id+'\')">📎 justificatif</button>':'')+'</span><span style="white-space:nowrap"><button class="btn" style="padding:5px 10px" onclick="congeSet(\''+c.id+'\',\'valide\')">✅ Valider</button> <button class="ghost btn" style="padding:5px 10px" onclick="congeSet(\''+c.id+'\',\'refuse\')">Refuser</button></span></div>'; }).join('')+'</div>') : ''; }
     if(!PERS.list.length){ box.innerHTML='<p class="empty">Aucune fiche salarié. Clique « + Nouvelle fiche salarié » ou « Importer depuis la masse salariale ».</p>'; return; }
     box.innerHTML='<table><thead><tr><th>Salarié·e</th><th>Poste</th><th>Compte</th><th>Soldes</th><th>Docs</th><th></th></tr></thead><tbody>'
       +PERS.list.map(f=>{ const nd=PERS.docs.filter(d=>d.personnel_id===f.id).length;
@@ -5545,8 +5617,10 @@ renderAll();
     if(statut==='refuse'){ note=prompt('Motif du refus (facultatif) :','')||''; }
     const up=await sbc.from('conges').update({statut,note_bureau:note}).eq('id',id); if(up.error){ alert(up.error.message); return; }
     if(statut==='valide' && c.nb_jours>0){ const f=PERS.list.find(x=>x.id===c.personnel_id); if(f){ const col=(c.type==='RTT')?'solde_rtt':'solde_conges'; const nv=Math.max(0,(f[col]||0)-c.nb_jours); await sbc.from('personnel').update({[col]:nv}).eq('id',f.id); } }
-    await loadPersonnel();
+    await loadPersonnel(); if(window.loadTodo) loadTodo();
   }
+  async function congePiece(id){ const c=PERS.conges.find(x=>x.id===id); if(!c||!c.piece||!c.piece.path) return; try{ const {data,error}=await sbc.storage.from('personnel-docs').createSignedUrl(c.piece.path,3600); if(error||!data){ alert('Justificatif indisponible'); return; } window.open(data.signedUrl,'_blank'); }catch(e){ alert('Justificatif indisponible'); } }
+  window.congePiece=congePiece;
   async function persDocsOpen(id){
     const f=PERS.list.find(x=>x.id===id); if(!f) return; const p=$('persDocsPanel'); p.style.display='';
     p.innerHTML='<h3 style="margin:0 0 4px">📎 Documents — '+esc(persName(f))+'</h3><p class="hint" style="margin:0 0 10px">« Partagé » = visible par le salarié dans son espace. « Interne » = bureau seulement.</p><div style="display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end;margin-bottom:10px"><div><label style="font-weight:700;font-size:13px">Fichier</label><br><input type="file" id="pd_file" accept="image/*,application/pdf"></div><div><label style="font-weight:700;font-size:13px">Catégorie</label><br><input id="pd_cat" placeholder="ex. Fiche de paie" style="width:160px"></div><label style="font-weight:700"><input type="checkbox" id="pd_share"> Partagé avec le salarié</label><button class="btn" onclick="persDocUpload(\''+id+'\')">⬆️ Déposer</button></div><div id="pd_list"></div><div style="margin-top:10px"><button class="ghost btn" onclick="document.getElementById(\'persDocsPanel\').style.display=\'none\'">Fermer</button></div>';
@@ -5569,6 +5643,36 @@ renderAll();
   async function persDocDel(docId){ const d=PERS.docs.find(x=>x.id===docId); if(!d) return; if(!confirm('Supprimer ce document ?')) return; try{ await sbc.storage.from('personnel-docs').remove([d.path]); }catch(e){} const up=await sbc.from('personnel_docs').delete().eq('id',docId); if(up.error){ alert(up.error.message); return; } await loadPersonnel(); persDocsOpen(d.personnel_id); }
   async function persDocView(docId){ const d=PERS.docs.find(x=>x.id===docId); if(!d) return; try{ const {data,error}=await sbc.storage.from('personnel-docs').createSignedUrl(d.path,3600); if(error||!data){ alert('Indisponible'); return; } window.open(data.signedUrl,'_blank'); }catch(e){ alert('Indisponible'); } }
   window.loadPersonnel=loadPersonnel; window.persNew=persNew; window.persEdit=persEdit; window.persCloseEdit=persCloseEdit; window.persSave=persSave; window.persLink=persLink; window.persUnlink=persUnlink; window.persDelete=persDelete; window.persImportSalaries=persImportSalaries; window.congeSet=congeSet; window.persDocsOpen=persDocsOpen; window.persDocUpload=persDocUpload; window.persDocToggle=persDocToggle; window.persDocDel=persDocDel; window.persDocView=persDocView;
+
+  /* ===== 🔔 À TRAITER (tableau de bord des demandes en attente, bureau — vu par Guy & le président) ===== */
+  async function loadTodo(){
+    const box=$('dashTodo'); if(!box||!sbc||!myAsso) return;
+    const q=(tbl,col,val)=>sbc.from(tbl).select('*',{count:'exact',head:true}).eq(col,val).then(r=>r.count||0).catch(()=>0);
+    const [cg,peri,cpt,part,ques,atel]=await Promise.all([
+      q('conges','statut','demande'),
+      q('inscriptions_periscolaire','statut','depose'),
+      q('profiles','statut','en_attente'),
+      q('partenaires','statut','nouveau'),
+      q('questions_aide','statut','nouvelle'),
+      q('ateliers','statut','proposition')
+    ]);
+    const items=[
+      {n:cg,emo:'🏖️',lab:"demande(s) de congé à valider",act:"bobGoTab('personnel')"},
+      {n:peri,emo:'🎒',lab:"dossier(s) périscolaire déposé(s) à valider",act:"bobGoTab('periscolaire')"},
+      {n:cpt,emo:'🔑',lab:"demande(s) d'accès (comptes) à valider",act:"location.href='connexion.html'"},
+      {n:part,emo:'🤝',lab:"demande(s) de partenariat à traiter",act:"bobGoTab('partenaires')"},
+      {n:ques,emo:'❓',lab:"question(s) d'adhérent sans réponse",act:"bobGoTab('aide')"},
+      {n:atel,emo:'💡',lab:"proposition(s) d'atelier à modérer",act:"bobGoTab('ateliers')"}
+    ].filter(x=>x.n>0);
+    const total=items.reduce((s,x)=>s+x.n,0);
+    if(!total){ box.innerHTML='<div class="panel" style="border-left:5px solid #1f9d6b"><b>🔔 À traiter</b><p class="hint" style="margin:6px 0 0">✅ Rien en attente — tout est à jour. 🎉</p></div>'; return; }
+    box.innerHTML='<div class="panel" style="border-left:5px solid #e8a33d;background:#fffaf0"><b>🔔 À traiter ('+total+')</b><p class="hint" style="margin:4px 0 10px">Les demandes qui attendent une action du bureau.</p>'
+      +items.map(x=>'<div style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding:9px 0;border-top:1px dashed #eadfc8"><span style="font-size:15px"><span style="font-size:18px">'+x.emo+'</span> <b>'+x.n+'</b> '+x.lab+'</span><button class="btn" style="padding:6px 12px" onclick="'+x.act+'">Voir →</button></div>').join('')
+      +'</div>';
+  }
+  function bobGoTab(tab){ const b=document.querySelector('nav.tabs button[data-tab="'+tab+'"]'); if(b) b.click(); }
+  window.loadTodo=loadTodo; window.bobGoTab=bobGoTab;
+  window.bobMe=function(){ try{ return myProfile?((myProfile.full_name||myProfile.email||'').split('@')[0]):''; }catch(e){ return ''; } };
 
   async function boot(){
     if(!window.supabase){ gate('<h2>Erreur de chargement</h2><p>Impossible de charger Supabase (connexion internet ?). Réessaie.</p>'); return; }
@@ -5620,6 +5724,8 @@ renderAll();
     const peb=document.querySelector('nav.tabs button[data-tab="periscolaire"]'); if(peb) peb.addEventListener('click',()=>{ if(window.loadDossiersPeri) loadDossiersPeri(); });
     if(window.loadDossiersPeri) loadDossiersPeri();
     const perb=document.querySelector('nav.tabs button[data-tab="personnel"]'); if(perb) perb.addEventListener('click',()=>{ if(window.loadPersonnel) loadPersonnel(); });
+    const dtb=document.querySelector('nav.tabs button[data-tab="dashboard"]'); if(dtb) dtb.addEventListener('click',()=>{ if(window.loadTodo) loadTodo(); });
+    if(window.loadTodo) loadTodo();
     addChatWidget(); addSuggestWidget();
     heartbeat(); if(window.loadPresence) loadPresence();
     setInterval(()=>{ heartbeat(); if(window.loadChat) loadChat(); if(window.loadPresence) loadPresence(); }, 10000);
