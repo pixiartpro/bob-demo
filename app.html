@@ -156,6 +156,7 @@
       <button data-tab="presentation">🎤 Présentation</button>
       <button data-tab="projet">🧭 Projet &amp; orientations</button>
       <button data-tab="projetados">🚀 Projet ados</button>
+      <button data-tab="admin" style="display:none">🛠️ Admin Bob</button>
     </div>
     <div class="tabgroup" data-group="adherents">
       <button data-tab="members">👥 Adhérents</button>
@@ -1050,6 +1051,10 @@
     </div>
   </section>
 
+  <section id="admin" class="page">
+    <div class="panel"><h2 style="margin:0 0 4px">🛠️ Admin Bob — toutes les associations</h2><p class="muted" style="margin:0">Console super-admin (PIX-I-ART) : tu autorises ici les fonctions de chaque association. Elle ne montre jamais les données privées des assos.</p></div>
+    <div id="adminConsole"></div>
+  </section>
   <section id="data" class="page">
     <div class="panel">
       <h2>Sauvegarde & données</h2>
@@ -3115,8 +3120,9 @@ function renderProjects(){
     const over=p.budget>0&&spent>p.budget;
     const sCls=p.status==='Terminé'?'ok':p.status==='À venir'?'wait':'in';
     const open=!!window._projOpen[p.id];
+    const projOn=(window.bobFeatures&&window.bobFeatures().gestion_projet)===true;
     const todo=p.tasks.filter(t=>!t.fait).length, doneN=p.tasks.filter(t=>t.fait).length;
-    const manage = !open ? '' : `
+    const manage = (!open||!projOn) ? '' : `
       <div style="border-top:1px solid var(--line);margin-top:12px;padding-top:14px;display:grid;gap:18px">
         <div>
           <div style="font-weight:700;margin-bottom:8px">👥 Équipe &amp; référent</div>
@@ -3166,7 +3172,7 @@ function renderProjects(){
       <div class="toolbar">
         <div><h2 style="margin:0">${esc(p.name)} <span class="pill ${sCls}" style="font-size:11px;vertical-align:middle">${esc(p.status)}</span></h2>
         ${(p.referent||p.team.length||p.tasks.length)?`<div class="muted" style="font-size:12px;margin-top:2px">${p.referent?'Référent : '+esc(p.referent):''}${p.team.length?(p.referent?' · ':'')+p.team.length+' perso.':''}${p.tasks.length?' · '+todo+' tâche'+(todo>1?'s':'')+' à faire':''}</div>`:''}</div>
-        <div style="white-space:nowrap"><button class="ghost btn" onclick="projToggleManage('${p.id}')">${open?'▲ Réduire':'🗂️ Gérer le projet'}</button>
+        <div style="white-space:nowrap">${projOn?`<button class="ghost btn" onclick="projToggleManage('${p.id}')">${open?'▲ Réduire':'🗂️ Gérer le projet'}</button>`:''}
         <button class="ghost btn" onclick="openDocs('projects','${p.id}')" title="Pièces jointes du projet">📎 Documents${(p.files&&p.files.length)?' ('+p.files.length+')':''}</button>
         <button class="ghost btn" onclick="openEdit('projects','${p.id}')">✏️ Modifier</button>
         <button class="danger" onclick="delProject('${p.id}')">Supprimer</button></div>
@@ -5612,7 +5618,7 @@ renderAll();
     const c=PERS.conges.find(x=>x.id===id); if(!c) return; let note='';
     if(statut==='refuse'){ note=prompt('Motif du refus (facultatif) :','')||''; }
     const up=await sbc.from('conges').update({statut,note_bureau:note}).eq('id',id); if(up.error){ alert(up.error.message); return; }
-    if(statut==='valide' && c.nb_jours>0){ const f=PERS.list.find(x=>x.id===c.personnel_id); if(f){ const col=(c.type==='RTT')?'solde_rtt':'solde_conges'; const nv=Math.max(0,(f[col]||0)-c.nb_jours); await sbc.from('personnel').update({[col]:nv}).eq('id',f.id); } }
+    if(statut==='valide' && c.nb_jours>0 && (c.type==='CP'||c.type==='RTT')){ const f=PERS.list.find(x=>x.id===c.personnel_id); if(f){ const col=(c.type==='RTT')?'solde_rtt':'solde_conges'; const nv=Math.max(0,(f[col]||0)-c.nb_jours); await sbc.from('personnel').update({[col]:nv}).eq('id',f.id); } }
     await loadPersonnel(); if(window.loadTodo) loadTodo();
   }
   async function congePiece(id){ const c=PERS.conges.find(x=>x.id===id); if(!c||!c.piece||!c.piece.path) return; try{ const {data,error}=await sbc.storage.from('personnel-docs').createSignedUrl(c.piece.path,3600); if(error||!data){ alert('Justificatif indisponible'); return; } window.open(data.signedUrl,'_blank'); }catch(e){ alert('Justificatif indisponible'); } }
@@ -5669,6 +5675,26 @@ renderAll();
   function bobGoTab(tab){ const b=document.querySelector('nav.tabs button[data-tab="'+tab+'"]'); if(b) b.click(); }
   window.loadTodo=loadTodo; window.bobGoTab=bobGoTab;
   window.bobMe=function(){ try{ return myProfile?((myProfile.full_name||myProfile.email||'').split('@')[0]):''; }catch(e){ return ''; } };
+  window.bobFeatures=function(){ return window.__bobFeatures||{}; };
+  window.bobIsAdmin=function(){ try{ return !!(myProfile&&myProfile.super_admin); }catch(e){ return false; } };
+  window.bobLoadAdmin=async function(){
+    const box=document.getElementById('adminConsole'); if(!box) return;
+    if(!(myProfile&&myProfile.super_admin)){ box.innerHTML='<div class="empty">Réservé au super-admin.</div>'; return; }
+    box.innerHTML='<p class="hint">Chargement…</p>';
+    const {data,error}=await sbc.rpc('admin_list_assos');
+    if(error){ box.innerHTML='<div class="empty">Erreur : '+esc(error.message)+'</div>'; return; }
+    const plans=['','Découverte','Essentiel','Trésorier','Structure'];
+    box.innerHTML='<div class="panel" style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:14px">'
+      +'<tr style="text-align:left"><th style="padding:8px 10px">Association</th><th>Comptes</th><th>Adhérents</th><th>Gestion de projet</th><th>Formule</th></tr>'
+      +(data||[]).map(function(a){ var on=a.features&&a.features.gestion_projet===true;
+        return '<tr style="border-top:1px solid var(--line)"><td style="padding:8px 10px"><b>'+esc(a.name||a.slug)+'</b><br><span class="muted" style="font-size:12px">'+esc(a.slug)+'</span></td>'
+          +'<td style="text-align:center">'+a.nb_comptes+'</td><td style="text-align:center">'+a.nb_adherents+'</td>'
+          +'<td><label style="cursor:pointer;display:inline-flex;align-items:center;gap:6px"><input type="checkbox" '+(on?'checked':'')+' onchange="window.bobAdminToggle(\''+a.id+'\',\'gestion_projet\',this.checked)"> '+(on?'activé':'éteint')+'</label></td>'
+          +'<td><select onchange="window.bobAdminPlan(\''+a.id+'\',this.value)">'+plans.map(function(p){return '<option'+((p||'')===(a.plan||'')?' selected':'')+'>'+(esc(p)||'—')+'</option>';}).join('')+'</select></td></tr>';
+      }).join('')+'</table></div><p class="hint" style="margin-top:8px">Tu autorises ici les fonctions de chaque association. La console ne montre jamais les données privées des assos.</p>';
+  };
+  window.bobAdminToggle=async function(assoId,key,val){ const {error}=await sbc.rpc('admin_set_feature',{p_asso:assoId,p_key:key,p_value:val}); if(error){ alert(error.message); } window.bobLoadAdmin(); };
+  window.bobAdminPlan=async function(assoId,plan){ const {error}=await sbc.rpc('admin_set_plan',{p_asso:assoId,p_plan:(plan==='—'?null:plan)}); if(error){ alert(error.message); } };
 
   async function boot(){
     if(!window.supabase){ gate('<h2>Erreur de chargement</h2><p>Impossible de charger Supabase (connexion internet ?). Réessaie.</p>'); return; }
@@ -5689,6 +5715,7 @@ renderAll();
       return;
     }
     myAsso=prof.asso_id;
+    try{ const {data:feat}=await sbc.rpc('my_asso_features'); window.__bobFeatures=feat||{}; }catch(e){ window.__bobFeatures={}; }
     try{ applyAssoIdentity(myAsso); }catch(e){}
     canWrite=['president','tresorier','bureau'].includes(prof.role);
     window._bobUser=(prof.full_name||prof.email||'').split('@')[0];
@@ -5720,6 +5747,7 @@ renderAll();
     const peb=document.querySelector('nav.tabs button[data-tab="periscolaire"]'); if(peb) peb.addEventListener('click',()=>{ if(window.loadDossiersPeri) loadDossiersPeri(); });
     if(window.loadDossiersPeri) loadDossiersPeri();
     const perb=document.querySelector('nav.tabs button[data-tab="personnel"]'); if(perb) perb.addEventListener('click',()=>{ if(window.loadPersonnel) loadPersonnel(); });
+    if(prof.super_admin){ const adb=document.querySelector('nav.tabs button[data-tab="admin"]'); if(adb){ adb.style.display=''; adb.addEventListener('click',()=>{ if(window.bobLoadAdmin) window.bobLoadAdmin(); }); } }
     const dtb=document.querySelector('nav.tabs button[data-tab="dashboard"]'); if(dtb) dtb.addEventListener('click',()=>{ if(window.loadTodo) loadTodo(); });
     if(window.loadTodo) loadTodo();
     addChatWidget(); addSuggestWidget();
