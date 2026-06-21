@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mon espace salarié — CASE du Bois de Nèfles</title>
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="favicon-16.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<style>
+  :root{--vert:#1f9d6b;--vert-fonce:#127a51;--jaune:#f6b400;--ananas:#e8a33d;--ink:#1d3a2e;--muted:#5c7468;
+        --bg:#fffef7;--card:#fff;--line:#e7efe9;--shadow:0 6px 22px rgba(20,60,40,.10);--shadow-lg:0 16px 44px rgba(20,60,40,.16)}
+  *{box-sizing:border-box}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;color:var(--ink);background:var(--bg);line-height:1.6}
+  .wrap{max-width:1000px;margin:0 auto;padding:0 20px}
+  header{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.93);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+  header .bar{display:flex;align-items:center;gap:12px;padding:12px 20px;max-width:1000px;margin:0 auto}
+  .logo{display:flex;align-items:center;gap:10px;font-weight:900;font-size:17px;text-decoration:none}
+  .logo .pine{font-size:28px} .logo b{color:var(--vert)} .logo span{color:var(--ananas)}
+  header nav{margin-left:auto;display:flex;gap:8px;align-items:center}
+  header nav a,header nav button{padding:8px 12px;border-radius:10px;font-weight:600;font-size:14px;text-decoration:none;color:var(--muted);background:none;border:none;cursor:pointer;font-family:inherit}
+  header nav a:hover,header nav button:hover{background:#f0f7f3;color:var(--ink)}
+  .flag{background:var(--vert);color:#fff;text-align:center;font-weight:700;font-size:13.5px;padding:8px}
+  .hero{background:linear-gradient(180deg,#aee5c4,var(--bg));padding:28px 0 8px}
+  .hello{font-size:24px;font-weight:900;margin:0}
+  .sub{color:var(--muted);margin:4px 0 0;font-size:14.5px}
+  section.block{padding:22px 0}
+  h2.title{font-size:20px;margin:0 0 10px;font-weight:900}
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:18px;box-shadow:var(--shadow)}
+  .kv{display:flex;justify-content:space-between;gap:12px;padding:7px 0;border-bottom:1px dashed var(--line);font-size:14.5px}
+  .kv:last-child{border-bottom:none} .kv .k{color:var(--muted)} .kv .v{font-weight:700;text-align:right}
+  .solde{display:flex;gap:14px;flex-wrap:wrap}
+  .soldebox{flex:1;min-width:150px;background:linear-gradient(135deg,var(--vert),var(--vert-fonce));color:#fff;border-radius:18px;padding:16px 18px;box-shadow:var(--shadow)}
+  .soldebox .big{font-size:34px;font-weight:900;line-height:1}
+  .soldebox .lab{opacity:.92;font-weight:600;font-size:13.5px}
+  .btn{border:none;cursor:pointer;font:inherit;font-weight:800;border-radius:999px;padding:10px 16px;font-size:14px;transition:.15s}
+  .btn.win{background:var(--vert);color:#fff} .btn.win:hover{background:var(--vert-fonce)}
+  .btn.ghost{background:#fff;border:1px solid var(--line);color:var(--ink)}
+  .btn:disabled{opacity:.5;cursor:default}
+  input,select,textarea{font:inherit;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:#fff}
+  label{font-weight:700;font-size:13.5px;display:block;margin:0 0 3px}
+  .row{display:flex;gap:10px;flex-wrap:wrap}
+  .row>div{flex:1;min-width:150px}
+  .badge{display:inline-block;padding:3px 10px;border-radius:999px;font-size:12.5px;font-weight:800}
+  .b-demande{background:#fff4e0;color:#b9770e}.b-valide{background:#e2f4ec;color:#127a51}.b-refuse{background:#fbe9e7;color:#c0392b}
+  .doc{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px dashed var(--line)}
+  .doc:last-child{border-bottom:none}
+  .empty{color:var(--muted);text-align:center;padding:14px}
+  .gate{max-width:520px;margin:60px auto;text-align:center;background:#fff;border:1px solid var(--line);border-radius:18px;padding:30px 26px;box-shadow:var(--shadow)}
+  #toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(40px);background:var(--ink);color:#fff;padding:12px 20px;border-radius:999px;font-weight:700;box-shadow:var(--shadow-lg);opacity:0;transition:.25s;z-index:99}
+  #toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+  footer{background:var(--vert-fonce);color:#dff3e9;padding:22px;text-align:center;margin-top:18px;font-size:14px}
+  .pre{white-space:pre-wrap;font:inherit;margin:0}
+</style>
+</head>
+<body>
+<div class="flag">🧑‍💼 Espace salarié — votre dossier, vos documents, votre planning et vos congés.</div>
+<header>
+  <div class="bar">
+    <a href="vitrine.html" class="logo"><span class="pine">🍍</span> <span><b>CASE</b> <span>Bois de Nèfles</span></span></a>
+    <nav>
+      <a href="vitrine.html">← Site public</a>
+      <button id="logoutBtn" onclick="spLogout()" style="display:none">Se déconnecter</button>
+    </nav>
+  </div>
+</header>
+
+<div id="content"><div class="gate"><p class="muted">Chargement…</p></div></div>
+<div id="toast"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+const SB_URL='https://dkidtwypclpwznleiqnq.supabase.co';
+const SB_KEY='sb_publishable_HDfV-O2ION1Vw9v03aV_Qg_PkiAjLNo';
+const sb=window.supabase.createClient(SB_URL,SB_KEY);
+const $=s=>document.querySelector(s);
+const ME={session:null,prof:null,fiche:null,conges:[],docs:[]};
+function esc(s){return (s==null?'':String(s)).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2600);}
+function euroDays(n){return (n==null?'0':(Math.round(n*100)/100).toString().replace('.',','));}
+function fdate(d){ if(!d) return '—'; try{const x=new Date(d+'T00:00:00');return x.toLocaleDateString('fr-FR',{day:'2-digit',month:'2-digit',year:'numeric'});}catch(e){return d;} }
+window.spLogout=async function(){ try{ await sb.auth.signOut(); }catch(e){} location.href='connexion.html'; };
+
+function gate(html){ $('#content').innerHTML='<div class="gate">'+html+'</div>'; }
+
+async function boot(){
+  let session=null; try{ session=(await sb.auth.getSession()).data.session; }catch(e){}
+  if(!session){ gate('<h2>🔒 Connexion requise</h2><p class="sub">Cet espace est réservé aux salariés du CASE.</p><p style="margin-top:16px"><a class="btn win" style="text-decoration:none" href="connexion.html">→ Se connecter</a></p>'); return; }
+  ME.session=session;
+  const {data:prof}=await sb.from('profiles').select('full_name,email,role,statut').eq('id',session.user.id).maybeSingle();
+  ME.prof=prof||null;
+  if(!prof){ gate('<h2>Profil introuvable</h2><p class="sub">Contacte le bureau du CASE.</p>'); return; }
+  $('#logoutBtn').style.display='';
+  if(prof.statut!=='actif'){ gate('<h2>⏳ Accès en attente</h2><p class="sub">Ton accès doit être validé par le bureau avant d\'ouvrir ton espace.</p>'); return; }
+  if(prof.role!=='personnel'){
+    if(prof.role==='adherent'){ location.replace('espace-adherent.html'); return; }
+    if(['president','tresorier','bureau'].includes(prof.role)){ gate('<h2>👋 Bonjour '+esc(prof.full_name||'')+'</h2><p class="sub">Cet espace est celui des salariés. La gestion du personnel se fait dans Bob (espace bureau).</p><p style="margin-top:16px"><a class="btn win" style="text-decoration:none" href="app.html">→ Aller à la gestion</a></p>'); return; }
+    gate('<h2>Accès réservé aux salariés</h2><p class="sub">Pour toute question, contacte le bureau.</p>'); return;
+  }
+  // rôle personnel : on charge la fiche
+  const {data:fiche}=await sb.from('personnel').select('*').eq('user_id',session.user.id).maybeSingle();
+  ME.fiche=fiche||null;
+  if(!fiche){ gate('<h2>👋 Bienvenue '+esc(prof.full_name||'')+'</h2><p class="sub">Ton dossier salarié est en cours de préparation par le bureau. Reviens un peu plus tard — tu y trouveras ton planning, tes documents et tes congés.</p>'); return; }
+  await Promise.all([loadConges(), loadDocs()]);
+  renderAll();
+}
+
+async function loadConges(){
+  try{ const {data}=await sb.from('conges').select('*').eq('personnel_id',ME.fiche.id).order('date_debut',{ascending:false}); ME.conges=data||[]; }catch(e){ ME.conges=[]; }
+}
+async function loadDocs(){
+  try{ const {data}=await sb.from('personnel_docs').select('*').eq('personnel_id',ME.fiche.id).eq('partage',true).order('created_at',{ascending:false}); ME.docs=data||[]; }catch(e){ ME.docs=[]; }
+}
+
+function renderAll(){
+  const f=ME.fiche, p=ME.prof;
+  $('#content').innerHTML=
+    '<div class="hero"><div class="wrap">'
+      +'<p class="hello">👋 Bonjour '+esc(f.prenom||p.full_name||'')+'</p>'
+      +'<p class="sub">'+esc(f.poste||'Salarié·e du CASE')+(f.type_contrat?' · '+esc(f.type_contrat):'')+(f.temps_travail?' · '+esc(f.temps_travail):'')+'</p>'
+    +'</div></div>'
+    +'<section class="block"><div class="wrap"><div class="grid">'
+      // Mon dossier
+      +'<div class="card"><h2 class="title">📋 Mon dossier</h2>'
+        +kv('Poste',f.poste)+kv('Contrat',f.type_contrat)+kv('Temps de travail',f.temps_travail)
+        +kv('Date d\'entrée',fdate(f.date_entree))+kv('Email',f.email||p.email)+kv('Téléphone',f.tel)
+        +kv('Adresse',f.adresse)+kv('N° Sécurité sociale',f.num_ss)
+        +'<p class="sub" style="margin-top:10px">Une info à corriger ? Préviens le bureau.</p>'
+      +'</div>'
+      // Mon planning
+      +'<div class="card"><h2 class="title">🗓️ Mon planning</h2>'
+        +(f.planning_hebdo?('<p class="pre">'+esc(f.planning_hebdo)+'</p>'):'<p class="empty">Ton planning sera affiché ici dès que le bureau l\'aura renseigné.</p>')
+      +'</div>'
+    +'</div>'
+    // Mes congés
+    +'<section class="block"><h2 class="title">🏖️ Mes congés</h2>'
+      +'<div class="solde" style="margin-bottom:14px">'
+        +'<div class="soldebox"><div class="big">'+euroDays(f.solde_conges)+'</div><div class="lab">jours de congés (CP) restants</div></div>'
+        +'<div class="soldebox" style="background:linear-gradient(135deg,#3a8fd0,#2b6cb0)"><div class="big">'+euroDays(f.solde_rtt)+'</div><div class="lab">jours de RTT restants</div></div>'
+      +'</div>'
+      +'<div class="card" style="margin-bottom:14px"><h3 style="margin:0 0 10px">Demander un congé</h3>'
+        +'<div class="row" style="margin-bottom:8px">'
+          +'<div><label>Type</label><select id="cg_type" style="width:100%"><option value="CP">Congé payé (CP)</option><option value="RTT">RTT</option><option value="Sans solde">Sans solde</option><option value="Maladie">Maladie</option><option value="Autre">Autre</option></select></div>'
+          +'<div><label>Du</label><input id="cg_debut" type="date" style="width:100%" oninput="cgDays()"></div>'
+          +'<div><label>Au</label><input id="cg_fin" type="date" style="width:100%" oninput="cgDays()"></div>'
+        +'</div>'
+        +'<div class="row" style="margin-bottom:8px"><div style="flex:2"><label>Motif (facultatif)</label><input id="cg_motif" style="width:100%" placeholder="ex. vacances famille"></div>'
+          +'<div><label>Jours</label><input id="cg_jours" type="number" min="0" step="0.5" style="width:100%" placeholder="0"></div></div>'
+        +'<button class="btn win" onclick="cgSend()">📨 Envoyer ma demande</button>'
+      +'</div>'
+      +'<div class="card"><h3 style="margin:0 0 6px">Mes demandes</h3><div id="cgList"></div></div>'
+    +'</section>'
+    // Mes documents
+    +'<section class="block"><h2 class="title">📎 Mes documents</h2>'
+      +'<p class="sub">Les documents que le bureau partage avec vous (fiches de paie, attestations, contrat…).</p>'
+      +'<div class="card"><div id="docList"></div></div>'
+    +'</section>'
+    +'</div></section>'
+    +'<footer>CASE du Bois de Nèfles · Espace salarié · données hébergées en France (RGPD)</footer>';
+  renderConges(); renderDocs();
+}
+function kv(k,v){ return '<div class="kv"><span class="k">'+esc(k)+'</span><span class="v">'+(v?esc(v):'—')+'</span></div>'; }
+
+function renderConges(){
+  const box=$('#cgList'); if(!box) return;
+  if(!ME.conges.length){ box.innerHTML='<p class="empty">Aucune demande pour l\'instant.</p>'; return; }
+  box.innerHTML=ME.conges.map(c=>{
+    const b={demande:'b-demande',valide:'b-valide',refuse:'b-refuse'}[c.statut]||'b-demande';
+    const lab={demande:'En attente',valide:'Validé',refuse:'Refusé'}[c.statut]||c.statut;
+    return '<div class="kv"><span class="k">'+esc(c.type||'CP')+' · '+fdate(c.date_debut)+' → '+fdate(c.date_fin)+(c.nb_jours?' · '+euroDays(c.nb_jours)+' j':'')
+      +(c.note_bureau?'<br><span style="font-size:12.5px">📝 '+esc(c.note_bureau)+'</span>':'')+'</span>'
+      +'<span class="v"><span class="badge '+b+'">'+lab+'</span>'+(c.statut==='demande'?' <button class="btn ghost" style="padding:4px 10px;font-size:12px" onclick="cgDelete(\''+c.id+'\')">Annuler</button>':'')+'</span></div>';
+  }).join('');
+}
+function renderDocs(){
+  const box=$('#docList'); if(!box) return;
+  if(!ME.docs.length){ box.innerHTML='<p class="empty">Aucun document partagé pour l\'instant.</p>'; return; }
+  box.innerHTML=ME.docs.map(d=>'<div class="doc"><span style="font-size:22px">📄</span><div style="flex:1"><div style="font-weight:700">'+esc(d.name||'Document')+'</div>'+(d.categorie?'<div class="sub" style="margin:0">'+esc(d.categorie)+'</div>':'')+'</div><button class="btn ghost" onclick="docOpen(\''+d.id+'\')">Ouvrir</button></div>').join('');
+}
+window.docOpen=async function(id){
+  const d=ME.docs.find(x=>x.id===id); if(!d) return;
+  try{ const {data,error}=await sb.storage.from('personnel-docs').createSignedUrl(d.path,3600); if(error||!data){ toast('Document indisponible'); return; } window.open(data.signedUrl,'_blank'); }
+  catch(e){ toast('Document indisponible'); }
+};
+window.cgDays=function(){
+  const a=$('#cg_debut').value, b=$('#cg_fin').value; if(!a||!b) return;
+  try{ const d1=new Date(a+'T00:00:00'), d2=new Date(b+'T00:00:00'); if(d2>=d1){ const n=Math.round((d2-d1)/86400000)+1; if(!$('#cg_jours').value||$('#cg_jours').dataset.auto!=='0') { $('#cg_jours').value=n; $('#cg_jours').dataset.auto='1'; } } }catch(e){}
+};
+window.cgSend=async function(){
+  const type=$('#cg_type').value, debut=$('#cg_debut').value, fin=$('#cg_fin').value, motif=$('#cg_motif').value.trim();
+  const jours=parseFloat($('#cg_jours').value)||0;
+  if(!debut||!fin){ toast('Indique les dates'); return; }
+  if(new Date(fin)<new Date(debut)){ toast('La date de fin est avant le début'); return; }
+  const {error}=await sb.from('conges').insert({type,date_debut:debut,date_fin:fin,nb_jours:jours,motif});
+  if(error){ toast('Erreur : '+error.message); return; }
+  $('#cg_motif').value=''; $('#cg_jours').value=''; $('#cg_jours').dataset.auto='';
+  await loadConges(); renderConges(); toast('✅ Demande envoyée au bureau');
+};
+window.cgDelete=async function(id){
+  if(!confirm('Annuler cette demande ?')) return;
+  const {error}=await sb.from('conges').delete().eq('id',id);
+  if(error){ toast('Erreur : '+error.message); return; }
+  await loadConges(); renderConges(); toast('Demande annulée');
+};
+
+boot();
+</script>
+</body>
+</html>

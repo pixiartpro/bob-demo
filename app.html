@@ -176,6 +176,7 @@
       <button data-tab="equipe">📒 Équipe</button>
       <button data-tab="accompagnement">🧑‍🏫 Accompagnement</button>
       <button data-tab="rh">🧑‍💼 RH</button>
+      <button data-tab="personnel">👥 Personnel</button>
       <button data-tab="suivi">✅ Suivi</button>
       <button data-tab="conges">🏖️ Congés</button>
       <button data-tab="horaires">🗓️ Horaires</button>
@@ -1552,6 +1553,23 @@ GOUVERNANCE
     </div>
   </section>
 
+  <!-- PERSONNEL (dossiers salariés — face bureau de l'espace salarié) -->
+  <section id="personnel" class="page">
+    <div class="panel">
+      <h2 style="margin:0 0 4px">👥 Personnel — dossiers salariés</h2>
+      <p class="hint" style="margin:0 0 12px">Crée la fiche de chaque salarié, lie son <b>compte de connexion</b>, dépose ses <b>documents</b> (partagés avec lui ou internes RH) et valide ses <b>congés</b>. Chaque salarié ne voit que <b>sa</b> fiche, ses documents <b>partagés</b>, son planning et ses congés, depuis son <b>espace salarié</b>.</p>
+      <div id="persDemandes"></div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin:8px 0 14px">
+        <button class="btn" onclick="persNew()">+ Nouvelle fiche salarié</button>
+        <button class="btn ghost" onclick="persImportSalaries()" title="Crée une fiche pour chaque salarié de la masse salariale qui n'en a pas encore">⬇️ Importer depuis la masse salariale</button>
+        <button class="btn ghost" onclick="loadPersonnel()">↻ Rafraîchir</button>
+      </div>
+      <div id="persList"><p class="hint">Chargement…</p></div>
+    </div>
+    <div class="panel" id="persEditPanel" style="display:none"></div>
+    <div class="panel" id="persDocsPanel" style="display:none"></div>
+  </section>
+
   <!-- PRÉSENTATION -->
   <section id="presentation" class="page">
     <div class="panel" style="background:linear-gradient(135deg,#127a51,#0f6b46);color:#fff">
@@ -2104,6 +2122,8 @@ document.querySelectorAll('nav.tabs button').forEach(b=>{
 
 /* ---- Aide : « Demande à Zanana » (FAQ + assistant par mots-clés, sans IA) ---- */
 const FAQ=[
+  {cat:'👥 Personnel',q:"Comment donner à un salarié l'accès à son espace salarié ?",kw:"salarie salaries personnel espace acces compte lier connexion fiche conges documents planning employe dossier rh donner creer importer masse salariale partage interne",
+   a:"Onglet <b>👥 Personnel</b>. 1) Le salarié crée d'abord son compte sur la page de connexion. 2) Tu valides son accès en rôle <b>personnel</b> (validation des accès). 3) Dans 👥 Personnel, crée ou ouvre sa <b>fiche</b> (bouton ✏️) puis « <b>Lier ce compte</b> » avec son email. Ensuite, depuis son <b>espace salarié</b>, il voit uniquement sa fiche, ses <b>documents partagés</b>, son <b>planning</b>, et peut <b>demander ses congés</b> (que tu valides ici). Les documents marqués « interne RH » lui restent invisibles. Astuce : « Importer depuis la masse salariale » crée les fiches d'un clic."},
   {cat:'🧭 Organisation',q:"Comment est organisé le CASE (pôles, valeurs, procédures) ?",kw:"organisation organigramme pole poles 3 trois valeurs valeur orientations procedure procedures protocole protocoles caisse facture factures comptabilite fonctionnement structure reorganisation reorg dla mission proximite lien social education populaire",
    a:"Depuis la réunion DLA du 18/06/2026, le CASE s'organise en <strong>3 pôles</strong> : Pôle 1 — Vie éducative &amp; jeunesse, Pôle 2 — Culture, lien social &amp; animation, Pôle 3 — Insertion, droits &amp; territoires (déploiement 2027). L'organigramme, les <strong>3 valeurs</strong> (Proximité · Lien social · Éducation populaire), les orientations et l'organisation cible sont dans l'onglet <strong>🧭 Projet &amp; orientations</strong>. Les <strong>procédures internes</strong> (caisse, factures, comptabilité, RH, actions) sont dans l'onglet <strong>📒 Équipe</strong>. Cette organisation est à ratifier formellement en CA."},
   {cat:'🧑‍💼 RH',q:"Où trouver un modèle d'avenant pour la bascule ÉCLAT (Kathy, Fabrice, Sandrine) ?",kw:"avenant avenants modele modeles document documents contrat travail eclat alisfa bascule changement convention kathy fabrice sandrine imprimer pdf maintien salaire signature clause classification coefficient remuneration garantie base",
@@ -2303,6 +2323,8 @@ function pageHelpGotoAide(){ pageHelpClose(); const b=document.querySelector('na
 
 /* ---- ✨ Quoi de neuf (nouveautés + notice chronologique) ---- */
 const NEWS=[
+  {id:'2026-06-21-espace-salarie',date:'2026-06-21',tab:'👥 Personnel',titre:"👥 Espace salarié : chaque salarié a désormais son accès",
+   desc:"Nouvel onglet 👥 Personnel : crée la fiche de chaque salarié, lie son compte, dépose ses documents (partagés avec lui ou internes RH) et valide ses demandes de congés. De son côté, le salarié se connecte à SON espace et voit seulement sa fiche, ses documents partagés, son planning et ses congés. Astuce : « Importer depuis la masse salariale » crée les fiches d'un clic, puis tu complètes."},
   {id:'2026-06-21-grille-familles',date:'2026-06-21',tab:'🎒 Périscolaire',titre:"💶 La grille tarifaire est désormais reliée aux familles",
    desc:"Quand tu cliques « 💾 Enregistrer la grille » dans le périscolaire, le calculateur de tarif de l'espace famille est mis à jour automatiquement — fini la double grille qui pouvait afficher de vieux prix. Tu modifies les tarifs à UN seul endroit (ici), les familles voient toujours les bons. Au passage : supprimer en compta l'opération d'un versement de subvention remet bien à jour le solde de la subvention (avant, elle restait marquée « versée » à tort)."},
   {id:'2026-06-20-anti-ecrasement',date:'2026-06-20',tab:'❓ Aide',titre:"🛟 Anti-écrasement : on ne perd plus le travail à plusieurs",
@@ -5446,6 +5468,108 @@ renderAll();
     }
   }
 
+  /* ===== 👥 PERSONNEL (dossiers salariés — face bureau de l'espace salarié) ===== */
+  let PERS={list:[],docs:[],conges:[]}, PERS_EDIT=null;
+  function persName(f){ return (((f.prenom||'')+' '+(f.nom||'')).trim())||f.email||'(sans nom)'; }
+  function persPill(txt,bg,fg){ return '<span style="padding:2px 8px;border-radius:999px;font-size:12px;font-weight:700;background:'+bg+';color:'+fg+'">'+txt+'</span>'; }
+  async function loadPersonnel(){
+    if(!sbc||!myAsso) return;
+    try{
+      const [p,d,c]=await Promise.all([
+        sbc.from('personnel').select('*').order('nom',{ascending:true}),
+        sbc.from('personnel_docs').select('*').order('created_at',{ascending:false}),
+        sbc.from('conges').select('*').order('date_debut',{ascending:false})
+      ]);
+      PERS.list=p.data||[]; PERS.docs=d.data||[]; PERS.conges=c.data||[];
+    }catch(e){ console.warn('loadPersonnel',e); }
+    renderPersonnel();
+  }
+  function renderPersonnel(){
+    const box=$('persList'); if(!box) return;
+    const pend=PERS.conges.filter(c=>c.statut==='demande'); const dbox=$('persDemandes');
+    if(dbox){ dbox.innerHTML = pend.length ? ('<div class="card" style="border:1px solid #f1e2ad;background:#fffaf0;margin-bottom:6px"><b>🏖️ '+pend.length+' demande(s) de congé à traiter</b>'+pend.map(c=>{ const f=PERS.list.find(x=>x.id===c.personnel_id)||{}; return '<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;justify-content:space-between;padding:8px 0;border-top:1px dashed #e7efe9"><span>'+esc(persName(f))+' — <b>'+esc(c.type||'CP')+'</b> du '+esc(c.date_debut||'?')+' au '+esc(c.date_fin||'?')+(c.nb_jours?' ('+c.nb_jours+' j)':'')+(c.motif?' · '+esc(c.motif):'')+'</span><span style="white-space:nowrap"><button class="btn" style="padding:5px 10px" onclick="congeSet(\''+c.id+'\',\'valide\')">✅ Valider</button> <button class="ghost btn" style="padding:5px 10px" onclick="congeSet(\''+c.id+'\',\'refuse\')">Refuser</button></span></div>'; }).join('')+'</div>') : ''; }
+    if(!PERS.list.length){ box.innerHTML='<p class="empty">Aucune fiche salarié. Clique « + Nouvelle fiche salarié » ou « Importer depuis la masse salariale ».</p>'; return; }
+    box.innerHTML='<table><thead><tr><th>Salarié·e</th><th>Poste</th><th>Compte</th><th>Soldes</th><th>Docs</th><th></th></tr></thead><tbody>'
+      +PERS.list.map(f=>{ const nd=PERS.docs.filter(d=>d.personnel_id===f.id).length;
+        const linked=f.user_id?persPill('lié','#e2f4ec','#127a51'):persPill('non lié','#fbe9e7','#c0392b');
+        return '<tr><td><b>'+esc(persName(f))+'</b>'+(f.actif===false?' <span class="muted">(inactif)</span>':'')+'</td><td>'+esc(f.poste||'—')+'<br><span class="muted" style="font-size:12px">'+esc(f.type_contrat||'')+(f.temps_travail?' · '+esc(f.temps_travail):'')+'</span></td><td>'+linked+'</td><td class="num">'+(f.solde_conges||0)+' CP · '+(f.solde_rtt||0)+' RTT</td><td class="num">'+nd+'</td><td style="white-space:nowrap"><button class="ghost btn" onclick="persEdit(\''+f.id+'\')" title="Modifier">✏️</button> <button class="ghost btn" onclick="persDocsOpen(\''+f.id+'\')" title="Documents">📎</button></td></tr>';
+      }).join('')+'</tbody></table>';
+  }
+  function persFld(id,label,val,type){ return '<div><label>'+esc(label)+'</label><input id="'+id+'" type="'+(type||'text')+'" value="'+esc(val==null?'':val)+'" style="width:100%"></div>'; }
+  function persForm(f){ f=f||{}; const v=k=>f[k]==null?'':f[k];
+    return '<h3 style="margin:0 0 10px">'+(f.id?'✏️ Modifier la fiche':'+ Nouvelle fiche salarié')+'</h3>'
+      +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">'
+      +persFld('pf_prenom','Prénom',v('prenom'))+persFld('pf_nom','Nom',v('nom'))
+      +persFld('pf_poste','Poste',v('poste'))+persFld('pf_contrat','Type de contrat (CDI/CDD/PEC…)',v('type_contrat'))
+      +persFld('pf_temps','Temps de travail (ex. 35h)',v('temps_travail'))+persFld('pf_entree','Date d\'entrée',v('date_entree'),'date')
+      +persFld('pf_email','Email',v('email'),'email')+persFld('pf_tel','Téléphone',v('tel'))
+      +persFld('pf_adresse','Adresse',v('adresse'))+persFld('pf_ss','N° Sécurité sociale',v('num_ss'))
+      +persFld('pf_cp','Solde congés (CP, jours)',f.solde_conges||0,'number')+persFld('pf_rtt','Solde RTT (jours)',f.solde_rtt||0,'number')
+      +'</div>'
+      +'<label style="display:block;margin-top:10px;font-weight:700">🗓️ Planning hebdomadaire (visible par le salarié)</label><textarea id="pf_planning" style="width:100%;min-height:70px;font:inherit;padding:8px 10px;border:1px solid #e6ece7;border-radius:10px" placeholder="ex. Lundi 8h-12h / 14h-17h · Mardi 8h-12h …">'+esc(v('planning_hebdo'))+'</textarea>'
+      +'<label style="display:block;margin-top:10px;font-weight:700"><input type="checkbox" id="pf_actif" '+(f.actif!==false?'checked':'')+'> Salarié actif</label>'
+      +'<div class="card" style="margin-top:12px;background:#f6faf8"><b>🔗 Compte de connexion</b><p class="hint" style="margin:4px 0 8px">Le salarié crée d\'abord son compte sur la page de connexion ; tu le valides en rôle « personnel », puis tu le lies ici par son email.</p>'
+        +(f.user_id?'<p style="margin:0 0 8px;color:#127a51;font-weight:700">✅ Compte lié</p>':'')
+        +'<div style="display:flex;gap:8px;flex-wrap:wrap"><input id="pf_linkmail" placeholder="email du compte salarié" style="flex:1;min-width:200px"><button class="btn" onclick="persLink()">Lier ce compte</button>'+(f.user_id?' <button class="ghost btn" onclick="persUnlink()">Délier</button>':'')+'</div></div>'
+      +'<div style="margin-top:14px"><button class="btn" onclick="persSave()">💾 Enregistrer</button> <button class="ghost btn" onclick="persCloseEdit()">Fermer</button>'+(f.id?' <button class="ghost btn" style="color:#c0392b" onclick="persDelete(\''+f.id+'\')">🗑 Supprimer</button>':'')+'</div>';
+  }
+  function persNew(){ PERS_EDIT={}; const p=$('persEditPanel'); p.style.display=''; p.innerHTML=persForm({}); p.scrollIntoView({behavior:'smooth'}); }
+  function persEdit(id){ const f=PERS.list.find(x=>x.id===id); if(!f) return; PERS_EDIT=f; const p=$('persEditPanel'); p.style.display=''; p.innerHTML=persForm(f); p.scrollIntoView({behavior:'smooth'}); }
+  function persCloseEdit(){ const p=$('persEditPanel'); p.style.display='none'; p.innerHTML=''; PERS_EDIT=null; }
+  async function persSave(){
+    const rec={ asso_id:myAsso, prenom:$('pf_prenom').value.trim(), nom:$('pf_nom').value.trim(), poste:$('pf_poste').value.trim(), type_contrat:$('pf_contrat').value.trim(), temps_travail:$('pf_temps').value.trim(), date_entree:$('pf_entree').value||null, email:$('pf_email').value.trim(), tel:$('pf_tel').value.trim(), adresse:$('pf_adresse').value.trim(), num_ss:$('pf_ss').value.trim(), solde_conges:parseFloat($('pf_cp').value)||0, solde_rtt:parseFloat($('pf_rtt').value)||0, planning_hebdo:$('pf_planning').value, actif:$('pf_actif').checked };
+    let res; if(PERS_EDIT&&PERS_EDIT.id){ res=await sbc.from('personnel').update(rec).eq('id',PERS_EDIT.id).select().single(); } else { res=await sbc.from('personnel').insert(rec).select().single(); }
+    if(res.error){ alert('Erreur : '+res.error.message); return; }
+    PERS_EDIT=res.data; await loadPersonnel(); persEdit(res.data.id);
+  }
+  async function persLink(){
+    const mail=($('pf_linkmail').value||'').trim().toLowerCase(); if(!mail){ alert('Indique l\'email du compte salarié.'); return; }
+    if(!PERS_EDIT||!PERS_EDIT.id){ alert('Enregistre d\'abord la fiche, puis lie le compte.'); return; }
+    const {data:prof,error}=await sbc.from('profiles').select('id,role').eq('email',mail).maybeSingle();
+    if(error||!prof){ alert('Aucun compte trouvé avec cet email. Le salarié doit d\'abord créer son compte sur la page de connexion.'); return; }
+    const up=await sbc.from('personnel').update({user_id:prof.id}).eq('id',PERS_EDIT.id).select().single();
+    if(up.error){ alert('Erreur : '+up.error.message); return; }
+    PERS_EDIT=up.data; await loadPersonnel(); persEdit(PERS_EDIT.id);
+    alert('✅ Compte lié.'+(prof.role!=='personnel'?'\n\n⚠️ Ce compte a le rôle « '+prof.role+' » : passe-le en « personnel » dans la validation des accès (connexion) pour qu\'il ouvre l\'espace salarié.':''));
+  }
+  async function persUnlink(){ if(!PERS_EDIT||!PERS_EDIT.id) return; if(!confirm('Délier ce compte ?')) return; const up=await sbc.from('personnel').update({user_id:null}).eq('id',PERS_EDIT.id).select().single(); if(up.error){ alert(up.error.message); return; } PERS_EDIT=up.data; await loadPersonnel(); persEdit(PERS_EDIT.id); }
+  async function persDelete(id){ if(!confirm('Supprimer définitivement cette fiche et ses documents ?')) return; const {error}=await sbc.from('personnel').delete().eq('id',id); if(error){ alert(error.message); return; } persCloseEdit(); await loadPersonnel(); }
+  async function persImportSalaries(){
+    const sal=(db.salaries||[]); if(!sal.length){ alert('La masse salariale (onglet 📒 Équipe) est vide.'); return; }
+    const have=new Set(PERS.list.map(f=>persName(f).toLowerCase())); let n=0;
+    for(const s of sal){ const nm=(s.name||'').trim(); if(!nm||have.has(nm.toLowerCase())) continue; const parts=nm.split(/\s+/); const rec={asso_id:myAsso, prenom:parts[0]||'', nom:parts.slice(1).join(' '), temps_travail:(s.heures?s.heures+'h':''), date_entree:s.dateEntree||null, actif:true}; const r=await sbc.from('personnel').insert(rec); if(!r.error) n++; }
+    await loadPersonnel(); alert(n?('✅ '+n+' fiche(s) créée(s) depuis la masse salariale. Complète-les (contrat, soldes…) et lie les comptes.'):'Toutes les fiches existent déjà.');
+  }
+  async function congeSet(id,statut){
+    const c=PERS.conges.find(x=>x.id===id); if(!c) return; let note='';
+    if(statut==='refuse'){ note=prompt('Motif du refus (facultatif) :','')||''; }
+    const up=await sbc.from('conges').update({statut,note_bureau:note}).eq('id',id); if(up.error){ alert(up.error.message); return; }
+    if(statut==='valide' && c.nb_jours>0){ const f=PERS.list.find(x=>x.id===c.personnel_id); if(f){ const col=(c.type==='RTT')?'solde_rtt':'solde_conges'; const nv=Math.max(0,(f[col]||0)-c.nb_jours); await sbc.from('personnel').update({[col]:nv}).eq('id',f.id); } }
+    await loadPersonnel();
+  }
+  async function persDocsOpen(id){
+    const f=PERS.list.find(x=>x.id===id); if(!f) return; const p=$('persDocsPanel'); p.style.display='';
+    p.innerHTML='<h3 style="margin:0 0 4px">📎 Documents — '+esc(persName(f))+'</h3><p class="hint" style="margin:0 0 10px">« Partagé » = visible par le salarié dans son espace. « Interne » = bureau seulement.</p><div style="display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end;margin-bottom:10px"><div><label style="font-weight:700;font-size:13px">Fichier</label><br><input type="file" id="pd_file" accept="image/*,application/pdf"></div><div><label style="font-weight:700;font-size:13px">Catégorie</label><br><input id="pd_cat" placeholder="ex. Fiche de paie" style="width:160px"></div><label style="font-weight:700"><input type="checkbox" id="pd_share"> Partagé avec le salarié</label><button class="btn" onclick="persDocUpload(\''+id+'\')">⬆️ Déposer</button></div><div id="pd_list"></div><div style="margin-top:10px"><button class="ghost btn" onclick="document.getElementById(\'persDocsPanel\').style.display=\'none\'">Fermer</button></div>';
+    renderPersDocs(id); p.scrollIntoView({behavior:'smooth'});
+  }
+  function renderPersDocs(id){ const box=$('pd_list'); if(!box) return; const docs=PERS.docs.filter(d=>d.personnel_id===id);
+    box.innerHTML = docs.length ? docs.map(d=>'<div style="display:flex;gap:8px;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px dashed #e7efe9"><span>📄 '+esc(d.name||'doc')+(d.categorie?' <span class="muted">· '+esc(d.categorie)+'</span>':'')+' '+(d.partage?persPill('partagé','#e2f4ec','#127a51'):persPill('interne','#eef1ef','#5c6b63'))+'</span><span style="white-space:nowrap"><button class="ghost btn" style="padding:4px 9px" onclick="persDocView(\''+d.id+'\')">Voir</button> <button class="ghost btn" style="padding:4px 9px" onclick="persDocToggle(\''+d.id+'\')">'+(d.partage?'Rendre interne':'Partager')+'</button> <button class="ghost btn" style="padding:4px 9px;color:#c0392b" onclick="persDocDel(\''+d.id+'\')">🗑</button></span></div>').join('') : '<p class="empty">Aucun document.</p>';
+  }
+  async function persDocUpload(id){
+    const fileEl=$('pd_file'); const file=fileEl&&fileEl.files&&fileEl.files[0]; if(!file){ alert('Choisis un fichier.'); return; }
+    const share=$('pd_share').checked; const cat=$('pd_cat').value.trim(); const ext=(file.name.split('.').pop()||'bin').toLowerCase();
+    const path=myAsso+'/'+id+'/'+(share?'shared':'internal')+'/'+Date.now().toString(36)+Math.random().toString(36).slice(2,7)+'.'+ext;
+    const up=await sbc.storage.from('personnel-docs').upload(path,file,{contentType:file.type||'application/octet-stream'});
+    if(up.error){ alert('Erreur upload : '+up.error.message); return; }
+    const ins=await sbc.from('personnel_docs').insert({asso_id:myAsso,personnel_id:id,path,name:file.name,categorie:cat,partage:share});
+    if(ins.error){ alert('Erreur : '+ins.error.message); return; }
+    await loadPersonnel(); persDocsOpen(id);
+  }
+  async function persDocToggle(docId){ const d=PERS.docs.find(x=>x.id===docId); if(!d) return; const np=!d.partage; const newPath=d.path.replace('/'+(d.partage?'shared':'internal')+'/','/'+(np?'shared':'internal')+'/'); try{ await sbc.storage.from('personnel-docs').move(d.path,newPath); }catch(e){} const up=await sbc.from('personnel_docs').update({partage:np,path:newPath}).eq('id',docId); if(up.error){ alert(up.error.message); return; } await loadPersonnel(); persDocsOpen(d.personnel_id); }
+  async function persDocDel(docId){ const d=PERS.docs.find(x=>x.id===docId); if(!d) return; if(!confirm('Supprimer ce document ?')) return; try{ await sbc.storage.from('personnel-docs').remove([d.path]); }catch(e){} const up=await sbc.from('personnel_docs').delete().eq('id',docId); if(up.error){ alert(up.error.message); return; } await loadPersonnel(); persDocsOpen(d.personnel_id); }
+  async function persDocView(docId){ const d=PERS.docs.find(x=>x.id===docId); if(!d) return; try{ const {data,error}=await sbc.storage.from('personnel-docs').createSignedUrl(d.path,3600); if(error||!data){ alert('Indisponible'); return; } window.open(data.signedUrl,'_blank'); }catch(e){ alert('Indisponible'); } }
+  window.loadPersonnel=loadPersonnel; window.persNew=persNew; window.persEdit=persEdit; window.persCloseEdit=persCloseEdit; window.persSave=persSave; window.persLink=persLink; window.persUnlink=persUnlink; window.persDelete=persDelete; window.persImportSalaries=persImportSalaries; window.congeSet=congeSet; window.persDocsOpen=persDocsOpen; window.persDocUpload=persDocUpload; window.persDocToggle=persDocToggle; window.persDocDel=persDocDel; window.persDocView=persDocView;
+
   async function boot(){
     if(!window.supabase){ gate('<h2>Erreur de chargement</h2><p>Impossible de charger Supabase (connexion internet ?). Réessaie.</p>'); return; }
     sbc=window.supabase.createClient(SB_URL,SB_KEY);
@@ -5460,6 +5584,7 @@ renderAll();
     const GESTION_ROLES=['president','tresorier','bureau'];
     if(!GESTION_ROLES.includes(prof.role)){
       if(prof.role==='adherent'){ location.replace('espace-adherent.html'); return; }
+      if(prof.role==='personnel'){ location.replace('espace-personnel.html'); return; }
       gate('<h2>🔒 Accès réservé au bureau</h2><p>Cet espace de gestion est réservé au bureau. Ton espace dédié n\'est pas encore disponible — pour toute question, contacte le bureau.</p><p style="margin-top:18px"><a href="connexion.html" style="background:#1f9d6b;color:#fff;text-decoration:none;padding:11px 18px;border-radius:999px;font-weight:800">→ Retour</a></p>');
       return;
     }
@@ -5494,6 +5619,7 @@ renderAll();
     if(window.loadActivitesGestion) loadActivitesGestion();
     const peb=document.querySelector('nav.tabs button[data-tab="periscolaire"]'); if(peb) peb.addEventListener('click',()=>{ if(window.loadDossiersPeri) loadDossiersPeri(); });
     if(window.loadDossiersPeri) loadDossiersPeri();
+    const perb=document.querySelector('nav.tabs button[data-tab="personnel"]'); if(perb) perb.addEventListener('click',()=>{ if(window.loadPersonnel) loadPersonnel(); });
     addChatWidget(); addSuggestWidget();
     heartbeat(); if(window.loadPresence) loadPresence();
     setInterval(()=>{ heartbeat(); if(window.loadChat) loadChat(); if(window.loadPresence) loadPresence(); }, 10000);
