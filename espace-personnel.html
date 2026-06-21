@@ -75,7 +75,7 @@ const SB_URL='https://dkidtwypclpwznleiqnq.supabase.co';
 const SB_KEY='sb_publishable_HDfV-O2ION1Vw9v03aV_Qg_PkiAjLNo';
 const sb=window.supabase.createClient(SB_URL,SB_KEY);
 const $=s=>document.querySelector(s);
-const ME={session:null,prof:null,fiche:null,conges:[],docs:[]};
+const ME={session:null,prof:null,fiche:null,conges:[],docs:[],acts:[],ins:[],asso:null};
 function esc(s){return (s==null?'':String(s)).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2600);}
 function euroDays(n){return (n==null?'0':(Math.round(n*100)/100).toString().replace('.',','));}
@@ -98,11 +98,12 @@ async function boot(){
     if(['president','tresorier','bureau'].includes(prof.role)){ gate('<h2>👋 Bonjour '+esc(prof.full_name||'')+'</h2><p class="sub">Cet espace est celui des salariés. La gestion du personnel se fait dans Bob (espace bureau).</p><p style="margin-top:16px"><a class="btn win" style="text-decoration:none" href="app.html">→ Aller à la gestion</a></p>'); return; }
     gate('<h2>Accès réservé aux salariés</h2><p class="sub">Pour toute question, contacte le bureau.</p>'); return;
   }
-  // rôle personnel : on charge la fiche
+  // rôle personnel : fiche RH facultative (la partie gestion ne dépend pas d'elle)
   const {data:fiche}=await sb.from('personnel').select('*').eq('user_id',session.user.id).maybeSingle();
   ME.fiche=fiche||null;
-  if(!fiche){ gate('<h2>👋 Bienvenue '+esc(prof.full_name||'')+'</h2><p class="sub">Ton dossier salarié est en cours de préparation par le bureau. Reviens un peu plus tard — tu y trouveras ton planning, tes documents et tes congés.</p>'); return; }
-  await Promise.all([loadConges(), loadDocs()]);
+  const jobs=[loadActs()];
+  if(fiche){ jobs.push(loadConges(), loadDocs()); }
+  await Promise.all(jobs);
   renderAll();
 }
 
@@ -114,26 +115,40 @@ async function loadDocs(){
 }
 
 function renderAll(){
-  const f=ME.fiche, p=ME.prof;
-  $('#content').innerHTML=
-    '<div class="hero"><div class="wrap">'
-      +'<p class="hello">👋 Bonjour '+esc(f.prenom||p.full_name||'')+'</p>'
-      +'<p class="sub">'+esc(f.poste||'Salarié·e du CASE')+(f.type_contrat?' · '+esc(f.type_contrat):'')+(f.temps_travail?' · '+esc(f.temps_travail):'')+'</p>'
+  const f=ME.fiche, p=ME.prof, hasFiche=!!f;
+  let html='<div class="hero"><div class="wrap">'
+      +'<p class="hello">👋 Bonjour '+esc((f&&f.prenom)||p.full_name||'')+'</p>'
+      +'<p class="sub">'+esc((f&&f.poste)||'Salarié·e du CASE')+(f&&f.type_contrat?' · '+esc(f.type_contrat):'')+(f&&f.temps_travail?' · '+esc(f.temps_travail):'')+'</p>'
     +'</div></div>'
-    +'<section class="block"><div class="wrap"><div class="grid">'
-      // Mon dossier
+    +'<div class="wrap">'
+    // ===== MA GESTION (toujours visible) =====
+    +'<section class="block"><h2 class="title">🎒 Ma gestion — activités & inscriptions</h2>'
+      +'<p class="sub">Crée et gère tes activités (ACM, ateliers…) et les enfants inscrits. <b>Tu prépares</b> ; le bureau publie sur le site public et s\'occupe de l\'argent. Chaque action est enregistrée.</p>'
+      +'<div class="card" style="margin-bottom:14px"><h3 id="naTitle" style="margin:0 0 10px">➕ Nouvelle activité</h3>'
+        +'<div class="row" style="margin-bottom:8px">'
+          +'<div style="flex:2"><label>Nom</label><input id="na_nom" style="width:100%" placeholder="ex. Sortie plage, Atelier cuisine…"></div>'
+          +'<div><label>Type</label><select id="na_type" style="width:100%"><option value="activite">🎟️ Activité</option><option value="evenement">📅 Événement</option></select></div>'
+          +'<div><label>Places</label><input id="na_cap" type="number" min="0" value="20" style="width:100%"></div>'
+        +'</div>'
+        +'<div class="row" style="margin-bottom:10px"><div style="flex:1"><label>Programme / description (facultatif)</label><input id="na_prog" style="width:100%" placeholder="ce qu\'on y fait"></div></div>'
+        +'<div class="row" style="gap:8px"><button class="btn win" onclick="spSaveAct()">Enregistrer l\'activité</button>'
+          +'<button class="btn ghost" onclick="spCancelAct()" id="na_cancel" style="display:none">Annuler la modif</button></div>'
+        +'<input type="hidden" id="na_id">'
+      +'</div>'
+      +'<div id="actList"></div>'
+    +'</section>';
+  if(hasFiche){
+    html+='<section class="block"><div class="grid">'
       +'<div class="card"><h2 class="title">📋 Mon dossier</h2>'
         +kv('Poste',f.poste)+kv('Contrat',f.type_contrat)+kv('Temps de travail',f.temps_travail)
         +kv('Date d\'entrée',fdate(f.date_entree))+kv('Email',f.email||p.email)+kv('Téléphone',f.tel)
         +kv('Adresse',f.adresse)+kv('N° Sécurité sociale',f.num_ss)
         +'<p class="sub" style="margin-top:10px">Une info à corriger ? Préviens le bureau.</p>'
       +'</div>'
-      // Mon planning
       +'<div class="card"><h2 class="title">🗓️ Mon planning</h2>'
         +(f.planning_hebdo?('<p class="pre">'+esc(f.planning_hebdo)+'</p>'):'<p class="empty">Ton planning sera affiché ici dès que le bureau l\'aura renseigné.</p>')
       +'</div>'
-    +'</div>'
-    // Mes congés
+    +'</div></section>'
     +'<section class="block"><h2 class="title">🏖️ Mes congés</h2>'
       +'<div class="solde" style="margin-bottom:14px">'
         +'<div class="soldebox"><div class="big">'+euroDays(f.solde_conges)+'</div><div class="lab">jours de congés (CP) restants</div></div>'
@@ -152,15 +167,88 @@ function renderAll(){
       +'</div>'
       +'<div class="card"><h3 style="margin:0 0 6px">Mes demandes</h3><div id="cgList"></div></div>'
     +'</section>'
-    // Mes documents
     +'<section class="block"><h2 class="title">📎 Mes documents</h2>'
       +'<p class="sub">Les documents que le bureau partage avec vous (fiches de paie, attestations, contrat…).</p>'
       +'<div class="card"><div id="docList"></div></div>'
-    +'</section>'
-    +'</div></section>'
-    +'<footer>CASE du Bois de Nèfles · Espace salarié · données hébergées en France (RGPD)</footer>';
-  renderConges(); renderDocs();
+    +'</section>';
+  } else {
+    html+='<section class="block"><div class="card"><p class="empty">📋 Ton dossier RH (planning, congés, documents) apparaîtra ici dès que le bureau aura créé ta fiche salarié.</p></div></section>';
+  }
+  html+='</div><footer>CASE du Bois de Nèfles · Espace salarié · données hébergées en France (RGPD)</footer>';
+  $('#content').innerHTML=html;
+  renderActs();
+  if(hasFiche){ renderConges(); renderDocs(); }
 }
+
+async function loadActs(){
+  try{
+    const pr=await sb.from('profiles').select('asso_id').eq('id',ME.session.user.id).maybeSingle();
+    ME.asso=pr.data?pr.data.asso_id:null;
+    const [ra,ri]=await Promise.all([
+      sb.from('activites').select('*').order('created_at',{ascending:true}),
+      sb.from('inscriptions_activite').select('*').order('created_at',{ascending:true})
+    ]);
+    ME.acts=ra.data||[]; ME.ins=ri.data||[];
+  }catch(e){ ME.acts=[]; ME.ins=[]; }
+}
+function renderActs(){
+  const box=$('#actList'); if(!box) return;
+  if(!ME.acts.length){ box.innerHTML='<p class="empty">Aucune activité pour l\'instant. Crée la première ci-dessus 👆</p>'; return; }
+  const byA={}; ME.ins.forEach(i=>{ (byA[i.activite_id]=byA[i.activite_id]||[]).push(i); });
+  box.innerHTML=ME.acts.map(a=>{
+    const list=byA[a.id]||[];
+    const editable=!a.publie; // une activité publiée par le bureau n'est pas modifiable par le salarié
+    const insRows=list.length
+      ? '<table style="width:100%;margin-top:8px;font-size:14px"><tbody>'+list.map(i=>'<tr><td style="padding:4px 0">👧 '+esc(i.nom||'(sans nom)')+(i.responsable?' <span class="sub">· '+esc(i.responsable)+'</span>':'')+'</td><td style="text-align:right">'+(editable?'<button class="btn ghost" style="padding:3px 9px;font-size:12px" onclick="spDelIns(\''+i.id+'\')">retirer</button>':'')+'</td></tr>').join('')+'</tbody></table>'
+      : '<p class="empty" style="margin:6px 0 0">Personne d\'inscrit.</p>';
+    return '<div class="card" style="margin-bottom:12px;border-left:4px solid '+(a.publie?'#1f9d6b':'#e8a33d')+'">'
+      +'<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px">'
+        +'<div><b style="font-size:16px">'+esc((a.emoji?a.emoji+' ':'')+(a.nom||'(sans nom)'))+'</b> '
+          +'<span class="badge '+(a.publie?'b-valide':'b-demande')+'">'+(a.publie?'🌍 publié (bureau)':'🔒 brouillon')+'</span><br>'
+          +'<span class="sub">'+(a.type==='evenement'?'📅 Événement':'🎟️ Activité')+' · '+list.length+' inscrit'+(list.length>1?'s':'')+(a.capacite?' / '+a.capacite+' places':'')+'</span>'
+          +(a.programme?'<div class="sub" style="margin-top:4px">'+esc(a.programme)+'</div>':'')
+        +'</div>'
+        +(editable?'<button class="btn ghost" style="padding:5px 10px;font-size:13px;white-space:nowrap" onclick="spEditAct(\''+a.id+'\')">✏️ Modifier</button>':'')
+      +'</div>'
+      +insRows
+      +(editable
+        ? '<div class="row" style="margin-top:8px;gap:6px"><div style="flex:2"><input id="ni_'+a.id+'" placeholder="Nom de l\'enfant à inscrire" style="width:100%" onkeydown="if(event.key===\'Enter\')spAddIns(\''+a.id+'\')"></div><button class="btn win" style="white-space:nowrap" onclick="spAddIns(\''+a.id+'\')">+ inscrire</button></div>'
+        : '<p class="sub" style="margin-top:8px">Activité publiée — gérée par le bureau.</p>')
+    +'</div>';
+  }).join('');
+}
+window.spCancelAct=function(){ $('#na_id').value=''; $('#na_nom').value=''; $('#na_prog').value=''; $('#na_cap').value='20'; $('#na_type').value='activite'; $('#naTitle').textContent='➕ Nouvelle activité'; $('#na_cancel').style.display='none'; };
+window.spSaveAct=async function(){
+  const nom=$('#na_nom').value.trim(); if(!nom){ toast('Indique le nom'); return; }
+  const id=$('#na_id').value;
+  let r;
+  if(id){
+    r=await sb.from('activites').update({ nom, type:$('#na_type').value, capacite:Math.max(0,parseInt($('#na_cap').value,10)||0), programme:$('#na_prog').value.trim() }).eq('id',id);
+  } else {
+    r=await sb.from('activites').insert({ asso_id:ME.asso, nom, type:$('#na_type').value, capacite:Math.max(0,parseInt($('#na_cap').value,10)||0), programme:$('#na_prog').value.trim(), publie:false, statut:'ouvert' });
+  }
+  if(r.error){ toast('Erreur : '+r.error.message); return; }
+  spCancelAct();
+  await loadActs(); renderActs(); toast(id?'✅ Activité modifiée':'✅ Activité créée');
+};
+window.spEditAct=function(id){
+  const a=ME.acts.find(x=>x.id===id); if(!a) return;
+  $('#na_id').value=a.id; $('#na_nom').value=a.nom||''; $('#na_type').value=a.type||'activite'; $('#na_cap').value=a.capacite||0; $('#na_prog').value=a.programme||'';
+  $('#naTitle').textContent='✏️ Modifier l\'activité'; $('#na_cancel').style.display='';
+  $('#na_nom').scrollIntoView({behavior:'smooth',block:'center'}); $('#na_nom').focus();
+};
+window.spAddIns=async function(aid){
+  const el=document.getElementById('ni_'+aid); const nom=el?el.value.trim():''; if(!nom){ toast('Indique un nom'); return; }
+  const {error}=await sb.from('inscriptions_activite').insert({ asso_id:ME.asso, activite_id:aid, nom, statut:'valide' });
+  if(error){ toast('Erreur : '+error.message); return; }
+  if(el) el.value=''; await loadActs(); renderActs(); toast('✅ '+nom+' inscrit·e');
+};
+window.spDelIns=async function(id){
+  if(!confirm('Retirer cette inscription ?')) return;
+  const {error}=await sb.from('inscriptions_activite').delete().eq('id',id);
+  if(error){ toast('Erreur : '+error.message); return; }
+  await loadActs(); renderActs(); toast('Inscription retirée');
+};
 function kv(k,v){ return '<div class="kv"><span class="k">'+esc(k)+'</span><span class="v">'+(v?esc(v):'—')+'</span></div>'; }
 
 function renderConges(){
