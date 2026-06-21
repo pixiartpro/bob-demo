@@ -177,7 +177,7 @@
       <button data-tab="equipe">📒 Équipe</button>
       <button data-tab="accompagnement">🧑‍🏫 Accompagnement</button>
       <button data-tab="rh">🧑‍💼 RH</button>
-      <button data-tab="personnel">👥 Personnel</button>
+      <button data-tab="personnel">👥 Dossiers salariés</button>
       <button data-tab="suivi">✅ Suivi</button>
       <button data-tab="conges">🏖️ Congés</button>
       <button data-tab="horaires">🗓️ Horaires</button>
@@ -1436,7 +1436,7 @@
         <div style="font-size:40px;flex:0 0 auto">🧑‍💼</div>
         <div style="flex:1;min-width:220px">
           <h2 style="margin:0 0 4px">RH &amp; Organisation</h2>
-          <p class="hint" style="margin:0">L'équipe, les fiches de poste, l'organisation que tu vises et les projets d'embauche — point de départ tiré du travail avec le DLA, à réajuster librement.</p>
+          <p class="hint" style="margin:0">Le <b>collectif</b> : l'équipe, les fiches de poste, l'organisation que tu vises, la bascule ÉCLAT et les projets d'embauche — point de départ tiré du travail avec le DLA, à réajuster librement.<br>👉 Pour le dossier <b>individuel</b> d'un salarié (compte, documents, congés) : onglet <b>👥 Dossiers salariés</b>.</p>
         </div>
       </div>
     </div>
@@ -1562,8 +1562,8 @@ GOUVERNANCE
   <!-- PERSONNEL (dossiers salariés — face bureau de l'espace salarié) -->
   <section id="personnel" class="page">
     <div class="panel">
-      <h2 style="margin:0 0 4px">👥 Personnel — dossiers salariés</h2>
-      <p class="hint" style="margin:0 0 12px">Crée la fiche de chaque salarié, lie son <b>compte de connexion</b>, dépose ses <b>documents</b> (partagés avec lui ou internes RH) et valide ses <b>congés</b>. Chaque salarié ne voit que <b>sa</b> fiche, ses documents <b>partagés</b>, son planning et ses congés, depuis son <b>espace salarié</b>.</p>
+      <h2 style="margin:0 0 4px">👥 Dossiers salariés</h2>
+      <p class="hint" style="margin:0 0 12px">Le dossier <b>individuel</b> de chaque salarié : crée sa fiche, lie son <b>compte de connexion</b>, dépose ses <b>documents</b> (partagés avec lui ou internes RH) et valide ses <b>congés</b>. Chaque salarié ne voit que <b>sa</b> fiche, ses documents <b>partagés</b>, son planning et ses congés, depuis son <b>espace salarié</b>.<br>👉 Pour le <b>collectif</b> (organisation, conventions, masse salariale, avenants ÉCLAT) : onglet <b>🧑‍💼 RH</b>.</p>
       <div id="persDemandes"></div>
       <div style="display:flex;gap:8px;flex-wrap:wrap;margin:8px 0 14px">
         <button class="btn" onclick="persNew()">+ Nouvelle fiche salarié</button>
@@ -2138,8 +2138,8 @@ document.querySelectorAll('nav.tabs button').forEach(b=>{
 const FAQ=[
   {cat:'🕘 Historique',q:"Comment voir qui a fait quoi (activités, inscriptions, congés, salariés) ?",kw:"journal trace tracabilite qui fait quoi action actions historique modif modification suppression salarie salaries activite inscription conges enfant personnel surveiller controle audit log savoir verifier",
    a:"Onglet <b>🕘 Historique</b>, panneau <b>📓 Journal des actions</b>. Tu y vois, du plus récent au plus ancien, chaque <b>création / modification / suppression</b> faite sur les activités, inscriptions, congés et fiches enfants/personnel — avec la <b>date, l'heure et la personne</b> (salariés compris). Tape dans le champ 🔍 pour filtrer par personne, rubrique ou type d'action. C'est réservé au bureau et ne peut pas être modifié : c'est ton filet pour savoir qui a touché à quoi."},
-  {cat:'👥 Personnel',q:"Comment donner à un salarié l'accès à son espace salarié ?",kw:"salarie salaries personnel espace acces compte lier connexion fiche conges documents planning employe dossier rh donner creer importer masse salariale partage interne",
-   a:"Onglet <b>👥 Personnel</b>. 1) Le salarié crée d'abord son compte sur la page de connexion. 2) Tu valides son accès en rôle <b>personnel</b> (validation des accès). 3) Dans 👥 Personnel, crée ou ouvre sa <b>fiche</b> (bouton ✏️) puis « <b>Lier ce compte</b> » avec son email. Ensuite, depuis son <b>espace salarié</b>, il voit uniquement sa fiche, ses <b>documents partagés</b>, son <b>planning</b>, et peut <b>demander ses congés</b> (que tu valides ici). Les documents marqués « interne RH » lui restent invisibles. Astuce : « Importer depuis la masse salariale » crée les fiches d'un clic."},
+  {cat:'👥 Dossiers salariés',q:"Comment donner à un salarié l'accès à son espace salarié ?",kw:"salarie salaries personnel dossiers espace acces compte lier connexion fiche conges documents planning employe dossier rh donner creer importer masse salariale partage interne",
+   a:"Onglet <b>👥 Dossiers salariés</b>. 1) Le salarié crée d'abord son compte sur la page de connexion. 2) Tu valides son accès en rôle <b>personnel</b> (validation des accès). 3) Dans 👥 Dossiers salariés, crée ou ouvre sa <b>fiche</b> (bouton ✏️) puis « <b>Lier ce compte</b> » avec son email. Ensuite, depuis son <b>espace salarié</b>, il voit uniquement sa fiche, ses <b>documents partagés</b>, son <b>planning</b>, et peut <b>demander ses congés</b> (que tu valides ici). Les documents marqués « interne RH » lui restent invisibles. Astuce : « Importer depuis la masse salariale » crée les fiches d'un clic."},
   {cat:'🧭 Organisation',q:"Comment est organisé le CASE (pôles, valeurs, procédures) ?",kw:"organisation organigramme pole poles 3 trois valeurs valeur orientations procedure procedures protocole protocoles caisse facture factures comptabilite fonctionnement structure reorganisation reorg dla mission proximite lien social education populaire",
    a:"Depuis la réunion DLA du 18/06/2026, le CASE s'organise en <strong>3 pôles</strong> : Pôle 1 — Vie éducative &amp; jeunesse, Pôle 2 — Culture, lien social &amp; animation, Pôle 3 — Insertion, droits &amp; territoires (déploiement 2027). L'organigramme, les <strong>3 valeurs</strong> (Proximité · Lien social · Éducation populaire), les orientations et l'organisation cible sont dans l'onglet <strong>🧭 Projet &amp; orientations</strong>. Les <strong>procédures internes</strong> (caisse, factures, comptabilité, RH, actions) sont dans l'onglet <strong>📒 Équipe</strong>. Cette organisation est à ratifier formellement en CA."},
   {cat:'🧑‍💼 RH',q:"Où trouver un modèle d'avenant pour la bascule ÉCLAT (Kathy, Fabrice, Sandrine) ?",kw:"avenant avenants modele modeles document documents contrat travail eclat alisfa bascule changement convention kathy fabrice sandrine imprimer pdf maintien salaire signature clause classification coefficient remuneration garantie base",
@@ -2347,8 +2347,8 @@ const NEWS=[
    desc:"Chaque projet a maintenant un bouton « 🗂️ Gérer le projet » : désigne un référent, ajoute les personnes qui sont dessus, crée des tâches assignées avec une échéance (à cocher quand c'est fait), et discute en équipe dans un fil propre au projet. Idéal pour que chacun sache ce qu'il a à faire."},
   {id:'2026-06-21-a-traiter',date:'2026-06-21',tab:'🏠 Accueil',titre:"🔔 Tableau de bord « À traiter » sur l'accueil",
    desc:"En haut de l'accueil, un panneau « À traiter » regroupe d'un coup d'œil TOUTES les demandes en attente : congés à valider, dossiers périscolaire déposés, comptes en attente, demandes de partenariat, questions d'adhérents, propositions d'atelier. Chaque ligne a un bouton « Voir → » qui t'emmène au bon endroit. Toi et Guy le voyez tous les deux — plus rien ne se perd."},
-  {id:'2026-06-21-espace-salarie',date:'2026-06-21',tab:'👥 Personnel',titre:"👥 Espace salarié : chaque salarié a désormais son accès",
-   desc:"Nouvel onglet 👥 Personnel : crée la fiche de chaque salarié, lie son compte, dépose ses documents (partagés avec lui ou internes RH) et valide ses demandes de congés. De son côté, le salarié se connecte à SON espace et voit seulement sa fiche, ses documents partagés, son planning et ses congés. Astuce : « Importer depuis la masse salariale » crée les fiches d'un clic, puis tu complètes."},
+  {id:'2026-06-21-espace-salarie',date:'2026-06-21',tab:'👥 Dossiers salariés',titre:"👥 Espace salarié : chaque salarié a désormais son accès",
+   desc:"Onglet 👥 Dossiers salariés : crée la fiche de chaque salarié, lie son compte, dépose ses documents (partagés avec lui ou internes RH) et valide ses demandes de congés. De son côté, le salarié se connecte à SON espace et voit seulement sa fiche, ses documents partagés, son planning et ses congés. Astuce : « Importer depuis la masse salariale » crée les fiches d'un clic, puis tu complètes."},
   {id:'2026-06-21-grille-familles',date:'2026-06-21',tab:'🎒 Périscolaire',titre:"💶 La grille tarifaire est désormais reliée aux familles",
    desc:"Quand tu cliques « 💾 Enregistrer la grille » dans le périscolaire, le calculateur de tarif de l'espace famille est mis à jour automatiquement — fini la double grille qui pouvait afficher de vieux prix. Tu modifies les tarifs à UN seul endroit (ici), les familles voient toujours les bons. Au passage : supprimer en compta l'opération d'un versement de subvention remet bien à jour le solde de la subvention (avant, elle restait marquée « versée » à tort)."},
   {id:'2026-06-20-anti-ecrasement',date:'2026-06-20',tab:'❓ Aide',titre:"🛟 Anti-écrasement : on ne perd plus le travail à plusieurs",
