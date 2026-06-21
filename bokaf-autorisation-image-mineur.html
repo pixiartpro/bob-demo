@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BOKAF — Autorisation droit à l'image (mineur)</title>
+<style>
+  :root{ --ink:#1c1d22; --muted:#5d6470; --line:#d9dce3; --soft:#f5f6fa; --magenta:#c0185a; --magenta-dk:#9a1247; }
+  *{box-sizing:border-box}
+  body{margin:0;background:#eceef3;color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;line-height:1.5}
+  .doc{max-width:820px;margin:18px auto;background:#fff;border:1px solid var(--line);border-radius:8px;padding:40px 46px;box-shadow:0 2px 14px rgba(0,0,0,.06)}
+  h1{font-size:21px;margin:0 0 2px} h3{font-size:14px;margin:18px 0 6px;text-transform:uppercase;letter-spacing:.5px;color:var(--muted)}
+  .brand{display:flex;align-items:baseline;gap:10px;border-bottom:3px solid var(--ink);padding-bottom:8px}
+  .brand .b{font-weight:900;font-size:24px;letter-spacing:1px}.brand .s{font-size:11px;font-weight:700;letter-spacing:2px;color:var(--muted)}
+  .meta{font-size:12px;color:var(--muted);margin:6px 0 0} p{margin:8px 0}
+  .fill{display:inline-block;border-bottom:1px solid #9aa0ad;min-width:160px;height:1.1em}.fill.lg{min-width:300px}.fill.xl{display:block;min-width:100%;margin-top:3px}
+  .row{display:flex;gap:24px;flex-wrap:wrap}.row > div{flex:1;min-width:220px}
+  .sign{margin-top:24px;display:flex;gap:40px;flex-wrap:wrap}.sign > div{flex:1;min-width:220px;border-top:1px solid #9aa0ad;padding-top:6px;font-size:12.5px;color:var(--muted)}
+  .rule{background:#fff7fa;border:1px solid #f0c9d9;border-radius:8px;padding:12px 16px;font-size:13.5px;margin:12px 0}.rule b{color:var(--magenta-dk)}
+  .opt label{display:inline-flex;align-items:center;gap:7px;margin-right:16px}.opt input{width:15px;height:15px}
+  .small{font-size:12px;color:var(--muted)}
+  .pbar{position:fixed;top:14px;right:14px}.pbar button{background:var(--magenta);color:#fff;border:none;border-radius:8px;padding:9px 16px;font-weight:700;cursor:pointer}
+  @media print{body{background:#fff}.pbar{display:none}.doc{box-shadow:none;border:none;margin:0;max-width:100%;padding:0 6mm;border-radius:0}}
+</style>
+</head>
+<body>
+<div class="pbar"><button onclick="window.print()">🖨️ Imprimer / PDF</button></div>
+<div class="doc">
+  <div class="brand"><span class="b">BOKAF</span><span class="s">MÉDIA · ÉVÈNEMENT · PRODUCTION</span></div>
+  <p class="meta">Association loi 1901 · SIREN 480 088 855 · asso.bokaf@gmail.com</p>
+  <h1>Autorisation de droit à l'image — mineur</h1>
+  <div class="rule"><b>Important :</b> pour un mineur, l'autorisation doit être signée par <b>les deux titulaires de l'autorité parentale</b> (sauf parent unique / décision de justice).</div>
+
+  <h3>L'enfant mineur</h3>
+  <p>Nom et prénom : <span class="fill lg"></span> — né(e) le <span class="fill"></span></p>
+
+  <h3>Le(s) représentant(s) légal(aux)</h3>
+  <div class="row">
+    <div>Parent / tuteur 1 : <span class="fill"></span><br><span class="small">Qualité : </span><span class="fill" style="min-width:120px"></span></div>
+    <div>Parent / tuteur 2 : <span class="fill"></span><br><span class="small">Qualité : </span><span class="fill" style="min-width:120px"></span></div>
+  </div>
+
+  <p style="margin-top:14px">autorise(nt) l'association <b>BOKAF</b> à filmer / photographier / enregistrer l'enfant ci-dessus et à diffuser son image, sa voix et son prénom dans le cadre du projet :</p>
+  <p><span class="fill xl"></span></p>
+
+  <h3>Supports de diffusion autorisés</h3>
+  <div class="opt">
+    <label><input type="checkbox"> Web TV / site de l'association</label>
+    <label><input type="checkbox"> Réseaux sociaux (YouTube, Instagram, Facebook…)</label><br>
+    <label><input type="checkbox"> Projections &amp; événements publics</label>
+    <label><input type="checkbox"> Presse &amp; supports de communication</label>
+    <label><input type="checkbox"> Dossiers de financement (usage interne)</label>
+  </div>
+
+  <h3>Durée</h3>
+  <p class="opt"><label><input type="checkbox"> 5 ans renouvelables</label> <label><input type="checkbox"> durée du projet</label> <label><input type="checkbox"> autre : <span class="fill"></span></label></p>
+
+  <div class="rule"><b>Vos droits (RGPD &amp; art. 9 du Code civil) :</b> l'image d'un mineur est une donnée personnelle. Vous pouvez <b>retirer cette autorisation à tout moment</b> (asso.bokaf@gmail.com) ; l'association cessera toute nouvelle diffusion. Aucune diffusion au-delà des supports cochés ci-dessus.</div>
+
+  <div class="sign">
+    <div>Parent / tuteur 1 — « Lu et approuvé »<br><br>Date &amp; signature :</div>
+    <div>Parent / tuteur 2 — « Lu et approuvé »<br><br>Date &amp; signature :</div>
+  </div>
+  <p class="small" style="margin-top:16px">⚠️ Règle d'or BOKAF : <b>pas de papier signé = rien n'est diffusé.</b> Conserver chaque autorisation dans le registre du bureau (secrétaire).</p>
+</div>
+</body>
+</html>
