@@ -142,6 +142,28 @@
   .qcard .t{font-weight:800;font-size:15.5px;color:var(--ink)}
   .qcard .d{color:var(--muted);font-size:12.5px;margin-top:2px}
   .qcard .go{margin-left:auto;color:var(--brand);font-size:18px;font-weight:800;opacity:.5;align-self:center}
+  /* Accueil : cartes-zones (hub) — gros blocs + badges 3D */
+  .zonecards{display:grid;grid-template-columns:1fr;gap:15px;margin:4px 0 20px}
+  @media(min-width:720px){.zonecards{grid-template-columns:1fr 1fr}}
+  .zonecard{position:relative;display:flex;flex-direction:column;gap:8px;background:var(--card);border:1px solid var(--line);border-radius:24px;padding:20px 22px;box-shadow:0 1px 2px rgba(16,60,40,.04),0 10px 26px rgba(16,60,40,.07);cursor:pointer;text-decoration:none;color:var(--ink);transition:transform .18s cubic-bezier(.2,.8,.2,1),box-shadow .18s}
+  .zonecard:hover{transform:translateY(-4px);box-shadow:0 2px 4px rgba(16,60,40,.05),0 22px 44px rgba(16,60,40,.14)}
+  .zonecard:active{transform:translateY(-1px)}
+  .zc-top{display:flex;align-items:flex-start;justify-content:space-between}
+  .zc-ico{width:80px;height:80px;display:flex;align-items:center;justify-content:center;flex:0 0 auto}
+  .zc-ico img{width:80px;height:80px;object-fit:contain;display:block;filter:drop-shadow(0 9px 13px rgba(16,60,40,.16))}
+  .zc-t{font-weight:900;font-size:18.5px;letter-spacing:-.015em;line-height:1.15}
+  .zc-d{color:var(--muted);font-size:12.5px;margin-top:1px;line-height:1.35}
+  .zc-state{font-size:12.5px;font-weight:800;margin-top:3px}
+  .zc-badge{color:#fff;font-size:15px;font-weight:900;border-radius:13px;padding:4px 12px;line-height:1.3}
+  .zc-ok{color:var(--muted);font-weight:700}
+  .z-bureau .zc-badge{background:#0e8a6e} .z-bureau .zc-act{color:#0e8a6e}
+  .z-rh .zc-badge{background:#d9820a} .z-rh .zc-act{color:#b06d0a}
+  .z-compta .zc-act{color:#5c7468}
+  .z-site .zc-act{color:#0c8fce}
+  .dashstate{margin:2px 0 16px}
+  .dashstate-in{display:inline-flex;align-items:center;gap:8px;font-size:14px;font-weight:700;padding:9px 14px;border-radius:12px}
+  .dashstate-in.act{background:linear-gradient(135deg,#fff6e2,#fdeecb);color:#8a5a00;box-shadow:0 2px 10px rgba(176,124,0,.13)}
+  .dashstate-in.ok{background:#e8f6ef;color:#127a4a}
   .todo{background:var(--card);border-radius:14px;padding:18px 20px;box-shadow:var(--shadow);margin-bottom:22px;border-top:3px solid var(--amber)}
   .todo h3{margin:0 0 4px;font-size:16px;display:flex;align-items:center;gap:8px}
   .todo h3 .todocount{background:#fcf2de;color:#a9742a;font-size:13px;font-weight:800;border-radius:999px;padding:1px 9px}
@@ -228,15 +250,8 @@
   <!-- DASHBOARD -->
   <section id="dashboard" class="page active">
     <div id="dashWelcome"></div>
-    <p class="sec-h">Accès rapide</p>
-    <div class="qcards">
-      <div class="qcard" onclick="bobGoTab('members')"><div class="emo">👥</div><div><div class="t">Adhérents</div><div class="d">Familles, adhésions, cotisations</div></div><div class="go">›</div></div>
-      <div class="qcard" onclick="bobGoTab('accounting')"><div class="emo">💶</div><div><div class="t">Comptabilité</div><div class="d">Écritures, recettes &amp; dépenses</div></div><div class="go">›</div></div>
-      <div class="qcard" onclick="bobGoTab('periscolaire')"><div class="emo">🎒</div><div><div class="t">Périscolaire</div><div class="d">Dossiers &amp; inscriptions garderie</div></div><div class="go">›</div></div>
-      <div class="qcard" onclick="bobGoTab('activites')"><div class="emo">🎟️</div><div><div class="t">Activités</div><div class="d">ACM ados, inscriptions</div></div><div class="go">›</div></div>
-      <div class="qcard" onclick="bobGoTab('subventions')"><div class="emo">🏛️</div><div><div class="t">Subventions</div><div class="d">Demandes &amp; suivi des financements</div></div><div class="go">›</div></div>
-      <div class="qcard" onclick="bobGoTab('repertoire')"><div class="emo">🗂️</div><div><div class="t">Répertoire</div><div class="d">Contacts, liens utiles &amp; documents</div></div><div class="go">›</div></div>
-    </div>
+    <div id="dashState" class="dashstate"></div>
+    <div class="zonecards" id="zoneCards"></div>
     <div id="dashTodo"></div>
     <p class="sec-h">Chiffres clés</p>
     <div class="cards" id="kpis"></div>
@@ -2289,8 +2304,8 @@ const FAQ=[
    a:"Le <b>💬 chat</b> sert à discuter en direct avec l'équipe. La <b>boîte à idées 💡</b> (le bouton ampoule) sert à noter une idée, une amélioration ou un bug : c'est traité au fur et à mesure."},
   {cat:'🛟 Le reste',q:"Qui peut voir ou modifier quoi ?",kw:"droits acces role president tresorier bureau permission voir modifier qui rubrique cacher lecture",
    a:"Les droits dépendent de ton <b>rôle</b>. Le président et le trésorier (administrateurs) peuvent régler, pour chaque personne, quelles rubriques elle voit et si elle peut modifier — via <b>« 🔧 Rubriques »</b> dans l'espace bureau."},
-  {cat:'📊 Tableau de bord',q:"Que montre le tableau de bord ?",kw:"tableau bord dashboard accueil resume apercu chiffres solde derniere operation alerte raccourci raccourcis acces rapide bienvenue bonjour prenom role navigation menu a traiter",
-   a:"C'est la <b>vue d'ensemble</b> à l'ouverture de Bob. Tout en haut, un <b>mot de bienvenue</b> (ton prénom et ton rôle). Juste en dessous, une rangée de <b>raccourcis « Accès rapide »</b> qui t'emmènent en un clic vers les espaces les plus utilisés (Adhérents, Comptabilité, Périscolaire, Activités, Subventions, Répertoire). Puis le panneau <b>« À traiter »</b> (les demandes qui attendent le bureau), les <b>chiffres clés</b> (soldes, adhérents…), les <b>alertes</b> importantes et les <b>dernières opérations</b> de la compta. Idéal pour voir l'essentiel et naviguer d'un coup d'œil."},
+  {cat:'📊 Tableau de bord',q:"Que montre le tableau de bord ?",kw:"tableau bord dashboard accueil resume apercu chiffres solde derniere operation alerte raccourci raccourcis acces rapide bienvenue bonjour prenom role navigation menu a traiter zone zones carte cartes pastille compteur bureau rh compta site a faire",
+   a:"C'est la <b>vue d'ensemble</b> à l'ouverture de Bob. Tout en haut, un <b>mot de bienvenue</b> + une <b>phrase d'état</b> (« Tout est à jour » ou « X choses t'attendent »). En dessous, <b>4 grandes cartes</b> = les 4 espaces : 🏛️ <b>Bureau / vie de l'asso</b>, 🧑‍💼 <b>RH &amp; équipe</b>, 💶 <b>Compta</b>, 🌐 <b>Site public</b>. Chaque carte affiche une <b>pastille « X à faire »</b> uniquement s'il y a une action en attente — un clic mène droit au bon endroit. Juste après : le panneau <b>« À traiter »</b> (le détail, mêmes chiffres que les pastilles), puis les <b>chiffres clés</b>, les <b>alertes</b> et les <b>dernières opérations</b>. La <b>barre d'onglets</b> en haut reste l'accès direct à tout. (Les pastilles ne comptent que ce qui demande une action — jamais le nombre d'adhérents ou de projets.)"},
   {cat:'💵 Caisse',q:"Comment je gère les espèces de la caisse ?",kw:"caisse especes liquide monnaie mouvement entree sortie solde cash",
    a:"Onglet <b>💵 Caisse</b> : tu y vois tous les mouvements d'espèces (entrées et sorties) et le solde de caisse. Clique sur une ligne pour le détail. Tu peux trier les mouvements par date."},
   {cat:'💵 Caisse',q:"C'est quoi une « remise en banque » ?",kw:"remise banque depot especes caisse compte bancaire deposer versement banque",
@@ -2405,7 +2420,7 @@ function pageHelpGotoAide(){ pageHelpClose(); const b=document.querySelector('na
 /* ---- ✨ Quoi de neuf (nouveautés + notice chronologique) ---- */
 const NEWS=[
   {id:'2026-06-22-preparer-ca', date:'2026-06-22', tab:'📝 Préparer le CA', titre:"📝 Nouveau : préparer le CA en amont", desc:"Un onglet « Préparer le CA » (réservé au bureau) regroupe les points à examiner avant un conseil d'administration. Chacun donne son avis à distance — « Lu, je suis d'accord » ou « Je veux en parler » — pour que, le jour du CA, on adopte vite ce qui fait déjà consensus. ⚠️ Ce n'est pas un vote : seules les décisions prises en séance du CA comptent ; la page sert à préparer et à imprimer un projet de relevé à apporter au conseil. Les 7 points en attente du 22/06 sont déjà pré-remplis."},
-  {id:'2026-06-22-accueil-raccourcis', date:'2026-06-22', tab:'📊 Tableau de bord', titre:"🏠 Un accueil plus clair : bienvenue + accès rapide", desc:"L'écran d'accueil (Tableau de bord) s'ouvre maintenant sur un petit mot de bienvenue — ton prénom et ton rôle — puis une rangée de raccourcis « Accès rapide » : un clic t'emmène droit aux espaces les plus utilisés (Adhérents, Comptabilité, Périscolaire, Activités, Subventions, Répertoire). En dessous, rien ne change : « À traiter », chiffres clés, alertes et dernières opérations sont toujours là."},
+  {id:'2026-06-22-accueil-zones', date:'2026-06-22', tab:'📊 Tableau de bord', titre:"🏠 Accueil simplifié : 4 grands accès + ce qui t'attend", desc:"En arrivant, tu vois d'abord une phrase « Tout est à jour » ou « X choses t'attendent », puis 4 grandes cartes — 🏛️ Bureau / vie de l'asso, 🧑‍💼 RH & équipe, 💶 Compta, 🌐 Site public. Chaque carte porte une pastille « X à faire » seulement quand une action attend le bureau, et un clic t'emmène droit au bon endroit. La barre d'onglets habituelle reste là pour aller partout directement."},
   {id:'2026-06-22-docs-inscription', date:'2026-06-22', tab:'docsperi', titre:"📋 Nouveau : Documents d'inscription périscolaire", desc:"Un onglet bureau « Docs inscription » regroupe les documents officiels de la garderie (règlement, dossier, fiche sanitaire, droit à l'image, RGPD, livret, suivi sanitaire). Dépose-les une fois, ils restent accessibles au bureau."},
   {id:'2026-06-21-journal-actions',date:'2026-06-21',tab:'🕘 Historique',titre:"📓 Journal des actions : qui a fait quoi",
    desc:"L'onglet 🕘 Historique a maintenant un second journal « 📓 Journal des actions » : chaque création, modification ou suppression sur les activités, inscriptions, congés et fiches enfants/personnel y est tracée avec la date, l'heure et la personne — salariés compris. Réservé au bureau et infalsifiable : pratique pour vérifier d'un coup d'œil qui a touché à quoi."},
@@ -3614,6 +3629,47 @@ function addReunion(){
   ['r_present','r_ordre','r_dec','r_drive'].forEach(i=>$(i).value=''); $('r_date').value=today(); save();
 }
 function delReunion(id){ if(confirm('Supprimer cette réunion ?')){ db.reunions=db.reunions.filter(r=>r.id!==id); save(); } }
+/* ===== Accueil : cartes-zones (hub) + phrase d'état — réutilise loadTodo ===== */
+const ZONE_ICONS={
+  bureau:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18"/><path d="M5 21V8l7-4 7 4v13"/><path d="M9.5 21v-4.5h5V21"/><path d="M9 11h0"/><path d="M15 11h0"/></svg>',
+  rh:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.1"/><path d="M3.6 19.5a5.4 5.4 0 0 1 10.8 0"/><path d="M16.5 5.2a3 3 0 0 1 0 5.6"/><path d="M18.4 19.5a5.4 5.4 0 0 0-3.1-4.9"/></svg>',
+  compta:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h16"/><rect x="5" y="12" width="3.4" height="6" rx="1.1"/><rect x="10.3" y="8" width="3.4" height="10" rx="1.1"/><rect x="15.6" y="4.5" width="3.4" height="13.5" rx="1.1"/></svg>',
+  site:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><path d="M3.5 12h17"/><path d="M12 3.5c2.4 2.3 2.4 14.7 0 17"/><path d="M12 3.5c-2.4 2.3-2.4 14.7 0 17"/></svg>'
+};
+const BOB_ZONES=[
+  {key:'bureau', cls:'z-bureau', titre:"Bureau / vie de l'asso", desc:'Adhérents, périscolaire, activités, projets, subventions…', tab:'members', tabs:['members','periscolaire','docsperi','activites','rdv','acmvac','lieux','projects','subventions','repertoire','partenaires','ateliers','secretariat','caprep','presentation','projet','projetados']},
+  {key:'rh', cls:'z-rh', titre:'RH & équipe', desc:'Salariés, congés, horaires, suivi, accompagnement', tab:'conges', tabs:['equipe','accompagnement','rh','personnel','suivi','conges','horaires','incidents']},
+  {key:'compta', cls:'z-compta', titre:'Compta', desc:'Comptabilité, caisse, dettes, bilan, prévisionnel', tab:'accounting', tabs:['accounting','caisse','dettes','bilan','previsionnel']},
+  {key:'site', cls:'z-site', titre:'Site public', desc:'Voir la vitrine publique du CASE', href:'https://pixiartpro.github.io/bob-demo/', tabs:[]}
+];
+function zoneVisible(z){
+  if(z.key==='site'||z.key==='bureau') return true;
+  if(!z.tabs||!z.tabs.length) return true;
+  return z.tabs.some(function(t){ const b=document.querySelector('nav.tabs button[data-tab="'+t+'"]'); if(!b) return false; try{ return getComputedStyle(b).display!=='none'; }catch(e){ return true; } });
+}
+function renderZoneCards(){
+  const box=document.getElementById('zoneCards'); if(!box) return;
+  const z=(window.bobTodoByZone)||{bureau:0,rh:0,compta:0,site:0};
+  box.innerHTML=BOB_ZONES.filter(zoneVisible).map(function(Z){
+    const n=(Z.key==='bureau'||Z.key==='rh')?(z[Z.key]||0):0;
+    const pastille = n>0 ? '<span class="zc-badge">'+n+'</span>' : '';
+    const etat = (Z.key==='compta') ? '<span class="zc-ok">Consultation</span>'
+      : (Z.key==='site') ? '<span class="zc-ok">Ouvrir le site ↗</span>'
+      : (n>0 ? '<span class="zc-act">'+n+(n>1?' choses à traiter':' chose à traiter')+'</span>' : '<span class="zc-ok">à jour ✓</span>');
+    const inner='<div class="zc-top"><div class="zc-ico"><img src="assets/badges/'+Z.key+'.png" alt="" loading="lazy"></div>'+pastille+'</div><div class="zc-t">'+esc(Z.titre)+'</div><div class="zc-d">'+esc(Z.desc)+'</div><div class="zc-state">'+etat+'</div>';
+    if(Z.href){ return '<a class="zonecard '+Z.cls+'" target="_blank" rel="noopener" href="'+Z.href+'">'+inner+'</a>'; }
+    return '<div class="zonecard '+Z.cls+'" onclick="bobGoTab(\''+Z.tab+'\')">'+inner+'</div>';
+  }).join('');
+  const st=document.getElementById('dashState');
+  if(st){
+    const total=(z.bureau||0)+(z.rh||0);
+    st.innerHTML = total>0
+      ? '<div class="dashstate-in act">📌 <b>'+total+'</b> '+(total>1?'choses t\'attendent':'chose t\'attend')+' — clique la carte qui a une pastille.</div>'
+      : '<div class="dashstate-in ok">✅ Tout est à jour, rien ne t\'attend aujourd\'hui.</div>';
+  }
+}
+window.renderZoneCards=renderZoneCards;
+
 /* ===== 📝 Préparer le CA (consent agenda — PRÉPARATION, pas un vote) ===== */
 function caprepStatut(p){
   const av=p.avis||[];
@@ -4933,7 +4989,7 @@ function acmNewSession(){
   const s={id:uid(),nom:nom.trim(),jours,plan:{}}; const a=acmDb(); a.sessions.push(s); a.cur=s.id; save();
 }
 function acmDelSession(){ const cs=acmCurSession(); if(!cs)return; if(!confirm('Supprimer la session « '+cs.nom+' » ? (le catalogue est conservé)'))return; const a=acmDb(); a.sessions=a.sessions.filter(s=>s.id!==cs.id); a.cur=a.sessions[0]?a.sessions[0].id:null; save(); }
-function renderAll(){ renderDashboard(); renderMembers(); renderRelances(); renderOps(); renderCaisse(); renderRapprochement(); renderProjects(); renderSubventions(); renderEcheancier(); renderBilan(); renderPrevisionnel(); renderEquipe(); renderRepertoire(); renderSecretariat(); renderAssurance(); renderReunions(); renderCaprep(); renderIncidents(); renderDettes(); renderOfficialLinks(); refreshComptes(); renderListParams(); renderJournal(); renderPeriscolaire(); renderFaqList(); renderNews(); renderAccompagnement(); renderRH(); renderProjet(); renderProjetAdos(); renderActions(); renderConges(); renderFermetures(); renderHoraires(); renderAcmVac(); if(window.renderDocsPeri)window.renderDocsPeri(); }
+function renderAll(){ renderDashboard(); renderZoneCards(); renderMembers(); renderRelances(); renderOps(); renderCaisse(); renderRapprochement(); renderProjects(); renderSubventions(); renderEcheancier(); renderBilan(); renderPrevisionnel(); renderEquipe(); renderRepertoire(); renderSecretariat(); renderAssurance(); renderReunions(); renderCaprep(); renderIncidents(); renderDettes(); renderOfficialLinks(); refreshComptes(); renderListParams(); renderJournal(); renderPeriscolaire(); renderFaqList(); renderNews(); renderAccompagnement(); renderRH(); renderProjet(); renderProjetAdos(); renderActions(); renderConges(); renderFermetures(); renderHoraires(); renderAcmVac(); if(window.renderDocsPeri)window.renderDocsPeri(); }
 
 /* ---- Data import/export ---- */
 function exportJSON(motif){
@@ -5986,8 +6042,10 @@ renderAll();
       q('questions_aide','statut','nouvelle'),
       q('ateliers','statut','proposition')
     ]);
+    window.bobTodoByZone={bureau:peri+cpt+part+ques+atel,rh:cg,compta:0,site:0};
+    if(window.renderZoneCards) window.renderZoneCards();
     const items=[
-      {n:cg,emo:'🏖️',lab:"demande(s) de congé à valider",act:"bobGoTab('personnel')"},
+      {n:cg,emo:'🏖️',lab:"demande(s) de congé à valider",act:"bobGoTab('conges')"},
       {n:peri,emo:'🎒',lab:"dossier(s) périscolaire déposé(s) à valider",act:"bobGoTab('periscolaire')"},
       {n:cpt,emo:'🔑',lab:"demande(s) d'accès (comptes) à valider",act:"location.href='connexion.html'"},
       {n:part,emo:'🤝',lab:"demande(s) de partenariat à traiter",act:"bobGoTab('partenaires')"},
