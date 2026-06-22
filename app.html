@@ -217,6 +217,7 @@
     </div>
     <div class="tabgroup" data-group="outils">
       <button data-tab="secretariat">🧰 Secrétariat</button>
+      <button data-tab="caprep">📝 Préparer le CA</button>
       <button data-tab="aide">❓ Aide</button>
       <button data-tab="journal" style="display:none">🕘 Historique</button>
       <button data-tab="data">⚙️ Données</button>
@@ -946,6 +947,22 @@
   </section>
 
   <!-- SECRETARIAT -->
+  <section id="caprep" class="page">
+    <h1>📝 Préparer le CA</h1>
+    <div style="background:#eef4ff;border:1px solid #cfe0ff;border-radius:10px;padding:12px 14px;font-size:13px;color:#23344d;line-height:1.5">
+      Cette page sert à <b>préparer le conseil d'administration</b> : chacun donne son avis à l'avance pour que le CA valide vite ce qui fait consensus. Les avis recueillis ici <b>ne sont pas un vote</b> et n'actent aucune décision — c'est le <b>CA réuni qui décide</b> (art.13 des statuts).
+    </div>
+    <details style="margin:8px 0">
+      <summary style="cursor:pointer;color:#5c7468;font-size:13px">Ce que cette page n'est PAS</summary>
+      <div style="font-size:13px;color:#444;padding:6px 0">Ce n'est pas un vote. Ce n'est pas une délibération. Ce n'est pas un compte autorisé ni une grille validée. C'est un brouillon d'ordre du jour et d'avis, horodaté, pour gagner du temps en séance. En cas de doute sur le formalisme : Hexopée (conseil juridique du CASE).</div>
+    </details>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin:10px 0">
+      <button class="btn" onclick="printCaprep()">🖨️ Imprimer le projet de relevé pour le CA</button>
+      <button class="btn ghost" onclick="addCaPoint()">+ Ajouter un point</button>
+    </div>
+    <div id="caprepBody"></div>
+  </section>
+
   <section id="secretariat" class="page">
     <div class="panel">
       <h2>📝 Mémo du bureau</h2>
@@ -2068,7 +2085,7 @@ const uid = () => Date.now().toString(36)+Math.random().toString(36).slice(2,7);
 
 let db = load();
 function load(){ try{ return Object.assign(blank(), JSON.parse(localStorage.getItem(KEY))||{}); }catch(e){ return blank(); } }
-function blank(){ return {members:[],ops:[],projects:[],subventions:[],comptes:[],contacts:[],liens:[],docs:[],notes:[],echeances:[],reunions:[],incidents:[],dettes:[],recurrents:{},protocoles:[],contrats:[],accueilIntro:'',accompNotes:'',rhOrgCible:'',projetMission:'',projetValeurs:'',projetOrientations:'',orga:null,projetAdosSuivi:'',assurance:{},periscolaire:{enfants:[]}}; }
+function blank(){ return {members:[],ops:[],projects:[],subventions:[],comptes:[],contacts:[],liens:[],docs:[],notes:[],echeances:[],reunions:[],incidents:[],dettes:[],recurrents:{},protocoles:[],contrats:[],accueilIntro:'',accompNotes:'',rhOrgCible:'',projetMission:'',projetValeurs:'',projetOrientations:'',orga:null,projetAdosSuivi:'',assurance:{},periscolaire:{enfants:[]},capoints:[]}; }
 function save(){ jLog(); localStorage.setItem(KEY, JSON.stringify(db)); renderAll(); }
 
 /* ---- Historique (journal d'activité automatique, onglet réservé au bureau) ---- */
@@ -2179,6 +2196,8 @@ document.querySelectorAll('nav.tabs button').forEach(b=>{
 
 /* ---- Aide : « Demande à Zanana » (FAQ + assistant par mots-clés, sans IA) ---- */
 const FAQ=[
+  {cat:'📝 Préparer le CA', q:"À quoi sert « Préparer le CA » et est-ce que valider ici = voter ?", kw:"preparer ca conseil administration releve avis lu accord parler discuter vote voter valider validation consentement ordre du jour deport president imprimer projet pv decision seance points consensus rediscuter",
+   a:"Onglet <b>📝 Préparer le CA</b> (réservé au bureau). Tu y retrouves les points à examiner avant un conseil d'administration. Chaque membre clique <b>« Lu, je suis d'accord »</b> ou <b>« Je veux en parler »</b> — c'est un <b>avis</b>, pas un vote. ⚠️ Sous les statuts du CASE, seules les décisions prises <b>en séance du CA</b> comptent : cette page sert juste à <b>préparer</b> et à gagner du temps (les points où tout le monde est déjà d'accord sont adoptés vite en séance). Le bouton <b>🖨️ Imprimer le projet de relevé</b> sort un document à apporter au CA. Sur les points où le président est en conflit d'intérêts (ex. convention Ôté Kartié), ses boutons sont masqués (déport). Tu peux retirer ton avis tant que le relevé n'est pas imprimé."},
   {cat:'📋 Docs inscription', q:"Où trouver les documents d'inscription du périscolaire ?", kw:"document documents inscription periscolaire reglement interieur dossier fiche sanitaire rgpd droit image livret suivi televerser telecharger bureau modele garderie", a:"Onglet <b>📋 Docs inscription</b> (réservé au bureau). Tu déposes une fois les documents officiels (règlement intérieur, dossier d'inscription, fiche sanitaire, autorisation de droit à l'image, notice RGPD, livret d'accueil, suivi sanitaire) avec <b>⬆️ Téléverser</b> ; ils sont stockés de façon sécurisée dans Bob et <b>téléchargeables par le bureau</b> via <b>⬇️ Télécharger</b>. Ces documents servent à ouvrir les inscriptions à la garderie."},
   {cat:'🕘 Historique',q:"Comment voir qui a fait quoi (activités, inscriptions, congés, salariés) ?",kw:"journal trace tracabilite qui fait quoi action actions historique modif modification suppression salarie salaries activite inscription conges enfant personnel surveiller controle audit log savoir verifier",
    a:"Onglet <b>🕘 Historique</b>, panneau <b>📓 Journal des actions</b>. Tu y vois, du plus récent au plus ancien, chaque <b>création / modification / suppression</b> faite sur les activités, inscriptions, congés et fiches enfants/personnel — avec la <b>date, l'heure et la personne</b> (salariés compris). Tape dans le champ 🔍 pour filtrer par personne, rubrique ou type d'action. C'est réservé au bureau et ne peut pas être modifié : c'est ton filet pour savoir qui a touché à quoi."},
@@ -2385,6 +2404,7 @@ function pageHelpGotoAide(){ pageHelpClose(); const b=document.querySelector('na
 
 /* ---- ✨ Quoi de neuf (nouveautés + notice chronologique) ---- */
 const NEWS=[
+  {id:'2026-06-22-preparer-ca', date:'2026-06-22', tab:'📝 Préparer le CA', titre:"📝 Nouveau : préparer le CA en amont", desc:"Un onglet « Préparer le CA » (réservé au bureau) regroupe les points à examiner avant un conseil d'administration. Chacun donne son avis à distance — « Lu, je suis d'accord » ou « Je veux en parler » — pour que, le jour du CA, on adopte vite ce qui fait déjà consensus. ⚠️ Ce n'est pas un vote : seules les décisions prises en séance du CA comptent ; la page sert à préparer et à imprimer un projet de relevé à apporter au conseil. Les 7 points en attente du 22/06 sont déjà pré-remplis."},
   {id:'2026-06-22-accueil-raccourcis', date:'2026-06-22', tab:'📊 Tableau de bord', titre:"🏠 Un accueil plus clair : bienvenue + accès rapide", desc:"L'écran d'accueil (Tableau de bord) s'ouvre maintenant sur un petit mot de bienvenue — ton prénom et ton rôle — puis une rangée de raccourcis « Accès rapide » : un clic t'emmène droit aux espaces les plus utilisés (Adhérents, Comptabilité, Périscolaire, Activités, Subventions, Répertoire). En dessous, rien ne change : « À traiter », chiffres clés, alertes et dernières opérations sont toujours là."},
   {id:'2026-06-22-docs-inscription', date:'2026-06-22', tab:'docsperi', titre:"📋 Nouveau : Documents d'inscription périscolaire", desc:"Un onglet bureau « Docs inscription » regroupe les documents officiels de la garderie (règlement, dossier, fiche sanitaire, droit à l'image, RGPD, livret, suivi sanitaire). Dépose-les une fois, ils restent accessibles au bureau."},
   {id:'2026-06-21-journal-actions',date:'2026-06-21',tab:'🕘 Historique',titre:"📓 Journal des actions : qui a fait quoi",
@@ -3594,6 +3614,128 @@ function addReunion(){
   ['r_present','r_ordre','r_dec','r_drive'].forEach(i=>$(i).value=''); $('r_date').value=today(); save();
 }
 function delReunion(id){ if(confirm('Supprimer cette réunion ?')){ db.reunions=db.reunions.filter(r=>r.id!==id); save(); } }
+/* ===== 📝 Préparer le CA (consent agenda — PRÉPARATION, pas un vote) ===== */
+function caprepStatut(p){
+  const av=p.avis||[];
+  if(av.some(a=>a.valeur==='a_parler')) return 'a_rediscuter';
+  if(av.some(a=>a.valeur==='accord')) return 'pret';
+  return 'a_preparer';
+}
+function renderCaprep(){
+  const box=document.getElementById('caprepBody'); if(!box) return;
+  const me=window.bobMe||null;
+  const pts=db.capoints||[];
+  if(!pts.length){ box.innerHTML='<p style="color:#5c7468">Aucun point pour l\'instant. Ajoute un point avec « + Ajouter un point ».</p>'; return; }
+  box.innerHTML=pts.map(function(p){
+    const st=caprepStatut(p);
+    const stPill = st==='pret'?'<span style="background:#dff5e9;color:#127a51;padding:2px 9px;border-radius:999px;font-size:12px;font-weight:700">prêt</span>'
+      : st==='a_rediscuter'?'<span style="background:#fff1d6;color:#8a5a00;padding:2px 9px;border-radius:999px;font-size:12px;font-weight:700">à rediscuter</span>'
+      : '<span style="background:#eee;color:#555;padding:2px 9px;border-radius:999px;font-size:12px;font-weight:700">à préparer</span>';
+    const organeBadge = p.organe==='CA'
+      ? '<div style="margin:6px 0;background:#eef4ff;border:1px solid #cfe0ff;color:#23344d;border-radius:8px;padding:6px 10px;font-size:12px">⚖️ Décision du Conseil d\'administration en séance requise — ce relevé prépare, il ne décide pas.</div>'
+      : '<div style="margin:6px 0;color:#5c7468;font-size:12px">🛠️ Point d\'intendance (sans vote du CA).</div>';
+    const lienBtn = p.lien ? (p.lien.type==='onglet'
+        ? '<button class="btn ghost" style="font-size:12px" onclick="bobGoTab(\''+p.lien.cible+'\')">Voir le doc ↗</button>'
+        : '<a class="btn ghost" style="font-size:12px;text-decoration:none" target="_blank" rel="noopener" href="'+esc(p.lien.cible)+'">Voir le doc ↗</a>') : '';
+    const avPills=(p.avis||[]).map(function(a){
+      const ok=a.valeur==='accord'; const c=ok?'#127a51':'#8a5a00'; const bg=ok?'#dff5e9':'#fff1d6';
+      return '<span style="background:'+bg+';color:'+c+';padding:2px 9px;border-radius:999px;font-size:12px;margin:2px;display:inline-block">'+esc(a.nom)+' · '+(ok?'✅ d\'accord':'💬 à discuter')+'</span>';
+    }).join(' ') || '<span style="color:#888;font-size:12px">aucun avis pour l\'instant</span>';
+    let action='';
+    const isPrez = me && me.role==='president';
+    const isInterested = (p.interets||[]).length>0;
+    if(!me){ action=''; }
+    else if(isInterested && isPrez){
+      action='<div style="margin-top:8px;background:#fdf0f0;border:1px solid #e3b4ad;color:#a33;border-radius:8px;padding:8px 10px;font-size:13px">🚫 <b>Président déporté</b> — tu ne prends pas part à ce point (conflit d\'intérêts). La préparation revient à Guy ou Cynthia.</div>';
+    } else {
+      const mine=(p.avis||[]).find(function(a){return a.email===me.email;});
+      action='<div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap">'
+        +'<button class="btn" style="background:#127a51;color:#fff;flex:1;min-width:160px" onclick="avisCaPoint(\''+p.id+'\',\'accord\')">✅ Lu, je suis d\'accord</button>'
+        +'<button class="btn ghost" style="flex:1;min-width:140px" onclick="avisCaPoint(\''+p.id+'\',\'a_parler\')">💬 Je veux en parler</button>'
+        +'</div>';
+      if(mine){ action+='<div style="margin-top:6px;font-size:12px;color:#5c7468">Ton avis : <b>'+(mine.valeur==='accord'?'✅ d\'accord':'💬 à discuter')+'</b> · <a href="#" onclick="retirerAvis(\''+p.id+'\');return false">retirer mon avis</a></div>'; }
+      action+='<div style="margin-top:4px;font-size:11px;color:#999">Tu peux retirer ton avis tant que le relevé n\'est pas imprimé. Astuce : enregistre ton avis quand tu es seul à modifier.</div>';
+    }
+    const note='<details style="margin-top:6px"><summary style="cursor:pointer;font-size:12px;color:#5c7468">📝 Note (optionnel)</summary><textarea onchange="setCaNote(\''+p.id+'\',this.value)" style="width:100%;margin-top:4px;min-height:48px" placeholder="Remarque…">'+esc(p.note||'')+'</textarea></details>';
+    return '<div class="card" style="margin-bottom:12px;padding:14px">'
+      +'<div style="display:flex;justify-content:space-between;gap:8px;align-items:flex-start"><b style="font-size:15px">'+esc(p.intitule)+'</b>'+stPill+'</div>'
+      +(p.contexte?'<div style="color:#444;font-size:13px;margin-top:4px">'+esc(p.contexte)+'</div>':'')
+      +organeBadge
+      +(lienBtn?'<div style="margin:4px 0">'+lienBtn+'</div>':'')
+      +'<div style="margin-top:6px">'+avPills+'</div>'
+      +action+note+'</div>';
+  }).join('');
+}
+function avisCaPoint(id,val){
+  const me=window.bobMe; if(!me){ alert('Connecte-toi pour donner ton avis.'); return; }
+  const p=(db.capoints||[]).find(function(x){return x.id===id;}); if(!p) return;
+  if((p.interets||[]).length>0 && me.role==='president'){ alert('Tu es déporté sur ce point (conflit d\'intérêts).'); return; }
+  p.avis=(p.avis||[]).filter(function(a){return a.email!==me.email;});
+  p.avis.push({email:me.email,nom:me.nom,role:me.role,ts:new Date().toISOString(),valeur:val});
+  p.statut=caprepStatut(p);
+  save();
+}
+function retirerAvis(id){
+  const me=window.bobMe; if(!me) return;
+  const p=(db.capoints||[]).find(function(x){return x.id===id;}); if(!p) return;
+  p.avis=(p.avis||[]).filter(function(a){return a.email!==me.email;});
+  p.statut=caprepStatut(p);
+  save();
+}
+function setCaNote(id,val){ const p=(db.capoints||[]).find(function(x){return x.id===id;}); if(!p) return; p.note=val; save(); }
+function addCaPoint(){
+  const me=window.bobMe; if(!me){ alert('Connecte-toi.'); return; }
+  const intitule=prompt('Intitulé du point à préparer :'); if(!intitule) return;
+  const contexte=prompt('Contexte en une phrase (optionnel) :')||'';
+  const organe=confirm('Ce point est-il une DÉCISION du Conseil d\'administration ?\n\nOK = oui (décision du CA en séance)\nAnnuler = simple intendance')?'CA':'intendance';
+  db.capoints=db.capoints||[];
+  db.capoints.push({id:uid(),intitule:intitule,contexte:contexte,organe:organe,lien:null,statut:'a_preparer',interets:[],instruitPar:{nom:me.nom,email:me.email,ts:new Date().toISOString()},avis:[],note:''});
+  save();
+}
+function printCaprep(){
+  const pts=db.capoints||[];
+  const fmt=function(ts){ if(!ts)return''; try{return new Date(ts).toLocaleDateString('fr-FR',{day:'2-digit',month:'2-digit',year:'numeric'});}catch(e){return ts;} };
+  const avTxt=function(p){ return (p.avis||[]).length?('<ul style="margin:4px 0 0 18px;padding:0">'+(p.avis||[]).map(function(a){return '<li>'+esc(a.nom)+' — '+(a.valeur==='accord'?'d\'accord':'à discuter')+' (le '+fmt(a.ts)+')</li>';}).join('')+'</ul>'):'<div style="color:#777">— aucun avis recueilli</div>'; };
+  const block=function(p){
+    const dep=(p.interets||[]).length?'<div style="margin-top:4px;font-style:italic;color:#a33">M. Guillaume Boulevart, en raison de son intérêt ('+esc(((p.interets||[])[0]||{}).nature||'')+'), n\'a pas pris part à la préparation ni à l\'avis sur ce point.</div>':'';
+    return '<div style="margin:0 0 14px;padding-bottom:10px;border-bottom:1px solid #ddd">'
+      +'<div style="font-weight:700">'+esc(p.intitule)+(p.organe==='CA'?' <span style="font-weight:400;color:#23344d">— décision du CA en séance</span>':' <span style="font-weight:400;color:#555">— intendance</span>')+'</div>'
+      +(p.contexte?'<div style="font-size:13px;color:#333">'+esc(p.contexte)+'</div>':'')
+      +'<div style="font-size:13px;margin-top:4px"><b>Avis recueillis :</b></div>'+avTxt(p)+dep+'</div>';
+  };
+  const consensus=pts.filter(function(p){return caprepStatut(p)==='pret';});
+  const aDiscuter=pts.filter(function(p){return caprepStatut(p)==='a_rediscuter';});
+  const aPreparer=pts.filter(function(p){return caprepStatut(p)==='a_preparer';});
+  const sec=function(t,arr){return arr.length?('<h3 style="margin:16px 0 8px">'+t+'</h3>'+arr.map(block).join('')):'';};
+  const today=new Date().toLocaleDateString('fr-FR',{day:'2-digit',month:'2-digit',year:'numeric'});
+  const html='<div style="font-family:-apple-system,Segoe UI,Roboto,sans-serif;color:#111;max-width:720px">'
+    +'<div style="text-align:center;margin-bottom:6px"><b>CASE DU BOIS DE NÈFLES</b><br><span style="font-size:12px;color:#444">Centre d\'Animation Socio-Éducatif · 122 Place de la Fraternité, 97490 Sainte-Clotilde · SIREN 325 635 738</span></div>'
+    +'<h2 style="text-align:center;margin:10px 0 2px">PROJET DE RELEVÉ — à présenter au Conseil d\'administration</h2>'
+    +'<div style="text-align:center;font-size:12px;color:#555;margin-bottom:14px">Document de préparation établi le '+today+'</div>'
+    +sec('✅ Points faisant consensus (à adopter en bloc en séance)',consensus)
+    +sec('💬 Points à discuter en séance',aDiscuter)
+    +sec('🗂️ Points encore à préparer',aPreparer)
+    +'<div style="margin-top:24px;display:flex;justify-content:space-between;gap:30px"><div>Le Président<br><br>__________________</div><div>Le Secrétaire<br><br>__________________</div></div>'
+    +'<div style="margin-top:18px;font-size:11px;color:#666;border-top:1px solid #ccc;padding-top:8px">Projet de relevé — ne vaut pas délibération. L\'adoption des décisions relève du Conseil d\'administration réuni en séance (art.13 des statuts). Document établi à titre de préparation.</div>'
+    +'</div>';
+  printHTML(html);
+}
+function seedCaprepIfNeeded(){
+  if(!db.capoints) db.capoints=[];
+  if(db.caprepSeeded22) return;
+  db.caprepSeeded22=true;
+  const P=function(intitule,contexte,organe,lien,interets){return {id:uid(),intitule:intitule,contexte:contexte,organe:organe,lien:lien||null,statut:'a_preparer',interets:interets||[],instruitPar:null,avis:[],note:''};};
+  db.capoints=db.capoints.concat([
+    P('Grille tarifaire périscolaire 2026','Grille « légèrement augmentée », à valider puis transmettre à la CAF (convention ALSH).','CA',{type:'onglet',cible:'periscolaire'}),
+    P('Règlement intérieur de la garderie','Règlement intérieur téléversé sur le site, à relire et adopter.','CA',{type:'onglet',cible:'docsperi'}),
+    P('Projet éducatif & de développement global 2026-2030','À écrire au-delà du volet ados : gouvernance, RH, socioculturel, éducation populaire, communication, partenariats.','CA',null),
+    P('Convention Ôté Kartié (CASE × BOKAF)','Partenariat audiovisuel pour valoriser le quartier ; convention sans flux financier, à publier sur le site puis valider.','CA',null,[{nom:'Guillaume Boulevart',nature:'président du CASE et de BOKAF, cocontractant'}]),
+    P('Ouverture du compte Qonto + fermeture de la BNP','Accord de principe ; la banque exigera le PV du CA réuni (art.14 : ouverture de compte = délibération du CA).','CA',null),
+    P('Signature du PV du CA du 11/06','À relire et signer (télécharger, signer, réuploader).','intendance',null),
+    P('Documents d\'inscription CM / périscolaire','Documents téléversés sur le site, à valider pour ouvrir les inscriptions (le plus urgent).','intendance',{type:'onglet',cible:'docsperi'})
+  ]);
+  save();
+}
 function renderReunions(){
   const rs=(db.reunions||[]).slice().sort((a,b)=>(b.date||'').localeCompare(a.date||''));
   $('reunionRows').innerHTML = rs.length ? rs.map(r=>`<tr>
@@ -4791,7 +4933,7 @@ function acmNewSession(){
   const s={id:uid(),nom:nom.trim(),jours,plan:{}}; const a=acmDb(); a.sessions.push(s); a.cur=s.id; save();
 }
 function acmDelSession(){ const cs=acmCurSession(); if(!cs)return; if(!confirm('Supprimer la session « '+cs.nom+' » ? (le catalogue est conservé)'))return; const a=acmDb(); a.sessions=a.sessions.filter(s=>s.id!==cs.id); a.cur=a.sessions[0]?a.sessions[0].id:null; save(); }
-function renderAll(){ renderDashboard(); renderMembers(); renderRelances(); renderOps(); renderCaisse(); renderRapprochement(); renderProjects(); renderSubventions(); renderEcheancier(); renderBilan(); renderPrevisionnel(); renderEquipe(); renderRepertoire(); renderSecretariat(); renderAssurance(); renderReunions(); renderIncidents(); renderDettes(); renderOfficialLinks(); refreshComptes(); renderListParams(); renderJournal(); renderPeriscolaire(); renderFaqList(); renderNews(); renderAccompagnement(); renderRH(); renderProjet(); renderProjetAdos(); renderActions(); renderConges(); renderFermetures(); renderHoraires(); renderAcmVac(); if(window.renderDocsPeri)window.renderDocsPeri(); }
+function renderAll(){ renderDashboard(); renderMembers(); renderRelances(); renderOps(); renderCaisse(); renderRapprochement(); renderProjects(); renderSubventions(); renderEcheancier(); renderBilan(); renderPrevisionnel(); renderEquipe(); renderRepertoire(); renderSecretariat(); renderAssurance(); renderReunions(); renderCaprep(); renderIncidents(); renderDettes(); renderOfficialLinks(); refreshComptes(); renderListParams(); renderJournal(); renderPeriscolaire(); renderFaqList(); renderNews(); renderAccompagnement(); renderRH(); renderProjet(); renderProjetAdos(); renderActions(); renderConges(); renderFermetures(); renderHoraires(); renderAcmVac(); if(window.renderDocsPeri)window.renderDocsPeri(); }
 
 /* ---- Data import/export ---- */
 function exportJSON(motif){
@@ -4913,6 +5055,7 @@ renderAll();
     if(!canWrite) perms.acmvac='cache'; // 🌴 Vacances : outil interne de programmation → bureau uniquement
     if(!canWrite) perms.rdv='cache'; // 📅 Rendez-vous : gestion des plages/créneaux → bureau uniquement
     if(!canWrite) perms.docsperi='cache'; // 📋 Docs inscription : documents officiels → bureau uniquement
+    if(!canWrite) perms.caprep='cache'; // 📝 Préparer le CA : préparation du conseil → bureau uniquement
     // === Abonnement (OPT-OUT) : un onglet est caché si SA fonction vaut explicitement false. Absent ou true = visible.
     //     Le CASE a des fonctions vides {} → rien n'est false → il garde TOUT (aucune donnée touchée). ===
     const feats=(window.bobFeatures&&window.bobFeatures())||{};
@@ -5897,6 +6040,7 @@ renderAll();
     try{ applyAssoIdentity(myAsso); }catch(e){}
     canWrite=['president','tresorier','bureau'].includes(prof.role);
     window._bobUser=(prof.full_name||prof.email||'').split('@')[0];
+    window.bobMe={role:prof.role,email:prof.email||'',nom:(prof.full_name||prof.email||''),canWrite:canWrite};
     // onglet Historique : réservé au bureau (retiré du navigateur pour les autres rôles)
     const jBtn=document.querySelector('nav.tabs button[data-tab="journal"]'), jSec=document.getElementById('journal');
     if(canWrite){ if(jBtn) jBtn.style.display=''; }
@@ -5909,6 +6053,7 @@ renderAll();
     lastSyncTs = st?st.updated_at:null;
     // remplace l'enregistrement local par l'enregistrement en ligne
     save = function(){ jLog(); try{localStorage.setItem(KEY,JSON.stringify(db));}catch(e){} renderAll(); schedulePush(); };
+    try{ if(canWrite) seedCaprepIfNeeded(); }catch(e){}
     addBanner();
     renderAll();
     applyPerms();
