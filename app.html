@@ -44,6 +44,26 @@
        transition:.15s}
   nav.tabs button:hover{color:var(--ink);background:#eef4f0}
   nav.tabs button.active{background:var(--brand);color:#fff}
+  /* === Étape 2 (22/06/2026) : couleurs par famille — additif, revertible (supprimer ce bloc) === */
+  nav.famtabs button{border-bottom-width:3px}
+  nav.famtabs button[data-group="accueil"]{border-bottom-color:#5a6b7a}
+  nav.famtabs button[data-group="adherents"]{border-bottom-color:#127a51}
+  nav.famtabs button[data-group="bureau"]{border-bottom-color:#0e6b6b}
+  nav.famtabs button[data-group="equipe"]{border-bottom-color:#7a3b5e}
+  nav.famtabs button[data-group="finances"]{border-bottom-color:#c8881f}
+  nav.famtabs button[data-group="regl"]{border-bottom-color:#7d8a83}
+  nav.famtabs button[data-group="accueil"].on{background:#5a6b7a;border-color:#5a6b7a;color:#fff}
+  nav.famtabs button[data-group="adherents"].on{background:#127a51;border-color:#127a51;color:#fff}
+  nav.famtabs button[data-group="bureau"].on{background:#0e6b6b;border-color:#0e6b6b;color:#fff}
+  nav.famtabs button[data-group="equipe"].on{background:#7a3b5e;border-color:#7a3b5e;color:#fff}
+  nav.famtabs button[data-group="finances"].on{background:#c8881f;border-color:#c8881f;color:#fff}
+  nav.famtabs button[data-group="regl"].on{background:#7d8a83;border-color:#7d8a83;color:#fff}
+  nav.tabs .tabgroup[data-group="accueil"] button.active{background:#5a6b7a}
+  nav.tabs .tabgroup[data-group="adherents"] button.active{background:#127a51}
+  nav.tabs .tabgroup[data-group="bureau"] button.active{background:#0e6b6b}
+  nav.tabs .tabgroup[data-group="equipe"] button.active{background:#7a3b5e}
+  nav.tabs .tabgroup[data-group="finances"] button.active{background:#c8881f}
+  nav.tabs .tabgroup[data-group="regl"] button.active{background:#7d8a83}
   .page{display:none;animation:fade .2s ease}
   .page.active{display:block}
   @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
@@ -190,11 +210,11 @@
   <div class="navwrap">
   <nav class="famtabs" aria-label="Familles d'onglets">
     <button class="fam on" data-group="accueil">🏠 Accueil</button>
-    <button class="fam" data-group="adherents">👥 Adhérents &amp; activités</button>
-    <button class="fam" data-group="projets">📁 Projets &amp; partenaires</button>
-    <button class="fam" data-group="equipe">🧑‍💼 Équipe &amp; RH</button>
+    <button class="fam" data-group="adherents">👥 Adhérents</button>
+    <button class="fam" data-group="bureau">🏛️ Bureau</button><!-- étape2: ex data-group="projets" -->
+    <button class="fam" data-group="equipe">🧑‍💼 Équipe</button>
     <button class="fam" data-group="finances">💶 Finances</button>
-    <button class="fam" data-group="outils">🧰 Outils</button>
+    <button class="fam" data-group="regl">🧰 Réglages</button><!-- étape2: ex data-group="outils" -->
   </nav>
   <nav class="tabs">
     <div class="tabgroup show" data-group="accueil">
@@ -202,7 +222,6 @@
       <button data-tab="presentation">🎤 Présentation</button>
       <button data-tab="projet">🧭 Projet &amp; orientations</button>
       <button data-tab="projetados">🚀 Projet ados</button>
-      <button data-tab="admin" style="display:none">🛠️ Admin Bob</button>
     </div>
     <div class="tabgroup" data-group="adherents">
       <button data-tab="members">👥 Adhérents</button>
@@ -213,12 +232,14 @@
       <button data-tab="acmvac">🌴 Vacances</button>
       <button data-tab="lieux">🏠 Lieux</button>
     </div>
-    <div class="tabgroup" data-group="projets">
+    <div class="tabgroup" data-group="bureau"><!-- étape2: ex data-group="projets" + secretariat/caprep rapatriés depuis outils -->
       <button data-tab="projects">📁 Projets</button>
       <button data-tab="subventions">🏛️ Subventions</button>
       <button data-tab="repertoire">🗂️ Répertoire</button>
       <button data-tab="partenaires">🤝 Partenaires</button>
       <button data-tab="ateliers">💡 Ateliers</button>
+      <button data-tab="secretariat">🧰 Secrétariat</button>
+      <button data-tab="caprep">📝 Préparer le CA</button>
     </div>
     <div class="tabgroup" data-group="equipe">
       <button data-tab="equipe">📒 Équipe</button>
@@ -237,12 +258,11 @@
       <button data-tab="bilan">📈 Bilan</button>
       <button data-tab="previsionnel">🔮 Prévisionnel</button>
     </div>
-    <div class="tabgroup" data-group="outils">
-      <button data-tab="secretariat">🧰 Secrétariat</button>
-      <button data-tab="caprep">📝 Préparer le CA</button>
+    <div class="tabgroup" data-group="regl"><!-- étape2: ex data-group="outils", secretariat/caprep partis vers bureau, admin rapatrié -->
       <button data-tab="aide">❓ Aide</button>
       <button data-tab="journal" style="display:none">🕘 Historique</button>
       <button data-tab="data">⚙️ Données</button>
+      <button data-tab="admin" style="display:none">🛠️ Admin Bob</button>
     </div>
   </nav>
   </div>
@@ -2211,6 +2231,8 @@ document.querySelectorAll('nav.tabs button').forEach(b=>{
 
 /* ---- Aide : « Demande à Zanana » (FAQ + assistant par mots-clés, sans IA) ---- */
 const FAQ=[
+  {cat:'📊 Tableau de bord', q:"Où sont passés les onglets ? Comment marche la nouvelle barre en couleur ?", kw:"onglet onglets barre famille familles couleur couleurs ranger retrouver navigation menu reglages outils bureau finances adherents equipe perdu trouve trouver disparu deplace deplacer organisation secretariat",
+   a:"La barre du haut est rangée en <b>4 familles colorées</b> : 👥 <b>Adhérents</b> (vert — membres, périscolaire, activités, lieux…), 🏛️ <b>Bureau</b> (sarcelle — projets, subventions, partenaires, ateliers, répertoire, secrétariat, préparer le CA), 🧑‍💼 <b>Équipe</b> (prune — RH, dossiers salariés, congés, horaires, suivi…) et 💶 <b>Finances</b> (ambre — compta, caisse, dettes, bilan, prévisionnel). Plus 🏠 <b>Accueil</b> (tableau de bord + présentation/projet) et 🧰 <b>Réglages</b> (données, aide, historique). Clique une famille pour ouvrir ses onglets. <b>Rien n'a été supprimé</b> : tout est juste regroupé par couleur pour s'y retrouver plus vite, surtout sur téléphone."},
   {cat:'📝 Préparer le CA', q:"À quoi sert « Préparer le CA » et est-ce que valider ici = voter ?", kw:"preparer ca conseil administration releve avis lu accord parler discuter vote voter valider validation consentement ordre du jour deport president imprimer projet pv decision seance points consensus rediscuter",
    a:"Onglet <b>📝 Préparer le CA</b> (réservé au bureau). Tu y retrouves les points à examiner avant un conseil d'administration. Chaque membre clique <b>« Lu, je suis d'accord »</b> ou <b>« Je veux en parler »</b> — c'est un <b>avis</b>, pas un vote. ⚠️ Sous les statuts du CASE, seules les décisions prises <b>en séance du CA</b> comptent : cette page sert juste à <b>préparer</b> et à gagner du temps (les points où tout le monde est déjà d'accord sont adoptés vite en séance). Le bouton <b>🖨️ Imprimer le projet de relevé</b> sort un document à apporter au CA. Sur les points où le président est en conflit d'intérêts (ex. convention Ôté Kartié), ses boutons sont masqués (déport). Tu peux retirer ton avis tant que le relevé n'est pas imprimé."},
   {cat:'📋 Docs inscription', q:"Où trouver les documents d'inscription du périscolaire ?", kw:"document documents inscription periscolaire reglement interieur dossier fiche sanitaire rgpd droit image livret suivi televerser telecharger bureau modele garderie", a:"Onglet <b>📋 Docs inscription</b> (réservé au bureau). Tu déposes une fois les documents officiels (règlement intérieur, dossier d'inscription, fiche sanitaire, autorisation de droit à l'image, notice RGPD, livret d'accueil, suivi sanitaire) avec <b>⬆️ Téléverser</b> ; ils sont stockés de façon sécurisée dans Bob et <b>téléchargeables par le bureau</b> via <b>⬇️ Télécharger</b>. Ces documents servent à ouvrir les inscriptions à la garderie."},
@@ -2419,6 +2441,7 @@ function pageHelpGotoAide(){ pageHelpClose(); const b=document.querySelector('na
 
 /* ---- ✨ Quoi de neuf (nouveautés + notice chronologique) ---- */
 const NEWS=[
+  {id:'2026-06-22-familles-couleurs', date:'2026-06-22', tab:'📊 Tableau de bord', titre:"🎨 Les onglets rangés en 4 familles de couleur", desc:"La barre du haut est réorganisée en 4 grandes familles, chacune avec sa couleur, pour t'y retrouver d'un coup d'œil : 👥 Adhérents (vert), 🏛️ Bureau (sarcelle), 🧑‍💼 Équipe (prune) et 💶 Finances (ambre) — plus 🏠 Accueil et 🧰 Réglages. Rien n'a disparu : les onglets sont juste regroupés (le secrétariat et « Préparer le CA » sont passés sous 🏛️ Bureau ; les réglages techniques sous 🧰 Réglages)."},
   {id:'2026-06-22-preparer-ca', date:'2026-06-22', tab:'📝 Préparer le CA', titre:"📝 Nouveau : préparer le CA en amont", desc:"Un onglet « Préparer le CA » (réservé au bureau) regroupe les points à examiner avant un conseil d'administration. Chacun donne son avis à distance — « Lu, je suis d'accord » ou « Je veux en parler » — pour que, le jour du CA, on adopte vite ce qui fait déjà consensus. ⚠️ Ce n'est pas un vote : seules les décisions prises en séance du CA comptent ; la page sert à préparer et à imprimer un projet de relevé à apporter au conseil. Les 7 points en attente du 22/06 sont déjà pré-remplis."},
   {id:'2026-06-22-accueil-zones', date:'2026-06-22', tab:'📊 Tableau de bord', titre:"🏠 Accueil simplifié : 4 grands accès + ce qui t'attend", desc:"En arrivant, tu vois d'abord une phrase « Tout est à jour » ou « X choses t'attendent », puis 4 grandes cartes — 🏛️ Bureau / vie de l'asso, 🧑‍💼 RH & équipe, 💶 Compta, 🌐 Site public. Chaque carte porte une pastille « X à faire » seulement quand une action attend le bureau, et un clic t'emmène droit au bon endroit. La barre d'onglets habituelle reste là pour aller partout directement."},
   {id:'2026-06-22-docs-inscription', date:'2026-06-22', tab:'docsperi', titre:"📋 Nouveau : Documents d'inscription périscolaire", desc:"Un onglet bureau « Docs inscription » regroupe les documents officiels de la garderie (règlement, dossier, fiche sanitaire, droit à l'image, RGPD, livret, suivi sanitaire). Dépose-les une fois, ils restent accessibles au bureau."},
@@ -2515,8 +2538,8 @@ function newsBadge(){
   let s=b.querySelector('.newsdot');
   if(!s){ s=document.createElement('span'); s.className='newsdot'; s.style.cssText='display:inline-block;margin-left:6px;background:var(--red);color:#fff;border-radius:10px;padding:0 7px;font-size:11px;font-weight:700'; b.appendChild(s); }
   s.style.display=nb?'inline-block':'none'; s.textContent=nb;
-  // report du badge sur la famille « Outils » (qui contient l'Aide), visible tiroir fermé
-  const fb=document.querySelector('nav.famtabs button[data-group="outils"]');
+  // report du badge sur la famille « Réglages » (qui contient l'Aide), visible tiroir fermé
+  const fb=document.querySelector('nav.famtabs button[data-group="regl"]');
   if(fb){ let fs=fb.querySelector('.newsdot'); if(!fs){ fs=document.createElement('span'); fs.className='newsdot'; fs.style.cssText='display:inline-block;margin-left:6px;background:var(--red);color:#fff;border-radius:10px;padding:0 7px;font-size:11px;font-weight:700'; fb.appendChild(fs); } fs.style.display=nb?'inline-block':'none'; fs.textContent=nb; }
 }
 function renderNews(){
@@ -5112,6 +5135,8 @@ renderAll();
     if(!canWrite) perms.rdv='cache'; // 📅 Rendez-vous : gestion des plages/créneaux → bureau uniquement
     if(!canWrite) perms.docsperi='cache'; // 📋 Docs inscription : documents officiels → bureau uniquement
     if(!canWrite) perms.caprep='cache'; // 📝 Préparer le CA : préparation du conseil → bureau uniquement
+    if(!canWrite){ perms.accounting='cache'; perms.caisse='cache'; perms.dettes='cache'; perms.bilan='cache'; perms.previsionnel='cache'; } // 💶 Finances : trésorerie → bureau uniquement (verrou de DROIT, plus seulement « de fait » — étape2 22/06/2026)
+    if(!canWrite){ perms.equipe='cache'; perms.personnel='cache'; perms.incidents='cache'; } // 🧑‍💼 Équipe : masse salariale, dossiers salariés & événements = données nominatives/RGPD → bureau uniquement (étape2 22/06/2026)
     // === Abonnement (OPT-OUT) : un onglet est caché si SA fonction vaut explicitement false. Absent ou true = visible.
     //     Le CASE a des fonctions vides {} → rien n'est false → il garde TOUT (aucune donnée touchée). ===
     const feats=(window.bobFeatures&&window.bobFeatures())||{};
