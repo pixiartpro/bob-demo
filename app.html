@@ -161,6 +161,7 @@
     <div class="tabgroup" data-group="adherents">
       <button data-tab="members">👥 Adhérents</button>
       <button data-tab="periscolaire">🎒 Périscolaire</button>
+      <button data-tab="docsperi">📋 Docs inscription</button>
       <button data-tab="activites">🎟️ Activités</button>
       <button data-tab="rdv">📅 Rendez-vous</button>
       <button data-tab="acmvac">🌴 Vacances</button>
@@ -231,6 +232,13 @@
     </div>
   </div>
 
+  <section id="docsperi" class="page">
+    <div class="panel">
+      <h2 style="margin:0 0 4px">📋 Documents d'inscription périscolaire 2026-2027</h2>
+      <p class="hint" style="margin:0 0 10px">Réservé au bureau. Dépose ici une fois les documents officiels d'inscription à la garderie : ils sont stockés de façon sécurisée dans Bob et téléchargeables par le bureau. Plus tard, on pourra en ouvrir certains au personnel puis aux familles.</p>
+      <div id="docsPeriList"></div>
+    </div>
+  </section>
   <section id="members" class="page">
     <div class="panel">
       <h2>Ajouter un adhérent</h2>
@@ -2136,6 +2144,7 @@ document.querySelectorAll('nav.tabs button').forEach(b=>{
 
 /* ---- Aide : « Demande à Zanana » (FAQ + assistant par mots-clés, sans IA) ---- */
 const FAQ=[
+  {cat:'📋 Docs inscription', q:"Où trouver les documents d'inscription du périscolaire ?", kw:"document documents inscription periscolaire reglement interieur dossier fiche sanitaire rgpd droit image livret suivi televerser telecharger bureau modele garderie", a:"Onglet <b>📋 Docs inscription</b> (réservé au bureau). Tu déposes une fois les documents officiels (règlement intérieur, dossier d'inscription, fiche sanitaire, autorisation de droit à l'image, notice RGPD, livret d'accueil, suivi sanitaire) avec <b>⬆️ Téléverser</b> ; ils sont stockés de façon sécurisée dans Bob et <b>téléchargeables par le bureau</b> via <b>⬇️ Télécharger</b>. Ces documents servent à ouvrir les inscriptions à la garderie."},
   {cat:'🕘 Historique',q:"Comment voir qui a fait quoi (activités, inscriptions, congés, salariés) ?",kw:"journal trace tracabilite qui fait quoi action actions historique modif modification suppression salarie salaries activite inscription conges enfant personnel surveiller controle audit log savoir verifier",
    a:"Onglet <b>🕘 Historique</b>, panneau <b>📓 Journal des actions</b>. Tu y vois, du plus récent au plus ancien, chaque <b>création / modification / suppression</b> faite sur les activités, inscriptions, congés et fiches enfants/personnel — avec la <b>date, l'heure et la personne</b> (salariés compris). Tape dans le champ 🔍 pour filtrer par personne, rubrique ou type d'action. C'est réservé au bureau et ne peut pas être modifié : c'est ton filet pour savoir qui a touché à quoi."},
   {cat:'👥 Dossiers salariés',q:"Comment donner à un salarié l'accès à son espace salarié ?",kw:"salarie salaries personnel dossiers espace acces compte lier connexion fiche conges documents planning employe dossier rh donner creer importer masse salariale partage interne",
@@ -2341,6 +2350,7 @@ function pageHelpGotoAide(){ pageHelpClose(); const b=document.querySelector('na
 
 /* ---- ✨ Quoi de neuf (nouveautés + notice chronologique) ---- */
 const NEWS=[
+  {id:'2026-06-22-docs-inscription', date:'2026-06-22', tab:'docsperi', titre:"📋 Nouveau : Documents d'inscription périscolaire", desc:"Un onglet bureau « Docs inscription » regroupe les documents officiels de la garderie (règlement, dossier, fiche sanitaire, droit à l'image, RGPD, livret, suivi sanitaire). Dépose-les une fois, ils restent accessibles au bureau."},
   {id:'2026-06-21-journal-actions',date:'2026-06-21',tab:'🕘 Historique',titre:"📓 Journal des actions : qui a fait quoi",
    desc:"L'onglet 🕘 Historique a maintenant un second journal « 📓 Journal des actions » : chaque création, modification ou suppression sur les activités, inscriptions, congés et fiches enfants/personnel y est tracée avec la date, l'heure et la personne — salariés compris. Réservé au bureau et infalsifiable : pratique pour vérifier d'un coup d'œil qui a touché à quoi."},
   {id:'2026-06-21-gestion-projet',date:'2026-06-21',tab:'📁 Projets',titre:"🗂️ Gestion de projet : équipe, tâches & discussion",
@@ -4735,7 +4745,7 @@ function acmNewSession(){
   const s={id:uid(),nom:nom.trim(),jours,plan:{}}; const a=acmDb(); a.sessions.push(s); a.cur=s.id; save();
 }
 function acmDelSession(){ const cs=acmCurSession(); if(!cs)return; if(!confirm('Supprimer la session « '+cs.nom+' » ? (le catalogue est conservé)'))return; const a=acmDb(); a.sessions=a.sessions.filter(s=>s.id!==cs.id); a.cur=a.sessions[0]?a.sessions[0].id:null; save(); }
-function renderAll(){ renderDashboard(); renderMembers(); renderRelances(); renderOps(); renderCaisse(); renderRapprochement(); renderProjects(); renderSubventions(); renderEcheancier(); renderBilan(); renderPrevisionnel(); renderEquipe(); renderRepertoire(); renderSecretariat(); renderAssurance(); renderReunions(); renderIncidents(); renderDettes(); renderOfficialLinks(); refreshComptes(); renderListParams(); renderJournal(); renderPeriscolaire(); renderFaqList(); renderNews(); renderAccompagnement(); renderRH(); renderProjet(); renderProjetAdos(); renderActions(); renderConges(); renderFermetures(); renderHoraires(); renderAcmVac(); }
+function renderAll(){ renderDashboard(); renderMembers(); renderRelances(); renderOps(); renderCaisse(); renderRapprochement(); renderProjects(); renderSubventions(); renderEcheancier(); renderBilan(); renderPrevisionnel(); renderEquipe(); renderRepertoire(); renderSecretariat(); renderAssurance(); renderReunions(); renderIncidents(); renderDettes(); renderOfficialLinks(); refreshComptes(); renderListParams(); renderJournal(); renderPeriscolaire(); renderFaqList(); renderNews(); renderAccompagnement(); renderRH(); renderProjet(); renderProjetAdos(); renderActions(); renderConges(); renderFermetures(); renderHoraires(); renderAcmVac(); if(window.renderDocsPeri)window.renderDocsPeri(); }
 
 /* ---- Data import/export ---- */
 function exportJSON(motif){
@@ -4846,7 +4856,7 @@ renderAll();
     ateliers:'f_ateliers_partenaires', partenaires:'f_ateliers_partenaires',
     equipe:'f_rh_equipe', accompagnement:'f_rh_equipe', rh:'f_rh_equipe', personnel:'f_rh_equipe',
     suivi:'f_rh_equipe', conges:'f_rh_equipe', horaires:'f_rh_equipe', incidents:'f_rh_equipe',
-    periscolaire:'f_metier_acm', activites:'f_metier_acm', rdv:'f_metier_acm', acmvac:'f_metier_acm', lieux:'f_metier_acm'
+    periscolaire:'f_metier_acm', activites:'f_metier_acm', rdv:'f_metier_acm', acmvac:'f_metier_acm', lieux:'f_metier_acm', docsperi:'f_metier_acm'
   };
   function applyPerms(){
     const perms=Object.assign({}, (myProfile.perms&&typeof myProfile.perms==='object')?myProfile.perms:{});
@@ -4856,6 +4866,7 @@ renderAll();
     if(!canWrite){ perms.suivi='cache'; perms.conges='cache'; perms.horaires='cache'; } // Suivi, Congés & Horaires : bureau uniquement par défaut
     if(!canWrite) perms.acmvac='cache'; // 🌴 Vacances : outil interne de programmation → bureau uniquement
     if(!canWrite) perms.rdv='cache'; // 📅 Rendez-vous : gestion des plages/créneaux → bureau uniquement
+    if(!canWrite) perms.docsperi='cache'; // 📋 Docs inscription : documents officiels → bureau uniquement
     // === Abonnement (OPT-OUT) : un onglet est caché si SA fonction vaut explicitement false. Absent ou true = visible.
     //     Le CASE a des fonctions vides {} → rien n'est false → il garde TOUT (aucune donnée touchée). ===
     const feats=(window.bobFeatures&&window.bobFeatures())||{};
@@ -4969,6 +4980,55 @@ renderAll();
       if(error){ console.warn('upload doc:', error.message); return null; }
       return 'sb:'+path;
     }catch(e){ console.warn('upload doc:', e); return null; }
+  };
+
+  // === Documents d'inscription périscolaire (bureau) — bucket privé dossiers-periscolaire, chemin <asso>/<uid>/modeles-peri/ ===
+  const DOCSPERI=[
+    {k:'reglement', file:'01_Reglement-interieur_Garderie-periscolaire_2026-2027.docx', label:'Règlement intérieur de la garderie'},
+    {k:'dossier',   file:'02_Dossier-inscription_periscolaire_2026-2027.docx', label:"Dossier d'inscription"},
+    {k:'sanitaire', file:'03_Fiche-sanitaire-de-liaison.docx', label:'Fiche sanitaire de liaison'},
+    {k:'image',     file:'04_Autorisation-droit-a-l-image.docx', label:"Autorisation de droit à l'image"},
+    {k:'rgpd',      file:'05_Notice-RGPD_familles.docx', label:'Notice RGPD (familles)'},
+    {k:'livret',    file:'06_Livret-accueil-des-familles.docx', label:"Livret d'accueil des familles"},
+    {k:'suivi',     file:'07_Suivi-sanitaire_Registre-et-designation.docx', label:'Suivi sanitaire (registre + désignation)'},
+    {k:'plan',      file:'Plan-d-action_Inscriptions-periscolaires.html', label:"Plan d'action (à faire)"}
+  ];
+  window.renderDocsPeri=function(){
+    const box=document.getElementById('docsPeriList'); if(!box) return;
+    const store=(db&&db.docsPeri)||{};
+    box.innerHTML='<table style="width:100%;border-collapse:collapse">'+DOCSPERI.map(function(d){
+      const e=store[d.k];
+      const etat=(e&&e.path)?'<span class="pill ok">✅ déposé</span>':'<span class="pill">— à déposer</span>';
+      const dl=(e&&e.path)?'<button class="ghost btn" onclick="docsPeriDownload(\''+d.k+'\')">⬇️ Télécharger</button> ':'';
+      const up=canWrite?'<button class="btn" onclick="docsPeriUpload(\''+d.k+'\')">⬆️ Téléverser</button>':'';
+      return '<tr><td style="padding:8px;border-top:1px solid #eee"><b>'+d.label+'</b><br><span class="muted" style="font-size:12px">'+d.file+'</span></td><td style="padding:8px;border-top:1px solid #eee">'+etat+'</td><td style="padding:8px;border-top:1px solid #eee;text-align:right;white-space:nowrap">'+dl+up+'</td></tr>';
+    }).join('')+'</table>';
+  };
+  window.docsPeriUpload=function(k){
+    if(!canWrite){ alert('Réservé au bureau.'); return; }
+    const d=DOCSPERI.find(function(x){return x.k===k;}); if(!d) return;
+    const inp=document.createElement('input'); inp.type='file';
+    inp.onchange=async function(){
+      const f=inp.files&&inp.files[0]; if(!f) return;
+      try{
+        const uid=(myProfile&&myProfile.id)||((await sbc.auth.getUser()).data.user.id);
+        const path=myAsso+'/'+uid+'/modeles-peri/'+d.file;
+        const up=await sbc.storage.from('dossiers-periscolaire').upload(path, f, {upsert:true, contentType:f.type||'application/octet-stream'});
+        if(up.error){ alert('Échec du dépôt : '+up.error.message); return; }
+        if(!db.docsPeri) db.docsPeri={};
+        db.docsPeri[k]={path:path, file:d.file, ts:new Date().toISOString()};
+        save(); schedulePush(); window.renderDocsPeri();
+      }catch(e){ alert('Échec du dépôt.'); }
+    };
+    inp.click();
+  };
+  window.docsPeriDownload=async function(k){
+    const e=(db.docsPeri||{})[k]; if(!e||!e.path){ alert('Pas encore déposé.'); return; }
+    try{
+      const r=await sbc.storage.from('dossiers-periscolaire').createSignedUrl(e.path,3600);
+      if(r.error||!r.data){ alert('Indisponible.'); return; }
+      window.open(r.data.signedUrl,'_blank');
+    }catch(e2){ alert('Indisponible.'); }
   };
 
   // Demandes de partenariat (commerçants) — table partenaires
