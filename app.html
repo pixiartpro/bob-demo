@@ -129,6 +129,30 @@
   .ados-year:not(:last-child)::before{content:"";position:absolute;left:27px;top:34px;bottom:0;width:2px;background:#dbe3f5}
   .ados-y{flex:0 0 auto;width:56px;height:34px;border-radius:8px;background:#2a55c4;color:#fff;font-weight:800;font-size:14px;display:flex;align-items:center;justify-content:center;z-index:1}
   .ados-t{flex:1;font-size:13.5px;line-height:1.55;padding-top:5px}
+  /* ===== Accueil bureau : bienvenue + accès rapide (22/06/2026) ===== */
+  .dashwelcome{background:linear-gradient(135deg,#127a51,#0f6b46);color:#fff;border-radius:16px;padding:18px 22px;margin-bottom:20px;display:flex;align-items:center;gap:16px;box-shadow:var(--shadow)}
+  .dashwelcome .dwav{width:46px;height:46px;border-radius:50%;background:rgba(255,255,255,.18);display:grid;place-items:center;font-size:24px;flex:0 0 auto}
+  .dashwelcome h2{margin:0;font-size:19px;color:#fff}
+  .dashwelcome p{margin:2px 0 0;font-size:13px;opacity:.92}
+  .sec-h{font-size:12.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:700;margin:0 0 10px}
+  .qcards{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin-bottom:24px}
+  .qcard{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px 16px 16px 18px;box-shadow:var(--shadow);cursor:pointer;transition:.16s;border-left:4px solid var(--brand);display:flex;gap:13px;align-items:flex-start}
+  .qcard:hover{transform:translateY(-2px);box-shadow:0 6px 18px rgba(16,60,40,.12);border-left-color:var(--brand-dk)}
+  .qcard .emo{font-size:24px;line-height:1;flex:0 0 auto}
+  .qcard .t{font-weight:800;font-size:15.5px;color:var(--ink)}
+  .qcard .d{color:var(--muted);font-size:12.5px;margin-top:2px}
+  .qcard .go{margin-left:auto;color:var(--brand);font-size:18px;font-weight:800;opacity:.5;align-self:center}
+  .todo{background:var(--card);border-radius:14px;padding:18px 20px;box-shadow:var(--shadow);margin-bottom:22px;border-top:3px solid var(--amber)}
+  .todo h3{margin:0 0 4px;font-size:16px;display:flex;align-items:center;gap:8px}
+  .todo h3 .todocount{background:#fcf2de;color:#a9742a;font-size:13px;font-weight:800;border-radius:999px;padding:1px 9px}
+  .todo .todohint{color:var(--muted);font-size:13px;margin:0 0 14px}
+  .todo .items{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:10px}
+  .todo .it{display:flex;align-items:center;gap:12px;background:#fbfdfc;border:1px solid var(--line);border-radius:11px;padding:11px 13px;cursor:pointer;transition:.15s}
+  .todo .it:hover{border-color:var(--amber);background:#fffdf6}
+  .todo .it .n{flex:0 0 auto;min-width:30px;height:30px;border-radius:8px;background:#fcf2de;color:#a9742a;font-weight:800;display:grid;place-items:center;font-size:14px;padding:0 6px}
+  .todo .it .lab{font-size:13.5px;font-weight:600}
+  .todo .it .goarrow{margin-left:auto;color:var(--amber);font-weight:800;opacity:.6}
+  .todo .todo-empty{color:var(--green);font-size:14px;font-weight:600;margin:6px 0 0}
 </style>
 </head>
 <body>
@@ -202,7 +226,18 @@
 
   <!-- DASHBOARD -->
   <section id="dashboard" class="page active">
+    <div id="dashWelcome"></div>
+    <p class="sec-h">Accès rapide</p>
+    <div class="qcards">
+      <div class="qcard" onclick="bobGoTab('members')"><div class="emo">👥</div><div><div class="t">Adhérents</div><div class="d">Familles, adhésions, cotisations</div></div><div class="go">›</div></div>
+      <div class="qcard" onclick="bobGoTab('accounting')"><div class="emo">💶</div><div><div class="t">Comptabilité</div><div class="d">Écritures, recettes &amp; dépenses</div></div><div class="go">›</div></div>
+      <div class="qcard" onclick="bobGoTab('periscolaire')"><div class="emo">🎒</div><div><div class="t">Périscolaire</div><div class="d">Dossiers &amp; inscriptions garderie</div></div><div class="go">›</div></div>
+      <div class="qcard" onclick="bobGoTab('activites')"><div class="emo">🎟️</div><div><div class="t">Activités</div><div class="d">ACM ados, inscriptions</div></div><div class="go">›</div></div>
+      <div class="qcard" onclick="bobGoTab('subventions')"><div class="emo">🏛️</div><div><div class="t">Subventions</div><div class="d">Demandes &amp; suivi des financements</div></div><div class="go">›</div></div>
+      <div class="qcard" onclick="bobGoTab('repertoire')"><div class="emo">🗂️</div><div><div class="t">Répertoire</div><div class="d">Contacts, liens utiles &amp; documents</div></div><div class="go">›</div></div>
+    </div>
     <div id="dashTodo"></div>
+    <p class="sec-h">Chiffres clés</p>
     <div class="cards" id="kpis"></div>
     <div id="dashAlerts"></div>
     <div class="panel">
@@ -2235,8 +2270,8 @@ const FAQ=[
    a:"Le <b>💬 chat</b> sert à discuter en direct avec l'équipe. La <b>boîte à idées 💡</b> (le bouton ampoule) sert à noter une idée, une amélioration ou un bug : c'est traité au fur et à mesure."},
   {cat:'🛟 Le reste',q:"Qui peut voir ou modifier quoi ?",kw:"droits acces role president tresorier bureau permission voir modifier qui rubrique cacher lecture",
    a:"Les droits dépendent de ton <b>rôle</b>. Le président et le trésorier (administrateurs) peuvent régler, pour chaque personne, quelles rubriques elle voit et si elle peut modifier — via <b>« 🔧 Rubriques »</b> dans l'espace bureau."},
-  {cat:'📊 Tableau de bord',q:"Que montre le tableau de bord ?",kw:"tableau bord dashboard accueil resume apercu chiffres solde derniere operation alerte",
-   a:"C'est la <b>vue d'ensemble</b> à l'ouverture de Bob : soldes, chiffres clés, les dernières opérations de la compta et les échéances proches à ne pas oublier. Idéal pour voir l'essentiel d'un coup d'œil."},
+  {cat:'📊 Tableau de bord',q:"Que montre le tableau de bord ?",kw:"tableau bord dashboard accueil resume apercu chiffres solde derniere operation alerte raccourci raccourcis acces rapide bienvenue bonjour prenom role navigation menu a traiter",
+   a:"C'est la <b>vue d'ensemble</b> à l'ouverture de Bob. Tout en haut, un <b>mot de bienvenue</b> (ton prénom et ton rôle). Juste en dessous, une rangée de <b>raccourcis « Accès rapide »</b> qui t'emmènent en un clic vers les espaces les plus utilisés (Adhérents, Comptabilité, Périscolaire, Activités, Subventions, Répertoire). Puis le panneau <b>« À traiter »</b> (les demandes qui attendent le bureau), les <b>chiffres clés</b> (soldes, adhérents…), les <b>alertes</b> importantes et les <b>dernières opérations</b> de la compta. Idéal pour voir l'essentiel et naviguer d'un coup d'œil."},
   {cat:'💵 Caisse',q:"Comment je gère les espèces de la caisse ?",kw:"caisse especes liquide monnaie mouvement entree sortie solde cash",
    a:"Onglet <b>💵 Caisse</b> : tu y vois tous les mouvements d'espèces (entrées et sorties) et le solde de caisse. Clique sur une ligne pour le détail. Tu peux trier les mouvements par date."},
   {cat:'💵 Caisse',q:"C'est quoi une « remise en banque » ?",kw:"remise banque depot especes caisse compte bancaire deposer versement banque",
@@ -2350,6 +2385,7 @@ function pageHelpGotoAide(){ pageHelpClose(); const b=document.querySelector('na
 
 /* ---- ✨ Quoi de neuf (nouveautés + notice chronologique) ---- */
 const NEWS=[
+  {id:'2026-06-22-accueil-raccourcis', date:'2026-06-22', tab:'📊 Tableau de bord', titre:"🏠 Un accueil plus clair : bienvenue + accès rapide", desc:"L'écran d'accueil (Tableau de bord) s'ouvre maintenant sur un petit mot de bienvenue — ton prénom et ton rôle — puis une rangée de raccourcis « Accès rapide » : un clic t'emmène droit aux espaces les plus utilisés (Adhérents, Comptabilité, Périscolaire, Activités, Subventions, Répertoire). En dessous, rien ne change : « À traiter », chiffres clés, alertes et dernières opérations sont toujours là."},
   {id:'2026-06-22-docs-inscription', date:'2026-06-22', tab:'docsperi', titre:"📋 Nouveau : Documents d'inscription périscolaire", desc:"Un onglet bureau « Docs inscription » regroupe les documents officiels de la garderie (règlement, dossier, fiche sanitaire, droit à l'image, RGPD, livret, suivi sanitaire). Dépose-les une fois, ils restent accessibles au bureau."},
   {id:'2026-06-21-journal-actions',date:'2026-06-21',tab:'🕘 Historique',titre:"📓 Journal des actions : qui a fait quoi",
    desc:"L'onglet 🕘 Historique a maintenant un second journal « 📓 Journal des actions » : chaque création, modification ou suppression sur les activités, inscriptions, congés et fiches enfants/personnel y est tracée avec la date, l'heure et la personne — salariés compris. Réservé au bureau et infalsifiable : pratique pour vérifier d'un coup d'œil qui a touché à quoi."},
@@ -3228,6 +3264,16 @@ function projPostMsg(pid){ const p=_proj(pid); if(!p)return; const inp=$('pf_msg
 
 /* ---- Dashboard ---- */
 function renderDashboard(){
+  // bandeau de bienvenue (prénom + rôle du compte connecté) — 22/06/2026
+  try{
+    var RL={president:'Président',tresorier:'Trésorier',bureau:'Bureau',personnel:'Personnel',intervenant:'Intervenant',adherent:'Adhérent'};
+    var raw=((myProfile&&(myProfile.full_name||myProfile.email))||'').split('@')[0].trim();
+    var pre=raw?raw.split(/\s+/)[0]:''; if(pre) pre=pre.charAt(0).toUpperCase()+pre.slice(1).toLowerCase();
+    var role=RL[myProfile&&myProfile.role]||'';
+    var dj=''; try{ dj=new Date().toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long',year:'numeric'}); }catch(e){}
+    var dw=$('dashWelcome');
+    if(dw) dw.innerHTML='<div class="dashwelcome"><div class="dwav">👋</div><div><h2>Bonjour '+(esc(pre)||'à toi')+'</h2><p>'+(role?('Rôle <b>'+esc(role)+'</b> · '):'')+'CASE du Bois de Nèfles'+(dj?(' · '+esc(dj)):'')+'</p></div></div>';
+  }catch(e){}
   const upToDate = db.members.filter(m=>m.paid).length;
   $('kpis').innerHTML =
     kpi('Solde de l\'association',euro(balance()),balance()>=0?'green':'red','Recettes − dépenses')
@@ -4996,7 +5042,7 @@ renderAll();
   window.renderDocsPeri=function(){
     const box=document.getElementById('docsPeriList'); if(!box) return;
     const store=(db&&db.docsPeri)||{};
-    box.innerHTML='<table style="width:100%;border-collapse:collapse">'+DOCSPERI.map(function(d){
+    box.innerHTML=(canWrite?'<div style="margin:0 0 12px"><button class="btn" onclick="docsPeriUploadAll()">⬆️ Tout déposer en 1 fois</button> <span class="muted" style="font-size:12px">— choisis les 8 fichiers d\'un coup, ils se rangent tout seuls</span></div>':'')+'<table style="width:100%;border-collapse:collapse">'+DOCSPERI.map(function(d){
       const e=store[d.k];
       const etat=(e&&e.path)?'<span class="pill ok">✅ déposé</span>':'<span class="pill">— à déposer</span>';
       const dl=(e&&e.path)?'<button class="ghost btn" onclick="docsPeriDownload(\''+d.k+'\')">⬇️ Télécharger</button> ':'';
@@ -5029,6 +5075,29 @@ renderAll();
       if(r.error||!r.data){ alert('Indisponible.'); return; }
       window.open(r.data.signedUrl,'_blank');
     }catch(e2){ alert('Indisponible.'); }
+  };
+  window.docsPeriUploadAll=function(){
+    if(!canWrite){ alert('Réservé au bureau.'); return; }
+    const inp=document.createElement('input'); inp.type='file'; inp.multiple=true;
+    inp.onchange=async function(){
+      const files=inp.files?Array.from(inp.files):[]; if(!files.length) return;
+      const uid=(myProfile&&myProfile.id)||((await sbc.auth.getUser()).data.user.id);
+      if(!db.docsPeri) db.docsPeri={};
+      let ok=0; const skip=[];
+      for(const f of files){
+        const d=DOCSPERI.find(function(x){return x.file===f.name;});
+        if(!d){ skip.push(f.name); continue; }
+        try{
+          const path=myAsso+'/'+uid+'/modeles-peri/'+d.file;
+          const up=await sbc.storage.from('dossiers-periscolaire').upload(path, f, {upsert:true, contentType:f.type||'application/octet-stream'});
+          if(up.error){ skip.push(f.name+' — '+up.error.message); continue; }
+          db.docsPeri[d.k]={path:path, file:d.file, ts:new Date().toISOString()}; ok++;
+        }catch(e){ skip.push(f.name); }
+      }
+      save(); schedulePush(); window.renderDocsPeri();
+      alert('✅ '+ok+' document(s) déposé(s).'+(skip.length?'\n\nNon reconnus (nom différent) :\n- '+skip.join('\n- '):''));
+    };
+    inp.click();
   };
 
   // Demandes de partenariat (commerçants) — table partenaires
@@ -5783,10 +5852,12 @@ renderAll();
       {n:atel,emo:'💡',lab:"proposition(s) d'atelier à modérer",act:"bobGoTab('ateliers')"}
     ].filter(x=>x.n>0);
     const total=items.reduce((s,x)=>s+x.n,0);
-    if(!total){ box.innerHTML='<div class="panel" style="border-left:5px solid #1f9d6b"><b>🔔 À traiter</b><p class="hint" style="margin:6px 0 0">✅ Rien en attente — tout est à jour. 🎉</p></div>'; return; }
-    box.innerHTML='<div class="panel" style="border-left:5px solid #e8a33d;background:#fffaf0"><b>🔔 À traiter ('+total+')</b><p class="hint" style="margin:4px 0 10px">Les demandes qui attendent une action du bureau.</p>'
-      +items.map(x=>'<div style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding:9px 0;border-top:1px dashed #eadfc8"><span style="font-size:15px"><span style="font-size:18px">'+x.emo+'</span> <b>'+x.n+'</b> '+x.lab+'</span><button class="btn" style="padding:6px 12px" onclick="'+x.act+'">Voir →</button></div>').join('')
-      +'</div>';
+    if(!total){ box.innerHTML='<div class="todo" style="border-top-color:var(--green)"><h3>⏰ À traiter</h3><p class="todo-empty">✅ Rien en attente — tout est à jour 🎉</p></div>'; return; }
+    box.innerHTML='<div class="todo"><h3>⏰ À traiter <span class="todocount">'+total+'</span></h3>'
+      +'<p class="todohint">Ce qui attend une action du bureau — cliquer mène droit au bon endroit.</p>'
+      +'<div class="items">'
+      +items.map(x=>'<div class="it" onclick="'+x.act+'"><div class="n">'+x.n+'</div><div class="lab">'+x.emo+' '+x.lab+'</div><div class="goarrow">›</div></div>').join('')
+      +'</div></div>';
   }
   function bobGoTab(tab){ const b=document.querySelector('nav.tabs button[data-tab="'+tab+'"]'); if(b) b.click(); }
   window.loadTodo=loadTodo; window.bobGoTab=bobGoTab;
