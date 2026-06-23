@@ -249,6 +249,7 @@
       <button data-tab="rdv">📅 Rendez-vous</button>
       <button data-tab="acmvac">🌴 Vacances</button>
       <button data-tab="lieux">🏠 Lieux</button>
+      <button data-tab="reserver">🛎️ Réserver une salle</button>
     </div>
     <div class="tabgroup" data-group="bureau"><!-- étape2: ex data-group="projets" + secretariat/caprep rapatriés depuis outils -->
       <button data-tab="projects">📁 Projets</button>
@@ -372,6 +373,15 @@
       </div>
       <table><thead><tr><th>Nom</th><th>Contact</th><th>Adresse</th><th>Adhésion</th><th class="num">Cotisation</th><th>Statut</th><th></th></tr></thead>
         <tbody id="memberRows"></tbody></table>
+    </div>
+  </section>
+
+  <!-- RÉSERVER UNE SALLE (guichet de demandes — bureau : valider/refuser + occupation) -->
+  <section id="reserver" class="page">
+    <div class="panel">
+      <h2>🛎️ Demandes de réservation de salle</h2>
+      <p class="hint">Les adhérents et intervenants déposent leurs demandes de salle depuis leur espace ; tu valides ou refuses ici. Un membre <b>ne peut pas valider sa propre demande</b> (déport). <button class="ghost btn" onclick="if(window.loadReservations)loadReservations()">↻ Rafraîchir</button></p>
+      <div id="resaList"></div>
     </div>
   </section>
 
@@ -2261,6 +2271,7 @@ document.querySelectorAll('nav.tabs button').forEach(b=>{
 
 /* ---- Aide : « Demande à Zanana » (FAQ + assistant par mots-clés, sans IA) ---- */
 const FAQ=[
+  {cat:'🛎️ Réserver une salle',q:"Comment réserver une salle, et comment valider une demande ?",kw:"reserver salle reservation demande creneau local kaz zados bringelliers occupation valider refuser bureau intervenant adherent guichet deport",a:"Onglet <b>🛎️ Réserver une salle</b>. Les adhérents et intervenants déposent leur demande depuis leur espace adhérent (salle, jour, créneau, motif). La demande tombe ici et dans <b>⏰ À traiter</b>. Le bureau valide ou refuse — et un membre <b>ne peut pas valider sa propre demande</b> (déport, un autre membre doit le faire). Les réservations validées forment l'occupation des locaux."},
   {cat:'📊 Tableau de bord', q:"Où sont passés les onglets ? Comment marche la nouvelle barre en couleur ?", kw:"onglet onglets barre famille familles couleur couleurs ranger retrouver navigation menu reglages outils bureau finances adherents equipe perdu trouve trouver disparu deplace deplacer organisation secretariat",
    a:"La barre du haut est rangée en <b>4 familles colorées</b> : 👥 <b>Adhérents</b> (vert — membres, périscolaire, activités, lieux…), 🏛️ <b>Bureau</b> (sarcelle — projets, subventions, partenaires, ateliers, répertoire, secrétariat, préparer le CA), 🧑‍💼 <b>Équipe</b> (prune — RH, dossiers salariés, congés, horaires, suivi…) et 💶 <b>Finances</b> (ambre — compta, caisse, dettes, bilan, prévisionnel). Plus 🏠 <b>Accueil</b> (tableau de bord + présentation/projet) et 🧰 <b>Réglages</b> (données, aide, historique). Clique une famille pour ouvrir ses onglets. <b>Rien n'a été supprimé</b> : tout est juste regroupé par couleur pour s'y retrouver plus vite, surtout sur téléphone."},
   {cat:'📝 Préparer le CA', q:"À quoi sert « Préparer le CA » et est-ce que valider ici = voter ?", kw:"preparer ca conseil administration releve avis lu accord parler discuter vote voter valider validation consentement ordre du jour deport president imprimer projet pv decision seance points consensus rediscuter",
@@ -2475,6 +2486,7 @@ function pageHelpGotoAide(){ pageHelpClose(); const b=document.querySelector('na
 
 /* ---- ✨ Quoi de neuf (nouveautés + notice chronologique) ---- */
 const NEWS=[
+  {id:'2026-06-23-reserver-salle',date:'2026-06-23',tab:'reserver',titre:'🛎️ Réserver une salle',desc:"Nouveau guichet : les adhérents et intervenants demandent une salle (jour + créneau) depuis leur espace, le bureau valide ou refuse au même endroit. Un membre ne peut pas valider sa propre demande."},
   {id:'2026-06-23-presence-quorum', date:'2026-06-23', tab:'🧰 Secrétariat', titre:"👥 Présence & quorum du CA (calcul automatique)", desc:"Dans 🧰 Secrétariat, un panneau « 👥 Membres du CA » te laisse lister tous les membres une fois pour toutes. Sur chaque réunion, déplie « 👥 Présence & quorum » et pointe présent / excusé / absent / pouvoir-à-X : Bob calcule le quorum tout seul (un tiers des membres, art.13 — les pouvoirs comptent s'ils vont à un présent) et imprime la feuille d'émargement. Le calcul est indicatif : sa constatation reste au CA en séance."},
   {id:'2026-06-23-deliberations-ca', date:'2026-06-23', tab:'🧰 Secrétariat', titre:"🗳️ Délibérations de CA classées par catégorie", desc:"Dans 🧰 Secrétariat → « Réunions & délibérations », chaque réunion peut maintenant porter des décisions structurées : un intitulé, une catégorie (Gouvernance, RH, Finances, Vie associative, Périscolaire, Intendance…) et leur sens (adoptée / rejetée / reportée). Les décisions s'affichent groupées par thème, et 🖨️ Relevé imprime un relevé classé. Tu peux importer un point déjà validé depuis « 📝 Préparer le CA » sans le retaper. (Le suivi des présents et le calcul du quorum arriveront dans une 2e étape.)"},
   {id:'2026-06-23-rangement-nav', date:'2026-06-23', tab:'🎒 Périscolaire & ❓ Aide', titre:"🧹 Deux onglets rangés (rien n'a disparu)", desc:"On a regroupé deux onglets pour alléger la barre du haut. (1) « 📋 Docs inscription » est désormais un panneau tout en bas de l'onglet 🎒 Périscolaire — tes documents officiels de la garderie sont au même endroit que la grille tarifaire et les dossiers des familles. (2) « 🎤 Présentation » (le pitch de Bob pour le DLA ou un partenaire) est passé tout en bas de l'onglet ❓ Aide, section « 📖 Découvrir Bob ». Aucun document ni contenu n'a été perdu : c'est juste mieux rangé."},
@@ -5970,6 +5982,60 @@ renderAll();
   };
   window.delLieu=async function(id){ if(!confirm('Supprimer ce lieu ?'))return; const {error}=await sbc.from('lieux').delete().eq('id',id); if(error){alert(error.message);return;} loadLieuxGestion(); };
 
+  /* ===== 🛎️ Réservation de salle (guichet : demandes des adhérents, validation bureau avec déport) ===== */
+  const RESA_ST={demande:['#fff5da','#8a6400','📨 En attente'],valide:['#dff5e9','#127a51','✅ Validée'],refuse:['#fbecea','#b23a23','✖️ Refusée']};
+  function resaCreneau(r){ const a=(r.heure_debut||'').trim(), b=(r.heure_fin||'').trim(); return (a&&b)?(a+'–'+b):(a||b||'horaire non précisé'); }
+  function resaMinutes(t){ t=(t||'').trim(); const x=t.split(':'); return x.length>=2?(parseInt(x[0],10)*60+parseInt(x[1],10)):NaN; }
+  function resaOverlap(a1,a2,b1,b2){ const s1=resaMinutes(a1),e1=resaMinutes(a2),s2=resaMinutes(b1),e2=resaMinutes(b2); if([s1,e1,s2,e2].some(isNaN)) return false; return s1<e2 && s2<e1; }
+  window.loadReservations=async function(){
+    const box=document.getElementById('resaList'); if(!box) return;
+    const {data,error}=await sbc.from('reservations').select('*').order('jour',{ascending:true}).order('heure_debut',{ascending:true});
+    if(error){ box.innerHTML='<p class="hint" style="color:#c0392b">Erreur : '+esc(error.message)+'</p>'; return; }
+    const rows=data||[];
+    const att=rows.filter(r=>r.statut==='demande'), val=rows.filter(r=>r.statut==='valide'), ref=rows.filter(r=>r.statut==='refuse');
+    const me=(myProfile&&myProfile.id)||'';
+    const card=(r,withCtrl)=>{
+      const st=RESA_ST[r.statut]||RESA_ST.demande; const own=(r.user_id===me); let ctrl='';
+      if(withCtrl && canWrite){
+        if(own){ ctrl='<p class="hint" style="margin:10px 0 0;color:#8a6400">⚖️ Déport : c\'est ta demande — un <b>autre</b> membre du bureau doit la valider.</p>'; }
+        else { ctrl='<div class="row" style="margin-top:10px;gap:6px;flex-wrap:wrap">'
+          +'<button class="btn" onclick="setResa(\''+r.id+'\',\'valide\')">✅ Valider</button>'
+          +'<button class="ghost btn" onclick="setResa(\''+r.id+'\',\'refuse\')">✖️ Refuser</button></div>'; }
+      }
+      return '<div class="panel" style="margin:10px 0;border-left:4px solid '+st[1]+'">'
+        +'<div class="toolbar"><div><strong>🏠 '+esc(r.lieu_nom||'(salle ?)')+'</strong> '
+        +'<span class="pill" style="background:'+st[0]+';color:'+st[1]+';font-size:11px">'+st[2]+'</span><br>'
+        +'<span class="muted" style="font-size:13px">📅 '+esc((r.jour||'').split('-').reverse().join('/'))+' · 🕒 '+esc(resaCreneau(r))+' · 👤 '+esc(r.demandeur_nom||'adhérent')+'</span></div>'
+        +'<span class="muted" style="font-size:12px">'+esc((r.created_at||'').slice(0,10))+'</span></div>'
+        +(r.motif?'<div class="kv"><span class="k">Motif</span><span style="text-align:right;max-width:70%">'+esc(r.motif)+'</span></div>':'')
+        +(r.statut==='valide'&&r.decideur_nom?'<p class="hint" style="margin:6px 0 0">✅ Validée par '+esc(r.decideur_nom)+(r.decision_at?' le '+esc((r.decision_at||'').slice(0,10)):'')+'</p>':'')
+        +(r.statut==='refuse'&&r.note_bureau?'<p class="hint" style="margin:6px 0 0;color:#b23a23">Motif du refus : '+esc(r.note_bureau)+'</p>':'')
+        +ctrl+'</div>';
+    };
+    let html='<h3 style="margin:6px 0">📨 À valider <span class="pill" style="background:#fff5da;color:#8a6400">'+att.length+'</span></h3>';
+    html+= att.length? att.map(r=>card(r,true)).join('') : '<p class="hint">Aucune demande en attente. 🎉</p>';
+    html+='<h3 style="margin:18px 0 6px">🗓️ Occupation (réservations validées)</h3>';
+    html+= val.length? val.map(r=>card(r,false)).join('') : '<p class="hint">Aucune réservation validée pour l\'instant.</p>';
+    if(ref.length){ html+='<details style="margin-top:16px"><summary style="cursor:pointer;font-weight:700">✖️ Demandes refusées ('+ref.length+')</summary>'+ref.map(r=>card(r,false)).join('')+'</details>'; }
+    box.innerHTML=html;
+  };
+  window.setResa=async function(id,statut){
+    if(!canWrite){ alert('Réservé au bureau.'); return; }
+    const {data:row}=await sbc.from('reservations').select('*').eq('id',id).single();
+    if(!row){ alert('Demande introuvable.'); loadReservations(); return; }
+    if(row.user_id===((myProfile&&myProfile.id)||'')){ alert('⚖️ Déport : tu ne peux pas valider/refuser ta propre demande. Un autre membre du bureau doit le faire.'); return; }
+    const patch={statut, decideur_id:(myProfile&&myProfile.id)||null, decideur_nom:((myProfile&&(myProfile.full_name||myProfile.email))||'').split('@')[0], decision_at:new Date().toISOString()};
+    if(statut==='refuse'){ patch.note_bureau=prompt('Motif du refus (visible par le demandeur) :','')||''; }
+    if(statut==='valide'){
+      const {data:others}=await sbc.from('reservations').select('heure_debut,heure_fin').eq('statut','valide').eq('jour',row.jour).eq('lieu_nom',row.lieu_nom);
+      const clash=(others||[]).some(o=>resaOverlap(o.heure_debut,o.heure_fin,row.heure_debut,row.heure_fin));
+      if(clash && !confirm('⚠️ Une réservation VALIDÉE existe déjà pour « '+row.lieu_nom+' » le '+row.jour+' sur un créneau qui se recoupe.\n\nValider quand même ?')) return;
+    }
+    const {error}=await sbc.from('reservations').update(patch).eq('id',id);
+    if(error){ alert('Erreur : '+error.message); return; }
+    loadReservations(); if(window.loadTodo) loadTodo();
+  };
+
   // Chat interne FLOTTANT (bulle en bas à droite + badge non-lus + panneau)
   let chatSeen=0, chatOpen=false, lastUnread=0;
   const chatSeenKey=()=>'chat_seen_'+myAsso+'_'+myProfile.id;
@@ -6294,19 +6360,21 @@ renderAll();
   async function loadTodo(){
     const box=$('dashTodo'); if(!box||!sbc||!myAsso) return;
     const q=(tbl,col,val)=>sbc.from(tbl).select('*',{count:'exact',head:true}).eq(col,val).then(r=>r.count||0).catch(()=>0);
-    const [cg,peri,cpt,part,ques,atel]=await Promise.all([
+    const [cg,peri,cpt,part,ques,atel,resa]=await Promise.all([
       q('conges','statut','demande'),
       q('inscriptions_periscolaire','statut','depose'),
       q('profiles','statut','en_attente'),
       q('partenaires','statut','nouveau'),
       q('questions_aide','statut','nouvelle'),
-      q('ateliers','statut','proposition')
+      q('ateliers','statut','proposition'),
+      q('reservations','statut','demande')
     ]);
-    window.bobTodoByZone={adherents:peri, bureau:part+atel, equipe:cg, finances:0, site:0, _total:cg+peri+cpt+part+ques+atel};
+    window.bobTodoByZone={adherents:peri+resa, bureau:part+atel, equipe:cg, finances:0, site:0, _total:cg+peri+cpt+part+ques+atel+resa};
     if(window.renderZoneCards) window.renderZoneCards();
     const items=[
       {n:cg,emo:'🏖️',lab:"demande(s) de congé à valider",act:"bobGoTab('conges')"},
       {n:peri,emo:'🎒',lab:"dossier(s) périscolaire déposé(s) à valider",act:"bobGoTab('periscolaire')"},
+      {n:resa,emo:'🛎️',lab:"demande(s) de salle à valider",act:"bobGoTab('reserver')"},
       {n:cpt,emo:'🔑',lab:"demande(s) d'accès (comptes) à valider",act:"location.href='connexion.html'"},
       {n:part,emo:'🤝',lab:"demande(s) de partenariat à traiter",act:"bobGoTab('partenaires')"},
       {n:ques,emo:'❓',lab:"question(s) d'adhérent sans réponse",act:"bobGoTab('aide')"},
@@ -6384,6 +6452,8 @@ renderAll();
     const rb=document.querySelector('nav.tabs button[data-tab="rdv"]'); if(rb) rb.addEventListener('click',()=>{ if(window.loadRdvAdmin) loadRdvAdmin(); });
     const lgb=document.querySelector('nav.tabs button[data-tab="lieux"]'); if(lgb) lgb.addEventListener('click',()=>{ if(window.loadLieuxGestion) loadLieuxGestion(); });
     if(window.loadLieuxGestion) loadLieuxGestion();
+    const reb=document.querySelector('nav.tabs button[data-tab="reserver"]'); if(reb) reb.addEventListener('click',()=>{ if(window.loadReservations) loadReservations(); });
+    if(window.loadReservations) loadReservations();
     if(window.loadActivitesGestion) loadActivitesGestion();
     const peb=document.querySelector('nav.tabs button[data-tab="periscolaire"]'); if(peb) peb.addEventListener('click',()=>{ if(window.loadDossiersPeri) loadDossiersPeri(); });
     if(window.loadDossiersPeri) loadDossiersPeri();
