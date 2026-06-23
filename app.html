@@ -239,14 +239,12 @@
   <nav class="tabs">
     <div class="tabgroup show" data-group="accueil">
       <button data-tab="dashboard" class="active">📊 Tableau de bord</button>
-      <button data-tab="presentation">🎤 Présentation</button>
       <button data-tab="projet">🧭 Projet &amp; orientations</button>
       <button data-tab="projetados">🚀 Projet ados</button>
     </div>
     <div class="tabgroup" data-group="adherents">
       <button data-tab="members">👥 Adhérents</button>
       <button data-tab="periscolaire">🎒 Périscolaire</button>
-      <button data-tab="docsperi">📋 Docs inscription</button>
       <button data-tab="activites">🎟️ Activités</button>
       <button data-tab="rdv">📅 Rendez-vous</button>
       <button data-tab="acmvac">🌴 Vacances</button>
@@ -323,13 +321,7 @@
     </div>
   </div>
 
-  <section id="docsperi" class="page">
-    <div class="panel">
-      <h2 style="margin:0 0 4px">📋 Documents d'inscription périscolaire 2026-2027</h2>
-      <p class="hint" style="margin:0 0 10px">Réservé au bureau. Dépose ici une fois les documents officiels d'inscription à la garderie : ils sont stockés de façon sécurisée dans Bob et téléchargeables par le bureau. Plus tard, on pourra en ouvrir certains au personnel puis aux familles.</p>
-      <div id="docsPeriList"></div>
-    </div>
-  </section>
+  <!-- étape2 23/06 : section docsperi fusionnée dans 🎒 Périscolaire (panneau #docsPeriPanel) -->
   <section id="members" class="page">
     <div class="panel">
       <h2>Ajouter un adhérent</h2>
@@ -836,6 +828,13 @@
         <p class="hint" style="margin:2px 0 0">Dossiers déposés par les familles <strong>adhérentes</strong> depuis leur espace (enfants + pièces : CAF, assurance, vaccins…). Clique sur une pièce pour la consulter, puis valide ou signale un dossier incomplet.</p>
       </div><button class="ghost btn" onclick="if(window.loadDossiersPeri)loadDossiersPeri()">↻ Rafraîchir</button></div>
       <div id="periDossiersList" style="margin-top:8px"><p class="hint">Chargement…</p></div>
+    </div>
+
+    <!-- étape2 23/06 : ancien onglet « 📋 Docs inscription » fusionné ici. Masqué aux non-bureau via #docsPeriPanel dans applyPerms. Revert = redéplacer ce panneau dans <section id="docsperi"> -->
+    <div class="panel" id="docsPeriPanel">
+      <h2 style="margin:0 0 4px">📋 Documents d'inscription périscolaire 2026-2027</h2>
+      <p class="hint" style="margin:0 0 10px">Réservé au bureau. Dépose ici une fois les documents officiels d'inscription à la garderie : ils sont stockés de façon sécurisée dans Bob et téléchargeables par le bureau. Plus tard, on pourra en ouvrir certains au personnel puis aux familles.</p>
+      <div id="docsPeriList"></div>
     </div>
   </section>
 
@@ -1692,49 +1691,7 @@ GOUVERNANCE
   </section>
 
   <!-- PRÉSENTATION -->
-  <section id="presentation" class="page">
-    <div class="panel" style="background:linear-gradient(135deg,#127a51,#0f6b46);color:#fff">
-      <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap">
-        <div style="font-size:42px;flex:0 0 auto">🍍</div>
-        <div style="flex:1;min-width:240px">
-          <h2 style="margin:0 0 4px;color:#fff">Bob — l'outil de gestion du CASE</h2>
-          <p style="margin:0;opacity:.93;font-size:14px">Tout le pilotage de l'association en un seul endroit, en ligne et sécurisé (hébergé en France, RGPD). En quelques mois, on est passés d'un simple Drive à un vrai outil de gestion, de suivi et de visibilité.</p>
-        </div>
-      </div>
-    </div>
-
-    <div class="panel">
-      <h3 style="margin:0 0 6px">🏆 Ce qu'on a fait avancer (en 3 mois)</h3>
-      <div style="font-size:13.5px;line-height:1.6">
-        <p style="margin:6px 0 2px"><strong>🧰 Outils &amp; suivi</strong> — Bob + le site, le suivi des actions, les boîtes mail pro : fini le « tout sur un Drive ».</p>
-        <p style="margin:6px 0 2px"><strong>💶 Finances</strong> — échéanciers URSSAF &amp; DGFiP en place, dettes suivies, impayés relancés, dossiers de subventions déposés.</p>
-        <p style="margin:6px 0 2px"><strong>📑 RH &amp; conformité</strong> — convention ÉCLAT verrouillée, contrats en révision (Hexopée), fiches de poste, plan de formation.</p>
-        <p style="margin:6px 0 2px"><strong>🎯 Activités &amp; ouverture</strong> — permanence du samedi, travaux du local, projet ado, ACM été, inauguration de juillet en préparation.</p>
-        <p style="margin:6px 0 2px"><strong>🏛️ Gouvernance</strong> — statuts + règlement intérieur à jour, CA tracé et formalisé, AG en préparation.</p>
-      </div>
-    </div>
-
-    <div class="panel">
-      <h3 style="margin:0 0 10px">🧭 Tout ce que Bob sait faire</h3>
-      <div class="cards">
-        <div class="card"><div class="label">📊 Pilotage</div><div class="sub" style="margin-top:6px;font-size:13px">Tableau de bord (alertes auto : trésorerie, dettes, fins d'aides) · Bilan (compte de résultat + N−1) · Prévisionnel (+ simulateur garderie du matin)</div></div>
-        <div class="card"><div class="label">💶 Finances</div><div class="sub" style="margin-top:6px;font-size:13px">Comptabilité · Caisse + rapprochement bancaire · Dettes &amp; créances (échéanciers) · Subventions · Échéancier</div></div>
-        <div class="card"><div class="label">👥 Public &amp; activités</div><div class="sub" style="margin-top:6px;font-size:13px">Adhérents (+ relances) · Périscolaire (grille au quotient familial + facturation auto) · Activités &amp; places · Lieux · Ateliers</div></div>
-        <div class="card"><div class="label">🧑‍💼 RH &amp; équipe</div><div class="sub" style="margin-top:6px;font-size:13px">Équipe (masse salariale, contrats) · RH &amp; Organisation · Suivi des actions · Congés (demande + validation)</div></div>
-        <div class="card"><div class="label">🤝 Accompagnement &amp; réseau</div><div class="sub" style="margin-top:6px;font-size:13px">Accompagnement (DLA, MDA, ressources expertes) · Partenaires · Répertoire · Secrétariat · Événements</div></div>
-        <div class="card"><div class="label">❓ Aide intégrée</div><div class="sub" style="margin-top:6px;font-size:13px">« Demande à Zanana » (questions / réponses) · « Quoi de neuf » (les nouveautés au fil du temps)</div></div>
-      </div>
-    </div>
-
-    <div class="panel">
-      <h3 style="margin:0 0 4px">📂 Et côté gouvernance, tout est prêt</h3>
-      <p class="hint" style="margin:0">Statuts vérifiés · règlement intérieur · dossier complet du CA (convocation, ordre du jour, feuille d'émargement, PV) · propositions pour l'AG · grille tarifaire · notes de service · plan de formation.</p>
-    </div>
-
-    <div class="panel" style="border-left:4px solid var(--brand);background:#f3fbf6">
-      <p style="margin:0;font-size:14px"><strong>Le message :</strong> en quelques mois, le CASE s'est doté d'<strong>outils</strong>, de <strong>suivi</strong> et d'un <strong>cadre</strong> — précisément les manques pointés au diagnostic. Bob centralise tout ça et le rend visible, partageable et durable.</p>
-    </div>
-  </section>
+  <!-- étape2 23/06 : section presentation fusionnée dans ❓ Aide (« 📖 Découvrir Bob ») -->
 
   <!-- PROJET & ORIENTATIONS -->
   <section id="projet" class="page">
@@ -2094,6 +2051,49 @@ Deux locaux complémentaires — le Bois de Nèfles (« le haut » : jeunesse, a
       <p class="hint" style="margin:0 0 10px">Clique sur une question pour voir la réponse. Tu peux aussi filtrer ci-dessus.</p>
       <div id="faqList"></div>
     </div>
+
+    <!-- étape2 23/06 : ancien onglet « 🎤 Présentation » fusionné ici en « 📖 Découvrir Bob ». Revert = redéplacer ce bloc dans <section id="presentation"> + rendre le bouton -->
+    <div class="panel" style="background:linear-gradient(135deg,#127a51,#0f6b46);color:#fff">
+      <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap">
+        <div style="font-size:42px;flex:0 0 auto">🍍</div>
+        <div style="flex:1;min-width:240px">
+          <h2 style="margin:0 0 4px;color:#fff">📖 Découvrir Bob — l'outil de gestion du CASE</h2>
+          <p style="margin:0;opacity:.93;font-size:14px">Tout le pilotage de l'association en un seul endroit, en ligne et sécurisé (hébergé en France, RGPD). En quelques mois, on est passés d'un simple Drive à un vrai outil de gestion, de suivi et de visibilité. <em>(À montrer au DLA ou à un partenaire.)</em></p>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h3 style="margin:0 0 6px">🏆 Ce qu'on a fait avancer (en 3 mois)</h3>
+      <div style="font-size:13.5px;line-height:1.6">
+        <p style="margin:6px 0 2px"><strong>🧰 Outils &amp; suivi</strong> — Bob + le site, le suivi des actions, les boîtes mail pro : fini le « tout sur un Drive ».</p>
+        <p style="margin:6px 0 2px"><strong>💶 Finances</strong> — échéanciers URSSAF &amp; DGFiP en place, dettes suivies, impayés relancés, dossiers de subventions déposés.</p>
+        <p style="margin:6px 0 2px"><strong>📑 RH &amp; conformité</strong> — convention ÉCLAT verrouillée, contrats en révision (Hexopée), fiches de poste, plan de formation.</p>
+        <p style="margin:6px 0 2px"><strong>🎯 Activités &amp; ouverture</strong> — permanence du samedi, travaux du local, projet ado, ACM été, inauguration de juillet en préparation.</p>
+        <p style="margin:6px 0 2px"><strong>🏛️ Gouvernance</strong> — statuts + règlement intérieur à jour, CA tracé et formalisé, AG en préparation.</p>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h3 style="margin:0 0 10px">🧭 Tout ce que Bob sait faire</h3>
+      <div class="cards">
+        <div class="card"><div class="label">📊 Pilotage</div><div class="sub" style="margin-top:6px;font-size:13px">Tableau de bord (alertes auto : trésorerie, dettes, fins d'aides) · Bilan (compte de résultat + N−1) · Prévisionnel (+ simulateur garderie du matin)</div></div>
+        <div class="card"><div class="label">💶 Finances</div><div class="sub" style="margin-top:6px;font-size:13px">Comptabilité · Caisse + rapprochement bancaire · Dettes &amp; créances (échéanciers) · Subventions · Échéancier</div></div>
+        <div class="card"><div class="label">👥 Public &amp; activités</div><div class="sub" style="margin-top:6px;font-size:13px">Adhérents (+ relances) · Périscolaire (grille au quotient familial + facturation auto) · Activités &amp; places · Lieux · Ateliers</div></div>
+        <div class="card"><div class="label">🧑‍💼 RH &amp; équipe</div><div class="sub" style="margin-top:6px;font-size:13px">Équipe (masse salariale, contrats) · RH &amp; Organisation · Suivi des actions · Congés (demande + validation)</div></div>
+        <div class="card"><div class="label">🤝 Accompagnement &amp; réseau</div><div class="sub" style="margin-top:6px;font-size:13px">Accompagnement (DLA, MDA, ressources expertes) · Partenaires · Répertoire · Secrétariat · Événements</div></div>
+        <div class="card"><div class="label">❓ Aide intégrée</div><div class="sub" style="margin-top:6px;font-size:13px">« Demande à Zanana » (questions / réponses) · « Quoi de neuf » (les nouveautés au fil du temps)</div></div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h3 style="margin:0 0 4px">📂 Et côté gouvernance, tout est prêt</h3>
+      <p class="hint" style="margin:0">Statuts vérifiés · règlement intérieur · dossier complet du CA (convocation, ordre du jour, feuille d'émargement, PV) · propositions pour l'AG · grille tarifaire · notes de service · plan de formation.</p>
+    </div>
+
+    <div class="panel" style="border-left:4px solid var(--brand);background:#f3fbf6">
+      <p style="margin:0;font-size:14px"><strong>Le message :</strong> en quelques mois, le CASE s'est doté d'<strong>outils</strong>, de <strong>suivi</strong> et d'un <strong>cadre</strong> — précisément les manques pointés au diagnostic. Bob centralise tout ça et le rend visible, partageable et durable.</p>
+    </div>
   </section>
 
   <section id="journal" class="page">
@@ -2255,7 +2255,7 @@ const FAQ=[
    a:"La barre du haut est rangée en <b>4 familles colorées</b> : 👥 <b>Adhérents</b> (vert — membres, périscolaire, activités, lieux…), 🏛️ <b>Bureau</b> (sarcelle — projets, subventions, partenaires, ateliers, répertoire, secrétariat, préparer le CA), 🧑‍💼 <b>Équipe</b> (prune — RH, dossiers salariés, congés, horaires, suivi…) et 💶 <b>Finances</b> (ambre — compta, caisse, dettes, bilan, prévisionnel). Plus 🏠 <b>Accueil</b> (tableau de bord + présentation/projet) et 🧰 <b>Réglages</b> (données, aide, historique). Clique une famille pour ouvrir ses onglets. <b>Rien n'a été supprimé</b> : tout est juste regroupé par couleur pour s'y retrouver plus vite, surtout sur téléphone."},
   {cat:'📝 Préparer le CA', q:"À quoi sert « Préparer le CA » et est-ce que valider ici = voter ?", kw:"preparer ca conseil administration releve avis lu accord parler discuter vote voter valider validation consentement ordre du jour deport president imprimer projet pv decision seance points consensus rediscuter",
    a:"Onglet <b>📝 Préparer le CA</b> (réservé au bureau). Tu y retrouves les points à examiner avant un conseil d'administration. Chaque membre clique <b>« Lu, je suis d'accord »</b> ou <b>« Je veux en parler »</b> — c'est un <b>avis</b>, pas un vote. ⚠️ Sous les statuts du CASE, seules les décisions prises <b>en séance du CA</b> comptent : cette page sert juste à <b>préparer</b> et à gagner du temps (les points où tout le monde est déjà d'accord sont adoptés vite en séance). Le bouton <b>🖨️ Imprimer le projet de relevé</b> sort un document à apporter au CA. Sur les points où le président est en conflit d'intérêts (ex. convention Ôté Kartié), ses boutons sont masqués (déport). Tu peux retirer ton avis tant que le relevé n'est pas imprimé."},
-  {cat:'📋 Docs inscription', q:"Où trouver les documents d'inscription du périscolaire ?", kw:"document documents inscription periscolaire reglement interieur dossier fiche sanitaire rgpd droit image livret suivi televerser telecharger bureau modele garderie", a:"Onglet <b>📋 Docs inscription</b> (réservé au bureau). Tu déposes une fois les documents officiels (règlement intérieur, dossier d'inscription, fiche sanitaire, autorisation de droit à l'image, notice RGPD, livret d'accueil, suivi sanitaire) avec <b>⬆️ Téléverser</b> ; ils sont stockés de façon sécurisée dans Bob et <b>téléchargeables par le bureau</b> via <b>⬇️ Télécharger</b>. Ces documents servent à ouvrir les inscriptions à la garderie."},
+  {cat:'🎒 Périscolaire', q:"Où trouver les documents d'inscription du périscolaire ?", kw:"document documents inscription periscolaire reglement interieur dossier fiche sanitaire rgpd droit image livret suivi televerser telecharger bureau modele garderie docs", a:"Onglet <b>🎒 Périscolaire</b>, panneau <b>« Documents d'inscription »</b> tout en bas (réservé au bureau). Tu déposes une fois les documents officiels (règlement intérieur, dossier d'inscription, fiche sanitaire, autorisation de droit à l'image, notice RGPD, livret d'accueil, suivi sanitaire) avec <b>⬆️ Téléverser</b> ; ils sont stockés de façon sécurisée dans Bob et <b>téléchargeables par le bureau</b> via <b>⬇️ Télécharger</b>. Ces documents servent à ouvrir les inscriptions à la garderie."},
   {cat:'🕘 Historique',q:"Comment voir qui a fait quoi (activités, inscriptions, congés, salariés) ?",kw:"journal trace tracabilite qui fait quoi action actions historique modif modification suppression salarie salaries activite inscription conges enfant personnel surveiller controle audit log savoir verifier",
    a:"Onglet <b>🕘 Historique</b>, panneau <b>📓 Journal des actions</b>. Tu y vois, du plus récent au plus ancien, chaque <b>création / modification / suppression</b> faite sur les activités, inscriptions, congés et fiches enfants/personnel — avec la <b>date, l'heure et la personne</b> (salariés compris). Tape dans le champ 🔍 pour filtrer par personne, rubrique ou type d'action. C'est réservé au bureau et ne peut pas être modifié : c'est ton filet pour savoir qui a touché à quoi."},
   {cat:'👥 Dossiers salariés',q:"Comment donner à un salarié l'accès à son espace salarié ?",kw:"salarie salaries personnel dossiers espace acces compte lier connexion fiche conges documents planning employe dossier rh donner creer importer masse salariale partage interne",
@@ -2270,8 +2270,8 @@ const FAQ=[
    a:"Onglet <b>🎒 Périscolaire</b>, panneau <b>📨 Dossiers d'inscription</b> (en bas). Chaque famille dépose son dossier depuis <b>son espace famille</b> : enfants (matin et/ou soir) et les pièces (attestation CAF de <b>moins de 3 mois</b>, avis d'imposition, justificatif de domicile, attestation d'assurance, vaccins à jour, livret de famille). <b>Nouveau : la famille peut déposer dès la création de son compte</b>, sans attendre une validation — tu vois l'état des pièces, tu cliques pour <b>consulter</b> chacune, et tu marques le dossier <b>✅ Validé</b> ou <b>⚠️ Incomplet</b> (avec une note). Le dépôt est possible <b>même s'il manque une pièce</b> : tu la réclames via « Incomplet ». ⚠️ Pense à <b>régulariser l'adhésion (10 €)</b> de la famille — un seul parent adhérent suffit pour tous les enfants."},
   {cat:'🧰 Secrétariat',q:"Où sont les informations de l'assurance (MAIF) pour se connecter ?",kw:"assurance maif raqvam contrat sociétaire societaire cotisation garantie connexion identifiant mot de passe attestation sinistre responsabilite civile rc secretariat",
    a:"Onglet <b>🧰 Secrétariat</b>, panneau <b>🛡️ Assurance de l'association</b>. Tu y trouves le contrat : assureur <b>MAIF</b>, contrat <b>Raqvam</b> (réf. M4202RACA), cotisation 2026 de 1&nbsp;514,10&nbsp;€, les 4 sites assurés, les garanties, l'espace <b>espacepersonnel.maif.fr</b> et le <b>contact MAIF (09 78 97 98 99, gestionsocietaire@maif.fr)</b>. Le <b>n° de sociétaire</b> et l'<b>identifiant</b> de connexion se saisissent par le bureau (rangés dans le coffre privé, jamais publiés) ; le numéro figure sur l'avis d'échéance MAIF (dossier CASE/BDN/2026/Maif). 🔒 N'écris pas le mot de passe en clair : gestionnaire de mots de passe ou « identifiant/mot de passe oublié » sur le site MAIF."},
-  {cat:'🎤 Présentation',q:"Comment présenter Bob et nos avancées (au DLA, à un partenaire) ?",kw:"presentation presenter bob demo montrer avancees fonctionnalites tour visite guidee charlotte dla partenaire pitch fil ecran",
-   a:"Ouvre l'onglet <strong>🎤 Présentation</strong> : sur un seul écran tu as le pitch de Bob, ce qu'on a fait avancer en 3 mois, la carte de toutes les fonctions, et le volet gouvernance. Déroule-le de haut en bas pour présenter, puis clique dans un onglet précis seulement si on te le demande."},
+  {cat:'❓ Aide',q:"Comment présenter Bob et nos avancées (au DLA, à un partenaire) ?",kw:"presentation presenter bob demo montrer avancees fonctionnalites tour visite guidee charlotte dla partenaire pitch fil ecran decouvrir",
+   a:"Déroule l'onglet <strong>❓ Aide</strong> jusqu'en bas, section <strong>« 📖 Découvrir Bob »</strong> : tu y as le pitch de Bob, ce qu'on a fait avancer en 3 mois, la carte de toutes les fonctions, et le volet gouvernance. Déroule de haut en bas pour présenter, puis clique dans un onglet précis seulement si on te le demande."},
   {cat:'🧭 Projet & orientations',q:"Où sont le projet associatif, nos valeurs, nos orientations et l'organigramme ?",kw:"projet associatif raison d'etre raison etre mission valeurs orientations strategiques strategie axes diagnostic organigramme organigram roles role qui fait quoi poste postes gouvernance bureau president tresorier secretaire poles equipe",
    a:"Onglet <strong>🧭 Projet &amp; orientations</strong>. Tu y trouves, sur un seul écran&nbsp;: <strong>notre raison d'être</strong> (le projet du CASE), <strong>nos valeurs</strong>, <strong>nos orientations stratégiques</strong> (les axes issus du diagnostic / DLA) et l'<strong>organigramme</strong> (qui fait quoi&nbsp;: la gouvernance bénévole — Président, Trésorier, Secrétaire — puis les pôles de l'équipe avec leur responsable et leur mission). Tout est <strong>pré-rempli</strong> et <strong>modifiable&nbsp;: clique dans une case pour l'éditer</strong>, c'est enregistré dans le coffre du bureau. Pour les fiches de poste détaillées et les coefficients, va dans 🧑‍💼 RH ; pour la paie, dans 📒 Équipe."},
   {cat:'🚀 Projet ados',q:"Où est le projet ados 2026-2030 (La Kaz Zados, Ôté Kartié, collège & lycée) ?",kw:"projet ado ados adolescent adolescents jeunesse 11 17 ans 2026 2030 kaz zados kaz-zados accueil de jeunes ote kartie media quartier webradio service civique college lycee polyvalent nord audiovisuel bts mercredi jeunesse axes pedagogique trajectoire continuite parcours",
@@ -2347,7 +2347,7 @@ const FAQ=[
   {cat:'🛟 Le reste',q:"Qui peut voir ou modifier quoi ?",kw:"droits acces role president tresorier bureau permission voir modifier qui rubrique cacher lecture",
    a:"Les droits dépendent de ton <b>rôle</b>. Le président et le trésorier (administrateurs) peuvent régler, pour chaque personne, quelles rubriques elle voit et si elle peut modifier — via <b>« 🔧 Rubriques »</b> dans l'espace bureau."},
   {cat:'📊 Tableau de bord',q:"Que montre le tableau de bord ?",kw:"tableau bord dashboard accueil resume apercu chiffres solde derniere operation alerte raccourci raccourcis acces rapide bienvenue bonjour prenom role navigation menu a traiter zone zones carte cartes pastille compteur bureau rh compta site a faire",
-   a:"C'est la <b>vue d'ensemble</b> à l'ouverture de Bob. Tout en haut, un <b>mot de bienvenue</b> + une <b>phrase d'état</b> (« Tout est à jour » ou « X choses t'attendent »). En dessous, <b>4 grandes cartes</b> = les 4 espaces : 🏛️ <b>Bureau / vie de l'asso</b>, 🧑‍💼 <b>RH &amp; équipe</b>, 💶 <b>Compta</b>, 🌐 <b>Site public</b>. Chaque carte affiche une <b>pastille « X à faire »</b> uniquement s'il y a une action en attente — un clic mène droit au bon endroit. Juste après : le panneau <b>« À traiter »</b> (le détail, mêmes chiffres que les pastilles), puis les <b>chiffres clés</b>, les <b>alertes</b> et les <b>dernières opérations</b>. La <b>barre d'onglets</b> en haut reste l'accès direct à tout. (Les pastilles ne comptent que ce qui demande une action — jamais le nombre d'adhérents ou de projets.)"},
+   a:"C'est la <b>vue d'ensemble</b> à l'ouverture de Bob. Tout en haut, un <b>mot de bienvenue</b> + une <b>phrase d'état</b> (« Tout est à jour » ou « X choses t'attendent »). En dessous, <b>4 grandes cartes colorées</b> = les 4 familles : 👥 <b>Adhérents &amp; familles</b>, 🏛️ <b>Bureau &amp; projets</b>, 🧑‍💼 <b>Équipe &amp; salariés</b>, 💶 <b>Finances</b> — plus 🌐 <b>Site public</b>. Chaque carte affiche une <b>pastille « X à faire »</b> uniquement s'il y a une action en attente — un clic mène droit au bon endroit. Juste après : le panneau <b>« À traiter »</b> (le détail, mêmes chiffres que les pastilles), puis les <b>chiffres clés</b>, les <b>alertes</b> et les <b>dernières opérations</b>. La <b>barre d'onglets</b> en haut reste l'accès direct à tout. (Les pastilles ne comptent que ce qui demande une action — jamais le nombre d'adhérents ou de projets.)"},
   {cat:'💵 Caisse',q:"Comment je gère les espèces de la caisse ?",kw:"caisse especes liquide monnaie mouvement entree sortie solde cash",
    a:"Onglet <b>💵 Caisse</b> : tu y vois tous les mouvements d'espèces (entrées et sorties) et le solde de caisse. Clique sur une ligne pour le détail. Tu peux trier les mouvements par date."},
   {cat:'💵 Caisse',q:"C'est quoi une « remise en banque » ?",kw:"remise banque depot especes caisse compte bancaire deposer versement banque",
@@ -2461,10 +2461,11 @@ function pageHelpGotoAide(){ pageHelpClose(); const b=document.querySelector('na
 
 /* ---- ✨ Quoi de neuf (nouveautés + notice chronologique) ---- */
 const NEWS=[
+  {id:'2026-06-23-rangement-nav', date:'2026-06-23', tab:'🎒 Périscolaire & ❓ Aide', titre:"🧹 Deux onglets rangés (rien n'a disparu)", desc:"On a regroupé deux onglets pour alléger la barre du haut. (1) « 📋 Docs inscription » est désormais un panneau tout en bas de l'onglet 🎒 Périscolaire — tes documents officiels de la garderie sont au même endroit que la grille tarifaire et les dossiers des familles. (2) « 🎤 Présentation » (le pitch de Bob pour le DLA ou un partenaire) est passé tout en bas de l'onglet ❓ Aide, section « 📖 Découvrir Bob ». Aucun document ni contenu n'a été perdu : c'est juste mieux rangé."},
   {id:'2026-06-22-familles-couleurs', date:'2026-06-22', tab:'📊 Tableau de bord', titre:"🎨 Les onglets rangés en 4 familles de couleur", desc:"La barre du haut est réorganisée en 4 grandes familles, chacune avec sa couleur, pour t'y retrouver d'un coup d'œil : 👥 Adhérents (vert), 🏛️ Bureau (sarcelle), 🧑‍💼 Équipe (prune) et 💶 Finances (ambre) — plus 🏠 Accueil et 🧰 Réglages. Rien n'a disparu : les onglets sont juste regroupés (le secrétariat et « Préparer le CA » sont passés sous 🏛️ Bureau ; les réglages techniques sous 🧰 Réglages)."},
   {id:'2026-06-22-preparer-ca', date:'2026-06-22', tab:'📝 Préparer le CA', titre:"📝 Nouveau : préparer le CA en amont", desc:"Un onglet « Préparer le CA » (réservé au bureau) regroupe les points à examiner avant un conseil d'administration. Chacun donne son avis à distance — « Lu, je suis d'accord » ou « Je veux en parler » — pour que, le jour du CA, on adopte vite ce qui fait déjà consensus. ⚠️ Ce n'est pas un vote : seules les décisions prises en séance du CA comptent ; la page sert à préparer et à imprimer un projet de relevé à apporter au conseil. Les 7 points en attente du 22/06 sont déjà pré-remplis."},
-  {id:'2026-06-22-accueil-zones', date:'2026-06-22', tab:'📊 Tableau de bord', titre:"🏠 Accueil simplifié : 4 grands accès + ce qui t'attend", desc:"En arrivant, tu vois d'abord une phrase « Tout est à jour » ou « X choses t'attendent », puis 4 grandes cartes — 🏛️ Bureau / vie de l'asso, 🧑‍💼 RH & équipe, 💶 Compta, 🌐 Site public. Chaque carte porte une pastille « X à faire » seulement quand une action attend le bureau, et un clic t'emmène droit au bon endroit. La barre d'onglets habituelle reste là pour aller partout directement."},
-  {id:'2026-06-22-docs-inscription', date:'2026-06-22', tab:'docsperi', titre:"📋 Nouveau : Documents d'inscription périscolaire", desc:"Un onglet bureau « Docs inscription » regroupe les documents officiels de la garderie (règlement, dossier, fiche sanitaire, droit à l'image, RGPD, livret, suivi sanitaire). Dépose-les une fois, ils restent accessibles au bureau."},
+  {id:'2026-06-22-accueil-zones', date:'2026-06-22', tab:'📊 Tableau de bord', titre:"🏠 Accueil simplifié : 4 grands accès + ce qui t'attend", desc:"En arrivant, tu vois d'abord une phrase « Tout est à jour » ou « X choses t'attendent », puis 4 grandes cartes colorées — 👥 Adhérents & familles, 🏛️ Bureau & projets, 🧑‍💼 Équipe & salariés, 💶 Finances — plus 🌐 Site public. Chaque carte porte une pastille « X à faire » seulement quand une action attend le bureau, et un clic t'emmène droit au bon endroit. La barre d'onglets habituelle reste là pour aller partout directement."},
+  {id:'2026-06-22-docs-inscription', date:'2026-06-22', tab:'🎒 Périscolaire', titre:"📋 Documents d'inscription périscolaire", desc:"Les documents officiels de la garderie (règlement, dossier, fiche sanitaire, droit à l'image, RGPD, livret, suivi sanitaire) sont regroupés dans l'onglet 🎒 Périscolaire, panneau « Documents d'inscription » (tout en bas). Dépose-les une fois, ils restent accessibles au bureau."},
   {id:'2026-06-21-journal-actions',date:'2026-06-21',tab:'🕘 Historique',titre:"📓 Journal des actions : qui a fait quoi",
    desc:"L'onglet 🕘 Historique a maintenant un second journal « 📓 Journal des actions » : chaque création, modification ou suppression sur les activités, inscriptions, congés et fiches enfants/personnel y est tracée avec la date, l'heure et la personne — salariés compris. Réservé au bureau et infalsifiable : pratique pour vérifier d'un coup d'œil qui a touché à quoi."},
   {id:'2026-06-21-gestion-projet',date:'2026-06-21',tab:'📁 Projets',titre:"🗂️ Gestion de projet : équipe, tâches & discussion",
@@ -2521,8 +2522,8 @@ const NEWS=[
    desc:"Les familles adhérentes déposent désormais leur dossier d'inscription au périscolaire (matin & soir, rentrée d'août) depuis leur espace adhérent : enfants + pièces (attestation CAF de moins de 3 mois, avis d'imposition, justificatif de domicile, assurance, vaccins, livret de famille), scannées depuis le téléphone. Tu les retrouves dans 🎒 Périscolaire → 📨 Dossiers d'inscription : consulte chaque pièce, marque le dossier ✅ Validé ou ⚠️ Incomplet. Seuls les adhérents (compte validé) peuvent déposer."},
   {id:'2026-06-17-assurance',date:'2026-06-17',tab:'🧰 Secrétariat',titre:'🛡️ Fiche Assurance (MAIF)',
    desc:"Nouveau panneau dans l'onglet 🧰 Secrétariat qui réunit le contrat d'assurance, à partir de l'avis d'échéance MAIF 2026 : assureur MAIF, contrat Raqvam (M4202RACA), cotisation 2026 (1 514,10 €), 4 sites assurés, garanties, espace espacepersonnel.maif.fr et contact (09 78 97 98 99 / gestionsocietaire@maif.fr). Le n° de sociétaire et l'identifiant de connexion se saisissent par le bureau et restent dans le coffre privé (jamais publiés) ; le mot de passe ne se met pas en clair."},
-  {id:'2026-06-17-presentation',date:'2026-06-17',tab:'🎤 Présentation',titre:'🎤 Nouvel onglet Présentation',
-   desc:"Un seul écran pour présenter Bob et les avancées : le pitch, le bilan en 3 mois, la carte de toutes les fonctionnalités, et le volet gouvernance. Idéal pour montrer au DLA ou à un partenaire sans flipper d'onglet en onglet."},
+  {id:'2026-06-17-presentation',date:'2026-06-17',tab:'❓ Aide',titre:'🎤 Présenter Bob (dans l\'Aide)',
+   desc:"Pour présenter Bob et les avancées (pitch, bilan en 3 mois, carte des fonctionnalités, gouvernance), déroule l'onglet ❓ Aide jusqu'en bas, section « 📖 Découvrir Bob ». Idéal pour montrer au DLA ou à un partenaire sans flipper d'onglet en onglet."},
   {id:'2026-06-17-suivi',date:'2026-06-17',tab:'✅ Suivi',titre:'✅ Nouvel onglet Suivi des actions',
    desc:"La checklist du DLA (09/06) et toutes tes actions, en suivi vivant : change le statut, ajoute une note, crée des actions. Réservé au bureau."},
   {id:'2026-06-17-conges',date:'2026-06-17',tab:'🏖️ Congés',titre:'🏖️ Nouvel onglet Congés',
@@ -3680,7 +3681,7 @@ const ZONE_ICONS={
   site:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><path d="M3.5 12h17"/><path d="M12 3.5c2.4 2.3 2.4 14.7 0 17"/><path d="M12 3.5c-2.4 2.3-2.4 14.7 0 17"/></svg>'
 };
 const BOB_ZONES=[
-  {key:'adherents', cls:'z-adherents', titre:'Adhérents & familles', desc:'Membres, périscolaire, activités, lieux', tab:'members', tabs:['members','periscolaire','docsperi','activites','rdv','acmvac','lieux']},
+  {key:'adherents', cls:'z-adherents', titre:'Adhérents & familles', desc:'Membres, périscolaire, activités, lieux', tab:'members', tabs:['members','periscolaire','activites','rdv','acmvac','lieux']},
   {key:'bureau', cls:'z-bureau', titre:'Bureau & projets', desc:'Projets, subventions, partenaires, secrétariat', tab:'projects', tabs:['projects','subventions','repertoire','partenaires','ateliers','secretariat','caprep']},
   {key:'equipe', cls:'z-equipe', titre:'Équipe & salariés', desc:'RH, dossiers, congés, horaires, suivi', tab:'rh', tabs:['equipe','accompagnement','rh','personnel','suivi','conges','horaires','incidents']},
   {key:'finances', cls:'z-finances', titre:'Finances', desc:'Compta, caisse, dettes, bilan, prévisionnel', tab:'accounting', tabs:['accounting','caisse','dettes','bilan','previsionnel']},
@@ -3827,12 +3828,12 @@ function seedCaprepIfNeeded(){
   const P=function(intitule,contexte,organe,lien,interets){return {id:uid(),intitule:intitule,contexte:contexte,organe:organe,lien:lien||null,statut:'a_preparer',interets:interets||[],instruitPar:null,avis:[],note:''};};
   db.capoints=db.capoints.concat([
     P('Grille tarifaire périscolaire 2026','Grille « légèrement augmentée », à valider puis transmettre à la CAF (convention ALSH).','CA',{type:'onglet',cible:'periscolaire'}),
-    P('Règlement intérieur de la garderie','Règlement intérieur téléversé sur le site, à relire et adopter.','CA',{type:'onglet',cible:'docsperi'}),
+    P('Règlement intérieur de la garderie','Règlement intérieur téléversé sur le site, à relire et adopter.','CA',{type:'onglet',cible:'periscolaire'}),
     P('Projet éducatif & de développement global 2026-2030','À écrire au-delà du volet ados : gouvernance, RH, socioculturel, éducation populaire, communication, partenariats.','CA',null),
     P('Convention Ôté Kartié (CASE × BOKAF)','Partenariat audiovisuel pour valoriser le quartier ; convention sans flux financier, à publier sur le site puis valider.','CA',null,[{nom:'Guillaume Boulevart',nature:'président du CASE et de BOKAF, cocontractant'}]),
     P('Ouverture du compte Qonto + fermeture de la BNP','Accord de principe ; la banque exigera le PV du CA réuni (art.14 : ouverture de compte = délibération du CA).','CA',null),
     P('Signature du PV du CA du 11/06','À relire et signer (télécharger, signer, réuploader).','intendance',null),
-    P('Documents d\'inscription CM / périscolaire','Documents téléversés sur le site, à valider pour ouvrir les inscriptions (le plus urgent).','intendance',{type:'onglet',cible:'docsperi'})
+    P('Documents d\'inscription CM / périscolaire','Documents téléversés sur le site, à valider pour ouvrir les inscriptions (le plus urgent).','intendance',{type:'onglet',cible:'periscolaire'})
   ]);
   save();
 }
@@ -5133,7 +5134,7 @@ renderAll();
   }
 
   // === Catalogue abonnement : chaque onglet → son bouquet de fonctions. Les onglets ABSENTS de cette table
-  //     (tableau de bord, présentation, projet, projet ados, secrétariat, aide, historique, admin, données)
+  //     (tableau de bord, projet, projet ados, secrétariat, aide, historique, admin, données)
   //     sont le SOCLE : jamais gatés par l'abonnement (seul le rôle peut les masquer). ===
   const BOB_TAB_PACK={
     members:'f_adherents', repertoire:'f_adherents',
@@ -5144,7 +5145,7 @@ renderAll();
     ateliers:'f_ateliers_partenaires', partenaires:'f_ateliers_partenaires',
     equipe:'f_rh_equipe', accompagnement:'f_rh_equipe', rh:'f_rh_equipe', personnel:'f_rh_equipe',
     suivi:'f_rh_equipe', conges:'f_rh_equipe', horaires:'f_rh_equipe', incidents:'f_rh_equipe',
-    periscolaire:'f_metier_acm', activites:'f_metier_acm', rdv:'f_metier_acm', acmvac:'f_metier_acm', lieux:'f_metier_acm', docsperi:'f_metier_acm'
+    periscolaire:'f_metier_acm', activites:'f_metier_acm', rdv:'f_metier_acm', acmvac:'f_metier_acm', lieux:'f_metier_acm'
   };
   function applyPerms(){
     const perms=Object.assign({}, (myProfile.perms&&typeof myProfile.perms==='object')?myProfile.perms:{});
@@ -5154,7 +5155,7 @@ renderAll();
     if(!canWrite){ perms.suivi='cache'; perms.conges='cache'; perms.horaires='cache'; } // Suivi, Congés & Horaires : bureau uniquement par défaut
     if(!canWrite) perms.acmvac='cache'; // 🌴 Vacances : outil interne de programmation → bureau uniquement
     if(!canWrite) perms.rdv='cache'; // 📅 Rendez-vous : gestion des plages/créneaux → bureau uniquement
-    if(!canWrite) perms.docsperi='cache'; // 📋 Docs inscription : documents officiels → bureau uniquement
+    // 📋 Docs inscription : panneau fusionné dans 🎒 Périscolaire (#docsPeriPanel) → masqué aux non-bureau via le css plus bas (étape2 23/06/2026)
     if(!canWrite) perms.caprep='cache'; // 📝 Préparer le CA : préparation du conseil → bureau uniquement
     if(!canWrite){ perms.accounting='cache'; perms.caisse='cache'; perms.dettes='cache'; perms.bilan='cache'; perms.previsionnel='cache'; } // 💶 Finances : trésorerie → bureau uniquement (verrou de DROIT, plus seulement « de fait » — étape2 22/06/2026)
     if(!canWrite){ perms.equipe='cache'; perms.personnel='cache'; perms.incidents='cache'; } // 🧑‍💼 Équipe : masse salariale, dossiers salariés & événements = données nominatives/RGPD → bureau uniquement (étape2 22/06/2026)
@@ -5174,6 +5175,7 @@ renderAll();
         css.push('#'+k+' input,#'+k+' select,#'+k+' textarea{pointer-events:none!important;background:#f1f1f1!important;opacity:.6}');
       }
     });
+    if(!canWrite) css.push('#docsPeriPanel{display:none!important}'); // 📋 Docs officiels (fusionnés dans Périscolaire) → bureau uniquement (préserve l'ancien perms.docsperi='cache')
     const old=document.getElementById('permsStyle'); if(old)old.remove();
     if(css.length){ const st=document.createElement('style'); st.id='permsStyle'; st.textContent=css.join('\n'); document.head.appendChild(st); }
     // masquer une famille dont TOUS les onglets sont cachés (lecture seule OU bouquet éteint)
