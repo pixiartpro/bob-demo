@@ -1080,6 +1080,16 @@
       <div class="row" style="margin-top:10px"><button class="btn" onclick="printCourrier()">🖨️ Générer / imprimer</button></div>
     </div>
     <div class="panel">
+      <h2>👥 Membres du CA</h2>
+      <p class="hint">La liste de <strong>tous</strong> les membres du conseil d'administration (présents ou non). C'est ce total qui sert au calcul du <strong>quorum</strong> (un tiers des membres, art.13 des statuts) ; elle sert aussi à pointer la présence sur chaque réunion.</p>
+      <div class="row">
+        <div class="field" style="flex:2"><label>Nom du membre</label><input id="cam_nom" placeholder="Prénom Nom" onkeydown="if(event.key==='Enter')addCaMembre()"></div>
+        <div class="field"><label>Titre (optionnel)</label><input id="cam_titre" placeholder="Président, Trésorier, Membre…"></div>
+        <div class="field" style="flex:0"><label>&nbsp;</label><button class="btn" onclick="addCaMembre()">＋ Ajouter</button></div>
+      </div>
+      <div id="caMembresList" style="margin-top:12px"></div>
+    </div>
+    <div class="panel">
       <h2>🗳️ Réunions & délibérations</h2>
       <p class="hint">Le registre des réunions : participants, ordre du jour, et les <strong>délibérations classées par catégorie</strong> (avec leur sens : adoptée / rejetée / reportée). Imprime un <strong>relevé groupé par thème</strong>, et importe un point déjà validé depuis « 📝 Préparer le CA ».</p>
       <div class="row">
@@ -2374,6 +2384,8 @@ const FAQ=[
    a:"Onglet <b>🧰 Secrétariat</b> → <b>Modèles de courriers</b> : choisis un modèle, complète-le et imprime (ou enregistre en PDF). <b>L'en-tête de l'association est ajouté automatiquement</b>."},
   {cat:'🧰 Secrétariat',q:"Comment je note les délibérations d'un CA par catégorie ?",kw:"deliberation deliberations decision decisions categorie classer thematique titre sens adoptee rejetee reportee releve registre imprimer importer point prepare ca releve de decisions",
    a:"Onglet <b>🧰 Secrétariat</b> → <b>🗳️ Réunions &amp; délibérations</b>. Sur la fiche d'une réunion, déplie <b>➕ Ajouter une délibération</b> : un intitulé, une <b>catégorie</b> (🏛️ Gouvernance, 🧑‍💼 RH, 💶 Finances, 🎟️ Vie associative, 🎒 Périscolaire, 🔧 Intendance, Autre), la nature (CA en séance / intendance) et le <b>sens</b> (adoptée / rejetée / reportée). Les décisions s'affichent <b>groupées par catégorie</b> et le bouton <b>🖨️ Relevé</b> imprime un relevé classé par thème. Tu peux <b>importer un point déjà préparé</b> dans « 📝 Préparer le CA » (il pré-remplit la délibération sans la re-saisir). Rappel : ce relevé prépare, il ne remplace pas la délibération votée en séance (art.13)."},
+  {cat:'🧰 Secrétariat',q:"Comment je pointe la présence et le quorum d'un CA ?",kw:"presence present absent excuse pouvoir mandat quorum tiers effectif membres ca conseil administration emargement feuille calcul seuil",
+   a:"D'abord renseigne <b>tous</b> les membres du CA dans le panneau <b>👥 Membres du CA</b> (c'est l'effectif qui sert au calcul). Ensuite, sur une réunion, déplie <b>👥 Présence &amp; quorum</b> et choisis pour chacun : Présent / Excusé / Absent / Pouvoir à… Bob calcule le <b>quorum automatiquement</b> : présents + pouvoirs valides ≥ <b>un tiers</b> des membres (art.13). Le bouton <b>🖨️ Feuille d'émargement</b> imprime la liste à signer. Le quorum affiché est indicatif : sa constatation officielle revient au CA en séance."},
   {cat:'🧰 Secrétariat',q:"Où j'enregistre une réunion ou une décision du bureau ?",kw:"reunion decision bureau conseil administration assemblee compte rendu proces verbal pv ordre du jour",
    a:"Onglet <b>🧰 Secrétariat</b> → section <b>Réunions & décisions</b> : enregistre la date, le type (bureau, CA, AG…), les présents, l'ordre du jour, les décisions, et un lien vers le compte-rendu."},
   {cat:'📒 Équipe',q:"Où sont les infos sur les salariés et les contrats (PEC, Service Civique…) ?",kw:"equipe salarie contrat statut pec service civique cdi protocole procedure accueil arrivant personnel",
@@ -2463,6 +2475,7 @@ function pageHelpGotoAide(){ pageHelpClose(); const b=document.querySelector('na
 
 /* ---- ✨ Quoi de neuf (nouveautés + notice chronologique) ---- */
 const NEWS=[
+  {id:'2026-06-23-presence-quorum', date:'2026-06-23', tab:'🧰 Secrétariat', titre:"👥 Présence & quorum du CA (calcul automatique)", desc:"Dans 🧰 Secrétariat, un panneau « 👥 Membres du CA » te laisse lister tous les membres une fois pour toutes. Sur chaque réunion, déplie « 👥 Présence & quorum » et pointe présent / excusé / absent / pouvoir-à-X : Bob calcule le quorum tout seul (un tiers des membres, art.13 — les pouvoirs comptent s'ils vont à un présent) et imprime la feuille d'émargement. Le calcul est indicatif : sa constatation reste au CA en séance."},
   {id:'2026-06-23-deliberations-ca', date:'2026-06-23', tab:'🧰 Secrétariat', titre:"🗳️ Délibérations de CA classées par catégorie", desc:"Dans 🧰 Secrétariat → « Réunions & délibérations », chaque réunion peut maintenant porter des décisions structurées : un intitulé, une catégorie (Gouvernance, RH, Finances, Vie associative, Périscolaire, Intendance…) et leur sens (adoptée / rejetée / reportée). Les décisions s'affichent groupées par thème, et 🖨️ Relevé imprime un relevé classé. Tu peux importer un point déjà validé depuis « 📝 Préparer le CA » sans le retaper. (Le suivi des présents et le calcul du quorum arriveront dans une 2e étape.)"},
   {id:'2026-06-23-rangement-nav', date:'2026-06-23', tab:'🎒 Périscolaire & ❓ Aide', titre:"🧹 Deux onglets rangés (rien n'a disparu)", desc:"On a regroupé deux onglets pour alléger la barre du haut. (1) « 📋 Docs inscription » est désormais un panneau tout en bas de l'onglet 🎒 Périscolaire — tes documents officiels de la garderie sont au même endroit que la grille tarifaire et les dossiers des familles. (2) « 🎤 Présentation » (le pitch de Bob pour le DLA ou un partenaire) est passé tout en bas de l'onglet ❓ Aide, section « 📖 Découvrir Bob ». Aucun document ni contenu n'a été perdu : c'est juste mieux rangé."},
   {id:'2026-06-22-familles-couleurs', date:'2026-06-22', tab:'📊 Tableau de bord', titre:"🎨 Les onglets rangés en 4 familles de couleur", desc:"La barre du haut est réorganisée en 4 grandes familles, chacune avec sa couleur, pour t'y retrouver d'un coup d'œil : 👥 Adhérents (vert), 🏛️ Bureau (sarcelle), 🧑‍💼 Équipe (prune) et 💶 Finances (ambre) — plus 🏠 Accueil et 🧰 Réglages. Rien n'a disparu : les onglets sont juste regroupés (le secrétariat et « Préparer le CA » sont passés sous 🏛️ Bureau ; les réglages techniques sous 🧰 Réglages)."},
@@ -3903,6 +3916,9 @@ function renderReunions(){
           +'<div style="margin-top:8px"><button class="btn" onclick="addDelib(\''+rid+'\')">＋ Ajouter la délibération</button></div>'
         +'</div>'
       +'</details>'
+      +'<details style="margin-top:8px"><summary style="cursor:pointer;font-size:13px;color:#127a51;font-weight:600">👥 Présence & quorum</summary>'
+        +'<div id="presence_'+rid+'" style="margin-top:8px;padding:10px;border:1px dashed var(--line);border-radius:10px">'+presenceBlock(rid,r)+'</div>'
+      +'</details>'
     +'</div>';
   }).join('');
 }
@@ -3961,6 +3977,88 @@ function printReleve(rid){
   printHTML(html);
 }
 
+/* ---- T2 : membres du CA, présence & quorum (au tiers, art.13) ---- */
+function renderCaMembres(){
+  const box=$('caMembresList'); if(!box) return;
+  const ms=db.caMembres||[];
+  box.innerHTML = ms.length
+    ? ms.map(m=>'<div class="kv"><span><b>'+esc(m.nom||'')+'</b>'+(m.titre?' <span class="muted">— '+esc(m.titre)+'</span>':'')+'</span><span><button class="ghost btn" style="padding:2px 8px;font-size:11px" onclick="delCaMembre(\''+m.id+'\')">🗑️</button></span></div>').join('')
+      +'<p class="hint" style="margin-top:8px">Effectif du CA : <b>'+ms.length+'</b> membre'+(ms.length>1?'s':'')+' → quorum (un tiers) = <b>'+Math.ceil(ms.length/3)+'</b>.</p>'
+    : '<p class="hint">Aucun membre enregistré. Ajoute <b>tous</b> les membres du CA ci-dessus — c\'est le total qui sert au calcul du quorum.</p>';
+}
+function addCaMembre(){
+  const n=(($('cam_nom')||{}).value||'').trim(); if(!n){ alert('Indique le nom du membre.'); return; }
+  db.caMembres=db.caMembres||[];
+  db.caMembres.push({id:uid(),nom:n,titre:(($('cam_titre')||{}).value||'').trim()});
+  if($('cam_nom'))$('cam_nom').value=''; if($('cam_titre'))$('cam_titre').value='';
+  save(); renderCaMembres(); renderReunions();
+}
+function delCaMembre(id){
+  if(!confirm('Retirer ce membre du CA ?')) return;
+  db.caMembres=(db.caMembres||[]).filter(m=>m.id!==id);
+  save(); renderCaMembres(); renderReunions();
+}
+function calcQuorum(r){
+  const ms=db.caMembres||[]; const eff=ms.length; const pres=(r&&r.presence)||{};
+  let presents=0, pouvoirs=0;
+  ms.forEach(m=>{ const e=pres[m.id]; if(e&&e.s==='present') presents++; });
+  ms.forEach(m=>{ const e=pres[m.id]; if(e&&e.s==='pouvoir'&&e.to){ const h=pres[e.to]; if(h&&h.s==='present') pouvoirs++; } });
+  const voix=presents+pouvoirs; const seuil=Math.ceil(eff/3);
+  return {eff,presents,pouvoirs,voix,seuil,atteint:eff>0&&voix>=seuil};
+}
+function quorumLine(r){
+  const q=calcQuorum(r);
+  if(!q.eff) return '<div class="hint" style="color:#8a5a00">⚠️ Renseigne d\'abord les membres du CA (panneau « 👥 Membres du CA ») pour calculer le quorum.</div>';
+  const col=q.atteint?'#127a51':'#c0392b';
+  return '<div style="font-size:13px;margin-top:8px;padding-top:8px;border-top:1px dashed var(--line)"><b>'+q.presents+'</b> présent'+(q.presents>1?'s':'')+' + <b>'+q.pouvoirs+'</b> pouvoir'+(q.pouvoirs>1?'s':'')+' = <b>'+q.voix+'</b> voix · effectif '+q.eff+' · seuil (tiers) '+q.seuil+' → <b style="color:'+col+'">'+(q.atteint?'✓ quorum atteint':'🔴 quorum NON atteint')+'</b><div class="hint" style="margin-top:2px">Indicatif (art.13) — sa constatation revient au CA.</div></div>';
+}
+function presenceBlock(rid,r){
+  const ms=db.caMembres||[];
+  if(!ms.length) return '<p class="hint">Renseigne les membres du CA dans « 👥 Membres du CA » pour pointer la présence ici.</p>';
+  const pres=r.presence||{};
+  const memOpts=function(sel){ return ms.map(m=>'<option value="'+m.id+'"'+(sel===m.id?' selected':'')+'>'+esc(m.nom||'')+'</option>').join(''); };
+  const STL={'':'—','present':'Présent','excuse':'Excusé','absent':'Absent','pouvoir':'Pouvoir à…'};
+  const rows=ms.map(function(m){
+    const e=pres[m.id]||{}; const s=e.s||'';
+    const stSel='<select onchange="setPresenceStatut(\''+rid+'\',\''+m.id+'\',this.value)">'
+      +['','present','excuse','absent','pouvoir'].map(v=>'<option value="'+v+'"'+(s===v?' selected':'')+'>'+STL[v]+'</option>').join('')+'</select>';
+    const toSel=(s==='pouvoir')?'<select onchange="setPresenceTo(\''+rid+'\',\''+m.id+'\',this.value)"><option value="">— à qui ? —</option>'+memOpts(e.to)+'</select>':'';
+    return '<div class="row" style="align-items:center;gap:8px;margin:2px 0"><div class="field" style="flex:2"><b style="font-size:13.5px">'+esc(m.nom||'')+'</b>'+(m.titre?' <span class="muted" style="font-size:12px">'+esc(m.titre)+'</span>':'')+'</div><div class="field" style="flex:0;min-width:120px">'+stSel+'</div><div class="field">'+toSel+'</div></div>';
+  }).join('');
+  return rows+'<div id="quorum_'+rid+'">'+quorumLine(r)+'</div>'
+    +'<div style="margin-top:8px"><button class="ghost btn" style="font-size:12px" onclick="printEmargement(\''+rid+'\')">🖨️ Feuille d\'émargement</button></div>';
+}
+function setPresenceStatut(rid,mid,val){
+  const r=(db.reunions||[]).find(x=>x.id===rid); if(!r) return;
+  r.presence=r.presence||{}; const e=r.presence[mid]||{}; e.s=val; if(val!=='pouvoir') e.to=''; r.presence[mid]=e;
+  save(); const host=$('presence_'+rid); if(host) host.innerHTML=presenceBlock(rid,r); else renderReunions();
+}
+function setPresenceTo(rid,mid,val){
+  const r=(db.reunions||[]).find(x=>x.id===rid); if(!r) return;
+  r.presence=r.presence||{}; const e=r.presence[mid]||{s:'pouvoir'}; e.to=val; r.presence[mid]=e;
+  save(); const q=$('quorum_'+rid); if(q) q.innerHTML=quorumLine(r);
+}
+function printEmargement(rid){
+  const r=(db.reunions||[]).find(x=>x.id===rid); if(!r) return;
+  const ms=db.caMembres||[]; if(!ms.length){ alert('Renseigne d\'abord les membres du CA.'); return; }
+  const pres=r.presence||{}; const q=calcQuorum(r);
+  const nom=function(id){ const m=ms.find(x=>x.id===id); return m?(m.nom||''):''; };
+  const lab={'present':'Présent','excuse':'Excusé','absent':'Absent','pouvoir':'Pouvoir'};
+  const rows=ms.map(function(m){ const e=pres[m.id]||{}; const st=lab[e.s]||'—'; const det=(e.s==='pouvoir'&&e.to)?(' à '+esc(nom(e.to))):'';
+    return '<tr><td style="padding:5px 8px;border:1px solid #ccc">'+esc(m.nom||'')+'</td><td style="padding:5px 8px;border:1px solid #ccc">'+esc(m.titre||'')+'</td><td style="padding:5px 8px;border:1px solid #ccc">'+st+det+'</td><td style="padding:5px 8px;border:1px solid #ccc;width:170px"></td></tr>';
+  }).join('');
+  const today=new Date().toLocaleDateString('fr-FR',{day:'2-digit',month:'2-digit',year:'numeric'});
+  const html='<div style="font-family:-apple-system,Segoe UI,Roboto,sans-serif;color:#111;max-width:720px">'
+    +'<div style="text-align:center;margin-bottom:6px"><b>CASE DU BOIS DE NÈFLES</b><br><span style="font-size:12px;color:#444">122 Place de la Fraternité, 97490 Sainte-Clotilde · SIREN 325 635 738</span></div>'
+    +'<h2 style="text-align:center;margin:10px 0 2px">FEUILLE D\'ÉMARGEMENT</h2>'
+    +'<div style="text-align:center;font-size:13px;color:#333;margin-bottom:10px">'+esc(r.type||'')+' du '+fmtDate(r.date)+'</div>'
+    +'<table style="width:100%;border-collapse:collapse;font-size:13px"><thead><tr><th style="padding:5px 8px;border:1px solid #ccc;text-align:left">Membre</th><th style="padding:5px 8px;border:1px solid #ccc;text-align:left">Titre</th><th style="padding:5px 8px;border:1px solid #ccc;text-align:left">Statut</th><th style="padding:5px 8px;border:1px solid #ccc;text-align:left">Émargement</th></tr></thead><tbody>'+rows+'</tbody></table>'
+    +'<div style="margin-top:12px;font-size:13px"><b>Quorum :</b> '+q.presents+' présent(s) + '+q.pouvoirs+' pouvoir(s) = '+q.voix+' voix · effectif '+q.eff+' · seuil (tiers, art.13) '+q.seuil+' → <b>'+(q.atteint?'atteint ✓':'NON atteint')+'</b></div>'
+    +'<div style="margin-top:24px;display:flex;justify-content:space-between;gap:30px"><div>Le Président<br><br>__________________</div><div>Le Secrétaire<br><br>__________________</div></div>'
+    +'<div style="margin-top:14px;font-size:11px;color:#666;border-top:1px solid #ccc;padding-top:8px">Document de séance. Le quorum est indicatif (calcul au tiers des membres, art.13 des statuts) ; sa constatation revient au CA.</div>'
+    +'</div>';
+  printHTML(html);
+}
 /* ---- Événements indésirables (avec démarche guidée) ---- */
 function incidentSteps(gravite){
   const s=["Mettre en sécurité les personnes et les lieux",
@@ -5148,7 +5246,7 @@ function acmNewSession(){
   const s={id:uid(),nom:nom.trim(),jours,plan:{}}; const a=acmDb(); a.sessions.push(s); a.cur=s.id; save();
 }
 function acmDelSession(){ const cs=acmCurSession(); if(!cs)return; if(!confirm('Supprimer la session « '+cs.nom+' » ? (le catalogue est conservé)'))return; const a=acmDb(); a.sessions=a.sessions.filter(s=>s.id!==cs.id); a.cur=a.sessions[0]?a.sessions[0].id:null; save(); }
-function renderAll(){ renderDashboard(); renderZoneCards(); renderMembers(); renderRelances(); renderOps(); renderCaisse(); renderRapprochement(); renderProjects(); renderSubventions(); renderEcheancier(); renderBilan(); renderPrevisionnel(); renderEquipe(); renderRepertoire(); renderSecretariat(); renderAssurance(); renderReunions(); renderCaprep(); renderIncidents(); renderDettes(); renderOfficialLinks(); refreshComptes(); renderListParams(); renderJournal(); renderPeriscolaire(); renderFaqList(); renderNews(); renderAccompagnement(); renderRH(); renderProjet(); renderProjetAdos(); renderActions(); renderConges(); renderFermetures(); renderHoraires(); renderAcmVac(); if(window.renderDocsPeri)window.renderDocsPeri(); }
+function renderAll(){ renderDashboard(); renderZoneCards(); renderMembers(); renderRelances(); renderOps(); renderCaisse(); renderRapprochement(); renderProjects(); renderSubventions(); renderEcheancier(); renderBilan(); renderPrevisionnel(); renderEquipe(); renderRepertoire(); renderSecretariat(); renderAssurance(); renderCaMembres(); renderReunions(); renderCaprep(); renderIncidents(); renderDettes(); renderOfficialLinks(); refreshComptes(); renderListParams(); renderJournal(); renderPeriscolaire(); renderFaqList(); renderNews(); renderAccompagnement(); renderRH(); renderProjet(); renderProjetAdos(); renderActions(); renderConges(); renderFermetures(); renderHoraires(); renderAcmVac(); if(window.renderDocsPeri)window.renderDocsPeri(); }
 
 /* ---- Data import/export ---- */
 function exportJSON(motif){
