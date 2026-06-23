@@ -1080,8 +1080,8 @@
       <div class="row" style="margin-top:10px"><button class="btn" onclick="printCourrier()">🖨️ Générer / imprimer</button></div>
     </div>
     <div class="panel">
-      <h2>🗳️ Réunions & décisions</h2>
-      <p class="hint">Le registre des réunions du bureau : participants, décisions, et le lien vers le compte-rendu sur le Drive (pour le déposer ou le récupérer).</p>
+      <h2>🗳️ Réunions & délibérations</h2>
+      <p class="hint">Le registre des réunions : participants, ordre du jour, et les <strong>délibérations classées par catégorie</strong> (avec leur sens : adoptée / rejetée / reportée). Imprime un <strong>relevé groupé par thème</strong>, et importe un point déjà validé depuis « 📝 Préparer le CA ».</p>
       <div class="row">
         <div class="field"><label>Date</label><input id="r_date" type="date"></div>
         <div class="field" style="flex:0;min-width:150px"><label>Type</label>
@@ -1096,7 +1096,7 @@
         <div class="field" style="flex:3"><label>Lien du compte-rendu (Drive)</label><input id="r_drive" placeholder="https://drive.google.com/..."></div>
         <div class="field" style="flex:0"><label>&nbsp;</label><button class="btn" onclick="addReunion()">Ajouter</button></div>
       </div>
-      <table style="margin-top:14px"><thead><tr><th>Date</th><th>Type</th><th>Décisions</th><th>CR</th><th></th></tr></thead><tbody id="reunionRows"></tbody></table>
+      <div id="reunionList" style="margin-top:14px"></div>
     </div>
   </section>
 
@@ -2372,6 +2372,8 @@ const FAQ=[
    a:"Onglet <b>🧰 Secrétariat</b> → <b>Échéancier général</b> : note les dates importantes (renouvellement d'assurance, déclarations, AG, contrats…). Les échéances proches s'affichent aussi sur le tableau de bord. Le <b>Mémo du bureau</b> sert de pense-bête partagé."},
   {cat:'🧰 Secrétariat',q:"Comment je fais un courrier avec l'en-tête de l'association ?",kw:"courrier lettre modele entete papier en-tete imprimer pdf secretariat redaction officiel",
    a:"Onglet <b>🧰 Secrétariat</b> → <b>Modèles de courriers</b> : choisis un modèle, complète-le et imprime (ou enregistre en PDF). <b>L'en-tête de l'association est ajouté automatiquement</b>."},
+  {cat:'🧰 Secrétariat',q:"Comment je note les délibérations d'un CA par catégorie ?",kw:"deliberation deliberations decision decisions categorie classer thematique titre sens adoptee rejetee reportee releve registre imprimer importer point prepare ca releve de decisions",
+   a:"Onglet <b>🧰 Secrétariat</b> → <b>🗳️ Réunions &amp; délibérations</b>. Sur la fiche d'une réunion, déplie <b>➕ Ajouter une délibération</b> : un intitulé, une <b>catégorie</b> (🏛️ Gouvernance, 🧑‍💼 RH, 💶 Finances, 🎟️ Vie associative, 🎒 Périscolaire, 🔧 Intendance, Autre), la nature (CA en séance / intendance) et le <b>sens</b> (adoptée / rejetée / reportée). Les décisions s'affichent <b>groupées par catégorie</b> et le bouton <b>🖨️ Relevé</b> imprime un relevé classé par thème. Tu peux <b>importer un point déjà préparé</b> dans « 📝 Préparer le CA » (il pré-remplit la délibération sans la re-saisir). Rappel : ce relevé prépare, il ne remplace pas la délibération votée en séance (art.13)."},
   {cat:'🧰 Secrétariat',q:"Où j'enregistre une réunion ou une décision du bureau ?",kw:"reunion decision bureau conseil administration assemblee compte rendu proces verbal pv ordre du jour",
    a:"Onglet <b>🧰 Secrétariat</b> → section <b>Réunions & décisions</b> : enregistre la date, le type (bureau, CA, AG…), les présents, l'ordre du jour, les décisions, et un lien vers le compte-rendu."},
   {cat:'📒 Équipe',q:"Où sont les infos sur les salariés et les contrats (PEC, Service Civique…) ?",kw:"equipe salarie contrat statut pec service civique cdi protocole procedure accueil arrivant personnel",
@@ -2461,6 +2463,7 @@ function pageHelpGotoAide(){ pageHelpClose(); const b=document.querySelector('na
 
 /* ---- ✨ Quoi de neuf (nouveautés + notice chronologique) ---- */
 const NEWS=[
+  {id:'2026-06-23-deliberations-ca', date:'2026-06-23', tab:'🧰 Secrétariat', titre:"🗳️ Délibérations de CA classées par catégorie", desc:"Dans 🧰 Secrétariat → « Réunions & délibérations », chaque réunion peut maintenant porter des décisions structurées : un intitulé, une catégorie (Gouvernance, RH, Finances, Vie associative, Périscolaire, Intendance…) et leur sens (adoptée / rejetée / reportée). Les décisions s'affichent groupées par thème, et 🖨️ Relevé imprime un relevé classé. Tu peux importer un point déjà validé depuis « 📝 Préparer le CA » sans le retaper. (Le suivi des présents et le calcul du quorum arriveront dans une 2e étape.)"},
   {id:'2026-06-23-rangement-nav', date:'2026-06-23', tab:'🎒 Périscolaire & ❓ Aide', titre:"🧹 Deux onglets rangés (rien n'a disparu)", desc:"On a regroupé deux onglets pour alléger la barre du haut. (1) « 📋 Docs inscription » est désormais un panneau tout en bas de l'onglet 🎒 Périscolaire — tes documents officiels de la garderie sont au même endroit que la grille tarifaire et les dossiers des familles. (2) « 🎤 Présentation » (le pitch de Bob pour le DLA ou un partenaire) est passé tout en bas de l'onglet ❓ Aide, section « 📖 Découvrir Bob ». Aucun document ni contenu n'a été perdu : c'est juste mieux rangé."},
   {id:'2026-06-22-familles-couleurs', date:'2026-06-22', tab:'📊 Tableau de bord', titre:"🎨 Les onglets rangés en 4 familles de couleur", desc:"La barre du haut est réorganisée en 4 grandes familles, chacune avec sa couleur, pour t'y retrouver d'un coup d'œil : 👥 Adhérents (vert), 🏛️ Bureau (sarcelle), 🧑‍💼 Équipe (prune) et 💶 Finances (ambre) — plus 🏠 Accueil et 🧰 Réglages. Rien n'a disparu : les onglets sont juste regroupés (le secrétariat et « Préparer le CA » sont passés sous 🏛️ Bureau ; les réglages techniques sous 🧰 Réglages)."},
   {id:'2026-06-22-preparer-ca', date:'2026-06-22', tab:'📝 Préparer le CA', titre:"📝 Nouveau : préparer le CA en amont", desc:"Un onglet « Préparer le CA » (réservé au bureau) regroupe les points à examiner avant un conseil d'administration. Chacun donne son avis à distance — « Lu, je suis d'accord » ou « Je veux en parler » — pour que, le jour du CA, on adopte vite ce qui fait déjà consensus. ⚠️ Ce n'est pas un vote : seules les décisions prises en séance du CA comptent ; la page sert à préparer et à imprimer un projet de relevé à apporter au conseil. Les 7 points en attente du 22/06 sont déjà pré-remplis."},
@@ -3837,14 +3840,125 @@ function seedCaprepIfNeeded(){
   ]);
   save();
 }
+/* ---- T1 délibérations : vocabulaire fixe (catégories + sens) ---- */
+const DELIB_CATS=['🏛️ Gouvernance','🧑‍💼 RH','💶 Finances','🎟️ Vie associative & activités','🎒 Périscolaire','🔧 Intendance & local','Autre'];
+const DELIB_SENS_COLOR={'Adoptée':['#dff5e9','#127a51'],'Rejetée':['#fbe9e7','#c0392b'],'Reportée':['#fff1d6','#8a5a00']};
+function delibLine(rid,d){
+  const sc=DELIB_SENS_COLOR[d.sens]||['#eee','#555'];
+  return '<div style="display:flex;justify-content:space-between;gap:8px;align-items:flex-start;padding:5px 0;border-bottom:1px dashed var(--line)">'
+    +'<div style="font-size:13.5px"><b>'+esc(d.titre||'(sans titre)')+'</b>'
+      +' <span class="pill" style="background:'+sc[0]+';color:'+sc[1]+';font-size:11px">'+esc(d.sens||'')+'</span>'
+      +(d.organe==='CA'?' <span class="pill" style="background:#eef4ff;color:#23344d;font-size:11px">CA en séance</span>':' <span class="pill" style="background:#eee;color:#555;font-size:11px">intendance</span>')
+      +(d.capoint_id?' <span title="Lié à un point préparé en CA" style="font-size:11px;color:#127a51">📎 préparé</span>':'')
+      +(d.texte?'<div class="hint" style="margin:2px 0 0">'+esc(d.texte)+'</div>':'')
+    +'</div>'
+    +'<button class="ghost btn" style="padding:2px 8px;font-size:11px" onclick="delDelib(\''+rid+'\',\''+d.id+'\')" title="Retirer">🗑️</button>'
+  +'</div>';
+}
 function renderReunions(){
+  const box=$('reunionList'); if(!box) return;
   const rs=(db.reunions||[]).slice().sort((a,b)=>(b.date||'').localeCompare(a.date||''));
-  $('reunionRows').innerHTML = rs.length ? rs.map(r=>`<tr>
-    <td>${fmtDate(r.date)}</td><td><span class="pill" style="background:#eef2fb;color:#1f4fc4">${esc(r.type)}</span></td>
-    <td style="font-size:13px">${esc(r.decisions||r.ordre||'—')}</td>
-    <td>${r.drive?`<a href="${esc(r.drive)}" target="_blank" rel="noopener">CR ↗</a>`:'<span class="muted">—</span>'}</td>
-    <td style="white-space:nowrap"><button class="ghost btn" style="padding:4px 9px;font-size:12px" onclick="openEdit('reunions','${r.id}')" title="Modifier">✏️</button><button class="danger" onclick="delReunion('${r.id}')">Suppr.</button></td></tr>`).join('')
-    : '<tr><td colspan="5" class="empty">Aucune réunion enregistrée.</td></tr>';
+  if(!rs.length){ box.innerHTML='<p class="empty">Aucune réunion enregistrée.</p>'; return; }
+  box.innerHTML=rs.map(function(r){
+    const rid=r.id, delibs=(r.deliberations||[]);
+    let delibHtml;
+    if(delibs.length){
+      delibHtml=DELIB_CATS.filter(c=>delibs.some(d=>d.categorie===c)).map(function(c){
+        return '<div style="margin-top:8px"><div style="font-weight:700;font-size:13px;color:#5c7468">'+esc(c)+'</div>'
+          +delibs.filter(d=>d.categorie===c).map(d=>delibLine(rid,d)).join('')+'</div>';
+      }).join('');
+    } else {
+      delibHtml='<p class="hint" style="margin:6px 0 0">Aucune délibération structurée pour l\'instant.</p>';
+    }
+    const usedCap={}; delibs.forEach(d=>{ if(d.capoint_id) usedCap[d.capoint_id]=1; });
+    const capOpts=(db.capoints||[]).filter(p=>p.organe==='CA'&&!usedCap[p.id]).map(p=>'<option value="'+p.id+'">'+esc(p.intitule||'')+'</option>').join('');
+    return '<div class="card" style="margin-bottom:14px">'
+      +'<div style="display:flex;justify-content:space-between;gap:10px;align-items:flex-start">'
+        +'<div><b style="font-size:15px">'+fmtDate(r.date)+'</b> <span class="pill" style="background:#eef2fb;color:#1f4fc4">'+esc(r.type||'')+'</span>'
+          +(r.present?'<div class="hint" style="margin:3px 0 0">👥 '+esc(r.present)+'</div>':'')
+          +(r.ordre?'<div class="hint" style="margin:2px 0 0">📋 '+esc(r.ordre)+'</div>':'')
+        +'</div>'
+        +'<div style="white-space:nowrap">'
+          +(delibs.length?'<button class="ghost btn" style="padding:4px 9px;font-size:12px" onclick="printReleve(\''+rid+'\')" title="Imprimer le relevé">🖨️ Relevé</button> ':'')
+          +(r.drive?'<a class="ghost btn" style="padding:4px 9px;font-size:12px;text-decoration:none" href="'+esc(r.drive)+'" target="_blank" rel="noopener">CR ↗</a> ':'')
+          +'<button class="ghost btn" style="padding:4px 9px;font-size:12px" onclick="openEdit(\'reunions\',\''+rid+'\')" title="Modifier">✏️</button> '
+          +'<button class="danger" onclick="delReunion(\''+rid+'\')">Suppr.</button>'
+        +'</div>'
+      +'</div>'
+      +(r.decisions?'<div class="hint" style="margin-top:6px;padding:6px 10px;background:#f7f7f2;border-radius:8px">📝 Décisions (texte libre) : '+esc(r.decisions)+'</div>':'')
+      +'<div style="margin-top:6px"><div style="font-weight:700;font-size:13px">🗳️ Délibérations</div>'+delibHtml+'</div>'
+      +'<details style="margin-top:10px"><summary style="cursor:pointer;font-size:13px;color:#127a51;font-weight:600">➕ Ajouter une délibération'+(capOpts?' / importer un point préparé':'')+'</summary>'
+        +'<div style="margin-top:8px;padding:10px;border:1px dashed var(--line);border-radius:10px">'
+          +(capOpts?'<div class="row" style="margin-bottom:8px"><div class="field" style="flex:2"><label>📎 Importer un point « Préparer le CA »</label><select id="dlb_imp_'+rid+'" onchange="prefillDelibFromCapoint(\''+rid+'\')"><option value="">— Choisir un point décidé en CA —</option>'+capOpts+'</select></div></div>':'')
+          +'<input type="hidden" id="dlb_cap_'+rid+'">'
+          +'<div class="row">'
+            +'<div class="field" style="flex:2"><label>Intitulé de la décision</label><input id="dlb_titre_'+rid+'" placeholder="Ex. Adoption du budget 2026"></div>'
+            +'<div class="field"><label>Catégorie</label><select id="dlb_cat_'+rid+'">'+DELIB_CATS.map(c=>'<option>'+esc(c)+'</option>').join('')+'</select></div>'
+          +'</div>'
+          +'<div class="row" style="margin-top:8px">'
+            +'<div class="field"><label>Nature</label><select id="dlb_org_'+rid+'"><option value="CA">Décision du CA (en séance)</option><option value="intendance">Intendance</option></select></div>'
+            +'<div class="field"><label>Sens</label><select id="dlb_sens_'+rid+'"><option>Adoptée</option><option>Rejetée</option><option>Reportée</option></select></div>'
+            +'<div class="field" style="flex:2"><label>Détail (optionnel)</label><input id="dlb_txt_'+rid+'" placeholder="Précision / montant / modalités"></div>'
+          +'</div>'
+          +'<div style="margin-top:8px"><button class="btn" onclick="addDelib(\''+rid+'\')">＋ Ajouter la délibération</button></div>'
+        +'</div>'
+      +'</details>'
+    +'</div>';
+  }).join('');
+}
+function addDelib(rid){
+  const r=(db.reunions||[]).find(x=>x.id===rid); if(!r) return;
+  const t=(($('dlb_titre_'+rid)||{}).value||'').trim();
+  if(!t){ alert('Indique l\'intitulé de la décision.'); return; }
+  r.deliberations=r.deliberations||[];
+  r.deliberations.push({
+    id:uid(), titre:t,
+    categorie:($('dlb_cat_'+rid)||{}).value||'Autre',
+    organe:($('dlb_org_'+rid)||{}).value||'CA',
+    sens:($('dlb_sens_'+rid)||{}).value||'Adoptée',
+    texte:(($('dlb_txt_'+rid)||{}).value||'').trim(),
+    capoint_id:(($('dlb_cap_'+rid)||{}).value||'')||null
+  });
+  save(); renderReunions();
+}
+function delDelib(rid,did){
+  if(!confirm('Retirer cette délibération ?')) return;
+  const r=(db.reunions||[]).find(x=>x.id===rid); if(!r) return;
+  r.deliberations=(r.deliberations||[]).filter(d=>d.id!==did);
+  save(); renderReunions();
+}
+function prefillDelibFromCapoint(rid){
+  const sel=$('dlb_imp_'+rid); if(!sel||!sel.value) return;
+  const p=(db.capoints||[]).find(x=>x.id===sel.value); if(!p) return;
+  if($('dlb_titre_'+rid)) $('dlb_titre_'+rid).value=p.intitule||'';
+  if($('dlb_txt_'+rid)) $('dlb_txt_'+rid).value=p.contexte||'';
+  if($('dlb_org_'+rid)) $('dlb_org_'+rid).value=(p.organe==='intendance'?'intendance':'CA');
+  if($('dlb_cap_'+rid)) $('dlb_cap_'+rid).value=sel.value;
+}
+function printReleve(rid){
+  const r=(db.reunions||[]).find(x=>x.id===rid); if(!r) return;
+  const delibs=(r.deliberations||[]);
+  if(!delibs.length){ alert('Aucune délibération à imprimer pour cette réunion.'); return; }
+  const sensTxt=function(s){ const c=(DELIB_SENS_COLOR[s]||['','#555'])[1]; return '<span style="color:'+c+';font-weight:600">'+esc(s||'')+'</span>'; };
+  const body=DELIB_CATS.filter(c=>delibs.some(d=>d.categorie===c)).map(function(c){
+    return '<h3 style="margin:16px 0 6px">'+esc(c)+'</h3>'+delibs.filter(d=>d.categorie===c).map(function(d){
+      return '<div style="margin:0 0 10px;padding-bottom:8px;border-bottom:1px solid #ddd">'
+        +'<div style="font-weight:700">'+esc(d.titre||'')+' — '+sensTxt(d.sens)+(d.organe==='CA'?' <span style="font-weight:400;color:#23344d">(décision du CA en séance)</span>':' <span style="font-weight:400;color:#555">(intendance)</span>')+'</div>'
+        +(d.texte?'<div style="font-size:13px;color:#333;margin-top:3px">'+esc(d.texte)+'</div>':'')
+      +'</div>';
+    }).join('');
+  }).join('');
+  const today=new Date().toLocaleDateString('fr-FR',{day:'2-digit',month:'2-digit',year:'numeric'});
+  const html='<div style="font-family:-apple-system,Segoe UI,Roboto,sans-serif;color:#111;max-width:720px">'
+    +'<div style="text-align:center;margin-bottom:6px"><b>CASE DU BOIS DE NÈFLES</b><br><span style="font-size:12px;color:#444">Centre d\'Animation Socio-Éducatif · 122 Place de la Fraternité, 97490 Sainte-Clotilde · SIREN 325 635 738</span></div>'
+    +'<h2 style="text-align:center;margin:10px 0 2px">PROJET DE RELEVÉ DE DÉLIBÉRATIONS</h2>'
+    +'<div style="text-align:center;font-size:13px;color:#333;margin-bottom:4px">'+esc(r.type||'')+' du '+fmtDate(r.date)+'</div>'
+    +(r.present?'<div style="font-size:12px;color:#555;margin-bottom:12px"><b>Présents :</b> '+esc(r.present)+'</div>':'<div style="margin-bottom:12px"></div>')
+    +body
+    +'<div style="margin-top:24px;display:flex;justify-content:space-between;gap:30px"><div>Le Président<br><br>__________________</div><div>Le Secrétaire<br><br>__________________</div></div>'
+    +'<div style="margin-top:18px;font-size:11px;color:#666;border-top:1px solid #ccc;padding-top:8px">Projet de relevé — ne vaut pas délibération. L\'adoption des décisions relève du Conseil d\'administration réuni en séance (art.13 des statuts). Document établi à titre de préparation.</div>'
+    +'</div>';
+  printHTML(html);
 }
 
 /* ---- Événements indésirables (avec démarche guidée) ---- */
