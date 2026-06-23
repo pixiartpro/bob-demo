@@ -44,26 +44,41 @@
        transition:.15s}
   nav.tabs button:hover{color:var(--ink);background:#eef4f0}
   nav.tabs button.active{background:var(--brand);color:#fff}
-  /* === Étape 2 (22/06/2026) : couleurs par famille — additif, revertible (supprimer ce bloc) === */
-  nav.famtabs button{border-bottom-width:3px}
+  /* === Étape 2 (22/06/2026) : familles colorées + finition clay — additif, revertible (supprimer ce bloc) === */
+  nav.famtabs button{border-bottom-width:3px;border-radius:13px;transition:transform .18s ease-out,box-shadow .18s ease-out,background .18s ease-out}
+  nav.famtabs button:hover{transform:translateY(-1px)}
+  /* liseré d'accent toujours visible (la couleur ne dépend pas de l'état actif) */
   nav.famtabs button[data-group="accueil"]{border-bottom-color:#5a6b7a}
   nav.famtabs button[data-group="adherents"]{border-bottom-color:#127a51}
   nav.famtabs button[data-group="bureau"]{border-bottom-color:#0e6b6b}
   nav.famtabs button[data-group="equipe"]{border-bottom-color:#7a3b5e}
   nav.famtabs button[data-group="finances"]{border-bottom-color:#c8881f}
   nav.famtabs button[data-group="regl"]{border-bottom-color:#7d8a83}
-  nav.famtabs button[data-group="accueil"].on{background:#5a6b7a;border-color:#5a6b7a;color:#fff}
-  nav.famtabs button[data-group="adherents"].on{background:#127a51;border-color:#127a51;color:#fff}
-  nav.famtabs button[data-group="bureau"].on{background:#0e6b6b;border-color:#0e6b6b;color:#fff}
-  nav.famtabs button[data-group="equipe"].on{background:#7a3b5e;border-color:#7a3b5e;color:#fff}
-  nav.famtabs button[data-group="finances"].on{background:#c8881f;border-color:#c8881f;color:#fff}
-  nav.famtabs button[data-group="regl"].on{background:#7d8a83;border-color:#7d8a83;color:#fff}
+  /* actif = pastille « clay » : dégradé même teinte + reflet haut + ombre branded de la couleur */
+  nav.famtabs button.on{color:#fff;border-color:transparent;transform:translateY(-1px);box-shadow:inset 0 1px 0 rgba(255,255,255,.28),0 5px 14px -4px var(--famSh,rgba(18,122,81,.5))}
+  nav.famtabs button[data-group="accueil"].on{background:linear-gradient(160deg,#6a7b8a,#4e5e6b);--famSh:rgba(90,107,122,.42)}
+  nav.famtabs button[data-group="adherents"].on{background:linear-gradient(160deg,#169160,#0c5d3d);--famSh:rgba(18,122,81,.5)}
+  nav.famtabs button[data-group="bureau"].on{background:linear-gradient(160deg,#118585,#0a4f4f);--famSh:rgba(14,107,107,.5)}
+  nav.famtabs button[data-group="equipe"].on{background:linear-gradient(160deg,#8a4569,#5e2f45);--famSh:rgba(122,59,94,.5)}
+  nav.famtabs button[data-group="finances"].on{background:linear-gradient(160deg,#d49426,#a96f12);--famSh:rgba(200,136,31,.5)}
+  nav.famtabs button[data-group="regl"].on{background:linear-gradient(160deg,#8b988f,#6b7770);--famSh:rgba(125,138,131,.42)}
+  /* niveau 2 : l'onglet actif prend la teinte de sa famille, légère profondeur */
+  nav.tabs button.active{box-shadow:0 3px 9px -3px rgba(60,50,40,.34)}
   nav.tabs .tabgroup[data-group="accueil"] button.active{background:#5a6b7a}
   nav.tabs .tabgroup[data-group="adherents"] button.active{background:#127a51}
   nav.tabs .tabgroup[data-group="bureau"] button.active{background:#0e6b6b}
   nav.tabs .tabgroup[data-group="equipe"] button.active{background:#7a3b5e}
   nav.tabs .tabgroup[data-group="finances"] button.active{background:#c8881f}
   nav.tabs .tabgroup[data-group="regl"] button.active{background:#7d8a83}
+  /* mobile (Cynthia) : cibles tactiles confortables ≥44px */
+  @media(max-width:560px){
+    nav.famtabs{gap:7px}
+    nav.famtabs button{padding:10px 13px;font-size:14px;min-height:44px}
+    nav.tabs button{padding:10px 13px;min-height:42px}
+  }
+  @media(prefers-reduced-motion:reduce){
+    nav.famtabs button,nav.famtabs button:hover,nav.famtabs button.on{transition:none;transform:none}
+  }
   .page{display:none;animation:fade .2s ease}
   .page.active{display:block}
   @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
@@ -180,6 +195,11 @@
   .z-rh .zc-badge{background:#d9820a} .z-rh .zc-act{color:#b06d0a}
   .z-compta .zc-act{color:#5c7468}
   .z-site .zc-act{color:#0c8fce}
+  /* étape2 : cartes accueil par famille (couleurs charte) */
+  .z-adherents .zc-badge{background:#127a51} .z-adherents .zc-act{color:#127a51}
+  .z-bureau .zc-badge{background:#0e6b6b} .z-bureau .zc-act{color:#0e6b6b}
+  .z-equipe .zc-badge{background:#7a3b5e} .z-equipe .zc-act{color:#7a3b5e}
+  .z-finances .zc-act{color:#a96f12}
   .dashstate{margin:2px 0 16px}
   .dashstate-in{display:inline-flex;align-items:center;gap:8px;font-size:14px;font-weight:700;padding:9px 14px;border-radius:12px}
   .dashstate-in.act{background:linear-gradient(135deg,#fff6e2,#fdeecb);color:#8a5a00;box-shadow:0 2px 10px rgba(176,124,0,.13)}
@@ -3660,23 +3680,24 @@ const ZONE_ICONS={
   site:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><path d="M3.5 12h17"/><path d="M12 3.5c2.4 2.3 2.4 14.7 0 17"/><path d="M12 3.5c-2.4 2.3-2.4 14.7 0 17"/></svg>'
 };
 const BOB_ZONES=[
-  {key:'bureau', cls:'z-bureau', titre:"Bureau / vie de l'asso", desc:'Adhérents, périscolaire, activités, projets, subventions…', tab:'members', tabs:['members','periscolaire','docsperi','activites','rdv','acmvac','lieux','projects','subventions','repertoire','partenaires','ateliers','secretariat','caprep','presentation','projet','projetados']},
-  {key:'rh', cls:'z-rh', titre:'RH & équipe', desc:'Salariés, congés, horaires, suivi, accompagnement', tab:'conges', tabs:['equipe','accompagnement','rh','personnel','suivi','conges','horaires','incidents']},
-  {key:'compta', cls:'z-compta', titre:'Compta', desc:'Comptabilité, caisse, dettes, bilan, prévisionnel', tab:'accounting', tabs:['accounting','caisse','dettes','bilan','previsionnel']},
+  {key:'adherents', cls:'z-adherents', titre:'Adhérents & familles', desc:'Membres, périscolaire, activités, lieux', tab:'members', tabs:['members','periscolaire','docsperi','activites','rdv','acmvac','lieux']},
+  {key:'bureau', cls:'z-bureau', titre:'Bureau & projets', desc:'Projets, subventions, partenaires, secrétariat', tab:'projects', tabs:['projects','subventions','repertoire','partenaires','ateliers','secretariat','caprep']},
+  {key:'equipe', cls:'z-equipe', titre:'Équipe & salariés', desc:'RH, dossiers, congés, horaires, suivi', tab:'rh', tabs:['equipe','accompagnement','rh','personnel','suivi','conges','horaires','incidents']},
+  {key:'finances', cls:'z-finances', titre:'Finances', desc:'Compta, caisse, dettes, bilan, prévisionnel', tab:'accounting', tabs:['accounting','caisse','dettes','bilan','previsionnel']},
   {key:'site', cls:'z-site', titre:'Site public', desc:'Voir la vitrine publique du CASE', href:'https://pixiartpro.github.io/bob-demo/', tabs:[]}
 ];
 function zoneVisible(z){
-  if(z.key==='site'||z.key==='bureau') return true;
+  if(z.key==='site') return true;
   if(!z.tabs||!z.tabs.length) return true;
   return z.tabs.some(function(t){ const b=document.querySelector('nav.tabs button[data-tab="'+t+'"]'); if(!b) return false; try{ return getComputedStyle(b).display!=='none'; }catch(e){ return true; } });
 }
 function renderZoneCards(){
   const box=document.getElementById('zoneCards'); if(!box) return;
-  const z=(window.bobTodoByZone)||{bureau:0,rh:0,compta:0,site:0};
+  const z=(window.bobTodoByZone)||{adherents:0,bureau:0,equipe:0,finances:0,site:0};
   box.innerHTML=BOB_ZONES.filter(zoneVisible).map(function(Z){
-    const n=(Z.key==='bureau'||Z.key==='rh')?(z[Z.key]||0):0;
+    const n=(Z.key==='finances'||Z.key==='site')?0:(z[Z.key]||0);
     const pastille = n>0 ? '<span class="zc-badge">'+n+'</span>' : '';
-    const etat = (Z.key==='compta') ? '<span class="zc-ok">Consultation</span>'
+    const etat = (Z.key==='finances') ? '<span class="zc-ok">Consultation</span>'
       : (Z.key==='site') ? '<span class="zc-ok">Ouvrir le site ↗</span>'
       : (n>0 ? '<span class="zc-act">'+n+(n>1?' choses à traiter':' chose à traiter')+'</span>' : '<span class="zc-ok">à jour ✓</span>');
     const inner='<div class="zc-top"><div class="zc-ico"><img src="assets/badges/'+Z.key+'.png" alt="" loading="lazy"></div>'+pastille+'</div><div class="zc-t">'+esc(Z.titre)+'</div><div class="zc-d">'+esc(Z.desc)+'</div><div class="zc-state">'+etat+'</div>';
@@ -3685,9 +3706,9 @@ function renderZoneCards(){
   }).join('');
   const st=document.getElementById('dashState');
   if(st){
-    const total=(z.bureau||0)+(z.rh||0);
+    const total=(typeof z._total==='number')?z._total:((z.adherents||0)+(z.bureau||0)+(z.equipe||0));
     st.innerHTML = total>0
-      ? '<div class="dashstate-in act">📌 <b>'+total+'</b> '+(total>1?'choses t\'attendent':'chose t\'attend')+' — clique la carte qui a une pastille.</div>'
+      ? '<div class="dashstate-in act">📌 <b>'+total+'</b> '+(total>1?'choses t\'attendent':'chose t\'attend')+' — les cartes et la liste ci-dessous t\'y mènent.</div>'
       : '<div class="dashstate-in ok">✅ Tout est à jour, rien ne t\'attend aujourd\'hui.</div>';
   }
 }
@@ -6067,7 +6088,7 @@ renderAll();
       q('questions_aide','statut','nouvelle'),
       q('ateliers','statut','proposition')
     ]);
-    window.bobTodoByZone={bureau:peri+cpt+part+ques+atel,rh:cg,compta:0,site:0};
+    window.bobTodoByZone={adherents:peri, bureau:part+atel, equipe:cg, finances:0, site:0, _total:cg+peri+cpt+part+ques+atel};
     if(window.renderZoneCards) window.renderZoneCards();
     const items=[
       {n:cg,emo:'🏖️',lab:"demande(s) de congé à valider",act:"bobGoTab('conges')"},
