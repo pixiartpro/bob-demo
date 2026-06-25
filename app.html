@@ -2158,6 +2158,34 @@ const today = () => new Date().toISOString().slice(0,10);
 const fmtDate = d => d ? new Date(d).toLocaleDateString('fr-FR') : '';
 const uid = () => Date.now().toString(36)+Math.random().toString(36).slice(2,7);
 
+/* ===== Coffre : chiffrement des notes sensibles (liens), 100% côté navigateur =====
+   AES-256-GCM + PBKDF2 (WebCrypto). Rien (ni la clé, ni le texte clair) ne part vers la base.
+   Une note chiffrée a la forme :  BOBV1.<saltB64>.<ivB64>.<cipherB64>                       */
+const Coffre = (() => {
+  const PREFIX='BOBV1.';
+  const tenc=new TextEncoder(), tdec=new TextDecoder();
+  const b64=(buf)=>btoa(String.fromCharCode.apply(null,new Uint8Array(buf)));
+  const unb64=(s)=>Uint8Array.from(atob(s),c=>c.charCodeAt(0));
+  async function deriveKey(pass,salt){
+    const base=await crypto.subtle.importKey('raw',tenc.encode(pass),'PBKDF2',false,['deriveKey']);
+    return crypto.subtle.deriveKey({name:'PBKDF2',salt,iterations:150000,hash:'SHA-256'},base,{name:'AES-GCM',length:256},false,['encrypt','decrypt']);
+  }
+  const estChiffre=(t)=>typeof t==='string' && t.startsWith(PREFIX);
+  async function chiffrer(clair,pass){
+    const salt=crypto.getRandomValues(new Uint8Array(16)), iv=crypto.getRandomValues(new Uint8Array(12));
+    const key=await deriveKey(pass,salt);
+    const ct=await crypto.subtle.encrypt({name:'AES-GCM',iv},key,tenc.encode(clair));
+    return PREFIX+b64(salt)+'.'+b64(iv)+'.'+b64(ct);
+  }
+  async function dechiffrer(token,pass){
+    if(!estChiffre(token)) return token;
+    const parts=token.split('.'); const key=await deriveKey(pass,unb64(parts[1]));
+    try{ return tdec.decode(await crypto.subtle.decrypt({name:'AES-GCM',iv:unb64(parts[2])},key,unb64(parts[3]))); }
+    catch(e){ throw new Error('CODE_INVALIDE'); }
+  }
+  return { PREFIX, estChiffre, chiffrer, dechiffrer };
+})();
+
 let db = load();
 function load(){ try{ return Object.assign(blank(), JSON.parse(localStorage.getItem(KEY))||{}); }catch(e){ return blank(); } }
 function blank(){ return {members:[],ops:[],projects:[],subventions:[],comptes:[],contacts:[],liens:[],docs:[],notes:[],echeances:[],reunions:[],incidents:[],dettes:[],recurrents:{},protocoles:[],contrats:[],accueilIntro:'',accompNotes:'',rhOrgCible:'',projetMission:'',projetValeurs:'',projetOrientations:'',orga:null,projetAdosSuivi:'',assurance:{},periscolaire:{enfants:[]},capoints:[]}; }
@@ -2271,6 +2299,7 @@ document.querySelectorAll('nav.tabs button').forEach(b=>{
 
 /* ---- Aide : « Demande à Zanana » (FAQ + assistant par mots-clés, sans IA) ---- */
 const FAQ=[
+  {cat:'🗂️ Répertoire',q:"Comment protéger un identifiant ou un mot de passe dans les liens ?",kw:"lien liens mot de passe motdepasse code coffre chiffrer chiffré cadenas secret acces identifiant proteger confidentiel reveler reveler tam mairie orange portail securiser cacher",a:"Dans <b>🗂️ Répertoire</b>, section <b>Liens</b> : mets l'identifiant et le mot de passe dans la <b>note</b> du lien, puis clique <b>🔒</b> sur la ligne (ou <b>« Protéger les accès »</b> en haut de la liste) et choisis un <b>code du coffre</b> connu du bureau. La note devient <b>illisible</b> (chiffrée) — même en ligne, personne ne peut la lire sans le code. Pour la relire : bouton <b>« Révéler »</b> + le code ; pour la modifier : <b>🔓 Déprotéger</b>. Le code <b>n'est jamais enregistré</b> : on le tape à chaque fois. Si tu oublies le code, re-saisis l'accès (il existe aussi sur le vrai portail)."},
   {cat:'🛎️ Réserver une salle',q:"Comment réserver une salle, et comment valider une demande ?",kw:"reserver salle reservation demande creneau local kaz zados bringelliers occupation valider refuser bureau intervenant adherent guichet deport",a:"Onglet <b>🛎️ Réserver une salle</b>. Les adhérents et intervenants déposent leur demande depuis leur espace adhérent (salle, jour, créneau, motif). La demande tombe ici et dans <b>⏰ À traiter</b>. Le bureau valide ou refuse — et un membre <b>ne peut pas valider sa propre demande</b> (déport, un autre membre doit le faire). Les réservations validées forment l'occupation des locaux."},
   {cat:'📊 Tableau de bord', q:"Où sont passés les onglets ? Comment marche la nouvelle barre en couleur ?", kw:"onglet onglets barre famille familles couleur couleurs ranger retrouver navigation menu reglages outils bureau finances adherents equipe perdu trouve trouver disparu deplace deplacer organisation secretariat",
    a:"La barre du haut est rangée en <b>4 familles colorées</b> : 👥 <b>Adhérents</b> (vert — membres, périscolaire, activités, lieux…), 🏛️ <b>Bureau</b> (sarcelle — projets, subventions, partenaires, ateliers, répertoire, secrétariat, préparer le CA), 🧑‍💼 <b>Équipe</b> (prune — RH, dossiers salariés, congés, horaires, suivi…) et 💶 <b>Finances</b> (ambre — compta, caisse, dettes, bilan, prévisionnel). Plus 🏠 <b>Accueil</b> (tableau de bord + présentation/projet) et 🧰 <b>Réglages</b> (données, aide, historique). Clique une famille pour ouvrir ses onglets. <b>Rien n'a été supprimé</b> : tout est juste regroupé par couleur pour s'y retrouver plus vite, surtout sur téléphone."},
@@ -2486,6 +2515,7 @@ function pageHelpGotoAide(){ pageHelpClose(); const b=document.querySelector('na
 
 /* ---- ✨ Quoi de neuf (nouveautés + notice chronologique) ---- */
 const NEWS=[
+  {id:'2026-06-25-coffre-liens',date:'2026-06-25',tab:'🗂️ Répertoire',titre:"🔒 Accès protégés par un code (liens)",desc:"Dans 🗂️ Répertoire, tu peux maintenant chiffrer les identifiants et mots de passe rangés dans les notes des liens (TAM, Mairie, Orange…). Clique 🔒 sur un lien (ou « Protéger les accès » en haut de la liste) et choisis un code du coffre connu du bureau : la note devient illisible, même dans la base en ligne. Pour la relire : bouton « Révéler » + le code ; pour la modifier : 🔓 Déprotéger. Le code n'est jamais enregistré — on le tape à chaque fois (et s'il est oublié, on re-saisit l'accès, qui existe aussi sur le vrai portail)."},
   {id:'2026-06-25-espace-salarie-blocs',date:'2026-06-25',tab:'👥 Dossiers salariés',titre:"🧑‍💼 Espace salarié rangé en blocs + inscriptions VEPI",desc:"L'espace de chaque salarié s'ouvre maintenant sur un choix clair de blocs — « 🧑‍💼 Mon RH » (dossier, planning, congés, documents) et « 🎒 Mes activités » — au lieu d'une longue page à faire défiler. Côté activités : un salarié peut désormais gérer les inscrits (ajouter / retirer) même sur une activité que le bureau a déjà publiée (VEPI, ACM…) ; le bureau garde la main sur le titre, les places et la publication. Et ses documents partagés s'ouvrent en aperçu directement dans l'appli, sans avoir à les télécharger."},
   {id:'2026-06-23-reserver-salle',date:'2026-06-23',tab:'reserver',titre:'🛎️ Réserver une salle',desc:"Nouveau guichet : les adhérents et intervenants demandent une salle (jour + créneau) depuis leur espace, le bureau valide ou refuse au même endroit. Un membre ne peut pas valider sa propre demande."},
   {id:'2026-06-23-presence-quorum', date:'2026-06-23', tab:'🧰 Secrétariat', titre:"👥 Présence & quorum du CA (calcul automatique)", desc:"Dans 🧰 Secrétariat, un panneau « 👥 Membres du CA » te laisse lister tous les membres une fois pour toutes. Sur chaque réunion, déplie « 👥 Présence & quorum » et pointe présent / excusé / absent / pouvoir-à-X : Bob calcule le quorum tout seul (un tiers des membres, art.13 — les pouvoirs comptent s'ils vont à un présent) et imprime la feuille d'émargement. Le calcul est indicatif : sa constatation reste au CA en séance."},
@@ -3066,6 +3096,7 @@ let editCtx=null;
 function openEdit(entity,id){
   const sch=EDIT_SCHEMAS[entity]; if(!sch)return;
   const rec=(db[sch.coll]||[]).find(x=>x.id===id); if(!rec)return;
+  if(entity==='liens' && Coffre.estChiffre(rec.note)){ alert('🔒 Cet accès est protégé. Utilise « Révéler » pour le lire, ou « 🔓 Déprotéger » pour le modifier.'); return; }
   editCtx={entity,id};
   const body=sch.f.map(f=>{
     const sval=rec[f.k]==null?'':rec[f.k];
@@ -3125,11 +3156,36 @@ async function addDocFile(input){
   rec.files=rec.files||[]; rec.files.push({name:f.name, ref, ts:today()});
   save(); renderDocsModal();
 }
+// ===== Visionneuse de documents (aperçu intégré, sans téléchargement) =====
+window.docView=function(url,name){
+  const ext=(String(name||url||'').toLowerCase().match(/\.([a-z0-9]+)(?:[?#].*)?$/)||[])[1]||'';
+  const isImg=['png','jpg','jpeg','gif','webp','bmp','heic','heif','avif','svg'].includes(ext);
+  const isPdf=ext==='pdf';
+  let body;
+  if(isImg) body='<img src="'+url+'" alt="" style="max-width:100%;max-height:80vh;border-radius:10px;display:block;margin:0 auto;background:#fff">';
+  else if(isPdf) body='<iframe src="'+url+'" style="width:100%;height:80vh;border:none;border-radius:10px;background:#fff"></iframe>';
+  else body='<div style="padding:28px;text-align:center;color:#5c7468">Ce type de fichier ne s\'affiche pas dans le navigateur (ex. Word).<br><a href="'+url+'" target="_blank" rel="noopener" style="display:inline-block;margin-top:12px;background:#127a51;color:#fff;text-decoration:none;border-radius:999px;padding:9px 16px;font-weight:800">⬇️ Ouvrir / télécharger</a></div>';
+  let ov=document.getElementById('docViewer');
+  if(!ov){ ov=document.createElement('div'); ov.id='docViewer'; ov.style.cssText='position:fixed;inset:0;z-index:3000'; document.body.appendChild(ov); }
+  ov.innerHTML='<div onclick="docViewClose()" style="position:absolute;inset:0;background:rgba(15,30,25,.55)"></div>'
+    +'<div style="position:relative;max-width:920px;width:calc(100% - 28px);margin:3vh auto;background:#fff;border-radius:18px;box-shadow:0 24px 60px rgba(16,60,40,.3);overflow:hidden;max-height:94vh;display:flex;flex-direction:column">'
+      +'<div style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding:11px 14px;border-bottom:1px solid #e6ece7">'
+        +'<span style="font-weight:800;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+esc(name||'Document')+'</span>'
+        +'<span style="white-space:nowrap"><a href="'+url+'" target="_blank" rel="noopener" title="Télécharger" style="text-decoration:none;margin-right:8px;font-size:18px">⬇️</a>'
+        +'<button onclick="docViewClose()" class="ghost btn" style="padding:5px 11px">✕ Fermer</button></span>'
+      +'</div>'
+      +'<div style="padding:12px;overflow:auto;background:#f4f8f5">'+body+'</div>'
+    +'</div>';
+  ov.style.display='block'; document.body.style.overflow='hidden';
+};
+window.docViewClose=function(){ const ov=document.getElementById('docViewer'); if(ov){ ov.style.display='none'; ov.innerHTML=''; } document.body.style.overflow=''; };
+document.addEventListener('keydown',function(e){ if(e.key==='Escape') docViewClose(); });
+
 async function openDoc(i){
   if(!docsCtx)return; const rec=(db[docsCtx.entity]||[]).find(x=>x.id===docsCtx.id); if(!rec)return;
   const f=(rec.files||[])[i]; if(!f)return;
   const url=window.bobPhotoSrc?await window.bobPhotoSrc(f.ref):f.ref;
-  if(url) window.open(url,'_blank'); else alert('Document indisponible.');
+  if(url) docView(url, f.name||'Document'); else alert('Document indisponible.');
 }
 function delDocFile(i){
   if(!docsCtx)return; if(!confirm('Retirer ce document de la liste ?'))return;
@@ -3605,6 +3661,39 @@ function addLien(){
   ['l_label','l_cat','l_url','l_note'].forEach(i=>$(i).value=''); save();
 }
 function delLien(id){ if(confirm('Supprimer ce lien ?')){ db.liens=db.liens.filter(l=>l.id!==id); save(); } }
+/* ---- 🔒 Accès chiffrés : notes confidentielles des liens (identifiants / mots de passe) ----
+   Chiffrement côté navigateur (module Coffre). Le « code du coffre » n'est jamais enregistré : tapé à chaque fois. */
+async function protegerLien(id){
+  const l=(db.liens||[]).find(x=>x.id===id); if(!l||!l.note) return;
+  if(Coffre.estChiffre(l.note)){ alert('Cet accès est déjà protégé.'); return; }
+  const code=prompt('Choisis le CODE DU COFFRE (le même pour tous les accès, à retenir) :'); if(!code) return;
+  const code2=prompt('Confirme le code :'); if(code2!==code){ alert("Les deux codes sont différents — rien n'a été protégé."); return; }
+  l.note=await Coffre.chiffrer(l.note, code); save();
+  alert('🔒 Accès protégé. Pour le relire : bouton « Révéler » + ce code.');
+}
+async function protegerTousLiens(){
+  const list=(db.liens||[]).filter(l=>l.note && !Coffre.estChiffre(l.note));
+  if(!list.length){ alert('Aucune note à protéger.'); return; }
+  const code=prompt('Choisis le CODE DU COFFRE (le même pour tous les accès, à retenir) :'); if(!code) return;
+  const code2=prompt('Confirme le code :'); if(code2!==code){ alert("Les deux codes sont différents — rien n'a été protégé."); return; }
+  for(const l of list){ l.note=await Coffre.chiffrer(l.note, code); }
+  save(); alert('🔒 '+list.length+' accès protégé(s). Pour les relire : « Révéler » + ce code.');
+}
+async function revealLien(id){
+  const l=(db.liens||[]).find(x=>x.id===id); if(!l) return;
+  const code=prompt('Code du coffre :'); if(!code) return;
+  try{
+    const clair=await Coffre.dechiffrer(l.note, code);
+    const cell=document.getElementById('ln_'+id);
+    if(cell) cell.innerHTML='🔓 '+esc(clair).replace(/\n/g,'<br>')+' · <button class="ghost btn" style="padding:2px 8px;font-size:12px" onclick="renderRepertoire()">Masquer</button>';
+  }catch(e){ alert('Code incorrect.'); }
+}
+async function deprotegerLien(id){
+  const l=(db.liens||[]).find(x=>x.id===id); if(!l||!Coffre.estChiffre(l.note)) return;
+  const code=prompt('Code du coffre (pour déprotéger et pouvoir modifier) :'); if(!code) return;
+  try{ l.note=await Coffre.dechiffrer(l.note, code); save(); alert('🔓 Note remise en clair. Modifie-la avec ✏️, puis re-protège-la avec 🔒.'); }
+  catch(e){ alert('Code incorrect.'); }
+}
 function renderRepertoire(){
   const cq=($('c_search')?.value||'').toLowerCase();
   const cs=(db.contacts||[]).filter(c=>(c.name+' '+c.org+' '+c.email+' '+c.note).toLowerCase().includes(cq));
@@ -3616,12 +3705,14 @@ function renderRepertoire(){
     : '<tr><td colspan="5" class="empty">Aucun contact. Ajoute le comptable, le CAC, les financeurs…</td></tr>';
   const lq=($('l_search')?.value||'').toLowerCase();
   const ls=(db.liens||[]).filter(l=>(l.label+' '+l.cat+' '+l.url+' '+l.note).toLowerCase().includes(lq));
-  $('lienRows').innerHTML = ls.length ? ls.map(l=>`<tr>
+  const aProtLn=(db.liens||[]).filter(l=>l.note && !Coffre.estChiffre(l.note)).length;
+  const lnProtBar=aProtLn?`<tr><td colspan="5" style="background:#fffaf0"><button class="ghost btn" style="padding:5px 11px;font-size:12.5px" onclick="protegerTousLiens()">🔒 Protéger ${aProtLn} accès (identifiants / mots de passe)</button> <span class="muted" style="font-size:12px">— chiffre les notes avec un code connu du bureau</span></td></tr>`:'';
+  $('lienRows').innerHTML = ls.length ? (lnProtBar+ls.map(l=>`<tr>
     <td><strong>${esc(l.label)}</strong></td>
     <td>${l.cat?'<span class="pill" style="background:#eef2fb;color:#1f4fc4">'+esc(l.cat)+'</span>':'—'}</td>
     <td style="font-size:13px">${l.url?`<a href="${esc(l.url)}" target="_blank" rel="noopener">Ouvrir ↗</a>`:'—'}</td>
-    <td class="muted" style="font-size:13px">${esc(l.note||'')}</td>
-    <td style="white-space:nowrap"><button class="ghost btn" style="padding:4px 9px;font-size:12px" onclick="openEdit('liens','${l.id}')" title="Modifier">✏️</button><button class="danger" onclick="delLien('${l.id}')">Suppr.</button></td></tr>`).join('')
+    <td class="muted" style="font-size:13px" id="ln_${l.id}">${Coffre.estChiffre(l.note)?`🔒 <button class="ghost btn" style="padding:2px 8px;font-size:12px" onclick="revealLien('${l.id}')">Révéler</button>`:esc(l.note||'')}</td>
+    <td style="white-space:nowrap">${l.note?(Coffre.estChiffre(l.note)?`<button class="ghost btn" style="padding:4px 9px;font-size:12px" onclick="deprotegerLien('${l.id}')" title="Déprotéger pour modifier">🔓</button>`:`<button class="ghost btn" style="padding:4px 9px;font-size:12px" onclick="protegerLien('${l.id}')" title="Protéger (chiffrer la note)">🔒</button>`):''}<button class="ghost btn" style="padding:4px 9px;font-size:12px" onclick="openEdit('liens','${l.id}')" title="Modifier">✏️</button><button class="danger" onclick="delLien('${l.id}')">Suppr.</button></td></tr>`).join(''))
     : '<tr><td colspan="5" class="empty">Aucun lien. Ajoute les portails de subvention, espaces financeurs…</td></tr>';
   // Documents clés
   const ds=db.docs||[];
@@ -5517,7 +5608,7 @@ renderAll();
     box.innerHTML=(canWrite?'<div style="margin:0 0 12px"><button class="btn" onclick="docsPeriUploadAll()">⬆️ Tout déposer en 1 fois</button> <span class="muted" style="font-size:12px">— choisis les 8 fichiers d\'un coup, ils se rangent tout seuls</span></div>':'')+'<table style="width:100%;border-collapse:collapse">'+DOCSPERI.map(function(d){
       const e=store[d.k];
       const etat=(e&&e.path)?'<span class="pill ok">✅ déposé</span>':'<span class="pill">— à déposer</span>';
-      const dl=(e&&e.path)?'<button class="ghost btn" onclick="docsPeriDownload(\''+d.k+'\')">⬇️ Télécharger</button> ':'';
+      const dl=(e&&e.path)?'<button class="ghost btn" onclick="docsPeriDownload(\''+d.k+'\')">👁️ Ouvrir</button> ':'';
       const up=canWrite?'<button class="btn" onclick="docsPeriUpload(\''+d.k+'\')">⬆️ Téléverser</button>':'';
       return '<tr><td style="padding:8px;border-top:1px solid #eee"><b>'+d.label+'</b><br><span class="muted" style="font-size:12px">'+d.file+'</span></td><td style="padding:8px;border-top:1px solid #eee">'+etat+'</td><td style="padding:8px;border-top:1px solid #eee;text-align:right;white-space:nowrap">'+dl+up+'</td></tr>';
     }).join('')+'</table>';
@@ -5545,7 +5636,7 @@ renderAll();
     try{
       const r=await sbc.storage.from('dossiers-periscolaire').createSignedUrl(e.path,3600);
       if(r.error||!r.data){ alert('Indisponible.'); return; }
-      window.open(r.data.signedUrl,'_blank');
+      docView(r.data.signedUrl, e.file||'Document');
     }catch(e2){ alert('Indisponible.'); }
   };
   window.docsPeriUploadAll=function(){
@@ -5602,7 +5693,7 @@ renderAll();
     if(!path) return;
     const {data,error}=await sbc.storage.from('dossiers-periscolaire').createSignedUrl(path,3600);
     if(error||!data){ alert('Pièce introuvable : '+(error?error.message:'')); return; }
-    window.open(data.signedUrl,'_blank');
+    docView(data.signedUrl, path);
   };
   window.setDossierPeri=async function(id,statut){
     const {error}=await sbc.from('inscriptions_periscolaire').update({statut}).eq('id',id);
@@ -5849,7 +5940,7 @@ renderAll();
   window.setInsact=async function(id,patch){ const {error}=await sbc.from('inscriptions_activite').update(patch).eq('id',id); if(error){alert(error.message);return;} loadActivitesGestion(); };
   window.setInsactRdv=function(id,kind){ const el=document.getElementById((kind==='recup'?'rdvr_':'rdvd_')+id); const v=el?el.value:''; if(!v){alert('Choisis une date.');return;} setInsact(id, kind==='recup'?{rdv_recup:v,statut:'rdv_recup'}:{rdv_depot:v,statut:'rdv_depot'}); };
   window.insactNote=async function(id){ const el=document.getElementById('insnote_'+id); const {error}=await sbc.from('inscriptions_activite').update({note_bureau:el?el.value:''}).eq('id',id); setSync(error?('⚠️ '+error.message):'✓ note enregistrée', error?'#ffd9d0':'#dff5e9'); };
-  window.bureauActViewPiece=async function(path){ if(!path)return; const {data,error}=await sbc.storage.from('dossiers-periscolaire').createSignedUrl(path,3600); if(error||!data){alert('Pièce introuvable.');return;} window.open(data.signedUrl,'_blank'); };
+  window.bureauActViewPiece=async function(path){ if(!path)return; const {data,error}=await sbc.storage.from('dossiers-periscolaire').createSignedUrl(path,3600); if(error||!data){alert('Pièce introuvable.');return;} docView(data.signedUrl, path); };
   function agReset(){ const g=id=>document.getElementById(id); ['ag_id','ag_nom','ag_cat','ag_emoji','ag_desc','ag_date','ag_quand','ag_lieu','ag_programme'].forEach(k=>{ if(g(k)) g(k).value=''; }); if(g('ag_cap'))g('ag_cap').value='20'; if(g('ag_type'))g('ag_type').value='activite'; if(g('ag_statut'))g('ag_statut').value='ouvert'; if(g('ag_pub'))g('ag_pub').value='1'; if(g('ag_ordre'))g('ag_ordre').value='0'; const b=g('ag_btn'); if(b) b.textContent='+ Créer'; }
   window.addActivite=async function(){
     const g=id=>document.getElementById(id);
@@ -6350,7 +6441,7 @@ renderAll();
     if(statut==='valide' && c.nb_jours>0 && (c.type==='CP'||c.type==='RTT')){ const f=PERS.list.find(x=>x.id===c.personnel_id); if(f){ const col=(c.type==='RTT')?'solde_rtt':'solde_conges'; const nv=Math.max(0,(f[col]||0)-c.nb_jours); await sbc.from('personnel').update({[col]:nv}).eq('id',f.id); } }
     await loadPersonnel(); if(window.loadTodo) loadTodo();
   }
-  async function congePiece(id){ const c=PERS.conges.find(x=>x.id===id); if(!c||!c.piece||!c.piece.path) return; try{ const {data,error}=await sbc.storage.from('personnel-docs').createSignedUrl(c.piece.path,3600); if(error||!data){ alert('Justificatif indisponible'); return; } window.open(data.signedUrl,'_blank'); }catch(e){ alert('Justificatif indisponible'); } }
+  async function congePiece(id){ const c=PERS.conges.find(x=>x.id===id); if(!c||!c.piece||!c.piece.path) return; try{ const {data,error}=await sbc.storage.from('personnel-docs').createSignedUrl(c.piece.path,3600); if(error||!data){ alert('Justificatif indisponible'); return; } docView(data.signedUrl, (c.piece&&c.piece.name)||'Justificatif'); }catch(e){ alert('Justificatif indisponible'); } }
   window.congePiece=congePiece;
   async function persDocsOpen(id){
     const f=PERS.list.find(x=>x.id===id); if(!f) return; const p=$('persDocsPanel'); p.style.display='';
@@ -6372,7 +6463,7 @@ renderAll();
   }
   async function persDocToggle(docId){ const d=PERS.docs.find(x=>x.id===docId); if(!d) return; const np=!d.partage; const newPath=d.path.replace('/'+(d.partage?'shared':'internal')+'/','/'+(np?'shared':'internal')+'/'); try{ await sbc.storage.from('personnel-docs').move(d.path,newPath); }catch(e){} const up=await sbc.from('personnel_docs').update({partage:np,path:newPath}).eq('id',docId); if(up.error){ alert(up.error.message); return; } await loadPersonnel(); persDocsOpen(d.personnel_id); }
   async function persDocDel(docId){ const d=PERS.docs.find(x=>x.id===docId); if(!d) return; if(!confirm('Supprimer ce document ?')) return; try{ await sbc.storage.from('personnel-docs').remove([d.path]); }catch(e){} const up=await sbc.from('personnel_docs').delete().eq('id',docId); if(up.error){ alert(up.error.message); return; } await loadPersonnel(); persDocsOpen(d.personnel_id); }
-  async function persDocView(docId){ const d=PERS.docs.find(x=>x.id===docId); if(!d) return; try{ const {data,error}=await sbc.storage.from('personnel-docs').createSignedUrl(d.path,3600); if(error||!data){ alert('Indisponible'); return; } window.open(data.signedUrl,'_blank'); }catch(e){ alert('Indisponible'); } }
+  async function persDocView(docId){ const d=PERS.docs.find(x=>x.id===docId); if(!d) return; try{ const {data,error}=await sbc.storage.from('personnel-docs').createSignedUrl(d.path,3600); if(error||!data){ alert('Indisponible'); return; } docView(data.signedUrl, d.name||'Document'); }catch(e){ alert('Indisponible'); } }
   window.loadPersonnel=loadPersonnel; window.persNew=persNew; window.persEdit=persEdit; window.persCloseEdit=persCloseEdit; window.persSave=persSave; window.persLink=persLink; window.persUnlink=persUnlink; window.persDelete=persDelete; window.persImportSalaries=persImportSalaries; window.congeSet=congeSet; window.persDocsOpen=persDocsOpen; window.persDocUpload=persDocUpload; window.persDocToggle=persDocToggle; window.persDocDel=persDocDel; window.persDocView=persDocView;
 
   /* ===== 🔔 À TRAITER (tableau de bord des demandes en attente, bureau — vu par Guy & le président) ===== */
