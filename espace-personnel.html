@@ -70,6 +70,20 @@
   .dv-head{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:11px 14px;border-bottom:1px solid var(--line)}
   .dv-name{font-weight:800;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .dv-body{padding:12px;overflow:auto;background:#f4f8f5}
+  /* Bienvenue + boîte à commentaires (💡) */
+  #welcomeBar{display:flex;gap:12px;align-items:center;justify-content:center;flex-wrap:wrap;background:linear-gradient(90deg,#fff7e6,#eafaf1);border-bottom:1px solid var(--line);padding:11px 16px;font-size:14px;color:var(--ink)}
+  #welcomeBar button{flex:0 0 auto;background:var(--vert);color:#fff;border:none;border-radius:999px;padding:7px 14px;font-weight:800;cursor:pointer;font-family:inherit}
+  #fbFab{position:fixed;right:20px;bottom:20px;z-index:150;width:56px;height:56px;border-radius:50%;border:none;cursor:pointer;background:var(--jaune);color:#5b4300;font-size:24px;box-shadow:var(--shadow-lg)}
+  #fbPanel{position:fixed;right:20px;bottom:86px;z-index:150;width:340px;max-width:calc(100vw - 28px);height:440px;max-height:72vh;background:#fff;border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow-lg);display:none;flex-direction:column;overflow:hidden}
+  #fbPanel.open{display:flex}
+  #fbHead{background:var(--jaune);color:#5b4300;padding:12px 14px;font-weight:800;display:flex;align-items:center;justify-content:space-between}
+  #fbHead button{background:rgba(0,0,0,.12);border:none;color:#5b4300;cursor:pointer;border-radius:8px;font-size:15px;width:28px;height:28px}
+  #fbList{flex:1;overflow:auto;padding:8px;background:#fffdf6}
+  .fbItem{background:#fff;border:1px solid var(--line);border-radius:12px;padding:9px 11px;margin:7px 4px}
+  .fbMeta{font-size:11px;color:#8a7d56;font-weight:700;margin-bottom:3px}
+  #fbBar{padding:8px;border-top:1px solid var(--line)}
+  #fbBar textarea{width:100%;font:inherit;padding:9px 11px;border:1px solid var(--line);border-radius:10px;resize:none;height:60px}
+  #fbBar button{margin-top:6px;width:100%;background:var(--jaune);color:#5b4300;border:none;border-radius:10px;padding:10px;font-weight:800;cursor:pointer}
 </style>
 </head>
 <body>
@@ -123,6 +137,7 @@ async function boot(){
   if(fiche){ jobs.push(loadConges(), loadDocs()); }
   await Promise.all(jobs);
   renderAll();
+  mountFeedback();
 }
 
 async function loadConges(){
@@ -383,6 +398,41 @@ window.spShowDoc=function(url,name){
 };
 window.spCloseDoc=function(){ const ov=document.getElementById('docViewer'); if(ov){ ov.style.display='none'; ov.innerHTML=''; } document.body.style.overflow=''; };
 document.addEventListener('keydown',function(e){ if(e.key==='Escape') spCloseDoc(); });
+
+// ===== Bienvenue + boîte à commentaires (💡) =====
+function fbMe(){ return { id:(ME.session&&ME.session.user&&ME.session.user.id)||null, asso:ME.asso, name:(((ME.prof&&(ME.prof.full_name||ME.prof.email))||'').split('@')[0]), statut:ME.prof&&ME.prof.statut }; }
+function mountFeedback(){
+  if(!localStorage.getItem('case_welcome_salarie_v1') && !document.getElementById('welcomeBar')){
+    const w=document.createElement('div'); w.id='welcomeBar';
+    w.innerHTML='<span>👋 Bienvenue dans ton espace ! On l\'améliore en continu — une idée, un truc à améliorer, un bug&nbsp;? Le bouton <b>💡</b> en bas à droite.</span><button onclick="fbDismissWelcome()">J\'ai compris</button>';
+    const hdr=document.querySelector('header'); if(hdr) hdr.insertAdjacentElement('afterend', w); else document.body.insertBefore(w, document.body.firstChild);
+  }
+  if(!document.getElementById('fbFab')){
+    const fab=document.createElement('button'); fab.id='fbFab'; fab.title='Une idée, un commentaire ?'; fab.textContent='💡'; fab.onclick=fbToggle;
+    const p=document.createElement('div'); p.id='fbPanel';
+    p.innerHTML='<div id="fbHead"><span>💡 Une idée, un commentaire ?</span><button title="Fermer" onclick="fbToggle()">✕</button></div><div id="fbList"></div><div id="fbBar"><textarea id="fbInput" placeholder="Un truc à améliorer, une idée, un bug à signaler ?…"></textarea><button onclick="fbSend()">Envoyer</button></div>';
+    document.body.appendChild(fab); document.body.appendChild(p);
+  }
+}
+window.fbDismissWelcome=function(){ try{localStorage.setItem('case_welcome_salarie_v1','1');}catch(e){} const w=document.getElementById('welcomeBar'); if(w) w.remove(); };
+window.fbToggle=function(){ const p=document.getElementById('fbPanel'); if(!p) return; const open=!p.classList.contains('open'); p.classList.toggle('open',open); if(open){ fbLoadMine(); setTimeout(()=>{const i=document.getElementById('fbInput'); if(i)i.focus();},60); } };
+async function fbLoadMine(){
+  const box=document.getElementById('fbList'); if(!box) return; const me=fbMe();
+  if(!me.id){ box.innerHTML='<p class="empty" style="padding:10px">Connecte-toi pour commenter.</p>'; return; }
+  const {data,error}=await sb.from('suggestions').select('*').eq('author_id',me.id).order('created_at',{ascending:false}).limit(50);
+  if(error){ box.innerHTML='<p class="empty" style="padding:10px">Erreur : '+esc(error.message)+'</p>'; return; }
+  if(!data||!data.length){ box.innerHTML='<p class="empty" style="padding:10px">Tes commentaires apparaîtront ici. Lance-toi 👇</p>'; return; }
+  const ST={nouvelle:'🆕 reçu',vue:'👀 vu',faite:'✅ fait',rejetee:'✖️ écarté'};
+  box.innerHTML=data.map(s=>'<div class="fbItem"><div class="fbMeta">'+esc(new Date(s.created_at).toLocaleString('fr-FR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}))+' <span style="float:right">'+(ST[s.statut]||'')+'</span></div><div style="white-space:pre-wrap">'+esc(s.body)+'</div></div>').join('');
+}
+window.fbSend=async function(){
+  const inp=document.getElementById('fbInput'); if(!inp) return; const body=inp.value.trim(); if(!body){ toast('Écris ton commentaire'); return; }
+  const me=fbMe(); if(!me.id){ toast('Connecte-toi'); return; }
+  inp.value='';
+  const {error}=await sb.from('suggestions').insert({ asso_id:me.asso, author_id:me.id, author_name:me.name, body, context:'🧑‍💼 Espace salarié' });
+  if(error){ toast('Erreur : '+error.message); inp.value=body; return; }
+  toast('✅ Merci, c\'est envoyé au bureau'); fbLoadMine();
+};
 
 boot();
 </script>

@@ -304,7 +304,7 @@
   </section>
 
   <!-- MEMBERS -->
-<button id="pageHelpBtn" onclick="pageHelp()" title="Comprendre cette page" style="position:fixed;right:18px;bottom:18px;z-index:1200;border:none;border-radius:999px;padding:11px 16px;background:#1d7a3f;color:#fff;font-weight:700;font-size:14px;box-shadow:0 4px 14px rgba(0,0,0,.22);cursor:pointer">❓ Aide</button>
+<button id="pageHelpBtn" onclick="pageHelp()" title="Comprendre cette page" style="position:fixed;left:18px;bottom:18px;z-index:1200;border:none;border-radius:999px;padding:11px 16px;background:#1d7a3f;color:#fff;font-weight:700;font-size:14px;box-shadow:0 4px 14px rgba(0,0,0,.22);cursor:pointer">❓ Aide</button>
   <div id="pageHelpModal" onclick="if(event.target===this)pageHelpClose()" style="display:none;position:fixed;inset:0;z-index:1201;background:rgba(0,0,0,.45);align-items:flex-start;justify-content:center;padding:36px 14px;overflow:auto">
     <div style="background:#fff;max-width:640px;width:100%;border-radius:16px;padding:18px 20px 20px;box-shadow:0 12px 44px rgba(0,0,0,.3)">
       <div class="row" style="justify-content:space-between;align-items:center;gap:10px">
@@ -6102,6 +6102,11 @@ renderAll();
   // Boîte à idées / améliorations (bouton flottant 💡, sur toutes les pages)
   function curTabLabel(){ const b=document.querySelector('nav.tabs button.active'); return b?b.textContent.trim():''; }
   const SUG_STATUTS={nouvelle:'🆕 Nouvelle',vue:'👀 Vue',faite:'✅ Faite',rejetee:'✖️ Écartée'};
+  function sugRoleBadge(role){
+    const M={ president:['🏛️ Bureau','#e7edff','#28407a'], tresorier:['🏛️ Bureau','#e7edff','#28407a'], bureau:['🏛️ Bureau','#e7edff','#28407a'], personnel:['👤 Salarié','#efe6ff','#5b3a8a'], adherent:['👪 Adhérent','#e2f4ec','#127a51'], intervenant:['🛠️ Intervenant','#fff1da','#8a5a00'] };
+    const b=M[role]; if(!b) return '';
+    return '<span style="display:inline-block;background:'+b[1]+';color:'+b[2]+';border-radius:999px;padding:1px 7px;margin-right:5px;font-size:10.5px;font-weight:700">'+b[0]+'</span>';
+  }
   function addSuggestWidget(){
     const st=document.createElement('style');
     st.textContent='#sugFab{position:fixed;right:88px;bottom:20px;z-index:200;width:58px;height:58px;border-radius:50%;border:none;cursor:pointer;background:#f4b740;color:#5b4300;font-size:24px;box-shadow:0 10px 26px rgba(16,60,40,.3)}'
@@ -6122,6 +6127,16 @@ renderAll();
       +'<div id="sugList"><p class="hint" style="padding:10px">Chargement…</p></div>'
       +'<div id="sugBar"><textarea id="sugInput" placeholder="Une idée, un truc à améliorer, un bug à signaler ?…"></textarea><button onclick="sendSuggest()">Envoyer ma suggestion</button></div>';
     document.body.appendChild(fab); document.body.appendChild(panel);
+    // Bandeau de bienvenue (dismissible, mémorisé par appareil)
+    if(!localStorage.getItem('case_welcome_bureau_v1') && !document.getElementById('welcomeBar')){
+      const w=document.createElement('div'); w.id='welcomeBar';
+      w.style.cssText='display:flex;gap:12px;align-items:center;justify-content:center;flex-wrap:wrap;background:linear-gradient(90deg,#fff7e6,#eafaf1);border-bottom:1px solid #e6ece7;padding:10px 16px;font-size:14px;color:#1d3a2e';
+      w.innerHTML='<span>👋 Bienvenue ! On améliore Bob en continu — une idée, un truc à améliorer, un bug&nbsp;? Le bouton <b>💡</b> en bas à droite. Les commentaires des salariés et des familles arrivent ici aussi.</span>';
+      const b=document.createElement('button'); b.textContent='J\'ai compris'; b.style.cssText='flex:0 0 auto;background:#127a51;color:#fff;border:none;border-radius:999px;padding:7px 14px;font-weight:800;cursor:pointer';
+      b.onclick=function(){ try{localStorage.setItem('case_welcome_bureau_v1','1');}catch(e){} w.remove(); };
+      w.appendChild(b);
+      document.body.insertBefore(w, document.body.firstChild);
+    }
   }
   window.toggleSuggest=function(){
     const p=document.getElementById('sugPanel'); const open=!p.classList.contains('open');
@@ -6133,10 +6148,13 @@ renderAll();
     const {data,error}=await sbc.from('suggestions').select('*').order('created_at',{ascending:false}).limit(100);
     if(error){ box.innerHTML='<p class="hint" style="padding:10px;color:#c0392b">Erreur : '+esc(error.message)+'</p>'; return; }
     if(!data||!data.length){ box.innerHTML='<p class="hint" style="padding:10px">Aucune idée pour l\'instant. Lance-toi : qu\'est-ce qu\'on pourrait améliorer&nbsp;?</p>'; return; }
+    let roleById={};
+    try{ const ids=[...new Set(data.map(s=>s.author_id).filter(Boolean))];
+      if(ids.length){ const {data:profs}=await sbc.from('profiles').select('id,role').in('id',ids); (profs||[]).forEach(p=>{roleById[p.id]=p.role;}); } }catch(e){}
     box.innerHTML=data.map(s=>{
       const d=new Date(s.created_at).toLocaleString('fr-FR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
       return '<div style="margin:7px 4px;background:#fff;border:1px solid #e6ece7;border-radius:12px;padding:9px 11px">'
-        +'<div style="font-size:11px;color:#8a7d56;font-weight:700">'+esc(s.author_name||'?')+' · '+esc(d)+(s.context?' · '+esc(s.context):'')+' <span style="float:right">'+(SUG_STATUTS[s.statut]||'')+'</span></div>'
+        +'<div style="font-size:11px;color:#8a7d56;font-weight:700">'+sugRoleBadge(roleById[s.author_id])+esc(s.author_name||'?')+' · '+esc(d)+(s.context?' · '+esc(s.context):'')+' <span style="float:right">'+(SUG_STATUTS[s.statut]||'')+'</span></div>'
         +'<div style="white-space:pre-wrap;margin-top:3px">'+esc(s.body)+'</div>'
         +(canWrite?'<div style="margin-top:7px;display:flex;gap:5px;flex-wrap:wrap">'
             +'<button onclick="setSugStatut(\''+s.id+'\',\'vue\')" style="font-size:12px;border:1px solid #e6ece7;background:#fff;border-radius:8px;padding:3px 8px;cursor:pointer">👀 Vue</button>'
