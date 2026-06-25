@@ -52,6 +52,24 @@
   #toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
   footer{background:var(--vert-fonce);color:#dff3e9;padding:22px;text-align:center;margin-top:18px;font-size:14px}
   .pre{white-space:pre-wrap;font:inherit;margin:0}
+  /* Hub de blocs (accueil salarié) */
+  .hubgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:16px;margin-top:6px}
+  .hubcard{text-align:left;cursor:pointer;background:var(--card);border:1px solid var(--line);border-radius:22px;padding:22px 22px 18px;box-shadow:var(--shadow);font-family:inherit;color:inherit;display:flex;flex-direction:column;gap:6px;min-height:160px;transition:transform .16s,box-shadow .16s,border-color .16s}
+  .hubcard:hover{transform:translateY(-3px);box-shadow:var(--shadow-lg);border-color:var(--vert)}
+  .hubcard:active{transform:translateY(-1px)}
+  .hubico{font-size:40px;line-height:1}
+  .hubname{font-size:20px;font-weight:900;color:var(--ink)}
+  .hubsub{color:var(--muted);font-size:14.5px;flex:1}
+  .hubgo{font-weight:800;color:var(--vert);font-size:14.5px}
+  .backbar{display:flex;align-items:center;gap:12px;padding:16px 0 2px}
+  .backttl{font-weight:900;font-size:17px}
+  /* Visionneuse de documents (aperçu intégré, sans téléchargement) */
+  #docViewer{display:none;position:fixed;inset:0;z-index:200}
+  .dv-backdrop{position:absolute;inset:0;background:rgba(20,40,30,.55)}
+  .dv-card{position:relative;max-width:920px;margin:3vh auto;width:calc(100% - 28px);background:#fff;border-radius:18px;box-shadow:var(--shadow-lg);overflow:hidden;max-height:94vh;display:flex;flex-direction:column}
+  .dv-head{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:11px 14px;border-bottom:1px solid var(--line)}
+  .dv-name{font-weight:800;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .dv-body{padding:12px;overflow:auto;background:#f4f8f5}
 </style>
 </head>
 <body>
@@ -115,15 +133,51 @@ async function loadDocs(){
 }
 
 function renderAll(){
-  const f=ME.fiche, p=ME.prof, hasFiche=!!f;
-  let html='<div class="hero"><div class="wrap">'
+  if(!ME.view) ME.view='hub';
+  const f=ME.fiche, p=ME.prof;
+  const html='<div class="hero"><div class="wrap">'
       +'<p class="hello">👋 Bonjour '+esc((f&&f.prenom)||p.full_name||'')+'</p>'
       +'<p class="sub">'+esc((f&&f.poste)||'Salarié·e du CASE')+(f&&f.type_contrat?' · '+esc(f.type_contrat):'')+(f&&f.temps_travail?' · '+esc(f.temps_travail):'')+'</p>'
     +'</div></div>'
-    +'<div class="wrap">'
-    // ===== MA GESTION (toujours visible) =====
-    +'<section class="block"><h2 class="title">🎒 Ma gestion — activités & inscriptions</h2>'
-      +'<p class="sub">Crée et gère tes activités (ACM, ateliers…) et les enfants inscrits. <b>Tu prépares</b> ; le bureau publie sur le site public et s\'occupe de l\'argent. Chaque action est enregistrée.</p>'
+    +'<div class="wrap"><div id="viewport"></div>'
+    +'<footer>CASE du Bois de Nèfles · Espace salarié · données hébergées en France (RGPD)</footer></div>';
+  $('#content').innerHTML=html;
+  renderView();
+}
+window.spView=function(v){ ME.view=v; renderView(); try{window.scrollTo({top:0,behavior:'smooth'});}catch(e){} };
+function renderView(){
+  const vp=$('#viewport'); if(!vp) return;
+  if(ME.view==='activites'){ vp.innerHTML=backBar('🎒 Mes activités')+activitesHTML(); renderActs(); }
+  else if(ME.view==='rh'){ vp.innerHTML=backBar('🧑‍💼 Mon RH')+rhHTML(); if(ME.fiche){ renderConges(); renderDocs(); } }
+  else { vp.innerHTML=hubHTML(); }
+}
+function backBar(t){ return '<div class="backbar"><button class="btn ghost" onclick="spView(\'hub\')">← Retour</button><span class="backttl">'+esc(t)+'</span></div>'; }
+
+// ===== Accueil : choisir un bloc =====
+function hubHTML(){
+  const f=ME.fiche, hasFiche=!!f;
+  const nbAct=ME.acts.length, nbIns=ME.ins.length;
+  const actSub=nbAct?(nbAct+' activité'+(nbAct>1?'s':'')+' · '+nbIns+' inscrit'+(nbIns>1?'s':'')):'Crée ta première activité';
+  let rhSub, rhBadge='';
+  if(hasFiche){
+    const att=ME.conges.filter(c=>c.statut==='demande').length;
+    rhSub='Dossier, planning, congés & documents';
+    if(att) rhBadge=' <span class="badge b-demande">'+att+' en attente</span>';
+  } else { rhSub='Activé par le bureau dès qu\'il crée ta fiche'; }
+  return '<section class="block"><h2 class="title">Que veux-tu faire ?</h2>'
+    +'<p class="sub" style="margin:-4px 0 14px">Choisis un espace — tu pourras toujours revenir ici.</p>'
+    +'<div class="hubgrid">'
+      +'<button class="hubcard" onclick="spView(\'activites\')"><div class="hubico">🎒</div>'
+        +'<div class="hubname">Mes activités</div><div class="hubsub">'+esc(actSub)+'</div><div class="hubgo">Entrer →</div></button>'
+      +'<button class="hubcard" onclick="spView(\'rh\')"><div class="hubico">🧑‍💼</div>'
+        +'<div class="hubname">Mon RH'+rhBadge+'</div><div class="hubsub">'+esc(rhSub)+'</div><div class="hubgo">Entrer →</div></button>'
+    +'</div></section>';
+}
+
+// ===== Bloc Activités (gestion + inscriptions) =====
+function activitesHTML(){
+  return '<section class="block">'
+      +'<p class="sub">Crée et gère tes activités (ACM, VEPI, ateliers…) et les enfants inscrits. <b>Tu prépares</b> ; le bureau publie sur le site public et s\'occupe de l\'argent. Chaque action est enregistrée.</p>'
       +'<div class="card" style="margin-bottom:14px"><h3 id="naTitle" style="margin:0 0 10px">➕ Nouvelle activité</h3>'
         +'<div class="row" style="margin-bottom:8px">'
           +'<div style="flex:2"><label>Nom</label><input id="na_nom" style="width:100%" placeholder="ex. Sortie plage, Atelier cuisine…"></div>'
@@ -137,8 +191,13 @@ function renderAll(){
       +'</div>'
       +'<div id="actList"></div>'
     +'</section>';
-  if(hasFiche){
-    html+='<section class="block"><div class="grid">'
+}
+
+// ===== Bloc RH (dossier, planning, congés, documents) =====
+function rhHTML(){
+  const f=ME.fiche, p=ME.prof;
+  if(!f){ return '<section class="block"><div class="card"><p class="empty">📋 Ton dossier RH (planning, congés, documents) apparaîtra ici dès que le bureau aura créé ta fiche salarié.</p></div></section>'; }
+  return '<section class="block"><div class="grid">'
       +'<div class="card"><h2 class="title">📋 Mon dossier</h2>'
         +kv('Poste',f.poste)+kv('Contrat',f.type_contrat)+kv('Temps de travail',f.temps_travail)
         +kv('Date d\'entrée',fdate(f.date_entree))+kv('Email',f.email||p.email)+kv('Téléphone',f.tel)
@@ -168,16 +227,9 @@ function renderAll(){
       +'<div class="card"><h3 style="margin:0 0 6px">Mes demandes</h3><div id="cgList"></div></div>'
     +'</section>'
     +'<section class="block"><h2 class="title">📎 Mes documents</h2>'
-      +'<p class="sub">Les documents que le bureau partage avec vous (fiches de paie, attestations, contrat…).</p>'
+      +'<p class="sub">Les documents que le bureau partage avec vous (fiches de paie, attestations, contrat…). Clique pour les <b>visualiser</b> directement, sans télécharger.</p>'
       +'<div class="card"><div id="docList"></div></div>'
     +'</section>';
-  } else {
-    html+='<section class="block"><div class="card"><p class="empty">📋 Ton dossier RH (planning, congés, documents) apparaîtra ici dès que le bureau aura créé ta fiche salarié.</p></div></section>';
-  }
-  html+='</div><footer>CASE du Bois de Nèfles · Espace salarié · données hébergées en France (RGPD)</footer>';
-  $('#content').innerHTML=html;
-  renderActs();
-  if(hasFiche){ renderConges(); renderDocs(); }
 }
 
 async function loadActs(){
@@ -197,9 +249,10 @@ function renderActs(){
   const byA={}; ME.ins.forEach(i=>{ (byA[i.activite_id]=byA[i.activite_id]||[]).push(i); });
   box.innerHTML=ME.acts.map(a=>{
     const list=byA[a.id]||[];
-    const editable=!a.publie; // une activité publiée par le bureau n'est pas modifiable par le salarié
+    const canMeta=!a.publie; // le bureau garde la main sur la DÉFINITION d'une activité publiée
+    const canIns=true;       // mais le salarié gère toujours les inscrits (VEPI, ACM…) — autorisé par la RLS « staff »
     const insRows=list.length
-      ? '<table style="width:100%;margin-top:8px;font-size:14px"><tbody>'+list.map(i=>'<tr><td style="padding:4px 0">👧 '+esc(i.nom||'(sans nom)')+(i.responsable?' <span class="sub">· '+esc(i.responsable)+'</span>':'')+'</td><td style="text-align:right">'+(editable?'<button class="btn ghost" style="padding:3px 9px;font-size:12px" onclick="spDelIns(\''+i.id+'\')">retirer</button>':'')+'</td></tr>').join('')+'</tbody></table>'
+      ? '<table style="width:100%;margin-top:8px;font-size:14px"><tbody>'+list.map(i=>'<tr><td style="padding:4px 0">👧 '+esc(i.nom||'(sans nom)')+(i.responsable?' <span class="sub">· '+esc(i.responsable)+'</span>':'')+'</td><td style="text-align:right">'+(canIns?'<button class="btn ghost" style="padding:3px 9px;font-size:12px" onclick="spDelIns(\''+i.id+'\')">retirer</button>':'')+'</td></tr>').join('')+'</tbody></table>'
       : '<p class="empty" style="margin:6px 0 0">Personne d\'inscrit.</p>';
     return '<div class="card" style="margin-bottom:12px;border-left:4px solid '+(a.publie?'#1f9d6b':'#e8a33d')+'">'
       +'<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px">'
@@ -208,12 +261,11 @@ function renderActs(){
           +'<span class="sub">'+(a.type==='evenement'?'📅 Événement':'🎟️ Activité')+' · '+list.length+' inscrit'+(list.length>1?'s':'')+(a.capacite?' / '+a.capacite+' places':'')+'</span>'
           +(a.programme?'<div class="sub" style="margin-top:4px">'+esc(a.programme)+'</div>':'')
         +'</div>'
-        +(editable?'<button class="btn ghost" style="padding:5px 10px;font-size:13px;white-space:nowrap" onclick="spEditAct(\''+a.id+'\')">✏️ Modifier</button>':'')
+        +(canMeta?'<button class="btn ghost" style="padding:5px 10px;font-size:13px;white-space:nowrap" onclick="spEditAct(\''+a.id+'\')">✏️ Modifier</button>':'')
       +'</div>'
       +insRows
-      +(editable
-        ? '<div class="row" style="margin-top:8px;gap:6px"><div style="flex:2"><input id="ni_'+a.id+'" placeholder="Nom de l\'enfant à inscrire" style="width:100%" onkeydown="if(event.key===\'Enter\')spAddIns(\''+a.id+'\')"></div><button class="btn win" style="white-space:nowrap" onclick="spAddIns(\''+a.id+'\')">+ inscrire</button></div>'
-        : '<p class="sub" style="margin-top:8px">Activité publiée — gérée par le bureau.</p>')
+      +'<div class="row" style="margin-top:8px;gap:6px"><div style="flex:2"><input id="ni_'+a.id+'" placeholder="Nom de l\'enfant à inscrire" style="width:100%" onkeydown="if(event.key===\'Enter\')spAddIns(\''+a.id+'\')"></div><button class="btn win" style="white-space:nowrap" onclick="spAddIns(\''+a.id+'\')">+ inscrire</button></div>'
+      +(a.publie?'<p class="sub" style="margin-top:6px">🌍 Publiée par le bureau — tu gères les inscrits, le bureau garde le reste (titre, places).</p>':'')
     +'</div>';
   }).join('');
 }
@@ -270,7 +322,7 @@ function renderDocs(){
 }
 window.docOpen=async function(id){
   const d=ME.docs.find(x=>x.id===id); if(!d) return;
-  try{ const {data,error}=await sb.storage.from('personnel-docs').createSignedUrl(d.path,3600); if(error||!data){ toast('Document indisponible'); return; } window.open(data.signedUrl,'_blank'); }
+  try{ const {data,error}=await sb.storage.from('personnel-docs').createSignedUrl(d.path,3600); if(error||!data){ toast('Document indisponible'); return; } spShowDoc(data.signedUrl, d.name||d.path||'Document'); }
   catch(e){ toast('Document indisponible'); }
 };
 window.cgDays=function(){
@@ -298,7 +350,7 @@ window.cgSend=async function(){
 };
 window.cgVoirPiece=async function(id){
   const c=ME.conges.find(x=>x.id===id); if(!c||!c.piece||!c.piece.path) return;
-  try{ const {data,error}=await sb.storage.from('personnel-docs').createSignedUrl(c.piece.path,3600); if(error||!data){ toast('Indisponible'); return; } window.open(data.signedUrl,'_blank'); }
+  try{ const {data,error}=await sb.storage.from('personnel-docs').createSignedUrl(c.piece.path,3600); if(error||!data){ toast('Indisponible'); return; } spShowDoc(data.signedUrl, (c.piece&&c.piece.name)||'Justificatif'); }
   catch(e){ toast('Indisponible'); }
 };
 window.cgDelete=async function(id){
@@ -307,6 +359,30 @@ window.cgDelete=async function(id){
   if(error){ toast('Erreur : '+error.message); return; }
   await loadConges(); renderConges(); toast('Demande annulée');
 };
+
+// ===== Visionneuse de documents (aperçu intégré) =====
+function docExt(s){ const m=String(s||'').toLowerCase().match(/\.([a-z0-9]+)(?:[?#].*)?$/); return m?m[1]:''; }
+window.spShowDoc=function(url,name){
+  const ext=docExt(name)||docExt(url);
+  const isImg=['png','jpg','jpeg','gif','webp','bmp','heic','heif','avif','svg'].includes(ext);
+  const isPdf=ext==='pdf';
+  let body;
+  if(isImg){ body='<img src="'+url+'" alt="'+esc(name||'')+'" style="max-width:100%;max-height:80vh;border-radius:10px;display:block;margin:0 auto;background:#fff">'; }
+  else if(isPdf){ body='<iframe src="'+url+'" title="'+esc(name||'')+'" style="width:100%;height:80vh;border:none;border-radius:10px;background:#fff"></iframe>'; }
+  else { body='<div class="empty" style="padding:28px">Ce type de fichier ne s\'affiche pas dans le navigateur.<br><a class="btn win" style="text-decoration:none;margin-top:12px;display:inline-block" href="'+url+'" target="_blank" rel="noopener">⬇️ Ouvrir / télécharger</a></div>'; }
+  let ov=document.getElementById('docViewer');
+  if(!ov){ ov=document.createElement('div'); ov.id='docViewer'; document.body.appendChild(ov); }
+  ov.innerHTML='<div class="dv-backdrop" onclick="spCloseDoc()"></div>'
+    +'<div class="dv-card">'
+      +'<div class="dv-head"><span class="dv-name">'+esc(name||'Document')+'</span>'
+        +'<span style="white-space:nowrap"><a class="btn ghost" style="text-decoration:none;margin-right:6px" href="'+url+'" target="_blank" rel="noopener" title="Télécharger">⬇️</a>'
+        +'<button class="btn ghost" onclick="spCloseDoc()">✕ Fermer</button></span></div>'
+      +'<div class="dv-body">'+body+'</div>'
+    +'</div>';
+  ov.style.display='block'; document.body.style.overflow='hidden';
+};
+window.spCloseDoc=function(){ const ov=document.getElementById('docViewer'); if(ov){ ov.style.display='none'; ov.innerHTML=''; } document.body.style.overflow=''; };
+document.addEventListener('keydown',function(e){ if(e.key==='Escape') spCloseDoc(); });
 
 boot();
 </script>
