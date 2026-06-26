@@ -70,7 +70,7 @@
   nav.tabs .tabgroup[data-group="equipe"] button.active{background:#7a3b5e}
   nav.tabs .tabgroup[data-group="finances"] button.active{background:#c8881f}
   nav.tabs .tabgroup[data-group="regl"] button.active{background:#7d8a83}
-  /* mobile (Cynthia) : cibles tactiles confortables ≥44px */
+  /* mobile : cibles tactiles confortables ≥44px */
   @media(max-width:560px){
     nav.famtabs{gap:7px}
     nav.famtabs button{padding:10px 13px;font-size:14px;min-height:44px}
@@ -1110,7 +1110,7 @@
         <div class="field"><label>Date</label><input id="r_date" type="date"></div>
         <div class="field" style="flex:0;min-width:150px"><label>Type</label>
           <select id="r_type"><option>Bureau</option><option>Conseil d'administration</option><option>Assemblée générale</option><option>Autre</option></select></div>
-        <div class="field" style="flex:2"><label>Participants</label><input id="r_present" placeholder="Ex. G. Robert, L. Payet..."></div>
+        <div class="field" style="flex:2"><label>Participants</label><input id="r_present" placeholder="Ex. noms des présents…"></div>
       </div>
       <div class="row" style="margin-top:10px">
         <div class="field"><label>Ordre du jour</label><input id="r_ordre" placeholder="Points abordés"></div>
@@ -1278,15 +1278,8 @@
 
     <div class="panel">
       <h3 style="margin:0 0 4px">🪪 Fiches de poste (salariés)</h3>
-      <p class="hint" style="margin:0 0 10px"><strong>Lecture :</strong> <em>Aujourd'hui</em> = situation actuelle (convention ALISFA). <em>Après bascule ÉCLAT</em> = passage à ÉCLAT au 1ᵉʳ septembre 2026, <strong>à l'existant et sans baisse de salaire</strong>. <em>Évolution</em> = promotions éventuelles, décidées <strong>séparément</strong>. Coefficients à valider — saisine Hexopée Q199179. (Réorganisation en 3 pôles : séance DLA du 18/06, à ratifier en CA.)</p>
-      <table>
-        <thead><tr><th>Poste &amp; titulaire</th><th>Aujourd'hui (ALISFA)</th><th>Après bascule ÉCLAT (1ᵉʳ sept. 2026)</th><th>Évolution envisagée (séparée)</th></tr></thead>
-        <tbody>
-          <tr><td><strong>Coordinatrice d'association</strong><br><span class="muted">Réf. Pôle 1</span></td><td>Convention ALISFA · 35 h/sem</td><td>ÉCLAT coef <strong>265</strong> (groupe B) + ancienneté · <strong>maintien de salaire</strong> (brut inchangé)</td><td>Promotion <em>coordination</em> : coef 285 → 305 (début 2027) — avenant séparé, à voir à son retour</td></tr>
-          <tr><td><strong>Animatrice enfance-jeunesse</strong><br><span class="muted">Appui pôles 1 &amp; 2</span></td><td>Convention ALISFA · contrat PEC · 21 h/sem</td><td>ÉCLAT coef <strong>265</strong> (groupe B) + indemnité temps partiel · remontée</td><td>Démarrage du PEC au coef 257 (groupe A), relevée en groupe B (265) avec l'élargissement de ses missions — validé Hexopée 25/06 (non rétroactif)</td></tr>
-          <tr><td><strong>Coordinateur / animateur socioculturel</strong><br><span class="muted">Réf. Pôle 2</span></td><td>Convention ALISFA · 35 h/sem</td><td>ÉCLAT coef <strong>265</strong> (groupe B) + ancienneté · <strong>maintien de salaire</strong> (brut inchangé)</td><td>Groupe C (coef 285) si maintien + montée en responsabilité — après entretien</td></tr>
-        </tbody>
-      </table>
+      <p class="hint" style="margin:0 0 10px">Les fiches sont reconstituées depuis la <strong>masse salariale</strong> (onglet 📒 Équipe) — poste, contrat, temps de travail, date d'entrée et brut mensuel. Réservé au bureau ; rien de nominatif n'est publié sur le site. Pour la projection ÉCLAT par salarié (coefficient, groupe), voir le panneau <strong>🔄 Bascule</strong> ci-dessous.</p>
+      <div id="fichesPosteList"></div>
     </div>
 
     <div class="panel">
@@ -1294,7 +1287,7 @@
       <p class="hint" style="margin:0 0 10px">Calculée automatiquement à partir de la <strong>date d'entrée</strong> de chaque salarié (saisie dans 📒 Équipe), reprise d'ancienneté incluse. Du plus ancien au plus récent.</p>
       <div style="margin:0 0 10px;padding:9px 12px;background:#fff7e6;border:1px solid #ffd98a;border-radius:8px;font-size:13px;line-height:1.45">
         <strong>⚠️ Projection ÉCLAT — les bulletins de paie sont encore en ALISFA.</strong><br>
-        Les <strong>points</strong> et la <strong>prime/mois</strong> ci-dessous sont calculés selon la <strong>future convention ÉCLAT</strong> (2 pts/an × V1 7,23 €). Tant que la bascule ALISFA → ÉCLAT n'est pas effective sur la paie, ils <strong>ne correspondent pas</strong> au montant inscrit sur le bulletin actuel <span class="muted">(la projection ÉCLAT diffère du montant ALISFA du bulletin)</span>. Chiffrage officiel : paie (Julie Lauret) / Hexopée.
+        Les <strong>points</strong> et la <strong>prime/mois</strong> ci-dessous sont calculés selon la <strong>future convention ÉCLAT</strong> (2 pts/an × V1 7,23 €). Tant que la bascule ALISFA → ÉCLAT n'est pas effective sur la paie, ils <strong>ne correspondent pas</strong> au montant inscrit sur le bulletin actuel <span class="muted">(la projection ÉCLAT diffère du montant ALISFA du bulletin)</span>. Chiffrage officiel : paie / Hexopée.
       </div>
       <div id="ancienneteList"></div>
     </div>
@@ -1312,7 +1305,7 @@
 
     <div class="panel" id="basculeEclat">
       <h3 style="margin:0 0 4px">🔄 Bascule ÉLISFA → ÉCLAT — maintien de salaire (simulateur)</h3>
-      <p class="hint" style="margin:0 0 8px">Changement de convention <strong>ÉLISFA / ALISFA → ÉCLAT</strong>. La loi garantit qu'<strong>aucun salaire ne baisse</strong> (art. L2261-14 + clause de maintien). Pour chaque salarié, Bob compare le <strong>salaire ÉCLAT projeté</strong> (base + ancienneté + indemnité temps partiel) au <strong>brut actuel total</strong> (salaire de base + valorisation d'expérience ÉLISFA) — total contre total, <strong>sans cumuler</strong> l'expérience des deux conventions. Résultat : soit une <strong>↗ remontée</strong> (ÉCLAT plus haut), soit un <strong>🛡️ maintien</strong> (on garde le salaire actuel). <span class="muted">Aide à la décision — chiffrage officiel : paie (Julie Lauret) / Hexopée.</span></p>
+      <p class="hint" style="margin:0 0 8px">Changement de convention <strong>ÉLISFA / ALISFA → ÉCLAT</strong>. La loi garantit qu'<strong>aucun salaire ne baisse</strong> (art. L2261-14 + clause de maintien). Pour chaque salarié, Bob compare le <strong>salaire ÉCLAT projeté</strong> (base + ancienneté + indemnité temps partiel) au <strong>brut actuel total</strong> (salaire de base + valorisation d'expérience ÉLISFA) — total contre total, <strong>sans cumuler</strong> l'expérience des deux conventions. Résultat : soit une <strong>↗ remontée</strong> (ÉCLAT plus haut), soit un <strong>🛡️ maintien</strong> (on garde le salaire actuel). <span class="muted">Aide à la décision — chiffrage officiel : paie / Hexopée.</span></p>
       <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;margin:0 0 6px">
         <div class="field" style="min-width:120px"><label>Point ÉCLAT V1 (€)</label><input type="number" id="bsc_v1" min="0" step="0.01" oninput="saveBasculeParam()" placeholder="7.23"></div>
         <div class="field" style="min-width:120px"><label>Point ÉCLAT V2 (€)</label><input type="number" id="bsc_v2" min="0" step="0.01" oninput="saveBasculeParam()" placeholder="6.81"></div>
@@ -1325,7 +1318,7 @@
         <div class="card"><div class="label">🛡️ Le vrai coût caché</div><div class="sub" style="margin-top:6px;font-size:13px">Le salaire, on le maintient. Mais ÉCLAT est <strong>moins favorable sur l'arrêt maladie long</strong> (perte du relais 75 % pendant 90 j d'ALISFA). À compenser par la <strong>prévoyance de branche ÉCLAT</strong> (Harmonie Mutuelle ESS) — surcoût à prévoir pour le CASE.</div></div>
         <div class="card"><div class="label">📝 La règle légale</div><div class="sub" style="margin-top:6px;font-size:13px">Avenant par salarié avec <strong>clause de maintien de salaire</strong> si la grille serait plus basse. <strong>Pas de rétroactivité</strong> (effet à la signature). Comparaison <strong>par blocs</strong> (salaire / maladie / congés), pas pioche par pioche.</div></div>
       </div>
-      <div class="field" style="margin-top:10px"><label>📌 Suivi de la bascule (où on en est)</label><textarea id="bsc_notes" onchange="saveBasculeNotes()" style="width:100%;min-height:80px;font:inherit;padding:8px 10px;border:1px solid #e6ece7;border-radius:10px;resize:vertical" placeholder="Ex. Réponse Hexopée Q199179 reçue le 04/05 (ÉCLAT confirmé). En attente du chiffrage masse salariale (Julie Lauret) et de la note bénéfice/coût (Sabine Hamot) avant signature des avenants."></textarea></div>
+      <div class="field" style="margin-top:10px"><label>📌 Suivi de la bascule (où on en est)</label><textarea id="bsc_notes" onchange="saveBasculeNotes()" style="width:100%;min-height:80px;font:inherit;padding:8px 10px;border:1px solid #e6ece7;border-radius:10px;resize:vertical" placeholder="Ex. Réponse Hexopée Q199179 reçue le 04/05 (ÉCLAT confirmé). En attente du chiffrage masse salariale et de la note bénéfice/coût avant signature des avenants."></textarea></div>
     </div>
 
     <div class="panel" id="docsRh">
@@ -1334,23 +1327,23 @@
       <div style="margin-bottom:16px">
         <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:6px">
           <strong>👤 Avenant — Coordination</strong>
-          <span style="display:flex;gap:6px"><button class="ghost btn" onclick="printAvenant('kathy')" title="Ouvrir une version imprimable / PDF">🖨️ Imprimer / PDF</button><button class="ghost btn" onclick="resetAvenant('kathy')" title="Revenir au modèle d'origine">↩️ Modèle</button></span>
+          <span style="display:flex;gap:6px"><button class="ghost btn" onclick="printAvenant('p1')" title="Ouvrir une version imprimable / PDF">🖨️ Imprimer / PDF</button><button class="ghost btn" onclick="resetAvenant('p1')" title="Revenir au modèle d'origine">↩️ Modèle</button></span>
         </div>
-        <textarea id="av_kathy" onchange="saveAvenant('kathy')" style="width:100%;min-height:300px;font:13px/1.6 Georgia,'Times New Roman',serif;padding:14px 16px;border:1px solid #e6ece7;border-radius:10px;resize:vertical"></textarea>
+        <textarea id="av_p1" onchange="saveAvenant('p1')" style="width:100%;min-height:300px;font:13px/1.6 Georgia,'Times New Roman',serif;padding:14px 16px;border:1px solid #e6ece7;border-radius:10px;resize:vertical"></textarea>
       </div>
       <div style="margin-bottom:16px">
         <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:6px">
           <strong>👤 Avenant — Animation socioculturelle</strong>
-          <span style="display:flex;gap:6px"><button class="ghost btn" onclick="printAvenant('fabrice')" title="Ouvrir une version imprimable / PDF">🖨️ Imprimer / PDF</button><button class="ghost btn" onclick="resetAvenant('fabrice')" title="Revenir au modèle d'origine">↩️ Modèle</button></span>
+          <span style="display:flex;gap:6px"><button class="ghost btn" onclick="printAvenant('p2')" title="Ouvrir une version imprimable / PDF">🖨️ Imprimer / PDF</button><button class="ghost btn" onclick="resetAvenant('p2')" title="Revenir au modèle d'origine">↩️ Modèle</button></span>
         </div>
-        <textarea id="av_fabrice" onchange="saveAvenant('fabrice')" style="width:100%;min-height:300px;font:13px/1.6 Georgia,'Times New Roman',serif;padding:14px 16px;border:1px solid #e6ece7;border-radius:10px;resize:vertical"></textarea>
+        <textarea id="av_p2" onchange="saveAvenant('p2')" style="width:100%;min-height:300px;font:13px/1.6 Georgia,'Times New Roman',serif;padding:14px 16px;border:1px solid #e6ece7;border-radius:10px;resize:vertical"></textarea>
       </div>
       <div>
         <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:6px">
           <strong>👤 Avenant — Animation enfance-jeunesse</strong>
-          <span style="display:flex;gap:6px"><button class="ghost btn" onclick="printAvenant('sandrine')" title="Ouvrir une version imprimable / PDF">🖨️ Imprimer / PDF</button><button class="ghost btn" onclick="resetAvenant('sandrine')" title="Revenir au modèle d'origine">↩️ Modèle</button></span>
+          <span style="display:flex;gap:6px"><button class="ghost btn" onclick="printAvenant('p3')" title="Ouvrir une version imprimable / PDF">🖨️ Imprimer / PDF</button><button class="ghost btn" onclick="resetAvenant('p3')" title="Revenir au modèle d'origine">↩️ Modèle</button></span>
         </div>
-        <textarea id="av_sandrine" onchange="saveAvenant('sandrine')" style="width:100%;min-height:300px;font:13px/1.6 Georgia,'Times New Roman',serif;padding:14px 16px;border:1px solid #e6ece7;border-radius:10px;resize:vertical"></textarea>
+        <textarea id="av_p3" onchange="saveAvenant('p3')" style="width:100%;min-height:300px;font:13px/1.6 Georgia,'Times New Roman',serif;padding:14px 16px;border:1px solid #e6ece7;border-radius:10px;resize:vertical"></textarea>
       </div>
     </div>
 
@@ -1937,7 +1930,7 @@ document.querySelectorAll('nav.tabs button').forEach(b=>{
   function openGroup(g){
     famNav.querySelectorAll('button').forEach(x=>x.classList.toggle('on', x.dataset.group===g));
     groups.forEach(d=>d.classList.toggle('show', d.dataset.group===g));
-    // Guy (réflexion 23/06) : cliquer une famille ouvre directement son 1er onglet visible,
+    // Réflexion bureau (23/06) : cliquer une famille ouvre directement son 1er onglet visible,
     // sauf si on est DÉJÀ dans cette famille (pour ne pas réinitialiser un onglet en cours de saisie).
     const active=document.querySelector('nav.tabs button[data-tab].active');
     const ag=active&&active.closest('.tabgroup');
@@ -1968,9 +1961,9 @@ const FAQ=[
   {cat:'🧭 Organisation',q:"Comment est organisé le CASE (pôles, valeurs, procédures) ?",kw:"organisation organigramme pole poles 3 trois valeurs valeur orientations procedure procedures protocole protocoles caisse facture factures comptabilite fonctionnement structure reorganisation reorg dla mission proximite lien social education populaire",
    a:"Depuis la réunion DLA du 18/06/2026, le CASE s'organise en <strong>3 pôles</strong> : Pôle 1 — Vie éducative &amp; jeunesse, Pôle 2 — Culture, lien social &amp; animation, Pôle 3 — Insertion, droits &amp; territoires (déploiement 2027). L'organigramme, les <strong>3 valeurs</strong> (Proximité · Lien social · Éducation populaire), les orientations et l'organisation cible sont dans l'onglet <strong>🧭 Projet &amp; orientations</strong>. Les <strong>procédures internes</strong> (caisse, factures, comptabilité, RH, actions) sont dans l'onglet <strong>📒 Équipe</strong>. Cette organisation est à ratifier formellement en CA."},
   {cat:'🧑‍💼 RH',q:"Où trouver un modèle d'avenant pour la bascule ÉCLAT (pour chaque salarié) ?",kw:"avenant avenants modele modeles document documents contrat travail eclat alisfa bascule changement convention imprimer pdf maintien salaire signature clause classification coefficient remuneration garantie base",
-   a:"Onglet <strong>🧑‍💼 RH</strong>, panneau <strong>📄 Documents RH — Modèles d'avenant</strong>. Tu y trouves un avenant <strong>pré-rempli pour chaque salarié</strong> (changement de convention ALISFA → ÉCLAT avec <strong>clause de maintien de salaire</strong>, sans rétroactivité). Le texte est <strong>modifiable</strong> (enregistré dans le coffre) et <strong>imprimable</strong> (bouton 🖨️ Imprimer / PDF ouvre une version propre). Le bouton ↩️ Modèle restaure le texte d'origine. ⚠️ C'est une <strong>base de travail</strong> : à faire valider par Hexopée / la paie (Julie Lauret) avant signature, et à compléter là où il y a des crochets [ ___ ] (SIRET, adresse, coefficient ÉCLAT, rémunération, date d'effet)."},
-  {cat:'🧑‍💼 RH',q:"Comment gérer le passage de convention ÉLISFA à ÉCLAT sans baisser les salaires ?",kw:"bascule eclat elisfa alisfa convention collective changement passage salaire salaires maintien baisser baisse trop paye payes coefficient point valeur v1 v2 7.23 6.81 257 minimum grille plancher avenant differentiel complement remontee hausse valorisation experience indemnite temps partiel reconstitution carriere anciennete kathy fabrice sandrine idcc 1518 1261 hexopee simulateur arret maladie prevoyance regularisation",
-   a:"Onglet <strong>🧑‍💼 RH</strong>, panneau <strong>🔄 Bascule ÉLISFA → ÉCLAT</strong>. Bob compare, pour chaque salarié, le <strong>salaire ÉCLAT projeté</strong> au <strong>brut actuel total</strong>, et garantit qu'<strong>aucun salaire ne baisse</strong> (art. L2261-14 + clause de maintien). Calcul ÉCLAT 2026&nbsp;: salaire de base = <strong>257 × V1 + (coefficient − 257) × V2</strong> (V1 = 7,23 € jusqu'à 257, V2 = 6,81 € au-delà), + <strong>ancienneté</strong> (2 pts/an × V1) + <strong>indemnité temps partiel</strong> si &lt; 24 h/sem (8 pts × V1, forfaitaire). Le brut actuel = salaire de base + <strong>valorisation d'expérience ÉLISFA</strong> (1 pt/an × point ALISFA 55 € ÷ 12). ⚠️ On ne <strong>cumule pas</strong> l'expérience des deux conventions&nbsp;: la valo ÉLISFA disparaît, l'ancienneté ÉCLAT la remplace — on compare total contre total. Résultat affiché&nbsp;: <strong>↗ Remontée</strong> (ÉCLAT plus haut, hausse à payer) ou <strong>🛡️ Maintien</strong> (ÉCLAT plus bas, on garde le salaire actuel)&nbsp;; un coefficient sous <strong>257</strong> (plancher de branche) est signalé en rouge. ⚠️ Le vrai surcoût n'est pas le salaire (maintenu) mais l'<strong>arrêt maladie</strong> (ÉCLAT moins favorable qu'ALISFA → prévoyance de branche à souscrire). Aide à la décision&nbsp;: chiffrage officiel = paie (Julie Lauret) / Hexopée."},
+   a:"Onglet <strong>🧑‍💼 RH</strong>, panneau <strong>📄 Documents RH — Modèles d'avenant</strong>. Tu y trouves un avenant <strong>pré-rempli pour chaque salarié</strong> (changement de convention ALISFA → ÉCLAT avec <strong>clause de maintien de salaire</strong>, sans rétroactivité). Le texte est <strong>modifiable</strong> (enregistré dans le coffre) et <strong>imprimable</strong> (bouton 🖨️ Imprimer / PDF ouvre une version propre). Le bouton ↩️ Modèle restaure le texte d'origine. ⚠️ C'est une <strong>base de travail</strong> : à faire valider par Hexopée / la paie avant signature, et à compléter là où il y a des crochets [ ___ ] (SIRET, adresse, coefficient ÉCLAT, rémunération, date d'effet)."},
+  {cat:'🧑‍💼 RH',q:"Comment gérer le passage de convention ÉLISFA à ÉCLAT sans baisser les salaires ?",kw:"bascule eclat elisfa alisfa convention collective changement passage salaire salaires maintien baisser baisse trop paye payes coefficient point valeur v1 v2 7.23 6.81 257 minimum grille plancher avenant differentiel complement remontee hausse valorisation experience indemnite temps partiel reconstitution carriere anciennete idcc 1518 1261 hexopee simulateur arret maladie prevoyance regularisation",
+   a:"Onglet <strong>🧑‍💼 RH</strong>, panneau <strong>🔄 Bascule ÉLISFA → ÉCLAT</strong>. Bob compare, pour chaque salarié, le <strong>salaire ÉCLAT projeté</strong> au <strong>brut actuel total</strong>, et garantit qu'<strong>aucun salaire ne baisse</strong> (art. L2261-14 + clause de maintien). Calcul ÉCLAT 2026&nbsp;: salaire de base = <strong>257 × V1 + (coefficient − 257) × V2</strong> (V1 = 7,23 € jusqu'à 257, V2 = 6,81 € au-delà), + <strong>ancienneté</strong> (2 pts/an × V1) + <strong>indemnité temps partiel</strong> si &lt; 24 h/sem (8 pts × V1, forfaitaire). Le brut actuel = salaire de base + <strong>valorisation d'expérience ÉLISFA</strong> (1 pt/an × point ALISFA 55 € ÷ 12). ⚠️ On ne <strong>cumule pas</strong> l'expérience des deux conventions&nbsp;: la valo ÉLISFA disparaît, l'ancienneté ÉCLAT la remplace — on compare total contre total. Résultat affiché&nbsp;: <strong>↗ Remontée</strong> (ÉCLAT plus haut, hausse à payer) ou <strong>🛡️ Maintien</strong> (ÉCLAT plus bas, on garde le salaire actuel)&nbsp;; un coefficient sous <strong>257</strong> (plancher de branche) est signalé en rouge. ⚠️ Le vrai surcoût n'est pas le salaire (maintenu) mais l'<strong>arrêt maladie</strong> (ÉCLAT moins favorable qu'ALISFA → prévoyance de branche à souscrire). Aide à la décision&nbsp;: chiffrage officiel = paie / Hexopée."},
   {cat:'🎒 Périscolaire',q:"Où je vois les dossiers d'inscription périscolaire déposés par les familles ?",kw:"periscolaire inscription dossier dossiers famille familles piece pieces caf assurance vaccin livret avis imposition justificatif domicile depose adherent matin soir rentree aout scan coffre",
    a:"Onglet <b>🎒 Périscolaire</b>, panneau <b>📨 Dossiers d'inscription</b> (en bas). Chaque famille dépose son dossier depuis <b>son espace famille</b> : enfants (matin et/ou soir) et les pièces (attestation CAF de <b>moins de 3 mois</b>, avis d'imposition, justificatif de domicile, attestation d'assurance, vaccins à jour, livret de famille). <b>Nouveau : la famille peut déposer dès la création de son compte</b>, sans attendre une validation — tu vois l'état des pièces, tu cliques pour <b>consulter</b> chacune, et tu marques le dossier <b>✅ Validé</b> ou <b>⚠️ Incomplet</b> (avec une note). Le dépôt est possible <b>même s'il manque une pièce</b> : tu la réclames via « Incomplet ». ⚠️ Pense à <b>régulariser l'adhésion (10 €)</b> de la famille — un seul parent adhérent suffit pour tous les enfants."},
   {cat:'🧰 Secrétariat',q:"Où sont les informations de l'assurance (MAIF) pour se connecter ?",kw:"assurance maif raqvam contrat sociétaire societaire cotisation garantie connexion identifiant mot de passe attestation sinistre responsabilite civile rc secretariat",
@@ -1989,18 +1982,18 @@ const FAQ=[
    a:"Onglet <strong>🏖️ Congés</strong> : enregistre une demande (salarié, type, dates, motif) puis <strong>Valide</strong> ou <strong>Refuse</strong>. La règle (demande à l'avance, acquis après validation) est rappelée en haut. Réservé au bureau. <em>(La saisie directe par le salarié depuis son espace viendra ensuite.)</em>"},
   {cat:'🗓️ Horaires',q:"Où sont les horaires (planning) des salariés ?",kw:"horaires horaire planning plannings heures emploi du temps temps de travail semaine type recurrente acm matin apres-midi total hebdomadaire salarie equipe quand travaille",
    a:"Onglet <strong>🗓️ Horaires</strong> (réservé au bureau). Choisis un salarié, puis remplis sa <strong>semaine type</strong> : pour chaque jour, l'heure de début/fin du matin et de l'après-midi (sélecteurs d'heure). Bob calcule automatiquement le <strong>total par jour et par semaine</strong>. Pour une période spéciale (ACM, vacances), clique <strong>« ➕ Semaine particulière »</strong>, choisis une date dans la semaine concernée et un motif : la semaine est pré-remplie avec la semaine type, tu n'ajustes que ce qui change. La liste des salariés se remplit toute seule depuis l'onglet 📒 Équipe."},
-  {cat:'🧑‍💼 RH',q:"Pourquoi l'animatrice (PEC) est-elle au coefficient 265 (groupe B) et plus à 257 ?",kw:"sandrine michel animatrice animation enfance jeunesse coefficient coef 265 257 groupe b groupe a pec classement classification missions diplome bafa hexopee tamisier non retroactif historique pourquoi change releve",
-   a:"Décision validée avec <strong>Hexopée (M. Tamisier) le 25/06/2026</strong> : en convention <strong>ÉCLAT</strong>, un poste d'<strong>animation</strong> relève au minimum du <strong>groupe B</strong>, ce qui donne <strong>automatiquement le coefficient 265</strong> (et non 257, le plancher du groupe A). Règle clé : <strong>c'est la mission confiée qui classe</strong>, pas le diplôme — le BAFA ne change pas le classement. <strong>Historique conservé</strong> : l'animatrice en contrat PEC a démarré au coef <strong>257 (groupe A)</strong> et passe en <strong>groupe B (265)</strong> avec l'<strong>élargissement de ses missions</strong> ; le passage <strong>n'est pas rétroactif</strong>. Le tableau des fiches de poste et le simulateur de bascule (onglet 🧑‍💼 RH) sont à jour ; chiffrage définitif dans la note Hexopée du 21 août."},
-  {cat:'🧑‍💼 RH',q:"Où je gère les RH : organisation cible, fiches de poste, embauches ?",kw:"rh ressources humaines organisation cible fiche de poste fiches poste embauche embauches recrutement coordination kathy sandrine fabrice coefficient eclat pec direction bafd equipe salaries piliers projet embauche",
+  {cat:'🧑‍💼 RH',q:"En ÉCLAT, à quel coefficient classer un poste d'animation ?",kw:"animation coefficient coef 265 257 groupe b groupe a pec classement classification missions diplome bafa eclat non retroactif regle pourquoi change releve",
+   a:"Règle ÉCLAT (validée avec <strong>Hexopée</strong>) : un poste d'<strong>animation</strong> relève au minimum du <strong>groupe B</strong>, ce qui donne <strong>automatiquement le coefficient 265</strong> (et non 257, le plancher du groupe A). Point clé : <strong>c'est la mission confiée qui classe</strong>, pas le diplôme — le BAFA ne change pas le classement. Un passage de groupe suit l'<strong>élargissement des missions</strong> et <strong>n'est pas rétroactif</strong>. Le détail par salarié se gère dans l'onglet <strong>🧑‍💼 RH</strong> (réservé au bureau) ; chiffrage officiel validé par la paie / Hexopée."},
+  {cat:'🧑‍💼 RH',q:"Où je gère les RH : organisation cible, fiches de poste, embauches ?",kw:"rh ressources humaines organisation cible fiche de poste fiches poste embauche embauches recrutement coordination coefficient eclat pec direction bafd equipe salaries piliers projet embauche",
    a:"Onglet <strong>🧑‍💼 RH</strong> (réservé au bureau). Tu y trouves : l'<strong>organisation cible</strong> (zone modifiable — comment tu veux que ça tourne), les <strong>fiches de poste</strong> des salariés (missions + coefficient ÉCLAT), l'<strong>ancienneté de l'équipe</strong> et les <strong>projets d'embauche</strong> (PEC matin, ACM été, service civique, direction). C'est un point de départ tiré du DLA : dis-moi ce que tu veux ajuster et je mets à jour."},
   {cat:'🧑‍💼 RH',q:"Où je vois l'ancienneté des salariés ?",kw:"anciennete annees mois date entree embauche depuis combien temps salarie reprise calcul",
    a:"Onglet <strong>🧑‍💼 RH</strong>, panneau <strong>📅 Ancienneté de l'équipe</strong>. Pour chaque salarié, Bob calcule l'ancienneté <strong>en direct</strong> à partir de sa <strong>date d'entrée</strong> (en années et mois, reprise d'ancienneté incluse), du plus ancien au plus récent. La date d'entrée se saisit dans 📒 Équipe (masse salariale) : clique ✏️ sur la ligne du salarié, renseigne « Date d'entrée », enregistre. Réservé au bureau."},
-  {cat:'🧑‍💼 RH',q:"Pourquoi la prime d'ancienneté affichée ne correspond pas au bulletin de paie ?",kw:"projection bulletin bulletins paie fiche de paie prime anciennete points montant correspond pas different difference ecart faux erreur trop eleve pas pareil convention pas la meme fabrice 115 36 reel affiche",
-   a:"C'est normal. Dans le panneau <strong>📅 Ancienneté de l'équipe</strong>, les <strong>points</strong> et la <strong>prime/mois</strong> sont une <strong>projection en convention ÉCLAT</strong> (2 pts/an × valeur du point V1 7,23 €). Or les <strong>bulletins de paie sont encore en ALISFA</strong> : tant que la bascule ALISFA → ÉCLAT n'est pas effective sur la paie, le montant affiché par Bob <strong>ne correspond pas</strong> à celui du bulletin (la projection ÉCLAT diffère du montant ALISFA du bulletin). Le bandeau orange « Projection ÉCLAT — bulletins encore en ALISFA » te le rappelle. C'est uniquement un <strong>repère d'affichage</strong> : Bob n'a rien changé au calcul. Le montant qui fait foi reste celui de la paie — chiffrage officiel validé par la paie (Julie Lauret) / Hexopée."},
-  {cat:'📄 Contrats',q:"Où je retrouve le contrat de travail d'un salarié (dates, rémunération, convention) ?",kw:"contrat contrats travail cdd cdi avenant salarie salariee remplacement kissy kysy victoire periode essai precarite terme convention eclat coefficient remuneration brut taux horaire fin indemnite duree temps de travail signe",
+  {cat:'🧑‍💼 RH',q:"Pourquoi la prime d'ancienneté affichée ne correspond pas au bulletin de paie ?",kw:"projection bulletin bulletins paie fiche de paie prime anciennete points montant correspond pas different difference ecart faux erreur trop eleve pas pareil convention pas la meme reel affiche",
+   a:"C'est normal. Dans le panneau <strong>📅 Ancienneté de l'équipe</strong>, les <strong>points</strong> et la <strong>prime/mois</strong> sont une <strong>projection en convention ÉCLAT</strong> (2 pts/an × valeur du point V1 7,23 €). Or les <strong>bulletins de paie sont encore en ALISFA</strong> : tant que la bascule ALISFA → ÉCLAT n'est pas effective sur la paie, le montant affiché par Bob <strong>ne correspond pas</strong> à celui du bulletin (la projection ÉCLAT diffère du montant ALISFA du bulletin). Le bandeau orange « Projection ÉCLAT — bulletins encore en ALISFA » te le rappelle. C'est uniquement un <strong>repère d'affichage</strong> : Bob n'a rien changé au calcul. Le montant qui fait foi reste celui de la paie — chiffrage officiel validé par la paie / Hexopée."},
+  {cat:'📄 Contrats',q:"Où je retrouve le contrat de travail d'un salarié (dates, rémunération, convention) ?",kw:"contrat contrats travail cdd cdi avenant salarie salariee remplacement periode essai precarite terme convention eclat coefficient remuneration brut taux horaire fin indemnite duree temps de travail signe",
    a:"Onglet <strong>📒 Équipe</strong>, panneau <strong>📄 Contrats de travail</strong> (juste sous la masse salariale). Chaque contrat signé y est résumé : salarié·e, type (CDD/CDI/avenant), motif, fonction, période (avec un badge <b>● En cours</b> ou <b>Terminé</b>), temps de travail, convention/coefficient, rémunération, période d'essai et indemnités de fin. Clique sur ✏️ pour compléter ou corriger. Pour le <b>coût employeur</b> charges comprises, c'est le tableau 💰 Masse salariale juste au-dessus. Réservé au bureau."},
-  {cat:'🤝 Accompagnement',q:"Où je retrouve l'accompagnement DLA, la Maison des Associations et la préparation des RDV ?",kw:"accompagnement dla charlotte verdure demele maison associations mda mdac aurelie gaudieux monbeig france active hexopee eclat elisfa neopale uniformation seance seances rdv rendez-vous diagnostic preparation suivi strategique conseillere",
-   a:"Ouvre l'onglet <strong>🤝 Accompagnement</strong>. Tu y trouves : la fiche et la frise des 9 séances du <strong>DLA</strong> (Charlotte Verdure, Démêlé ESS), le diagnostic du CASE (séance 3) et le plan d'actions, la <strong>Maison Des Associations</strong>, les autres ressources (France Active, Hexopée, ELISFA, Uniformation…), et en bas le bloc <strong>Préparation du RDV</strong> avec le statut de tes actions, les demandes de Charlotte et une zone de notes de séance. Cet onglet est réservé au bureau."},
+  {cat:'🤝 Accompagnement',q:"Où je retrouve l'accompagnement DLA, la Maison des Associations et la préparation des RDV ?",kw:"accompagnement dla maison associations mda mdac france active hexopee eclat elisfa neopale uniformation seance seances rdv rendez-vous diagnostic preparation suivi strategique conseillere",
+   a:"Ouvre l'onglet <strong>🤝 Accompagnement</strong>. Tu y trouves : la fiche et la frise des 9 séances du <strong>DLA</strong> (Démêlé ESS), le diagnostic du CASE (séance 3) et le plan d'actions, la <strong>Maison Des Associations</strong>, les autres ressources (France Active, Hexopée, ELISFA, Uniformation…), et en bas le bloc <strong>Préparation du RDV</strong> avec le statut de tes actions, les demandes de la conseillère et une zone de notes de séance. Cet onglet est réservé au bureau."},
   {cat:'🎟️ Activités',q:"Comment afficher les places restantes et gérer les inscriptions sur le site ?",kw:"activite activites place places restantes capacite complet inscription inscriptions site public publier vitrine arrive bientot acm vepi danse musique programme ados vacances ete sortie",
    a:"Onglet <b>🎟️ Activités</b>. Crée chaque activité (nom, emoji, catégorie, description), fixe sa <b>capacité</b>, choisis le statut (<b>Ouvert</b> / <b>Arrive bientôt</b> / Archivé) et clique <b>🌍 Publier sur le site</b>. Sur le site public, « Nos activités » affiche alors en direct <b>« X places restantes »</b>, <b>« complet »</b> quand la capacité est atteinte, ou <b>« arrive bientôt »</b>. Quand une famille s'inscrit, son inscription <b>arrive automatiquement ici</b> (tu vois le nom, le responsable, le contact) et le nombre de places se met à jour tout seul. Tu peux retirer une inscription avec ✕. <b>Nouveau :</b> pour le <b>périscolaire, l'ACM et le VEPI</b>, la réservation se fait depuis le <b>compte famille</b> (espace famille) et reste <b>reliée à la famille</b> ; les <b>événements / temps forts</b> restent ouverts à tous directement sur le site. Astuce : si tu remplis le champ <b>Programme</b> d'une activité, il s'affiche sur la carte du site quand une famille clique dessus (parfait pour détailler l'ACM des vacances)."},
   {cat:'📅 Rendez-vous',q:"Comment proposer des rendez-vous (créneaux) aux familles ?",kw:"rendez vous rdv creneau creneaux plage plages horaire recurrent recurrente agenda coiffeur accompagnement vepi reserver disponibilite dispo heure",
@@ -2174,9 +2167,10 @@ function pageHelpGotoAide(){ pageHelpClose(); const b=document.querySelector('na
 
 /* ---- ✨ Quoi de neuf (nouveautés + notice chronologique) ---- */
 const NEWS=[
-  {id:'2026-06-25-coef-anim-pec',date:'2026-06-25',tab:'🧑‍💼 RH',titre:"🔄 Coefficient de l'animatrice (PEC) corrigé à 265 (groupe B)",desc:"Suite à la réunion avec Hexopée (M. Tamisier) du 25/06 : l'animatrice enfance-jeunesse en contrat PEC passe au coefficient 265 (groupe B), et non plus 257. En ÉCLAT, un poste d'animation relève au minimum du groupe B (= 265 automatique) ; le diplôme ne change pas le classement, ce sont les missions confiées. Son démarrage en contrat PEC au coef 257 (groupe A) reste tracé : le passage en groupe B suit l'élargissement de ses missions et n'est pas rétroactif. Le tableau des fiches de poste et le simulateur de bascule (onglet 🧑‍💼 RH) sont à jour. À confirmer dans la note Hexopée du 21 août."},
+  {id:'2026-06-26-fiches-coffre',date:'2026-06-26',tab:'🧑‍💼 RH',titre:"🔒 Fiches de poste rangées dans le coffre",desc:"Les fiches de poste de l'onglet 🧑‍💼 RH se construisent maintenant directement depuis la masse salariale (onglet 📒 Équipe) — poste, contrat, temps de travail, date d'entrée et brut mensuel — et plus rien de nominatif n'est écrit dans la page publique du site. Le bureau voit le détail une fois connecté ; un visiteur ne voit rien. La projection ÉCLAT par salarié (coefficient, groupe) reste dans le panneau 🔄 Bascule."},
+  {id:'2026-06-25-coef-anim-pec',date:'2026-06-25',tab:'🧑‍💼 RH',titre:"🔄 Règle de classement ÉCLAT précisée (postes d'animation)",desc:"Suite à un échange avec Hexopée le 25/06 : en ÉCLAT, un poste d'animation relève au minimum du groupe B (coefficient 265 automatique), et non du groupe A (257). Le diplôme ne change pas le classement, ce sont les missions confiées ; un passage de groupe suit l'élargissement des missions et n'est pas rétroactif. Le simulateur de bascule (onglet 🧑‍💼 RH) applique la règle ; le détail par salarié est réservé au bureau."},
   {id:'2026-06-25-previsionnel-export',date:'2026-06-25',tab:'🔮 Prévisionnel',titre:"📤 Exporter le budget en Excel + PDF officiel signé",desc:"Dans 🔮 Prévisionnel, sous le « Budget mensuel détaillé », deux nouveaux boutons. « 📋 Exporter en Excel (CSV) » télécharge le tableau mois par mois (recettes et dépenses par code comptable, totaux, solde, variation) pour le retravailler dans un tableur. « 🖨️ Imprimer / PDF officiel (signé) » sort une version mise en page en paysage, avec l'en-tête de l'association (nom, adresse, SIREN) et deux espaces de signature — Le Président et Le Trésorier — prête à transmettre aux partenaires et financeurs, sur n'importe quelle période. Les documents reprennent exactement les chiffres affichés à l'écran."},
-  {id:'2026-06-25-tableau-bord-allege',date:'2026-06-25',tab:'📊 Tableau de bord',titre:"🧹 Tableau de bord allégé + notifications sur le menu",desc:"Suite au retour de Guy : les grandes cartes qui faisaient doublon avec le menu ont été retirées du tableau de bord, qui se concentre maintenant sur la situation de l'association (ce qu'il y a à traiter, les chiffres clés, les alertes, les dernières opérations). Les notifications « X choses à traiter » passent en petites pastilles rouges directement sur les boutons du menu en haut (👥 Adhérents, 🏛️ Bureau, 🧑‍💼 Équipe) — gain de place, moins perturbant. Et cliquer une famille du menu ouvre maintenant directement son premier onglet, sans second clic."},
+  {id:'2026-06-25-tableau-bord-allege',date:'2026-06-25',tab:'📊 Tableau de bord',titre:"🧹 Tableau de bord allégé + notifications sur le menu",desc:"Suite à un retour du bureau : les grandes cartes qui faisaient doublon avec le menu ont été retirées du tableau de bord, qui se concentre maintenant sur la situation de l'association (ce qu'il y a à traiter, les chiffres clés, les alertes, les dernières opérations). Les notifications « X choses à traiter » passent en petites pastilles rouges directement sur les boutons du menu en haut (👥 Adhérents, 🏛️ Bureau, 🧑‍💼 Équipe) — gain de place, moins perturbant. Et cliquer une famille du menu ouvre maintenant directement son premier onglet, sans second clic."},
   {id:'2026-06-25-vote-pv-ca',date:'2026-06-25',tab:'🧰 Secrétariat',titre:"🗳️ Compter les voix + générer le PV du CA",desc:"Dans 🧰 Secrétariat → « Réunions & délibérations », chaque délibération a maintenant des boutons + / − pour compter les voix Pour / Contre / Abstention : le sens (adoptée / rejetée / reportée) se calcule tout seul. Le bouton ⚖️ Déport note qu'un membre se retire d'une résolution (conflit d'intérêts). Et 🖨️ PV génère le procès-verbal officiel — présents, quorum, déports, résolutions avec le détail des voix, signatures — à valider et signer en séance. (Le 🖨️ Relevé reste le document de préparation.)"},
   {id:'2026-06-25-coffre-liens',date:'2026-06-25',tab:'🗂️ Répertoire',titre:"🔒 Accès protégés par un code (liens)",desc:"Dans 🗂️ Répertoire, tu peux maintenant chiffrer les identifiants et mots de passe rangés dans les notes des liens (TAM, Mairie, Orange…). Clique 🔒 sur un lien (ou « Protéger les accès » en haut de la liste) et choisis un code du coffre connu du bureau : la note devient illisible, même dans la base en ligne. Pour la relire : bouton « Révéler » + le code ; pour la modifier : 🔓 Déprotéger. Le code n'est jamais enregistré — on le tape à chaque fois (et s'il est oublié, on re-saisit l'accès, qui existe aussi sur le vrai portail)."},
   {id:'2026-06-25-espace-salarie-blocs',date:'2026-06-25',tab:'👥 Dossiers salariés',titre:"🧑‍💼 Espace salarié rangé en blocs + inscriptions VEPI",desc:"L'espace de chaque salarié s'ouvre maintenant sur un choix clair de blocs — « 🧑‍💼 Mon RH » (dossier, planning, congés, documents) et « 🎒 Mes activités » — au lieu d'une longue page à faire défiler. Côté activités : un salarié peut désormais gérer les inscrits (ajouter / retirer) même sur une activité que le bureau a déjà publiée (VEPI, ACM…) ; le bureau garde la main sur le titre, les places et la publication. Et ses documents partagés s'ouvrent en aperçu directement dans l'appli, sans avoir à les télécharger."},
@@ -2193,7 +2187,7 @@ const NEWS=[
   {id:'2026-06-21-gestion-projet',date:'2026-06-21',tab:'📁 Projets',titre:"🗂️ Gestion de projet : équipe, tâches & discussion",
    desc:"Chaque projet a maintenant un bouton « 🗂️ Gérer le projet » : désigne un référent, ajoute les personnes qui sont dessus, crée des tâches assignées avec une échéance (à cocher quand c'est fait), et discute en équipe dans un fil propre au projet. Idéal pour que chacun sache ce qu'il a à faire."},
   {id:'2026-06-21-a-traiter',date:'2026-06-21',tab:'🏠 Accueil',titre:"🔔 Tableau de bord « À traiter » sur l'accueil",
-   desc:"En haut de l'accueil, un panneau « À traiter » regroupe d'un coup d'œil TOUTES les demandes en attente : congés à valider, dossiers périscolaire déposés, comptes en attente, demandes de partenariat, questions d'adhérents, propositions d'atelier. Chaque ligne a un bouton « Voir → » qui t'emmène au bon endroit. Toi et Guy le voyez tous les deux — plus rien ne se perd."},
+   desc:"En haut de l'accueil, un panneau « À traiter » regroupe d'un coup d'œil TOUTES les demandes en attente : congés à valider, dossiers périscolaire déposés, comptes en attente, demandes de partenariat, questions d'adhérents, propositions d'atelier. Chaque ligne a un bouton « Voir → » qui t'emmène au bon endroit. Tout le bureau le voit — plus rien ne se perd."},
   {id:'2026-06-21-espace-salarie',date:'2026-06-21',tab:'👥 Dossiers salariés',titre:"👥 Espace salarié : chaque salarié a désormais son accès",
    desc:"Onglet 👥 Dossiers salariés : crée la fiche de chaque salarié, lie son compte, dépose ses documents (partagés avec lui ou internes RH) et valide ses demandes de congés. De son côté, le salarié se connecte à SON espace et voit seulement sa fiche, ses documents partagés, son planning et ses congés. Astuce : « Importer depuis la masse salariale » crée les fiches d'un clic, puis tu complètes."},
   {id:'2026-06-21-grille-familles',date:'2026-06-21',tab:'🎒 Périscolaire',titre:"💶 La grille tarifaire est désormais reliée aux familles",
@@ -2210,8 +2204,8 @@ const NEWS=[
    desc:"Un outil interne pour préparer les programmes de vacances sans repartir de zéro : un catalogue d'activités réutilisable, classé par origine (🏠 maison / 🤝 partenaire / 💶 payant), avec le contact de l'intervenant et le statut de la démarche (à appeler / en attente / confirmé). On crée une session (ex : Été 2026), on pose les activités sur les jours, et un objectif rappelle la cible : 5 activités minimum, dont une majorité « maison ». Les jours d'une session peuvent être datés (ex : Lun 27/07), les week-ends sont sautés automatiquement. Un planning visuel permet de glisser-déposer les activités sur les jours (menu « Jour » en secours sur mobile). Réservé au bureau."},
   {id:'2026-06-20-acm-ados',date:'2026-06-20',tab:'🎟️ Activités',titre:"🏕️ ACM Ados — Été 2026 en ligne",
    desc:"La carte « Accueil de loisirs (ACM) » devient « ACM Ados — Été 2026 » (27 juil. → 7 août · 11-17 ans) : programme complet (média/podcast, cuisine, randonnée du Pic Adam, sport, self-défense…) et inscriptions ouvertes (16 places, modifiable). Nouveau : les cartes d'activité affichent maintenant leur programme quand on clique dessus sur le site. Pour relancer la com d'un prochain ACM, modifie la date, le message et la capacité ici puis republie."},
-  {id:'2026-06-19-avenant-sandrine',date:'2026-06-19',tab:'🧑‍💼 RH',titre:"📄 Avenant ÉCLAT (3ᵉ salarié) ajouté",
-   desc:"Le panneau « Documents RH — Modèles d'avenant » de l'onglet 🧑‍💼 RH propose désormais un 3ᵉ modèle, pour le 3ᵉ salarié, au même format que les autres (changement ALISFA → ÉCLAT avec clause de maintien de salaire, modifiable et imprimable). À compléter (coef 265 / groupe B + indemnité temps partiel, contrat PEC, 21 h) et à faire valider par Hexopée avant signature."},
+  {id:'2026-06-19-avenant-3',date:'2026-06-19',tab:'🧑‍💼 RH',titre:"📄 Modèle d'avenant ÉCLAT (3ᵉ salarié) ajouté",
+   desc:"Le panneau « Documents RH — Modèles d'avenant » de l'onglet 🧑‍💼 RH propose désormais un 3ᵉ modèle, pour le 3ᵉ salarié, au même format que les autres (changement ALISFA → ÉCLAT avec clause de maintien de salaire, modifiable et imprimable). À compléter (coefficient ÉCLAT, indemnité éventuelle, type de contrat, heures) et à faire valider par Hexopée avant signature."},
   {id:'2026-06-19-reorg-3poles',date:'2026-06-19',tab:'🧭 Projet & orientations',titre:"🧭 Réorganisation en 3 pôles, valeurs & procédures",
    desc:"Suite à la réunion DLA du 18/06 : l'organigramme passe à 3 pôles (Pôle 1 — Vie éducative & jeunesse, Pôle 2 — Culture, lien social & animation, Pôle 3 — Insertion, droits & territoires, déployé en 2027). Les 3 valeurs cardinales (Proximité · Lien social · Éducation populaire), les orientations et l'organisation cible sont posées dans l'onglet 🧭 Projet & orientations. Six procédures internes (caisse, factures fournisseurs, comptabilité, RH congés, RH hebdo, conduite d'actions) sont disponibles dans 📒 Équipe. Les fiches de poste affichent les nouveaux rôles — coefficients ÉCLAT encore en validation Hexopée. Décision « 3 pôles » à ratifier formellement en CA."},
   {id:'2026-06-19-historique-salaires',date:'2026-06-19',tab:'🕘 Historique',titre:"🔎 Salaires, contrats et protocoles tracés dans l'Historique",
@@ -2221,7 +2215,7 @@ const NEWS=[
   {id:'2026-06-18-budget-mensuel',date:'2026-06-18',tab:'🔮 Prévisionnel',titre:'📅 Budget mensuel détaillé par code comptable',
    desc:"L'onglet 🔮 Prévisionnel a un nouveau grand tableau : les mois (janv.→déc.) sont en COLONNES et chaque code du plan comptable est en LIGNE. On y lit les recettes par code et leur total mensuel, les dépenses par code et leur total, la ligne Recettes − Dépenses (solde du mois) et la ligne Variation (le solde cumulé qui progresse mois après mois), plus une colonne Total an à droite. Les mois déjà saisis sont réels ; les mois à venir (marqués d'un *) sont projetés, comme le reste de l'onglet. Le tableau défile horizontalement si l'écran est étroit."},
   {id:'2026-06-18-projection-eclat',date:'2026-06-18',tab:'🧑‍💼 RH',titre:'⚠️ Ancienneté : repère « projection ÉCLAT »',
-   desc:"Dans l'onglet 🧑‍💼 RH, les points et la prime d'ancienneté affichés (panneaux 📅 Ancienneté de l'équipe et 🧮 Ancienneté ÉCLAT) sont calculés selon la FUTURE convention ÉCLAT (2 pts/an × V1 7,23 €). Or les bulletins de paie sont encore en ALISFA : les montants affichés ne correspondent donc pas encore au bulletin (la projection ÉCLAT diffère du montant ALISFA du bulletin). Un bandeau « Projection ÉCLAT — bulletins encore en ALISFA » a été ajouté pour éviter toute confusion. C'est uniquement un repère d'affichage : aucun calcul n'a changé. Chiffrage officiel : paie (Julie Lauret) / Hexopée."},
+   desc:"Dans l'onglet 🧑‍💼 RH, les points et la prime d'ancienneté affichés (panneaux 📅 Ancienneté de l'équipe et 🧮 Ancienneté ÉCLAT) sont calculés selon la FUTURE convention ÉCLAT (2 pts/an × V1 7,23 €). Or les bulletins de paie sont encore en ALISFA : les montants affichés ne correspondent donc pas encore au bulletin (la projection ÉCLAT diffère du montant ALISFA du bulletin). Un bandeau « Projection ÉCLAT — bulletins encore en ALISFA » a été ajouté pour éviter toute confusion. C'est uniquement un repère d'affichage : aucun calcul n'a changé. Chiffrage officiel : paie / Hexopée."},
   {id:'2026-06-18-fermetures',date:'2026-06-18',tab:'🏖️ Congés',titre:'🔒 Fermetures de la structure (congés imposés)',
    desc:"Dans l'onglet 🏖️ Congés, un nouveau bloc « 🔒 Fermetures de la structure » permet de déclarer une période où le CASE ferme (ex. vacances de décembre). En un clic « 👥 Appliquer à toute l'équipe », Bob crée un congé « Imposé » déjà validé pour chaque salarié·e sur la période, et affiche un bandeau de fermeture. Le bouton ⛄ pré-remplit le nom et le 15 décembre : tu n'ajoutes que la date de reprise. Réservé au bureau."},
   {id:'2026-06-18-mode-paiement',date:'2026-06-18',tab:'👥 Adhérents & 💶 Comptabilité',titre:'💳 Mode de paiement (espèces, chèque, virement…)',
@@ -2253,7 +2247,7 @@ const NEWS=[
   {id:'2026-06-17-rh',date:'2026-06-17',tab:'🧑‍💼 RH',titre:'🧑‍💼 Nouvel onglet RH & Organisation',
    desc:"L'organisation que tu vises (zone modifiable), les fiches de poste des salariés (avec coefficients ÉCLAT) et les projets d'embauche (PEC matin, ACM été, service civique, direction). Point de départ tiré du DLA, à réajuster. Réservé au bureau."},
   {id:'2026-06-17-accompagnement',date:'2026-06-17',tab:'🤝 Accompagnement',titre:'🤝 Nouvel onglet Accompagnement',
-   desc:"Tout l'accompagnement du CASE réuni au même endroit : le DLA (Charlotte Verdure / Démêlé ESS) avec la frise des 9 séances et le diagnostic, la Maison Des Associations, et les autres ressources (France Active, Hexopée, ELISFA, Uniformation…). En bas : la préparation des rendez-vous (statut de tes actions, demandes de Charlotte, notes de séance). Réservé au bureau."},
+   desc:"Tout l'accompagnement du CASE réuni au même endroit : le DLA (Démêlé ESS) avec la frise des 9 séances et le diagnostic, la Maison Des Associations, et les autres ressources (France Active, Hexopée, ELISFA, Uniformation…). En bas : la préparation des rendez-vous (statut de tes actions, demandes de la conseillère, notes de séance). Réservé au bureau."},
   {id:'2026-06-17-evenements',date:'2026-06-17',tab:'🎟️ Activités',titre:'📅 Événements (temps forts) dans la gestion',
    desc:"L'onglet 🎟️ Activités gère aussi les ÉVÉNEMENTS : choisis le type « Événement », mets une date (ou « Quand » si pas encore fixée), un lieu et un programme. Ils s'affichent sur le site dans « Temps forts » (les passés se masquent tout seuls, les sans-date passent en « date à venir »). Bouton ✏️ Modifier pour éditer une fiche complète."},
   {id:'2026-06-16-activites',date:'2026-06-16',tab:'🎟️ Activités',titre:'🎟️ Activités & places restantes',
@@ -3192,7 +3186,7 @@ function printBilan(){
 }
 function printHTML(html){ $('printArea').innerHTML=html; window.print(); }
 
-/* ---- Prévisionnel : export Excel (CSV) + PDF officiel signé (réflexion Guy 23/06) ---- */
+/* ---- Prévisionnel : export Excel (CSV) + PDF officiel signé (réflexion bureau 23/06) ---- */
 function exportPrevisionnelCSV(){
   if(!window._prevExport) renderPrevisionnel();
   const E=window._prevExport;
@@ -3524,7 +3518,7 @@ function zoneVisible(z){
 }
 function renderZoneCards(){
   const z=window.bobTodoByZone;
-  // Réflexion Guy (23/06) : les notifications par thème passent en petites pastilles rouges sur les
+  // Réflexion bureau (23/06) : les notifications par thème passent en petites pastilles rouges sur les
   // boutons-familles du menu (gain de place, moins perturbant) ; le tableau de bord n'est plus un menu en double.
   const famBadge=(group,n)=>{
     const fb=document.querySelector('nav.famtabs button[data-group="'+group+'"]'); if(!fb) return;
@@ -3580,7 +3574,7 @@ function renderCaprep(){
     const isInterested = (p.interets||[]).length>0;
     if(!me){ action=''; }
     else if(isInterested && isPrez){
-      action='<div style="margin-top:8px;background:#fdf0f0;border:1px solid #e3b4ad;color:#a33;border-radius:8px;padding:8px 10px;font-size:13px">🚫 <b>Président déporté</b> — tu ne prends pas part à ce point (conflit d\'intérêts). La préparation revient à Guy ou Cynthia.</div>';
+      action='<div style="margin-top:8px;background:#fdf0f0;border:1px solid #e3b4ad;color:#a33;border-radius:8px;padding:8px 10px;font-size:13px">🚫 <b>Président déporté</b> — tu ne prends pas part à ce point (conflit d\'intérêts). La préparation revient à un autre membre du bureau.</div>';
     } else {
       const mine=(p.avis||[]).find(function(a){return a.email===me.email;});
       action='<div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap">'
@@ -4207,7 +4201,7 @@ function renderPrevisionnel(){
   mh+=signRow('Variation (solde cumulé)',cumM,'background:#eef4ff',false);
   mh+='</tbody>';
   $('prevMatrix').innerHTML=mh;
-  // Mémorise les données du tableau pour l'export Excel et le PDF (mêmes chiffres, aucun recalcul) — réflexion Guy 23/06
+  // Mémorise les données du tableau pour l'export Excel et le PDF (mêmes chiffres, aucun recalcul) — réflexion bureau 23/06
   window._prevExport={Y:Y, refM:refM, MOIS:MOIS, recSeries:recSeries, depSeries:depSeries, recTotM:recTotM, depTotM:depTotM, netM:netM, cumM:cumM};
   $('prevMatrixHint').innerHTML = refM>0
     ? `Mois en colonnes, codes du plan comptable en lignes. Les colonnes <strong>janv.→${MOIS[refM-1]}</strong> sont réelles&nbsp;; les suivantes (marquées <em>*</em>, en italique) sont <strong>projetées</strong> — codes récurrents à leur moyenne mensuelle, subventions placées selon leur calendrier. La ligne <strong>Variation</strong> = solde cumulé qui progresse mois après mois.`
@@ -4478,7 +4472,18 @@ function renderAnciennete(){
     +'</tbody></table>'
     +'<p class="hint" style="margin:8px 0 0">Points = +2 par année d\'ancienneté (après 12 mois de travail effectif), valorisés à la valeur du point <strong>V1 (7,23 € en 2026)</strong> et proratisés au temps de travail&nbsp;; <strong>sans plafond</strong>. ⚠️ À distinguer de la <em>reconstitution de carrière</em> (reprise de l\'expérience antérieure à l\'embauche, valorisée à V2, plafonnée à 40 points) — décompte exact validé par la paie / Hexopée.</p>';
 }
-function renderRH(){ const t=$('rhOrgCible'); if(t && db.rhOrgCible && document.activeElement!==t) t.value=db.rhOrgCible; renderAnciennete(); renderBascule(); renderAvenants(); }
+function renderFichesPoste(){
+  const box=$('fichesPosteList'); if(!box) return;
+  const list=db.salaries||[];
+  if(!list.length){ box.innerHTML='<p class="hint" style="margin:0">Aucune fiche : ajoute l\'équipe dans 📒 Équipe (masse salariale), elles s\'affichent ici automatiquement.</p>'; return; }
+  box.innerHTML='<table><thead><tr><th>Poste &amp; titulaire</th><th>Contrat</th><th>Temps de travail</th><th>Date d\'entrée</th><th class="num">Brut mensuel</th></tr></thead><tbody>'
+    +list.map(function(s){ const c=msCalc(s);
+        const aide=(s.aide>0&&s.aidefin)?' <span class="muted" style="font-size:11px">aide jusqu\'à '+esc(s.aidefin)+'</span>':'';
+        return '<tr><td><strong>'+esc(s.name||'—')+'</strong>'+(s.poste?' <span class="muted" style="font-size:12px">'+esc(s.poste)+'</span>':'')+'</td><td>'+esc(s.contrat||'—')+aide+'</td><td>'+(s.hsem||0)+' h/sem</td><td>'+(s.dateEntree?ctDateFR(s.dateEntree):'—')+'</td><td class="num">'+euro(c.brutMois)+'</td></tr>';
+      }).join('')
+    +'</tbody></table>';
+}
+function renderRH(){ const t=$('rhOrgCible'); if(t && db.rhOrgCible && document.activeElement!==t) t.value=db.rhOrgCible; renderFichesPoste(); renderAnciennete(); renderBascule(); renderAvenants(); }
 
 /* ---- Bascule ÉLISFA → ÉCLAT : simulateur de maintien de salaire (RH) ---- */
 function bsParam(){
@@ -4560,8 +4565,6 @@ function renderBascule(){
 
 /* ---- Documents RH : modèles d'avenant bascule ÉCLAT ---- */
 function avInfo(key){
-  if(key==='kathy') return {civ:'', name:'[ Nom du salarie ]', poste:'[ Poste ]', entree:'[ date entree ]'};
-  if(key==='sandrine') return {civ:'', name:'[ Nom du salarie ]', poste:'[ Poste ]', entree:'[ date entree ]'};
   return {civ:'', name:'[ Nom du salarie ]', poste:'[ Poste ]', entree:'[ date entree ]'};
 }
 function avenantTpl(key){
@@ -4642,7 +4645,7 @@ Fait à Saint-Denis, le ____________________, en deux exemplaires originaux.
 
 ————————————————————————————————————————————————————————————
 ⚠️ MODÈLE / BASE DE TRAVAIL — à faire valider par Hexopée et le gestionnaire de
-paie (Julie Lauret) avant signature. Champs à compléter : SIRET, adresse du / de
+paie avant signature. Champs à compléter : SIRET, adresse du / de
 la salarié(e), n° d'avenant, groupe et coefficient ÉCLAT, rémunération brute,
 nombre d'heures, date d'effet.`;
 }
@@ -4661,7 +4664,7 @@ function printAvenant(key){
 }
 function renderAvenants(){
   if(!db.avenants) db.avenants={};
-  ['kathy','fabrice','sandrine'].forEach(function(key){
+  ['p1','p2','p3'].forEach(function(key){
     const el=$('av_'+key); if(!el || document.activeElement===el) return;
     const v=db.avenants[key];
     el.value=(v!=null && v!=='') ? v : avenantTpl(key);
@@ -4683,7 +4686,7 @@ function renderProjetAdos(){ const t=$('projetAdosSuivi'); if(t && db.projetAdos
 const ORGA_DEFAUT={
   gov:[
     {id:'g1',role:'Président',nom:'',mission:'Stratégie, représentation, garant du projet associatif'},
-    {id:'g2',role:'Trésorier',nom:'Guy',mission:'Finances, budget, banque, subventions, suivi des dettes'},
+    {id:'g2',role:'Trésorier',nom:'',mission:'Finances, budget, banque, subventions, suivi des dettes'},
     {id:'g3',role:'Secrétaire',nom:'(à pourvoir)',mission:'Comptes-rendus, registres, convocations, archives'}
   ],
   poles:[
@@ -4729,15 +4732,15 @@ const ACT_DEFAUT=[
   {id:'a1',sujet:'Plannings temporaires validés + diffusés aux salariés (accusé de lecture)',statut:'En cours',note:''},
   {id:'a2',sujet:'Boîtes mail pro individuelles (casebdn.re)',statut:'En cours',note:'Mise en place ce week-end'},
   {id:'a3',sujet:'Agendas individuels + actions',statut:'En cours',note:''},
-  {id:'a4',sujet:'Réunions hebdo équipe (jeudi 11h)',statut:'À faire',note:'Jamais tenue à ce jour — à mettre réellement en place'},
-  {id:'a5',sujet:'Ouvertures & activités au CASE des Bringelliers',statut:'En cours',note:'Local ouvert (Guy)'},
-  {id:'a6',sujet:'Entretien des espaces verts (Bringelliers)',statut:'En cours',note:'Guy au quotidien ; projet jardin à mettre en place'},
-  {id:'a7',sujet:'Relance Intermettra (visites médicales 3 salariés)',statut:'En attente',note:'Retour Mme Lauret ; relance demain'},
+  {id:'a4',sujet:'Réunions hebdo équipe (jeudi 11h)',statut:'À faire',note:'À mettre réellement en place'},
+  {id:'a5',sujet:'Ouvertures & activités au CASE des Bringelliers',statut:'En cours',note:'Local ouvert'},
+  {id:'a6',sujet:'Entretien des espaces verts (Bringelliers)',statut:'En cours',note:'Au quotidien ; projet jardin à mettre en place'},
+  {id:'a7',sujet:'Relance médecine du travail (visites périodiques)',statut:'En attente',note:'Relance en cours'},
   {id:'a8',sujet:'Relance Uniformation (cotisation 2026 + formations)',statut:'En attente',note:'~2 720 € ; relance demain'},
-  {id:'a9',sujet:'Relance impayés parents',statut:'Fait',note:'Courriers envoyés + suivi sur Bob ; point Cathy lundi'},
+  {id:'a9',sujet:'Relance impayés parents',statut:'Fait',note:'Courriers envoyés + suivi sur Bob'},
   {id:'a10',sujet:'Retour CAF subventions 2026',statut:'En attente',note:'Dossier transmis le 02/06'},
-  {id:'a11',sujet:'Révision des contrats avec Hexopée (coefficients ÉCLAT)',statut:'En cours',note:'Validation demain en séance DLA'},
-  {id:'a12',sujet:'Démarches service civique (Unis-Cité / Ôté Kartié)',statut:'Fait',note:'Rappeler Lucie'}
+  {id:'a11',sujet:'Révision des contrats avec Hexopée (coefficients ÉCLAT)',statut:'En cours',note:'Validation en séance DLA'},
+  {id:'a12',sujet:'Démarches service civique (Unis-Cité / Ôté Kartié)',statut:'Fait',note:'Relancer le contact Unis-Cité'}
 ];
 const ACT_STATUTS=['À faire','En cours','En attente','Fait'];
 function actionsDB(){ if(!Array.isArray(db.actionsSuivi)) db.actionsSuivi=JSON.parse(JSON.stringify(ACT_DEFAUT)); return db.actionsSuivi; }
@@ -6256,7 +6259,7 @@ renderAll();
   async function persDocView(docId){ const d=PERS.docs.find(x=>x.id===docId); if(!d) return; try{ const {data,error}=await sbc.storage.from('personnel-docs').createSignedUrl(d.path,3600); if(error||!data){ alert('Indisponible'); return; } docView(data.signedUrl, d.name||'Document'); }catch(e){ alert('Indisponible'); } }
   window.loadPersonnel=loadPersonnel; window.persNew=persNew; window.persEdit=persEdit; window.persCloseEdit=persCloseEdit; window.persSave=persSave; window.persLink=persLink; window.persUnlink=persUnlink; window.persDelete=persDelete; window.persImportSalaries=persImportSalaries; window.congeSet=congeSet; window.persDocsOpen=persDocsOpen; window.persDocUpload=persDocUpload; window.persDocToggle=persDocToggle; window.persDocDel=persDocDel; window.persDocView=persDocView;
 
-  /* ===== 🔔 À TRAITER (tableau de bord des demandes en attente, bureau — vu par Guy & le président) ===== */
+  /* ===== 🔔 À TRAITER (tableau de bord des demandes en attente, réservé au bureau) ===== */
   async function loadTodo(){
     const box=$('dashTodo'); if(!box||!sbc||!myAsso) return;
     const q=(tbl,col,val)=>sbc.from(tbl).select('*',{count:'exact',head:true}).eq(col,val).then(r=>r.count||0).catch(()=>0);
