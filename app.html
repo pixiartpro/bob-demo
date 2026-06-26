@@ -1249,8 +1249,9 @@
   <!-- ACCOMPAGNEMENT -->
   <section id="accompagnement" class="page">
     <div class="panel">
-      <p class="hint" style="margin:0">📋 Le dossier d'accompagnement DLA (diagnostic, plan d'actions, préparation des RDV) a été retiré de l'outil en ligne pour protéger les données nominatives des salariés. Il reste consultable sur le <strong>Drive du CASE</strong> (dossier DLA), et sera bientôt réintégré dans le coffre privé du bureau.</p>
+      <p class="hint" style="margin:0">📋 Synthèse stratégique de l'accompagnement DLA, rangée dans le <strong>coffre privé du bureau</strong> — visible seulement une fois connecté, jamais publiée sur le site. Le dossier complet (CR de séances, préparation des RDV) reste sur le <strong>Drive du CASE</strong>.</p>
     </div>
+    <div data-coffre="accompagnement"></div>
     <div class="panel">
       <h3 style="margin:0 0 4px;font-size:15px">📝 Notes de séance</h3>
       <p class="hint" style="margin:0 0 6px">Pour noter pendant ou après le RDV (enregistré automatiquement dans le coffre du bureau).</p>
@@ -2167,6 +2168,7 @@ function pageHelpGotoAide(){ pageHelpClose(); const b=document.querySelector('na
 
 /* ---- ✨ Quoi de neuf (nouveautés + notice chronologique) ---- */
 const NEWS=[
+  {id:'2026-06-26-dla-coffre',date:'2026-06-26',tab:'🤝 Accompagnement',titre:"🤝 Dossier DLA réintégré (coffre privé)",desc:"L'onglet 🤝 Accompagnement réaffiche une synthèse stratégique du DLA (diagnostic, recommandations, avancées & blocages, ressources) — rangée dans le coffre privé du bureau, visible seulement une fois connecté et jamais publiée sur le site. Le dossier complet reste sur le Drive du CASE. Le suivi du projet ados est de nouveau en place dans l'onglet 🚀 Projet ados."},
   {id:'2026-06-26-fiches-coffre',date:'2026-06-26',tab:'🧑‍💼 RH',titre:"🔒 Fiches de poste rangées dans le coffre",desc:"Les fiches de poste de l'onglet 🧑‍💼 RH se construisent maintenant directement depuis la masse salariale (onglet 📒 Équipe) — poste, contrat, temps de travail, date d'entrée et brut mensuel — et plus rien de nominatif n'est écrit dans la page publique du site. Le bureau voit le détail une fois connecté ; un visiteur ne voit rien. La projection ÉCLAT par salarié (coefficient, groupe) reste dans le panneau 🔄 Bascule."},
   {id:'2026-06-25-coef-anim-pec',date:'2026-06-25',tab:'🧑‍💼 RH',titre:"🔄 Règle de classement ÉCLAT précisée (postes d'animation)",desc:"Suite à un échange avec Hexopée le 25/06 : en ÉCLAT, un poste d'animation relève au minimum du groupe B (coefficient 265 automatique), et non du groupe A (257). Le diplôme ne change pas le classement, ce sont les missions confiées ; un passage de groupe suit l'élargissement des missions et n'est pas rétroactif. Le simulateur de bascule (onglet 🧑‍💼 RH) applique la règle ; le détail par salarié est réservé au bureau."},
   {id:'2026-06-25-previsionnel-export',date:'2026-06-25',tab:'🔮 Prévisionnel',titre:"📤 Exporter le budget en Excel + PDF officiel signé",desc:"Dans 🔮 Prévisionnel, sous le « Budget mensuel détaillé », deux nouveaux boutons. « 📋 Exporter en Excel (CSV) » télécharge le tableau mois par mois (recettes et dépenses par code comptable, totaux, solde, variation) pour le retravailler dans un tableur. « 🖨️ Imprimer / PDF officiel (signé) » sort une version mise en page en paysage, avec l'en-tête de l'association (nom, adresse, SIREN) et deux espaces de signature — Le Président et Le Trésorier — prête à transmettre aux partenaires et financeurs, sur n'importe quelle période. Les documents reprennent exactement les chiffres affichés à l'écran."},
