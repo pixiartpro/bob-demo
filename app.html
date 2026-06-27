@@ -2083,6 +2083,8 @@ const FAQ=[
    a:"Onglet <b>🧰 Secrétariat</b> → section <b>Réunions & décisions</b> : enregistre la date, le type (bureau, CA, AG…), les présents, l'ordre du jour, les décisions, et un lien vers le compte-rendu."},
   {cat:'📒 Équipe',q:"Où sont les infos sur les salariés et les contrats (PEC, Service Civique…) ?",kw:"equipe salarie contrat statut pec service civique cdi protocole procedure accueil arrivant personnel",
    a:"Onglet <b>📒 Équipe</b> : le mot d'accueil des nouveaux arrivants, les <b>statuts/contrats</b> (Service Civique, PEC, CDI… avec leurs spécificités) et les <b>protocoles & procédures</b> internes consultables par toute l'équipe."},
+  {cat:'📒 Équipe',q:"Comment publier un protocole aux salariés (espace salarié) ?",kw:"protocole procedure publier valider statut construction valide brouillon equipe salarie espace caisse afficher montrer diffuser lecture seule accordeon publie",
+   a:"Onglet <b>📒 Équipe</b>, panneau <b>📋 Protocoles & procédures</b>. Chaque protocole a un statut : <b>📝 En construction</b> (visible du bureau seulement) ou <b>✅ Validé</b> (publié dans l'<b>espace salarié</b>, en lecture seule, en accordéon). Clique <b>« 📝 Valider → »</b> pour le publier à toute l'équipe, ou <b>« ✅ Validé · publié »</b> pour le retirer. La liste du bureau est rangée en deux paquets : validés / en construction."},
   {cat:'📒 Équipe',q:"Combien nous coûte le personnel par an (salaires + charges) ?",kw:"masse salariale cout personnel salaire charges patronales brut horaire annuel mensuel employeur aide pec combien coute",
    a:"Onglet <b>📒 Équipe</b>, panneau <b>💰 Masse salariale</b> (en haut) : saisis chaque salarié avec son bulletin de paie sous les yeux (brut horaire, heures/semaine, % de charges patronales, % d'aide PEC). Bob calcule le <b>coût employeur au mois et à l'année</b>, déduit les aides, et donne le <b>coût horaire chargé</b> de chacun — c'est ce chiffre qu'on reporte dans le 📐 Simulateur du Prévisionnel. Le % de charges exact se lit sur un bulletin : (coût total employeur − brut) ÷ brut."},
   {cat:'⚠️ Événements',q:"Comment je déclare un accident ou un incident ?",kw:"evenement incident accident chute blessure conflit dommage declarer indesirable securite fiche signalement",
@@ -2168,6 +2170,7 @@ function pageHelpGotoAide(){ pageHelpClose(); const b=document.querySelector('na
 
 /* ---- ✨ Quoi de neuf (nouveautés + notice chronologique) ---- */
 const NEWS=[
+  {id:'2026-06-27-protocoles-salaries',date:'2026-06-27',tab:'📒 Équipe',titre:"📋 Procédures publiables dans l'espace salarié",desc:"Chaque protocole a maintenant un statut : 📝 en construction (bureau seulement) ou ✅ validé. Un protocole validé s'affiche tout seul dans l'espace salarié (lecture seule, en accordéon) — pratique pour que toute l'équipe ait sous les yeux la procédure caisse, la sécurité, etc. Clique « 📝 Valider → » sur un protocole pour le publier ; la liste du bureau est rangée en validés / en construction."},
   {id:'2026-06-26-dla-coffre',date:'2026-06-26',tab:'🤝 Accompagnement',titre:"🤝 Dossier DLA réintégré (coffre privé)",desc:"L'onglet 🤝 Accompagnement réaffiche une synthèse stratégique du DLA (diagnostic, recommandations, avancées & blocages, ressources) — rangée dans le coffre privé du bureau, visible seulement une fois connecté et jamais publiée sur le site. Le dossier complet reste sur le Drive du CASE. Le suivi du projet ados est de nouveau en place dans l'onglet 🚀 Projet ados."},
   {id:'2026-06-26-fiches-coffre',date:'2026-06-26',tab:'🧑‍💼 RH',titre:"🔒 Fiches de poste rangées dans le coffre",desc:"Les fiches de poste de l'onglet 🧑‍💼 RH se construisent maintenant directement depuis la masse salariale (onglet 📒 Équipe) — poste, contrat, temps de travail, date d'entrée et brut mensuel — et plus rien de nominatif n'est écrit dans la page publique du site. Le bureau voit le détail une fois connecté ; un visiteur ne voit rien. La projection ÉCLAT par salarié (coefficient, groupe) reste dans le panneau 🔄 Bascule."},
   {id:'2026-06-25-coef-anim-pec',date:'2026-06-25',tab:'🧑‍💼 RH',titre:"🔄 Règle de classement ÉCLAT précisée (postes d'animation)",desc:"Suite à un échange avec Hexopée le 25/06 : en ÉCLAT, un poste d'animation relève au minimum du groupe B (coefficient 265 automatique), et non du groupe A (257). Le diplôme ne change pas le classement, ce sont les missions confiées ; un passage de groupe suit l'élargissement des missions et n'est pas rétroactif. Le simulateur de bascule (onglet 🧑‍💼 RH) applique la règle ; le détail par salarié est réservé au bureau."},
@@ -2782,7 +2785,9 @@ function saveEdit(){
     else { v=(typeof v==='string')?v.trim():v; if((f.k==='url'||f.k==='lien'||f.k==='drive')&&v&&!/^https?:\/\//i.test(v))v='https://'+v; }
     rec[f.k]=v;
   });
+  const wasProto = editCtx.entity==='protocoles';
   editCtx=null; closeModal(); save();
+  if(wasProto && typeof syncProtocolesPublies==='function') syncProtocolesPublies();
 }
 /* ---- Documents joints (projets, subventions) : fichiers stockés dans le coffre sécurisé ---- */
 let docsCtx=null;
@@ -4349,6 +4354,21 @@ async function publishTarifs(){
     await sbc.from('tarifs_publics').upsert({asso_id:myAsso, data:payload, updated_at:new Date().toISOString()});
   }catch(e){ console.warn('publishTarifs', e); }
 }
+// Synchro du canal étroit « protocoles_publies » : publie les protocoles VALIDÉS (lus par les salariés), retire le reste. Calqué sur publishTarifs.
+async function syncProtocolesPublies(){
+  try{
+    if(!myAsso||!canWrite||!sbc) return;
+    const valides=(db.protocoles||[]).filter(p=>p.statut==='valide');
+    if(valides.length){
+      const rows=valides.map(p=>({id:p.id, asso_id:myAsso, titre:p.titre||'', categorie:p.categorie||null, contenu:p.contenu||'', url:p.url||'', updated_at:new Date().toISOString()}));
+      const up=await sbc.from('protocoles_publies').upsert(rows); if(up.error) throw up.error;
+    }
+    // retirer du canal ce qui n'est plus validé (ou supprimé)
+    const {data:existing}=await sbc.from('protocoles_publies').select('id');
+    const keep=new Set(valides.map(p=>p.id));
+    for(const r of (existing||[])){ if(!keep.has(r.id)) await sbc.from('protocoles_publies').delete().eq('id',r.id); }
+  }catch(e){ console.warn('syncProtocolesPublies', e); }
+}
 function savePeriGrille(){
   const g=periDB().grille;
   g.suppMatin=parseFloat($('peri_suppMatin').value)||0;
@@ -4984,17 +5004,34 @@ function renderContratsTravail(){
 }
 function addProtocole(){
   const titre=$('pr_titre').value.trim(); if(!titre){ alert('Indique un titre.'); return; }
-  db.protocoles=db.protocoles||[]; db.protocoles.push({id:uid(),titre,categorie:$('pr_cat').value.trim()||'Général',contenu:$('pr_contenu').value.trim(),url:$('pr_url').value.trim()});
+  db.protocoles=db.protocoles||[]; db.protocoles.push({id:uid(),titre,categorie:$('pr_cat').value.trim()||'Général',contenu:$('pr_contenu').value.trim(),url:$('pr_url').value.trim(),statut:'construction'});
   ['pr_titre','pr_cat','pr_contenu','pr_url'].forEach(i=>$(i).value=''); save();
 }
-function delProtocole(id){ if(confirm('Supprimer ce protocole ?')){ db.protocoles=(db.protocoles||[]).filter(p=>p.id!==id); save(); } }
+function delProtocole(id){ if(confirm('Supprimer ce protocole ?')){ db.protocoles=(db.protocoles||[]).filter(p=>p.id!==id); save(); syncProtocolesPublies(); } }
+function toggleProtoStatut(id){
+  const p=(db.protocoles||[]).find(x=>x.id===id); if(!p) return;
+  if(p.statut!=='valide'){
+    if(!confirm('Publier « '+(p.titre||'')+' » à toute l\'équipe (espace salarié, lecture seule) ?')) return;
+    p.statut='valide';
+  } else { p.statut='construction'; }
+  save(); renderProtocoles(); syncProtocolesPublies();
+}
+function protoRow(p){
+  const isV=p.statut==='valide';
+  const pubBtn=isV
+    ? '<button class="ghost btn" style="padding:4px 9px;font-size:12px;color:#127a51" onclick="toggleProtoStatut(\''+p.id+'\')" title="Retirer de l\'espace salarié">✅ Validé · publié</button>'
+    : '<button class="ghost btn" style="padding:4px 9px;font-size:12px" onclick="toggleProtoStatut(\''+p.id+'\')" title="Valider et publier à l\'équipe">📝 Valider →</button>';
+  return `<div class="kv"><span><strong>${esc(p.titre)}</strong>${p.categorie?' <span class="muted" style="font-size:12px">· '+esc(p.categorie)+'</span>':''}${p.contenu?'<br><span class="muted" style="font-size:13px;white-space:pre-wrap">'+esc(p.contenu)+'</span>':''}</span>
+    <span style="white-space:nowrap">${pubBtn} ${p.url?'<a class="btn" style="padding:4px 12px;font-size:12px;text-decoration:none" href="'+esc(p.url)+'" target="_blank" rel="noopener">Ouvrir ↗</a> ':''}<button class="ghost btn" style="padding:4px 9px;font-size:12px" onclick="openEdit('protocoles','${p.id}')" title="Modifier">✏️</button> <button class="danger" onclick="delProtocole('${p.id}')">✕</button></span></div>`;
+}
 function renderProtocoles(){
   const box=$('protocoleList'); if(!box) return; const ps=db.protocoles||[];
   if(!ps.length){ box.innerHTML='<p class="hint" style="margin:0">Aucun protocole. Ajoute la première procédure ci-dessus.</p>'; return; }
-  const byCat={}; ps.forEach(p=>{ const k=p.categorie||'Général'; (byCat[k]=byCat[k]||[]).push(p); });
-  box.innerHTML=Object.keys(byCat).sort().map(cat=>`<div style="margin:12px 0 4px;font-weight:800;font-size:12px;color:var(--muted);letter-spacing:.04em;text-transform:uppercase">${esc(cat)}</div>`
-    +byCat[cat].map(p=>`<div class="kv"><span><strong>${esc(p.titre)}</strong>${p.contenu?'<br><span class="muted" style="font-size:13px;white-space:pre-wrap">'+esc(p.contenu)+'</span>':''}</span>
-      <span style="white-space:nowrap">${p.url?'<a class="btn" style="padding:4px 12px;font-size:12px;text-decoration:none" href="'+esc(p.url)+'" target="_blank" rel="noopener">Ouvrir ↗</a> ':''}<button class="ghost btn" style="padding:4px 9px;font-size:12px" onclick="openEdit('protocoles','${p.id}')" title="Modifier">✏️</button> <button class="danger" onclick="delProtocole('${p.id}')">✕</button></span></div>`).join('')).join('');
+  const val=ps.filter(p=>p.statut==='valide'), cons=ps.filter(p=>p.statut!=='valide');
+  const paquet=(titre,hint,arr)=>`<div style="margin:14px 0 4px;font-weight:800;font-size:13px">${titre} <span class="muted" style="font-weight:600;font-size:12px">${hint}</span></div>`
+      +(arr.length?arr.map(protoRow).join(''):'<p class="hint" style="margin:0 0 6px">—</p>');
+  box.innerHTML = paquet('✅ Validés','· vus par toute l\'équipe dans l\'espace salarié', val)
+                + paquet('📝 En construction','· visibles du bureau uniquement', cons);
 }
 function renderEquipe(){ const t=$('accueilIntro'); if(t && document.activeElement!==t) t.value=db.accueilIntro||''; renderSalaries(); renderContratsTravail(); renderContrats(); renderProtocoles(); }
 

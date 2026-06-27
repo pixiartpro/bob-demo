@@ -107,7 +107,7 @@ const SB_URL='https://dkidtwypclpwznleiqnq.supabase.co';
 const SB_KEY='sb_publishable_HDfV-O2ION1Vw9v03aV_Qg_PkiAjLNo';
 const sb=window.supabase.createClient(SB_URL,SB_KEY);
 const $=s=>document.querySelector(s);
-const ME={session:null,prof:null,fiche:null,conges:[],docs:[],acts:[],ins:[],asso:null};
+const ME={session:null,prof:null,fiche:null,conges:[],docs:[],acts:[],ins:[],asso:null,protos:[]};
 function esc(s){return (s==null?'':String(s)).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2600);}
 function euroDays(n){return (n==null?'0':(Math.round(n*100)/100).toString().replace('.',','));}
@@ -133,7 +133,7 @@ async function boot(){
   // rôle personnel : fiche RH facultative (la partie gestion ne dépend pas d'elle)
   const {data:fiche}=await sb.from('personnel').select('*').eq('user_id',session.user.id).maybeSingle();
   ME.fiche=fiche||null;
-  const jobs=[loadActs()];
+  const jobs=[loadActs(), loadProtocoles()];
   if(fiche){ jobs.push(loadConges(), loadDocs()); }
   await Promise.all(jobs);
   renderAll();
@@ -145,6 +145,10 @@ async function loadConges(){
 }
 async function loadDocs(){
   try{ const {data}=await sb.from('personnel_docs').select('*').eq('personnel_id',ME.fiche.id).eq('partage',true).order('created_at',{ascending:false}); ME.docs=data||[]; }catch(e){ ME.docs=[]; }
+}
+async function loadProtocoles(){
+  // Canal étroit : seulement les protocoles VALIDÉS publiés par le bureau (RLS filtre par asso)
+  try{ const {data}=await sb.from('protocoles_publies').select('*').order('categorie',{ascending:true}); ME.protos=data||[]; }catch(e){ ME.protos=[]; }
 }
 
 function renderAll(){
@@ -164,6 +168,7 @@ function renderView(){
   const vp=$('#viewport'); if(!vp) return;
   if(ME.view==='activites'){ vp.innerHTML=backBar('🎒 Mes activités')+activitesHTML(); renderActs(); }
   else if(ME.view==='rh'){ vp.innerHTML=backBar('🧑‍💼 Mon RH')+rhHTML(); if(ME.fiche){ renderConges(); renderDocs(); } }
+  else if(ME.view==='procedures'){ vp.innerHTML=backBar('📋 Procédures du CASE')+proceduresHTML(); }
   else { vp.innerHTML=hubHTML(); }
 }
 function backBar(t){ return '<div class="backbar"><button class="btn ghost" onclick="spView(\'hub\')">← Retour</button><span class="backttl">'+esc(t)+'</span></div>'; }
@@ -186,8 +191,29 @@ function hubHTML(){
         +'<div class="hubname">Mes activités</div><div class="hubsub">'+esc(actSub)+'</div><div class="hubgo">Entrer →</div></button>'
       +'<button class="hubcard" onclick="spView(\'rh\')"><div class="hubico">🧑‍💼</div>'
         +'<div class="hubname">Mon RH'+rhBadge+'</div><div class="hubsub">'+esc(rhSub)+'</div><div class="hubgo">Entrer →</div></button>'
+      +(ME.protos.length?('<button class="hubcard" onclick="spView(\'procedures\')"><div class="hubico">📋</div>'
+        +'<div class="hubname">Procédures du CASE</div><div class="hubsub">'+ME.protos.length+' procédure'+(ME.protos.length>1?'s':'')+' à connaître (caisse, sécurité…)</div><div class="hubgo">Entrer →</div></button>'):'')
     +'</div></section>';
 }
+
+// ===== Bloc Procédures (protocoles validés, lecture seule, accordéon) =====
+function proceduresHTML(){
+  if(!ME.protos.length) return '<section class="block"><div class="card"><p class="empty">Aucune procédure publiée pour l\'instant.</p></div></section>';
+  return '<section class="block">'
+    +'<p class="sub">Les procédures validées par le bureau, à appliquer dans ton travail. Touche un titre pour le déplier.</p>'
+    +'<div class="card" style="padding:4px 10px">'+ME.protos.map((p,i)=>{
+      const last=i===ME.protos.length-1;
+      const cat=p.categorie?' <span class="badge b-valide">'+esc(p.categorie)+'</span>':'';
+      return '<div'+(last?'':' style="border-bottom:1px dashed var(--line)"')+'>'
+        +'<button onclick="spProtoToggle('+i+')" style="width:100%;text-align:left;background:none;border:none;cursor:pointer;font:inherit;padding:14px 4px;display:flex;align-items:center;justify-content:space-between;gap:10px">'
+          +'<span style="font-weight:800;font-size:15.5px">'+esc(p.titre)+cat+'</span>'
+          +'<span id="pchev'+i+'" style="color:var(--muted);flex:0 0 auto">▾</span></button>'
+        +'<div id="pbody'+i+'" style="display:none;padding:0 4px 16px"><p class="pre">'+esc(p.contenu||'')+'</p>'
+          +(p.url?'<a class="btn ghost" style="text-decoration:none;display:inline-block;margin-top:8px" href="'+esc(p.url)+'" target="_blank" rel="noopener">Ouvrir le document ↗</a>':'')
+        +'</div></div>';
+    }).join('')+'</div></section>';
+}
+window.spProtoToggle=function(i){ const b=document.getElementById('pbody'+i), c=document.getElementById('pchev'+i); if(!b)return; const open=b.style.display==='none'; b.style.display=open?'block':'none'; if(c)c.textContent=open?'▴':'▾'; };
 
 // ===== Bloc Activités (gestion + inscriptions) =====
 function activitesHTML(){
