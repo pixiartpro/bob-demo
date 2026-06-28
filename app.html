@@ -2854,6 +2854,23 @@ window.docView=function(url,name){
 };
 window.docViewClose=function(){ const ov=document.getElementById('docViewer'); if(ov){ ov.style.display='none'; ov.innerHTML=''; } document.body.style.overflow=''; };
 document.addEventListener('keydown',function(e){ if(e.key==='Escape') docViewClose(); });
+let __dvHtml='';
+window.docViewHtml=function(title, html){
+  __dvHtml=html||'';
+  let ov=document.getElementById('docViewer');
+  if(!ov){ ov=document.createElement('div'); ov.id='docViewer'; ov.style.cssText='position:fixed;inset:0;z-index:3000'; document.body.appendChild(ov); }
+  ov.innerHTML='<div onclick="docViewClose()" style="position:absolute;inset:0;background:rgba(15,30,25,.55)"></div>'
+    +'<div style="position:relative;max-width:920px;width:calc(100% - 28px);margin:3vh auto;background:#fff;border-radius:18px;box-shadow:0 24px 60px rgba(16,60,40,.3);overflow:hidden;max-height:94vh;display:flex;flex-direction:column">'
+      +'<div style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding:11px 14px;border-bottom:1px solid #e6ece7">'
+        +'<span style="font-weight:800;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+esc(title||'Aperçu du document')+'</span>'
+        +'<span style="white-space:nowrap"><button onclick="docViewPrint()" class="ghost btn" style="padding:5px 11px;margin-right:8px">🖨️ Imprimer / PDF</button>'
+        +'<button onclick="docViewClose()" class="ghost btn" style="padding:5px 11px">✕ Fermer</button></span>'
+      +'</div>'
+      +'<div style="padding:18px;overflow:auto;background:#fff">'+html+'</div>'
+    +'</div>';
+  ov.style.display='block'; document.body.style.overflow='hidden';
+};
+window.docViewPrint=function(){ const pa=document.getElementById('printArea'); if(pa){ pa.innerHTML=__dvHtml; window.print(); } };
 
 async function openDoc(i){
   if(!docsCtx)return; const rec=(db[docsCtx.entity]||[]).find(x=>x.id===docsCtx.id); if(!rec)return;
@@ -3201,7 +3218,7 @@ function printBilan(){
     <h3 style="margin-bottom:0">Dépenses par code comptable</h3>${tbl(d.depC,d.tOut,'Code comptable')}
     <p style="margin-top:30px;font-size:12px;color:#666">Édité le ${fmtDate(today())} — document établi à partir de la comptabilité de l'association.</p>`);
 }
-function printHTML(html){ $('printArea').innerHTML=html; window.print(); }
+function printHTML(html){ window.docViewHtml('Aperçu du document', html); }
 
 /* ---- Prévisionnel : export Excel (CSV) + PDF officiel signé (réflexion bureau 23/06) ---- */
 function exportPrevisionnelCSV(){
@@ -5571,7 +5588,7 @@ renderAll();
     box.innerHTML=(canWrite?'<div style="margin:0 0 12px"><button class="btn" onclick="docsPeriUploadAll()">⬆️ Tout déposer en 1 fois</button> <span class="muted" style="font-size:12px">— choisis les 8 fichiers d\'un coup, ils se rangent tout seuls</span></div>':'')+'<table style="width:100%;border-collapse:collapse">'+DOCSPERI.map(function(d){
       const e=store[d.k];
       const etat=(e&&e.path)?'<span class="pill ok">✅ déposé</span>':'<span class="pill">— à déposer</span>';
-      const dl=(e&&e.path)?'<button class="ghost btn" onclick="docsPeriDownload(\''+d.k+'\')">👁️ Ouvrir</button> ':'';
+      const dl=(e&&e.path)?'<button class="ghost btn" onclick="docsPeriView(\''+d.k+'\')">👁️ Visualiser</button> <button class="ghost btn" onclick="docsPeriDownload(\''+d.k+'\')">⬇️ Télécharger</button> ':'';
       const up=canWrite?'<button class="btn" onclick="docsPeriUpload(\''+d.k+'\')">⬆️ Téléverser</button>':'';
       return '<tr><td style="padding:8px;border-top:1px solid #eee"><b>'+d.label+'</b><br><span class="muted" style="font-size:12px">'+d.file+'</span></td><td style="padding:8px;border-top:1px solid #eee">'+etat+'</td><td style="padding:8px;border-top:1px solid #eee;text-align:right;white-space:nowrap">'+dl+up+'</td></tr>';
     }).join('')+'</table>';
@@ -5594,12 +5611,20 @@ renderAll();
     };
     inp.click();
   };
-  window.docsPeriDownload=async function(k){
+  window.docsPeriView=async function(k){
     const e=(db.docsPeri||{})[k]; if(!e||!e.path){ alert('Pas encore déposé.'); return; }
     try{
       const r=await sbc.storage.from('dossiers-periscolaire').createSignedUrl(e.path,3600);
       if(r.error||!r.data){ alert('Indisponible.'); return; }
       docView(r.data.signedUrl, e.file||'Document');
+    }catch(e2){ alert('Indisponible.'); }
+  };
+  window.docsPeriDownload=async function(k){
+    const e=(db.docsPeri||{})[k]; if(!e||!e.path){ alert('Pas encore déposé.'); return; }
+    try{
+      const r=await sbc.storage.from('dossiers-periscolaire').createSignedUrl(e.path,3600,{download:e.file||true});
+      if(r.error||!r.data){ alert('Indisponible.'); return; }
+      const a=document.createElement('a'); a.href=r.data.signedUrl; a.download=e.file||''; document.body.appendChild(a); a.click(); a.remove();
     }catch(e2){ alert('Indisponible.'); }
   };
   window.docsPeriUploadAll=function(){
