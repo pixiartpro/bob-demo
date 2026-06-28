@@ -804,18 +804,7 @@
       <div class="cards" id="periKpis" style="margin-top:8px"></div>
     </div>
 
-    <div class="panel">
-      <h2 style="margin:0 0 4px">💶 Grille tarifaire (tarif par jour, selon le quotient familial)</h2>
-      <p class="hint">Le tarif est <strong>par jour de présence</strong> : la facture du mois = tarif jour × nombre de jours dans le mois (≈ 16 en moyenne). Modifie une case puis clique 💾.</p>
-      <table><thead><tr><th>Tranche</th><th>Quotient familial</th><th class="num">Après-midi / jour</th></tr></thead>
-        <tbody id="periGrilleRows"></tbody></table>
-      <div class="toolbar" style="flex-wrap:wrap;gap:10px;margin-top:12px">
-        <div class="field" style="min-width:210px"><label>Supplément matin (€ / jour) — dès août</label><input type="number" id="peri_suppMatin" min="0" step="0.1"></div>
-        <div class="field" style="min-width:210px"><label>Remise par enfant supplémentaire (%)</label><input type="number" id="peri_remise" min="0" max="100" step="1"></div>
-        <div class="field" style="min-width:170px"><label>Jours / mois (moyenne)</label><input type="number" id="peri_jours" min="1" max="26" step="1"></div>
-      </div>
-      <div style="margin-top:10px"><button class="btn" onclick="savePeriGrille()">💾 Enregistrer la grille</button> <span class="hint" id="periGrilleSaved"></span></div>
-    </div>
+    <!-- 💶 Grille tarifaire déplacée dans le dépliant ⚙️ Paramétrage (bas de page) — réglage stable une fois par an -->
 
     <div class="panel">
       <h2 style="margin:0 0 4px">👧 Enfants inscrits</h2>
@@ -844,12 +833,30 @@
       <div id="periDossiersList" style="margin-top:8px"><p class="hint">Chargement…</p></div>
     </div>
 
-    <!-- étape2 23/06 : ancien onglet « 📋 Docs inscription » fusionné ici. Masqué aux non-bureau via #docsPeriPanel dans applyPerms. Revert = redéplacer ce panneau dans <section id="docsperi"> -->
-    <div class="panel" id="docsPeriPanel">
-      <h2 style="margin:0 0 4px">📋 Documents d'inscription périscolaire 2026-2027</h2>
-      <p class="hint" style="margin:0 0 10px">Réservé au bureau. Dépose ici une fois les documents officiels d'inscription à la garderie : ils sont stockés de façon sécurisée dans Bob et téléchargeables par le bureau. Plus tard, on pourra en ouvrir certains au personnel puis aux familles.</p>
-      <div id="docsPeriList"></div>
-    </div>
+    <!-- ⚙️ Paramétrage (stable, une fois/an) : grille tarifaire + documents d'inscription. Replié par défaut, séparé du quotidien (les inscrits). -->
+    <details class="panel" id="periParamPanel" style="margin-top:6px">
+      <summary style="cursor:pointer;font-weight:700;font-size:16px">⚙️ Paramétrage du périscolaire <span class="hint" style="font-weight:400">— à régler une fois par an (grille &amp; documents)</span></summary>
+      <p class="hint" style="margin:8px 0 12px">Réglages <strong>stables</strong> : on les pose à la rentrée, puis on n'y touche plus. Le quotidien (les inscrits) reste en haut de la page.</p>
+
+      <div class="panel" style="margin-top:0">
+        <h2 style="margin:0 0 4px">💶 Grille tarifaire (tarif par jour, selon le quotient familial)</h2>
+        <p class="hint">Le tarif est <strong>par jour de présence</strong> : la facture du mois = tarif jour × nombre de jours dans le mois (≈ 16 en moyenne). Modifie une case puis clique 💾.</p>
+        <table><thead><tr><th>Tranche</th><th>Quotient familial</th><th class="num">Après-midi / jour</th></tr></thead>
+          <tbody id="periGrilleRows"></tbody></table>
+        <div class="toolbar" style="flex-wrap:wrap;gap:10px;margin-top:12px">
+          <div class="field" style="min-width:210px"><label>Supplément matin (€ / jour) — dès août</label><input type="number" id="peri_suppMatin" min="0" step="0.1"></div>
+          <div class="field" style="min-width:210px"><label>Remise par enfant supplémentaire (%)</label><input type="number" id="peri_remise" min="0" max="100" step="1"></div>
+          <div class="field" style="min-width:170px"><label>Jours / mois (moyenne)</label><input type="number" id="peri_jours" min="1" max="26" step="1"></div>
+        </div>
+        <div style="margin-top:10px"><button class="btn" onclick="savePeriGrille()">💾 Enregistrer la grille</button> <span class="hint" id="periGrilleSaved"></span></div>
+      </div>
+
+      <div class="panel" id="docsPeriPanel">
+        <h2 style="margin:0 0 4px">📋 Documents d'inscription périscolaire 2026-2027</h2>
+        <p class="hint" style="margin:0 0 10px">Réservé au bureau. Dépose ici une fois les documents officiels d'inscription à la garderie : ils sont stockés de façon sécurisée dans Bob. <strong>👁️ Visualiser</strong> (aperçu sur la page) ou <strong>⬇️ Télécharger</strong>.</p>
+        <div id="docsPeriList"></div>
+      </div>
+    </details>
   </section>
 
   <!-- ACTIVITÉS & PLACES (gestion du public) -->
@@ -2171,6 +2178,7 @@ function pageHelpGotoAide(){ pageHelpClose(); const b=document.querySelector('na
 
 /* ---- ✨ Quoi de neuf (nouveautés + notice chronologique) ---- */
 const NEWS=[
+  {id:'2026-06-28-periscolaire-param',date:'2026-06-28',tab:'🎒 Périscolaire',titre:"🧹 Périscolaire rangé : le quotidien en haut, le paramétrage replié en bas",desc:"L'onglet 🎒 Périscolaire est réorganisé : les inscrits (ce qui bouge tous les jours) sont en haut, et la grille tarifaire + les documents d'inscription (qu'on règle une fois par an) sont regroupés dans un dépliant « ⚙️ Paramétrage » replié tout en bas. Plus clair au quotidien ; le paramétrage reste à portée, juste rangé."},
   {id:'2026-06-28-apercu-docs',date:'2026-06-28',tab:'🎒 Périscolaire',titre:"👁️ Aperçu des documents sur la même page (même Word)",desc:"Quand tu cliques « 👁️ Ouvrir » sur un document (règlement intérieur, pièce, justificatif…), il s'affiche maintenant dans une fenêtre par-dessus la page — sans t'emmener ailleurs ni le télécharger. Les PDF et images s'affichent directement ; les fichiers Word/Excel via un aperçu Microsoft. Le bouton ⬇️ reste disponible pour télécharger si besoin."},
   {id:'2026-06-28-signature-pv',date:'2026-06-28',tab:'🧰 Secrétariat',titre:"✍️ Chacun signe et valide le PV du CA, sur la même page",desc:"Dans 🧰 Secrétariat → « Réunions & délibérations », déplie « ✍️ Signatures & validation du CA » : chaque membre dessine sa signature (au doigt ou à la souris) directement sur la page — signer = valider son vote —, peut refuser ou noter une réserve, et le président voit qui a signé puis clôture le PV. Plusieurs personnes peuvent signer en même temps, chacun dans son espace. C'est la signature du PV (Président + Secrétaire au minimum) ; le vote se prend en séance."},
   {id:'2026-06-27-protocoles-salaries',date:'2026-06-27',tab:'📒 Équipe',titre:"📋 Procédures publiables dans l'espace salarié",desc:"Chaque protocole a maintenant un statut : 📝 en construction (bureau seulement) ou ✅ validé. Un protocole validé s'affiche tout seul dans l'espace salarié (lecture seule, en accordéon) — pratique pour que toute l'équipe ait sous les yeux la procédure caisse, la sécurité, etc. Clique « 📝 Valider → » sur un protocole pour le publier ; la liste du bureau est rangée en validés / en construction."},
