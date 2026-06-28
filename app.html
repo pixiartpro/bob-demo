@@ -1952,6 +1952,7 @@ const FAQ=[
   {cat:'🛎️ Réserver une salle',q:"Comment réserver une salle, et comment valider une demande ?",kw:"reserver salle reservation demande creneau local kaz zados bringelliers occupation valider refuser bureau intervenant adherent guichet deport",a:"Onglet <b>🛎️ Réserver une salle</b>. Les adhérents et intervenants déposent leur demande depuis leur espace adhérent (salle, jour, créneau, motif). La demande tombe ici et dans <b>⏰ À traiter</b>. Le bureau valide ou refuse — et un membre <b>ne peut pas valider sa propre demande</b> (déport, un autre membre doit le faire). Les réservations validées forment l'occupation des locaux."},
   {cat:'📊 Tableau de bord', q:"Où sont passés les onglets ? Comment marche la nouvelle barre en couleur ?", kw:"onglet onglets barre famille familles couleur couleurs ranger retrouver navigation menu reglages outils bureau finances adherents equipe perdu trouve trouver disparu deplace deplacer organisation secretariat",
    a:"La barre du haut est rangée en <b>4 familles colorées</b> : 👥 <b>Adhérents</b> (vert — membres, périscolaire, activités, lieux…), 🏛️ <b>Bureau</b> (sarcelle — projets, subventions, partenaires, ateliers, répertoire, secrétariat, préparer le CA), 🧑‍💼 <b>Équipe</b> (prune — RH, dossiers salariés, congés, horaires, suivi…) et 💶 <b>Finances</b> (ambre — compta, caisse, dettes, bilan, prévisionnel). Plus 🏠 <b>Accueil</b> (tableau de bord + présentation/projet) et 🧰 <b>Réglages</b> (données, aide, historique). Clique une famille pour ouvrir ses onglets — Bob ouvre <b>directement le premier onglet</b> de la famille (par ex. Accueil → Tableau de bord), plus besoin d'un second clic. Quand une rubrique a quelque chose à traiter, une <b>petite pastille rouge</b> apparaît sur sa famille dans la barre. <b>Rien n'a été supprimé</b> : tout est juste regroupé par couleur pour s'y retrouver plus vite, surtout sur téléphone."},
+  {cat:'🧰 Secrétariat',q:"Comment faire signer le PV du CA dans Bob (président puis secrétaire) ?",kw:"signer signature pv proces verbal proces-verbal president secretaire televerser telecharger scan archiver archive circuit transmettre conseil administration deux signatures art20 final",a:"Onglet <b>🧰 Secrétariat</b> → <b>« Réunions &amp; délibérations »</b>, sur une réunion qui a des délibérations : déplie <b>✍️ Signature du PV</b>. Le circuit a 3 temps : <b>1)</b> le <b>président</b> génère le PV (🖨️ PV), le signe (impression ou PDF) et le <b>téléverse</b> → il part vers la secrétaire ; <b>2)</b> la <b>secrétaire</b> le télécharge, le signe à son tour et téléverse le <b>PV final</b> ; <b>3)</b> le PV signé est <b>archivé dans Bob</b> (horodaté, avec qui a signé et quand) et <b>téléchargeable</b>. C'est la signature du PV (Président + Secrétaire, art.20) — elle <b>ne remplace pas le vote</b>, qui se prend en séance. Bouton <b>↩️ Recommencer</b> si besoin de refaire."},
   {cat:'📝 Préparer le CA', q:"À quoi sert « Préparer le CA » et est-ce que valider ici = voter ?", kw:"preparer ca conseil administration releve avis lu accord parler discuter vote voter valider validation consentement ordre du jour deport president imprimer projet pv decision seance points consensus rediscuter",
    a:"Onglet <b>📝 Préparer le CA</b> (réservé au bureau). Tu y retrouves les points à examiner avant un conseil d'administration. Chaque membre clique <b>« Lu, je suis d'accord »</b> ou <b>« Je veux en parler »</b> — c'est un <b>avis</b>, pas un vote. ⚠️ Sous les statuts du CASE, seules les décisions prises <b>en séance du CA</b> comptent : cette page sert juste à <b>préparer</b> et à gagner du temps (les points où tout le monde est déjà d'accord sont adoptés vite en séance). Le bouton <b>🖨️ Imprimer le projet de relevé</b> sort un document à apporter au CA. Sur les points où le président est en conflit d'intérêts (ex. convention Ôté Kartié), ses boutons sont masqués (déport). Tu peux retirer ton avis tant que le relevé n'est pas imprimé."},
   {cat:'🎒 Périscolaire', q:"Où trouver les documents d'inscription du périscolaire ?", kw:"document documents inscription periscolaire reglement interieur dossier fiche sanitaire rgpd droit image livret suivi televerser telecharger bureau modele garderie docs", a:"Onglet <b>🎒 Périscolaire</b>, panneau <b>« Documents d'inscription »</b> tout en bas (réservé au bureau). Tu déposes une fois les documents officiels (règlement intérieur, dossier d'inscription, fiche sanitaire, autorisation de droit à l'image, notice RGPD, livret d'accueil, suivi sanitaire) avec <b>⬆️ Téléverser</b> ; ils sont stockés de façon sécurisée dans Bob et <b>téléchargeables par le bureau</b> via <b>⬇️ Télécharger</b>. Ces documents servent à ouvrir les inscriptions à la garderie."},
@@ -2170,6 +2171,7 @@ function pageHelpGotoAide(){ pageHelpClose(); const b=document.querySelector('na
 
 /* ---- ✨ Quoi de neuf (nouveautés + notice chronologique) ---- */
 const NEWS=[
+  {id:'2026-06-28-signature-pv',date:'2026-06-28',tab:'🧰 Secrétariat',titre:"✍️ Signer le PV du CA directement dans Bob",desc:"Dans 🧰 Secrétariat → « Réunions & délibérations », chaque PV peut maintenant être signé en ligne : le président génère le PV (🖨️ PV), le signe et le téléverse → il passe à la secrétaire, qui le signe à son tour et dépose le PV final. Le PV signé est archivé dans Bob (horodaté, qui a signé quand) et téléchargeable. C'est la signature du PV (Président + Secrétaire) ; le vote, lui, reste pris en séance."},
   {id:'2026-06-27-protocoles-salaries',date:'2026-06-27',tab:'📒 Équipe',titre:"📋 Procédures publiables dans l'espace salarié",desc:"Chaque protocole a maintenant un statut : 📝 en construction (bureau seulement) ou ✅ validé. Un protocole validé s'affiche tout seul dans l'espace salarié (lecture seule, en accordéon) — pratique pour que toute l'équipe ait sous les yeux la procédure caisse, la sécurité, etc. Clique « 📝 Valider → » sur un protocole pour le publier ; la liste du bureau est rangée en validés / en construction."},
   {id:'2026-06-26-dla-coffre',date:'2026-06-26',tab:'🤝 Accompagnement',titre:"🤝 Dossier DLA réintégré (coffre privé)",desc:"L'onglet 🤝 Accompagnement réaffiche une synthèse stratégique du DLA (diagnostic, recommandations, avancées & blocages, ressources) — rangée dans le coffre privé du bureau, visible seulement une fois connecté et jamais publiée sur le site. Le dossier complet reste sur le Drive du CASE. Le suivi du projet ados est de nouveau en place dans l'onglet 🚀 Projet ados."},
   {id:'2026-06-26-fiches-coffre',date:'2026-06-26',tab:'🧑‍💼 RH',titre:"🔒 Fiches de poste rangées dans le coffre",desc:"Les fiches de poste de l'onglet 🧑‍💼 RH se construisent maintenant directement depuis la masse salariale (onglet 📒 Équipe) — poste, contrat, temps de travail, date d'entrée et brut mensuel — et plus rien de nominatif n'est écrit dans la page publique du site. Le bureau voit le détail une fois connecté ; un visiteur ne voit rien. La projection ÉCLAT par salarié (coefficient, groupe) reste dans le panneau 🔄 Bascule."},
@@ -3769,6 +3771,7 @@ function renderReunions(){
       +'<details style="margin-top:8px"><summary style="cursor:pointer;font-size:13px;color:#127a51;font-weight:600">👥 Présence & quorum</summary>'
         +'<div id="presence_'+rid+'" style="margin-top:8px;padding:10px;border:1px dashed var(--line);border-radius:10px">'+presenceBlock(rid,r)+'</div>'
       +'</details>'
+      +(delibs.length?pvSignBlock(rid,r):'')
     +'</div>';
   }).join('');
 }
@@ -3868,6 +3871,49 @@ function printPV(rid){
   printHTML(html);
 }
 
+/* ---- Signature du PV (président → secrétaire → archivé) — MVP par téléversement ---- */
+function pvFmtTs(ts){ try{ return new Date(ts).toLocaleString('fr-FR',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'}); }catch(e){ return ''; } }
+function pvStatutPill(st){
+  const M={brouillon:['#eef2fb','#1f4fc4','à signer'],signe_president:['#fff3cd','#8a5a00','signé président'],signe_secretaire:['#fff3cd','#8a5a00','signé secrétaire'],archive:['#dff5e9','#127a51','signé & archivé']};
+  const c=M[st]||M.brouillon;
+  return ' <span class="pill" style="background:'+c[0]+';color:'+c[1]+';font-size:11px;font-weight:600">'+c[2]+'</span>';
+}
+function pvResetSig(rid){
+  if(!confirm('Recommencer la signature de ce PV ? Le circuit repart de zéro (les fichiers déjà déposés restent dans Bob).')) return;
+  const r=(db.reunions||[]).find(x=>x.id===rid); if(!r) return;
+  r.pvStatut='brouillon'; r.sigPresident=null; r.sigSecretaire=null; r.pvFinalPath=null;
+  save(); renderReunions();
+}
+function pvSignBlock(rid,r){
+  const me=(window.bobMe&&typeof window.bobMe==='object')?window.bobMe:null;
+  if(!me||!me.canWrite) return ''; // réservé au bureau connecté
+  const st=r.pvStatut||'brouillon'; const isPrez=me.role==='president';
+  let h='<details style="margin-top:8px"><summary style="cursor:pointer;font-size:13px;color:#127a51;font-weight:600">✍️ Signature du PV'+pvStatutPill(st)+'</summary>'
+    +'<div style="margin-top:8px;padding:10px;border:1px dashed var(--line);border-radius:10px;font-size:13px">';
+  if(st==='brouillon'){
+    if(isPrez){
+      h+='<div><b>1. Le président signe.</b> Génère le PV (bouton 🖨️ PV ci-dessus), imprime-le et signe-le — ou signe le PDF — puis dépose-le :</div>'
+        +'<div style="margin-top:6px"><button class="btn" onclick="pvUploadSig(\''+rid+'\',\'president\')">📤 Téléverser le PV signé (président) → transmettre à la secrétaire</button></div>';
+    } else {
+      h+='<div class="hint">En attente de la signature du <b>président</b>.</div>';
+    }
+  } else if(st==='signe_president'){
+    h+='<div style="color:#127a51">✅ Signé par le président'+(r.sigPresident?(' — '+esc(r.sigPresident.nom||'')+', le '+pvFmtTs(r.sigPresident.ts)):'')+'.</div>';
+    if(r.sigPresident&&r.sigPresident.path) h+='<div style="margin-top:5px"><button class="ghost btn" style="font-size:12px" onclick="pvViewFile(\''+esc(r.sigPresident.path)+'\')">📥 Télécharger le PV signé par le président</button></div>';
+    h+='<div style="margin-top:8px"><b>2. La secrétaire signe.</b> Télécharge le PV ci-dessus, signe-le (impression ou PDF), puis dépose le PV final :</div>'
+      +'<div style="margin-top:6px"><button class="btn" onclick="pvUploadSig(\''+rid+'\',\'secretaire\')">📤 Téléverser le PV final signé (secrétaire)</button></div>';
+  } else if(st==='archive'){
+    h+='<div style="color:#127a51;font-weight:600">✅ PV signé et archivé dans Bob.</div>'
+      +'<div class="hint" style="margin-top:3px">'
+      +(r.sigPresident?('Président : '+esc(r.sigPresident.nom||'')+' ('+pvFmtTs(r.sigPresident.ts)+')<br>'):'')
+      +(r.sigSecretaire?('Secrétaire : '+esc(r.sigSecretaire.nom||'')+' ('+pvFmtTs(r.sigSecretaire.ts)+')'):'')
+      +'</div>';
+    if(r.pvFinalPath) h+='<div style="margin-top:6px"><button class="ghost btn" style="font-size:12px" onclick="pvViewFile(\''+esc(r.pvFinalPath)+'\')">📁 Télécharger le PV signé</button></div>';
+    h+='<div style="margin-top:8px"><button class="ghost btn" style="font-size:11px;color:#a33" onclick="pvResetSig(\''+rid+'\')">↩️ Recommencer</button></div>';
+  }
+  h+='</div></details>';
+  return h;
+}
 /* ---- T2 : membres du CA, présence & quorum (au tiers, art.13) ---- */
 function renderCaMembres(){
   const box=$('caMembresList'); if(!box) return;
@@ -5421,6 +5467,33 @@ renderAll();
       if(error){ console.warn('upload doc:', error.message); return null; }
       return 'sb:'+path;
     }catch(e){ console.warn('upload doc:', e); return null; }
+  };
+
+  // === Signature du PV de CA (bureau) — réutilise le bucket privé justificatifs, chemin <asso>/pv/<reunionId>/ ===
+  window.pvUploadSig=function(rid,who){
+    const r=(db.reunions||[]).find(x=>x.id===rid); if(!r){ alert('Réunion introuvable.'); return; }
+    if(!myAsso||!canWrite||!sbc){ alert("La signature en ligne nécessite d'être connecté au bureau."); return; }
+    const inp=document.createElement('input'); inp.type='file'; inp.accept='application/pdf,image/*';
+    inp.onchange=async function(){
+      const file=inp.files&&inp.files[0]; if(!file) return;
+      try{
+        const m=(file.name||'').match(/\.[a-z0-9]+$/i); const ext=m?m[0].toLowerCase():'.pdf';
+        const path=myAsso+'/pv/'+rid+'/pv-'+who+'-'+Date.now().toString(36)+ext;
+        const {error}=await sbc.storage.from('justificatifs').upload(path, file, {upsert:true, contentType:file.type||'application/octet-stream'});
+        if(error){ alert('Échec du téléversement : '+error.message); return; }
+        const meta={nom:(myProfile&&(myProfile.full_name||myProfile.email))||'', ts:new Date().toISOString(), path:path};
+        if(who==='president'){ r.sigPresident=meta; r.pvStatut='signe_president'; }
+        else { r.sigSecretaire=meta; r.pvFinalPath=path; r.pvStatut='archive'; }
+        save(); renderReunions();
+        alert(who==='president'?'✅ PV signé (président) — transmis à la secrétaire.':'✅ PV final signé et archivé dans Bob.');
+      }catch(e){ alert('Erreur : '+(e.message||e)); }
+    };
+    inp.click();
+  };
+  window.pvViewFile=async function(path){
+    if(!path||!sbc){ return; }
+    try{ const {data,error}=await sbc.storage.from('justificatifs').createSignedUrl(path,3600); if(error||!data){ alert('Fichier introuvable.'); return; } window.open(data.signedUrl,'_blank'); }
+    catch(e){ alert('Fichier indisponible.'); }
   };
 
   // === Documents d'inscription périscolaire (bureau) — bucket privé dossiers-periscolaire, chemin <asso>/<uid>/modeles-peri/ ===
