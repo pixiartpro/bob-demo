@@ -2871,6 +2871,23 @@ window.docViewHtml=function(title, html){
   ov.style.display='block'; document.body.style.overflow='hidden';
 };
 window.docViewPrint=function(){ const pa=document.getElementById('printArea'); if(pa){ pa.innerHTML=__dvHtml; window.print(); } };
+window.caprepDocView=function(cible){
+  const sec=document.getElementById(cible);
+  if(!sec){ window.docViewHtml('Aperçu', '<div class="hint" style="padding:18px">Section introuvable.</div>'); return; }
+  const clone=sec.cloneNode(true);
+  clone.querySelectorAll('input,textarea,select').forEach(function(el){
+    const s=document.createElement('span'); s.style.fontWeight='600';
+    if(el.type==='checkbox'||el.type==='radio') s.textContent=el.checked?'☑':'☐';
+    else { let v=el.value; if(el.tagName==='SELECT'&&el.selectedOptions&&el.selectedOptions[0]) v=el.selectedOptions[0].textContent; s.textContent=(v||el.getAttribute('placeholder')||'—'); }
+    el.replaceWith(s);
+  });
+  clone.querySelectorAll('button').forEach(function(el){ el.remove(); });
+  clone.querySelectorAll('[onclick]').forEach(function(el){ el.removeAttribute('onclick'); });
+  clone.querySelectorAll('a[href]').forEach(function(el){ el.removeAttribute('href'); });
+  clone.querySelectorAll('details').forEach(function(d){ d.open=true; });
+  const h=sec.querySelector('h1,h2'); const title=h?h.textContent.trim():'Aperçu de la section';
+  window.docViewHtml('Aperçu — '+title, clone.innerHTML);
+};
 
 async function openDoc(i){
   if(!docsCtx)return; const rec=(db[docsCtx.entity]||[]).find(x=>x.id===docsCtx.id); if(!rec)return;
@@ -3597,8 +3614,8 @@ function renderCaprep(){
       ? '<div style="margin:6px 0;background:#eef4ff;border:1px solid #cfe0ff;color:#23344d;border-radius:8px;padding:6px 10px;font-size:12px">⚖️ Décision du Conseil d\'administration en séance requise — ce relevé prépare, il ne décide pas.</div>'
       : '<div style="margin:6px 0;color:#5c7468;font-size:12px">🛠️ Point d\'intendance (sans vote du CA).</div>';
     const lienBtn = p.lien ? (p.lien.type==='onglet'
-        ? '<button class="btn ghost" style="font-size:12px" onclick="bobGoTab(\''+p.lien.cible+'\')">Voir le doc ↗</button>'
-        : '<a class="btn ghost" style="font-size:12px;text-decoration:none" target="_blank" rel="noopener" href="'+esc(p.lien.cible)+'">Voir le doc ↗</a>') : '';
+        ? '<button class="btn ghost" style="font-size:12px" onclick="caprepDocView(\''+p.lien.cible+'\')">👁️ Voir le doc</button>'
+        : '<button class="btn ghost" style="font-size:12px" onclick="docView(decodeURIComponent(\''+encodeURIComponent(p.lien.cible)+'\'),\'Document\')">👁️ Voir le doc</button>') : '';
     const avPills=(p.avis||[]).map(function(a){
       const ok=a.valeur==='accord'; const c=ok?'#127a51':'#8a5a00'; const bg=ok?'#dff5e9':'#fff1d6';
       return '<span style="background:'+bg+';color:'+c+';padding:2px 9px;border-radius:999px;font-size:12px;margin:2px;display:inline-block">'+esc(a.nom)+' · '+(ok?'✅ d\'accord':'💬 à discuter')+'</span>';
