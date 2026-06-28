@@ -2178,6 +2178,7 @@ function pageHelpGotoAide(){ pageHelpClose(); const b=document.querySelector('na
 
 /* ---- ✨ Quoi de neuf (nouveautés + notice chronologique) ---- */
 const NEWS=[
+  {id:'2026-06-28-dossiers-atraiter',date:'2026-06-28',tab:'🎒 Périscolaire',titre:"🔴 Dossiers d'inscription : ceux à traiter ressortent",desc:"Dans 🎒 Périscolaire, les dossiers déposés par les familles qui ne sont pas encore validés (incomplets ou à valider) remontent automatiquement en haut, sont surlignés (fond ambré), et un compteur « 🔴 X à traiter » s'affiche. Une case « à traiter seulement » masque les dossiers déjà validés. Plus besoin de les chercher."},
   {id:'2026-06-28-periscolaire-param',date:'2026-06-28',tab:'🎒 Périscolaire',titre:"🧹 Périscolaire rangé : le quotidien en haut, le paramétrage replié en bas",desc:"L'onglet 🎒 Périscolaire est réorganisé : les inscrits (ce qui bouge tous les jours) sont en haut, et la grille tarifaire + les documents d'inscription (qu'on règle une fois par an) sont regroupés dans un dépliant « ⚙️ Paramétrage » replié tout en bas. Plus clair au quotidien ; le paramétrage reste à portée, juste rangé."},
   {id:'2026-06-28-apercu-docs',date:'2026-06-28',tab:'🎒 Périscolaire',titre:"👁️ Aperçu des documents sur la même page (même Word)",desc:"Quand tu cliques « 👁️ Ouvrir » sur un document (règlement intérieur, pièce, justificatif…), il s'affiche maintenant dans une fenêtre par-dessus la page — sans t'emmener ailleurs ni le télécharger. Les PDF et images s'affichent directement ; les fichiers Word/Excel via un aperçu Microsoft. Le bouton ⬇️ reste disponible pour télécharger si besoin."},
   {id:'2026-06-28-signature-pv',date:'2026-06-28',tab:'🧰 Secrétariat',titre:"✍️ Chacun signe et valide le PV du CA, sur la même page",desc:"Dans 🧰 Secrétariat → « Réunions & délibérations », déplie « ✍️ Signatures & validation du CA » : chaque membre dessine sa signature (au doigt ou à la souris) directement sur la page — signer = valider son vote —, peut refuser ou noter une réserve, et le président voit qui a signé puis clôture le PV. Plusieurs personnes peuvent signer en même temps, chacun dans son espace. C'est la signature du PV (Président + Secrétaire au minimum) ; le vote se prend en séance."},
@@ -5718,6 +5719,7 @@ renderAll();
     const {error}=await sbc.from('inscriptions_periscolaire').update({note_bureau:el.value}).eq('id',id);
     setSync(error?('⚠️ '+error.message):'✓ note enregistrée', error?'#ffd9d0':'#dff5e9');
   };
+  window.periDosToggle=function(v){ window.__periDosTodoOnly=!!v; if(window.loadDossiersPeri) window.loadDossiersPeri(); };
   window.loadDossiersPeri=async function(){
     const box=document.getElementById('periDossiersList'); if(!box) return;
     const [rd, rf]=await Promise.all([
@@ -5727,7 +5729,16 @@ renderAll();
     if(rd.error){ box.innerHTML='<p class="hint" style="color:#c0392b">Erreur : '+esc(rd.error.message)+'</p>'; return; }
     const data=rd.data; const fmap={}; (rf.data||[]).forEach(f=>{ fmap[f.id]=f; });
     if(!data||!data.length){ box.innerHTML='<p class="hint">Aucun dossier déposé pour l\'instant. Les familles adhérentes déposent depuis leur espace adhérent.</p>'; return; }
-    box.innerHTML=data.map(d=>{
+    const isTodo=function(x){ return x.statut!=='valide'; };
+    data.sort(function(a,b){ return (isTodo(a)?0:1)-(isTodo(b)?0:1); }); // les dossiers à traiter d'abord
+    const nbTodo=data.filter(isTodo).length;
+    const todoOnly=!!window.__periDosTodoOnly;
+    const hdr='<div class="row" style="align-items:center;gap:10px;margin-bottom:8px;flex-wrap:wrap">'
+      +'<span class="pill" style="background:'+(nbTodo?'#fbecea':'#dff5e9')+';color:'+(nbTodo?'#b23a23':'#127a51')+';font-weight:600">'+(nbTodo?('🔴 '+nbTodo+' dossier'+(nbTodo>1?'s':'')+' à traiter'):'✅ Tous les dossiers sont traités')+'</span>'
+      +'<label style="font-size:12px;display:flex;align-items:center;gap:5px;cursor:pointer"><input type="checkbox" '+(todoOnly?'checked':'')+' onchange="periDosToggle(this.checked)"> à traiter seulement</label>'
+      +'</div>';
+    const list=todoOnly?data.filter(isTodo):data;
+    box.innerHTML=hdr+list.map(d=>{
       const st=PERI_DOS_ST[d.statut]||PERI_DOS_ST.brouillon;
       const enfants=(Array.isArray(d.enfants)?d.enfants:[]);
       const enfHtml=enfants.length?enfants.map(e=>{
@@ -5756,7 +5767,7 @@ renderAll();
         +'<button class="ghost btn" onclick="setDossierPeri(\''+d.id+'\',\'incomplet\')">⚠️ Incomplet</button>'
         +'<input id="dosnote_'+d.id+'" placeholder="Note bureau (ce qui manque…)" value="'+esc(d.note_bureau||'')+'" style="flex:1;min-width:160px;padding:7px 10px;border:1px solid var(--line);border-radius:8px;font:inherit">'
         +'<button class="ghost btn" onclick="noteDossierPeri(\''+d.id+'\')">💾 Note</button></div>'):'';
-      return '<div class="panel" style="margin:10px 0;border-left:4px solid '+st[1]+'">'
+      return '<div class="panel" style="margin:10px 0;border-left:4px solid '+st[1]+(isTodo(d)?';background:#fff8ef':';opacity:.85')+'">'
         +'<div class="toolbar"><div><strong>'+esc(d.foyer||'Famille')+'</strong> '
         +'<span class="pill" style="background:'+st[0]+';color:'+st[1]+';font-size:11px">'+st[2]+'</span>'
         +(d.besoin_aide?' <span class="pill" style="background:#fff5da;color:#8a6400;font-size:11px">🙋 Aide demandée (RDV)</span>':'')
