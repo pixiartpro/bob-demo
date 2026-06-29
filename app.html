@@ -1060,7 +1060,7 @@
       </div>
       <div id="echeanceList" style="margin-top:12px"></div>
     </div>
-    <div class="panel" style="border:2px solid var(--brand)">
+    <div class="panel" id="assurancePanel" style="border:2px solid var(--brand)">
       <h2>🛡️ Assurance de l'association</h2>
       <p class="hint">Toutes les infos du contrat d'assurance réunies pour le bureau. Source : <strong>avis d'échéance MAIF 2026</strong> (rangé dans le dossier <code>CASE/BDN/2026/Maif</code>), complété par les comptes-rendus et la comptabilité du CASE.</p>
       <div class="kv"><span><strong>Assureur</strong></span><span>MAIF — société d'assurance mutuelle (SIREN 775 709 702)</span></div>
@@ -6393,6 +6393,8 @@ renderAll();
   function voc(key){ try{ const v=(typeof myAsso!=='undefined' && myAsso && ORG_VOCAB[myAsso])||{}; return (v[key]!=null?v[key]:VOCAB_DEFAULT[key])||''; }catch(e){ return (VOCAB_DEFAULT[key]||''); } }
   // Applique le vocabulaire de l'org aux libellés (amorce : l'onglet « Adhérents »). Étendre ici au fil des besoins.
   function applyOrgVocab(){ try{ const b=document.querySelector('nav.tabs button[data-tab="members"]'); if(b) b.textContent='👥 '+voc('adherents'); }catch(e){} }
+  // Contenu spécifique CASE masqué pour les autres orgs (ex. assurance MAIF). Additif : CASE = tout visible, inchangé. Étendre ici (PDF projet-ados, ÉCLAT…) au besoin.
+  function applyOrgContent(){ try{ const isCase=(typeof myAsso!=='undefined' && myAsso==='d617489c-b18b-499b-ab17-c31656d0f08a'); const ap=document.getElementById('assurancePanel'); if(ap) ap.style.display = isCase ? '' : 'none'; }catch(e){} }
   function applyAssoIdentity(assoId){
     const id = ASSO_IDENTITY[assoId] || ASSO_IDENTITY['d617489c-b18b-499b-ab17-c31656d0f08a'];
     try{ document.title=id.title; }catch(e){}
@@ -6644,6 +6646,7 @@ renderAll();
     try{ const {data:feat}=await sbc.rpc('my_asso_features'); window.__bobFeatures=feat||{}; }catch(e){ window.__bobFeatures={}; }
     try{ applyAssoIdentity(myAsso); }catch(e){}
     try{ applyOrgVocab(); }catch(e){}
+    try{ applyOrgContent(); }catch(e){}
     canWrite=['president','tresorier','bureau'].includes(prof.role);
     window._bobUser=(prof.full_name||prof.email||'').split('@')[0];
     window.bobMe={id:prof.id,role:prof.role,email:prof.email||'',nom:(prof.full_name||prof.email||''),canWrite:canWrite};
