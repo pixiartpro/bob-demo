@@ -1060,6 +1060,15 @@
       </div>
       <div id="echeanceList" style="margin-top:12px"></div>
     </div>
+    <div class="panel" id="demarchesPanel" style="border:2px solid var(--brand)">
+      <h2>📋 Démarches administratives</h2>
+      <p class="hint">Que faire — et <strong>où aller</strong> — quand le bureau change, qu’on modifie les statuts, le siège ou l’objet, ou juste après un PV. Liens officiels, délais légaux et pièces à fournir. <span id="dem_maj" class="muted"></span></p>
+      <div id="demContext" style="margin:8px 0 14px"></div>
+      <div id="demList"></div>
+      <h3 style="margin:18px 0 6px">✅ Démarches en cours</h3>
+      <p class="hint" style="margin:0 0 8px">Quand tu lances une démarche, sa checklist apparaît ici et un rappel « à déclarer sous 3 mois » s’ajoute à ton échéancier.</p>
+      <div id="demEnCours"></div>
+    </div>
     <div class="panel" id="assurancePanel" style="border:2px solid var(--brand)">
       <h2>🛡️ Assurance de l'association</h2>
       <p class="hint">Toutes les infos du contrat d'assurance réunies pour le bureau. Source : <strong>avis d'échéance MAIF 2026</strong> (rangé dans le dossier <code>CASE/BDN/2026/Maif</code>), complété par les comptes-rendus et la comptabilité du CASE.</p>
@@ -1834,7 +1843,7 @@ const Coffre = (() => {
 
 let db = load();
 function load(){ try{ return Object.assign(blank(), JSON.parse(localStorage.getItem(KEY))||{}); }catch(e){ return blank(); } }
-function blank(){ return {members:[],ops:[],projects:[],subventions:[],comptes:[],contacts:[],liens:[],docs:[],notes:[],echeances:[],reunions:[],incidents:[],dettes:[],recurrents:{},protocoles:[],contrats:[],accueilIntro:'',accompNotes:'',rhOrgCible:'',projetMission:'',projetValeurs:'',projetOrientations:'',orga:null,projetAdosSuivi:'',assurance:{},periscolaire:{enfants:[]},capoints:[],coffreHtml:{}}; }
+function blank(){ return {members:[],ops:[],projects:[],subventions:[],comptes:[],contacts:[],liens:[],docs:[],notes:[],echeances:[],demarches:[],reunions:[],incidents:[],dettes:[],recurrents:{},protocoles:[],contrats:[],accueilIntro:'',accompNotes:'',rhOrgCible:'',projetMission:'',projetValeurs:'',projetOrientations:'',orga:null,projetAdosSuivi:'',assurance:{},periscolaire:{enfants:[]},capoints:[],coffreHtml:{}}; }
 function save(){ jLog(); localStorage.setItem(KEY, JSON.stringify(db)); renderAll(); }
 
 /* ---- Historique (journal d'activité automatique, onglet réservé au bureau) ---- */
@@ -2079,6 +2088,7 @@ const FAQ=[
    a:"Onglet <b>🔮 Prévisionnel</b>, sous le titre <b>📅 Budget mensuel détaillé</b>, deux boutons : <b>« 📋 Exporter en Excel (CSV) »</b> télécharge le tableau mois par mois (recettes et dépenses par code comptable, totaux, solde et variation) — à ouvrir dans Excel ou Google Sheets pour le retravailler. <b>« 🖨️ Imprimer / PDF officiel (signé) »</b> ouvre une version mise en page (en paysage) avec l'<b>en-tête de l'association</b> (nom, adresse, SIREN) et deux espaces de <b>signature — Le Président et Le Trésorier</b> ; choisis « Enregistrer en PDF » dans la fenêtre d'impression. Ces documents reprennent <b>exactement</b> les chiffres affichés à l'écran (mêmes mois réels et projetés) et sont prêts à transmettre aux partenaires, sur n'importe quelle période. Aucune écriture n'est créée en compta : c'est une projection."},
   {cat:'🔮 Prévisionnel',q:"Comment savoir si le périscolaire du matin est rentable et combien ajouter à la grille tarifaire ?",kw:"simulateur garderie periscolaire matin rentable rentabilite tarif supplement equilibre point mort enfants nouvelle activite cout calcul grille tarifaire quotient familial",
    a:"Onglet <b>🔮 Prévisionnel</b>, panneau <b>📐 Simulateur</b> (tout en bas). Important : on ne compte que l'argent <b>nouveau</b> — un enfant déjà inscrit le soir qui vient aussi le matin ne rapporte que le <b>supplément matin</b> qu'on lui facture ; un <b>nouvel enfant</b> rapporte son tarif jour complet. Renseigne les deux groupes, les heures et le coût de l'animateur : Bob calcule le coût annuel, les recettes nouvelles, le résultat et le <b>supplément d'équilibre</b> à ajouter au tarif jour de la grille (3,14 € à 7,43 € selon quotient familial). Clique sur <b>« 💾 Garder ces hypothèses »</b> pour les partager avec le bureau. C'est une simulation : rien n'est écrit en compta."},
+  {cat:'🧰 Secrétariat',q:"Comment déclarer un changement de bureau, ou savoir quoi déclarer après un PV ?",kw:"demarche demarches prefecture sous-prefecture greffe declarer declaration changement bureau dirigeant dirigeants president tresorier secretaire statuts siege objet pv recepisse cerfa 13971 13972 compte asso service public delai trois mois 3 mois amende liste dirigeants administratif",a:"Onglet <b>🧰 Secrétariat</b> → panneau <b>📋 Démarches administratives</b>. Pour chaque cas (changement de bureau, statuts, siège, objet, ou « après un PV »), tu as : <b>quand</b> le faire, le <b>délai légal</b> (⏰ 3 mois, sinon 1&nbsp;500&nbsp;€), les <b>pièces</b> à fournir, les <b>étapes</b>, et les <b>liens officiels</b> (service-public.fr, Le Compte Asso, les Cerfa 13971/13972). Le bouton <b>▶️ Lancer cette démarche</b> ouvre une <b>checklist à cocher</b> et ajoute un <b>rappel « à déclarer sous 3 mois »</b> à ton échéancier. ⚠️ Rappel utile : le <b>récépissé</b> de la préfecture ne porte pas les noms — ce sont le <b>PV + la liste des dirigeants</b> qui prouvent qui est au bureau."},
   {cat:'🧰 Secrétariat',q:"Où je note les choses à ne pas oublier (assurance, AG, déclarations) ?",kw:"secretariat echeancier general date oubli assurance ag declaration contrat rappel agenda memo penser",
    a:"Onglet <b>🧰 Secrétariat</b> → <b>Échéancier général</b> : note les dates importantes (renouvellement d'assurance, déclarations, AG, contrats…). Les échéances proches s'affichent aussi sur le tableau de bord. Le <b>Mémo du bureau</b> sert de pense-bête partagé."},
   {cat:'🧰 Secrétariat',q:"Comment je fais un courrier avec l'en-tête de l'association ?",kw:"courrier lettre modele entete papier en-tete imprimer pdf secretariat redaction officiel",
@@ -2181,6 +2191,7 @@ const NEWS=[
   {id:'2026-06-28-dossiers-atraiter',date:'2026-06-28',tab:'🎒 Périscolaire',titre:"🔴 Dossiers d'inscription : ceux à traiter ressortent",desc:"Dans 🎒 Périscolaire, les dossiers déposés par les familles qui ne sont pas encore validés (incomplets ou à valider) remontent automatiquement en haut, sont surlignés (fond ambré), et un compteur « 🔴 X à traiter » s'affiche. Une case « à traiter seulement » masque les dossiers déjà validés. Plus besoin de les chercher."},
   {id:'2026-06-28-periscolaire-param',date:'2026-06-28',tab:'🎒 Périscolaire',titre:"🧹 Périscolaire rangé : le quotidien en haut, le paramétrage replié en bas",desc:"L'onglet 🎒 Périscolaire est réorganisé : les inscrits (ce qui bouge tous les jours) sont en haut, et la grille tarifaire + les documents d'inscription (qu'on règle une fois par an) sont regroupés dans un dépliant « ⚙️ Paramétrage » replié tout en bas. Plus clair au quotidien ; le paramétrage reste à portée, juste rangé."},
   {id:'2026-06-28-apercu-docs',date:'2026-06-28',tab:'🎒 Périscolaire',titre:"👁️ Aperçu des documents sur la même page (même Word)",desc:"Quand tu cliques « 👁️ Ouvrir » sur un document (règlement intérieur, pièce, justificatif…), il s'affiche maintenant dans une fenêtre par-dessus la page — sans t'emmener ailleurs ni le télécharger. Les PDF et images s'affichent directement ; les fichiers Word/Excel via un aperçu Microsoft. Le bouton ⬇️ reste disponible pour télécharger si besoin."},
+  {id:'2026-06-30-demarches',date:'2026-06-30',tab:'🧰 Secrétariat',titre:"📋 Les démarches administratives, guidées pas à pas",desc:"Nouveau dans 🧰 Secrétariat → « Démarches administratives » : pour un changement de bureau, une modif des statuts, du siège, de l'objet, ou juste après un PV, Bob te dit quoi faire, où aller (liens officiels service-public.fr / Le Compte Asso / Cerfa), le délai légal (3 mois, sinon 1 500 €) et les pièces à fournir. Clique « Lancer cette démarche » : tu obtiens une checklist à cocher et un rappel automatique dans ton échéancier. Pour ne plus jamais rater une déclaration en préfecture."},
   {id:'2026-06-28-signature-pv',date:'2026-06-28',tab:'🧰 Secrétariat',titre:"✍️ Chacun signe et valide le PV du CA, sur la même page",desc:"Dans 🧰 Secrétariat → « Réunions & délibérations », déplie « ✍️ Signatures & validation du CA » : chaque membre dessine sa signature (au doigt ou à la souris) directement sur la page — signer = valider son vote —, peut refuser ou noter une réserve, et le président voit qui a signé puis clôture le PV. Plusieurs personnes peuvent signer en même temps, chacun dans son espace. C'est la signature du PV (Président + Secrétaire au minimum) ; le vote se prend en séance."},
   {id:'2026-06-27-protocoles-salaries',date:'2026-06-27',tab:'📒 Équipe',titre:"📋 Procédures publiables dans l'espace salarié",desc:"Chaque protocole a maintenant un statut : 📝 en construction (bureau seulement) ou ✅ validé. Un protocole validé s'affiche tout seul dans l'espace salarié (lecture seule, en accordéon) — pratique pour que toute l'équipe ait sous les yeux la procédure caisse, la sécurité, etc. Clique « 📝 Valider → » sur un protocole pour le publier ; la liste du bureau est rangée en validés / en construction."},
   {id:'2026-06-26-dla-coffre',date:'2026-06-26',tab:'🤝 Accompagnement',titre:"🤝 Dossier DLA réintégré (coffre privé)",desc:"L'onglet 🤝 Accompagnement réaffiche une synthèse stratégique du DLA (diagnostic, recommandations, avancées & blocages, ressources) — rangée dans le coffre privé du bureau, visible seulement une fois connecté et jamais publiée sur le site. Le dossier complet reste sur le Drive du CASE. Le suivi du projet ados est de nouveau en place dans l'onglet 🚀 Projet ados."},
@@ -3525,6 +3536,76 @@ function gEcheance(e){ // prochaine occurrence (roule si récurrente)
   if(e.recurrent){ const now=new Date(today()+'T00:00:00'); while(d<now){ d=new Date(d.getFullYear()+1,d.getMonth(),d.getDate()); } }
   return d;
 }
+/* ===== Démarches administratives (Secrétariat) — bibliothèque NATIONALE partagée + contexte/suivi par asso (coffre db) ===== */
+const DEMARCHES_MAJ='30/06/2026';
+const DEMARCHES_LIB=[
+ {id:'bureau',icon:'👥',titre:'Changement de bureau / dirigeants',
+  quand:'Un membre du bureau change (président, trésorier, secrétaire) ou un dirigeant entre / part.',
+  delaiJours:90,delai:'sous 3 mois après l’AG ou le CA qui l’a décidé',amende:'1 500 € (3 000 € en récidive)',
+  pieces:['Liste des dirigeants à jour : nom, prénom, profession, domicile, nationalité de chacun','PV de l’AG ou du CA qui a élu le bureau (signé)'],
+  piege:'Le récépissé renvoyé par la préfecture ne porte PAS les noms : c’est un simple accusé de réception. Ce sont le PV + la liste des dirigeants qui prouvent QUI est au bureau — garde-les ensemble. (Et vérifie que le PDF s’ouvre vraiment avant de l’envoyer à une banque.)',
+  ou:[{l:'Déclarer en ligne · service-public.fr',u:'https://www.service-public.fr/particuliers/vosdroits/R19468'},{l:'Le Compte Asso',u:'https://lecompteasso.associations.gouv.fr'},{l:'Cerfa 13971*03',u:'https://www.formulaires.service-public.fr/gf/cerfa_13971.do'}],
+  etapes:['Voter le nouveau bureau en séance (CA ou AG) et rédiger le PV','Faire signer le PV (Président + Secrétaire au minimum)','Préparer la liste des dirigeants (nom, profession, domicile, nationalité)','Déclarer en ligne (service-public.fr / Le Compte Asso) ou envoyer le Cerfa 13971*03 au greffe des associations','Classer le récépissé reçu, avec le PV']},
+ {id:'statuts',icon:'📜',titre:'Modification des statuts',
+  quand:'Une AG extraordinaire modifie les statuts (règles de fonctionnement, gouvernance…).',
+  delaiJours:90,delai:'sous 3 mois après l’AGE',amende:'1 500 €',
+  pieces:['PV de l’assemblée générale extraordinaire (signé)','Un exemplaire des statuts mis à jour, daté et signé'],
+  piege:'L’insertion au Journal officiel (JOAFE) n’est PAS obligatoire pour des statuts (seulement conseillée) : le récépissé de la préfecture fait foi.',
+  ou:[{l:'Déclarer en ligne · service-public.fr',u:'https://www.service-public.fr/particuliers/vosdroits/R19468'},{l:'Le Compte Asso',u:'https://lecompteasso.associations.gouv.fr'},{l:'Cerfa 13972*03',u:'https://www.formulaires.service-public.fr/gf/cerfa_13972.do'}],
+  etapes:['Voter la modification en AGE (à la majorité prévue par tes statuts)','Rédiger et signer le PV de l’AGE','Mettre à jour le texte des statuts (daté + signé)','Déclarer en ligne ou envoyer le Cerfa 13972*03 au greffe','Classer le récépissé avec les statuts à jour']},
+ {id:'siege',icon:'🏠',titre:'Changement de siège social',
+  quand:'L’association déménage son siège.',
+  delaiJours:90,delai:'sous 3 mois',amende:'1 500 €',
+  pieces:['PV de l’organe qui a décidé le déménagement','La nouvelle adresse complète'],
+  piege:'Si l’asso a un n° SIRET (subventions, salariés…), pense à mettre l’adresse à jour aussi à l’INSEE / Sirene, en plus de la préfecture.',
+  ou:[{l:'Déclarer en ligne · service-public.fr',u:'https://www.service-public.fr/particuliers/vosdroits/R19468'},{l:'Le Compte Asso',u:'https://lecompteasso.associations.gouv.fr'},{l:'Mettre à jour à l’INSEE (Sirene)',u:'https://www.insee.fr/fr/information/2015441'}],
+  etapes:['Décider le nouveau siège (selon tes statuts) et rédiger le PV','Déclarer la nouvelle adresse en ligne ou Cerfa 13972*03','Si SIRET : mettre l’adresse à jour à l’INSEE / Sirene','Classer le récépissé']},
+ {id:'objet',icon:'🎯',titre:'Changement d’objet',
+  quand:'Une AGE modifie l’objet de l’association (ses missions).',
+  delaiJours:90,delai:'sous 3 mois après l’AGE',amende:'1 500 €',
+  pieces:['PV de l’AGE','Statuts mis à jour avec le nouvel objet'],
+  piege:'Un changement d’objet peut avoir des conséquences (agréments, éligibilité à certaines subventions) : vérifie avant de voter.',
+  ou:[{l:'Déclarer en ligne · service-public.fr',u:'https://www.service-public.fr/particuliers/vosdroits/R19468'},{l:'Le Compte Asso',u:'https://lecompteasso.associations.gouv.fr'},{l:'Cerfa 13972*03',u:'https://www.formulaires.service-public.fr/gf/cerfa_13972.do'}],
+  etapes:['Voter le nouvel objet en AGE','Rédiger / signer le PV + statuts à jour','Déclarer en ligne ou Cerfa 13972*03','Classer le récépissé']},
+ {id:'pv',icon:'🗳️',titre:'Après un PV — je déclare quoi ?',
+  quand:'Tu sors d’un CA ou d’une AG : voici ce qui se déclare… et ce qui ne se déclare pas.',
+  delaiJours:0,guide:true,delai:'',amende:'',
+  pieces:['Le PV signé (à garder dans le registre de l’association dans tous les cas)'],
+  piege:'Tout ne se déclare pas ! Seuls les changements de dirigeants, statuts, siège ou objet vont à la préfecture. Le reste (budget, projets, adhésions…) se consigne juste dans ton registre.',
+  ou:[{l:'En cas de doute · service-public.fr',u:'https://www.service-public.fr/particuliers/vosdroits/R19468'}],
+  etapes:['Le PV change le BUREAU / un dirigeant ? → fais « Changement de bureau / dirigeants » (Cerfa 13971*03)','Le PV modifie les STATUTS / l’OBJET / le SIÈGE ? → fais la démarche correspondante (Cerfa 13972*03)','Sinon (gestion courante) → rien à déclarer : signe le PV et range-le dans le registre de l’asso']}
+];
+function demCtx(){ db.assoContext=db.assoContext||{}; const c=db.assoContext; return {greffe:(c.greffe!==undefined?c.greffe:'Sous-préfecture de Saint-Paul'),tel:(c.tel!==undefined?c.tel:'0262 35 89 50'),regime:c.regime||'1901'}; }
+function saveDemCtx(){ db.assoContext=db.assoContext||{}; db.assoContext.greffe=$('dem_greffe').value.trim(); db.assoContext.tel=$('dem_tel').value.trim(); db.assoContext.regime=$('dem_regime').value; save(); }
+function renderDemarches(){
+  db.demarches=db.demarches||[];
+  const majEl=$('dem_maj'); if(majEl) majEl.textContent='· liens à jour au '+DEMARCHES_MAJ;
+  const c=demCtx();
+  const cx=$('demContext'); if(cx){ cx.innerHTML='<div class="card" style="background:#f4f8f6"><div class="row" style="align-items:flex-end">'
+    +'<div class="field" style="flex:2"><label>Ton greffe / préfecture</label><input id="dem_greffe" value="'+(c.greffe||'')+'" onchange="saveDemCtx()" placeholder="Ex. Sous-préfecture de…"></div>'
+    +'<div class="field"><label>Téléphone du greffe</label><input id="dem_tel" value="'+(c.tel||'')+'" onchange="saveDemCtx()" placeholder="02…"></div>'
+    +'<div class="field" style="flex:0;min-width:210px"><label>Régime</label><select id="dem_regime" onchange="saveDemCtx()"><option value="1901"'+(c.regime==='1901'?' selected':'')+'>Loi 1901 (préfecture)</option><option value="am"'+(c.regime==='am'?' selected':'')+'>Alsace-Moselle (tribunal)</option></select></div>'
+    +'</div>'+(c.regime==='am'?'<p class="hint" style="margin:8px 0 0;color:#b45309">⚠️ En Alsace-Moselle, ces démarches passent par le <strong>tribunal judiciaire</strong> (registre des associations), pas la préfecture.</p>':'')+'</div>'; }
+  const list=$('demList'); if(list){ list.innerHTML=DEMARCHES_LIB.map(function(d){
+    var liens=d.ou.map(function(o){return '<a class="ghost btn" style="margin:2px 4px 2px 0" href="'+o.u+'" target="_blank" rel="noopener">🔗 '+o.l+'</a>';}).join('');
+    var pieces=d.pieces.map(function(p){return '<li>'+p+'</li>';}).join('');
+    var etapes=d.etapes.map(function(e){return '<li>'+e+'</li>';}).join('');
+    var delai=d.guide?'':'<div class="kv"><span><strong>⏰ Délai</strong></span><span>'+d.delai+' · sinon amende '+d.amende+'</span></div>';
+    var launch=d.guide?'':'<button class="btn" style="margin-top:10px" onclick="lancerDemarche(\''+d.id+'\')">▶️ Lancer cette démarche (checklist + rappel)</button>';
+    return '<details class="card" style="margin-bottom:8px"><summary style="cursor:pointer;font-weight:600">'+d.icon+' '+d.titre+'</summary><div style="margin-top:8px"><p class="hint" style="margin:0 0 8px"><strong>Quand ?</strong> '+d.quand+'</p>'+delai+'<div style="margin:8px 0"><strong>📎 Pièces à fournir</strong><ul style="margin:4px 0 0">'+pieces+'</ul></div><div style="margin:8px 0"><strong>🧭 Étapes</strong><ol style="margin:4px 0 0">'+etapes+'</ol></div><div style="margin:8px 0"><strong>⚠️ Bon à savoir</strong><p class="hint" style="margin:4px 0 0">'+d.piege+'</p></div><div style="margin:8px 0"><strong>🔗 Où aller</strong><div style="margin-top:4px">'+liens+'</div></div>'+launch+'</div></details>';
+  }).join(''); }
+  const enc=$('demEnCours'); if(enc){ if(!db.demarches.length){ enc.innerHTML='<p class="hint" style="margin:0">Aucune démarche en cours.</p>'; } else { enc.innerHTML=db.demarches.map(function(inst){
+    var done=inst.etapes.filter(function(e){return e.fait;}).length;
+    var items=inst.etapes.map(function(e,i){return '<label style="display:block;margin:3px 0"><input type="checkbox" '+(e.fait?'checked':'')+' onchange="toggleDemEtape(\''+inst.id+'\','+i+')"> '+(e.fait?'<s>'+e.label+'</s>':e.label)+'</label>';}).join('');
+    return '<div class="card" style="margin-bottom:8px"><div class="row" style="justify-content:space-between;align-items:center"><strong>'+inst.titre+'</strong><span class="muted">lancée le '+fmtDate(inst.dateLancement)+' · '+done+'/'+inst.etapes.length+'</span></div><div style="margin-top:6px">'+items+'</div><button class="ghost btn" style="margin-top:6px" onclick="supprDemarche(\''+inst.id+'\')">🗑️ Retirer</button></div>';
+  }).join(''); } }
+}
+function lancerDemarche(libId){ var d=DEMARCHES_LIB.find(function(x){return x.id===libId;}); if(!d)return; db.demarches=db.demarches||[]; db.echeances=db.echeances||[]; var echId='';
+  if(d.delaiJours>0){ var dt=new Date(); dt.setDate(dt.getDate()+d.delaiJours); var iso=dt.toISOString().slice(0,10); echId=uid(); db.echeances.push({id:echId,label:'⏰ Déclarer en préfecture : '+d.titre+' (délai légal 3 mois)',date:iso,recurrent:false}); }
+  db.demarches.push({id:uid(),type:d.id,titre:d.titre,dateLancement:today(),echeanceId:echId,etapes:d.etapes.map(function(e){return {label:e,fait:false};})});
+  save(); alert('Démarche lancée ✅\n\nSa checklist est dans « Démarches en cours »'+(d.delaiJours>0?', et un rappel « à déclarer sous 3 mois » a été ajouté à ton échéancier.':'.')); }
+function toggleDemEtape(instId,i){ var inst=(db.demarches||[]).find(function(x){return x.id===instId;}); if(!inst)return; inst.etapes[i].fait=!inst.etapes[i].fait; save(); }
+function supprDemarche(instId){ var inst=(db.demarches||[]).find(function(x){return x.id===instId;}); if(!inst)return; if(!confirm('Retirer cette démarche en cours ? Le rappel dans l’échéancier reste (tu peux le supprimer là-bas).'))return; db.demarches=db.demarches.filter(function(x){return x.id!==instId;}); save(); }
 function renderSecretariat(){
   const ns=db.notes||[];
   $('noteList').innerHTML = ns.length ? ns.slice().sort((a,b)=>(a.done-b.done)).map(n=>`<div class="kv">
@@ -5331,7 +5412,7 @@ function acmNewSession(){
 function acmDelSession(){ const cs=acmCurSession(); if(!cs)return; if(!confirm('Supprimer la session « '+cs.nom+' » ? (le catalogue est conservé)'))return; const a=acmDb(); a.sessions=a.sessions.filter(s=>s.id!==cs.id); a.cur=a.sessions[0]?a.sessions[0].id:null; save(); }
 function b64ToUtf8(s){ try{ return new TextDecoder().decode(Uint8Array.from(atob(s),c=>c.charCodeAt(0))); }catch(e){ return ''; } }
 function renderCoffre(){ try{ document.querySelectorAll('[data-coffre]').forEach(function(el){ var k=el.getAttribute('data-coffre'); var v=(window.db&&db.coffreHtml&&db.coffreHtml[k])||''; el.innerHTML = v ? b64ToUtf8(v) : ''; }); }catch(e){} }
-function renderAll(){ renderCoffre(); renderDashboard(); renderZoneCards(); renderMembers(); renderRelances(); renderOps(); renderCaisse(); renderRapprochement(); renderProjects(); renderSubventions(); renderEcheancier(); renderBilan(); renderPrevisionnel(); renderEquipe(); renderRepertoire(); renderSecretariat(); renderAssurance(); renderCaMembres(); renderReunions(); renderCaprep(); renderIncidents(); renderDettes(); renderOfficialLinks(); refreshComptes(); renderListParams(); renderJournal(); renderPeriscolaire(); renderFaqList(); renderNews(); renderAccompagnement(); renderRH(); renderProjet(); renderProjetAdos(); renderActions(); renderConges(); renderFermetures(); renderHoraires(); renderAcmVac(); if(window.renderDocsPeri)window.renderDocsPeri(); }
+function renderAll(){ renderCoffre(); renderDashboard(); renderZoneCards(); renderMembers(); renderRelances(); renderOps(); renderCaisse(); renderRapprochement(); renderProjects(); renderSubventions(); renderEcheancier(); renderBilan(); renderPrevisionnel(); renderEquipe(); renderRepertoire(); renderSecretariat(); renderDemarches(); renderAssurance(); renderCaMembres(); renderReunions(); renderCaprep(); renderIncidents(); renderDettes(); renderOfficialLinks(); refreshComptes(); renderListParams(); renderJournal(); renderPeriscolaire(); renderFaqList(); renderNews(); renderAccompagnement(); renderRH(); renderProjet(); renderProjetAdos(); renderActions(); renderConges(); renderFermetures(); renderHoraires(); renderAcmVac(); if(window.renderDocsPeri)window.renderDocsPeri(); }
 
 /* ---- Data import/export ---- */
 function exportJSON(motif){
