@@ -6384,6 +6384,15 @@ renderAll();
       theme:{ brand:'#E8300A', brandDk:'#c0260a', headerBg:'linear-gradient(100deg,#23262d 0%,#2c3038 52%,#1b1e23 100%)', headerInk:'#ffffff', headerSub:'#b9bfc9', logoBg:'#E8300A', logoHtml:'<span style="font-weight:800;font-size:12px;letter-spacing:.3px;color:#fff">PIX</span>', themeColor:'#23262d' }
     }
   };
+  /* ===== Vocabulaire PAR ORGANISATION (amorce) — même patron qu'ASSO_IDENTITY. Le CASE n'a PAS d'entrée → garde « Adhérent » par défaut.
+     Pour adapter une org, ajoute son asso_id ci-dessous. voc('adherents'|'adherent'|'adhesion'|'cotisation') donne le mot juste de l'org connectée. ===== */
+  const ORG_VOCAB={
+    '1b4f1aea-1e7a-45dd-97c0-1efa94319b94':{ adherents:'Clients', adherent:'Client', adhesion:'Contrat', cotisation:'Facture' } // PIX-I-ART (entreprise)
+  };
+  const VOCAB_DEFAULT={ adherents:'Adhérents', adherent:'Adhérent', adhesion:'Adhésion', cotisation:'Cotisation' };
+  function voc(key){ try{ const v=(typeof myAsso!=='undefined' && myAsso && ORG_VOCAB[myAsso])||{}; return (v[key]!=null?v[key]:VOCAB_DEFAULT[key])||''; }catch(e){ return (VOCAB_DEFAULT[key]||''); } }
+  // Applique le vocabulaire de l'org aux libellés (amorce : l'onglet « Adhérents »). Étendre ici au fil des besoins.
+  function applyOrgVocab(){ try{ const b=document.querySelector('nav.tabs button[data-tab="members"]'); if(b) b.textContent='👥 '+voc('adherents'); }catch(e){} }
   function applyAssoIdentity(assoId){
     const id = ASSO_IDENTITY[assoId] || ASSO_IDENTITY['d617489c-b18b-499b-ab17-c31656d0f08a'];
     try{ document.title=id.title; }catch(e){}
@@ -6634,6 +6643,7 @@ renderAll();
     myAsso=prof.asso_id;
     try{ const {data:feat}=await sbc.rpc('my_asso_features'); window.__bobFeatures=feat||{}; }catch(e){ window.__bobFeatures={}; }
     try{ applyAssoIdentity(myAsso); }catch(e){}
+    try{ applyOrgVocab(); }catch(e){}
     canWrite=['president','tresorier','bureau'].includes(prof.role);
     window._bobUser=(prof.full_name||prof.email||'').split('@')[0];
     window.bobMe={id:prof.id,role:prof.role,email:prof.email||'',nom:(prof.full_name||prof.email||''),canWrite:canWrite};
