@@ -2673,16 +2673,26 @@ function renderVentilation(){
   $('ventSiteIn').innerHTML = ventTable('site','in');
   $('ventActionIn').innerHTML = ventTable('action','in');
 }
-const BASE_SITES=["C.A.S.E Bois de Nèfles","Local des Bringelliers"];
-const BASE_ACTIONS=["Périscolaire","Accueil de loisirs (ACM)","VEPI","Secteur ados / Kaz Zados","Danse","Musique","Permanence du samedi","Jeudi info population","Sport & santé","Accompagnement à la parentalité","Animation de quartier","Fêt nout kartyé","Ôté Kartié","Fonctionnement"];
-const BASE_CATS=["Cotisations","Subvention","Dons","Événement","Matériel","Frais"];
-const TYPES_ADH=["Membre","Danse","Périscolaire","VEPI","ACM","Musique","Famille"];
-/* listes paramétrables : standard (base) + perso (db[key]) + déjà utilisées */
+/* ===== Listes métier PAR ORGANISATION — même patron qu'ASSO_IDENTITY (config front par asso_id, ZÉRO base de données).
+   Le CASE garde EXACTEMENT ses listes historiques ; les autres orgs partent d'un socle générique (pas de fuite « CASE »).
+   Chaque org complète ensuite ses propres listes via db[key] (coffre), inchangé. ===== */
+const ORG_LISTS={
+  'd617489c-b18b-499b-ab17-c31656d0f08a':{ // CASE — listes historiques, INCHANGÉES
+    sites:["C.A.S.E Bois de Nèfles","Local des Bringelliers"],
+    actions:["Périscolaire","Accueil de loisirs (ACM)","VEPI","Secteur ados / Kaz Zados","Danse","Musique","Permanence du samedi","Jeudi info population","Sport & santé","Accompagnement à la parentalité","Animation de quartier","Fêt nout kartyé","Ôté Kartié","Fonctionnement"],
+    cats:["Cotisations","Subvention","Dons","Événement","Matériel","Frais"],
+    typesAdh:["Membre","Danse","Périscolaire","VEPI","ACM","Musique","Famille"]
+  }
+};
+// Socle générique pour toute org non listée (ex. PIX-I-ART, BOKAF) : catégories compta universelles, le reste vierge à compléter.
+const ORG_LISTS_DEFAULT={ sites:[], actions:["Fonctionnement"], cats:["Cotisations","Subvention","Dons","Événement","Matériel","Frais"], typesAdh:["Membre"] };
+function orgLists(){ try{ return (typeof myAsso!=='undefined' && myAsso && ORG_LISTS[myAsso]) || ORG_LISTS_DEFAULT; }catch(e){ return ORG_LISTS_DEFAULT; } }
+/* listes paramétrables : standard (par org, ci-dessus) + perso (db[key]) + déjà utilisées */
 const LIST_DEFS={
-  sites:{label:"Sites",base:BASE_SITES,dl:"sites"},
-  actions:{label:"Actions",base:BASE_ACTIONS,dl:"actions"},
-  cats:{label:"Catégories",base:BASE_CATS,dl:"cats"},
-  typesAdh:{label:"Types d'adhésion",base:TYPES_ADH,dl:"typesAdh"}
+  sites:{label:"Sites",dl:"sites"},
+  actions:{label:"Actions",dl:"actions"},
+  cats:{label:"Catégories",dl:"cats"},
+  typesAdh:{label:"Types d'adhésion",dl:"typesAdh"}
 };
 function usedFor(key){
   if(key==='sites')return db.ops.flatMap(o=>getSplits(o).map(s=>(s.site||'').trim()));
@@ -2691,7 +2701,7 @@ function usedFor(key){
   if(key==='typesAdh')return (db.members||[]).map(m=>(m.typeAdh||'').trim());
   return [];
 }
-function listValues(key){ const d=LIST_DEFS[key]; return [...new Set([...d.base, ...(db[key]||[]), ...usedFor(key)].filter(Boolean))].sort((a,b)=>a.localeCompare(b,'fr',{numeric:true})); }
+function listValues(key){ const base=orgLists()[key]||[]; return [...new Set([...base, ...(db[key]||[]), ...usedFor(key)].filter(Boolean))].sort((a,b)=>a.localeCompare(b,'fr',{numeric:true})); }
 function refreshDatalists(){
   Object.keys(LIST_DEFS).forEach(key=>{ const dl=$(LIST_DEFS[key].dl); if(dl) dl.innerHTML=listValues(key).map(v=>`<option value="${esc(v)}">`).join(''); });
 }
