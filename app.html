@@ -6534,14 +6534,55 @@ renderAll();
   window.bobMe=function(){ try{ return myProfile?((myProfile.full_name||myProfile.email||'').split('@')[0]):''; }catch(e){ return ''; } };
   window.bobFeatures=function(){ return window.__bobFeatures||{}; };
   window.bobIsAdmin=function(){ try{ return !!(myProfile&&myProfile.super_admin); }catch(e){ return false; } };
-  // La console super-admin (fonctions & formules par association) vit désormais sur UNE seule page dédiée,
-  // bob.re/admin, pour éviter deux outils qui se désynchronisent. Cet onglet n'est plus qu'un raccourci.
+  // Console super-admin (réservée à pix.i.art.pro). Inclut la « Tour de contrôle des bouquets » EN LECTURE SEULE
+  // (additif, super-admin only → invisible et sans effet pour le CASE). Le pilotage fin reste sur bob.re/admin.
   window.bobLoadAdmin=async function(){
     const box=document.getElementById('adminConsole'); if(!box) return;
     if(!(myProfile&&myProfile.super_admin)){ box.innerHTML='<div class="empty">Réservé au super-admin.</div>'; return; }
-    box.innerHTML='<div class="panel"><h2 style="margin-top:0">🛠️ Console super-admin</h2>'
-      +'<p class="hint">Le pilotage des fonctions et des formules de chaque association se fait sur la console dédiée.</p>'
-      +'<p style="margin-top:14px"><a href="https://bob.re/admin.html" target="_blank" rel="noopener" style="display:inline-block;background:#127a51;color:#fff;text-decoration:none;padding:11px 18px;border-radius:999px;font-weight:800">→ Ouvrir la console bob.re/admin</a></p></div>';
+    // Catalogue des bouquets (lecture seule) : chaque bouquet → ses onglets. Source de vérité = BOB_TAB_PACK (applyPerms).
+    const PACKS=[
+      {key:'f_adherents', nom:'Adhérents', onglets:['Adhérents','Répertoire']},
+      {key:'f_metier_acm', nom:'Métier ACM / Périscolaire', onglets:['Périscolaire','Activités','Rendez-vous','Vacances','Lieux']},
+      {key:'f_compta_base', nom:'Compta de base', onglets:['Comptabilité','Caisse']},
+      {key:'f_compta_avancee', nom:'Compta avancée', onglets:['Dettes & créances','Bilan','Prévisionnel']},
+      {key:'f_subventions', nom:'Subventions', onglets:['Subventions']},
+      {key:'f_projets', nom:'Projets', onglets:['Projets']},
+      {key:'f_ateliers_partenaires', nom:'Ateliers & Partenaires', onglets:['Ateliers','Partenaires']},
+      {key:'f_rh_equipe', nom:'RH & Équipe', onglets:['Équipe','Accompagnement','RH','Dossiers salariés','Suivi','Congés','Horaires','Événements']}
+    ];
+    // opt-out : un bouquet est ÉTEINT seulement s'il vaut explicitement false ; absent ou true = activé (donc CASE {} = tout activé)
+    const packOn=(feats,key)=> !(feats && feats[key]===false);
+    const projOn=(feats)=> !!(feats && feats.gestion_projet===true); // opt-in (fonction avancée projets)
+    const escA=(s)=>String(s==null?'':s).replace(/[&<>"]/g,function(c){return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'})[c];});
+    const planBadge=function(plan){ return '<span style="font-size:11px;font-weight:800;padding:2px 8px;border-radius:999px;background:#eef4ff;color:#23344d">'+escA(plan||'—')+'</span>'; };
+    const line=function(on,titre,detail){
+      return '<div style="display:flex;align-items:flex-start;gap:8px;padding:7px 0;border-top:1px dashed #e7efe9">'
+        +'<span style="flex:0 0 22px;font-size:15px">'+(on?'✅':'⛔')+'</span>'
+        +'<span style="flex:1"><b>'+escA(titre)+'</b> <span class="muted" style="font-size:12px">— '+escA(detail)+'</span></span>'
+        +'<span style="flex:0 0 auto;font-size:12px;font-weight:700;color:'+(on?'#127a51':'#b3261e')+'">'+(on?'activé':'éteint')+'</span></div>';
+    };
+    const renderOrg=function(o){
+      const feats=o.features||{};
+      const rows=PACKS.map(function(pk){ return line(packOn(feats,pk.key), pk.nom, pk.onglets.join(', ')); }).join('');
+      const proj=line(projOn(feats),'Gestion de projet avancée','équipe, tâches & budget par projet');
+      const meta=(o.nb_comptes!=null||o.nb_adherents!=null)?'<div class="muted" style="font-size:12px;margin:-2px 0 6px">'+(o.nb_comptes!=null?escA(o.nb_comptes)+' compte(s)':'')+((o.nb_comptes!=null&&o.nb_adherents!=null)?' · ':'')+(o.nb_adherents!=null?escA(o.nb_adherents)+' adhérent(s)':'')+'</div>':'';
+      return '<div class="card" style="margin-bottom:12px">'
+        +'<div style="display:flex;align-items:center;gap:10px;margin-bottom:4px"><h3 style="margin:0;flex:1">🏢 '+escA(o.name)+'</h3>'+planBadge(o.plan)+'</div>'
+        +meta+rows+proj+'</div>';
+    };
+    box.innerHTML='<div class="panel"><h2 style="margin-top:0">🎛️ Tour de contrôle — Bouquets par organisation</h2>'
+      +'<p class="hint" style="margin:4px 0 0">Vue <b>en lecture seule</b> : quels modules (bouquets) sont activés pour chaque organisation. Le <b>socle</b> (tableau de bord, secrétariat, aide…) est toujours présent et n\'apparaît pas ici. Modifier = étape suivante.</p>'
+      +'<div id="bouquetsTower" style="margin-top:14px"><div class="empty">Chargement…</div></div></div>'
+      +'<div class="panel" style="margin-top:12px"><p class="hint" style="margin:0">Pilotage fin (formules, réglages avancés) : <a href="https://bob.re/admin.html" target="_blank" rel="noopener" style="font-weight:800;color:#127a51">→ console bob.re/admin</a></p></div>';
+    const tower=document.getElementById('bouquetsTower'); if(!tower) return;
+    let orgs=null;
+    try{ const {data,error}=await sbc.rpc('admin_list_assos'); if(!error && Array.isArray(data) && data.length) orgs=data; }catch(e){}
+    if(orgs){ tower.innerHTML=orgs.map(renderOrg).join(''); return; }
+    // Repli : la fonction multi-org n'est pas (encore) disponible → on montre au moins l'org connectée.
+    let mine=null;
+    try{ const {data}=await sbc.from('associations').select('id,name,slug,plan,features').eq('id',myAsso).maybeSingle(); mine=data; }catch(e){}
+    if(!mine) mine={name:'Mon organisation', plan:null, features:(window.bobFeatures&&window.bobFeatures())||{}};
+    tower.innerHTML='<div class="card" style="background:#fffaf0;border:1px solid #f1e2ad;margin-bottom:10px"><b>ℹ️ Vue limitée à ton organisation.</b> <span class="muted">La vue multi-organisations s\'activera dès que la fonction super-admin sera en place.</span></div>'+renderOrg(mine);
   };
 
   async function boot(){
