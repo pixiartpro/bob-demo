@@ -6540,6 +6540,7 @@ renderAll();
     const box=document.getElementById('adminConsole'); if(!box) return;
     if(!(myProfile&&myProfile.super_admin)){ box.innerHTML='<div class="empty">Réservé au super-admin.</div>'; return; }
     // Catalogue des bouquets (lecture seule) : chaque bouquet → ses onglets. Source de vérité = BOB_TAB_PACK (applyPerms).
+    const CASE_ID='d617489c-b18b-499b-ab17-c31656d0f08a'; // org historique = VERROUILLÉE (jamais d'extinction de brique par accident)
     const PACKS=[
       {key:'f_adherents', nom:'Adhérents', onglets:['Adhérents','Répertoire']},
       {key:'f_metier_acm', nom:'Métier ACM / Périscolaire', onglets:['Périscolaire','Activités','Rendez-vous','Vacances','Lieux']},
@@ -6555,34 +6556,51 @@ renderAll();
     const projOn=(feats)=> !!(feats && feats.gestion_projet===true); // opt-in (fonction avancée projets)
     const escA=(s)=>String(s==null?'':s).replace(/[&<>"]/g,function(c){return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'})[c];});
     const planBadge=function(plan){ return '<span style="font-size:11px;font-weight:800;padding:2px 8px;border-radius:999px;background:#eef4ff;color:#23344d">'+escA(plan||'—')+'</span>'; };
-    const line=function(on,titre,detail){
-      return '<div style="display:flex;align-items:flex-start;gap:8px;padding:7px 0;border-top:1px dashed #e7efe9">'
-        +'<span style="flex:0 0 22px;font-size:15px">'+(on?'✅':'⛔')+'</span>'
-        +'<span style="flex:1"><b>'+escA(titre)+'</b> <span class="muted" style="font-size:12px">— '+escA(detail)+'</span></span>'
-        +'<span style="flex:0 0 auto;font-size:12px;font-weight:700;color:'+(on?'#127a51':'#b3261e')+'">'+(on?'activé':'éteint')+'</span></div>';
+    const ctrl=function(on,orgId,key,editable,locked){
+      if(editable && !locked){
+        return '<button type="button" onclick="bobToggleFeature(\''+orgId+'\',\''+key+'\','+(on?'false':'true')+')" title="Cliquer pour '+(on?'éteindre':'activer')+'" style="flex:0 0 auto;cursor:pointer;border:1px solid '+(on?'#bfe3d2':'#f1c9c4')+';background:'+(on?'#e2f4ec':'#fbe9e7')+';color:'+(on?'#127a51':'#b3261e')+';font-size:12px;font-weight:700;padding:3px 12px;border-radius:999px">'+(on?'activé':'éteint')+'</button>';
+      }
+      return '<span style="flex:0 0 auto;font-size:12px;font-weight:700;color:'+(on?(locked?'#5c6b63':'#127a51'):'#b3261e')+'">'+(locked?'🔒 ':'')+(on?'activé':'éteint')+'</span>';
     };
-    const renderOrg=function(o){
+    const line=function(on,titre,detail,orgId,key,editable,locked){
+      return '<div style="display:flex;align-items:center;gap:8px;padding:7px 0;border-top:1px dashed #e7efe9">'
+        +'<span style="flex:0 0 20px;font-size:14px">'+(on?'✅':'⛔')+'</span>'
+        +'<span style="flex:1"><b>'+escA(titre)+'</b> <span class="muted" style="font-size:12px">— '+escA(detail)+'</span></span>'
+        +ctrl(on,orgId,key,editable,locked)+'</div>';
+    };
+    const renderOrg=function(o,editable){
       const feats=o.features||{};
-      const rows=PACKS.map(function(pk){ return line(packOn(feats,pk.key), pk.nom, pk.onglets.join(', ')); }).join('');
-      const proj=line(projOn(feats),'Gestion de projet avancée','équipe, tâches & budget par projet');
-      const meta=(o.nb_comptes!=null||o.nb_adherents!=null)?'<div class="muted" style="font-size:12px;margin:-2px 0 6px">'+(o.nb_comptes!=null?escA(o.nb_comptes)+' compte(s)':'')+((o.nb_comptes!=null&&o.nb_adherents!=null)?' · ':'')+(o.nb_adherents!=null?escA(o.nb_adherents)+' adhérent(s)':'')+'</div>':'';
+      const locked=(o.id===CASE_ID);
+      const rows=PACKS.map(function(pk){ return line(packOn(feats,pk.key), pk.nom, pk.onglets.join(', '), o.id, pk.key, editable, locked); }).join('');
+      const proj=line(projOn(feats),'Gestion de projet avancée','équipe, tâches & budget par projet', o.id, 'gestion_projet', editable, locked);
+      const meta=(o.nb_comptes!=null||o.nb_adherents!=null)?'<div class="muted" style="font-size:12px;margin:-2px 0 4px">'+(o.nb_comptes!=null?escA(o.nb_comptes)+' compte(s)':'')+((o.nb_comptes!=null&&o.nb_adherents!=null)?' · ':'')+(o.nb_adherents!=null?escA(o.nb_adherents)+' adhérent(s)':'')+'</div>':'';
+      const lockNote=(editable&&locked)?'<div class="muted" style="font-size:12px;margin:0 0 6px;color:#9a7b1f">🔒 CASE verrouillé : ses modules ne peuvent pas être modifiés ici (sécurité).</div>':'';
       return '<div class="card" style="margin-bottom:12px">'
         +'<div style="display:flex;align-items:center;gap:10px;margin-bottom:4px"><h3 style="margin:0;flex:1">🏢 '+escA(o.name)+'</h3>'+planBadge(o.plan)+'</div>'
-        +meta+rows+proj+'</div>';
+        +meta+lockNote+rows+proj+'</div>';
     };
     box.innerHTML='<div class="panel"><h2 style="margin-top:0">🎛️ Tour de contrôle — Bouquets par organisation</h2>'
-      +'<p class="hint" style="margin:4px 0 0">Vue <b>en lecture seule</b> : quels modules (bouquets) sont activés pour chaque organisation. Le <b>socle</b> (tableau de bord, secrétariat, aide…) est toujours présent et n\'apparaît pas ici. Modifier = étape suivante.</p>'
+      +'<p class="hint" style="margin:4px 0 0">Clique le bouton à droite pour <b>activer / éteindre</b> un bouquet par organisation. Le <b>socle</b> (tableau de bord, secrétariat, aide…) est toujours présent et n\'apparaît pas ici. 🔒 Le <b>CASE</b> est verrouillé : on ne peut pas lui retirer de module ici.</p>'
       +'<div id="bouquetsTower" style="margin-top:14px"><div class="empty">Chargement…</div></div></div>'
-      +'<div class="panel" style="margin-top:12px"><p class="hint" style="margin:0">Pilotage fin (formules, réglages avancés) : <a href="https://bob.re/admin.html" target="_blank" rel="noopener" style="font-weight:800;color:#127a51">→ console bob.re/admin</a></p></div>';
+      +'<div class="panel" style="margin-top:12px"><p class="hint" style="margin:0">Pilotage fin (formules, plan, réglages avancés) : <a href="https://bob.re/admin.html" target="_blank" rel="noopener" style="font-weight:800;color:#127a51">→ console bob.re/admin</a></p></div>';
     const tower=document.getElementById('bouquetsTower'); if(!tower) return;
     let orgs=null;
     try{ const {data,error}=await sbc.rpc('admin_list_assos'); if(!error && Array.isArray(data) && data.length) orgs=data; }catch(e){}
-    if(orgs){ tower.innerHTML=orgs.map(renderOrg).join(''); return; }
-    // Repli : la fonction multi-org n'est pas (encore) disponible → on montre au moins l'org connectée.
+    if(orgs){ tower.innerHTML=orgs.map(function(o){ return renderOrg(o,true); }).join(''); return; }
+    // Repli (lecture seule) : la fonction multi-org indispo → on montre au moins l'org connectée.
     let mine=null;
     try{ const {data}=await sbc.from('associations').select('id,name,slug,plan,features').eq('id',myAsso).maybeSingle(); mine=data; }catch(e){}
-    if(!mine) mine={name:'Mon organisation', plan:null, features:(window.bobFeatures&&window.bobFeatures())||{}};
-    tower.innerHTML='<div class="card" style="background:#fffaf0;border:1px solid #f1e2ad;margin-bottom:10px"><b>ℹ️ Vue limitée à ton organisation.</b> <span class="muted">La vue multi-organisations s\'activera dès que la fonction super-admin sera en place.</span></div>'+renderOrg(mine);
+    if(!mine) mine={id:myAsso, name:'Mon organisation', plan:null, features:(window.bobFeatures&&window.bobFeatures())||{}};
+    tower.innerHTML='<div class="card" style="background:#fffaf0;border:1px solid #f1e2ad;margin-bottom:10px"><b>ℹ️ Vue limitée à ton organisation (lecture seule).</b></div>'+renderOrg(mine,false);
+  };
+  // Bascule un bouquet pour une org (super-admin). CASE verrouillé : double garde (ici + UI désactivée). Réservé au super-admin côté base (admin_set_feature).
+  window.bobToggleFeature=async function(orgId,key,val){
+    if(orgId==='d617489c-b18b-499b-ab17-c31656d0f08a'){ alert('🔒 Le CASE est verrouillé : on ne modifie pas ses modules ici (sécurité).'); return; }
+    try{
+      const {error}=await sbc.rpc('admin_set_feature',{p_asso:orgId,p_key:key,p_value:val});
+      if(error){ alert('Erreur : '+error.message); return; }
+    }catch(e){ alert('Erreur : '+((e&&e.message)||e)); return; }
+    if(window.bobLoadAdmin) window.bobLoadAdmin();
   };
 
   async function boot(){
