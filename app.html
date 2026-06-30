@@ -44,6 +44,18 @@
        transition:.15s}
   nav.tabs button:hover{color:var(--ink);background:#eef4f0}
   nav.tabs button.active{background:var(--brand);color:#fff}
+  /* === Recherche d'onglet « Aller à… » (30/06/2026) — additif, revertible (supprimer ce bloc) === */
+  .tabjump{position:relative;margin-bottom:8px;max-width:340px}
+  .tabjump input{width:100%;border:1px solid var(--line);background:var(--card);border-radius:999px;padding:8px 14px;font-size:13.5px;font-weight:600;color:var(--ink);outline:none}
+  .tabjump input::placeholder{color:var(--muted);font-weight:500}
+  .tabjump input:focus{border-color:var(--brand);box-shadow:0 0 0 3px rgba(18,122,81,.13)}
+  .tabjump-res{position:absolute;top:calc(100% + 4px);left:0;right:0;background:var(--card);border:1px solid var(--line);border-radius:12px;box-shadow:0 10px 28px rgba(16,48,42,.16);padding:5px;z-index:60;display:none;max-height:330px;overflow:auto}
+  .tabjump-res.show{display:block}
+  .tabjump-res button{display:flex;width:100%;align-items:center;gap:8px;border:none;background:transparent;color:var(--ink);padding:8px 11px;border-radius:9px;font-size:13.5px;font-weight:600;cursor:pointer;text-align:left}
+  .tabjump-res button:hover,.tabjump-res button.sel{background:#eef4f0}
+  .tabjump-res button .fam{margin-left:auto;font-size:11px;font-weight:600;color:var(--muted);white-space:nowrap}
+  .tabjump-res .empty{padding:9px 11px;color:var(--muted);font-size:13px}
+  @media(max-width:560px){.tabjump{max-width:none}}
   /* === Étape 2 (22/06/2026) : familles colorées + finition clay — additif, revertible (supprimer ce bloc) === */
   nav.famtabs button{border-bottom-width:3px;border-radius:13px;transition:transform .18s ease-out,box-shadow .18s ease-out,background .18s ease-out}
   nav.famtabs button:hover{transform:translateY(-1px)}
@@ -228,6 +240,10 @@
 
 <div class="wrap">
   <div class="navwrap">
+  <div class="tabjump"><!-- 30/06/2026 : recherche d'onglet « Aller à… » — additif, revertible (supprimer ce bloc + le CSS .tabjump + l'IIFE tabJump) -->
+    <input id="tabJumpInput" type="search" autocomplete="off" placeholder="🔎 Aller à un onglet…" aria-label="Aller à un onglet" aria-expanded="false">
+    <div id="tabJumpResults" class="tabjump-res" role="listbox" aria-label="Onglets correspondants"></div>
+  </div>
   <nav class="famtabs" aria-label="Familles d'onglets">
     <button class="fam on" data-group="accueil">🏠 Accueil</button>
     <button class="fam" data-group="adherents">👥 Adhérents</button>
@@ -1961,6 +1977,44 @@ document.querySelectorAll('nav.tabs button').forEach(b=>{
   });
 })();
 
+/* ---- Recherche d'onglet « Aller à… » (30/06/2026, additif/revertible) : tape 2-3 lettres → saute à l'onglet via bobGoTab() ---- */
+(function(){
+  const input=document.getElementById('tabJumpInput');
+  const box=document.getElementById('tabJumpResults');
+  if(!input||!box) return;
+  const FAM={accueil:'Accueil',adherents:'Adhérents',bureau:'Bureau',equipe:'Équipe',finances:'Finances',regl:'Réglages'};
+  const norm=s=>(s||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
+  function items(){
+    return [...document.querySelectorAll('nav.tabs .tabgroup button[data-tab]')]
+      .filter(b=>{ try{ return getComputedStyle(b).display!=='none'; }catch(e){ return true; } })
+      .map(b=>{ const g=b.closest('.tabgroup'); return {tab:b.dataset.tab,label:b.textContent.trim(),fam:(g&&FAM[g.dataset.group])||''}; });
+  }
+  let cur=[], sel=-1;
+  function paint(){ [...box.querySelectorAll('button')].forEach((b,i)=>b.classList.toggle('sel',i===sel)); }
+  function close(){ box.classList.remove('show'); box.innerHTML=''; cur=[]; sel=-1; input.setAttribute('aria-expanded','false'); }
+  function render(){
+    const q=norm(input.value).trim();
+    if(!q){ close(); return; }
+    cur=items().filter(it=>norm(it.label).includes(q)).slice(0,8);
+    sel=cur.length?0:-1;
+    box.innerHTML = cur.length
+      ? cur.map((it,i)=>'<button type="button" data-go="'+it.tab+'" class="'+(i===sel?'sel':'')+'"><span>'+it.label+'</span><span class="fam">'+it.fam+'</span></button>').join('')
+      : '<div class="empty">Aucun onglet ne correspond.</div>';
+    box.classList.add('show'); input.setAttribute('aria-expanded','true');
+  }
+  function go(tab){ if(!tab) return; if(typeof bobGoTab==='function') bobGoTab(tab); input.value=''; close(); }
+  input.addEventListener('input', render);
+  input.addEventListener('focus', render);
+  input.addEventListener('keydown', e=>{
+    if(e.key==='ArrowDown'){ e.preventDefault(); if(cur.length){ sel=(sel+1)%cur.length; paint(); } }
+    else if(e.key==='ArrowUp'){ e.preventDefault(); if(cur.length){ sel=(sel-1+cur.length)%cur.length; paint(); } }
+    else if(e.key==='Enter'){ e.preventDefault(); if(cur[sel]) go(cur[sel].tab); }
+    else if(e.key==='Escape'){ input.value=''; close(); input.blur(); }
+  });
+  box.addEventListener('click', e=>{ const b=e.target.closest('button[data-go]'); if(b) go(b.getAttribute('data-go')); });
+  document.addEventListener('click', e=>{ if(!e.target.closest('.tabjump')) close(); });
+})();
+
 /* ---- Aide : « Demande à Zanana » (FAQ + assistant par mots-clés, sans IA) ---- */
 const FAQ=[
   {cat:'🧰 Secrétariat',q:"Comment compter les voix d'une délibération et générer le procès-verbal (PV) ?",kw:"pv proces verbal procès délibération deliberation resolution voix compter compteur pour contre abstention sens adoptee rejetee reportee deport voter scrutin generer imprimer reunion seance conseil administration boutons plus moins",a:"Onglet <b>🧰 Secrétariat</b> → <b>« Réunions &amp; délibérations »</b>. Sur chaque délibération, les boutons <b>+ / −</b> comptent les voix <b>Pour / Contre / Abstention</b> ; le <b>sens</b> (adoptée / rejetée / reportée) se met à jour tout seul. Le bouton <b>⚖️ Déport</b> note qu'un membre se retire d'une résolution (conflit d'intérêts) — c'est repris au PV. Une fois les votes saisis, <b>🖨️ PV</b> génère le <b>procès-verbal officiel</b> (présents, quorum, déports, résolutions avec le détail des voix, signatures Président/Secrétaire). Le <b>🖨️ Relevé</b> reste, lui, un document de préparation. Le PV est <b>à valider et signer en séance</b> ; en cas de doute sur le formalisme : Hexopée."},
@@ -1968,6 +2022,7 @@ const FAQ=[
   {cat:'🛎️ Réserver une salle',q:"Comment réserver une salle, et comment valider une demande ?",kw:"reserver salle reservation demande creneau local kaz zados bringelliers occupation valider refuser bureau intervenant adherent guichet deport",a:"Onglet <b>🛎️ Réserver une salle</b>. Les adhérents et intervenants déposent leur demande depuis leur espace adhérent (salle, jour, créneau, motif). La demande tombe ici et dans <b>⏰ À traiter</b>. Le bureau valide ou refuse — et un membre <b>ne peut pas valider sa propre demande</b> (déport, un autre membre doit le faire). Les réservations validées forment l'occupation des locaux."},
   {cat:'📊 Tableau de bord', q:"Où sont passés les onglets ? Comment marche la nouvelle barre en couleur ?", kw:"onglet onglets barre famille familles couleur couleurs ranger retrouver navigation menu reglages outils bureau finances adherents equipe perdu trouve trouver disparu deplace deplacer organisation secretariat",
    a:"La barre du haut est rangée en <b>4 familles colorées</b> : 👥 <b>Adhérents</b> (vert — membres, périscolaire, activités, lieux…), 🏛️ <b>Bureau</b> (sarcelle — projets, subventions, partenaires, ateliers, répertoire, secrétariat, préparer le CA), 🧑‍💼 <b>Équipe</b> (prune — RH, dossiers salariés, congés, horaires, suivi…) et 💶 <b>Finances</b> (ambre — compta, caisse, dettes, bilan, prévisionnel). Plus 🏠 <b>Accueil</b> (tableau de bord + présentation/projet) et 🧰 <b>Réglages</b> (données, aide, historique). Clique une famille pour ouvrir ses onglets — Bob ouvre <b>directement le premier onglet</b> de la famille (par ex. Accueil → Tableau de bord), plus besoin d'un second clic. Quand une rubrique a quelque chose à traiter, une <b>petite pastille rouge</b> apparaît sur sa famille dans la barre. <b>Rien n'a été supprimé</b> : tout est juste regroupé par couleur pour s'y retrouver plus vite, surtout sur téléphone."},
+  {cat:'📊 Tableau de bord',q:"Comment aller vite à un onglet sans le chercher dans le menu ?",kw:"aller chercher recherche rechercher loupe taper saute sauter raccourci rapide rapidement saisir champ allera nom rubrique direct directement",a:"Tout en haut du menu, une barre <b>🔎 Aller à un onglet…</b> : tape 2-3 lettres du nom (ex. « cong » → Congés, « subv » → Subventions, « rh » → RH) et clique le résultat, ou utilise les flèches ↑↓ puis Entrée. Bob ouvre directement l'onglet, peu importe la famille dans laquelle il est rangé. Pratique quand on ne se souvient plus de sa couleur."},
   {cat:'🧰 Secrétariat',q:"Comment chaque membre du CA signe et valide le PV dans Bob ?",kw:"signer signature pv proces verbal proces-verbal membre membres president secretaire valider validation vote chacun dessiner doigt cloturer cloture archiver conseil administration art20 reserve refuser rafraichir simultane",a:"Onglet <b>🧰 Secrétariat</b> → <b>« Réunions &amp; délibérations »</b>, sur une réunion qui a des délibérations : déplie <b>✍️ Signatures &amp; validation du CA</b> (tout reste sur la même page). <b>Chaque membre</b> clique <b>« Signer / valider mon vote »</b>, dessine sa signature (au doigt ou à la souris) et valide — <b>signer = valider son vote</b>. On peut aussi <b>refuser / noter une réserve</b>. Le <b>président</b> voit qui a signé (bouton <b>🔄 Rafraîchir</b>) et clique <b>« Clôturer le PV »</b> quand tout le monde a signé. Plusieurs personnes peuvent <b>signer en même temps</b>, chacun dans son espace. C'est la signature du PV (Président + Secrétaire au minimum, art.20) ; le <b>vote</b> se prend en séance (et en ligne une fois la clause distanciel votée en AGE)."},
   {cat:'📝 Préparer le CA', q:"À quoi sert « Préparer le CA » et est-ce que valider ici = voter ?", kw:"preparer ca conseil administration releve avis lu accord parler discuter vote voter valider validation consentement ordre du jour deport president imprimer projet pv decision seance points consensus rediscuter",
    a:"Onglet <b>📝 Préparer le CA</b> (réservé au bureau). Tu y retrouves les points à examiner avant un conseil d'administration. Chaque membre clique <b>« Lu, je suis d'accord »</b> ou <b>« Je veux en parler »</b> — c'est un <b>avis</b>, pas un vote. ⚠️ Sous les statuts du CASE, seules les décisions prises <b>en séance du CA</b> comptent : cette page sert juste à <b>préparer</b> et à gagner du temps (les points où tout le monde est déjà d'accord sont adoptés vite en séance). Le bouton <b>🖨️ Imprimer le projet de relevé</b> sort un document à apporter au CA. Sur les points où le président est en conflit d'intérêts (ex. convention Ôté Kartié), ses boutons sont masqués (déport). Tu peux retirer ton avis tant que le relevé n'est pas imprimé."},
@@ -2188,6 +2243,7 @@ function pageHelpGotoAide(){ pageHelpClose(); const b=document.querySelector('na
 
 /* ---- ✨ Quoi de neuf (nouveautés + notice chronologique) ---- */
 const NEWS=[
+  {id:'2026-06-30-aller-a-onglet',date:'2026-06-30',tab:'📊 Tableau de bord',titre:"🔎 Une barre « Aller à un onglet » en haut du menu",desc:"Nouveau : tout en haut du menu, tape 2-3 lettres du nom d'un onglet (ex. « cong » pour Congés, « subv » pour Subventions) et Bob t'y emmène directement, sans avoir à te rappeler dans quelle famille de couleur il est rangé. Flèches ↑↓ puis Entrée, ou clique le résultat. Rien d'autre n'a changé : c'est juste un raccourci pour aller plus vite."},
   {id:'2026-06-28-dossiers-atraiter',date:'2026-06-28',tab:'🎒 Périscolaire',titre:"🔴 Dossiers d'inscription : ceux à traiter ressortent",desc:"Dans 🎒 Périscolaire, les dossiers déposés par les familles qui ne sont pas encore validés (incomplets ou à valider) remontent automatiquement en haut, sont surlignés (fond ambré), et un compteur « 🔴 X à traiter » s'affiche. Une case « à traiter seulement » masque les dossiers déjà validés. Plus besoin de les chercher."},
   {id:'2026-06-28-periscolaire-param',date:'2026-06-28',tab:'🎒 Périscolaire',titre:"🧹 Périscolaire rangé : le quotidien en haut, le paramétrage replié en bas",desc:"L'onglet 🎒 Périscolaire est réorganisé : les inscrits (ce qui bouge tous les jours) sont en haut, et la grille tarifaire + les documents d'inscription (qu'on règle une fois par an) sont regroupés dans un dépliant « ⚙️ Paramétrage » replié tout en bas. Plus clair au quotidien ; le paramétrage reste à portée, juste rangé."},
   {id:'2026-06-28-apercu-docs',date:'2026-06-28',tab:'🎒 Périscolaire',titre:"👁️ Aperçu des documents sur la même page (même Word)",desc:"Quand tu cliques « 👁️ Ouvrir » sur un document (règlement intérieur, pièce, justificatif…), il s'affiche maintenant dans une fenêtre par-dessus la page — sans t'emmener ailleurs ni le télécharger. Les PDF et images s'affichent directement ; les fichiers Word/Excel via un aperçu Microsoft. Le bouton ⬇️ reste disponible pour télécharger si besoin."},
