@@ -87,7 +87,7 @@ const $=s=>document.querySelector(s);
 /* ===== Multi-assos : "porte" d'entrée (slug dans l'URL : ?asso=bokaf, /bokaf, ou /bokaf.html) ===== */
 const ASSO_DOORS = {
   case:  { pine:'🍍', nom:'CASE', nom2:'Bois de Nèfles', titre:'Espace bureau — CASE du Bois de Nèfles',
-           theme:{ vert:'#1f9d6b', vertFonce:'#127a51' } },
+           theme:{ vert:'#1f9d6b', vertFonce:'#0f6b46' } },
   bokaf: { pine:'🎬', nom:'BOKAF', nom2:'', titre:'Espace bureau — association BOKAF', logoImg:'bokaf-logo.png',
            theme:{ vert:'#d81e5b', vertFonce:'#b3134a', dark:true, headerBg:'linear-gradient(100deg,#141318,#26182e 55%,#141318)', flagBg:'#221826', flagInk:'#f1c6d8' } },
   pixiart: { pine:'🔴', nom:'PIX-I-ART', nom2:'pilotage', titre:'Espace pilotage — PIX-I-ART',
@@ -138,8 +138,9 @@ const DOOR = assoSlug();
     const u=new URL(location.href);
     if((u.searchParams.get('role')||'').toLowerCase()!=='famille') return;
     const h=document.querySelector('h1.t'); if(h) h.textContent='👨‍👩‍👧 Créer mon compte famille';
+    try{ document.title='Créer mon compte famille — CASE du Bois de Nèfles'; }catch(e){}
     const s=document.querySelector('p.sub'); if(s) s.innerHTML='Créez votre compte en 2 minutes pour inscrire vos enfants au <b>périscolaire</b> et à l\'<b>ACM</b>, et réserver vos activités. <b>Un parent adhérent</b> (10 €/an) suffit pour tous les enfants. Déjà un compte ? Connectez-vous ci-dessous.';
-    const m=document.querySelector('#welcomeMascot p'); if(m) m.innerHTML="Salut, c'est <b style=\"color:#e8a32c\">Zanana</b> ! Crée ton <b>compte famille</b> pour inscrire tes enfants 👨‍👩‍👧";
+    const m=document.querySelector('#welcomeMascot p'); if(m) m.innerHTML="Salut, c'est <b style=\"color:#dc8f38\">Zanana</b> ! Crée ton <b>compte famille</b> pour inscrire tes enfants 👨‍👩‍👧";
     const sf=document.querySelector('.secure-flag'); if(sf) sf.textContent='🔒 Espace sécurisé — vos données sont chiffrées et hébergées en France (RGPD).';
   }catch(e){}
 })();

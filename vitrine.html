@@ -211,7 +211,7 @@
       <a href="#partenaires">🤝 Partenaires</a>
       <a href="#contact">Contact</a>
       <span class="nav-sep"></span>
-      <a href="espace-adherent.html" class="navpill">🪙 Espace adhérent</a>
+      <a href="espace-adherent.html" class="navpill">🍍 Espace adhérent</a>
       <a href="connexion.html" class="navpill">🔐 Espace bureau</a>
       <a href="#adhesion" class="btn primary">Devenir adhérent</a>
     </nav>
@@ -741,15 +741,6 @@ function envoyerContact(){
   if(!msg){ alert('Écris ton message avant d\'envoyer 🙂'); return; }
   const subject=encodeURIComponent('Message du site — '+(nom||'Visiteur'));
   const body=encodeURIComponent(msg+'\n\n— '+(nom||'')+' (envoyé depuis le site du CASE)');
-  window.location.href='mailto:case.bdn@gmail.com?subject='+subject+'&body='+body;
-}
-function envoyerInscription(){
-  const nom=(document.getElementById('adh_nom').value||'').trim();
-  const email=(document.getElementById('adh_email').value||'').trim();
-  const act=document.getElementById('adh_activite').value;
-  if(!nom){ alert('Indique ton nom avant d\'envoyer la demande 🙂'); return; }
-  const subject=encodeURIComponent("Demande d'inscription — "+act);
-  const body=encodeURIComponent("Bonjour,\n\nJe souhaite m'inscrire à : "+act+"\n\nNom : "+nom+"\nEmail : "+email+"\n\n(envoyé depuis le site du CASE)");
   window.location.href='mailto:case.bdn@gmail.com?subject='+subject+'&body='+body;
 }
 function openPlan(i){

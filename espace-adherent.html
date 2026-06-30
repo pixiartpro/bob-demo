@@ -26,11 +26,6 @@
   .demo-flag{background:var(--jaune);color:#5b4300;text-align:center;font-weight:700;font-size:13.5px;padding:8px}
   .hero{background:linear-gradient(180deg,#aee5c4,var(--bg));padding:30px 0 10px}
   .hello{font-size:24px;font-weight:900;margin:0}
-  .wallet{background:linear-gradient(135deg,var(--vert),var(--vert-fonce));color:#fff;border-radius:22px;padding:24px 26px;
-          box-shadow:var(--shadow-lg);display:flex;align-items:center;gap:18px;margin:14px 0 6px}
-  .wallet .big{font-size:46px;font-weight:900;line-height:1}
-  .wallet .coin{font-size:52px;filter:drop-shadow(0 3px 4px rgba(0,0,0,.25))}
-  .wallet .lab{opacity:.9;font-weight:600}
   .explain{display:flex;gap:14px;flex-wrap:wrap;justify-content:center;color:var(--muted);font-weight:600;margin:8px 0 0;font-size:14.5px}
   section.block{padding:30px 0}
   h2.title{font-size:22px;margin:0 0 4px;font-weight:900}
@@ -148,7 +143,7 @@
   </div>
 </section>
 
-<!-- Démo « jetons » retirée de l'espace famille (focus périscolaire/extrascolaire) ; code conservé dans Bob.html hors-ligne. -->
+<!-- Démo « jetons » retirée de l'espace famille (focus périscolaire/extrascolaire). -->
 
 <!-- ATELIERS PARTICIPATIFS (données réelles, via le site) -->
 <section class="block">
@@ -188,51 +183,7 @@
 
 <script>
 const $=s=>document.querySelector(s);
-const KEY='case_jetons_demo';
-const MISSIONS=[
-  {id:'m1',ico:'🌱',nom:'Refaire le jardin partagé',when:'Samedi · 9h–12h (3h)',gain:3},
-  {id:'m2',ico:'🎪',nom:'Aider à la fête de quartier',when:'Vendredi · 17h–20h (3h)',gain:3},
-  {id:'m3',ico:'🚌',nom:'Accompagner la sortie plage',when:'Mercredi · 13h–18h (5h)',gain:5},
-  {id:'m4',ico:'🍽️',nom:'Préparer le repas partagé',when:'Jeudi · 10h–12h (2h)',gain:2}
-];
-const ACTIVITES=[
-  {id:'a1',ico:'🎬',nom:'Sortie cinéma (demi-journée)',when:'Samedi après-midi',cost:2},
-  {id:'a2',ico:'👩‍🍳',nom:'Atelier cuisine créole',when:'Mercredi · 14h',cost:1},
-  {id:'a3',ico:'🏖️',nom:'Sortie plage (journée)',when:'Dimanche',cost:3},
-  {id:'a4',ico:'🧘',nom:'Atelier bien-être',when:'Mardi · 18h',cost:1}
-];
-let state=load();
-function load(){try{return JSON.parse(localStorage.getItem(KEY))||def()}catch(e){return def()}}
-function def(){return{solde:5,done:[],taken:[],hist:[{t:'Bienvenue ! 2 jetons offerts pour ton adhésion',d:'+2'},{t:'Coup de main : rangement de la salle (3h)',d:'+3'}]}}
-function save(){localStorage.setItem(KEY,JSON.stringify(state));render()}
 function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('show');clearTimeout(t._tm);t._tm=setTimeout(()=>t.classList.remove('show'),2200)}
-function doMission(id){
-  const m=MISSIONS.find(x=>x.id===id); if(state.done.includes(id))return;
-  state.done.push(id); state.solde+=m.gain;
-  state.hist.unshift({t:'Coup de main : '+m.nom,d:'+'+m.gain});
-  save(); toast('Bravo ! +'+m.gain+' jetons 🪙');
-}
-function doActivite(id){
-  const a=ACTIVITES.find(x=>x.id===id); if(state.taken.includes(id))return;
-  if(state.solde<a.cost){toast('Pas assez de jetons — donne un coup de main 💪');return;}
-  state.taken.push(id); state.solde-=a.cost;
-  state.hist.unshift({t:'Participation : '+a.nom,d:'−'+a.cost});
-  save(); toast('Inscrit ! −'+a.cost+' jetons');
-}
-function resetDemo(){state=def();save();toast('Démo réinitialisée')}
-function render(){
-  $('#solde').textContent=state.solde;
-  $('#missions').innerHTML=MISSIONS.map(m=>{const f=state.done.includes(m.id);
-    return `<div class="card"><div class="ico">${m.ico}</div><h3>${m.nom}</h3><div class="when">${m.when}</div>
-      <div class="foot"><span class="gain">+${m.gain} 🪙</span>
-      <button class="btn win" ${f?'disabled':''} onclick="doMission('${m.id}')">${f?'✓ Fait':'Je participe'}</button></div></div>`}).join('');
-  $('#activites').innerHTML=ACTIVITES.map(a=>{const f=state.taken.includes(a.id);
-    return `<div class="card"><div class="ico">${a.ico}</div><h3>${a.nom}</h3><div class="when">${a.when}</div>
-      <div class="foot"><span class="cost">${a.cost} 🪙</span>
-      <button class="btn use" ${f?'disabled':''} onclick="doActivite('${a.id}')">${f?'✓ Inscrit':'Participer'}</button></div></div>`}).join('');
-  $('#hist').innerHTML=state.hist.length?state.hist.map(h=>`<div class="row"><span>${h.t}</span><span class="${h.d[0]==='+'?'plus':'minus'}">${h.d} 🪙</span></div>`).join(''):'<div class="empty">Aucun mouvement.</div>';
-}
-/* Démo « jetons » désactivée dans l'espace famille (focus périscolaire/extrascolaire). Le code reste pour réactivation éventuelle ; on ne l'exécute plus au chargement. */
 </script>
 <!-- Ateliers participatifs : vraies données (table ateliers de Bob, lecture publique) -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
