@@ -64,7 +64,7 @@ async function payer(btn){
 }
 function render(d){
   if(params.get('paiement') === 'ok'){
-    C.innerHTML = '<div class="state ok"><strong>Merci ❤️</strong><br>Votre paiement a bien été pris en compte. Un reçu vous est envoyé par HelloAsso.</div>'; return;
+    C.innerHTML = '<div class="state ok"><strong>Merci ❤️</strong><br>Votre paiement a bien été pris en compte. Un justificatif de paiement vous est envoyé par HelloAsso.</div>'; return;
   }
   if(params.get('paiement') === 'erreur'){
     C.innerHTML = '<div class="state err">Le paiement n’a pas abouti. Vous pouvez réessayer.</div>'; return;
@@ -75,7 +75,8 @@ function render(d){
   C.innerHTML = '<h1>'+(d.libelle||'Paiement')+'</h1>'
     + '<div class="sub">Montant à régler</div>'
     + '<div class="montant">'+euro(d.montant_cents)+'</div>'
-    + '<button id="b">Payer en ligne</button>';
+    + '<button id="b">Payer en ligne</button>'
+    + '<div class="muted" style="font-size:12px;margin-top:12px">💡 HelloAsso vous proposera une <b>contribution facultative</b> en plus du montant : elle soutient HelloAsso et <b>ne revient pas au CASE</b>. Vous pouvez la mettre à <b>0 €</b> — seul le montant ci-dessus est dû au CASE.</div>';
   document.getElementById('b').onclick = function(){ payer(this); };
 }
 (async function(){
