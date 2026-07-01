@@ -2097,7 +2097,7 @@ const FAQ=[
   {cat:'🤝 Accompagnement',q:"Où je retrouve l'accompagnement DLA, la Maison des Associations et la préparation des RDV ?",kw:"accompagnement dla maison associations mda mdac france active hexopee eclat elisfa neopale uniformation seance seances rdv rendez-vous diagnostic preparation suivi strategique conseillere",
    a:"Ouvre l'onglet <strong>🤝 Accompagnement</strong>. Tu y trouves : la fiche et la frise des 9 séances du <strong>DLA</strong> (Démêlé ESS), le diagnostic du CASE (séance 3) et le plan d'actions, la <strong>Maison Des Associations</strong>, les autres ressources (France Active, Hexopée, ELISFA, Uniformation…), et en bas le bloc <strong>Préparation du RDV</strong> avec le statut de tes actions, les demandes de la conseillère et une zone de notes de séance. Cet onglet est réservé au bureau."},
   {cat:'🎟️ Activités',q:"Comment afficher les places restantes et gérer les inscriptions sur le site ?",kw:"activite activites place places restantes capacite complet inscription inscriptions site public publier vitrine arrive bientot acm vepi danse musique programme ados vacances ete sortie",
-   a:"Onglet <b>🎟️ Activités</b>. Crée chaque activité (nom, emoji, catégorie, description), fixe sa <b>capacité</b>, choisis le statut (<b>Ouvert</b> / <b>Arrive bientôt</b> / Archivé) et clique <b>🌍 Publier sur le site</b>. Sur le site public, « Nos activités » affiche alors en direct <b>« X places restantes »</b>, <b>« complet »</b> quand la capacité est atteinte, ou <b>« arrive bientôt »</b>. Quand une famille s'inscrit, son inscription <b>arrive automatiquement ici</b> (tu vois le nom, le responsable, le contact) et le nombre de places se met à jour tout seul. Tu peux retirer une inscription avec ✕. <b>Nouveau :</b> pour le <b>périscolaire, l'ACM et le VEPI</b>, la réservation se fait depuis le <b>compte famille</b> (espace famille) et reste <b>reliée à la famille</b> ; les <b>événements / temps forts</b> restent ouverts à tous directement sur le site. Astuce : si tu remplis le champ <b>Programme</b> d'une activité, il s'affiche sur la carte du site quand une famille clique dessus (parfait pour détailler l'ACM des vacances)."},
+   a:"Onglet <b>🎟️ Activités</b>. Crée chaque activité (nom, emoji, catégorie, description), fixe sa <b>capacité</b>, choisis le statut (<b>Ouvert</b> / <b>Arrive bientôt</b> / Archivé) et clique <b>🌍 Publier sur le site</b>. Sur le site public, « Nos activités » affiche alors en direct <b>« X places restantes »</b>, <b>« complet »</b> quand la capacité est atteinte, ou <b>« arrive bientôt »</b>. Quand une famille s'inscrit, son inscription <b>arrive automatiquement ici</b> (tu vois le nom, le responsable, le contact) et le nombre de places se met à jour tout seul. Tu peux aussi <b>inscrire quelqu'un toi-même</b> (formulaire « ➕ inscrire » sous chaque activité — pratique quand une famille vient au comptoir plutôt que de passer par le site), <b>corriger</b> un nom / responsable / contact directement dans le tableau, ou <b>retirer</b> une inscription avec ✕. <b>Nouveau :</b> pour le <b>périscolaire, l'ACM et le VEPI</b>, la réservation se fait depuis le <b>compte famille</b> (espace famille) et reste <b>reliée à la famille</b> ; les <b>événements / temps forts</b> restent ouverts à tous directement sur le site. Astuce : si tu remplis le champ <b>Programme</b> d'une activité, il s'affiche sur la carte du site quand une famille clique dessus (parfait pour détailler l'ACM des vacances)."},
   {cat:'📅 Rendez-vous',q:"Comment proposer des rendez-vous (créneaux) aux familles ?",kw:"rendez vous rdv creneau creneaux plage plages horaire recurrent recurrente agenda coiffeur accompagnement vepi reserver disponibilite dispo heure",
    a:"En bas de l'onglet <b>🎟️ Activités</b>, panneau <b>« 📅 Rendez-vous »</b>. Tu définis tes <b>plages récurrentes</b> : un <b>jour</b> (ex : mardi), <b>de … à …</b> (ex : 14h-17h), la <b>durée d'un créneau</b> (30 min par défaut) et un <b>libellé</b>. Les familles voient alors uniquement les <b>créneaux LIBRES</b> dans l'espace famille (📅 Prendre rendez-vous) et en réservent un elles-mêmes — <b>tu n'as plus à rappeler</b>. Tu retrouves ici la liste des <b>rendez-vous pris</b> (date, heure, motif). Pour supprimer une plage : 🗑. Deux plages sont déjà posées par défaut, ajuste-les à ta convenance."},
   {cat:'🌴 Vacances',q:"Comment préparer le programme des vacances (ACM) et suivre les intervenants ?",kw:"vacances acm ados programme catalogue activites origine maison partenaire payant intervenant contact statut appeler attente confirme objectif session jour planning sortie prepa preparation outil interne",
@@ -2272,6 +2272,7 @@ function pageHelpGotoAide(){ pageHelpClose(); const b=document.querySelector('na
 
 /* ---- ✨ Quoi de neuf (nouveautés + notice chronologique) ---- */
 const NEWS=[
+  {id:'2026-07-01-inscrire-comptoir',date:'2026-07-01',tab:'🎟️ Activités',titre:"➕ Inscrire une famille au comptoir, directement depuis le bureau",desc:"Dans 🎟️ Activités, sous chaque activité, un petit formulaire « ➕ Inscrire quelqu'un » permet maintenant au bureau d'ajouter une inscription à la main (nom + responsable + contact) — pratique quand une famille vient sur place au lieu de passer par le site. Tu peux aussi corriger un nom, un responsable ou un contact directement dans le tableau des inscrits. Le nombre de places se met à jour tout seul, et l'ajout est tracé dans le Journal des actions. (Idée de Guy Robert.)"},
   {id:'2026-06-30-qui-fait-quoi',date:'2026-06-30',tab:'🧭 Projet & orientations',titre:"👥 Une vue « Qui fait quoi » : toute l'équipe d'un coup d'œil",desc:"Nouveau, en haut de 🧭 Projet & orientations : « Qui fait quoi — l'équipe en vrai ». Une vue vivante qui rassemble sur un écran le bureau (bénévoles), l'équipe salariée (depuis les Dossiers salariés) et les pôles, en cartes. Les postes « à pourvoir » ressortent en ambre pour voir tout de suite les trous. C'est en lecture seule (aucun salaire affiché) ; pour modifier quelqu'un, on passe par sa fiche. C'est la 1re brique d'un grand rangement : à terme, on saisira chaque personne une seule fois."},
   {id:'2026-06-30-aller-a-onglet',date:'2026-06-30',tab:'📊 Tableau de bord',titre:"🔎 Une barre « Aller à un onglet » en haut du menu",desc:"Nouveau : tout en haut du menu, tape 2-3 lettres du nom d'un onglet (ex. « cong » pour Congés, « subv » pour Subventions) et Bob t'y emmène directement, sans avoir à te rappeler dans quelle famille de couleur il est rangé. Flèches ↑↓ puis Entrée, ou clique le résultat. Rien d'autre n'a changé : c'est juste un raccourci pour aller plus vite."},
   {id:'2026-06-28-dossiers-atraiter',date:'2026-06-28',tab:'🎒 Périscolaire',titre:"🔴 Dossiers d'inscription : ceux à traiter ressortent",desc:"Dans 🎒 Périscolaire, les dossiers déposés par les familles qui ne sont pas encore validés (incomplets ou à valider) remontent automatiquement en haut, sont surlignés (fond ambré), et un compteur « 🔴 X à traiter » s'affiche. Une case « à traiter seulement » masque les dossiers déjà validés. Plus besoin de les chercher."},
@@ -6169,10 +6170,24 @@ renderAll();
         ? (isWorkflow
           ? list.map(i=>bureauActInsCard(a,i)).join('')
           : '<table style="margin-top:10px"><thead><tr><th>Nom</th><th>Responsable</th><th>Contact</th><th>Date</th>'+(canWrite?'<th></th>':'')+'</tr></thead><tbody>'
-            +list.map(i=>'<tr><td>'+esc(i.nom||'')+'</td><td>'+esc(i.responsable||'')+'</td><td>'+esc(i.contact||'')+'</td><td>'+esc((i.created_at||'').slice(0,10))+'</td>'
-              +(canWrite?'<td><button class="ghost btn" title="Retirer" onclick="delInscriptionActivite(\''+i.id+'\')">✕</button></td>':'')+'</tr>').join('')
+            +list.map(i=>{
+                const cell=field=> canWrite
+                  ? '<td><input value="'+esc(i[field]||'')+'" style="width:100%;padding:4px 6px;border:1px solid var(--line);border-radius:6px;font:inherit;font-size:13px;background:#fff" onchange="updInscriptionActivite(\''+i.id+'\',\''+field+'\',this.value)"></td>'
+                  : '<td>'+esc(i[field]||'')+'</td>';
+                return '<tr>'+cell('nom')+cell('responsable')+cell('contact')+'<td>'+esc((i.created_at||'').slice(0,10))+'</td>'
+                  +(canWrite?'<td><button class="ghost btn" title="Retirer" onclick="delInscriptionActivite(\''+i.id+'\')">✕</button></td>':'')+'</tr>';
+              }).join('')
             +'</tbody></table>')
         : '<p class="hint" style="margin:8px 0 0">Personne d\'inscrit pour l\'instant.</p>';
+      let addIns='';
+      if(canWrite){
+        addIns='<div class="row" style="margin-top:8px;gap:6px;flex-wrap:wrap;align-items:flex-end;background:#f4f7f4;border:1px dashed #cdd8cd;padding:8px 10px;border-radius:8px">'
+          +'<div class="field" style="flex:2;min-width:150px;margin:0"><label style="font-size:12px">➕ Inscrire quelqu\'un (au comptoir)</label><input id="ai_nom_'+a.id+'" placeholder="Nom de la personne / l\'enfant" onkeydown="if(event.key===\'Enter\')addInscriptionActivite(\''+a.id+'\')"></div>'
+          +'<div class="field" style="flex:1;min-width:120px;margin:0"><label style="font-size:12px">Responsable</label><input id="ai_resp_'+a.id+'" placeholder="Parent / responsable" onkeydown="if(event.key===\'Enter\')addInscriptionActivite(\''+a.id+'\')"></div>'
+          +'<div class="field" style="flex:1;min-width:120px;margin:0"><label style="font-size:12px">Contact</label><input id="ai_contact_'+a.id+'" placeholder="Tél. ou e-mail" onkeydown="if(event.key===\'Enter\')addInscriptionActivite(\''+a.id+'\')"></div>'
+          +'<button class="btn" onclick="addInscriptionActivite(\''+a.id+'\')">+ inscrire</button>'
+          +'</div>';
+      }
       let ctrl='';
       if(canWrite){
         ctrl='<div class="row" style="margin-top:10px;gap:8px;flex-wrap:wrap;align-items:flex-end">'
@@ -6197,6 +6212,7 @@ renderAll();
         +(a.type==='evenement'?'<p class="hint" style="margin:6px 0 0">📅 '+(a.date_event?esc(a.date_event):esc(a.quand||'date à venir'))+(a.lieu?' · 📍 '+esc(a.lieu):'')+'</p>'+(a.programme?'<p class="hint" style="margin:2px 0 0"><em>'+esc(a.programme)+'</em></p>':''):'')
         +'<p class="hint" style="margin:6px 0 0"><strong>'+(a.nb_inscrits||0)+'</strong> inscrit'+((a.nb_inscrits||0)>1?'s':'')+(a.statut==='ouvert'?' · '+places+' place'+(places>1?'s':'')+' restante'+(places>1?'s':''):'')+'</p>'
         +insHtml
+        +addIns
         +ctrl
         +'</div>';
     }).join('');
@@ -6259,6 +6275,17 @@ renderAll();
   };
   window.delActivite=async function(id){ if(!confirm('Supprimer définitivement cette activité et ses inscriptions ?'))return; const {error}=await sbc.from('activites').delete().eq('id',id); if(error){alert(error.message);return;} loadActivitesGestion(); };
   window.delInscriptionActivite=async function(id){ if(!confirm('Retirer cette inscription ?'))return; const {error}=await sbc.from('inscriptions_activite').delete().eq('id',id); if(error){alert(error.message);return;} loadActivitesGestion(); };
+  window.addInscriptionActivite=async function(aid){
+    const gv=id=>{ const e=document.getElementById(id); return e?e.value.trim():''; };
+    const nom=gv('ai_nom_'+aid); if(!nom){ alert('Indique au moins le nom.'); return; }
+    const {error}=await sbc.from('inscriptions_activite').insert({ asso_id:myAsso, activite_id:aid, nom, responsable:gv('ai_resp_'+aid), contact:gv('ai_contact_'+aid), statut:'valide' });
+    if(error){ alert(error.message); return; }
+    loadActivitesGestion();
+  };
+  window.updInscriptionActivite=async function(id,field,val){
+    const {error}=await sbc.from('inscriptions_activite').update({[field]:(val||'').trim()}).eq('id',id);
+    setSync(error?('⚠️ '+error.message):'✓ inscription mise à jour', error?'#ffd9d0':'#dff5e9');
+  };
 
   /* ---- 📓 Journal des actions (table journal_actions, lecture bureau seulement) ---- */
   let JA_ROWS=[];
