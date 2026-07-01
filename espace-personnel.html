@@ -98,6 +98,7 @@
     <a href="vitrine.html" class="logo"><span class="pine">🍍</span> <span><b>CASE</b> <span>Bois de Nèfles</span></span></a>
     <nav>
       <a href="vitrine.html">← Site public</a>
+      <a href="https://mail.hostinger.com" target="_blank" rel="noopener">📧 Ma boîte mail</a>
       <button id="logoutBtn" onclick="spLogout()" style="display:none">Se déconnecter</button>
     </nav>
   </div>
@@ -198,6 +199,8 @@ function hubHTML(){
         +'<div class="hubname">Mon RH'+rhBadge+'</div><div class="hubsub">'+esc(rhSub)+'</div><div class="hubgo">Entrer →</div></button>'
       +(ME.protos.length?('<button class="hubcard" onclick="spView(\'procedures\')"><div class="hubico">📋</div>'
         +'<div class="hubname">Procédures du CASE</div><div class="hubsub">'+ME.protos.length+' procédure'+(ME.protos.length>1?'s':'')+' à connaître (caisse, sécurité…)</div><div class="hubgo">Entrer →</div></button>'):'')
+      +'<a class="hubcard" href="https://mail.hostinger.com" target="_blank" rel="noopener" style="text-decoration:none"><div class="hubico">📧</div>'
+        +'<div class="hubname">Ma boîte mail</div><div class="hubsub">Ta messagerie pro @casebdn.re — s\'ouvre dans un nouvel onglet</div><div class="hubgo">Ouvrir ↗</div></a>'
     +'</div></section>';
 }
 
