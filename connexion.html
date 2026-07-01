@@ -34,6 +34,10 @@
   .field label{font-weight:700;font-size:13.5px}
   input,select{font:inherit;padding:11px 13px;border:1.5px solid var(--line);border-radius:11px;background:#fdfffe}
   input:focus,select:focus{outline:none;border-color:var(--vert)}
+  .pw-wrap{position:relative;display:flex}
+  .pw-wrap input{flex:1;width:100%;padding-right:46px}
+  .pw-eye{position:absolute;right:5px;top:50%;transform:translateY(-50%);border:none;background:transparent;cursor:pointer;font-size:17px;line-height:1;padding:5px 7px;border-radius:9px}
+  .pw-eye:hover{background:#eef2f0}
   .btn{border:none;cursor:pointer;font:inherit;font-weight:800;border-radius:999px;padding:11px 18px;font-size:14px;transition:.15s}
   .btn.p{background:var(--vert);color:#fff} .btn.p:hover{background:var(--vert-fonce)}
   .btn.s{background:var(--jaune);color:#5b4300}
@@ -155,7 +159,7 @@ const ROLES={
 };
 const STATUTS={en_attente:{label:'En attente de validation',pill:'wait'},actif:{label:'Actif',pill:'ok'},suspendu:{label:'Suspendu',pill:'off'}};
 const MODULES=[['dashboard','Tableau de bord'],['members','Adhérents'],['periscolaire','Périscolaire'],['activites','Activités & places'],['lieux','Lieux'],['projects','Projets'],['subventions','Subventions'],['repertoire','Répertoire'],['ateliers','Ateliers'],['secretariat','Secrétariat'],['incidents','Événements'],['accounting','Comptabilité'],['caisse','Caisse'],['dettes','Dettes & créances'],['bilan','Bilan'],['data','Données']];
-let myProfile=null, adminProfiles=[];
+let myProfile=null, adminProfiles=[], __recovery=false;
 
 function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('show');clearTimeout(t._tm);t._tm=setTimeout(()=>t.classList.remove('show'),3200)}
 function esc(s){return (s==null?'':String(s)).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
@@ -222,28 +226,69 @@ async function signIn(){
 }
 async function signOut(){ await sb.auth.signOut(); myProfile=null; await refresh(); }
 
-/* ---- Lien magique : connexion (ou inscription) sans mot de passe ---- */
+/* ---- Lien magique + code OTP : connexion (ou inscription) sans mot de passe ---- */
 async function magicLink(){
   const email=$('#l_email').value.trim();
   if(!email){toast('Entre ton email ci-dessus, puis clique ici.');return}
   const btn=$('#magic_btn'); const old=btn.textContent; btn.disabled=true; btn.textContent='Envoi…';
   const {error}=await sb.auth.signInWithOtp({email,options:{emailRedirectTo:location.origin+location.pathname}});
   btn.disabled=false; btn.textContent=old;
-  toast(error?error.message:'✓ Lien envoyé ! Ouvre ta boîte mail et clique le lien pour te connecter.');
+  if(error){ toast(error.message); return; }
+  toast('✓ Email envoyé ! Clique le lien OU tape le code à 6 chiffres reçu.');
+  const box=$('#otpBox'); if(box){ box.style.display='block'; const f=$('#otp_code'); if(f){ f.value=''; f.focus(); } }
+}
+/* ---- Valider le code à 6 chiffres reçu par mail (repli si le lien est coupé par la messagerie) ---- */
+async function verifyCode(){
+  const email=$('#l_email').value.trim();
+  const token=($('#otp_code').value||'').replace(/\s/g,'');
+  if(!email){toast('Entre ton email ci-dessus d\'abord.');return}
+  if(!token){toast('Tape le code à 6 chiffres reçu par mail.');return}
+  const btn=$('#otp_btn'); const old=btn.textContent; btn.disabled=true; btn.textContent='Vérification…';
+  const {error}=await sb.auth.verifyOtp({email,token,type:'email'});
+  btn.disabled=false; btn.textContent=old;
+  if(error){ toast('Code incorrect ou expiré. Redemande un email.'); return; }
+  await refresh();
 }
 
 /* ---- Mot de passe oublié / changement ---- */
 async function resetPwd(){
   const email=$('#l_email').value.trim();
   if(!email){toast('Entre ton email ci-dessus d\'abord.');return}
-  const {error}=await sb.auth.resetPasswordForEmail(email);
-  toast(error?error.message:'Email de réinitialisation envoyé ✓');
+  const {error}=await sb.auth.resetPasswordForEmail(email,{redirectTo:location.origin+location.pathname});
+  toast(error?error.message:'Email de réinitialisation envoyé ✓ — ouvre le mail et clique le lien.');
 }
 async function changePwd(){
   const pw=prompt('Nouveau mot de passe (au moins 6 caractères) :'); if(pw===null)return;
   if(pw.length<6){toast('Trop court (min 6).');return}
   const {error}=await sb.auth.updateUser({password:pw});
   toast(error?error.message:'Mot de passe mis à jour ✓');
+}
+/* ---- Afficher / masquer un mot de passe ---- */
+function togglePw(id,btn){
+  const el=document.getElementById(id); if(!el)return;
+  const show=el.type==='password'; el.type=show?'text':'password';
+  if(btn){ btn.textContent=show?'🙈':'👁️'; btn.setAttribute('aria-label',show?'Masquer le mot de passe':'Afficher le mot de passe'); }
+}
+/* ---- Retour depuis le mail « mot de passe oublié » : on demande directement le nouveau mot de passe ---- */
+function renderRecovery(){
+  $('#app').innerHTML=`<div class="card" style="max-width:460px;margin:0 auto">
+    <h2>🔑 Choisis ton nouveau mot de passe</h2>
+    <p class="h">Tu as cliqué sur le lien de réinitialisation reçu par mail. Entre un nouveau mot de passe (au moins 6 caractères).</p>
+    <div class="field"><label>Nouveau mot de passe</label>
+      <div class="pw-wrap"><input id="rec_pw" type="password" placeholder="••••••••" onkeydown="if(event.key==='Enter')doRecovery()">
+        <button type="button" class="pw-eye" onclick="togglePw('rec_pw',this)" aria-label="Afficher le mot de passe">👁️</button></div></div>
+    <button id="rec_btn" class="btn p" style="width:100%" onclick="doRecovery()">Enregistrer le nouveau mot de passe</button>
+  </div>`;
+}
+async function doRecovery(){
+  const pw=($('#rec_pw').value||'');
+  if(pw.length<6){toast('Trop court (min 6 caractères).');return}
+  const btn=$('#rec_btn'); btn.disabled=true; btn.textContent='Enregistrement…';
+  const {error}=await sb.auth.updateUser({password:pw});
+  btn.disabled=false; btn.textContent='Enregistrer le nouveau mot de passe';
+  if(error){ toast(error.message); return; }
+  __recovery=false; toast('Mot de passe mis à jour ✓ Tu es connecté.');
+  await refresh();
 }
 
 /* ---- Profil ---- */
@@ -257,6 +302,7 @@ async function loadProfile(user){
   return p;
 }
 async function refresh(){
+  if(__recovery) return; /* on est en train de définir un nouveau mot de passe : ne pas écraser l'écran */
   const {data:{session}}=await sb.auth.getSession();
   if(!session){ myProfile=null; renderLoggedOut(); return; }
   myProfile=await loadProfile(session.user);
@@ -291,12 +337,20 @@ function renderLoggedOut(){
       <h2>Se connecter</h2>
       <p class="h">Avec ton email et ton mot de passe.</p>
       <div class="field"><label>Email</label><input id="l_email" type="email" placeholder="ton@email.fr" onkeydown="if(event.key==='Enter')signIn()"></div>
-      <div class="field"><label>Mot de passe</label><input id="l_pw" type="password" placeholder="••••••••" onkeydown="if(event.key==='Enter')signIn()"></div>
+      <div class="field"><label>Mot de passe</label>
+        <div class="pw-wrap"><input id="l_pw" type="password" placeholder="••••••••" onkeydown="if(event.key==='Enter')signIn()">
+          <button type="button" class="pw-eye" onclick="togglePw('l_pw',this)" aria-label="Afficher le mot de passe">👁️</button></div></div>
       <button id="l_btn" class="btn p" style="width:100%" onclick="signIn()">Se connecter</button>
       <p class="small muted" style="margin-top:10px;text-align:center"><a href="#" onclick="resetPwd();return false" style="color:var(--vert-fonce)">Mot de passe oublié ?</a></p>
       <div style="display:flex;align-items:center;gap:10px;margin:14px 0 10px"><div style="flex:1;height:1px;background:var(--line)"></div><span class="small muted">ou, sans mot de passe</span><div style="flex:1;height:1px;background:var(--line)"></div></div>
       <button id="magic_btn" class="btn g" style="width:100%" onclick="magicLink()">✨ Recevoir un lien de connexion par email</button>
-      <p class="small muted" style="margin-top:8px;text-align:center">Tu reçois un lien, tu cliques, tu es connecté. (Saisis ton email ci-dessus d'abord.)</p>
+      <p class="small muted" style="margin-top:8px;text-align:center">Tu reçois un email : tu cliques le lien, <b>ou</b> tu tapes le code. (Saisis ton email ci-dessus d'abord.)</p>
+      <div id="otpBox" style="display:none;margin-top:12px;padding-top:12px;border-top:1px dashed var(--line)">
+        <div class="field"><label>Code reçu par mail (6 chiffres)</label>
+          <input id="otp_code" inputmode="numeric" autocomplete="one-time-code" maxlength="8" placeholder="123456" onkeydown="if(event.key==='Enter')verifyCode()"></div>
+        <button id="otp_btn" class="btn p" style="width:100%" onclick="verifyCode()">Valider le code</button>
+        <p class="small muted" style="margin-top:6px;text-align:center">Si le lien du mail ne fonctionne pas (parfois coupé par la messagerie), tape simplement le code ici.</p>
+      </div>
     </div>
     <div class="card">
       <h2>Demander un accès</h2>
@@ -306,7 +360,9 @@ function renderLoggedOut(){
         <div class="field" style="flex:1;min-width:130px"><label>Nom</label><input id="r_nom" placeholder="ex. Robert"></div>
       </div>
       <div class="field"><label>Email</label><input id="r_email" type="email" placeholder="ton@email.fr"></div>
-      <div class="field"><label>Mot de passe (min. 6 caractères)</label><input id="r_pw" type="password" placeholder="••••••••"></div>
+      <div class="field"><label>Mot de passe (min. 6 caractères)</label>
+        <div class="pw-wrap"><input id="r_pw" type="password" placeholder="••••••••">
+          <button type="button" class="pw-eye" onclick="togglePw('r_pw',this)" aria-label="Afficher le mot de passe">👁️</button></div></div>
       <div style="margin:6px 0 10px">
         <button type="button" id="r_cgu_btn" class="btn g" style="width:100%" onclick="openReglement()">📜 Lire et accepter le règlement (obligatoire)</button>
         <p id="r_cgu_status" style="font-size:12.5px;margin:6px 0 0;text-align:center;color:var(--muted)">Confidentialité des identifiants · responsabilité du compte · RGPD</p>
@@ -437,7 +493,10 @@ async function savePerms(id){
 }
 
 /* re-render automatique quand l'état de connexion change */
-sb.auth.onAuthStateChange(()=>{ refresh(); });
+sb.auth.onAuthStateChange((event)=>{
+  if(event==='PASSWORD_RECOVERY'){ __recovery=true; renderRecovery(); return; }
+  refresh();
+});
 refresh();
 </script>
 </body>
