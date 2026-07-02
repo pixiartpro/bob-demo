@@ -1853,7 +1853,7 @@ Deux locaux complémentaires — le Bois de Nèfles (« le haut » : jeunesse, a
 
 <div id="printArea"></div>
 
-<footer>Propulsé par <a href="https://pixiartpro.github.io/bob-demo/demo.html" target="_blank" rel="nofollow noopener" style="color:inherit;text-decoration:underline">Bob</a> 🤖 · outil de gestion du CASE du Bois de Nèfles · données sécurisées en ligne (hébergement Paris · RGPD)</footer>
+<footer>Propulsé par <a href="https://bob.re" target="_blank" rel="nofollow noopener" style="color:inherit;text-decoration:underline">Bob</a> 🤖 · outil de gestion du CASE du Bois de Nèfles · données sécurisées en ligne (hébergement Paris · RGPD)</footer>
 
 <script>
 const $ = id => document.getElementById(id);
@@ -3892,10 +3892,15 @@ function renderCaprep(){
       : '<div style="margin:6px 0;color:#5c7468;font-size:12px">🛠️ Point d\'intendance (sans vote du CA).</div>';
     const lienBtn = p.lien ? (p.lien.type==='onglet'
         ? '<button class="btn ghost" style="font-size:12px" onclick="caprepDocView(\''+p.lien.cible+'\')">👁️ Voir le doc</button>'
+        : p.lien.type==='coffre'
+        ? '<button class="btn ghost" style="font-size:12px" onclick="caprepCoffreView(\''+p.id+'\')">👁️ Voir le doc 🔒</button>'
+        : p.lien.type==='storage'
+        ? '<button class="btn ghost" style="font-size:12px" onclick="caprepStorageView(\''+p.id+'\')">👁️ Voir le doc 🔒</button>'
         : '<button class="btn ghost" style="font-size:12px" onclick="docView(decodeURIComponent(\''+encodeURIComponent(p.lien.cible)+'\'),\'Document\')">👁️ Voir le doc</button>') : '';
     const avPills=(p.avis||[]).map(function(a){
       const ok=a.valeur==='accord'; const c=ok?'#127a51':'#8a5a00'; const bg=ok?'#dff5e9':'#fff1d6';
-      return '<span style="background:'+bg+';color:'+c+';padding:2px 9px;border-radius:999px;font-size:12px;margin:2px;display:inline-block">'+esc(a.nom)+' · '+(ok?'✅ d\'accord':'💬 à discuter')+'</span>';
+      const quand=a.ts?' · <span style="opacity:.65;font-weight:400">'+pvFmtTs(a.ts)+'</span>':'';
+      return '<span style="background:'+bg+';color:'+c+';padding:2px 9px;border-radius:999px;font-size:12px;margin:2px;display:inline-block">'+esc(a.nom)+' · '+(ok?'✅ d\'accord':'💬 à discuter')+quand+'</span>';
     }).join(' ') || '<span style="color:#888;font-size:12px">aucun avis pour l\'instant</span>';
     let action='';
     const isPrez = me && me.role==='president';
@@ -3909,7 +3914,7 @@ function renderCaprep(){
         +'<button class="btn" style="background:#127a51;color:#fff;flex:1;min-width:160px" onclick="avisCaPoint(\''+p.id+'\',\'accord\')">✅ Lu, je suis d\'accord</button>'
         +'<button class="btn ghost" style="flex:1;min-width:140px" onclick="avisCaPoint(\''+p.id+'\',\'a_parler\')">💬 Je veux en parler</button>'
         +'</div>';
-      if(mine){ action+='<div style="margin-top:6px;font-size:12px;color:#5c7468">Ton avis : <b>'+(mine.valeur==='accord'?'✅ d\'accord':'💬 à discuter')+'</b> · <a href="#" onclick="retirerAvis(\''+p.id+'\');return false">retirer mon avis</a></div>'; }
+      if(mine){ action+='<div style="margin-top:6px;font-size:12px;color:#5c7468">Ton avis : <b>'+(mine.valeur==='accord'?'✅ d\'accord':'💬 à discuter')+'</b>'+(mine.ts?' le '+pvFmtTs(mine.ts):'')+' · <a href="#" onclick="retirerAvis(\''+p.id+'\');return false">retirer mon avis</a></div>'; }
       action+='<div style="margin-top:4px;font-size:11px;color:#999">Tu peux retirer ton avis tant que le relevé n\'est pas imprimé. Astuce : enregistre ton avis quand tu es seul à modifier.</div>';
     }
     const note='<details style="margin-top:6px"><summary style="cursor:pointer;font-size:12px;color:#5c7468">📝 Note (optionnel)</summary><textarea onchange="setCaNote(\''+p.id+'\',this.value)" style="width:100%;margin-top:4px;min-height:48px" placeholder="Remarque…">'+esc(p.note||'')+'</textarea></details>';
@@ -3939,6 +3944,22 @@ function retirerAvis(id){
   save();
 }
 function setCaNote(id,val){ const p=(db.capoints||[]).find(function(x){return x.id===id;}); if(!p) return; p.note=val; save(); }
+// Documents de gouvernance : stockés dans le coffre (visibles connecté seulement), jamais sur le site public
+window.caprepCoffreView=function(id){
+  const p=(db.capoints||[]).find(function(x){return x.id===id;}); if(!p||!p.lien) return;
+  const raw=(db.coffreHtml||{})[p.lien.cible]||'';
+  docViewHtml(p.intitule, raw ? b64ToUtf8(raw) : '<div class="hint" style="padding:18px">Document introuvable dans le coffre.</div>');
+};
+// Documents de gouvernance rangés dans le bucket privé Storage « gouvernance » (bureau connecté seulement, URL signée 1h)
+window.caprepStorageView=async function(id){
+  const p=(db.capoints||[]).find(function(x){return x.id===id;}); if(!p||!p.lien||!p.lien.cible) return;
+  try{
+    const {data,error}=await sbc.storage.from('gouvernance').createSignedUrl(p.lien.cible,3600);
+    if(error||!data){ alert('Document introuvable dans le coffre.'); return; }
+    const ext=(p.lien.cible.match(/\.[a-z0-9]+$/i)||[''])[0];
+    docView(data.signedUrl, (p.intitule||'Document')+ext);
+  }catch(e){ alert('Document indisponible.'); }
+};
 function addCaPoint(){
   const me=window.bobMe; if(!me){ alert('Connecte-toi.'); return; }
   const intitule=prompt('Intitulé du point à préparer :'); if(!intitule) return;
