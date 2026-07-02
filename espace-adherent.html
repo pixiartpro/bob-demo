@@ -121,6 +121,17 @@
   </div>
 </section>
 
+<!-- 📸 PHOTOS DES ACTIVITÉS — albums privés partagés par l'équipe -->
+<section class="block" id="photosSection" style="padding:8px 0 6px">
+  <div class="wrap">
+    <div class="card" style="border-left:5px solid var(--jaune);background:#fffdf5">
+      <h2 class="title" style="font-size:20px">📸 Les photos de la journée <small>— réservées aux familles</small></h2>
+      <p class="sub" style="margin:2px 0 10px">Les animateurs partagent ici les photos des activités et un petit mot. Vous ne voyez que les albums des accueils où <b>vos enfants</b> sont inscrits — rien n'est public.</p>
+      <div id="photosBody"><p class="sub">Chargement…</p></div>
+    </div>
+  </div>
+</section>
+
 <!-- 📅 PRENDRE RENDEZ-VOUS (créneaux récurrents) -->
 <section class="block" id="rdvSection" style="padding:8px 0 6px">
   <div class="wrap">
@@ -254,6 +265,8 @@ const AQ=[
    a:"Ce sont des ateliers qui <b>ouvrent dès qu'il y a assez d'inscrits</b>. Dis si ça t'intéresse (<b>🙋 Ça m'intéresse</b>) ou si tu sais animer (<b>🧑‍🏫 Je peux animer</b>). Quand le seuil est atteint, l'atelier ouvre ! 🍍"},
   {cat:'💡 Ateliers',q:"Comment je dis qu'un atelier m'intéresse ?",kw:"interesse atelier signaler envie vouloir inscrire preparation bouton ca minteresse",
    a:"Dans <b>💡 Ateliers en préparation</b>, clique sur <b>« 🙋 Ça m'intéresse »</b>, indique ton nom (et un contact si tu veux), et valide. Le CASE te tiendra au courant dès que l'atelier ouvre."},
+  {cat:'📸 Photos',q:"Où voir les photos des activités de mes enfants ?",kw:"photos photo album albums voir images journee activite garderie periscolaire acm animateur mot souvenir telecharger droit image autorisation",
+   a:"Dans <b>📸 Les photos de la journée</b>, dans votre espace : les animateurs y partagent les photos des activités et un petit mot. Vous ne voyez que les albums des accueils où <b>vos enfants</b> sont inscrits — rien n'est public, les photos sont hébergées en Europe et supprimées en fin d'année scolaire. Pensez à signer l'<b>autorisation de droit à l'image</b> du dossier d'inscription : sans elle, l'équipe veille à ce que votre enfant n'apparaisse pas sur les photos. Merci de ne pas republier les photos sur les réseaux sociaux. 🍍"},
   {cat:'📜 Mon espace',q:"Comment j'adhère au CASE ?",kw:"adherer adhesion inscription devenir membre cotisation rejoindre carte adherent 10 euros",
    a:"L'adhésion (<b>10 €</b>, valable du <b>1ᵉʳ août au 31 juillet</b>) se règle auprès du <b>bureau du CASE</b>. <b>Un seul parent adhérent suffit pour tous les enfants.</b> Vous pouvez déjà créer votre compte, déposer votre dossier périscolaire et réserver vos activités en ligne — le bureau régularise l'adhésion."},
   {cat:'🌴 Activités & ACM',q:"Comment je réserve une place à l'ACM ?",kw:"acm reserver place activite sortie vacances ado inscrire reservation ete enfant",
@@ -381,12 +394,12 @@ async function periBoot(){
   const body=document.getElementById('periBody'); if(!body) return;
   let session=null;
   try{ session=(await _sbAt.auth.getSession()).data.session; }catch(e){ session=null; }
-  if(!session){ ACM.uid=null; ACM.profile=null; ACM.asso=null; acmBoot(); rdvBoot(); salleBoot(); KIDS.list=[]; kidsRender(); periRenderLocked('connexion'); return; }
+  if(!session){ ACM.uid=null; ACM.profile=null; ACM.asso=null; acmBoot(); rdvBoot(); salleBoot(); photosBoot(); KIDS.list=[]; kidsRender(); periRenderLocked('connexion'); return; }
   PERI.uid=session.user.id;
   const {data:prof}=await _sbAt.from('profiles').select('full_name,email,statut,role,asso_id').eq('id',PERI.uid).maybeSingle();
   PERI.profile=prof||null;
   // Contexte partagé pour la réservation d'activités/ACM (même compte famille)
-  ACM.uid=PERI.uid; ACM.profile=prof||null; ACM.asso=prof?prof.asso_id:null; acmBoot(); rdvBoot(); salleBoot();
+  ACM.uid=PERI.uid; ACM.profile=prof||null; ACM.asso=prof?prof.asso_id:null; acmBoot(); rdvBoot(); salleBoot(); photosBoot();
   if(!prof){ periRenderLocked('noprofile'); return; }
   PERI.asso=prof.asso_id;
   PERI.statut=prof.statut;
@@ -896,6 +909,36 @@ async function salleCancel(id){
   toast('Demande annulée'); salleBoot();
 }
 window.salleBook=salleBook; window.salleCancel=salleCancel;
+
+/* ===== 📸 Photos des activités (albums privés partagés par l'équipe) ===== */
+async function photosBoot(){
+  const body=document.getElementById('photosBody'); if(!body) return;
+  if(!ACM.uid){ body.innerHTML='<p class="sub" style="margin:0">🔒 Réservé aux familles connectées. <a href="connexion.html" style="color:var(--vert-fonce);font-weight:800">Se connecter →</a></p>'; return; }
+  let albums=[], photos=[];
+  try{
+    const ra=await _sbAt.from('albums_photos').select('*').order('jour',{ascending:false}).order('created_at',{ascending:false}).limit(20);
+    albums=ra.data||[];
+    if(albums.length){ const rp=await _sbAt.from('photos_album').select('*').in('album_id',albums.map(a=>a.id)); photos=rp.data||[]; }
+  }catch(e){ body.innerHTML='<p class="sub">Impossible de charger les photos pour le moment.</p>'; return; }
+  if(!albums.length){ body.innerHTML='<p class="sub" style="margin:0">Pas encore de photos — elles apparaîtront ici dès que l\'équipe en partagera. 🍍</p>'; return; }
+  const actNames={};
+  const ids=albums.filter(a=>a.activite_id).map(a=>a.activite_id);
+  if(ids.length){ try{ const rn=await _sbAt.from('activites').select('id,nom,emoji').in('id',ids); (rn.data||[]).forEach(x=>{ actNames[x.id]=(x.emoji?x.emoji+' ':'')+(x.nom||''); }); }catch(e){} }
+  const urls={};
+  try{ const paths=photos.map(p=>p.chemin); if(paths.length){ const r=await _sbAt.storage.from('photos-activites').createSignedUrls(paths,3600); (r.data||[]).forEach(u=>{ if(u.signedUrl) urls[u.path]=u.signedUrl; }); } }catch(e){}
+  const byAlb={}; photos.forEach(p=>{ (byAlb[p.album_id]=byAlb[p.album_id]||[]).push(p); });
+  const fr=j=>{ const p=(j||'').split('-'); return p.length===3?(p[2]+'/'+p[1]+'/'+p[0]):j; };
+  body.innerHTML=albums.map(a=>{
+    const ph=byAlb[a.id]||[];
+    const lieu=a.portee==='periscolaire'?'🎒 Garderie périscolaire':(actNames[a.activite_id]||'🎟️ Activité');
+    const thumbs=ph.map(p=>{ const u=urls[p.chemin]; return u?'<a href="'+u.replace(/"/g,'&quot;')+'" target="_blank" rel="noopener"><img src="'+u.replace(/"/g,'&quot;')+'" loading="lazy" alt="photo" style="width:104px;height:104px;object-fit:cover;border-radius:12px"></a>':''; }).join(' ');
+    return '<div style="border:1px solid var(--line);border-radius:14px;padding:12px 14px;margin:8px 0;background:#fff">'
+      +'<div style="font-weight:800">'+acmEsc(lieu)+' · '+acmEsc(fr(a.jour))+(a.titre?' · '+acmEsc(a.titre):'')+'</div>'
+      +(a.mot?'<div style="margin:4px 0 0;white-space:pre-wrap">💬 '+acmEsc(a.mot)+'</div>':'')
+      +(thumbs?'<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px">'+thumbs+'</div>':'')
+      +'</div>';
+  }).join('')+'<p class="sub" style="margin:8px 0 0;font-size:12px">🔒 Photos hébergées en Europe, visibles uniquement par les familles concernées, supprimées en fin d\'année scolaire. Merci de ne pas les republier sur les réseaux sociaux.</p>';
+}
 
 /* ===== 👧 Mes enfants — fiches réutilisables (table enfants) ===== */
 const KIDS = { list:[] };

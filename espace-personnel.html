@@ -113,7 +113,7 @@ const SB_URL='https://dkidtwypclpwznleiqnq.supabase.co';
 const SB_KEY='sb_publishable_HDfV-O2ION1Vw9v03aV_Qg_PkiAjLNo';
 const sb=window.supabase.createClient(SB_URL,SB_KEY);
 const $=s=>document.querySelector(s);
-const ME={session:null,prof:null,fiche:null,conges:[],docs:[],acts:[],ins:[],asso:null,protos:[]};
+const ME={session:null,prof:null,fiche:null,conges:[],docs:[],acts:[],ins:[],asso:null,protos:[],albums:[],photos:[],kids:[]};
 function esc(s){return (s==null?'':String(s)).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2600);}
 function euroDays(n){return (n==null?'0':(Math.round(n*100)/100).toString().replace('.',','));}
@@ -139,7 +139,7 @@ async function boot(){
   // rôle personnel : fiche RH facultative (la partie gestion ne dépend pas d'elle)
   const {data:fiche}=await sb.from('personnel').select('*').eq('user_id',session.user.id).maybeSingle();
   ME.fiche=fiche||null;
-  const jobs=[loadActs(), loadProtocoles()];
+  const jobs=[loadActs(), loadProtocoles(), loadPhotos()];
   if(fiche){ jobs.push(loadConges(), loadDocs()); }
   await Promise.all(jobs);
   renderAll();
@@ -173,6 +173,7 @@ window.spView=function(v){ ME.view=v; renderView(); try{window.scrollTo({top:0,b
 function renderView(){
   const vp=$('#viewport'); if(!vp) return;
   if(ME.view==='activites'){ vp.innerHTML=backBar('🎒 Mes activités')+activitesHTML(); renderActs(); }
+  else if(ME.view==='photos'){ vp.innerHTML=backBar('📸 Photos du jour')+photosHTML(); renderAlbums(); }
   else if(ME.view==='rh'){ vp.innerHTML=backBar('🧑‍💼 Mon RH')+rhHTML(); if(ME.fiche){ renderConges(); renderDocs(); } }
   else if(ME.view==='procedures'){ vp.innerHTML=backBar('📋 Procédures du CASE')+proceduresHTML(); }
   else { vp.innerHTML=hubHTML(); }
@@ -190,11 +191,15 @@ function hubHTML(){
     rhSub='Dossier, planning, congés & documents';
     if(att) rhBadge=' <span class="badge b-demande">'+att+' en attente</span>';
   } else { rhSub='Activé par le bureau dès qu\'il crée ta fiche'; }
+  const nbAlb=ME.albums.length;
+  const phSub=nbAlb?(nbAlb+' album'+(nbAlb>1?'s':'')+' partagé'+(nbAlb>1?'s':'')+' avec les familles'):'Partage les photos de la journée aux familles';
   return '<section class="block"><h2 class="title">Que veux-tu faire ?</h2>'
     +'<p class="sub" style="margin:-4px 0 14px">Choisis un espace — tu pourras toujours revenir ici.</p>'
     +'<div class="hubgrid">'
       +'<button class="hubcard" onclick="spView(\'activites\')"><div class="hubico">🎒</div>'
         +'<div class="hubname">Mes activités</div><div class="hubsub">'+esc(actSub)+'</div><div class="hubgo">Entrer →</div></button>'
+      +'<button class="hubcard" onclick="spView(\'photos\')"><div class="hubico">📸</div>'
+        +'<div class="hubname">Photos du jour</div><div class="hubsub">'+esc(phSub)+'</div><div class="hubgo">Entrer →</div></button>'
       +'<button class="hubcard" onclick="spView(\'rh\')"><div class="hubico">🧑‍💼</div>'
         +'<div class="hubname">Mon RH'+rhBadge+'</div><div class="hubsub">'+esc(rhSub)+'</div><div class="hubgo">Entrer →</div></button>'
       +(ME.protos.length?('<button class="hubcard" onclick="spView(\'procedures\')"><div class="hubico">📋</div>'
@@ -351,6 +356,148 @@ window.spDelIns=async function(id){
   await loadActs(); renderActs(); toast('Inscription retirée');
 };
 function kv(k,v){ return '<div class="kv"><span class="k">'+esc(k)+'</span><span class="v">'+(v?esc(v):'—')+'</span></div>'; }
+
+// ===== Bloc Photos du jour (albums privés partagés aux familles) =====
+async function loadPhotos(){
+  try{
+    const [ra,rp,rk]=await Promise.all([
+      sb.from('albums_photos').select('*').order('jour',{ascending:false}).order('created_at',{ascending:false}).limit(40),
+      sb.from('photos_album').select('*'),
+      sb.from('enfants').select('id,nom,prenom,droit_image')
+    ]);
+    ME.albums=ra.data||[]; ME.photos=rp.data||[]; ME.kids=rk.data||[];
+  }catch(e){ ME.albums=[]; ME.photos=[]; ME.kids=[]; }
+}
+function phActName(a){
+  if(a.portee==='periscolaire') return '🎒 Garderie périscolaire';
+  const act=ME.acts.find(x=>x.id===a.activite_id);
+  return act?((act.emoji?act.emoji+' ':'🎟️ ')+(act.nom||'Activité')):'🎟️ Activité';
+}
+function phAlerteHtml(){
+  const non=ME.kids.filter(k=>k.droit_image===false);
+  const inc=ME.kids.filter(k=>k.droit_image==null);
+  const nm=l=>l.map(k=>esc(((k.prenom||'')+' '+(k.nom||'')).trim())).join(', ');
+  if(!non.length&&!inc.length) return '';
+  let h='<div class="card" style="border-left:4px solid #dc8f38;background:#fff8ec;margin-bottom:14px;border-radius:0 18px 18px 0"><b>📵 Avant de photographier</b>';
+  if(non.length) h+='<div style="font-size:14px;margin-top:4px">🚫 <b>Jamais sur les photos</b> (refus signé) : '+nm(non)+'</div>';
+  if(inc.length) h+='<div style="font-size:14px;margin-top:4px;color:#8a6400">❔ Autorisation pas encore renseignée ('+inc.length+') : '+nm(inc.slice(0,25))+(inc.length>25?'…':'')+' — dans le doute, ne pas les cadrer.</div>';
+  h+='</div>'; return h;
+}
+function photosHTML(){
+  const actOpts=ME.acts.map(a=>'<option value="'+a.id+'">'+esc((a.emoji?a.emoji+' ':'')+(a.nom||''))+'</option>').join('');
+  const t=new Date(); const iso=t.getFullYear()+'-'+String(t.getMonth()+1).padStart(2,'0')+'-'+String(t.getDate()).padStart(2,'0');
+  return '<section class="block">'
+    +'<p class="sub">Partage aux familles les photos de la journée + un petit mot. <b>Seules les familles dont un enfant est inscrit</b> à l\'accueil concerné les voient — rien n\'est public, rien ne part sur les réseaux.</p>'
+    +phAlerteHtml()
+    +'<div class="card" style="margin-bottom:14px"><h3 style="margin:0 0 10px">📸 Album du jour</h3>'
+      +'<div class="row" style="margin-bottom:8px">'
+        +'<div style="flex:2"><label>Pour quel accueil ?</label><select id="ph_portee" style="width:100%"><option value="periscolaire">🎒 Garderie périscolaire</option>'+actOpts+'</select></div>'
+        +'<div><label>Jour</label><input id="ph_jour" type="date" value="'+iso+'" style="width:100%"></div>'
+      +'</div>'
+      +'<div class="row" style="margin-bottom:8px"><div style="flex:1"><label>Titre (facultatif)</label><input id="ph_titre" style="width:100%" placeholder="ex. Grand jeu, atelier cuisine…"></div></div>'
+      +'<div class="row" style="margin-bottom:8px"><div style="flex:1"><label>💬 Le petit mot aux familles</label><textarea id="ph_mot" rows="2" style="width:100%;resize:vertical;font:inherit" placeholder="ex. Belle journée ! Aujourd\'hui nous avons…"></textarea></div></div>'
+      +'<div class="row" style="margin-bottom:10px"><div style="flex:1"><label>📷 Photos (plusieurs possibles)</label><input id="ph_files" type="file" accept="image/*" multiple style="width:100%"></div></div>'
+      +'<button class="btn win" id="ph_btn" onclick="phPublish()">📨 Publier pour les familles</button>'
+      +'<div id="ph_prog" class="sub" style="margin-top:6px"></div>'
+    +'</div>'
+    +'<div id="albList"></div>'
+  +'</section>';
+}
+async function phCompress(file){
+  try{
+    const img=await new Promise(function(ok,ko){ const u=URL.createObjectURL(file); const i=new Image(); i.onload=function(){ok(i)}; i.onerror=ko; i.src=u; });
+    const MAX=1600; let w=img.naturalWidth,h=img.naturalHeight;
+    if(Math.max(w,h)>MAX){ const r=MAX/Math.max(w,h); w=Math.round(w*r); h=Math.round(h*r); }
+    const c=document.createElement('canvas'); c.width=w; c.height=h;
+    c.getContext('2d').drawImage(img,0,0,w,h);
+    const blob=await new Promise(function(ok){ c.toBlob(ok,'image/jpeg',0.82); });
+    return blob||file;
+  }catch(e){ return file; }
+}
+async function phUploadFiles(albumId, files, progSel){
+  const prog=document.querySelector(progSel); let ok=0;
+  for(let i=0;i<files.length;i++){
+    if(prog) prog.textContent='Envoi de la photo '+(i+1)+' / '+files.length+'…';
+    const blob=await phCompress(files[i]);
+    const path=ME.asso+'/'+albumId+'/'+Date.now().toString(36)+Math.random().toString(36).slice(2,7)+'.jpg';
+    const up=await sb.storage.from('photos-activites').upload(path,blob,{contentType:'image/jpeg'});
+    if(up.error){ if(prog) prog.textContent='⚠️ Photo '+(i+1)+' : '+up.error.message; continue; }
+    const ins=await sb.from('photos_album').insert({asso_id:ME.asso, album_id:albumId, chemin:path});
+    if(!ins.error) ok++;
+  }
+  if(prog) prog.textContent='';
+  return ok;
+}
+window.phPublish=async function(){
+  const sel=$('#ph_portee').value, jour=$('#ph_jour').value, titre=$('#ph_titre').value.trim(), mot=$('#ph_mot').value.trim();
+  const files=[].slice.call((($('#ph_files')||{}).files)||[]);
+  if(!files.length && !mot){ toast('Ajoute des photos ou un petit mot'); return; }
+  const btn=$('#ph_btn'); if(btn) btn.disabled=true;
+  const payload={ asso_id:ME.asso, portee:(sel==='periscolaire'?'periscolaire':'activite'), activite_id:(sel==='periscolaire'?null:sel), titre:titre, mot:mot };
+  if(jour) payload.jour=jour;
+  const r=await sb.from('albums_photos').insert(payload).select().single();
+  if(r.error){ toast('Erreur : '+r.error.message); if(btn) btn.disabled=false; return; }
+  const ok=await phUploadFiles(r.data.id, files, '#ph_prog');
+  if(btn) btn.disabled=false;
+  await loadPhotos(); renderView();
+  toast('✅ Album publié'+(ok?(' ('+ok+' photo'+(ok>1?'s':'')+')'):''));
+};
+async function renderAlbums(){
+  const box=$('#albList'); if(!box) return;
+  if(!ME.albums.length){ box.innerHTML='<p class="empty">Aucun album pour l\'instant. Publie le premier 👆</p>'; return; }
+  const byAlb={}; ME.photos.forEach(function(p){ (byAlb[p.album_id]=byAlb[p.album_id]||[]).push(p); });
+  const paths=ME.photos.map(function(p){ return p.chemin; });
+  const urls={};
+  if(paths.length){ try{ const r=await sb.storage.from('photos-activites').createSignedUrls(paths,3600); (r.data||[]).forEach(function(u){ if(u.signedUrl) urls[u.path]=u.signedUrl; }); }catch(e){} }
+  box.innerHTML=ME.albums.map(function(a){
+    const ph=byAlb[a.id]||[];
+    const thumbs=ph.map(function(p){
+      const u=urls[p.chemin];
+      return '<span style="position:relative;display:inline-block">'
+        +(u?'<img src="'+u.replace(/"/g,'&quot;')+'" loading="lazy" alt="photo" style="width:96px;height:96px;object-fit:cover;border-radius:10px;cursor:pointer" onclick="spShowDoc(this.src,\'photo.jpg\')">':'<span style="display:inline-block;width:96px;height:96px;border-radius:10px;background:#eef3ef"></span>')
+        +'<button title="Supprimer cette photo" onclick="phDelPhoto(\''+p.id+'\')" style="position:absolute;top:-6px;right:-6px;background:#fff;border:1px solid var(--line);border-radius:50%;width:22px;height:22px;cursor:pointer;font-size:11px;line-height:1">✕</button></span>';
+    }).join(' ');
+    return '<div class="card" style="margin-bottom:12px'+(a.publie?'':';opacity:.6')+'">'
+      +'<div style="display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;align-items:center">'
+        +'<div><b>'+esc(phActName(a))+'</b> · '+fdate(a.jour)+(a.titre?' · '+esc(a.titre):'')
+        +(a.publie?'':' <span class="badge b-demande">🙈 masqué</span>')+'</div>'
+        +'<span style="white-space:nowrap">'
+          +'<button class="btn ghost" style="padding:4px 10px;font-size:12px" onclick="phToggle(\''+a.id+'\','+(a.publie?'false':'true')+')">'+(a.publie?'🙈 Masquer':'👁️ Publier')+'</button> '
+          +'<button class="btn ghost" style="padding:4px 10px;font-size:12px" onclick="phDelAlbum(\''+a.id+'\')">🗑</button></span>'
+      +'</div>'
+      +(a.mot?'<p class="pre" style="margin:6px 0 2px">💬 '+esc(a.mot)+'</p>':'')
+      +'<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px">'+(thumbs||'<span class="empty" style="padding:0">Pas encore de photo.</span>')+'</div>'
+      +'<label class="btn ghost" style="cursor:pointer;display:inline-block;margin-top:8px;font-size:13px">➕ Ajouter des photos<input type="file" accept="image/*" multiple style="display:none" onchange="phAddTo(\''+a.id+'\',this)"></label>'
+      +'<div id="phprog_'+a.id+'" class="sub"></div>'
+    +'</div>';
+  }).join('');
+}
+window.phAddTo=async function(albumId, input){
+  const files=[].slice.call(input.files||[]); if(!files.length) return;
+  const ok=await phUploadFiles(albumId, files, '#phprog_'+albumId);
+  await loadPhotos(); renderView(); toast('✅ '+ok+' photo'+(ok>1?'s':'')+' ajoutée'+(ok>1?'s':''));
+};
+window.phToggle=async function(id, pub){
+  const {error}=await sb.from('albums_photos').update({publie:!!pub}).eq('id',id);
+  if(error){ toast('Erreur : '+error.message); return; }
+  await loadPhotos(); renderView();
+};
+window.phDelPhoto=async function(id){
+  if(!confirm('Supprimer cette photo ?')) return;
+  const p=ME.photos.find(function(x){ return x.id===id; }); if(!p) return;
+  try{ await sb.storage.from('photos-activites').remove([p.chemin]); }catch(e){}
+  const {error}=await sb.from('photos_album').delete().eq('id',id);
+  if(error){ toast('Erreur : '+error.message); return; }
+  await loadPhotos(); renderView();
+};
+window.phDelAlbum=async function(id){
+  if(!confirm('Supprimer tout l\'album (photos comprises) ?')) return;
+  const ph=ME.photos.filter(function(x){ return x.album_id===id; }).map(function(x){ return x.chemin; });
+  try{ if(ph.length) await sb.storage.from('photos-activites').remove(ph); }catch(e){}
+  const {error}=await sb.from('albums_photos').delete().eq('id',id);
+  if(error){ toast('Erreur : '+error.message); return; }
+  await loadPhotos(); renderView(); toast('Album supprimé');
+};
 
 function renderConges(){
   const box=$('#cgList'); if(!box) return;
