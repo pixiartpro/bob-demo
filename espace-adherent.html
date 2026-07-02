@@ -94,6 +94,17 @@
   </div>
 </section>
 
+<!-- 🪪 MON ADHÉSION — paiement en ligne (HelloAsso) -->
+<section class="block" id="adhSection" style="padding:22px 0 6px">
+  <div class="wrap">
+    <div class="card" id="adhCard" style="border-left:5px solid var(--vert);background:#f3faf6">
+      <h2 class="title" style="font-size:20px">🪪 Mon adhésion <small>— 10 € / an</small></h2>
+      <p class="sub" style="margin:2px 0 10px">L'adhésion (<b>10 €</b>, du 1ᵉʳ août au 31 juillet) ouvre l'accès aux activités. <b>Un seul parent adhérent suffit pour tous les enfants.</b></p>
+      <div id="adhBody"><p class="sub">Chargement…</p></div>
+    </div>
+  </div>
+</section>
+
 <!-- INSCRIPTION PÉRISCOLAIRE (réel — réservé aux adhérents connectés) -->
 <section class="block" id="periSection" style="padding:22px 0 6px">
   <div class="wrap">
@@ -1181,8 +1192,40 @@ window.calcRun=function(){
     +'</div>';
 };
 
-_sbAt.auth.onAuthStateChange((event)=>{ if(event==='SIGNED_IN'||event==='SIGNED_OUT') periBoot(); });
-periBoot();
+/* ===== Mon adhésion (paiement en ligne HelloAsso) — 10 € fixe, relié au compte famille ===== */
+const ADH={ANNEE:(function(){const d=new Date();const y=d.getFullYear(),m=d.getMonth();const deb=(m>=7)?y:y-1;return deb+'-'+(deb+1);})()};
+function adhRenderLocked(){
+  const b=document.getElementById('adhBody'); if(!b) return;
+  b.innerHTML='<p class="sub" style="margin:0">Connectez-vous à votre compte famille pour adhérer en ligne. <a href="connexion.html" style="color:var(--vert-fonce);font-weight:800">Se connecter / créer mon compte →</a></p>';
+}
+async function adhBoot(){
+  const b=document.getElementById('adhBody'); if(!b) return;
+  let session=null; try{ session=(await _sbAt.auth.getSession()).data.session; }catch(e){}
+  if(!session){ adhRenderLocked(); return; }
+  const justPaid=new URLSearchParams(location.search).get('paiement')==='ok';
+  let paye=false;
+  try{ const {data}=await _sbAt.from('paiements').select('id').eq('objet','adhesion').eq('statut','paye').contains('metadata',{annee:ADH.ANNEE}).limit(1); paye=!!(data&&data.length); }catch(e){}
+  if(paye){ b.innerHTML='<div style="background:#e9f8f0;border:1px solid #bfe6d0;color:#0f6b46;border-radius:12px;padding:12px 14px;font-weight:600">✅ Adhésion à jour <span style="font-weight:400">('+ADH.ANNEE+')</span>. Merci ❤️ Un seul parent adhérent suffit pour tous vos enfants.</div>'; return; }
+  if(justPaid){ b.innerHTML='<div style="background:#e9f8f0;border:1px solid #bfe6d0;color:#0f6b46;border-radius:12px;padding:12px 14px">Merci ❤️ Votre paiement est bien reçu — l\'indicateur « adhésion à jour » s\'affiche dans un instant (HelloAsso confirme le règlement). Un justificatif vous est envoyé par HelloAsso.</div>'; setTimeout(adhBoot,6000); return; }
+  b.innerHTML='<button id="adhPayBtn" class="btn" style="background:var(--vert-fonce);color:#fff;border:0;border-radius:12px;padding:14px 20px;font-size:16px;font-weight:700;cursor:pointer;width:100%;max-width:340px">🪪 Payer mon adhésion — 10 €</button>'
+    +'<div class="sub" style="font-size:12px;margin-top:10px">💡 Paiement sécurisé <b>via HelloAsso</b> — <b>sans frais pour vous</b>. HelloAsso proposera une <b>contribution facultative</b> en plus : elle soutient HelloAsso et <b>ne revient pas au CASE</b>. Vous pouvez la mettre à <b>0 €</b> — seuls les 10 € sont dus au CASE.</div>';
+  document.getElementById('adhPayBtn').onclick=async function(){
+    const btn=this; btn.disabled=true; btn.textContent='Ouverture du paiement…';
+    try{
+      const s=(await _sbAt.auth.getSession()).data.session;
+      const retour=location.origin+location.pathname;
+      const r=await fetch('https://dkidtwypclpwznleiqnq.supabase.co/functions/v1/helloasso-adhesion',{method:'POST',
+        headers:{'Content-Type':'application/json','apikey':'sb_publishable_HDfV-O2ION1Vw9v03aV_Qg_PkiAjLNo','Authorization':'Bearer '+(s?s.access_token:'')},
+        body:JSON.stringify({retour_url: retour.indexOf('https')===0?retour:'https://casebdn.re/espace-adherent.html'})});
+      const j=await r.json();
+      if(j.redirectUrl){ location.href=j.redirectUrl; return; }
+      if(j.error==='deja_adherent'){ adhBoot(); return; }
+      throw new Error(j.error||'erreur');
+    }catch(e){ btn.disabled=false; btn.textContent='🪪 Payer mon adhésion — 10 €'; alert('Impossible d\'ouvrir le paiement pour le moment. Réessayez dans un instant.'); }
+  };
+}
+_sbAt.auth.onAuthStateChange((event)=>{ if(event==='SIGNED_IN'||event==='SIGNED_OUT'){ periBoot(); adhBoot(); } });
+periBoot(); adhBoot();
 </script>
 </body>
 </html>
