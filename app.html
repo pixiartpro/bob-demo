@@ -5993,13 +5993,13 @@ renderAll();
   window.renderDocsPeri=function(){
     const box=document.getElementById('docsPeriList'); if(!box) return;
     const store=(db&&db.docsPeri)||{};
-    box.innerHTML=(canWrite?'<div style="margin:0 0 12px"><button class="btn" onclick="docsPeriUploadAll()">⬆️ Tout déposer en 1 fois</button> <span class="muted" style="font-size:12px">— choisis les 8 fichiers d\'un coup, ils se rangent tout seuls</span></div>':'')+'<table style="width:100%;border-collapse:collapse">'+DOCSPERI.map(function(d){
+    box.innerHTML=(canWrite?'<div style="margin:0 0 12px"><button class="btn" onclick="docsPeriUploadAll()">⬆️ Tout déposer en 1 fois</button> <span class="muted" style="font-size:12px">— choisis les 8 fichiers d\'un coup, ils se rangent tout seuls</span></div>':'')+'<div style="overflow-x:auto;-webkit-overflow-scrolling:touch"><table style="width:100%;min-width:520px;border-collapse:collapse">'+DOCSPERI.map(function(d){
       const e=store[d.k];
       const etat=(e&&e.path)?'<span class="pill ok">✅ déposé</span>':'<span class="pill">— à déposer</span>';
       const dl=(e&&e.path)?'<button class="ghost btn" onclick="docsPeriView(\''+d.k+'\')">👁️ Visualiser</button> <button class="ghost btn" onclick="docsPeriDownload(\''+d.k+'\')">⬇️ Télécharger</button> ':'';
       const up=canWrite?'<button class="btn" onclick="docsPeriUpload(\''+d.k+'\')">⬆️ Téléverser</button>':'';
       return '<tr><td style="padding:8px;border-top:1px solid #eee"><b>'+d.label+'</b><br><span class="muted" style="font-size:12px">'+d.file+'</span></td><td style="padding:8px;border-top:1px solid #eee">'+etat+'</td><td style="padding:8px;border-top:1px solid #eee;text-align:right;white-space:nowrap">'+dl+up+'</td></tr>';
-    }).join('')+'</table>';
+    }).join('')+'</table></div>';
   };
   window.docsPeriUpload=function(k){
     if(!canWrite){ alert('Réservé au bureau.'); return; }
