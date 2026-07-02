@@ -338,8 +338,8 @@
     <div class="panel">
       <h2>Dernières opérations</h2>
       <p class="hint">Les 6 dernières entrées de la comptabilité.</p>
-      <table><thead><tr><th>Date</th><th>Libellé</th><th>Projet</th><th class="num">Montant</th></tr></thead>
-        <tbody id="dashOps"></tbody></table>
+      <div style="overflow-x:auto;-webkit-overflow-scrolling:touch"><table style="min-width:520px"><thead><tr><th>Date</th><th>Libellé</th><th>Projet</th><th class="num">Montant</th></tr></thead>
+        <tbody id="dashOps"></tbody></table></div>
     </div>
   </section>
 
@@ -527,7 +527,7 @@
         </div>
       </div>
       <p class="hint" style="margin:0 0 6px">Clique sur un en-tête de colonne pour trier (re-clique pour inverser l'ordre).</p>
-      <table><thead><tr>
+      <div style="overflow-x:auto;-webkit-overflow-scrolling:touch"><table style="min-width:820px"><thead><tr>
         <th onclick="setOpSort('date')" style="cursor:pointer" title="Trier par date">Date ⇅</th>
         <th onclick="setOpSort('label')" style="cursor:pointer" title="Trier par libellé">Libellé ⇅</th>
         <th onclick="setOpSort('site')" style="cursor:pointer" title="Trier par site">Site ⇅</th>
@@ -535,7 +535,7 @@
         <th onclick="setOpSort('project')" style="cursor:pointer" title="Trier par projet">Projet ⇅</th>
         <th class="num" onclick="setOpSort('amount')" style="cursor:pointer" title="Trier par montant">Montant ⇅</th>
         <th></th></tr></thead>
-        <tbody id="opRows"></tbody></table>
+        <tbody id="opRows"></tbody></table></div>
     </div>
     <div class="panel">
       <h2>Ventilation des dépenses</h2>
@@ -585,8 +585,8 @@
         <p class="hint" style="margin:2px 0 0">Toutes les entrées et sorties en espèces, et les remises en banque. Clique sur une ligne pour le détail.</p></div>
         <button class="ghost btn" id="caisseSortBtn" onclick="toggleCaisseSort()" title="Inverser l'ordre des dates">↓ Plus récents en premier</button>
       </div>
-      <table><thead><tr><th>Date</th><th>Libellé</th><th>Type</th><th class="num">Montant</th><th class="num">Solde caisse</th></tr></thead>
-        <tbody id="caisseRows"></tbody></table>
+      <div style="overflow-x:auto;-webkit-overflow-scrolling:touch"><table style="min-width:640px"><thead><tr><th>Date</th><th>Libellé</th><th>Type</th><th class="num">Montant</th><th class="num">Solde caisse</th></tr></thead>
+        <tbody id="caisseRows"></tbody></table></div>
     </div>
 
     <div class="panel" id="rapprochement">
@@ -657,8 +657,8 @@
     </div>
     <div class="panel">
       <h2 style="margin:0 0 12px">Suivi des subventions</h2>
-      <table><thead><tr><th>Subvention</th><th>Financeur</th><th>Site / Action</th><th class="num">Demandé</th><th class="num">Accordé</th><th class="num">Versé</th><th>Statut</th><th></th></tr></thead>
-        <tbody id="subRows"></tbody></table>
+      <div style="overflow-x:auto;-webkit-overflow-scrolling:touch"><table style="min-width:900px"><thead><tr><th>Subvention</th><th>Financeur</th><th>Site / Action</th><th class="num">Demandé</th><th class="num">Accordé</th><th class="num">Versé</th><th>Statut</th><th></th></tr></thead>
+        <tbody id="subRows"></tbody></table></div>
     </div>
   </section>
 
@@ -703,8 +703,8 @@
         <div class="field" style="min-width:140px"><label>Date d'entrée</label><input type="date" id="ms_dateentree" title="Date d'entrée dans l'association — sert à calculer l'ancienneté (onglet RH)"></div>
         <div class="field" style="flex:0"><label>&nbsp;</label><button class="btn" onclick="addSalarie()" id="ms_btn">Ajouter</button></div>
       </div>
-      <table style="margin-top:10px"><thead><tr><th>Salarié</th><th>Contrat</th><th class="num">h / sem</th><th class="num">Brut / mois</th><th class="num">Coût employeur / mois</th><th class="num">Aide / mois</th><th class="num">Reste à charge / an</th><th class="num">Coût horaire chargé</th><th></th></tr></thead>
-        <tbody id="msRows"></tbody></table>
+      <div style="overflow-x:auto;-webkit-overflow-scrolling:touch"><table style="margin-top:10px;min-width:1080px"><thead><tr><th>Salarié</th><th>Contrat</th><th class="num">h / sem</th><th class="num">Brut / mois</th><th class="num">Coût employeur / mois</th><th class="num">Aide / mois</th><th class="num">Reste à charge / an</th><th class="num">Coût horaire chargé</th><th></th></tr></thead>
+        <tbody id="msRows"></tbody></table></div>
       <p class="hint" style="margin:8px 0 0">💡 Le « coût horaire chargé » de la dernière colonne est exactement le chiffre à reporter dans le <strong>📐 Simulateur</strong> de l'onglet 🔮 Prévisionnel.</p>
     </div>
 
@@ -786,8 +786,8 @@
     <div class="panel">
       <h2 style="margin:0 0 4px">🏛️ Détail des subventions retenues</h2>
       <p class="hint">Refusée = 0 · Versée = déjà reçu (déjà en compta) · Accordée non versée = reste à percevoir · En commission = 50 % du demandé. Le « à recevoir » est étalé : 80 % un mois après le vote, 20 % l'année suivante.</p>
-      <table><thead><tr><th>Subvention</th><th>Statut</th><th class="num">Base retenue</th><th class="num">Déjà reçu</th><th class="num">À recevoir cette année</th><th class="num">Reporté an prochain</th></tr></thead>
-        <tbody id="prevSubRows"></tbody></table>
+      <div style="overflow-x:auto;-webkit-overflow-scrolling:touch"><table style="min-width:760px"><thead><tr><th>Subvention</th><th>Statut</th><th class="num">Base retenue</th><th class="num">Déjà reçu</th><th class="num">À recevoir cette année</th><th class="num">Reporté an prochain</th></tr></thead>
+        <tbody id="prevSubRows"></tbody></table></div>
     </div>
 
     <div class="panel">
@@ -861,8 +861,8 @@
         <div class="field" style="min-width:110px"><label>Matin ?</label><select id="pe_matin"><option value="0">Non</option><option value="1">Oui</option></select></div>
       </div>
       <div style="margin-top:8px"><button class="btn" id="pe_btn" onclick="addEnfantPeri()">+ Ajouter l'enfant</button></div>
-      <table style="margin-top:12px"><thead><tr><th>Enfant</th><th>Responsable</th><th>Tranche</th><th>Formule</th><th class="num">Par mois</th><th></th></tr></thead>
-        <tbody id="periEnfRows"></tbody></table>
+      <div style="overflow-x:auto;-webkit-overflow-scrolling:touch"><table style="margin-top:12px;min-width:640px"><thead><tr><th>Enfant</th><th>Responsable</th><th>Tranche</th><th>Formule</th><th class="num">Par mois</th><th></th></tr></thead>
+        <tbody id="periEnfRows"></tbody></table></div>
     </div>
 
     <div class="panel">
@@ -1027,7 +1027,7 @@
       </div>
       <div class="row" style="margin-top:8px"><div class="field"><label>Note (optionnel)</label><input id="c_note" placeholder="Ex. référent dossier subvention, jours de présence..."></div></div>
       <div class="toolbar" style="margin-top:16px"><h2 style="margin:0;font-size:15px">Carnet</h2><input id="c_search" placeholder="🔎 Rechercher..." oninput="renderRepertoire()" style="max-width:220px"></div>
-      <table><thead><tr><th>Nom</th><th>Organisme / rôle</th><th>Contact</th><th>Note</th><th></th></tr></thead><tbody id="contactRows"></tbody></table>
+      <div style="overflow-x:auto;-webkit-overflow-scrolling:touch"><table style="min-width:620px"><thead><tr><th>Nom</th><th>Organisme / rôle</th><th>Contact</th><th>Note</th><th></th></tr></thead><tbody id="contactRows"></tbody></table></div>
     </div>
     <div class="panel">
       <h2>🔗 Liens & adresses internet</h2>
@@ -1041,7 +1041,7 @@
       <div class="row" style="margin-top:8px"><div class="field" style="flex:3"><label>Adresse (URL)</label><input id="l_url" placeholder="https://..."></div>
         <div class="field" style="flex:2"><label>Note (optionnel)</label><input id="l_note" placeholder="Ex. identifiant du compte, échéance..."></div></div>
       <div class="toolbar" style="margin-top:16px"><h2 style="margin:0;font-size:15px">Liens enregistrés</h2><input id="l_search" placeholder="🔎 Rechercher..." oninput="renderRepertoire()" style="max-width:220px"></div>
-      <table><thead><tr><th>Intitulé</th><th>Catégorie</th><th>Adresse</th><th>Note</th><th></th></tr></thead><tbody id="lienRows"></tbody></table>
+      <div style="overflow-x:auto;-webkit-overflow-scrolling:touch"><table style="min-width:680px"><thead><tr><th>Intitulé</th><th>Catégorie</th><th>Adresse</th><th>Note</th><th></th></tr></thead><tbody id="lienRows"></tbody></table></div>
       <div style="margin-top:18px;padding-top:14px;border-top:1px solid var(--line)">
         <h2 style="font-size:14px;margin:0 0 4px">🏛️ Portails officiels (toujours disponibles)</h2>
         <p class="hint" style="margin:0 0 8px">Les sites administratifs utiles, déjà prêts. Un clic et c'est ouvert.</p>
@@ -1058,7 +1058,7 @@
         <div class="field" style="flex:2"><label>Lien (optionnel)</label><input id="d_url" placeholder="https://... (Drive, etc.)"></div>
         <div class="field" style="flex:0"><label>&nbsp;</label><button class="btn" onclick="addDoc()">Ajouter</button></div>
       </div>
-      <table><thead><tr><th>Type</th><th>Document</th><th>Accès</th><th></th></tr></thead><tbody id="docRows"></tbody></table>
+      <div style="overflow-x:auto;-webkit-overflow-scrolling:touch"><table style="min-width:520px"><thead><tr><th>Type</th><th>Document</th><th>Accès</th><th></th></tr></thead><tbody id="docRows"></tbody></table></div>
     </div>
   </section>
 
@@ -1675,8 +1675,8 @@ Deux locaux complémentaires — le Bois de Nèfles (« le haut » : jeunesse, a
         <input id="act_new" placeholder="Nouvelle action à suivre…" style="flex:1" onkeydown="if(event.key==='Enter')addAction()">
         <button class="btn" onclick="addAction()" style="flex:0 0 auto">+ Ajouter</button>
       </div>
-      <table><thead><tr><th>Action</th><th style="width:140px">Statut</th><th>Note</th><th style="width:44px"></th></tr></thead>
-        <tbody id="actionsRows"></tbody></table>
+      <div style="overflow-x:auto;-webkit-overflow-scrolling:touch"><table style="min-width:480px"><thead><tr><th>Action</th><th style="width:140px">Statut</th><th>Note</th><th style="width:44px"></th></tr></thead>
+        <tbody id="actionsRows"></tbody></table></div>
     </div>
   </section>
 
@@ -1701,8 +1701,8 @@ Deux locaux complémentaires — le Bois de Nèfles (« le haut » : jeunesse, a
         <div><button class="ghost btn" onclick="fermPrefillDecembre()">⛄ Pré-remplir décembre</button></div>
         <div><button class="btn" onclick="addFermeture()">+ Enregistrer la fermeture</button></div>
       </div>
-      <table style="margin-top:12px"><thead><tr><th>Fermeture</th><th>Période</th><th>État</th><th></th></tr></thead>
-        <tbody id="fermRows"></tbody></table>
+      <div style="overflow-x:auto;-webkit-overflow-scrolling:touch"><table style="margin-top:12px;min-width:560px"><thead><tr><th>Fermeture</th><th>Période</th><th>État</th><th></th></tr></thead>
+        <tbody id="fermRows"></tbody></table></div>
     </div>
     <div class="panel">
       <h3 style="margin:0 0 8px">Nouvelle demande</h3>
@@ -1714,8 +1714,8 @@ Deux locaux complémentaires — le Bois de Nèfles (« le haut » : jeunesse, a
         <div class="field" style="min-width:180px"><label>Motif (facultatif)</label><input id="cg_motif" placeholder=""></div>
       </div>
       <div style="margin-top:8px"><button class="btn" onclick="addConge()">+ Enregistrer la demande</button></div>
-      <table style="margin-top:12px"><thead><tr><th>Salarié·e</th><th>Type</th><th>Période</th><th>Statut</th><th></th></tr></thead>
-        <tbody id="congesRows"></tbody></table>
+      <div style="overflow-x:auto;-webkit-overflow-scrolling:touch"><table style="margin-top:12px;min-width:640px"><thead><tr><th>Salarié·e</th><th>Type</th><th>Période</th><th>Statut</th><th></th></tr></thead>
+        <tbody id="congesRows"></tbody></table></div>
     </div>
   </section>
 
@@ -2646,7 +2646,7 @@ function analyzeImport(){
   }
   const body=data.slice(0,5).map(r=>'<tr>'+Array.from({length:ncol},(_,i)=>`<td style="font-size:12px">${esc(r[i]||'')}</td>`).join('')+'</tr>').join('');
   $('imp_preview').innerHTML=`<p class="hint">Aperçu (5 premières lignes) — choisis pour chaque colonne ce qu'elle représente :</p>
-    <table><thead><tr>${cols}</tr></thead><tbody>${body}</tbody></table>
+    <div style="overflow-x:auto;-webkit-overflow-scrolling:touch"><table><thead><tr>${cols}</tr></thead><tbody>${body}</tbody></table></div>
     <div class="row" style="margin-top:14px;align-items:center">
       <div class="field" style="flex:0;min-width:230px"><label>Si le type n'est pas précisé, ces lignes sont des :</label>
         <select id="imp_deftype"><option value="out">Dépenses</option><option value="in">Recettes</option></select></div>
@@ -4892,25 +4892,25 @@ function renderAnciennete(){
     .sort((a,b)=>String(a.dateEntree).localeCompare(String(b.dateEntree)));
   if(!list.length){ box.innerHTML='<p class="hint" style="margin:0">Renseigne la <strong>date d\'entrée</strong> d\'un salarié dans 📒 Équipe (masse salariale) — clique ✏️ sur sa ligne — pour voir son ancienneté ici.</p>'; return; }
   const fr=n=>n.toLocaleString('fr-FR',{minimumFractionDigits:2,maximumFractionDigits:2})+' €';
-  box.innerHTML='<table><thead><tr><th>Salarié</th><th>Poste</th><th>Date d\'entrée</th><th>Ancienneté</th><th class="num">Points ÉCLAT</th><th class="num">Prime ancienneté / mois</th></tr></thead><tbody>'
+  box.innerHTML='<div style="overflow-x:auto;-webkit-overflow-scrolling:touch"><table style="min-width:760px"><thead><tr><th>Salarié</th><th>Poste</th><th>Date d\'entrée</th><th>Ancienneté</th><th class="num">Points ÉCLAT</th><th class="num">Prime ancienneté / mois</th></tr></thead><tbody>'
     +list.map(s=>{ const e=eclatAnc(s), av=!e||e.avenir;
         const pts=av?'<span class="muted">—</span>':'<strong>'+e.pts+'</strong>'+(e.prorata<1?' <span class="muted">·'+Math.round(e.prorata*100)+'%</span>':'');
         const prime=av?'<span class="muted">—</span>':fr(e.prime);
         return `<tr><td><strong>${esc(s.name)}</strong></td><td class="muted">${esc(s.poste||'')}</td><td>${ctDateFR(s.dateEntree)}</td><td><strong>${esc(anciennete(s.dateEntree))}</strong></td><td class="num">${pts}</td><td class="num">${prime}</td></tr>`;
       }).join('')
-    +'</tbody></table>'
+    +'</tbody></table></div>'
     +'<p class="hint" style="margin:8px 0 0">Points = +2 par année d\'ancienneté (après 12 mois de travail effectif), valorisés à la valeur du point <strong>V1 (7,23 € en 2026)</strong> et proratisés au temps de travail&nbsp;; <strong>sans plafond</strong>. ⚠️ À distinguer de la <em>reconstitution de carrière</em> (reprise de l\'expérience antérieure à l\'embauche, valorisée à V2, plafonnée à 40 points) — décompte exact validé par la paie / Hexopée.</p>';
 }
 function renderFichesPoste(){
   const box=$('fichesPosteList'); if(!box) return;
   const list=db.salaries||[];
   if(!list.length){ box.innerHTML='<p class="hint" style="margin:0">Aucune fiche : ajoute l\'équipe dans 📒 Équipe (masse salariale), elles s\'affichent ici automatiquement.</p>'; return; }
-  box.innerHTML='<table><thead><tr><th>Poste &amp; titulaire</th><th>Contrat</th><th>Temps de travail</th><th>Date d\'entrée</th><th class="num">Brut mensuel</th></tr></thead><tbody>'
+  box.innerHTML='<div style="overflow-x:auto;-webkit-overflow-scrolling:touch"><table style="min-width:680px"><thead><tr><th>Poste &amp; titulaire</th><th>Contrat</th><th>Temps de travail</th><th>Date d\'entrée</th><th class="num">Brut mensuel</th></tr></thead><tbody>'
     +list.map(function(s){ const c=msCalc(s);
         const aide=(s.aide>0&&s.aidefin)?' <span class="muted" style="font-size:11px">aide jusqu\'à '+esc(s.aidefin)+'</span>':'';
         return '<tr><td><strong>'+esc(s.name||'—')+'</strong>'+(s.poste?' <span class="muted" style="font-size:12px">'+esc(s.poste)+'</span>':'')+'</td><td>'+esc(s.contrat||'—')+aide+'</td><td>'+(s.hsem||0)+' h/sem</td><td>'+(s.dateEntree?ctDateFR(s.dateEntree):'—')+'</td><td class="num">'+euro(c.brutMois)+'</td></tr>';
       }).join('')
-    +'</tbody></table>';
+    +'</tbody></table></div>';
 }
 function renderRH(){ const t=$('rhOrgCible'); if(t && db.rhOrgCible && document.activeElement!==t) t.value=db.rhOrgCible; renderFichesPoste(); renderAnciennete(); renderBascule(); renderAvenants(); }
 
@@ -4962,7 +4962,7 @@ function renderBascule(){
   if(!list.length){ box.innerHTML='<p class="hint" style="margin:0">Renseigne d\'abord l\'équipe dans 📒 <strong>Équipe</strong> (masse salariale) — nom, heures/semaine, brut horaire, date d\'entrée — pour simuler la bascule ici.</p>'; const kk=$('basculeKpis'); if(kk) kk.innerHTML=''; return; }
   const fr=n=>n.toLocaleString('fr-FR',{minimumFractionDigits:2,maximumFractionDigits:2})+' €';
   let totRemontee=0, totMaintien=0, nbCoef=0, nbSous=0;
-  box.innerHTML='<table><thead><tr><th>Salarié</th><th class="num">h/sem</th><th>Coeff ÉCLAT visé</th><th class="num">Salaire ÉCLAT projeté / mois</th><th class="num">Brut actuel / mois</th><th>Résultat</th></tr></thead><tbody>'
+  box.innerHTML='<div style="overflow-x:auto;-webkit-overflow-scrolling:touch"><table style="min-width:760px"><thead><tr><th>Salarié</th><th class="num">h/sem</th><th>Coeff ÉCLAT visé</th><th class="num">Salaire ÉCLAT projeté / mois</th><th class="num">Brut actuel / mois</th><th>Résultat</th></tr></thead><tbody>'
     + list.map(s=>{
         const c=bsCalc(s);
         const coefVal=(db.bascule.coef||{})[s.id];
@@ -4983,7 +4983,7 @@ function renderBascule(){
         else { res='<span class="pill ok">= Identique</span>'; }
         return '<tr>'+nameCell+'<td class="num">'+(s.hsem||0)+'</td><td>'+inp+'</td>'+eclatCell+brutCell+'<td>'+res+'</td></tr>';
       }).join('')
-    + '</tbody></table>';
+    + '</tbody></table></div>';
   let k='';
   k+=kpi('Salariés simulés', nbCoef+' / '+list.length, '', 'coefficient ÉCLAT saisi');
   k+=kpi('Coût des remontées', totRemontee>0?'+'+fr(totRemontee)+' / mois':'—', totRemontee>0?'red':'green', 'hausses obligatoires (salaire ÉCLAT > actuel)');
@@ -5373,8 +5373,8 @@ function renderHorGrid(){
       +'<td>'+inp('a1')+' <span class="muted">→</span> '+inp('a2')+'</td>'
       +'<td class="num">'+(dm?horFmt(dm):'<span class="muted">repos</span>')+'</td></tr>';
   }).join('');
-  wrap.innerHTML='<table><thead><tr><th>Jour</th><th>Matin</th><th>Après-midi</th><th class="num">Total</th></tr></thead><tbody>'+rows
-    +'</tbody><tfoot><tr><th>Total semaine</th><th></th><th></th><th class="num">'+horFmt(weekMin)+'</th></tr></tfoot></table>'
+  wrap.innerHTML='<div style="overflow-x:auto;-webkit-overflow-scrolling:touch"><table style="min-width:560px"><thead><tr><th>Jour</th><th>Matin</th><th>Après-midi</th><th class="num">Total</th></tr></thead><tbody>'+rows
+    +'</tbody><tfoot><tr><th>Total semaine</th><th></th><th></th><th class="num">'+horFmt(weekMin)+'</th></tr></tfoot></table></div>'
     +(c.exc?'<div style="margin-top:10px"><button class="danger" onclick="horDelExc()">🗑 Supprimer cette semaine particulière</button></div>':'');
 }
 function saveAssurance(){ const g=id=>{ const e=$(id); return e?(e.value||''):''; }; db.assurance=Object.assign({}, db.assurance, {num:g('as_num').trim(), login:g('as_login').trim(), memo:g('as_memo')}); save(); }
@@ -6370,7 +6370,7 @@ renderAll();
       const insHtml=list.length
         ? (isWorkflow
           ? list.map(i=>bureauActInsCard(a,i)).join('')
-          : '<table style="margin-top:10px"><thead><tr><th>Nom</th><th>Responsable</th><th>Contact</th><th>Date</th>'+(canWrite?'<th></th>':'')+'</tr></thead><tbody>'
+          : '<div style="overflow-x:auto;-webkit-overflow-scrolling:touch"><table style="margin-top:10px;min-width:560px"><thead><tr><th>Nom</th><th>Responsable</th><th>Contact</th><th>Date</th>'+(canWrite?'<th></th>':'')+'</tr></thead><tbody>'
             +list.map(i=>{
                 const cell=field=> canWrite
                   ? '<td><input value="'+esc(i[field]||'')+'" style="width:100%;padding:4px 6px;border:1px solid var(--line);border-radius:6px;font:inherit;font-size:13px;background:#fff" onchange="updInscriptionActivite(\''+i.id+'\',\''+field+'\',this.value)"></td>'
@@ -6378,7 +6378,7 @@ renderAll();
                 return '<tr>'+cell('nom')+cell('responsable')+cell('contact')+'<td>'+esc((i.created_at||'').slice(0,10))+'</td>'
                   +(canWrite?'<td><button class="ghost btn" title="Retirer" onclick="delInscriptionActivite(\''+i.id+'\')">✕</button></td>':'')+'</tr>';
               }).join('')
-            +'</tbody></table>')
+            +'</tbody></table></div>')
         : '<p class="hint" style="margin:8px 0 0">Personne d\'inscrit pour l\'instant.</p>';
       let addIns='';
       if(canWrite){
@@ -6921,11 +6921,11 @@ renderAll();
     const pend=PERS.conges.filter(c=>c.statut==='demande'); const dbox=$('persDemandes');
     if(dbox){ dbox.innerHTML = pend.length ? ('<div class="card" style="border:1px solid #f1e2ad;background:#fffaf0;margin-bottom:6px"><b>🏖️ '+pend.length+' demande(s) de congé à traiter</b>'+pend.map(c=>{ const f=PERS.list.find(x=>x.id===c.personnel_id)||{}; return '<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;justify-content:space-between;padding:8px 0;border-top:1px dashed #e7efe9"><span>'+esc(persName(f))+' — <b>'+esc(c.type||'CP')+'</b> du '+esc(c.date_debut||'?')+' au '+esc(c.date_fin||'?')+(c.nb_jours?' ('+c.nb_jours+' j)':'')+(c.motif?' · '+esc(c.motif):'')+(c.piece&&c.piece.path?' · <button class="ghost btn" style="padding:2px 8px;font-size:12px" onclick="congePiece(\''+c.id+'\')">📎 justificatif</button>':'')+'</span><span style="white-space:nowrap"><button class="btn" style="padding:5px 10px" onclick="congeSet(\''+c.id+'\',\'valide\')">✅ Valider</button> <button class="ghost btn" style="padding:5px 10px" onclick="congeSet(\''+c.id+'\',\'refuse\')">Refuser</button></span></div>'; }).join('')+'</div>') : ''; }
     if(!PERS.list.length){ box.innerHTML='<p class="empty">Aucune fiche salarié. Clique « + Nouvelle fiche salarié » ou « Importer depuis la masse salariale ».</p>'; return; }
-    box.innerHTML='<table><thead><tr><th>Salarié·e</th><th>Poste</th><th>Compte</th><th>Soldes</th><th>Docs</th><th></th></tr></thead><tbody>'
+    box.innerHTML='<div style="overflow-x:auto;-webkit-overflow-scrolling:touch"><table style="min-width:760px"><thead><tr><th>Salarié·e</th><th>Poste</th><th>Compte</th><th>Soldes</th><th>Docs</th><th></th></tr></thead><tbody>'
       +PERS.list.map(f=>{ const nd=PERS.docs.filter(d=>d.personnel_id===f.id).length;
         const linked=f.user_id?persPill('lié','#e2f4ec','#127a51'):persPill('non lié','#fbe9e7','#c0392b');
         return '<tr><td><b>'+esc(persName(f))+'</b>'+(f.actif===false?' <span class="muted">(inactif)</span>':'')+'</td><td>'+esc(f.poste||'—')+'<br><span class="muted" style="font-size:12px">'+esc(f.type_contrat||'')+(f.temps_travail?' · '+esc(f.temps_travail):'')+'</span></td><td>'+linked+'</td><td class="num">'+(f.solde_conges||0)+' CP · '+(f.solde_rtt||0)+' RTT</td><td class="num">'+nd+'</td><td style="white-space:nowrap"><button class="ghost btn" onclick="persEdit(\''+f.id+'\')" title="Modifier">✏️</button> <button class="ghost btn" onclick="persDocsOpen(\''+f.id+'\')" title="Documents">📎</button></td></tr>';
-      }).join('')+'</tbody></table>';
+      }).join('')+'</tbody></table></div>';
   }
   function persFld(id,label,val,type){ return '<div><label>'+esc(label)+'</label><input id="'+id+'" type="'+(type||'text')+'" value="'+esc(val==null?'':val)+'" style="width:100%"></div>'; }
   function persForm(f){ f=f||{}; const v=k=>f[k]==null?'':f[k];
