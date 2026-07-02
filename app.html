@@ -924,6 +924,7 @@
         <div class="field" style="flex:0"><label>&nbsp;</label><button class="btn" id="ag_btn" onclick="addActivite()">+ Créer</button></div>
       </div>
     </div>
+    <div id="bandeauVitrine"></div>
     <div id="actgList"></div>
   </section>
 
@@ -2110,6 +2111,8 @@ const FAQ=[
    a:"Ouvre l'onglet <strong>🤝 Accompagnement</strong>. Tu y trouves : la fiche et la frise des 9 séances du <strong>DLA</strong> (Démêlé ESS), le diagnostic du CASE (séance 3) et le plan d'actions, la <strong>Maison Des Associations</strong>, les autres ressources (France Active, Hexopée, ELISFA, Uniformation…), et en bas le bloc <strong>Préparation du RDV</strong> avec le statut de tes actions, les demandes de la conseillère et une zone de notes de séance. Cet onglet est réservé au bureau."},
   {cat:'🎟️ Activités',q:"Comment afficher les places restantes et gérer les inscriptions sur le site ?",kw:"activite activites place places restantes capacite complet inscription inscriptions site public publier vitrine arrive bientot acm vepi danse musique programme ados vacances ete sortie",
    a:"Onglet <b>🎟️ Activités</b>. Crée chaque activité (nom, emoji, catégorie, description), fixe sa <b>capacité</b>, choisis le statut (<b>Ouvert</b> / <b>Arrive bientôt</b> / Archivé) et clique <b>🌍 Publier sur le site</b>. Sur le site public, « Nos activités » affiche alors en direct <b>« X places restantes »</b>, <b>« complet »</b> quand la capacité est atteinte, ou <b>« arrive bientôt »</b>. Quand une famille s'inscrit, son inscription <b>arrive automatiquement ici</b> (tu vois le nom, le responsable, le contact) et le nombre de places se met à jour tout seul. Tu peux aussi <b>inscrire quelqu'un toi-même</b> (formulaire « ➕ inscrire » sous chaque activité — pratique quand une famille vient au comptoir plutôt que de passer par le site), <b>corriger</b> un nom / responsable / contact directement dans le tableau, ou <b>retirer</b> une inscription avec ✕. <b>Nouveau :</b> pour le <b>périscolaire, l'ACM et le VEPI</b>, la réservation se fait depuis le <b>compte famille</b> (espace famille) et reste <b>reliée à la famille</b> ; les <b>événements / temps forts</b> restent ouverts à tous directement sur le site. Astuce : si tu remplis le champ <b>Programme</b> d'une activité, il s'affiche sur la carte du site quand une famille clique dessus (parfait pour détailler l'ACM des vacances)."},
+  {cat:'🎟️ Activités',q:"Comment mettre une inscription (périscolaire, ACM, VEPI) dans le bandeau en haut du site ?",kw:"bandeau haut prioritaire priorite priorites annonces chips familles peri extrascolaire monte retirer depublier archiver ordre",
+   a:"Le site public affiche un <b>bandeau « 📣 Inscriptions »</b> tout en haut, sous le menu. Tu n'as <b>rien de spécial à faire</b> : toute activité de catégorie <b>Péri &amp; extrascolaire</b> qui est <b>publiée sur le site</b> y monte automatiquement (3 au maximum, triées par le champ « Ordre »). Son <b>statut</b> fait le libellé que voient les familles : <b>Ouvert</b> (pastille verte) · <b>Arrive bientôt</b> (bleue) · <b>Complet</b> (quand la capacité est atteinte). Pour retirer une activité du bandeau : <b>🔒 Dépublier</b> ou passer son statut sur <b>Archivé</b>. S'il n'y a rien à annoncer, le bandeau disparaît complètement du site. Le panneau <b>« 📣 Le bandeau du site, en ce moment »</b> en haut de l'onglet 🎟️ Activités te montre en permanence ce que les familles voient."},
   {cat:'📅 Rendez-vous',q:"Comment proposer des rendez-vous (créneaux) aux familles ?",kw:"rendez vous rdv creneau creneaux plage plages horaire recurrent recurrente agenda coiffeur accompagnement vepi reserver disponibilite dispo heure",
    a:"En bas de l'onglet <b>🎟️ Activités</b>, panneau <b>« 📅 Rendez-vous »</b>. Tu définis tes <b>plages récurrentes</b> : un <b>jour</b> (ex : mardi), <b>de … à …</b> (ex : 14h-17h), la <b>durée d'un créneau</b> (30 min par défaut) et un <b>libellé</b>. Les familles voient alors uniquement les <b>créneaux LIBRES</b> dans l'espace famille (📅 Prendre rendez-vous) et en réservent un elles-mêmes — <b>tu n'as plus à rappeler</b>. Tu retrouves ici la liste des <b>rendez-vous pris</b> (date, heure, motif). Pour supprimer une plage : 🗑. Deux plages sont déjà posées par défaut, ajuste-les à ta convenance."},
   {cat:'🌴 Vacances',q:"Comment préparer le programme des vacances (ACM) et suivre les intervenants ?",kw:"vacances acm ados programme catalogue activites origine maison partenaire payant intervenant contact statut appeler attente confirme objectif session jour planning sortie prepa preparation outil interne",
@@ -2284,6 +2287,7 @@ function pageHelpGotoAide(){ pageHelpClose(); const b=document.querySelector('na
 
 /* ---- ✨ Quoi de neuf (nouveautés + notice chronologique) ---- */
 const NEWS=[
+  {id:'2026-07-02-bandeau-inscriptions',date:'2026-07-02',tab:'🎟️ Activités',titre:"📣 Un bandeau « Inscriptions » en haut du site public",desc:"Le site affiche maintenant un <b>bandeau tout en haut</b> avec les inscriptions du moment (périscolaire, ACM, VEPI…). Il se pilote tout seul depuis 🎟️ Activités : une activité de catégorie <b>Péri &amp; extrascolaire</b> publiée sur le site y monte automatiquement, et son <b>statut</b> (Ouvert / Arrive bientôt / Complet) fait le libellé que voient les familles. Rien à annoncer ? Le bandeau disparaît. Un panneau « 📣 Le bandeau du site, en ce moment » en haut de l'onglet te montre en permanence ce qui est affiché."},
   {id:'2026-07-02-mon-equipe',date:'2026-07-02',tab:'📊 Tableau de bord',titre:"🍍 Ton équipe Bob, en haut de l'accueil",desc:"Nouveau sur le tableau de bord : « Qui veux-tu voir aujourd'hui ? ». Ton équipe s'affiche en personnages — <b>Sabine</b> la secrétaire, <b>Trési</b> la trésorière, <b>Nono</b> l'animateur, <b>Roro</b> le RH. Clique sur l'un d'eux pour retrouver d'un coup tous ses outils, sans chercher dans le menu ; « La Direction » juste au-dessus regroupe le pilotage. Rien n'a disparu : tous les onglets restent là où ils étaient, c'est juste une porte d'entrée plus simple et plus humaine."},
   {id:'2026-07-01-inscrire-comptoir',date:'2026-07-01',tab:'🎟️ Activités',titre:"➕ Inscrire une famille au comptoir, directement depuis le bureau",desc:"Dans 🎟️ Activités, sous chaque activité, un petit formulaire « ➕ Inscrire quelqu'un » permet maintenant au bureau d'ajouter une inscription à la main (nom + responsable + contact) — pratique quand une famille vient sur place au lieu de passer par le site. Tu peux aussi corriger un nom, un responsable ou un contact directement dans le tableau des inscrits. Le nombre de places se met à jour tout seul, et l'ajout est tracé dans le Journal des actions. (Idée de Guy Robert.)"},
   {id:'2026-06-30-qui-fait-quoi',date:'2026-06-30',tab:'🧭 Projet & orientations',titre:"👥 Une vue « Qui fait quoi » : toute l'équipe d'un coup d'œil",desc:"Nouveau, en haut de 🧭 Projet & orientations : « Qui fait quoi — l'équipe en vrai ». Une vue vivante qui rassemble sur un écran le bureau (bénévoles), l'équipe salariée (depuis les Dossiers salariés) et les pôles, en cartes. Les postes « à pourvoir » ressortent en ambre pour voir tout de suite les trous. C'est en lecture seule (aucun salaire affiché) ; pour modifier quelqu'un, on passe par sa fiche. C'est la 1re brique d'un grand rangement : à terme, on saisira chaque personne une seule fois."},
@@ -6253,6 +6257,27 @@ renderAll();
     if(ra.error){ box.innerHTML='<p class="hint" style="color:#c0392b">Erreur : '+esc(ra.error.message)+'</p>'; return; }
     const acts=(ra.data||[]).slice().sort((a,b)=>((a.type==='evenement')!==(b.type==='evenement'))?(a.type==='evenement'?1:-1):((a.ordre||0)-(b.ordre||0))), byA={};
     (ri.data||[]).forEach(i=>{ (byA[i.activite_id]=byA[i.activite_id]||[]).push(i); });
+    /* Aperçu du bandeau du site : même règle que la vitrine (catégorie « Péri & extrascolaire »
+       + publié + non archivé, tri par ordre, 3 max). Le statut fait le libellé. */
+    const bv=document.getElementById('bandeauVitrine');
+    if(bv){
+      const chips=acts.filter(a=>a.publie&&a.type==='activite'&&(a.categorie||'')==='Péri & extrascolaire'&&a.statut!=='archive')
+        .sort((a,b)=>(a.ordre||0)-(b.ordre||0)).slice(0,3);
+      bv.innerHTML='<div class="panel" style="margin:10px 0;background:#fff7e8;border:1px solid #f1e2ad">'
+        +'<strong>📣 Le bandeau du site, en ce moment</strong> — ce que les familles voient tout en haut de la vitrine :<br>'
+        +(chips.length
+          ? '<span style="display:inline-flex;gap:8px;flex-wrap:wrap;margin-top:8px">'+chips.map(a=>{
+              const places=Math.max(0,(a.capacite||0)-(a.nb_inscrits||0));
+              const bientot=a.statut==='bientot', complet=!bientot&&places<=0;
+              const st=bientot?'bientôt':(complet?'complet':'ouvert');
+              const stc=bientot?'#2a5aa0':(complet?'#b23a23':'#0f6b46');
+              return '<span style="display:inline-flex;align-items:center;gap:6px;background:#fff;border:1.5px solid #f1e2ad;border-radius:999px;padding:4px 12px;font-weight:700;font-size:13px">'
+                +esc((a.emoji?a.emoji+' ':'')+(a.nom||''))+'<span style="font-size:11.5px;font-weight:800;color:'+stc+'">· '+st+'</span></span>';
+            }).join('')+'</span>'
+          : '<span class="pill" style="margin-top:8px;display:inline-block;background:#f1f1f1;color:#777">rien pour l\'instant — le bandeau est invisible sur le site</span>')
+        +'<p class="hint" style="margin:8px 0 0">Comment ça marche : une activité de catégorie <b>Péri &amp; extrascolaire</b> + <b>Sur le site ? Oui</b> monte automatiquement dans le bandeau (3 max, tri par « Ordre »). Son <b>statut</b> fait le libellé : Ouvert · Arrive bientôt · Complet. Pour la retirer du bandeau : Dépublier ou Archiver.</p>'
+        +'</div>';
+    }
     if(!acts.length){ box.innerHTML='<p class="hint">Aucune activité pour le moment. Crée la première ci-dessus 👆</p>'; return; }
     box.innerHTML=acts.map(a=>{
       const list=byA[a.id]||[];
