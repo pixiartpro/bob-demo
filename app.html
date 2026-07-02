@@ -40,9 +40,12 @@
        border-radius:999px;font-size:13.5px;font-weight:700;cursor:pointer;white-space:nowrap;transition:.15s}
   nav.famtabs button:hover{border-color:var(--brand)}
   nav.famtabs button.on{background:var(--brand);color:#fff;border-color:var(--brand)}
-  nav.tabs{display:block;margin:0}
-  nav.tabs .tabgroup{display:none;gap:4px;flex-wrap:wrap}
-  nav.tabs .tabgroup.show{display:flex}
+  nav.tabs{display:block;margin:0;position:relative}
+  nav.tabs .tabgroup{display:none;gap:6px;flex-wrap:wrap}
+  nav.tabs .tabgroup.show{display:flex;position:absolute;top:2px;left:0;right:0;background:var(--card);border:1px solid var(--line);border-radius:14px;box-shadow:0 14px 32px rgba(16,48,42,.17);padding:10px;z-index:60;max-width:760px}
+  nav.famtabs button.famhome{border-bottom-color:#5a6b7a;font-weight:800}
+  nav.famtabs button[data-group].open{box-shadow:0 6px 16px rgba(18,122,81,.30);transform:translateY(-1px)}
+  nav.famtabs button[data-group]::after{content:" ▾";opacity:.5;font-size:11px}
   nav.tabs button{border:none;background:transparent;color:var(--muted);padding:9px 14px;
        border-radius:999px;font-size:13.5px;font-weight:600;cursor:pointer;white-space:nowrap;
        transition:.15s}
@@ -264,7 +267,8 @@
     <div id="tabJumpResults" class="tabjump-res" role="listbox" aria-label="Onglets correspondants"></div>
   </div>
   <nav class="famtabs" aria-label="Familles d'onglets">
-    <button class="fam on" data-group="accueil">🏠 Accueil</button>
+    <button class="fam famhome" data-tab="dashboard">📊 Tableau de bord</button>
+    <button class="fam" data-group="accueil">🏠 Accueil</button>
     <button class="fam" data-group="adherents">👥 Adhérents</button>
     <button class="fam" data-group="bureau">🏛️ Bureau</button><!-- étape2: ex data-group="projets" -->
     <button class="fam" data-group="equipe">🧑‍💼 Équipe</button>
@@ -272,7 +276,7 @@
     <button class="fam" data-group="regl">🧰 Réglages</button><!-- étape2: ex data-group="outils" -->
   </nav>
   <nav class="tabs">
-    <div class="tabgroup show" data-group="accueil">
+    <div class="tabgroup" data-group="accueil">
       <button data-tab="dashboard" class="active">📊 Tableau de bord</button>
       <button data-tab="projet">🧭 Projet &amp; orientations</button>
       <button data-tab="projetados">🚀 Projet ados</button>
@@ -323,6 +327,7 @@
 
   <!-- DASHBOARD -->
   <section id="dashboard" class="page active">
+    <div id="dashEquipe"></div>
     <div id="dashWelcome"></div>
     <div id="dashState" class="dashstate"></div>
     <div class="zonecards" id="zoneCards"></div>
@@ -1980,29 +1985,35 @@ document.querySelectorAll('nav.tabs button').forEach(b=>{
   };
 });
 
-/* ---- Menu par familles : on range les 29 onglets dans 6 tiroirs, sans changer leur fonctionnement ---- */
+/* ---- Menu par familles en TIROIRS DÉROULANTS (02/07/2026) : barre compacte, une famille s'ouvre en dropdown ; 📊 Tableau de bord = bouton direct. Réversible : restaurer l'ancien openGroup + le CSS .tabgroup.show inline. ---- */
 (function(){
   const famNav=document.querySelector('nav.famtabs'); if(!famNav) return;
   const groups=document.querySelectorAll('nav.tabs .tabgroup');
-  function firstVisibleTab(g){
-    return [...document.querySelectorAll('nav.tabs .tabgroup[data-group="'+g+'"] button[data-tab]')]
-      .find(b=>{ try{ return getComputedStyle(b).display!=='none'; }catch(e){ return true; } });
+  function closeDrawers(){ groups.forEach(d=>d.classList.remove('show')); famNav.querySelectorAll('button[data-group]').forEach(x=>x.classList.remove('open')); }
+  function markFam(g){
+    famNav.querySelectorAll('button[data-group]').forEach(x=>x.classList.toggle('on', x.dataset.group===g));
+    const home=famNav.querySelector('.famhome'); if(home) home.classList.toggle('on', g===null);
   }
-  function openGroup(g){
-    famNav.querySelectorAll('button').forEach(x=>x.classList.toggle('on', x.dataset.group===g));
-    groups.forEach(d=>d.classList.toggle('show', d.dataset.group===g));
-    // Réflexion bureau (23/06) : cliquer une famille ouvre directement son 1er onglet visible,
-    // sauf si on est DÉJÀ dans cette famille (pour ne pas réinitialiser un onglet en cours de saisie).
-    const active=document.querySelector('nav.tabs button[data-tab].active');
-    const ag=active&&active.closest('.tabgroup');
-    if(!(ag&&ag.dataset.group===g)){ const t=firstVisibleTab(g); if(t) t.click(); }
+  function toggleDrawer(g){
+    const grp=document.querySelector('nav.tabs .tabgroup[data-group="'+g+'"]');
+    const wasOpen=grp&&grp.classList.contains('show');
+    closeDrawers();
+    if(!wasOpen&&grp){ grp.classList.add('show'); const b=famNav.querySelector('button[data-group="'+g+'"]'); if(b) b.classList.add('open'); }
   }
-  window.openTabGroup=openGroup;
-  famNav.querySelectorAll('button').forEach(b=> b.addEventListener('click', ()=>openGroup(b.dataset.group)) );
-  // un clic d'onglet (réel OU programmatique via .click()) ouvre aussi sa famille
+  window.openTabGroup=function(g){ markFam(g); };
+  // clic sur une famille = ouvre/ferme son tiroir (ne change pas d'onglet)
+  famNav.querySelectorAll('button[data-group]').forEach(b=> b.addEventListener('click', ()=>toggleDrawer(b.dataset.group)) );
+  // 📊 bouton direct (data-tab) : va à l'onglet + ferme les tiroirs
+  famNav.querySelectorAll('button[data-tab]').forEach(b=> b.addEventListener('click', ()=>{ const t=document.querySelector('nav.tabs button[data-tab="'+b.dataset.tab+'"]'); if(t) t.click(); }) );
+  // clic sur un onglet (réel OU programmatique via .click()) = ferme les tiroirs + marque sa famille (accueil = tableau de bord)
   document.querySelectorAll('nav.tabs button[data-tab]').forEach(b=>{
-    const g=b.closest('.tabgroup'); if(g) b.addEventListener('click', ()=>openGroup(g.dataset.group));
+    const g=b.closest('.tabgroup');
+    b.addEventListener('click', ()=>{ closeDrawers(); markFam(b.dataset.tab==='dashboard' ? null : (g?g.dataset.group:null)); });
   });
+  // clic hors du menu = ferme les tiroirs
+  document.addEventListener('click', function(e){ if(!e.target.closest('.navwrap')) closeDrawers(); });
+  // état initial : tiroirs fermés, on est sur le Tableau de bord
+  closeDrawers(); markFam(null);
 })();
 
 /* ---- Recherche d'onglet « Aller à… » (30/06/2026, additif/revertible) : tape 2-3 lettres → saute à l'onglet via bobGoTab() ---- */
@@ -2045,6 +2056,7 @@ document.querySelectorAll('nav.tabs button').forEach(b=>{
 
 /* ---- Aide : « Demande à Zanana » (FAQ + assistant par mots-clés, sans IA) ---- */
 const FAQ=[
+  {cat:'📊 Tableau de bord',q:"C'est quoi « Ton équipe » avec les ananas en haut de l'accueil ?",kw:"equipe ananas bob bobs sabine tresi nono roro secretaire tresoriere animateur rh personnage mascotte accueil qui veux voir carte cartes outils porte entree cliquer membre direction zanana",a:"En haut du tableau de bord, ton équipe Bob te sert de <b>porte d'entrée</b> : chaque personnage regroupe un métier — <b>Sabine</b> (le bureau : adhérents, agenda, répertoire, CA), <b>Trési</b> (la trésorerie : compta, subventions, bilan), <b>Nono</b> (l'animation : périscolaire, activités, vacances, ateliers) et <b>Roro</b> (les salariés : dossiers, congés, horaires). Clique un personnage pour voir tous ses outils et y aller directement ; « La Direction » juste au-dessus regroupe le pilotage (tableau de bord, projet, suivi). Tu ne vois que les personnages et outils auxquels <b>ton rôle a accès</b>. Tous les onglets restent aussi dans le menu en couleurs comme avant."},
   {cat:'🧰 Secrétariat',q:"Comment compter les voix d'une délibération et générer le procès-verbal (PV) ?",kw:"pv proces verbal procès délibération deliberation resolution voix compter compteur pour contre abstention sens adoptee rejetee reportee deport voter scrutin generer imprimer reunion seance conseil administration boutons plus moins",a:"Onglet <b>🧰 Secrétariat</b> → <b>« Réunions &amp; délibérations »</b>. Sur chaque délibération, les boutons <b>+ / −</b> comptent les voix <b>Pour / Contre / Abstention</b> ; le <b>sens</b> (adoptée / rejetée / reportée) se met à jour tout seul. Le bouton <b>⚖️ Déport</b> note qu'un membre se retire d'une résolution (conflit d'intérêts) — c'est repris au PV. Une fois les votes saisis, <b>🖨️ PV</b> génère le <b>procès-verbal officiel</b> (présents, quorum, déports, résolutions avec le détail des voix, signatures Président/Secrétaire). Le <b>🖨️ Relevé</b> reste, lui, un document de préparation. Le PV est <b>à valider et signer en séance</b> ; en cas de doute sur le formalisme : Hexopée."},
   {cat:'🗂️ Répertoire',q:"Comment protéger un identifiant ou un mot de passe dans les liens ?",kw:"lien liens mot de passe motdepasse code coffre chiffrer chiffré cadenas secret acces identifiant proteger confidentiel reveler reveler tam mairie orange portail securiser cacher",a:"Dans <b>🗂️ Répertoire</b>, section <b>Liens</b> : mets l'identifiant et le mot de passe dans la <b>note</b> du lien, puis clique <b>🔒</b> sur la ligne (ou <b>« Protéger les accès »</b> en haut de la liste) et choisis un <b>code du coffre</b> connu du bureau. La note devient <b>illisible</b> (chiffrée) — même en ligne, personne ne peut la lire sans le code. Pour la relire : bouton <b>« Révéler »</b> + le code ; pour la modifier : <b>🔓 Déprotéger</b>. Le code <b>n'est jamais enregistré</b> : on le tape à chaque fois. Si tu oublies le code, re-saisis l'accès (il existe aussi sur le vrai portail)."},
   {cat:'🛎️ Réserver une salle',q:"Comment réserver une salle, et comment valider une demande ?",kw:"reserver salle reservation demande creneau local kaz zados bringelliers occupation valider refuser bureau intervenant adherent guichet deport",a:"Onglet <b>🛎️ Réserver une salle</b>. Les adhérents et intervenants déposent leur demande depuis leur espace adhérent (salle, jour, créneau, motif). La demande tombe ici et dans <b>⏰ À traiter</b>. Le bureau valide ou refuse — et un membre <b>ne peut pas valider sa propre demande</b> (déport, un autre membre doit le faire). Les réservations validées forment l'occupation des locaux."},
@@ -2272,6 +2284,7 @@ function pageHelpGotoAide(){ pageHelpClose(); const b=document.querySelector('na
 
 /* ---- ✨ Quoi de neuf (nouveautés + notice chronologique) ---- */
 const NEWS=[
+  {id:'2026-07-02-mon-equipe',date:'2026-07-02',tab:'📊 Tableau de bord',titre:"🍍 Ton équipe Bob, en haut de l'accueil",desc:"Nouveau sur le tableau de bord : « Qui veux-tu voir aujourd'hui ? ». Ton équipe s'affiche en personnages — <b>Sabine</b> la secrétaire, <b>Trési</b> la trésorière, <b>Nono</b> l'animateur, <b>Roro</b> le RH. Clique sur l'un d'eux pour retrouver d'un coup tous ses outils, sans chercher dans le menu ; « La Direction » juste au-dessus regroupe le pilotage. Rien n'a disparu : tous les onglets restent là où ils étaient, c'est juste une porte d'entrée plus simple et plus humaine."},
   {id:'2026-07-01-inscrire-comptoir',date:'2026-07-01',tab:'🎟️ Activités',titre:"➕ Inscrire une famille au comptoir, directement depuis le bureau",desc:"Dans 🎟️ Activités, sous chaque activité, un petit formulaire « ➕ Inscrire quelqu'un » permet maintenant au bureau d'ajouter une inscription à la main (nom + responsable + contact) — pratique quand une famille vient sur place au lieu de passer par le site. Tu peux aussi corriger un nom, un responsable ou un contact directement dans le tableau des inscrits. Le nombre de places se met à jour tout seul, et l'ajout est tracé dans le Journal des actions. (Idée de Guy Robert.)"},
   {id:'2026-06-30-qui-fait-quoi',date:'2026-06-30',tab:'🧭 Projet & orientations',titre:"👥 Une vue « Qui fait quoi » : toute l'équipe d'un coup d'œil",desc:"Nouveau, en haut de 🧭 Projet & orientations : « Qui fait quoi — l'équipe en vrai ». Une vue vivante qui rassemble sur un écran le bureau (bénévoles), l'équipe salariée (depuis les Dossiers salariés) et les pôles, en cartes. Les postes « à pourvoir » ressortent en ambre pour voir tout de suite les trous. C'est en lecture seule (aucun salaire affiché) ; pour modifier quelqu'un, on passe par sa fiche. C'est la 1re brique d'un grand rangement : à terme, on saisira chaque personne une seule fois."},
   {id:'2026-06-30-aller-a-onglet',date:'2026-06-30',tab:'📊 Tableau de bord',titre:"🔎 Une barre « Aller à un onglet » en haut du menu",desc:"Nouveau : tout en haut du menu, tape 2-3 lettres du nom d'un onglet (ex. « cong » pour Congés, « subv » pour Subventions) et Bob t'y emmène directement, sans avoir à te rappeler dans quelle famille de couleur il est rangé. Flèches ↑↓ puis Entrée, ou clique le résultat. Rien d'autre n'a changé : c'est juste un raccourci pour aller plus vite."},
@@ -5689,7 +5702,87 @@ renderAll();
     let want=null;
     if(!window._bobTabRestored){ window._bobTabRestored=true; try{ const lt=localStorage.getItem('bob_last_tab'); if(lt) want=vis.find(b=>b.dataset.tab===lt); }catch(e){} }
     if(vis.length){ if(want) want.click(); else if(!active || lvlOf(active.dataset.tab)==='cache') vis[0].click(); }
+    if(window.renderMonEquipe) window.renderMonEquipe();
   }
+
+  /* ===== Accueil « Mon équipe » — couche additive (02/07/2026) : haut du dashboard, filtré par onglets réellement visibles (rôle + forfait) ===== */
+  window.renderMonEquipe=function(){
+    var host=document.getElementById('dashEquipe'); if(!host) return;
+    if(!document.getElementById('eqStyle')){
+      var st=document.createElement('style'); st.id='eqStyle';
+      st.textContent='.eq-wrap{margin:2px 0 20px}'
+        +'.eq-hello{margin:0 0 2px;font-size:clamp(20px,3vw,26px);font-weight:800;color:var(--ink,#16302a)}'
+        +'.eq-sub{margin:0 0 15px;color:var(--muted,#62756b);font-size:14px}'
+        +'.eq-dir{display:flex;align-items:center;gap:13px;flex-wrap:wrap;background:linear-gradient(120deg,#eafaf2,#f4fbf7);border:1px solid #d7ece0;border-radius:16px;padding:13px 15px;margin:0 0 16px}'
+        +'.eq-dico{width:46px;height:46px;border-radius:13px;background:linear-gradient(145deg,#1f9d6b,#0f6b46);display:grid;place-items:center;font-size:23px;flex:0 0 auto}'
+        +'.eq-dir b{font-size:15px}.eq-dir p{margin:2px 0 0;color:var(--muted,#62756b);font-size:12.5px}'
+        +'.eq-dchips{display:flex;gap:6px;flex-wrap:wrap;margin-left:auto}'
+        +'.eq-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}'
+        +'@media(max-width:900px){.eq-grid{grid-template-columns:repeat(2,1fr)}}'
+        +'@media(max-width:540px){.eq-grid{grid-template-columns:1fr}}'
+        +'.eq-card{position:relative;background:#fff;border:1px solid var(--line,#e7efe9);border-radius:20px;padding:14px 12px;text-align:center;cursor:pointer;transition:.16s;overflow:hidden}'
+        +'.eq-card:hover{transform:translateY(-4px);box-shadow:0 14px 30px rgba(16,48,42,.13);border-color:#cfe7d9}'
+        +'.eq-card img{height:126px;display:block;margin:0 auto 6px;filter:drop-shadow(0 8px 12px rgba(16,60,40,.16))}'
+        +'.eq-nom{font-weight:800;font-size:16px;margin:0}'
+        +'.eq-role{display:inline-block;margin:3px 0 7px;font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.04em;color:#127a51;background:#e7f5ee;padding:2px 9px;border-radius:999px}'
+        +'.eq-tag{margin:0;color:var(--muted,#62756b);font-size:12.5px;line-height:1.35}'
+        +'.eq-cnt{position:absolute;top:10px;right:10px;background:#f0a92e;color:#5b3d00;font-weight:800;font-size:11px;width:22px;height:22px;border-radius:50%;display:grid;place-items:center}'
+        +'.eq-chip{display:inline-flex;align-items:center;gap:4px;background:#f0f7f3;border:1px solid #dcece4;color:var(--ink,#16302a);font-size:12.5px;font-weight:600;padding:5px 10px;border-radius:999px;cursor:pointer}'
+        +'.eq-chip:hover{background:#1f9d6b;color:#fff;border-color:#1f9d6b}'
+        +'.eq-back{position:fixed;inset:0;background:rgba(16,48,42,.45);z-index:1300;display:none}'
+        +'.eq-modal{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);width:min(540px,92vw);background:#fff;border-radius:22px;padding:22px;z-index:1301;box-shadow:0 30px 80px rgba(16,48,42,.34);display:none}'
+        +'.eq-modal.open,.eq-back.open{display:block}'
+        +'.eq-x{position:absolute;top:12px;right:12px;width:32px;height:32px;border:none;border-radius:50%;background:#f0f5f2;font-size:15px;cursor:pointer}'
+        +'.eq-dh{display:flex;align-items:center;gap:14px;padding-right:28px}'
+        +'.eq-dh img{height:76px}.eq-dh b{font-size:18px}.eq-dh p{margin:3px 0 0;color:var(--muted,#62756b);font-size:13px}'
+        +'.eq-lab{margin:14px 0 8px;font-size:11.5px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:#127a51}'
+        +'.eq-chips{display:flex;gap:8px;flex-wrap:wrap}';
+      document.head.appendChild(st);
+    }
+    if(!document.getElementById('eqBack')){
+      var bk=document.createElement('div'); bk.id='eqBack'; bk.className='eq-back'; bk.onclick=window.eqClose; document.body.appendChild(bk);
+      var md=document.createElement('div'); md.id='eqModal'; md.className='eq-modal'; document.body.appendChild(md);
+    }
+    var EQUIPE=[
+      {id:'sabine',nom:'Sabine',role:'La Secrétaire',img:'bob-sabine.png',tag:"Adhérents, agenda, répertoire et la vie du bureau.",tabs:[['🏛️','Adhérents','members'],['📅','Rendez-vous','rdv'],['🗂️','Répertoire','repertoire'],['🤝','Partenaires','partenaires'],['🧰','Secrétariat','secretariat'],['📝','Préparer le CA','caprep']]},
+      {id:'tresi',nom:'Trési',role:'La Trésorière',img:'bob-tresi.png',tag:"Compta par site & action, subventions, bilan, prévisionnel.",tabs:[['💶','Comptabilité','accounting'],['💵','Caisse','caisse'],['💳','Dettes & créances','dettes'],['📈','Bilan','bilan'],['🔮','Prévisionnel','previsionnel'],['🏛️','Subventions','subventions'],['📁','Projets','projects']]},
+      {id:'nono',nom:'Nono',role:"L'Animateur",img:'bob-nono.png',tag:"Périscolaire, activités, ACM & vacances, ateliers, salles.",tabs:[['🎒','Périscolaire','periscolaire'],['🎟️','Activités','activites'],['🌴','Vacances','acmvac'],['🚀','Projet ados','projetados'],['💡','Ateliers','ateliers'],['🏠','Lieux','lieux'],['🛎️','Réserver une salle','reserver']]},
+      {id:'roro',nom:'Roro',role:'Le RH',img:'bob-roro.png',tag:"Dossiers salariés, équipe, congés, horaires, paie.",tabs:[['🧑‍💼','RH','rh'],['📒','Équipe','equipe'],['👥','Dossiers salariés','personnel'],['🏖️','Congés','conges'],['🗓️','Horaires','horaires']]}
+    ];
+    var DIRECTION=[['📊','Tableau de bord','dashboard'],['🧭','Projet & orientations','projet'],['✅','Suivi','suivi'],['⚠️','Événements','incidents'],['🧑‍🏫','Accompagnement','accompagnement']];
+    function tb(t){return document.querySelector('nav.tabs button[data-tab="'+t+'"]');}
+    function vis(t){var b=tb(t);return b&&getComputedStyle(b).display!=='none';}
+    window._eqGo=function(t){var b=tb(t);if(b){b.click();window.scrollTo(0,0);}window.eqClose();};
+    function chips(list){return list.filter(function(x){return vis(x[2]);}).map(function(x){return '<span class="eq-chip" onclick="_eqGo(\''+x[2]+'\')">'+x[0]+' '+x[1]+'</span>';}).join('');}
+    var nom=(window.bobMe&&window.bobMe.nom)?(', '+String(window.bobMe.nom).split(' ')[0]):'';
+    var dch=chips(DIRECTION);
+    var html='<div class="eq-wrap"><h2 class="eq-hello">Bonjour'+nom+' 👋 Qui veux-tu voir ?</h2>'
+      +'<p class="eq-sub">Clique sur un membre de l\'équipe pour retrouver tous ses outils.</p>';
+    if(dch) html+='<div class="eq-dir"><div class="eq-dico">🧭</div><div><b>La Direction — ta vue d\'ensemble</b><p>Le pilotage du CASE.</p></div><div class="eq-dchips">'+dch+'</div></div>';
+    html+='<div class="eq-grid">';
+    window._eqData={};
+    EQUIPE.forEach(function(b){
+      var av=b.tabs.filter(function(x){return vis(x[2]);});
+      if(!av.length) return;
+      window._eqData[b.id]=b;
+      html+='<div class="eq-card" onclick="_eqOpen(\''+b.id+'\')"><span class="eq-cnt">'+av.length+'</span>'
+        +'<img src="'+b.img+'" alt="'+b.nom+'" onerror="this.style.display=\'none\'">'
+        +'<p class="eq-nom">'+b.nom+'</p><span class="eq-role">'+b.role+'</span><p class="eq-tag">'+b.tag+'</p></div>';
+    });
+    html+='</div></div>';
+    host.innerHTML=html;
+  };
+  window._eqOpen=function(id){
+    var b=window._eqData&&window._eqData[id]; if(!b) return;
+    var md=document.getElementById('eqModal'), bk=document.getElementById('eqBack'); if(!md) return;
+    function vis(t){var x=document.querySelector('nav.tabs button[data-tab="'+t+'"]');return x&&getComputedStyle(x).display!=='none';}
+    var av=b.tabs.filter(function(x){return vis(x[2]);});
+    var ch=av.map(function(x){return '<span class="eq-chip" onclick="_eqGo(\''+x[2]+'\')">'+x[0]+' '+x[1]+'</span>';}).join('');
+    md.innerHTML='<button class="eq-x" onclick="eqClose()">✕</button><div class="eq-dh"><img src="'+b.img+'" alt=""><div><b>'+b.nom+' — '+b.role+'</b><p>'+b.tag+'</p></div></div><p class="eq-lab">Ses outils ('+av.length+')</p><div class="eq-chips">'+ch+'</div>';
+    md.classList.add('open'); bk.classList.add('open');
+  };
+  window.eqClose=function(){var md=document.getElementById('eqModal'),bk=document.getElementById('eqBack');if(md)md.classList.remove('open');if(bk)bk.classList.remove('open');};
+  document.addEventListener('keydown',function(e){if(e.key==='Escape'&&window.eqClose)window.eqClose();});
 
   async function pushNow(){
     if(!myAsso||!canWrite)return;
