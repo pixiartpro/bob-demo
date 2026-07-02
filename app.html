@@ -411,8 +411,8 @@
         <h2 style="margin:0">Liste des adhérents</h2>
         <input id="m_search" placeholder="🔎 Rechercher..." oninput="renderMembers()" style="max-width:240px">
       </div>
-      <table><thead><tr><th>Nom</th><th>Contact</th><th>Adresse</th><th>Adhésion</th><th class="num">Cotisation</th><th>Statut</th><th></th></tr></thead>
-        <tbody id="memberRows"></tbody></table>
+      <div style="overflow-x:auto;-webkit-overflow-scrolling:touch"><table style="min-width:720px"><thead><tr><th>Nom</th><th>Contact</th><th>Adresse</th><th>Adhésion</th><th class="num">Cotisation</th><th>Statut</th><th></th></tr></thead>
+        <tbody id="memberRows"></tbody></table></div>
     </div>
   </section>
 
