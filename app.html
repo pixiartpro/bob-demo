@@ -3011,7 +3011,14 @@ window.docxRenderLocal=async function(url, boxId){
     if(!resp.ok) throw new Error('fichier inaccessible (HTTP '+resp.status+')');
     const blob=await resp.blob();
     box.innerHTML='';
-    await window.docx.renderAsync(blob, box, null, {inWrapper:true, breakPages:true});
+    // Petit écran (téléphone) : texte fluide adapté à la largeur ; grand écran : vraies pages A4.
+    const flow=(box.clientWidth||window.innerWidth||0)<700;
+    await window.docx.renderAsync(blob, box, null, {inWrapper:!flow, breakPages:!flow, ignoreWidth:flow, ignoreHeight:flow});
+    if(flow){
+      box.querySelectorAll('section.docx').forEach(function(s){ s.style.padding='16px 14px'; s.style.width='auto'; s.style.minHeight='0'; });
+      box.querySelectorAll('img').forEach(function(im){ im.style.maxWidth='100%'; im.style.height='auto'; });
+      box.querySelectorAll('table').forEach(function(t){ t.style.maxWidth='100%'; });
+    }
   }catch(e){
     box.innerHTML='<div style="padding:28px;text-align:center;color:#5c7468">L\'aperçu n\'a pas pu être généré ('+esc((e&&e.message)||'erreur')+').<br><a href="'+url+'" target="_blank" rel="noopener" style="display:inline-block;margin-top:12px;background:#127a51;color:#fff;text-decoration:none;border-radius:999px;padding:9px 16px;font-weight:800">⬇️ Télécharger</a></div>';
   }
@@ -3832,7 +3839,7 @@ window.renderZoneCards=renderZoneCards;
    QR gravé en dur (SVG) : l'adresse du site est stable → zéro dépendance externe, marche hors-ligne et à l'impression. */
 const QR_SITE_PATH='M0 0h7v1H0zM8 0h1v1H8zM10 0h1v1H10zM14 0h1v1H14zM16 0h2v1H16zM19 0h2v1H19zM22 0h2v1H22zM26 0h7v1H26zM0 1h1v1H0zM6 1h1v1H6zM9 1h1v1H9zM12 1h6v1H12zM20 1h1v1H20zM22 1h1v1H22zM26 1h1v1H26zM32 1h1v1H32zM0 2h1v1H0zM2 2h3v1H2zM6 2h1v1H6zM9 2h1v1H9zM11 2h1v1H11zM14 2h1v1H14zM17 2h2v1H17zM21 2h2v1H21zM24 2h1v1H24zM26 2h1v1H26zM28 2h3v1H28zM32 2h1v1H32zM0 3h1v1H0zM2 3h3v1H2zM6 3h1v1H6zM9 3h1v1H9zM11 3h3v1H11zM19 3h2v1H19zM24 3h1v1H24zM26 3h1v1H26zM28 3h3v1H28zM32 3h1v1H32zM0 4h1v1H0zM2 4h3v1H2zM6 4h1v1H6zM8 4h1v1H8zM11 4h1v1H11zM13 4h4v1H13zM18 4h1v1H18zM21 4h1v1H21zM23 4h1v1H23zM26 4h1v1H26zM28 4h3v1H28zM32 4h1v1H32zM0 5h1v1H0zM6 5h1v1H6zM8 5h2v1H8zM14 5h1v1H14zM20 5h1v1H20zM26 5h1v1H26zM32 5h1v1H32zM0 6h7v1H0zM8 6h1v1H8zM10 6h1v1H10zM12 6h1v1H12zM14 6h1v1H14zM16 6h1v1H16zM18 6h1v1H18zM20 6h1v1H20zM22 6h1v1H22zM24 6h1v1H24zM26 6h7v1H26zM15 7h1v1H15zM18 7h1v1H18zM21 7h1v1H21zM1 8h7v1H1zM9 8h6v1H9zM16 8h2v1H16zM22 8h3v1H22zM27 8h2v1H27zM32 8h1v1H32zM0 9h1v1H0zM4 9h2v1H4zM8 9h1v1H8zM11 9h1v1H11zM14 9h1v1H14zM18 9h3v1H18zM22 9h2v1H22zM26 9h2v1H26zM29 9h2v1H29zM32 9h1v1H32zM0 10h1v1H0zM3 10h2v1H3zM6 10h1v1H6zM10 10h3v1H10zM16 10h1v1H16zM18 10h1v1H18zM20 10h1v1H20zM22 10h1v1H22zM25 10h2v1H25zM28 10h1v1H28zM30 10h1v1H30zM1 11h1v1H1zM3 11h2v1H3zM7 11h2v1H7zM10 11h1v1H10zM12 11h2v1H12zM16 11h1v1H16zM19 11h4v1H19zM24 11h3v1H24zM28 11h3v1H28zM32 11h1v1H32zM0 12h1v1H0zM2 12h1v1H2zM6 12h3v1H6zM10 12h5v1H10zM16 12h1v1H16zM18 12h1v1H18zM21 12h1v1H21zM23 12h3v1H23zM27 12h3v1H27zM1 13h2v1H1zM7 13h1v1H7zM10 13h3v1H10zM16 13h2v1H16zM20 13h2v1H20zM23 13h1v1H23zM26 13h1v1H26zM29 13h1v1H29zM31 13h2v1H31zM0 14h2v1H0zM6 14h1v1H6zM10 14h2v1H10zM13 14h3v1H13zM17 14h3v1H17zM21 14h2v1H21zM25 14h4v1H25zM31 14h1v1H31zM3 15h3v1H3zM8 15h1v1H8zM12 15h3v1H12zM16 15h1v1H16zM18 15h4v1H18zM25 15h3v1H25zM29 15h2v1H29zM3 16h1v1H3zM5 16h2v1H5zM10 16h5v1H10zM16 16h1v1H16zM18 16h2v1H18zM22 16h1v1H22zM24 16h2v1H24zM27 16h2v1H27zM32 16h1v1H32zM0 17h1v1H0zM2 17h1v1H2zM4 17h1v1H4zM7 17h1v1H7zM12 17h2v1H12zM15 17h2v1H15zM18 17h3v1H18zM22 17h2v1H22zM25 17h3v1H25zM29 17h2v1H29zM32 17h1v1H32zM5 18h5v1H5zM14 18h2v1H14zM17 18h2v1H17zM22 18h1v1H22zM24 18h1v1H24zM27 18h2v1H27zM30 18h2v1H30zM2 19h3v1H2zM8 19h3v1H8zM16 19h1v1H16zM19 19h2v1H19zM24 19h1v1H24zM26 19h6v1H26zM0 20h2v1H0zM4 20h4v1H4zM9 20h2v1H9zM14 20h2v1H14zM17 20h1v1H17zM19 20h6v1H19zM27 20h3v1H27zM31 20h1v1H31zM0 21h1v1H0zM7 21h4v1H7zM12 21h1v1H12zM17 21h1v1H17zM21 21h1v1H21zM23 21h1v1H23zM26 21h1v1H26zM32 21h1v1H32zM0 22h1v1H0zM6 22h4v1H6zM12 22h2v1H12zM17 22h1v1H17zM20 22h2v1H20zM24 22h1v1H24zM28 22h4v1H28zM0 23h1v1H0zM2 23h1v1H2zM5 23h1v1H5zM7 23h2v1H7zM11 23h1v1H11zM14 23h1v1H14zM16 23h2v1H16zM21 23h1v1H21zM28 23h3v1H28zM32 23h1v1H32zM0 24h1v1H0zM3 24h2v1H3zM6 24h1v1H6zM10 24h1v1H10zM12 24h1v1H12zM14 24h2v1H14zM22 24h1v1H22zM24 24h5v1H24zM31 24h1v1H31zM8 25h2v1H8zM11 25h2v1H11zM16 25h4v1H16zM21 25h4v1H21zM28 25h1v1H28zM30 25h3v1H30zM0 26h7v1H0zM8 26h1v1H8zM11 26h1v1H11zM13 26h4v1H13zM18 26h1v1H18zM20 26h2v1H20zM23 26h2v1H23zM26 26h1v1H26zM28 26h1v1H28zM30 26h2v1H30zM0 27h1v1H0zM6 27h1v1H6zM8 27h5v1H8zM14 27h1v1H14zM17 27h1v1H17zM19 27h6v1H19zM28 27h3v1H28zM0 28h1v1H0zM2 28h3v1H2zM6 28h1v1H6zM8 28h2v1H8zM11 28h4v1H11zM19 28h1v1H19zM21 28h1v1H21zM24 28h6v1H24zM32 28h1v1H32zM0 29h1v1H0zM2 29h3v1H2zM6 29h1v1H6zM8 29h1v1H8zM10 29h5v1H10zM17 29h1v1H17zM20 29h6v1H20zM28 29h2v1H28zM32 29h1v1H32zM0 30h1v1H0zM2 30h3v1H2zM6 30h1v1H6zM8 30h2v1H8zM11 30h1v1H11zM13 30h3v1H13zM19 30h1v1H19zM26 30h2v1H26zM29 30h1v1H29zM0 31h1v1H0zM6 31h1v1H6zM8 31h2v1H8zM14 31h1v1H14zM17 31h5v1H17zM25 31h2v1H25zM28 31h1v1H28zM30 31h1v1H30zM0 32h7v1H0zM9 32h1v1H9zM14 32h1v1H14zM16 32h4v1H16zM22 32h4v1H22zM27 32h1v1H27zM31 32h1v1H31z';
 function afficheQR(){
-  const qr='<svg viewBox="0 0 33 33" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges" style="width:100%;height:100%;display:block"><path d="'+QR_SITE_PATH+'" fill="#16302a"/></svg>';
+  const qr='<svg viewBox="0 0 25 25" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges" style="width:100%;height:100%;display:block"><path d="'+QR_SITE_PATH+'" fill="#16302a"/></svg>';
   const html=''
     +'<style>@media print{.noprint{display:none !important}}</style>'
     +'<div class="noprint" style="text-align:center;margin-bottom:12px;color:var(--muted);font-size:13.5px">Imprime l\'affiche (bouton 🖨️ ci-dessus), ou montre-la à l\'écran : le QR code se scanne aussi directement sur ton téléphone.'
@@ -3844,7 +3851,7 @@ function afficheQR(){
       +'<p style="margin:0 0 20px;color:#62756b;font-size:15px">Activités, inscriptions, espace famille&nbsp;: tout est sur notre site.</p>'
       +'<div style="display:inline-block;background:#fff;border:2px solid #127a51;border-radius:18px;padding:18px"><div style="width:210px;height:210px">'+qr+'</div></div>'
       +'<p style="margin:16px 0 4px;font-weight:600;font-size:15px">📱 Ouvrez l\'appareil photo du téléphone,<br>visez le code… et c\'est parti&nbsp;!</p>'
-      +'<p style="margin:0 0 16px;color:#62756b;font-size:13.5px">ou tapez&nbsp;: <b style="color:#16302a">pixiartpro.github.io/bob-demo</b></p>'
+      +'<p style="margin:0 0 16px;color:#62756b;font-size:13.5px">ou tapez&nbsp;: <b style="color:#16302a">casebdn.re</b></p>'
       +'<div style="border-top:1px solid #e7efe9;padding-top:12px;display:flex;align-items:center;justify-content:center;gap:10px">'
         +'<img src="zanana-wave.png" alt="" onerror="this.style.display=\'none\'" style="height:44px">'
         +'<span style="font-size:12.5px;color:#62756b;text-align:left">CASE du Bois de Nèfles<br>122 Place de la Fraternité, 97490 Sainte-Clotilde</span>'
@@ -3853,7 +3860,7 @@ function afficheQR(){
   window.docViewHtml('📣 Affiche à partager — le site du CASE', html);
 }
 function afficheQRCopie(btn){
-  const url='https://pixiartpro.github.io/bob-demo/';
+  const url='https://casebdn.re/';
   const ok=()=>{ btn.textContent='✅ Lien copié !'; setTimeout(()=>{ btn.textContent='🔗 Copier le lien du site'; },2200); };
   if(navigator.clipboard&&navigator.clipboard.writeText){ navigator.clipboard.writeText(url).then(ok).catch(()=>prompt('Copie le lien :',url)); }
   else prompt('Copie le lien :',url);
