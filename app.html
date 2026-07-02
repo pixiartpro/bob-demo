@@ -2067,7 +2067,7 @@ const FAQ=[
   {cat:'🧰 Secrétariat',q:"Comment chaque membre du CA signe et valide le PV dans Bob ?",kw:"signer signature pv proces verbal proces-verbal membre membres president secretaire valider validation vote chacun dessiner doigt cloturer cloture archiver conseil administration art20 reserve refuser rafraichir simultane",a:"Onglet <b>🧰 Secrétariat</b> → <b>« Réunions &amp; délibérations »</b>, sur une réunion qui a des délibérations : déplie <b>✍️ Signatures &amp; validation du CA</b> (tout reste sur la même page). <b>Chaque membre</b> clique <b>« Signer / valider mon vote »</b>, dessine sa signature (au doigt ou à la souris) et valide — <b>signer = valider son vote</b>. On peut aussi <b>refuser / noter une réserve</b>. Le <b>président</b> voit qui a signé (bouton <b>🔄 Rafraîchir</b>) et clique <b>« Clôturer le PV »</b> quand tout le monde a signé. Plusieurs personnes peuvent <b>signer en même temps</b>, chacun dans son espace. C'est la signature du PV (Président + Secrétaire au minimum, art.20) ; le <b>vote</b> se prend en séance (et en ligne une fois la clause distanciel votée en AGE)."},
   {cat:'📝 Préparer le CA', q:"À quoi sert « Préparer le CA » et est-ce que valider ici = voter ?", kw:"preparer ca conseil administration releve avis lu accord parler discuter vote voter valider validation consentement ordre du jour deport president imprimer projet pv decision seance points consensus rediscuter",
    a:"Onglet <b>📝 Préparer le CA</b> (réservé au bureau). Tu y retrouves les points à examiner avant un conseil d'administration. Chaque membre clique <b>« Lu, je suis d'accord »</b> ou <b>« Je veux en parler »</b> — c'est un <b>avis</b>, pas un vote. ⚠️ Sous les statuts du CASE, seules les décisions prises <b>en séance du CA</b> comptent : cette page sert juste à <b>préparer</b> et à gagner du temps (les points où tout le monde est déjà d'accord sont adoptés vite en séance). Le bouton <b>🖨️ Imprimer le projet de relevé</b> sort un document à apporter au CA. Sur les points où le président est en conflit d'intérêts (ex. convention Ôté Kartié), ses boutons sont masqués (déport). Tu peux retirer ton avis tant que le relevé n'est pas imprimé."},
-  {cat:'🎒 Périscolaire', q:"Où trouver les documents d'inscription du périscolaire ?", kw:"document documents inscription periscolaire reglement interieur dossier fiche sanitaire rgpd droit image livret suivi televerser telecharger bureau modele garderie docs", a:"Onglet <b>🎒 Périscolaire</b>, panneau <b>« Documents d'inscription »</b> tout en bas (réservé au bureau). Tu déposes une fois les documents officiels (règlement intérieur, dossier d'inscription, fiche sanitaire, autorisation de droit à l'image, notice RGPD, livret d'accueil, suivi sanitaire) avec <b>⬆️ Téléverser</b> ; ils sont stockés de façon sécurisée dans Bob. Clique <b>👁️ Ouvrir</b> pour les <b>consulter en aperçu sur la même page</b> (PDF et images directement ; Word/Excel via un aperçu Microsoft) — sans rien télécharger ; le ⬇️ reste là si tu veux le fichier. Ces documents servent à ouvrir les inscriptions à la garderie."},
+  {cat:'🎒 Périscolaire', q:"Où trouver les documents d'inscription du périscolaire ?", kw:"document documents inscription periscolaire reglement interieur dossier fiche sanitaire rgpd droit image livret suivi televerser telecharger bureau modele garderie docs", a:"Onglet <b>🎒 Périscolaire</b>, panneau <b>« Documents d'inscription »</b> tout en bas (réservé au bureau). Tu déposes une fois les documents officiels (règlement intérieur, dossier d'inscription, fiche sanitaire, autorisation de droit à l'image, notice RGPD, livret d'accueil, suivi sanitaire) avec <b>⬆️ Téléverser</b> ; ils sont stockés de façon sécurisée dans Bob. Clique <b>👁️ Visualiser</b> pour les <b>consulter en aperçu sur la même page</b> (PDF, images et Word s'affichent directement dans Bob ; Excel/PowerPoint via un aperçu Microsoft) — sans rien télécharger ; le ⬇️ reste là si tu veux le fichier. Ces documents servent à ouvrir les inscriptions à la garderie."},
   {cat:'🕘 Historique',q:"Comment voir qui a fait quoi (activités, inscriptions, congés, salariés) ?",kw:"journal trace tracabilite qui fait quoi action actions historique modif modification suppression salarie salaries activite inscription conges enfant personnel surveiller controle audit log savoir verifier",
    a:"Onglet <b>🕘 Historique</b>, panneau <b>📓 Journal des actions</b>. Tu y vois, du plus récent au plus ancien, chaque <b>création / modification / suppression</b> faite sur les activités, inscriptions, congés et fiches enfants/personnel — avec la <b>date, l'heure et la personne</b> (salariés compris). Tape dans le champ 🔍 pour filtrer par personne, rubrique ou type d'action. C'est réservé au bureau et ne peut pas être modifié : c'est ton filet pour savoir qui a touché à quoi."},
   {cat:'👥 Dossiers salariés',q:"Comment donner à un salarié l'accès à son espace salarié ?",kw:"salarie salaries personnel dossiers espace acces compte lier connexion fiche conges documents planning employe dossier rh donner creer importer masse salariale partage interne",
@@ -2287,6 +2287,7 @@ function pageHelpGotoAide(){ pageHelpClose(); const b=document.querySelector('na
 
 /* ---- ✨ Quoi de neuf (nouveautés + notice chronologique) ---- */
 const NEWS=[
+  {id:'2026-07-02-apercu-word-local',date:'2026-07-02',tab:'🎒 Périscolaire',titre:"📄 L'aperçu des documents Word marche maintenant à tous les coups",desc:"Le règlement intérieur, l'autorisation de droit à l'image et les autres documents Word s'affichent désormais directement dans Bob quand tu cliques « 👁️ Visualiser » — fini la fenêtre vide. Bonus : le document ne transite plus par un service externe, il reste dans le coffre sécurisé."},
   {id:'2026-07-02-bandeau-inscriptions',date:'2026-07-02',tab:'🎟️ Activités',titre:"📣 Un bandeau « Inscriptions » en haut du site public",desc:"Le site affiche maintenant un <b>bandeau tout en haut</b> avec les inscriptions du moment (périscolaire, ACM, VEPI…). Il se pilote tout seul depuis 🎟️ Activités : une activité de catégorie <b>Péri &amp; extrascolaire</b> publiée sur le site y monte automatiquement, et son <b>statut</b> (Ouvert / Arrive bientôt / Complet) fait le libellé que voient les familles. Rien à annoncer ? Le bandeau disparaît. Un panneau « 📣 Le bandeau du site, en ce moment » en haut de l'onglet te montre en permanence ce qui est affiché."},
   {id:'2026-07-02-mon-equipe',date:'2026-07-02',tab:'📊 Tableau de bord',titre:"🍍 Ton équipe Bob, en haut de l'accueil",desc:"Nouveau sur le tableau de bord : « Qui veux-tu voir aujourd'hui ? ». Ton équipe s'affiche en personnages — <b>Sabine</b> la secrétaire, <b>Trési</b> la trésorière, <b>Nono</b> l'animateur, <b>Roro</b> le RH. Clique sur l'un d'eux pour retrouver d'un coup tous ses outils, sans chercher dans le menu ; « La Direction » juste au-dessus regroupe le pilotage. Rien n'a disparu : tous les onglets restent là où ils étaient, c'est juste une porte d'entrée plus simple et plus humaine."},
   {id:'2026-07-01-inscrire-comptoir',date:'2026-07-01',tab:'🎟️ Activités',titre:"➕ Inscrire une famille au comptoir, directement depuis le bureau",desc:"Dans 🎟️ Activités, sous chaque activité, un petit formulaire « ➕ Inscrire quelqu'un » permet maintenant au bureau d'ajouter une inscription à la main (nom + responsable + contact) — pratique quand une famille vient sur place au lieu de passer par le site. Tu peux aussi corriger un nom, un responsable ou un contact directement dans le tableau des inscrits. Le nombre de places se met à jour tout seul, et l'ajout est tracé dans le Journal des actions. (Idée de Guy Robert.)"},
@@ -2966,10 +2967,12 @@ window.docView=function(url,name){
   if(isImg) body='<img src="'+url+'" alt="" style="max-width:100%;max-height:80vh;border-radius:10px;display:block;margin:0 auto;background:#fff">';
   else if(isPdf) body='<iframe src="'+url+'" style="width:100%;height:80vh;border:none;border-radius:10px;background:#fff"></iframe>';
   else {
-    const office=['doc','docx','xls','xlsx','ppt','pptx','odt','ods','odp'].includes(ext);
+    const office=['doc','xls','xlsx','ppt','pptx','odt','ods','odp'].includes(ext);
     const isHtml=['html','htm'].includes(ext);
-    if(office) body='<iframe src="https://view.officeapps.live.com/op/embed.aspx?src='+encodeURIComponent(url)+'" style="width:100%;height:80vh;border:none;border-radius:10px;background:#fff"></iframe>'
-      +'<div class="hint" style="margin-top:6px;font-size:11px">Aperçu Word/Excel affiché via le visualiseur Microsoft (le fichier, lui, reste stocké dans Bob). S\'il ne s\'affiche pas, utilise le ⬇️ en haut à droite.</div>';
+    if(ext==='docx') body='<div id="docxLocalBox" style="min-height:200px;max-height:80vh;overflow:auto;background:#fff;border-radius:10px"><div style="padding:28px;text-align:center;color:#5c7468">⏳ Préparation de l\'aperçu…</div></div>'
+      +'<div class="hint" style="margin-top:6px;font-size:11px">Aperçu généré directement dans Bob — le document reste dans le coffre, rien ne transite par un service externe.</div>';
+    else if(office) body='<iframe src="https://view.officeapps.live.com/op/embed.aspx?src='+encodeURIComponent(url)+'" style="width:100%;height:80vh;border:none;border-radius:10px;background:#fff"></iframe>'
+      +'<div class="hint" style="margin-top:6px;font-size:11px">Aperçu Excel/PowerPoint affiché via le visualiseur Microsoft (le fichier, lui, reste stocké dans Bob). S\'il ne s\'affiche pas, utilise le ⬇️ en haut à droite.</div>';
     else if(isHtml) body='<iframe src="'+url+'" style="width:100%;height:80vh;border:none;border-radius:10px;background:#fff"></iframe>';
     else body='<div style="padding:28px;text-align:center;color:#5c7468">Ce type de fichier ne s\'affiche pas dans le navigateur.<br><a href="'+url+'" target="_blank" rel="noopener" style="display:inline-block;margin-top:12px;background:#127a51;color:#fff;text-decoration:none;border-radius:999px;padding:9px 16px;font-weight:800">⬇️ Télécharger</a></div>';
   }
@@ -2985,6 +2988,30 @@ window.docView=function(url,name){
       +'<div style="padding:12px;overflow:auto;background:#f4f8f5">'+body+'</div>'
     +'</div>';
   ov.style.display='block'; document.body.style.overflow='hidden';
+  if(ext==='docx') window.docxRenderLocal(url,'docxLocalBox');
+};
+// Aperçu Word 100 % local (docx-preview) : le fichier est lu dans le navigateur, rien n'est envoyé à un service externe.
+let __docxLibP=null;
+function loadDocxLib(){
+  if(window.docx&&window.docx.renderAsync) return Promise.resolve();
+  if(__docxLibP) return __docxLibP;
+  const add=function(src){ return new Promise(function(ok,ko){ const s=document.createElement('script'); s.src=src; s.onload=ok; s.onerror=function(){ ko(new Error('bibliothèque d\'aperçu inaccessible')); }; document.head.appendChild(s); }); };
+  __docxLibP=add('https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js')
+    .then(function(){ return add('https://cdn.jsdelivr.net/npm/docx-preview@0.3.5/dist/docx-preview.min.js'); })
+    .catch(function(e){ __docxLibP=null; throw e; });
+  return __docxLibP;
+}
+window.docxRenderLocal=async function(url, boxId){
+  const box=document.getElementById(boxId); if(!box) return;
+  try{
+    const rp=fetch(url); await loadDocxLib(); const resp=await rp;
+    if(!resp.ok) throw new Error('fichier inaccessible (HTTP '+resp.status+')');
+    const blob=await resp.blob();
+    box.innerHTML='';
+    await window.docx.renderAsync(blob, box, null, {inWrapper:true, breakPages:true});
+  }catch(e){
+    box.innerHTML='<div style="padding:28px;text-align:center;color:#5c7468">L\'aperçu n\'a pas pu être généré ('+esc((e&&e.message)||'erreur')+').<br><a href="'+url+'" target="_blank" rel="noopener" style="display:inline-block;margin-top:12px;background:#127a51;color:#fff;text-decoration:none;border-radius:999px;padding:9px 16px;font-weight:800">⬇️ Télécharger</a></div>';
+  }
 };
 window.docViewClose=function(){ const ov=document.getElementById('docViewer'); if(ov){ ov.style.display='none'; ov.innerHTML=''; } document.body.style.overflow=''; };
 document.addEventListener('keydown',function(e){ if(e.key==='Escape') docViewClose(); });
