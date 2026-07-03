@@ -954,6 +954,19 @@
 <section id="acmvac" class="page">
     <h2>🌴 Vacances — préparation des programmes</h2>
     <p class="hint">Le catalogue d'activités, réutilisable d'une session à l'autre : leur origine (🏠 maison / 🤝 partenaire / 💶 payant), le contact de l'intervenant, et où en est la démarche. Pioche dedans, place-les sur les jours d'une session. Objectif : au moins 5 activités par session, dont une majorité « maison ».</p>
+
+    <!-- 💶 Tarif ACM (grille officielle Saint-Denis, au quotient familial, par semaine) — réglage stable une fois/an, source unique tarifs_publics. Calqué sur la grille du périscolaire. -->
+    <details class="panel" id="acmTarifPanel" open style="margin:6px 0 14px">
+      <summary style="cursor:pointer;font-weight:700;font-size:16px">💶 Tarif ACM <span class="hint" style="font-weight:400">— au quotient familial, par semaine (grille officielle Saint-Denis 2026-2027)</span></summary>
+      <p class="hint" style="margin:8px 0 10px">Forfait <strong>5 jours / semaine</strong> : la facture d'une famille = <strong>prix de la semaine × nombre de semaines</strong> choisi. <strong>L'ACM d'été = grandes vacances.</strong> Recalculé si une semaine comporte un jour férié. Modifie une case puis clique 💾 — les familles voient aussitôt le bon tarif dans leur espace.</p>
+      <table><thead><tr><th>Tranche</th><th>Quotient familial</th><th class="num">Petites vac. (€/sem)</th><th class="num">Grandes vac. (€/sem)</th></tr></thead>
+        <tbody id="acmTarifRows"></tbody></table>
+      <div class="toolbar" style="flex-wrap:wrap;gap:10px;margin-top:12px">
+        <button class="ghost btn" onclick="acmGrandesFromPetites()" title="Recalcule la colonne Grandes vacances à −15 % des Petites vacances (hors commune inchangé)">↺ Grandes = Petites −15 %</button>
+      </div>
+      <div style="margin-top:10px"><button class="btn" onclick="saveAcmTarif()">💾 Enregistrer le tarif ACM</button> <span class="hint" id="acmTarifSaved"></span></div>
+    </details>
+
     <div id="acmSessionBar" class="row" style="gap:8px;flex-wrap:wrap;align-items:center;margin:12px 0"></div>
     <div id="acmObjectif" style="margin:10px 0"></div>
     <div id="acmBoard" style="margin:10px 0"></div>
@@ -4801,7 +4814,9 @@ async function publishTarifs(){
     const g=periDB().grille;
     const tr=PERI_THRESHOLDS.map((max,i)=>({max:max, jour:(g.tranches[i]&&g.tranches[i].jour)||0}));
     const hc=g.tranches.find(t=>/hors/i.test(t.label||''));
-    const payload={ tranches:tr, horsCommune:(hc?hc.jour:8.25), suppMatin:(g.suppMatin||0), remise:(g.remise||0), jours:(g.jours||16) };
+    const at=acmTarifDB();
+    const payload={ tranches:tr, horsCommune:(hc?hc.jour:8.25), suppMatin:(g.suppMatin||0), remise:(g.remise||0), jours:(g.jours||16),
+      acm:{ petites:(at.petites||[]).slice(), grandes:(at.grandes||[]).slice(), horsCommune:(at.horsCommune!=null?at.horsCommune:145) } };
     await sbc.from('tarifs_publics').upsert({asso_id:myAsso, data:payload, updated_at:new Date().toISOString()});
   }catch(e){ console.warn('publishTarifs', e); }
 }
@@ -5554,8 +5569,60 @@ function acmPublicProgramme(cs){
   const res=a.fiches.filter(f=>plan[f.id]==='reserve'); if(res.length) lines.push('En réserve : '+res.map(f=>(f.emoji?f.emoji+' ':'')+f.nom).join(', '));
   return lines.join('\n');
 }
+/* ---- Tarif ACM : grille officielle Saint-Denis au quotient familial, par semaine (source unique tarifs_publics). Mêmes seuils QF que le périscolaire. ---- */
+const ACM_QF=[
+  {lab:'Tranche 1', qf:'0 – 350,99 €'},
+  {lab:'Tranche 2', qf:'351 – 450,99 €'},
+  {lab:'Tranche 3', qf:'451 – 600,99 €'},
+  {lab:'Tranche 4', qf:'601 – 800,99 €'},
+  {lab:'Tranche 5', qf:'801 – 1 000,99 €'},
+  {lab:'Tranche 6', qf:'1 001 – 1 250,99 €'},
+  {lab:'Tranche 7', qf:'1 251 – 1 500,99 €'},
+  {lab:'Tranche 8', qf:'1 501 – 2 000,99 €'},
+  {lab:'Tranche 9', qf:'2 001 € et +'}
+];
+const ACM_TARIF_DEFAUT={
+  petites:[45,50,55,65,75,85,95,110,125],
+  grandes:[38.25,42.50,46.75,55.25,63.75,72.25,80.75,93.50,106.25],
+  horsCommune:145
+};
+function acmTarifDB(){
+  const a=acmDb();
+  if(!a.tarif) a.tarif=JSON.parse(JSON.stringify(ACM_TARIF_DEFAUT));
+  const t=a.tarif;
+  if(!Array.isArray(t.petites)||t.petites.length!==9) t.petites=ACM_TARIF_DEFAUT.petites.slice();
+  if(!Array.isArray(t.grandes)||t.grandes.length!==9) t.grandes=ACM_TARIF_DEFAUT.grandes.slice();
+  if(t.horsCommune==null) t.horsCommune=145;
+  return t;
+}
+function renderAcmTarif(){
+  if(!$('acmTarifRows')) return;
+  const t=acmTarifDB();
+  let rows=ACM_QF.map((tr,i)=>
+    `<tr><td>${esc(tr.lab)}</td><td>${esc(tr.qf)}</td>`
+    +`<td class="num"><input type="number" min="0" step="0.01" value="${t.petites[i]}" style="width:92px;text-align:right" oninput="acmSetTarif('petites',${i},this.value)"> €</td>`
+    +`<td class="num"><input type="number" min="0" step="0.01" value="${t.grandes[i]}" style="width:92px;text-align:right" oninput="acmSetTarif('grandes',${i},this.value)"> €</td></tr>`
+  ).join('');
+  rows+=`<tr><td><strong>Hors commune</strong></td><td>—</td>`
+    +`<td class="num" colspan="2"><input type="number" min="0" step="0.01" value="${t.horsCommune}" style="width:92px;text-align:right" oninput="acmSetTarif('horsCommune',0,this.value)"> € <span class="hint">(même tarif petites &amp; grandes)</span></td></tr>`;
+  $('acmTarifRows').innerHTML=rows;
+}
+function acmSetTarif(col,i,v){
+  const t=acmTarifDB(); const n=parseFloat(v)||0;
+  if(col==='horsCommune') t.horsCommune=n; else if(t[col]) t[col][i]=n;
+}
+function acmGrandesFromPetites(){
+  const t=acmTarifDB();
+  t.grandes=t.petites.map(p=>Math.round((p||0)*0.85*100)/100);
+  save(); renderAcmTarif(); publishTarifs();
+}
+function saveAcmTarif(){
+  acmTarifDB(); save(); renderAcmTarif(); publishTarifs();
+  const el=$('acmTarifSaved'); if(el){ el.textContent='Tarif ACM enregistré ✔ (familles mises à jour)'; setTimeout(()=>{ el.textContent=''; },4000); }
+}
 function renderAcmVac(){
   if(!$('acmvac')) return;
+  renderAcmTarif();
   const a=acmDb(), cs=acmCurSession();
   const bar=$('acmSessionBar');
   if(bar){

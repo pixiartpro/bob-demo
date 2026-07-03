@@ -127,6 +127,10 @@
       <h2 class="title" style="font-size:20px">🌴 Vacances, VEPI &amp; sorties <small>— accueil de loisirs (ACM)</small></h2>
       <p class="sub" style="margin:2px 0 10px">Réservez une place pour vos enfants. <b>Un parent adhérent</b> (10 € / an, du 1ᵉʳ août au 31 juillet) suffit pour <b>tous vos enfants</b>.</p>
       <p class="sub" style="margin:0 0 10px;font-size:13px;background:#eef7f2;border:1px solid #cfe6da;border-radius:10px;padding:8px 12px">👨‍👩‍👧 Ici, <b>uniquement les activités pour vos enfants</b> (périscolaire, ACM, sorties). Les <b>activités adultes</b> et les autres (danse, musique, ateliers…) sont sur le <a href="vitrine.html" style="color:var(--vert-fonce);font-weight:700">site public →</a></p>
+      <div class="card" style="border-left:5px solid var(--jaune);background:#fffdf5;margin:0 0 12px;padding:12px 14px">
+        <h2 class="title" style="font-size:17px;cursor:pointer;user-select:none;margin:0" onclick="acmCalcToggle()">💶 Estimez votre tarif vacances (ACM) <small>— au quotient familial, par semaine</small> <span id="acmCalcChev" style="float:right">▾</span></h2>
+        <div id="acmCalcBody" style="display:none;margin-top:8px"></div>
+      </div>
       <div id="acmBody"><p class="sub">Chargement…</p></div>
     </div>
   </div>
@@ -1028,7 +1032,7 @@ function kidSummary(k){
     +'<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">'
     +'<b style="font-size:15px">👧 '+who+'</b>'
     +(bits.length?'<span style="color:var(--muted);font-size:13.5px">'+bits.join(' · ')+'</span>':'')
-    +'<span style="margin-left:auto"><button class="btn use" style="padding:6px 12px" onclick="kidEdit(\''+k.id+'\')">✏️ Modifier</button></span>'
+    +'<span style="margin-left:auto;display:flex;gap:6px;flex-wrap:wrap"><button class="btn use" style="padding:6px 12px" onclick="kidEdit(\''+k.id+'\')">✏️ Modifier</button><button class="btn win" style="padding:6px 12px" onclick="ficheToggle(\''+k.id+'\')">🩺 Fiche sanitaire</button></span>'
     +'</div>'
     +(tags.length?'<div style="font-size:13px;color:#8a6400">'+tags.join(' · ')+'</div>':'')
     +'</div>';
@@ -1036,7 +1040,7 @@ function kidSummary(k){
 window.kidEdit=function(id){ kidsCaptureEdits(); const k=KIDS.list.find(x=>x.id===id); if(k) k._edit=true; kidsRender(); };
 function kidCard(k){
   const id=k.id; const dp=kidDateParts(k.naissance);
-  if(!k._edit && (k.prenom||'').trim()) return kidSummary(k);
+  if(!k._edit && (k.prenom||'').trim()) return kidSummary(k) + (k._fiche? ficheFormHtml(k):'');
   return '<div class="card" style="box-shadow:none;border:1px solid var(--line);gap:8px" data-kid="'+id+'" oninput="kidDirty(\''+id+'\')" onchange="kidDirty(\''+id+'\')">'
     +'<div style="display:flex;gap:8px;flex-wrap:wrap">'
     +'<input id="k_nom_'+id+'" value="'+kidEsc(k.nom||'')+'" placeholder="Nom de l\'enfant" style="flex:1;min-width:130px;padding:9px 11px;border:1px solid var(--line);border-radius:10px;font:inherit">'
@@ -1120,6 +1124,192 @@ window.kidDelete=async function(id){
   KIDS.list=KIDS.list.filter(k=>k.id!==id); kidsRender();
 };
 
+/* ===== 🩺 Fiche sanitaire en ligne (brique 2 — écran parent, pré-rempli, brouillon) =====
+   Un objet à part (table fiches_sanitaires) = un enfant + une année, réutilisable partout.
+   Le médical détaillé vit UNIQUEMENT dans donnees (jsonb) — jamais en colonne requêtable (Décision 1).
+   La signature en ligne arrive à l'étape suivante. */
+const FICHE = { byKid:{} };
+async function ficheLoad(enfantId){
+  if(!ACM.uid){ FICHE.byKid[enfantId]={row:null,donnees:{}}; return FICHE.byKid[enfantId]; }
+  const {data,error}=await _sbAt.from('fiches_sanitaires').select('*').eq('enfant_id',enfantId).eq('annee',PERI.ANNEE).order('version',{ascending:false}).limit(1);
+  const row=(!error && data && data[0])?data[0]:null;
+  FICHE.byKid[enfantId]={row:row, donnees:(row&&row.donnees)||{}};
+  return FICHE.byKid[enfantId];
+}
+window.ficheToggle=async function(id){
+  kidsCaptureEdits();
+  const k=KIDS.list.find(x=>x.id===id); if(!k) return;
+  k._fiche=!k._fiche;
+  if(k._fiche && !FICHE.byKid[id]){ await ficheLoad(id); }
+  kidsRender();
+};
+function ficheOpts(arr, sel){ return arr.map(o=>'<option value="'+kidEsc(o)+'"'+(o===(sel||'')?' selected':'')+'>'+(o||'— choisir —')+'</option>').join(''); }
+function ficheSection(title, inner){ return '<div style="margin-top:8px"><div style="font-weight:700;font-size:13.5px;margin-bottom:3px">'+title+'</div>'+inner+'</div>'; }
+function ficheFormHtml(k){
+  const id=k.id, e=kidEsc;
+  const st=FICHE.byKid[id]||{row:null,donnees:{}}; const d=st.donnees||{}, row=st.row;
+  const vc=d.vaccins||{}, pai=d.pai||{}, med=d.medecin||{};
+  const naiss=k.naissance? k.naissance.split('-').reverse().join('/') : '—';
+  const signed = !!(row && row.statut==='signee');
+  const ro = signed? ' disabled':'';
+  const statutBadge = signed
+    ? '<span style="background:#e2f4ec;color:#1c6e49;font-weight:700;font-size:12px;padding:2px 10px;border-radius:999px">✅ Signée</span>'
+    : '<span style="background:#fff5da;color:#8a6400;font-weight:700;font-size:12px;padding:2px 10px;border-radius:999px">📝 Brouillon</span>';
+  const nAut=(Array.isArray(k.autorises_json)?k.autorises_json.length:0);
+  return '<div class="card" style="border:1px solid #cfe6da;background:#f6fbf8;margin-top:4px" data-fiche="'+id+'">'
+    + '<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><b style="font-size:15px">🩺 Fiche sanitaire '+e(PERI.ANNEE)+'</b>'+statutBadge
+    +   '<button class="reset" style="margin-left:auto" onclick="ficheToggle(\''+id+'\')">✕ fermer</button></div>'
+    + '<p class="sub" style="margin:4px 0 8px;font-size:12.5px">Remplie <b>une fois par an</b>, elle est <b>réutilisée</b> pour la garderie, l\'ACM et les activités — plus besoin de la redonner à chaque inscription. '+(signed?'Cette fiche est <b>signée</b> ; pour la modifier, voyez avec le bureau.':'Complétez surtout la partie médicale, puis enregistrez.')+'</p>'
+    + '<div style="background:#fff;border:1px solid var(--line);border-radius:10px;padding:8px 11px;font-size:13.5px"><b>Identité</b> <span class="sub" style="font-size:12px">— se modifie dans 👧 Mes enfants</span><br>'
+    +   e(((k.prenom||'')+' '+(k.nom||'')).trim()||'—')+' · né(e) le '+e(naiss)+' · '+e(k.classe||'—')+' · 🏫 '+e(k.ecole||PERI.ECOLE||'—')+'</div>'
+    + ficheSection('💉 Vaccinations',
+        '<label class="sub" style="font-weight:700;font-size:13px">DTP (diphtérie-tétanos-polio) à jour ?</label>'
+        +'<select id="f_dtp_'+id+'"'+ro+' style="width:100%;padding:8px 10px;border:1px solid var(--line);border-radius:10px;font:inherit">'+ficheOpts(['','oui','non','ne sais pas'],vc.dtp)+'</select>'
+        +'<input id="f_vacc_rappel_'+id+'"'+ro+' value="'+e(vc.rappel||'')+'" placeholder="Date du dernier rappel (ex. 06/2024)" style="width:100%;margin-top:6px;padding:8px 10px;border:1px solid var(--line);border-radius:10px;font:inherit">'
+        +'<p class="sub" style="margin:4px 0 0;font-size:12px">Vous pourrez déposer une photo du carnet de vaccination dans votre dossier d\'inscription.</p>')
+    + ficheSection('🌰 Allergies & régime alimentaire',
+        '<div class="sub" style="font-size:13px">Allergies connues (depuis 👧 Mes enfants) : <b>'+(k.allergies?e(k.allergies):'aucune renseignée')+'</b></div>'
+        +'<textarea id="f_allerg_'+id+'"'+ro+' placeholder="Conduite à tenir en cas d\'allergie (ce que doit faire l\'animateur)" style="width:100%;margin-top:6px;min-height:44px;padding:8px 10px;border:1px solid var(--line);border-radius:10px;font:inherit">'+e(d.allergies_conduite||'')+'</textarea>'
+        +'<input id="f_regime_'+id+'"'+ro+' value="'+e(d.regime||'')+'" placeholder="Régime alimentaire (ex. sans porc, végétarien…)" style="width:100%;margin-top:6px;padding:8px 10px;border:1px solid var(--line);border-radius:10px;font:inherit">'
+        +'<p class="sub" style="margin:4px 0 0;font-size:12px">Merci d\'un libellé neutre (sans porc, végétarien…), pas de mention religieuse.</p>')
+    + ficheSection('🩺 Santé & PAI',
+        '<label style="font-weight:600;font-size:14px"><input type="checkbox" id="f_pai_'+id+'"'+ro+' '+(pai.enPlace?'checked':'')+'> Un PAI (projet d\'accueil individualisé) est en place</label>'
+        +'<input id="f_patho_'+id+'"'+ro+' value="'+e(pai.pathologie||'')+'" placeholder="Pathologie chronique (asthme, diabète…)" style="width:100%;margin-top:6px;padding:8px 10px;border:1px solid var(--line);border-radius:10px;font:inherit">'
+        +'<textarea id="f_pai_cond_'+id+'"'+ro+' placeholder="Conduite à tenir en cas de crise / d\'urgence" style="width:100%;margin-top:6px;min-height:44px;padding:8px 10px;border:1px solid var(--line);border-radius:10px;font:inherit">'+e(pai.conduite||'')+'</textarea>')
+    + ficheSection('📋 Antécédents médicaux & chirurgicaux',
+        '<textarea id="f_antec_'+id+'"'+ro+' placeholder="Maladies, opérations, hospitalisations passées…" style="width:100%;min-height:52px;padding:8px 10px;border:1px solid var(--line);border-radius:10px;font:inherit">'+e(d.antecedents||'')+'</textarea>'
+        +'<p class="sub" style="margin:4px 0 0;font-size:12px">🔒 Vu seulement par la direction, le référent de l\'activité et l\'assistant sanitaire — jamais affiché à l\'animateur.</p>')
+    + ficheSection('💊 Traitements en cours',
+        '<textarea id="f_trait_'+id+'"'+ro+' placeholder="Traitement suivi actuellement (nom, posologie)…" style="width:100%;min-height:44px;padding:8px 10px;border:1px solid var(--line);border-radius:10px;font:inherit">'+e(d.traitements||'')+'</textarea>'
+        +'<label style="font-weight:600;font-size:14px;margin-top:4px;display:inline-block"><input type="checkbox" id="f_ordo_'+id+'"'+ro+' '+(d.ordonnance_jointe?'checked':'')+'> L\'ordonnance est jointe au dossier</label>')
+    + ficheSection('☎️ Médecin traitant & contacts d\'urgence',
+        '<div style="display:flex;gap:6px;flex-wrap:wrap"><input id="f_med_nom_'+id+'"'+ro+' value="'+e(med.nom||'')+'" placeholder="Médecin traitant" style="flex:1;min-width:130px;padding:8px 10px;border:1px solid var(--line);border-radius:10px;font:inherit"><input id="f_med_tel_'+id+'"'+ro+' type="tel" value="'+e(med.tel||'')+'" placeholder="Tél médecin" style="flex:1;min-width:120px;padding:8px 10px;border:1px solid var(--line);border-radius:10px;font:inherit"></div>'
+        +'<textarea id="f_urg_'+id+'"'+ro+' placeholder="Personnes à prévenir en cas d\'urgence (nom + téléphone)" style="width:100%;margin-top:6px;min-height:44px;padding:8px 10px;border:1px solid var(--line);border-radius:10px;font:inherit">'+e(d.urgences||'')+'</textarea>'
+        +'<p class="sub" style="margin:4px 0 0;font-size:12px">Les personnes autorisées à récupérer l\'enfant se gèrent dans 👧 Mes enfants ('+nAut+' enregistrée·s).</p>')
+    + '<div style="background:#fff;border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin-top:8px"><label style="font-weight:600;font-size:14px"><input type="checkbox" id="f_autoUrg_'+id+'"'+ro+' '+(d.autorisation_urgence?'checked':'')+'> J\'autorise le responsable de l\'accueil à prendre, en cas d\'urgence, toute mesure (appel au SAMU, soins, hospitalisation) rendue nécessaire par l\'état de l\'enfant.</label></div>'
+    + (signed
+      ? '<div style="margin-top:10px;background:#e2f4ec;border:1px solid #bfe3d1;border-radius:10px;padding:10px 12px">'
+          +'<b style="color:#1c6e49">✅ Fiche signée</b>'+((row&&row.signe_le)?' le '+ficheDate(row.signe_le):'')+((row&&row.signe_mode==='assiste')?' <span class="sub">(saisie assistée)</span>':'')
+          +'<div style="margin-top:6px"><button class="reset" onclick="ficheDocView(\''+id+'\')">📄 Voir le document signé</button></div>'
+          +'<div id="f_doc_'+id+'" style="margin-top:8px"></div>'
+          +'<p class="sub" style="margin:6px 0 0;font-size:12px">Pour modifier une fiche signée, contactez le bureau (la réouverture versionnée arrive bientôt).</p>'
+        +'</div>'
+      : '<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:10px">'
+          +'<button class="btn use" onclick="ficheSave(\''+id+'\')">💾 Enregistrer (brouillon)</button>'
+          +'<span id="f_msg_'+id+'" style="font-size:13px;font-weight:700"></span></div>'
+        +'<div style="margin-top:10px;background:#fff;border:1px solid var(--line);border-radius:10px;padding:10px 12px">'
+          +'<div style="font-weight:700;font-size:14px;margin-bottom:4px">✍️ Signer la fiche</div>'
+          +'<label style="font-weight:500;font-size:13.5px;display:block"><input type="checkbox" id="f_lu_'+id+'"> <b>Lu et approuvé</b> — je certifie l\'exactitude des informations et j\'autorise les interventions d\'urgence.</label>'
+          +'<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:8px"><button class="btn win" onclick="ficheSign(\''+id+'\')">✍️ Signer la fiche '+e(PERI.ANNEE)+'</button>'
+          +'<span id="f_sign_msg_'+id+'" style="font-size:13px;font-weight:700"></span></div>'
+          +'<p class="sub" style="margin:6px 0 0;font-size:12px">La signature <b>gèle</b> la fiche (plus de modification possible) et l\'active pour toutes les activités de l\'année. Horodatage serveur et preuves capturés — enregistrez d\'abord votre brouillon.</p>'
+        +'</div>')
+    + '</div>';
+}
+function ficheReadForm(id, k){
+  const gv=fid=>{const el=document.getElementById(fid); return el?(el.value||'').trim():'';};
+  const gc=fid=>{const el=document.getElementById(fid); return el?el.checked:false;};
+  return {
+    identite:{ nom:(k.nom||''), prenom:(k.prenom||''), naissance:(k.naissance||''), ecole:(k.ecole||PERI.ECOLE||''), classe:(k.classe||'') },
+    vaccins:{ dtp:gv('f_dtp_'+id), rappel:gv('f_vacc_rappel_'+id) },
+    allergies:(k.allergies||''),
+    allergies_conduite:gv('f_allerg_'+id),
+    regime:gv('f_regime_'+id),
+    pai:{ enPlace:gc('f_pai_'+id), pathologie:gv('f_patho_'+id), conduite:gv('f_pai_cond_'+id) },
+    antecedents:gv('f_antec_'+id),
+    traitements:gv('f_trait_'+id),
+    ordonnance_jointe:gc('f_ordo_'+id),
+    medecin:{ nom:gv('f_med_nom_'+id), tel:gv('f_med_tel_'+id) },
+    urgences:gv('f_urg_'+id),
+    autorises:(Array.isArray(k.autorises_json)?k.autorises_json:[]),
+    depart_seul:!!k.depart_seul,
+    autorisation_urgence:gc('f_autoUrg_'+id),
+    maj_le:new Date().toISOString()
+  };
+}
+window.ficheSave=async function(id){
+  const k=KIDS.list.find(x=>x.id===id); if(!k) return;
+  const msg=document.getElementById('f_msg_'+id);
+  const donnees=ficheReadForm(id,k);
+  if(donnees.medecin.tel && !phoneValid(donnees.medecin.tel)){ if(msg){msg.style.color='#c0392b'; msg.textContent='📞 Numéro du médecin invalide.';} return; }
+  const st=FICHE.byKid[id]||{row:null};
+  let res;
+  if(st.row && st.row.id){
+    if(st.row.statut!=='brouillon'){ if(msg){msg.style.color='#8a6400'; msg.textContent='Fiche déjà signée — la réouverture arrive bientôt.';} return; }
+    res=await _sbAt.from('fiches_sanitaires').update({donnees:donnees}).eq('id',st.row.id).select().single();
+  } else {
+    res=await _sbAt.from('fiches_sanitaires').insert({enfant_id:id, annee:PERI.ANNEE, statut:'brouillon', donnees:donnees}).select().single();
+  }
+  if(res.error){ if(msg){msg.style.color='#c0392b'; msg.textContent='Échec : '+(res.error.message||res.error);} return; }
+  FICHE.byKid[id]={row:res.data, donnees:(res.data&&res.data.donnees)||donnees};
+  if(msg){ msg.style.color='var(--vert-fonce)'; msg.textContent='✅ Fiche sanitaire enregistrée (brouillon)'; }
+  toast('✅ Fiche sanitaire enregistrée');
+};
+window.ficheSign=async function(id){
+  const k=KIDS.list.find(x=>x.id===id); if(!k) return;
+  const msg=document.getElementById('f_sign_msg_'+id);
+  const lu=document.getElementById('f_lu_'+id);
+  if(!lu||!lu.checked){ if(msg){msg.style.color='#c0392b'; msg.textContent='Cochez « Lu et approuvé » pour signer.';} return; }
+  const donnees=ficheReadForm(id,k);
+  if(!donnees.autorisation_urgence){ if(msg){msg.style.color='#c0392b'; msg.textContent='Cochez l\'autorisation d\'intervention d\'urgence (plus haut) avant de signer.';} return; }
+  if(donnees.medecin.tel && !phoneValid(donnees.medecin.tel)){ if(msg){msg.style.color='#c0392b'; msg.textContent='📞 Numéro du médecin invalide.';} return; }
+  const CASE_TXT='Lu et approuvé — je certifie l\'exactitude des informations et j\'autorise les interventions d\'urgence.';
+  const signataire=((PERI.profile&&PERI.profile.full_name)||(ACM.profile&&ACM.profile.full_name)||'');
+  const doc={ type:'fiche_sanitaire', annee:PERI.ANNEE,
+    enfant:{ nom:k.nom||'', prenom:k.prenom||'', naissance:k.naissance||'', ecole:k.ecole||PERI.ECOLE||'', classe:k.classe||'' },
+    donnees:donnees, signataire:{ user_id:ACM.uid, nom:signataire },
+    case_texte:CASE_TXT, case_version:'v1', fige_at_client:new Date().toISOString() };
+  let hash='';
+  try{ const buf=await crypto.subtle.digest('SHA-256', new TextEncoder().encode(JSON.stringify(doc))); hash=Array.prototype.map.call(new Uint8Array(buf),b=>('0'+b.toString(16)).slice(-2)).join(''); }catch(e){ hash=''; }
+  const preuve={ algo:'SHA-256', hash:hash, case_texte:CASE_TXT, case_version:'v1', user_agent:(navigator&&navigator.userAgent)||'', signe_at_client:new Date().toISOString(), url:(location&&location.href)||'' };
+  const patch={ donnees:donnees, document_fige:doc, preuve:preuve, statut:'signee', signe_mode:'parent' };
+  const st=FICHE.byKid[id]||{row:null};
+  let res;
+  if(st.row && st.row.id){
+    if(st.row.statut==='signee'){ if(msg){msg.style.color='#8a6400'; msg.textContent='Fiche déjà signée.';} return; }
+    res=await _sbAt.from('fiches_sanitaires').update(patch).eq('id',st.row.id).select().single();
+  } else {
+    res=await _sbAt.from('fiches_sanitaires').insert(Object.assign({enfant_id:id, annee:PERI.ANNEE}, patch)).select().single();
+  }
+  if(res.error){ if(msg){msg.style.color='#c0392b'; msg.textContent='Échec : '+(res.error.message||res.error);} return; }
+  FICHE.byKid[id]={row:res.data, donnees:(res.data&&res.data.donnees)||donnees};
+  toast('✅ Fiche sanitaire signée');
+  kidsRender();
+};
+function ficheDate(iso){ try{ return new Date(iso).toLocaleDateString('fr-FR',{day:'2-digit',month:'2-digit',year:'numeric'}); }catch(e){ return String(iso||''); } }
+function ficheRow(label, val){ return val? '<div style="font-size:13px;margin:2px 0"><b>'+label+' :</b> '+kidEsc(val)+'</div>':''; }
+function ficheReadonlyHtml(d, enfant, annee){
+  d=d||{}; enfant=enfant||{};
+  const vc=d.vaccins||{}, pai=d.pai||{}, med=d.medecin||{};
+  const naiss=String(enfant.naissance||'').split('-').reverse().join('/');
+  const trai = d.traitements? (d.traitements + (d.ordonnance_jointe?' · ordonnance jointe':'')) : (d.ordonnance_jointe?'ordonnance jointe':'');
+  const medv = (med.nom||'') + (med.tel? ((med.nom?' · ':'')+med.tel) : '');
+  return '<div style="background:#fff;border:1px solid var(--line);border-radius:10px;padding:10px 12px">'
+    +'<b>🩺 Fiche sanitaire '+kidEsc(annee||'')+'</b>'
+    +ficheRow('Enfant', (((enfant.prenom||'')+' '+(enfant.nom||'')).trim())+(naiss?(' · né(e) le '+naiss):'')+(enfant.classe?(' · '+enfant.classe):''))
+    +ficheRow('Vaccins DTP', vc.dtp?(vc.dtp+(vc.rappel?(' · rappel '+vc.rappel):'')):'')
+    +ficheRow('Allergies', d.allergies)
+    +ficheRow('Conduite allergie', d.allergies_conduite)
+    +ficheRow('Régime', d.regime)
+    +ficheRow('PAI', pai.enPlace?('oui'+(pai.pathologie?(' · '+pai.pathologie):'')):'')
+    +ficheRow('Conduite d\'urgence', pai.conduite)
+    +ficheRow('Antécédents', d.antecedents)
+    +ficheRow('Traitements', trai)
+    +ficheRow('Médecin traitant', medv)
+    +ficheRow('Contacts d\'urgence', d.urgences)
+    +ficheRow('Autorisation d\'urgence', d.autorisation_urgence?'accordée':'')
+    +'</div>';
+}
+window.ficheDocView=function(id){
+  const box=document.getElementById('f_doc_'+id); if(!box) return;
+  if(box.dataset.open==='1'){ box.innerHTML=''; box.dataset.open=''; return; }
+  const st=FICHE.byKid[id]||{}; const row=st.row; const doc=(row&&row.document_fige)||null; const preuve=(row&&row.preuve)||{};
+  if(!doc){ box.innerHTML='<p class="sub" style="font-size:12.5px">Document figé non disponible.</p>'; box.dataset.open='1'; return; }
+  box.innerHTML=ficheReadonlyHtml(doc.donnees||{}, doc.enfant||{}, doc.annee||PERI.ANNEE)
+    +'<p class="sub" style="margin:6px 0 0;font-size:11.5px">Signé par '+kidEsc((doc.signataire&&doc.signataire.nom)||'—')+((row&&row.signe_le)?(' le '+ficheDate(row.signe_le)):'')+' · empreinte '+kidEsc((preuve.algo||'SHA-256'))+' '+kidEsc(String(preuve.hash||'—').slice(0,24))+'…</p>';
+  box.dataset.open='1';
+};
+
 /* ===== Calculateur de tarif périscolaire (grille officielle au quotient familial) ===== */
 const CALC_TR=[
   {max:350.99,jour:3.14,lab:'Tranche 1 (QF 0–350,99 €)'},
@@ -1140,7 +1330,7 @@ let PUBTARIF=null;
 async function calcLoadTarifs(){
   try{
     const {data}=await _sbAt.from('tarifs_publics').select('data').eq('asso_id',CALC_ASSO).maybeSingle();
-    if(data&&data.data&&Array.isArray(data.data.tranches)&&data.data.tranches.length){ PUBTARIF=data.data; if(typeof window.calcRun==='function') window.calcRun(); }
+    if(data&&data.data&&Array.isArray(data.data.tranches)&&data.data.tranches.length){ PUBTARIF=data.data; if(typeof window.calcRun==='function') window.calcRun(); if(typeof window.acmCalcRun==='function') window.acmCalcRun(); }
   }catch(e){ /* repli silencieux sur la grille en dur */ }
 }
 function calcGrille(){
@@ -1191,6 +1381,52 @@ window.calcRun=function(){
     +'<div style="font-size:13px;color:var(--muted)">'+lab+(soir?' · soir '+calcEuro(jour):'')+(matin?' · matin +'+calcEuro(G.supp):'')+' · '+nb+' enfant'+(nb>1?'s':'')+'</div>'
     +'<div style="font-size:26px;font-weight:900;color:var(--vert-fonce);margin-top:4px">≈ '+calcEuro(total)+' <span style="font-size:15px;font-weight:700;color:var(--muted)">/ mois pour la famille</span></div>'
     +(nb>1?'<div style="font-size:12.5px;color:var(--muted);margin-top:4px">Détail : '+parts.join(' + ')+'</div>':'')
+    +'</div>';
+};
+
+/* ===== Calculateur de tarif ACM (grille officielle Saint-Denis au quotient familial, par semaine) ===== */
+const ACM_CALC_DEFAUT={ petites:[45,50,55,65,75,85,95,110,125], grandes:[38.25,42.50,46.75,55.25,63.75,72.25,80.75,93.50,106.25], hors:145 };
+function acmCalcGrille(){
+  if(PUBTARIF&&PUBTARIF.acm&&Array.isArray(PUBTARIF.acm.petites)&&PUBTARIF.acm.petites.length===9){
+    return { petites:PUBTARIF.acm.petites, grandes:PUBTARIF.acm.grandes, hors:(PUBTARIF.acm.horsCommune!=null?PUBTARIF.acm.horsCommune:145) };
+  }
+  return ACM_CALC_DEFAUT;
+}
+window.acmCalcToggle=function(){
+  const b=document.getElementById('acmCalcBody'),c=document.getElementById('acmCalcChev'); if(!b) return;
+  const open=b.style.display==='none'; b.style.display=open?'block':'none'; if(c)c.textContent=open?'▴':'▾';
+  if(open && !b.dataset.init){ acmCalcInit(); b.dataset.init='1'; }
+};
+function acmCalcInit(){
+  const b=document.getElementById('acmCalcBody'); if(!b) return;
+  b.innerHTML=
+    '<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end">'
+    +'<div style="flex:1;min-width:150px"><label style="font-weight:700;font-size:14px">Votre quotient familial (CAF)</label><input id="acmcalc_qf" type="number" min="0" step="1" placeholder="ex. 700" oninput="acmCalcRun()" style="width:100%;padding:9px 11px;border:1px solid var(--line);border-radius:10px;font:inherit"></div>'
+    +'<div style="min-width:170px"><label style="font-weight:700;font-size:14px">Période</label><select id="acmcalc_type" onchange="acmCalcRun()" style="width:100%;padding:9px 11px;border:1px solid var(--line);border-radius:10px;font:inherit"><option value="grandes">☀️ Grandes vacances (été)</option><option value="petites">🍂 Petites vacances</option></select></div>'
+    +'<div style="min-width:130px"><label style="font-weight:700;font-size:14px">Nombre de semaines</label><input id="acmcalc_sem" type="number" min="1" max="12" step="1" value="1" oninput="acmCalcRun()" style="width:100%;padding:9px 11px;border:1px solid var(--line);border-radius:10px;font:inherit"></div>'
+    +'</div>'
+    +'<div style="display:flex;gap:16px;flex-wrap:wrap;margin-top:10px;align-items:center">'
+    +'<label style="font-weight:700"><input type="checkbox" id="acmcalc_hors" onchange="acmCalcRun()"> Hors commune</label>'
+    +'</div>'
+    +'<div id="acmcalc_res" style="margin-top:12px"></div>'
+    +'<p class="sub" style="margin:10px 0 0;font-size:12.5px">Forfait <b>5 jours / semaine</b> (grille officielle Saint-Denis 2026-2027). L\'<b>ACM d\'été = grandes vacances</b>. Si une semaine comporte un jour férié, le CASE recalcule. Le tarif définitif est confirmé avec le bureau d\'après votre attestation CAF.</p>';
+  acmCalcRun(); calcLoadTarifs();
+}
+window.acmCalcRun=function(){
+  const res=document.getElementById('acmcalc_res'); if(!res) return;
+  const G=acmCalcGrille(); const gv=id=>document.getElementById(id);
+  const qf=parseFloat((gv('acmcalc_qf')||{}).value)||0;
+  const hors=(gv('acmcalc_hors')||{}).checked;
+  const type=((gv('acmcalc_type')||{}).value)||'grandes';
+  const sem=Math.max(1,parseInt((gv('acmcalc_sem')||{}).value)||1);
+  let semaine, lab;
+  if(hors){ semaine=G.hors; lab='Hors commune'; }
+  else { let idx=CALC_TR.findIndex(t=>qf<=t.max); if(idx<0) idx=CALC_TR.length-1; semaine=(type==='petites'?G.petites:G.grandes)[idx]; lab=CALC_TR[idx].lab; }
+  const total=semaine*sem;
+  const typeLab=(type==='petites'?'petites vacances':'grandes vacances (été)');
+  res.innerHTML='<div style="background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px 14px">'
+    +'<div style="font-size:13px;color:var(--muted)">'+lab+' · '+typeLab+' · '+calcEuro(semaine)+' / semaine × '+sem+' semaine'+(sem>1?'s':'')+'</div>'
+    +'<div style="font-size:26px;font-weight:900;color:var(--vert-fonce);margin-top:4px">≈ '+calcEuro(total)+' <span style="font-size:15px;font-weight:700;color:var(--muted)">pour '+sem+' semaine'+(sem>1?'s':'')+'</span></div>'
     +'</div>';
 };
 
