@@ -304,8 +304,11 @@
   <div class="wrap">
     <p class="eyebrow">Nos activités</p>
     <h2 class="title">Il y en a pour tout le monde 🎉</h2>
-    <p class="sub">Choisissez une activité et inscrivez-vous directement.</p>
+    <p class="sub">Nos activités tournent déjà ! La page détaillée (horaires &amp; inscription en ligne) arrive bientôt — en attendant, <b>appelez-nous</b> pour vous inscrire, connaître les horaires ou passer nous voir. 🍍</p>
     <div class="actlist" id="actList"></div>
+    <div style="max-width:780px;margin:18px auto 0;text-align:center;background:#fff;border:1px solid var(--line);border-radius:16px;padding:16px 18px;box-shadow:var(--shadow);font-size:15px">
+      <b style="color:var(--vert-fonce)">Envie de rejoindre une activité&nbsp;?</b> Appelez le <a href="tel:+262262293790" style="color:var(--vert-fonce);font-weight:700">0262&nbsp;29&nbsp;37&nbsp;90</a> ou écrivez-nous à <a href="mailto:contact@casebdn.re" style="color:var(--vert-fonce);font-weight:700">contact@casebdn.re</a> — on vous donne les horaires et on vous inscrit.
+    </div>
     <p class="actnote">Et aussi, en accès libre (sans inscription) : <b>permanence du samedi</b> (café offert) et <b>jeudi info population</b> (accès aux droits).</p>
   </div>
 </section>
@@ -395,7 +398,7 @@
       <div>
         <div class="info-line"><span class="i">📍</span><div><b>Adresse</b><br>C.A.S.E du Bois de Nèfles<br>132 Route des Ananas, 97490 Sainte-Clotilde<br><span style="font-size:13px;color:var(--muted)">+ Local des Bringelliers</span></div></div>
         <div class="info-line"><span class="i">📞</span><div><b>Téléphone</b><br><a href="tel:+262262293790" style="text-decoration:none">0262 29 37 90</a> · <span style="font-size:13px;color:var(--muted)">CASE</span><br><a href="tel:+262692691811" style="text-decoration:none">0692 69 18 11</a> · <span style="font-size:13px;color:var(--muted)">ligne directe</span></div></div>
-        <div class="info-line"><span class="i">✉️</span><div><b>Email</b><br><a href="mailto:case.bdn@gmail.com" style="text-decoration:none">case.bdn@gmail.com</a></div></div>
+        <div class="info-line"><span class="i">✉️</span><div><b>Email</b><br><a href="mailto:contact@casebdn.re" style="text-decoration:none">contact@casebdn.re</a></div></div>
         <!-- Réseaux sociaux : à remettre dès que Guillaume fournit les liens FB/Insta/TikTok/WhatsApp -->
       </div>
       <div class="panel" style="box-shadow:var(--shadow)">
@@ -649,28 +652,29 @@ function renderPlan(){
 }
 /* ===== Nos activités : lecture en direct (places restantes) + inscription ===== */
 function actRowHtml(a){
-  const places=Math.max(0,(a.capacite||0)-(a.nb_inscrits||0));
+  const famille=(a.categorie||'')==='Péri & extrascolaire';   // périscolaire / ACM / VEPI → compte famille (réservation en ligne)
   const bientot=a.statut==='bientot';
+  if(!famille){
+    // Activités loisirs (danse, musique, zumba, renfo…) : elles tournent DÉJÀ.
+    // La page détaillée + l'inscription en ligne arrivent bientôt → on invite à appeler.
+    const badge = bientot ? '<span class="ptag soon">arrive bientôt</span>' : '<span class="ptag on">en cours</span>';
+    return '<div class="actrow">'
+      +'<span class="aico">'+(a.emoji||'•')+'</span>'
+      +'<div class="abody"><b>'+escP(a.nom)+'</b><span>'+escP(a.description||'')+'</span></div>'
+      +badge
+      +(bientot?'':'<a class="btn primary" style="text-decoration:none;white-space:nowrap" href="tel:+262262293790">📞 Appeler</a>')
+    +'</div>';
+  }
+  const places=Math.max(0,(a.capacite||0)-(a.nb_inscrits||0));
   const complet=!bientot && places<=0;
   const badge = bientot ? '<span class="ptag soon">arrive bientôt</span>'
               : complet ? '<span class="ptag work">complet</span>'
               : '<span class="ptag on">'+places+' place'+(places>1?'s':'')+' restante'+(places>1?'s':'')+'</span>';
-  const famille=(a.categorie||'')==='Péri & extrascolaire';   // périscolaire / ACM / VEPI → passent par le compte famille (adhésion + suivi)
-  const btn = (bientot||complet) ? ''
-    : famille ? '<a class="btn primary" style="text-decoration:none" href="espace-adherent.html">Réserver →</a>'
-    : '<button class="btn primary" onclick="actToggle(\''+a.id+'\')">S\'inscrire</button>';
+  const btn = (bientot||complet) ? '' : '<a class="btn primary" style="text-decoration:none" href="espace-adherent.html">Réserver →</a>';
   return '<div class="actrow">'
       +'<span class="aico">'+(a.emoji||'•')+'</span>'
       +'<div class="abody"><b>'+escP(a.nom)+'</b><span>'+escP(a.description||'')+'</span></div>'
       +badge+btn
-    +'</div>'
-    +'<div class="actform" id="actf_'+a.id+'" style="display:none">'
-      +(a.programme?'<p style="margin:0 0 10px;font-size:14px;line-height:1.55;white-space:pre-line"><b>📋 Au programme :</b><br>'+escP(a.programme)+'</p>':'')
-      +'<input id="actn_'+a.id+'" placeholder="Nom de l\'enfant / participant *">'
-      +'<input id="actr_'+a.id+'" placeholder="Responsable (parent)">'
-      +'<input id="actc_'+a.id+'" placeholder="Téléphone ou email">'
-      +'<button class="btn primary" style="width:100%;margin-top:4px" onclick="actSend(\''+a.id+'\')">Valider l\'inscription</button>'
-      +'<p id="acti_'+a.id+'" style="margin:6px 0 0;font-size:13px;font-weight:700;text-align:center"></p>'
     +'</div>';
 }
 async function loadActivitesPubliques(){
@@ -776,7 +780,7 @@ function envoyerContact(){
   if(!msg){ alert('Écris ton message avant d\'envoyer 🙂'); return; }
   const subject=encodeURIComponent('Message du site — '+(nom||'Visiteur'));
   const body=encodeURIComponent(msg+'\n\n— '+(nom||'')+' (envoyé depuis le site du CASE)');
-  window.location.href='mailto:case.bdn@gmail.com?subject='+subject+'&body='+body;
+  window.location.href='mailto:contact@casebdn.re?subject='+subject+'&body='+body;
 }
 function openPlan(i){
   const p=PLAN[i]; if(!p) return;
