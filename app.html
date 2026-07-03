@@ -408,6 +408,14 @@
     </div>
     <div class="panel">
       <div class="toolbar">
+        <h2 style="margin:0">💳 Adhésions payées en ligne <small style="font-weight:400;color:#5c7468;font-size:13px">— via HelloAsso, argent direct sur le compte du CASE</small></h2>
+        <button class="ghost btn" onclick="if(window.loadAdhesionsEnLigne)loadAdhesionsEnLigne()">↻ Rafraîchir</button>
+      </div>
+      <p class="hint">Les familles qui ont réglé leur adhésion (10 €) en ligne depuis leur espace. Rien à re-saisir ici.</p>
+      <div id="adhOnlineBox"><p class="hint">Ouvre cet onglet pour charger…</p></div>
+    </div>
+    <div class="panel">
+      <div class="toolbar">
         <h2 style="margin:0">Liste des adhérents</h2>
         <input id="m_search" placeholder="🔎 Rechercher..." oninput="renderMembers()" style="max-width:240px">
       </div>
@@ -6156,6 +6164,26 @@ renderAll();
     if(error){ alert('Erreur : '+error.message); return; }
     if(window.loadDossiersPeri) window.loadDossiersPeri();
   };
+  window.loadAdhesionsEnLigne=async function(){
+    const box=document.getElementById('adhOnlineBox'); if(!box) return;
+    if(typeof sbc==='undefined'||!sbc){ box.innerHTML='<p class="hint">Connecte-toi pour voir les paiements en ligne.</p>'; return; }
+    try{
+      const {data:pays,error}=await sbc.from('paiements').select('id,user_id,montant_cents,statut,paid_at,created_at,metadata').eq('objet','adhesion').order('created_at',{ascending:false});
+      if(error) throw error;
+      const rows=(pays||[]).filter(function(p){ return p.statut==='paye'||p.statut==='a_verifier'; });
+      if(!rows.length){ box.innerHTML='<p class="hint">Aucune adhésion payée en ligne pour le moment.</p>'; return; }
+      const uids=[...new Set(rows.map(function(p){return p.user_id;}).filter(Boolean))];
+      const nameById={};
+      if(uids.length){ const {data:profs}=await sbc.from('profiles').select('id,full_name,email').in('id',uids); (profs||[]).forEach(function(p){ nameById[p.id]={nom:p.full_name||'',email:p.email||''}; }); }
+      const fmtd=function(ts){ try{ return new Date(ts).toLocaleDateString('fr-FR',{day:'2-digit',month:'2-digit',year:'numeric'}); }catch(e){ return ''; } };
+      const nbPaye=rows.filter(function(p){return p.statut==='paye';}).length;
+      const totCents=rows.filter(function(p){return p.statut==='paye';}).reduce(function(s,p){return s+(p.montant_cents||0);},0);
+      box.innerHTML='<div class="row" style="gap:8px;margin-bottom:8px;flex-wrap:wrap"><span class="pill" style="background:#dff5e9;color:#127a51;font-weight:600">✅ '+nbPaye+' adhésion'+(nbPaye>1?'s':'')+' en ligne</span><span class="pill" style="background:#eef4ff;color:#23344d;font-weight:600">'+euro(totCents/100)+' encaissés</span></div>'
+        +'<div style="overflow-x:auto;-webkit-overflow-scrolling:touch"><table style="min-width:620px"><thead><tr><th>Famille</th><th>Année</th><th class="num">Montant</th><th>Payé le</th><th>Statut</th></tr></thead><tbody>'
+        +rows.map(function(p){ const who=nameById[p.user_id]||{}; const nom=esc(who.nom||who.email||'(compte famille)'); const an=esc((p.metadata&&p.metadata.annee)||''); const st=p.statut==='paye'?'<span style="color:#127a51;font-weight:700">✅ payé</span>':'<span style="color:#8a5a00;font-weight:700">⚠️ à vérifier</span>'; return '<tr><td>'+nom+(who.email&&who.nom?'<br><span style="color:#8a9a90;font-size:12px">'+esc(who.email)+'</span>':'')+'</td><td>'+an+'</td><td class="num">'+euro((p.montant_cents||0)/100)+'</td><td>'+fmtd(p.paid_at||p.created_at)+'</td><td>'+st+'</td></tr>'; }).join('')
+        +'</tbody></table></div>';
+    }catch(e){ box.innerHTML='<p class="hint" style="color:#c0392b">Impossible de charger les paiements en ligne : '+esc((e&&e.message)||'erreur')+'</p>'; }
+  };
   window.loadDossiersPeri=async function(){
     const box=document.getElementById('periDossiersList'); if(!box) return;
     const [rd, rf, rp]=await Promise.all([
@@ -7187,6 +7215,8 @@ renderAll();
     if(window.loadActivitesGestion) loadActivitesGestion();
     const peb=document.querySelector('nav.tabs button[data-tab="periscolaire"]'); if(peb) peb.addEventListener('click',()=>{ if(window.loadDossiersPeri) loadDossiersPeri(); });
     if(window.loadDossiersPeri) loadDossiersPeri();
+    const meb=document.querySelector('nav.tabs button[data-tab="members"]'); if(meb) meb.addEventListener('click',()=>{ if(window.loadAdhesionsEnLigne) loadAdhesionsEnLigne(); });
+    if(window.loadAdhesionsEnLigne) loadAdhesionsEnLigne();
     const perb=document.querySelector('nav.tabs button[data-tab="personnel"]'); if(perb) perb.addEventListener('click',()=>{ if(window.loadPersonnel) loadPersonnel(); });
     const jab=document.querySelector('nav.tabs button[data-tab="journal"]'); if(jab) jab.addEventListener('click',()=>{ if(window.loadJournalActions) loadJournalActions(); });
     if(prof.super_admin){ const adb=document.querySelector('nav.tabs button[data-tab="admin"]'); if(adb){ adb.style.display=''; adb.addEventListener('click',()=>{ if(window.bobLoadAdmin) window.bobLoadAdmin(); }); } }
