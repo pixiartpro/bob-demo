@@ -305,31 +305,50 @@ async function loadActs(){
     ME.acts=ra.data||[]; ME.ins=ri.data||[];
   }catch(e){ ME.acts=[]; ME.ins=[]; }
 }
+// Regroupement des activités en 3 blocs de lecture (la catégorie est un champ LIBRE côté bureau
+// → on classe par mots-clés, avec « Socioculturel » comme bloc de secours pour l'inconnu).
+const ACT_BLOCKS=[
+  {key:'peri', label:'🎒 Périscolaire & extrascolaire', sub:'Périscolaire, ACM Ados, VEPI…'},
+  {key:'socio', label:'🎨 Socioculturel', sub:'Danse, musique, secteur ados…'},
+  {key:'ponctuel', label:'🎉 Temps forts', sub:'Événements ponctuels (fête de la musique…)'}
+];
+function actBlockKey(a){
+  if(a.type==='evenement' || /temps *fort/i.test(a.categorie||'')) return 'ponctuel';
+  const c=famNorm(a.categorie||'');
+  if(c.indexOf('peri')>=0 || c.indexOf('extrascol')>=0) return 'peri';
+  return 'socio';
+}
+function actBlockLabelShort(a){ const b=ACT_BLOCKS.find(function(x){return x.key===actBlockKey(a);}); return b?b.label.replace(/^\S+\s/,''):''; }
 function renderActs(){
   const box=$('#actList'); if(!box) return;
   if(!ME.acts.length){ box.innerHTML='<p class="empty">Aucune activité pour l\'instant. Crée la première ci-dessus 👆</p>'; return; }
   const byA={}; ME.ins.forEach(i=>{ (byA[i.activite_id]=byA[i.activite_id]||[]).push(i); });
-  box.innerHTML=ME.acts.map(a=>{
-    const list=byA[a.id]||[];
-    const canMeta=!a.publie; // le bureau garde la main sur la DÉFINITION d'une activité publiée
-    const canIns=true;       // mais le salarié gère toujours les inscrits (VEPI, ACM…) — autorisé par la RLS « staff »
-    const insRows=list.length
-      ? '<table style="width:100%;margin-top:8px;font-size:14px"><tbody>'+list.map(i=>'<tr><td style="padding:4px 0">👧 '+esc(i.nom||'(sans nom)')+(i.responsable?' <span class="sub">· '+esc(i.responsable)+'</span>':'')+'</td><td style="text-align:right">'+(canIns?'<button class="btn ghost" style="padding:3px 9px;font-size:12px" onclick="spDelIns(\''+i.id+'\')">retirer</button>':'')+'</td></tr>').join('')+'</tbody></table>'
-      : '<p class="empty" style="margin:6px 0 0">Personne d\'inscrit.</p>';
-    return '<div class="card" style="margin-bottom:12px;border-left:4px solid '+(a.publie?'#1f9d6b':'#dc8f38')+'">'
-      +'<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px">'
-        +'<div><b style="font-size:16px">'+esc((a.emoji?a.emoji+' ':'')+(a.nom||'(sans nom)'))+'</b> '
-          +'<span class="badge '+(a.publie?'b-valide':'b-demande')+'">'+(a.publie?'🌍 publié (bureau)':'🔒 brouillon')+'</span><br>'
-          +'<span class="sub">'+(a.type==='evenement'?'📅 Événement':'🎟️ Activité')+' · '+list.length+' inscrit'+(list.length>1?'s':'')+(a.capacite?' / '+a.capacite+' places':'')+'</span>'
-          +(a.programme?'<div class="sub" style="margin-top:4px">'+esc(a.programme)+'</div>':'')
-        +'</div>'
-        +(canMeta?'<button class="btn ghost" style="padding:5px 10px;font-size:13px;white-space:nowrap" onclick="spEditAct(\''+a.id+'\')">✏️ Modifier</button>':'')
-      +'</div>'
-      +insRows
-      +'<div class="row" style="margin-top:8px;gap:6px"><div style="flex:2"><input id="ni_'+a.id+'" placeholder="Nom de l\'enfant à inscrire" style="width:100%" onkeydown="if(event.key===\'Enter\')spAddIns(\''+a.id+'\')"></div><button class="btn win" style="white-space:nowrap" onclick="spAddIns(\''+a.id+'\')">+ inscrire</button></div>'
-      +(a.publie?'<p class="sub" style="margin-top:6px">🌍 Publiée par le bureau — tu gères les inscrits, le bureau garde le reste (titre, places).</p>':'')
-    +'</div>';
+  const groups={peri:[],socio:[],ponctuel:[]};
+  ME.acts.forEach(function(a){ (groups[actBlockKey(a)]||groups.socio).push(a); });
+  box.innerHTML=ACT_BLOCKS.filter(function(b){return groups[b.key].length;}).map(function(b){
+    const cards=groups[b.key].map(function(a){ return actCardHtml(a, byA[a.id]||[]); }).join('');
+    return '<div style="margin:12px 0 4px"><h2 class="title" style="margin:0;font-size:18px">'+b.label+' <span class="sub" style="font-weight:400;font-size:14px">· '+groups[b.key].length+'</span></h2><p class="sub" style="margin:2px 0 8px">'+b.sub+'</p></div>'+cards;
   }).join('');
+}
+function actCardHtml(a, list){
+  const canMeta=!a.publie; // le bureau garde la main sur la DÉFINITION d'une activité publiée
+  const canIns=true;       // mais le salarié gère toujours les inscrits (VEPI, ACM…) — autorisé par la RLS « staff »
+  const insRows=list.length
+    ? '<table style="width:100%;margin-top:8px;font-size:14px"><tbody>'+list.map(i=>'<tr><td style="padding:4px 0">👧 '+esc(i.nom||'(sans nom)')+(i.responsable?' <span class="sub">· '+esc(i.responsable)+'</span>':'')+'</td><td style="text-align:right">'+(canIns?'<button class="btn ghost" style="padding:3px 9px;font-size:12px" onclick="spDelIns(\''+i.id+'\')">retirer</button>':'')+'</td></tr>').join('')+'</tbody></table>'
+    : '<p class="empty" style="margin:6px 0 0">Personne d\'inscrit.</p>';
+  return '<div class="card" style="margin-bottom:12px;border-left:4px solid '+(a.publie?'#1f9d6b':'#dc8f38')+'">'
+    +'<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px">'
+      +'<div><b style="font-size:16px">'+esc((a.emoji?a.emoji+' ':'')+(a.nom||'(sans nom)'))+'</b> '
+        +'<span class="badge '+(a.publie?'b-valide':'b-demande')+'">'+(a.publie?'🌍 publié (bureau)':'🔒 brouillon')+'</span><br>'
+        +'<span class="sub">'+(a.type==='evenement'?'📅 Événement':'🎟️ Activité')+' · '+list.length+' inscrit'+(list.length>1?'s':'')+(a.capacite?' / '+a.capacite+' places':'')+'</span>'
+        +(a.programme?'<div class="sub" style="margin-top:4px">'+esc(a.programme)+'</div>':'')
+      +'</div>'
+      +(canMeta?'<button class="btn ghost" style="padding:5px 10px;font-size:13px;white-space:nowrap" onclick="spEditAct(\''+a.id+'\')">✏️ Modifier</button>':'')
+    +'</div>'
+    +insRows
+    +'<div class="row" style="margin-top:8px;gap:6px"><div style="flex:2"><input id="ni_'+a.id+'" placeholder="Nom de l\'enfant à inscrire" style="width:100%" onkeydown="if(event.key===\'Enter\')spAddIns(\''+a.id+'\')"></div><button class="btn win" style="white-space:nowrap" onclick="spAddIns(\''+a.id+'\')">+ inscrire</button></div>'
+    +(a.publie?'<p class="sub" style="margin-top:6px">🌍 Publiée par le bureau — tu gères les inscrits, le bureau garde le reste (titre, places).</p>':'')
+  +'</div>';
 }
 window.spCancelAct=function(){ $('#na_id').value=''; $('#na_nom').value=''; $('#na_prog').value=''; $('#na_cap').value='20'; $('#na_type').value='activite'; $('#naTitle').textContent='➕ Nouvelle activité'; $('#na_cancel').style.display='none'; };
 window.spSaveAct=async function(){
@@ -641,8 +660,129 @@ function famCardHtml(k,b){
     +'</div>'
     +(editing?famEditFormHtml(k):('<div class="ckgrid">'+chips+'</div>'+infos))
     +doss
+    +famActsHtml(k)
   +'</div>';
 }
+// Activités où l'enfant est inscrit (ACM Ados, VEPI, danse, événements…) via inscriptions_activite.
+function famChildInscriptions(k){
+  const kn=famNorm((k.prenom||'')+' '+(k.nom||'')), kn2=famNorm((k.nom||'')+' '+(k.prenom||''));
+  return ME.ins.filter(function(i){
+    if(i.enfant_id) return i.enfant_id===k.id;
+    const inm=famNorm(i.nom||''); return inm && (inm===kn||inm===kn2);
+  }).map(function(i){ return {ins:i, act:ME.acts.find(function(a){return a.id===i.activite_id;})}; })
+   .filter(function(x){ return x.act; });
+}
+// Profils de pièces par activité : accueil de mineurs (ACM/VEPI = 6 docs CASF),
+// sport (certif médical + assurance), aucun (pièces libres). Catégorie = champ LIBRE → on
+// classe par bloc + mots-clés « sport ». Fichiers dans le bucket privé dossiers-activites.
+const ACT_DOC_PROFILES={
+  mineurs:{label:'Accueil de mineurs', pieces:[{k:'caf',lab:'Attestation CAF'},{k:'impots',lab:'Avis d\'imposition'},{k:'domicile',lab:'Justificatif de domicile'},{k:'assurance',lab:'Attestation d\'assurance'},{k:'vaccin',lab:'Vaccins à jour'},{k:'livret',lab:'Livret de famille'}]},
+  sport:{label:'Activité sportive', pieces:[{k:'certif_medical',lab:'Certificat médical'},{k:'assurance',lab:'Attestation d\'assurance'}]},
+  aucun:{label:'', pieces:[]}
+};
+function actDocProfile(a){
+  if(actBlockKey(a)==='peri') return 'mineurs';
+  const t=famNorm((a.nom||'')+' '+(a.categorie||''));
+  if(/(zumba|danse|sport|fitness|gym|muscu|yoga|fit|foot|basket|hand|athl|natation|boxe|karate|judo|rugby|volley|tennis|course|running|cardio|pilates|renfo|capoeira|hip *hop|moring)/.test(t)) return 'sport';
+  return 'aucun';
+}
+function famPieceRow(insId, key, lab, got){
+  return '<div style="display:flex;align-items:center;gap:8px;padding:3px 0;font-size:13.5px">'
+    +'<span style="flex:1;font-weight:600;color:'+(got?'#0f6b46':'#9a6a0a')+'">'+(got?'✓ ':'⚠️ ')+esc(lab)
+      +(got&&got.par==='accueil'?' <span style="font-weight:400;font-size:11px;color:var(--muted)">(par l\'accueil)</span>':'')+'</span>'
+    +(got
+      ?'<button class="btn ghost" style="padding:2px 9px;font-size:12px" onclick="famActVoir(\''+insId+'\',\''+key+'\')">👁️ Voir</button>'
+      :'<label class="btn win" style="padding:2px 9px;font-size:12px;cursor:pointer">📎 Déposer<input type="file" accept="image/*,application/pdf" style="display:none" onchange="famActUpload(\''+insId+'\',\''+key+'\',this)"></label>')
+  +'</div>';
+}
+function famActsHtml(k){
+  const mine=famChildInscriptions(k);
+  let rows;
+  if(mine.length){
+    rows=mine.map(function(x){
+      const a=x.act, i=x.ins;
+      const nm=(a.emoji?a.emoji+' ':'🎟️ ')+(a.nom||'Activité');
+      const cat=actBlockLabelShort(a);
+      const st=i.statut?('<span class="badge '+(i.statut==='valide'?'b-valide':(i.statut==='refuse'?'b-refuse':'b-demande'))+'">'+esc(i.statut)+'</span>'):'';
+      const prof=actDocProfile(a);
+      const pieces=(i.pieces&&typeof i.pieces==='object')?i.pieces:{};
+      let docs='';
+      if(prof==='aucun'){
+        const attached=Object.keys(pieces).filter(function(kk){ return pieces[kk]&&pieces[kk].path; });
+        docs=(attached.length?attached.map(function(kk){ return '<div style="display:flex;align-items:center;gap:8px;padding:3px 0;font-size:13.5px"><span style="flex:1">📎 '+esc(pieces[kk].name||'Document')+'</span><button class="btn ghost" style="padding:2px 9px;font-size:12px" onclick="famActVoir(\''+i.id+'\',\''+kk+'\')">👁️ Voir</button> <button class="btn ghost" style="padding:2px 8px;font-size:12px" onclick="famActDelDoc(\''+i.id+'\',\''+kk+'\')">✕</button></div>'; }).join(''):'')
+          +'<label class="btn ghost" style="padding:3px 10px;font-size:12px;cursor:pointer;display:inline-block;margin-top:4px">📎 Ajouter un document<input type="file" accept="image/*,application/pdf" style="display:none" onchange="famActUpload(\''+i.id+'\',\'\',this)"></label>';
+      } else {
+        const list=ACT_DOC_PROFILES[prof].pieces;
+        const done=list.filter(function(p){ return pieces[p.k]&&pieces[p.k].path; }).length;
+        docs='<div class="sub" style="margin:2px 0 2px">📋 Pièces ('+ACT_DOC_PROFILES[prof].label+') — <b>'+done+'/'+list.length+'</b></div>'
+          +list.map(function(p){ return famPieceRow(i.id, p.k, p.lab, (pieces[p.k]&&pieces[p.k].path)?pieces[p.k]:null); }).join('');
+      }
+      return '<div style="padding:6px 0;border-bottom:1px dashed var(--line)">'
+        +'<div style="display:flex;align-items:center;gap:8px;font-size:14px">'
+          +'<span style="flex:1"><b>'+esc(nm)+'</b>'+(cat?' <span class="sub">· '+esc(cat)+'</span>':'')+'</span>'
+          +st+' <button class="btn ghost" style="padding:3px 9px;font-size:12px" onclick="famDelIns(\''+i.id+'\')">retirer</button>'
+        +'</div>'
+        +'<div style="margin-top:2px">'+docs+'</div>'
+        +'<div id="factup_'+i.id+'" class="sub" style="margin:2px 0 0"></div>'
+      +'</div>';
+    }).join('');
+  } else { rows='<p class="empty" style="margin:4px 0 0">Pas encore inscrit à une activité.</p>'; }
+  const opts=ME.acts.filter(function(a){ return a.statut!=='archive'; })
+    .map(function(a){ return '<option value="'+a.id+'">'+esc((a.emoji?a.emoji+' ':'')+(a.nom||'')+' — '+actBlockLabelShort(a))+'</option>'; }).join('');
+  const adder='<div class="row" style="margin-top:8px;gap:6px"><div style="flex:2"><select id="faddact_'+k.id+'" style="width:100%"><option value="">➕ Inscrire à une activité…</option>'+opts+'</select></div><button class="btn win" style="white-space:nowrap" onclick="famAddToAct(\''+k.id+'\')">Inscrire</button></div>';
+  return '<div style="margin-top:10px;padding-top:10px;border-top:1px dashed var(--line);font-size:14px"><b>🎟️ Activités</b>'
+    +'<div style="margin-top:4px">'+rows+'</div>'+adder+'</div>';
+}
+window.famAddToAct=async function(kid){
+  const sel=document.getElementById('faddact_'+kid); const aid=sel?sel.value:''; if(!aid){ toast('Choisis une activité'); return; }
+  const k=ME.famKids.find(function(x){ return x.id===kid; }); if(!k) return;
+  if(ME.ins.find(function(i){ return i.activite_id===aid && i.enfant_id===kid; })){ toast('Déjà inscrit à cette activité'); return; }
+  const nom=((k.prenom||'')+' '+(k.nom||'')).trim();
+  const {error}=await sb.from('inscriptions_activite').insert({asso_id:ME.asso, activite_id:aid, nom:nom, enfant_id:kid, statut:'valide'});
+  if(error){ toast('Erreur : '+error.message); return; }
+  await loadActs(); renderFamilles(); toast('✅ '+nom+' inscrit·e');
+};
+window.famDelIns=async function(id){
+  if(!confirm('Retirer cette inscription à l\'activité ?')) return;
+  const {error}=await sb.from('inscriptions_activite').delete().eq('id',id);
+  if(error){ toast('Erreur : '+error.message); return; }
+  await loadActs(); renderFamilles(); toast('Inscription retirée');
+};
+window.famActUpload=async function(insId, key, input){
+  const ins=ME.ins.find(function(x){ return x.id===insId; }); if(!ins) return;
+  const file=input.files&&input.files[0]; if(!file) return;
+  if(file.size>10*1024*1024){ toast('Fichier trop lourd (max 10 Mo)'); input.value=''; return; }
+  const info=$('#factup_'+insId); if(info) info.textContent='📤 Envoi de « '+(file.name||'pièce')+' »…';
+  try{
+    const m=(file.name||'').match(/\.[a-z0-9]+$/i); const ext=m?m[0].toLowerCase():'';
+    const useKey=key||('doc_'+Date.now().toString(36)+Math.random().toString(36).slice(2,5));
+    const path=(ins.asso_id||ME.asso)+'/'+insId+'/'+useKey+'-'+Date.now().toString(36)+Math.random().toString(36).slice(2,6)+ext;
+    const up=await sb.storage.from('dossiers-activites').upload(path,file,{contentType:file.type||'application/octet-stream',upsert:false});
+    if(up.error) throw up.error;
+    const pieces=Object.assign({}, (ins.pieces&&typeof ins.pieces==='object')?ins.pieces:{});
+    pieces[useKey]={path:path, name:file.name||'', par:'accueil'};
+    const r=await sb.from('inscriptions_activite').update({pieces:pieces}).eq('id',insId);
+    if(r.error) throw r.error;
+    ins.pieces=pieces; if(info) info.textContent='';
+    renderFamilles(); toast('✅ Document déposé');
+  }catch(e){ if(info) info.textContent=''; toast('Échec du dépôt : '+(e.message||e)); }
+};
+window.famActVoir=async function(insId, key){
+  const ins=ME.ins.find(function(x){ return x.id===insId; }); if(!ins) return;
+  const got=ins.pieces&&ins.pieces[key]; if(!got||!got.path) return;
+  try{ const {data,error}=await sb.storage.from('dossiers-activites').createSignedUrl(got.path,3600); if(error||!data){ toast('Pièce indisponible'); return; } spShowDoc(data.signedUrl,(got.name||key)); }
+  catch(e){ toast('Pièce indisponible'); }
+};
+window.famActDelDoc=async function(insId, key){
+  if(!confirm('Retirer ce document ?')) return;
+  const ins=ME.ins.find(function(x){ return x.id===insId; }); if(!ins) return;
+  const got=ins.pieces&&ins.pieces[key];
+  try{ if(got&&got.path) await sb.storage.from('dossiers-activites').remove([got.path]); }catch(e){}
+  const pieces=Object.assign({}, (ins.pieces&&typeof ins.pieces==='object')?ins.pieces:{}); delete pieces[key];
+  const r=await sb.from('inscriptions_activite').update({pieces:pieces}).eq('id',insId);
+  if(r.error){ toast('Erreur : '+r.error.message); return; }
+  ins.pieces=pieces; renderFamilles(); toast('Document retiré');
+};
 function famEditFormHtml(k){
   const classes=['','TPS','PS','MS','GS','CP','CE1','CE2','CM1','CM2','Autre'];
   const opts=classes.map(function(c){ return '<option value="'+c+'"'+(k.classe===c?' selected':'')+'>'+(c||'—')+'</option>'; }).join('');
