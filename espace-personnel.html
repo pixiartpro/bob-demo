@@ -339,7 +339,7 @@ function actCardHtml(a, list){
   return '<div class="card" style="margin-bottom:12px;border-left:4px solid '+(a.publie?'#1f9d6b':'#dc8f38')+'">'
     +'<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px">'
       +'<div><b style="font-size:16px">'+esc((a.emoji?a.emoji+' ':'')+(a.nom||'(sans nom)'))+'</b> '
-        +'<span class="badge '+(a.publie?'b-valide':'b-demande')+'">'+(a.publie?'🌍 publié (bureau)':'🔒 brouillon')+'</span><br>'
+        +'<span class="badge '+(a.publie?'b-valide':'b-demande')+'">'+(a.publie?'🌍 publié (bureau)':'🔒 brouillon')+'</span>'+(a.educ_pop?' <span class="badge" style="background:#e7f4e9;color:#2b7a3d">🌱 Éduc. populaire</span>':'')+'<br>'
         +'<span class="sub">'+(a.type==='evenement'?'📅 Événement':'🎟️ Activité')+' · '+list.length+' inscrit'+(list.length>1?'s':'')+(a.capacite?' / '+a.capacite+' places':'')+'</span>'
         +(a.programme?'<div class="sub" style="margin-top:4px">'+esc(a.programme)+'</div>':'')
       +'</div>'
@@ -719,7 +719,7 @@ function famActsHtml(k){
       }
       return '<div style="padding:6px 0;border-bottom:1px dashed var(--line)">'
         +'<div style="display:flex;align-items:center;gap:8px;font-size:14px">'
-          +'<span style="flex:1"><b>'+esc(nm)+'</b>'+(cat?' <span class="sub">· '+esc(cat)+'</span>':'')+'</span>'
+          +'<span style="flex:1"><b>'+esc(nm)+'</b>'+(cat?' <span class="sub">· '+esc(cat)+'</span>':'')+(a.educ_pop?' <span class="badge" style="background:#e7f4e9;color:#2b7a3d;font-size:11px">🌱</span>':'')+'</span>'
           +st+' <button class="btn ghost" style="padding:3px 9px;font-size:12px" onclick="famDelIns(\''+i.id+'\')">retirer</button>'
         +'</div>'
         +'<div style="margin-top:2px">'+docs+'</div>'
