@@ -509,8 +509,9 @@ window.phDelAlbum=async function(id){
 
 // ===== Bloc Dossiers familles (accompagnement des parents — LECTURE SEULE) =====
 // Le salarié voit ce qui est rempli / ce qui manque, pour aider la famille à compléter.
-// 🔒 Confidentialité : le CONTENU des champs allergies / infos santé / personnes autorisées
-// n'est jamais affiché NI gardé en mémoire — on ne conserve que « renseigné ou pas ».
+// Décision GB 03/07/2026 : les contenus santé / allergies / personnes autorisées SONT
+// affichés — l'animateur en a besoin sur le terrain (PAI, qui récupère l'enfant…).
+// Ces données restent dans Bob (RLS staff), jamais publiques.
 // (La liste des pièces reflète PERI.PIECES de espace-adherent.html — à garder alignées.)
 const FAM_PIECES=[{k:'caf',lab:'Attestation CAF'},{k:'impots',lab:'Avis d\'imposition'},{k:'domicile',lab:'Justificatif de domicile'},{k:'assurance',lab:'Attestation d\'assurance'},{k:'vaccin',lab:'Vaccins à jour'},{k:'livret',lab:'Livret de famille'}];
 function famFilled(s){ return !!(s&&String(s).trim()); }
@@ -522,7 +523,7 @@ async function loadFamilles(){
       sb.from('inscriptions_periscolaire').select('id,annee,foyer,email,tel,enfants,pieces,statut,besoin_aide,updated_at').order('updated_at',{ascending:false})
     ]);
     ME.famKids=(rk.data||[]).map(function(k){ return { id:k.id, nom:k.nom||'', prenom:k.prenom||'', naissance:k.naissance||'', classe:k.classe||'', ecole:k.ecole||'',
-      allergies_ok:famFilled(k.allergies), sante_ok:famFilled(k.sante), autorises_ok:famFilled(k.autorises), droit_image:k.droit_image }; });
+      allergies:String(k.allergies||'').trim(), sante:String(k.sante||'').trim(), autorises:String(k.autorises||'').trim(), droit_image:k.droit_image }; });
     ME.famDoss=rd.data||[];
   }catch(e){ ME.famKids=[]; ME.famDoss=[]; }
 }
@@ -539,9 +540,9 @@ function famBilan(k){
     {lab:'Date de naissance', ok:!!k.naissance, val:k.naissance?fdate(k.naissance):''},
     {lab:'École', ok:famFilled(k.ecole), val:k.ecole},
     {lab:'Classe', ok:famFilled(k.classe), val:k.classe, opt:true},
-    {lab:'Allergies', ok:k.allergies_ok, lock:true},
-    {lab:'Infos santé', ok:k.sante_ok, opt:true, lock:true},
-    {lab:'Personnes autorisées', ok:k.autorises_ok, lock:true},
+    {lab:'Allergies', ok:famFilled(k.allergies)},
+    {lab:'Infos santé', ok:famFilled(k.sante), opt:true},
+    {lab:'Personnes autorisées', ok:famFilled(k.autorises)},
     {lab:'Droit à l\'image', ok:k.droit_image!=null, val:(k.droit_image==null?'':(k.droit_image?'autorisé':'refusé'))}
   ];
   const dj=famDossierFor(k);
@@ -563,7 +564,7 @@ function famHubBadge(){
 }
 function famillesHTML(){
   return '<section class="block">'
-    +'<p class="sub">Pour accompagner les parents : ce qui est <b>rempli ✓</b> et ce qui <b>manque ⚠️</b>, enfant par enfant (fiche + dossier périscolaire). <b>Lecture seule</b> — c\'est la famille (ou le bureau) qui complète. 🔒 Le contenu des infos santé, allergies et personnes autorisées ne s\'affiche pas ici : tu vois seulement si c\'est renseigné.</p>'
+    +'<p class="sub">Pour accompagner les parents : ce qui est <b>rempli ✓</b> et ce qui <b>manque ⚠️</b>, enfant par enfant (fiche + dossier périscolaire). <b>Lecture seule</b> — c\'est la famille (ou le bureau) qui complète. 🔒 Les allergies, infos santé et personnes autorisées s\'affichent pour le <b>terrain</b> (PAI, qui récupère l\'enfant…) : ces infos restent confidentielles, elles ne sortent pas de Bob.</p>'
     +'<div class="card" style="margin-bottom:14px"><div class="row">'
       +'<div style="flex:2"><input id="fam_q" placeholder="🔎 Chercher un enfant…" style="width:100%" oninput="renderFamilles()"></div>'
       +'<div style="flex:0 0 auto"><button class="btn '+(ME.famOnlyMiss?'win':'ghost')+'" id="fam_miss_btn" onclick="famToggleMiss()">⚠️ Seulement à compléter</button></div>'
@@ -593,10 +594,14 @@ function famCardHtml(k,b){
   const chips=b.checks.map(function(c){
     return '<span class="ck '+(c.ok?'on':'off')+'">'+(c.ok?'✓':'⚠️')+' '+esc(c.lab)
       +(c.ok&&c.val?' <span class="val">· '+esc(c.val)+'</span>':'')
-      +(c.ok&&c.lock?' 🔒':'')
       +((!c.ok&&c.opt)?' <span class="val">(facultatif)</span>':'')
     +'</span>';
   }).join('');
+  const iv=[];
+  if(k.allergies) iv.push('🤧 <b>Allergies :</b> '+esc(k.allergies));
+  if(k.sante) iv.push('🩺 <b>Infos santé :</b> '+esc(k.sante));
+  if(k.autorises) iv.push('👥 <b>Autorisés à récupérer l\'enfant :</b> '+esc(k.autorises));
+  const infos=iv.length?'<div style="margin-top:10px;font-size:14px;background:#f4f8f5;border:1px solid var(--line);border-radius:12px;padding:10px 12px;line-height:1.7">'+iv.join('<br>')+'</div>':'';
   let doss='';
   if(b.dj){
     const d=b.dj.d, it=b.dj.it||{};
@@ -620,6 +625,7 @@ function famCardHtml(k,b){
       +'<span>'+(b.aide?'<span class="badge b-demande">🙋 aide demandée</span> ':'')+'<span class="badge '+(okAll?'b-valide':'b-demande')+'">'+(okAll?'✅ complet':'⚠️ à compléter')+'</span></span>'
     +'</div>'
     +'<div class="ckgrid">'+chips+'</div>'
+    +infos
     +doss
   +'</div>';
 }
