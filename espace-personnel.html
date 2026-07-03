@@ -118,7 +118,7 @@ const SB_URL='https://dkidtwypclpwznleiqnq.supabase.co';
 const SB_KEY='sb_publishable_HDfV-O2ION1Vw9v03aV_Qg_PkiAjLNo';
 const sb=window.supabase.createClient(SB_URL,SB_KEY);
 const $=s=>document.querySelector(s);
-const ME={session:null,prof:null,fiche:null,conges:[],docs:[],acts:[],ins:[],asso:null,protos:[],albums:[],photos:[],kids:[],famKids:[],famDoss:[],famOnlyMiss:false};
+const ME={session:null,prof:null,fiche:null,conges:[],docs:[],acts:[],ins:[],asso:null,protos:[],albums:[],photos:[],kids:[],famKids:[],famDoss:[],famOnlyMiss:false,famEdit:null};
 function esc(s){return (s==null?'':String(s)).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2600);}
 function euroDays(n){return (n==null?'0':(Math.round(n*100)/100).toString().replace('.',','));}
@@ -520,7 +520,7 @@ async function loadFamilles(){
   try{
     const [rk,rd]=await Promise.all([
       sb.from('enfants').select('id,nom,prenom,naissance,classe,ecole,allergies,sante,autorises,droit_image').order('nom',{ascending:true}),
-      sb.from('inscriptions_periscolaire').select('id,annee,foyer,email,tel,enfants,pieces,statut,besoin_aide,updated_at').order('updated_at',{ascending:false})
+      sb.from('inscriptions_periscolaire').select('id,asso_id,user_id,annee,foyer,email,tel,enfants,pieces,statut,besoin_aide,note_bureau,updated_at').order('updated_at',{ascending:false})
     ]);
     ME.famKids=(rk.data||[]).map(function(k){ return { id:k.id, nom:k.nom||'', prenom:k.prenom||'', naissance:k.naissance||'', classe:k.classe||'', ecole:k.ecole||'',
       allergies:String(k.allergies||'').trim(), sante:String(k.sante||'').trim(), autorises:String(k.autorises||'').trim(), droit_image:k.droit_image }; });
@@ -564,7 +564,7 @@ function famHubBadge(){
 }
 function famillesHTML(){
   return '<section class="block">'
-    +'<p class="sub">Pour accompagner les parents : ce qui est <b>rempli ✓</b> et ce qui <b>manque ⚠️</b>, enfant par enfant (fiche + dossier périscolaire). <b>Lecture seule</b> — c\'est la famille (ou le bureau) qui complète. 🔒 Les allergies, infos santé et personnes autorisées s\'affichent pour le <b>terrain</b> (PAI, qui récupère l\'enfant…) : ces infos restent confidentielles, elles ne sortent pas de Bob.</p>'
+    +'<p class="sub">Pour accompagner les parents : ce qui est <b>rempli ✓</b> et ce qui <b>manque ⚠️</b>, enfant par enfant. Tu peux <b>📎 déposer les pièces à la place de la famille</b> (scanne ou photographie ses papiers) et <b>✏️ compléter la fiche avec le parent</b> à côté de toi. Le bureau garde la <b>validation</b> et tout ce qui touche à l\'argent ; chaque geste est enregistré au journal. 🔒 Les allergies, infos santé et personnes autorisées s\'affichent pour le <b>terrain</b> (PAI, qui récupère l\'enfant…) : ces infos restent confidentielles, elles ne sortent pas de Bob.</p>'
     +'<div class="card" style="margin-bottom:14px"><div class="row">'
       +'<div style="flex:2"><input id="fam_q" placeholder="🔎 Chercher un enfant…" style="width:100%" oninput="renderFamilles()"></div>'
       +'<div style="flex:0 0 auto"><button class="btn '+(ME.famOnlyMiss?'win':'ghost')+'" id="fam_miss_btn" onclick="famToggleMiss()">⚠️ Seulement à compléter</button></div>'
@@ -609,26 +609,89 @@ function famCardHtml(k,b){
     const s=SL[d.statut]||[esc(d.statut||'—'),'b-demande'];
     const acc=[(it.matin?'🌅 matin':''),(it.soir?'🌇 soir':'')].filter(Boolean).join(' + ');
     const pc=FAM_PIECES.length-b.missPieces.length;
+    const pieces=(d.pieces&&typeof d.pieces==='object')?d.pieces:{};
+    const pieceRows=FAM_PIECES.map(function(p){
+      const got=pieces[p.k]&&pieces[p.k].path;
+      return '<div style="display:flex;align-items:center;gap:8px;padding:4px 0;border-bottom:1px dashed var(--line);font-size:13.5px">'
+        +'<span style="flex:1;font-weight:600;color:'+(got?'#0f6b46':'#9a6a0a')+'">'+(got?'✓ ':'⚠️ ')+esc(p.lab)
+          +(got&&pieces[p.k].par==='accueil'?' <span style="font-weight:400;font-size:11.5px;color:var(--muted)">(déposée par l\'accueil)</span>':'')+'</span>'
+        +(got
+          ?'<button class="btn ghost" style="padding:3px 10px;font-size:12px" onclick="famVoirPiece(\''+d.id+'\',\''+p.k+'\')">👁️ Voir</button>'
+          :'<label class="btn win" style="padding:3px 10px;font-size:12px;cursor:pointer">📎 Déposer<input type="file" accept="image/*,application/pdf" style="display:none" onchange="famUpload(\''+d.id+'\',\''+p.k+'\',this)"></label>')
+      +'</div>';
+    }).join('');
     doss='<div style="margin-top:10px;padding-top:10px;border-top:1px dashed var(--line);font-size:14px">'
-      +'<b>🎒 Dossier périscolaire'+(d.annee?' '+esc(d.annee):'')+'</b> <span class="badge '+s[1]+'">'+s[0]+'</span>'+(acc?' · '+acc:'')
-      +'<div class="sub" style="margin:4px 0 0">Pièces déposées : <b>'+pc+'/'+FAM_PIECES.length+'</b>'+(b.missPieces.length?' — manque : '+b.missPieces.map(function(p){ return esc(p.lab); }).join(', '):' ✅')+'</div>'
+      +'<b>🎒 Dossier périscolaire'+(d.annee?' '+esc(d.annee):'')+'</b> <span class="badge '+s[1]+'">'+s[0]+'</span>'+(acc?' · '+acc:'')+' <span class="sub">· pièces : <b>'+pc+'/'+FAM_PIECES.length+'</b></span>'
+      +((d.statut==='incomplet'&&d.note_bureau)?'<div style="margin-top:4px;background:#fbe9e7;border:1px solid #f3c4ba;color:#b23a23;border-radius:10px;padding:6px 10px;font-size:13px">📝 Bureau : '+esc(d.note_bureau)+'</div>':'')
+      +'<div style="margin-top:4px">'+pieceRows+'</div>'
+      +'<div id="famup_'+d.id+'" class="sub" style="margin:4px 0 0"></div>'
       +(b.aide?'<div style="margin-top:4px;font-weight:700;color:#b9770e">🙋 La famille a coché « j\'ai besoin d\'aide » — c\'est le moment de l\'accompagner.</div>':'')
       +((d.foyer||d.email||d.tel)?'<div class="sub" style="margin:4px 0 0">👪 '+esc(d.foyer||'Famille')+(d.email?' · 📧 '+esc(d.email):'')+(d.tel?' · 📞 '+esc(d.tel):'')+'</div>':'')
     +'</div>';
   } else {
-    doss='<div class="sub" style="margin-top:10px;padding-top:10px;border-top:1px dashed var(--line)">🎒 Pas de dossier périscolaire — normal si la famille n\'utilise pas la garderie.</div>';
+    doss='<div class="sub" style="margin-top:10px;padding-top:10px;border-top:1px dashed var(--line)">🎒 Pas de dossier périscolaire — normal si la famille n\'utilise pas la garderie. (Pour en créer un : la famille se connecte à son espace, avec toi à côté si besoin.)</div>';
   }
   const okAll=b.manque===0;
+  const editing=ME.famEdit===k.id;
   return '<div class="card" style="margin-bottom:12px;border-left:4px solid '+(okAll?'#1f9d6b':'#dc8f38')+'">'
     +'<div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:center">'
       +'<b style="font-size:16px">🧒 '+name+'</b>'
-      +'<span>'+(b.aide?'<span class="badge b-demande">🙋 aide demandée</span> ':'')+'<span class="badge '+(okAll?'b-valide':'b-demande')+'">'+(okAll?'✅ complet':'⚠️ à compléter')+'</span></span>'
+      +'<span>'+(b.aide?'<span class="badge b-demande">🙋 aide demandée</span> ':'')+'<span class="badge '+(okAll?'b-valide':'b-demande')+'">'+(okAll?'✅ complet':'⚠️ à compléter')+'</span>'
+      +(editing?'':' <button class="btn ghost" style="padding:4px 10px;font-size:12px" onclick="famEditKid(\''+k.id+'\')">✏️ Compléter</button>')+'</span>'
     +'</div>'
-    +'<div class="ckgrid">'+chips+'</div>'
-    +infos
+    +(editing?famEditFormHtml(k):('<div class="ckgrid">'+chips+'</div>'+infos))
     +doss
   +'</div>';
 }
+function famEditFormHtml(k){
+  const classes=['','TPS','PS','MS','GS','CP','CE1','CE2','CM1','CM2','Autre'];
+  const opts=classes.map(function(c){ return '<option value="'+c+'"'+(k.classe===c?' selected':'')+'>'+(c||'—')+'</option>'; }).join('');
+  return '<div style="margin-top:10px;background:#f4f8f5;border:1px solid var(--line);border-radius:12px;padding:12px">'
+    +'<p class="sub" style="margin:0 0 8px">✏️ Complète <b>avec le parent</b> à côté de toi — chaque modification est enregistrée au journal. (Le droit à l\'image reste famille/bureau : il découle du formulaire signé.)</p>'
+    +'<div class="row" style="margin-bottom:8px">'
+      +'<div><label>Naissance</label><input id="fe_naissance" type="date" value="'+esc(k.naissance||'')+'" style="width:100%"></div>'
+      +'<div><label>Classe</label><select id="fe_classe" style="width:100%">'+opts+'</select></div>'
+      +'<div style="flex:2"><label>École</label><input id="fe_ecole" value="'+esc(k.ecole||'')+'" style="width:100%"></div>'
+    +'</div>'
+    +'<div class="row" style="margin-bottom:8px"><div style="flex:1"><label>🤧 Allergies (écrire « aucune » s\'il n\'y en a pas)</label><input id="fe_allergies" value="'+esc(k.allergies||'')+'" style="width:100%"></div></div>'
+    +'<div class="row" style="margin-bottom:8px"><div style="flex:1"><label>🩺 Infos santé (PAI, traitement, asthme…)</label><input id="fe_sante" value="'+esc(k.sante||'')+'" style="width:100%"></div></div>'
+    +'<div class="row" style="margin-bottom:10px"><div style="flex:1"><label>👥 Personnes autorisées à récupérer l\'enfant</label><input id="fe_autorises" value="'+esc(k.autorises||'')+'" style="width:100%"></div></div>'
+    +'<div class="row" style="gap:8px"><button class="btn win" onclick="famSaveKid(\''+k.id+'\')">💾 Enregistrer</button><button class="btn ghost" onclick="famEditKid(null)">Annuler</button></div>'
+  +'</div>';
+}
+window.famEditKid=function(id){ ME.famEdit=id; renderFamilles(); };
+window.famSaveKid=async function(id){
+  const payload={ naissance:($('#fe_naissance').value||null), classe:$('#fe_classe').value, ecole:$('#fe_ecole').value.trim(), allergies:$('#fe_allergies').value.trim(), sante:$('#fe_sante').value.trim(), autorises:$('#fe_autorises').value.trim() };
+  const {error}=await sb.from('enfants').update(payload).eq('id',id);
+  if(error){ toast('Erreur : '+error.message); return; }
+  ME.famEdit=null;
+  await loadFamilles(); renderFamilles(); toast('✅ Fiche enfant mise à jour');
+};
+window.famVoirPiece=async function(dossId,key){
+  const d=ME.famDoss.find(function(x){ return x.id===dossId; }); if(!d) return;
+  const got=d.pieces&&d.pieces[key]; if(!got||!got.path) return;
+  try{ const {data,error}=await sb.storage.from('dossiers-periscolaire').createSignedUrl(got.path,3600); if(error||!data){ toast('Pièce indisponible'); return; } spShowDoc(data.signedUrl,(got.name||key)); }
+  catch(e){ toast('Pièce indisponible'); }
+};
+window.famUpload=async function(dossId,key,input){
+  const d=ME.famDoss.find(function(x){ return x.id===dossId; }); if(!d) return;
+  const file=input.files&&input.files[0]; if(!file) return;
+  if(file.size>10*1024*1024){ toast('Fichier trop lourd (max 10 Mo)'); input.value=''; return; }
+  const info=$('#famup_'+dossId); if(info) info.textContent='📤 Envoi de « '+(file.name||'pièce')+' »…';
+  try{
+    const m=(file.name||'').match(/\.[a-z0-9]+$/i); const ext=m?m[0].toLowerCase():'';
+    const path=(d.asso_id||ME.asso)+'/'+d.user_id+'/'+key+'-'+Date.now().toString(36)+Math.random().toString(36).slice(2,6)+ext;
+    const up=await sb.storage.from('dossiers-periscolaire').upload(path,file,{contentType:file.type||'application/octet-stream',upsert:false});
+    if(up.error) throw up.error;
+    const pieces=Object.assign({},(d.pieces&&typeof d.pieces==='object')?d.pieces:{});
+    pieces[key]={path:path,name:file.name||'',par:'accueil'};
+    const r=await sb.from('inscriptions_periscolaire').update({pieces:pieces}).eq('id',d.id);
+    if(r.error) throw r.error;
+    d.pieces=pieces;
+    if(info) info.textContent='';
+    renderFamilles(); toast('✅ Pièce déposée pour la famille');
+  }catch(e){ if(info) info.textContent=''; toast('Échec du dépôt : '+(e.message||e)); }
+};
 window.renderFamilles=renderFamilles;
 
 function renderConges(){
