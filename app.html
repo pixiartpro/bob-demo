@@ -6400,7 +6400,7 @@ renderAll();
     const [ra,ri,rp]=await Promise.all([
       sbc.from('activites').select('*').order('ordre',{ascending:true}).order('created_at',{ascending:true}),
       sbc.from('inscriptions_activite').select('*').order('created_at',{ascending:true}),
-      sbc.from('profiles').select('id,full_name,email,role,assistant_sanitaire').eq('asso_id',myAsso).in('role',['personnel','bureau','president','tresorier']).eq('statut','actif').order('full_name',{ascending:true})
+      sbc.from('profiles').select('id,full_name,email,role,assistant_sanitaire,psc1_note').eq('asso_id',myAsso).in('role',['personnel','bureau','president','tresorier']).eq('statut','actif').order('full_name',{ascending:true})
     ]);
     if(ra.error){ box.innerHTML='<p class="hint" style="color:#c0392b">Erreur : '+esc(ra.error.message)+'</p>'; return; }
     const acts=(ra.data||[]).slice().sort((a,b)=>((a.type==='evenement')!==(b.type==='evenement'))?(a.type==='evenement'?1:-1):((a.ordre||0)-(b.ordre||0))), byA={};
@@ -6548,14 +6548,23 @@ renderAll();
     if(!isAdmin){ box.innerHTML=''; return; }
     box.innerHTML='<div class="panel" style="margin:10px 0;background:#eef7f0;border:1px solid #cfe6d6">'
       +'<strong>🩺 Accès aux fiches sanitaires</strong>'
-      +'<p class="hint" style="margin:4px 0 8px">Coche les personnes <b>« assistant sanitaire »</b> (souvent titulaires du PSC1) : elles voient les fiches sanitaires <b>complètes</b> de tous les enfants, comme le bureau. Un <b>référent</b> d\'activité voit déjà celles des enfants de <b>son</b> activité.</p>'
-      +((staff&&staff.length)?staff.map(function(p){ return '<label style="display:flex;align-items:center;gap:8px;padding:4px 0;cursor:pointer"><input type="checkbox" style="width:auto" '+(p.assistant_sanitaire?'checked':'')+' onchange="setAssistantSanitaire(\''+p.id+'\',this.checked)"> '+esc(p.full_name||p.email||'?')+' <span class="muted" style="font-size:12px">'+esc(p.role||'')+'</span></label>'; }).join(''):'<p class="hint" style="margin:0">Aucun compte salarié actif pour l\'instant — chaque salarié crée d\'abord son compte, puis apparaît ici.</p>')
+      +'<p class="hint" style="margin:4px 0 8px">Coche les personnes <b>« assistant sanitaire »</b> (souvent titulaires du PSC1) : elles voient les fiches sanitaires <b>complètes</b> de tous les enfants, comme le bureau. Un <b>référent</b> d\'activité voit déjà celles des enfants de <b>son</b> activité. Le PSC1 se <b>joint</b> comme document dans 👥 Dossiers salariés.</p>'
+      +((staff&&staff.length)?staff.map(function(p){ const on=!!p.assistant_sanitaire; return '<div style="display:flex;align-items:center;gap:8px;padding:5px 0;flex-wrap:wrap'+(on?';background:#e2f4ec;border-radius:8px;padding:6px 8px':'')+'">'
+        +'<label style="display:flex;align-items:center;gap:8px;cursor:pointer;flex:1;min-width:180px"><input type="checkbox" style="width:auto" '+(on?'checked':'')+' onchange="setAssistantSanitaire(\''+p.id+'\',this.checked)"> '+esc(p.full_name||p.email||'?')+' <span class="muted" style="font-size:12px">'+esc(p.role||'')+'</span>'+(on?' <span class="pill" style="background:#cfe6d6;color:#0f6b46;font-size:11px">🩺 Assistant sanitaire</span>':'')+'</label>'
+        +'<input placeholder="PSC1 : date / validité" value="'+esc(p.psc1_note||'')+'" onchange="setPsc1Note(\''+p.id+'\',this.value)" style="flex:0;min-width:190px;padding:4px 8px;border:1px solid var(--line,#cfe6d6);border-radius:6px;font:inherit;font-size:13px;background:#fff">'
+      +'</div>'; }).join(''):'<p class="hint" style="margin:0">Aucun compte salarié actif pour l\'instant — chaque salarié crée d\'abord son compte, puis apparaît ici.</p>')
       +'</div>';
   }
   window.setAssistantSanitaire=async function(uid,val){
     const {error}=await sbc.from('profiles').update({assistant_sanitaire:!!val}).eq('id',uid);
     if(error){ alert(error.message); loadActivitesGestion(); return; }
     if(typeof setSync==='function') setSync('✓ accès sanitaire mis à jour','#dff5e9');
+    loadActivitesGestion();
+  };
+  window.setPsc1Note=async function(uid,val){
+    const {error}=await sbc.from('profiles').update({psc1_note:(val||'').trim()||null}).eq('id',uid);
+    if(error){ alert(error.message); return; }
+    if(typeof setSync==='function') setSync('✓ PSC1 enregistré','#dff5e9');
   };
   window.editActivite=async function(id){
     const {data,error}=await sbc.from('activites').select('*').eq('id',id).single();

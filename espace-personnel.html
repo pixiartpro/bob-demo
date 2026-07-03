@@ -131,7 +131,7 @@ async function boot(){
   let session=null; try{ session=(await sb.auth.getSession()).data.session; }catch(e){}
   if(!session){ gate('<h2>🔒 Connexion requise</h2><p class="sub">Cet espace est réservé aux salariés du CASE.</p><p style="margin-top:16px"><a class="btn win" style="text-decoration:none" href="connexion.html">→ Se connecter</a></p>'); return; }
   ME.session=session;
-  const {data:prof}=await sb.from('profiles').select('full_name,email,role,statut').eq('id',session.user.id).maybeSingle();
+  const {data:prof}=await sb.from('profiles').select('full_name,email,role,statut,assistant_sanitaire').eq('id',session.user.id).maybeSingle();
   ME.prof=prof||null;
   if(!prof){ gate('<h2>Profil introuvable</h2><p class="sub">Contacte le bureau du CASE.</p>'); return; }
   $('#logoutBtn').style.display='';
@@ -168,6 +168,7 @@ function renderAll(){
   const html='<div class="hero"><div class="wrap">'
       +'<p class="hello">👋 Bonjour '+esc((f&&f.prenom)||p.full_name||'')+'</p>'
       +'<p class="sub">'+esc((f&&f.poste)||'Salarié·e du CASE')+(f&&f.type_contrat?' · '+esc(f.type_contrat):'')+(f&&f.temps_travail?' · '+esc(f.temps_travail):'')+'</p>'
+      +((p&&p.assistant_sanitaire)?'<p style="margin:6px 0 0"><span class="badge b-valide">🩺 Assistant sanitaire</span> <span class="sub">— tu as accès aux fiches sanitaires des enfants</span></p>':'')
     +'</div></div>'
     +'<div class="wrap"><div id="viewport"></div>'
     +'<footer>CASE du Bois de Nèfles · Espace salarié · données hébergées en France (RGPD)</footer></div>';
