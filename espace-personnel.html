@@ -51,6 +51,11 @@
   .b-demande{background:#fff4e0;color:#b9770e}.b-valide{background:#e2f4ec;color:#0f6b46}.b-refuse{background:#fbe9e7;color:#c0392b}
   .doc{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px dashed var(--line)}
   .doc:last-child{border-bottom:none}
+  /* Checklist « Dossiers familles » (rempli / manquant) */
+  .ckgrid{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+  .ck{display:inline-flex;align-items:center;gap:4px;padding:4px 11px;border-radius:999px;font-size:12.5px;font-weight:700;background:#e2f4ec;color:#0f6b46;border:1px solid #cdeadd}
+  .ck.off{background:#fff4e0;color:#9a6a0a;border-color:#f3e3bd}
+  .ck .val{font-weight:600}
   .empty{color:var(--muted);text-align:center;padding:14px}
   .gate{max-width:520px;margin:60px auto;text-align:center;background:#fff;border:1px solid var(--line);border-radius:18px;padding:30px 26px;box-shadow:var(--shadow)}
   #toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(40px);background:var(--ink);color:#fff;padding:12px 20px;border-radius:999px;font-weight:700;box-shadow:var(--shadow-lg);opacity:0;transition:.25s;z-index:99}
@@ -113,7 +118,7 @@ const SB_URL='https://dkidtwypclpwznleiqnq.supabase.co';
 const SB_KEY='sb_publishable_HDfV-O2ION1Vw9v03aV_Qg_PkiAjLNo';
 const sb=window.supabase.createClient(SB_URL,SB_KEY);
 const $=s=>document.querySelector(s);
-const ME={session:null,prof:null,fiche:null,conges:[],docs:[],acts:[],ins:[],asso:null,protos:[],albums:[],photos:[],kids:[]};
+const ME={session:null,prof:null,fiche:null,conges:[],docs:[],acts:[],ins:[],asso:null,protos:[],albums:[],photos:[],kids:[],famKids:[],famDoss:[],famOnlyMiss:false};
 function esc(s){return (s==null?'':String(s)).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2600);}
 function euroDays(n){return (n==null?'0':(Math.round(n*100)/100).toString().replace('.',','));}
@@ -139,7 +144,7 @@ async function boot(){
   // rôle personnel : fiche RH facultative (la partie gestion ne dépend pas d'elle)
   const {data:fiche}=await sb.from('personnel').select('*').eq('user_id',session.user.id).maybeSingle();
   ME.fiche=fiche||null;
-  const jobs=[loadActs(), loadProtocoles(), loadPhotos()];
+  const jobs=[loadActs(), loadProtocoles(), loadPhotos(), loadFamilles()];
   if(fiche){ jobs.push(loadConges(), loadDocs()); }
   await Promise.all(jobs);
   renderAll();
@@ -173,6 +178,7 @@ window.spView=function(v){ ME.view=v; renderView(); try{window.scrollTo({top:0,b
 function renderView(){
   const vp=$('#viewport'); if(!vp) return;
   if(ME.view==='activites'){ vp.innerHTML=backBar('🎒 Mes activités')+activitesHTML(); renderActs(); }
+  else if(ME.view==='familles'){ vp.innerHTML=backBar('👨‍👩‍👧 Dossiers familles')+famillesHTML(); renderFamilles(); }
   else if(ME.view==='photos'){ vp.innerHTML=backBar('📸 Photos du jour')+photosHTML(); renderAlbums(); }
   else if(ME.view==='rh'){ vp.innerHTML=backBar('🧑‍💼 Mon RH')+rhHTML(); if(ME.fiche){ renderConges(); renderDocs(); } }
   else if(ME.view==='procedures'){ vp.innerHTML=backBar('📋 Procédures du CASE')+proceduresHTML(); }
@@ -200,6 +206,8 @@ function hubHTML(){
         +'<div class="hubname">Mes activités</div><div class="hubsub">'+esc(actSub)+'</div><div class="hubgo">Entrer →</div></button>'
       +'<button class="hubcard" onclick="spView(\'photos\')"><div class="hubico">📸</div>'
         +'<div class="hubname">Photos du jour</div><div class="hubsub">'+esc(phSub)+'</div><div class="hubgo">Entrer →</div></button>'
+      +'<button class="hubcard" onclick="spView(\'familles\')"><div class="hubico">👨‍👩‍👧</div>'
+        +'<div class="hubname">Dossiers familles'+famHubBadge()+'</div><div class="hubsub">'+esc(famHubSub())+'</div><div class="hubgo">Entrer →</div></button>'
       +'<button class="hubcard" onclick="spView(\'rh\')"><div class="hubico">🧑‍💼</div>'
         +'<div class="hubname">Mon RH'+rhBadge+'</div><div class="hubsub">'+esc(rhSub)+'</div><div class="hubgo">Entrer →</div></button>'
       +(ME.protos.length?('<button class="hubcard" onclick="spView(\'procedures\')"><div class="hubico">📋</div>'
@@ -498,6 +506,124 @@ window.phDelAlbum=async function(id){
   if(error){ toast('Erreur : '+error.message); return; }
   await loadPhotos(); renderView(); toast('Album supprimé');
 };
+
+// ===== Bloc Dossiers familles (accompagnement des parents — LECTURE SEULE) =====
+// Le salarié voit ce qui est rempli / ce qui manque, pour aider la famille à compléter.
+// 🔒 Confidentialité : le CONTENU des champs allergies / infos santé / personnes autorisées
+// n'est jamais affiché NI gardé en mémoire — on ne conserve que « renseigné ou pas ».
+// (La liste des pièces reflète PERI.PIECES de espace-adherent.html — à garder alignées.)
+const FAM_PIECES=[{k:'caf',lab:'Attestation CAF'},{k:'impots',lab:'Avis d\'imposition'},{k:'domicile',lab:'Justificatif de domicile'},{k:'assurance',lab:'Attestation d\'assurance'},{k:'vaccin',lab:'Vaccins à jour'},{k:'livret',lab:'Livret de famille'}];
+function famFilled(s){ return !!(s&&String(s).trim()); }
+function famNorm(s){ return String(s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/\s+/g,' ').trim(); }
+async function loadFamilles(){
+  try{
+    const [rk,rd]=await Promise.all([
+      sb.from('enfants').select('id,nom,prenom,naissance,classe,ecole,allergies,sante,autorises,droit_image').order('nom',{ascending:true}),
+      sb.from('inscriptions_periscolaire').select('id,annee,foyer,email,tel,enfants,pieces,statut,besoin_aide,updated_at').order('updated_at',{ascending:false})
+    ]);
+    ME.famKids=(rk.data||[]).map(function(k){ return { id:k.id, nom:k.nom||'', prenom:k.prenom||'', naissance:k.naissance||'', classe:k.classe||'', ecole:k.ecole||'',
+      allergies_ok:famFilled(k.allergies), sante_ok:famFilled(k.sante), autorises_ok:famFilled(k.autorises), droit_image:k.droit_image }; });
+    ME.famDoss=rd.data||[];
+  }catch(e){ ME.famKids=[]; ME.famDoss=[]; }
+}
+function famDossierFor(k){
+  for(let i=0;i<ME.famDoss.length;i++){
+    const d=ME.famDoss[i]; const arr=Array.isArray(d.enfants)?d.enfants:[];
+    const it=arr.find(function(e){ return (e.enfant_id&&e.enfant_id===k.id) || (famNorm(e.nom)===famNorm(k.nom) && famNorm(e.prenom)===famNorm(k.prenom) && famNorm(k.nom+k.prenom)!==''); });
+    if(it) return {d:d,it:it};
+  }
+  return null;
+}
+function famBilan(k){
+  const checks=[
+    {lab:'Date de naissance', ok:!!k.naissance, val:k.naissance?fdate(k.naissance):''},
+    {lab:'École', ok:famFilled(k.ecole), val:k.ecole},
+    {lab:'Classe', ok:famFilled(k.classe), val:k.classe, opt:true},
+    {lab:'Allergies', ok:k.allergies_ok, lock:true},
+    {lab:'Infos santé', ok:k.sante_ok, opt:true, lock:true},
+    {lab:'Personnes autorisées', ok:k.autorises_ok, lock:true},
+    {lab:'Droit à l\'image', ok:k.droit_image!=null, val:(k.droit_image==null?'':(k.droit_image?'autorisé':'refusé'))}
+  ];
+  const dj=famDossierFor(k);
+  let missPieces=[];
+  if(dj){ const pieces=(dj.d.pieces&&typeof dj.d.pieces==='object')?dj.d.pieces:{}; missPieces=FAM_PIECES.filter(function(p){ return !(pieces[p.k]&&pieces[p.k].path); }); }
+  const manque=checks.filter(function(c){ return !c.ok&&!c.opt; }).length + ((dj&&(dj.d.statut==='incomplet'||missPieces.length))?1:0);
+  return {checks:checks, dj:dj, missPieces:missPieces, manque:manque, aide:!!(dj&&dj.d.besoin_aide)};
+}
+function famMissCount(){ let n=0; ME.famKids.forEach(function(k){ if(famBilan(k).manque>0) n++; }); return n; }
+function famHubSub(){
+  const n=ME.famKids.length;
+  if(!n) return 'Vois ce qui manque dans les fiches pour aider les parents à compléter';
+  const m=famMissCount();
+  return n+' enfant'+(n>1?'s':'')+' · '+(m?(m+' fiche'+(m>1?'s':'')+' à compléter'):'tout est complet ✅');
+}
+function famHubBadge(){
+  let a=0; ME.famKids.forEach(function(k){ if(famBilan(k).aide) a++; });
+  return a?' <span class="badge b-demande">🙋 '+a+'</span>':'';
+}
+function famillesHTML(){
+  return '<section class="block">'
+    +'<p class="sub">Pour accompagner les parents : ce qui est <b>rempli ✓</b> et ce qui <b>manque ⚠️</b>, enfant par enfant (fiche + dossier périscolaire). <b>Lecture seule</b> — c\'est la famille (ou le bureau) qui complète. 🔒 Le contenu des infos santé, allergies et personnes autorisées ne s\'affiche pas ici : tu vois seulement si c\'est renseigné.</p>'
+    +'<div class="card" style="margin-bottom:14px"><div class="row">'
+      +'<div style="flex:2"><input id="fam_q" placeholder="🔎 Chercher un enfant…" style="width:100%" oninput="renderFamilles()"></div>'
+      +'<div style="flex:0 0 auto"><button class="btn '+(ME.famOnlyMiss?'win':'ghost')+'" id="fam_miss_btn" onclick="famToggleMiss()">⚠️ Seulement à compléter</button></div>'
+    +'</div><div id="famStats" class="sub" style="margin:8px 0 0"></div></div>'
+    +'<div id="famList"></div>'
+  +'</section>';
+}
+window.famToggleMiss=function(){ ME.famOnlyMiss=!ME.famOnlyMiss; const b=$('#fam_miss_btn'); if(b) b.className='btn '+(ME.famOnlyMiss?'win':'ghost'); renderFamilles(); };
+function renderFamilles(){
+  const box=$('#famList'); if(!box) return;
+  const st=$('#famStats');
+  if(!ME.famKids.length){ if(st) st.textContent=''; box.innerHTML='<div class="card"><p class="empty">Aucune fiche enfant pour l\'instant. Elles apparaissent quand les familles créent leur compte (ou quand le bureau les saisit).</p></div>'; return; }
+  const q=famNorm((($('#fam_q')||{}).value)||'');
+  const rows=ME.famKids.map(function(k){ return {k:k,b:famBilan(k)}; });
+  const nMiss=rows.filter(function(r){ return r.b.manque>0; }).length;
+  const nAide=rows.filter(function(r){ return r.b.aide; }).length;
+  if(st) st.innerHTML='🧒 <b>'+rows.length+'</b> enfant'+(rows.length>1?'s':'')+' · ✅ '+(rows.length-nMiss)+' complet'+((rows.length-nMiss)>1?'s':'')+' · ⚠️ '+nMiss+' à compléter'+(nAide?' · 🙋 '+nAide+' demande'+(nAide>1?'s':'')+' d\'aide':'');
+  let list=rows;
+  if(q) list=list.filter(function(r){ return famNorm(r.k.prenom+' '+r.k.nom).indexOf(q)>=0; });
+  if(ME.famOnlyMiss) list=list.filter(function(r){ return r.b.manque>0; });
+  list.sort(function(a,b){ return ((b.b.aide?1:0)-(a.b.aide?1:0)) || ((b.b.manque?1:0)-(a.b.manque?1:0)) || famNorm(a.k.prenom+' '+a.k.nom).localeCompare(famNorm(b.k.prenom+' '+b.k.nom)); });
+  if(!list.length){ box.innerHTML='<div class="card"><p class="empty">'+(ME.famOnlyMiss&&!q?'🎉 Rien à compléter — toutes les fiches sont au complet.':'Aucun enfant ne correspond à la recherche.')+'</p></div>'; return; }
+  box.innerHTML=list.map(function(r){ return famCardHtml(r.k,r.b); }).join('');
+}
+function famCardHtml(k,b){
+  const name=esc(((k.prenom||'')+' '+(k.nom||'')).trim()||'(sans nom)');
+  const chips=b.checks.map(function(c){
+    return '<span class="ck '+(c.ok?'on':'off')+'">'+(c.ok?'✓':'⚠️')+' '+esc(c.lab)
+      +(c.ok&&c.val?' <span class="val">· '+esc(c.val)+'</span>':'')
+      +(c.ok&&c.lock?' 🔒':'')
+      +((!c.ok&&c.opt)?' <span class="val">(facultatif)</span>':'')
+    +'</span>';
+  }).join('');
+  let doss='';
+  if(b.dj){
+    const d=b.dj.d, it=b.dj.it||{};
+    const SL={brouillon:['📝 Brouillon — pas encore déposé','b-demande'],depose:['📨 Déposé — en attente du bureau','b-demande'],incomplet:['⚠️ Incomplet','b-refuse'],valide:['✅ Validé','b-valide'],refuse:['✖️ Refusé','b-refuse']};
+    const s=SL[d.statut]||[esc(d.statut||'—'),'b-demande'];
+    const acc=[(it.matin?'🌅 matin':''),(it.soir?'🌇 soir':'')].filter(Boolean).join(' + ');
+    const pc=FAM_PIECES.length-b.missPieces.length;
+    doss='<div style="margin-top:10px;padding-top:10px;border-top:1px dashed var(--line);font-size:14px">'
+      +'<b>🎒 Dossier périscolaire'+(d.annee?' '+esc(d.annee):'')+'</b> <span class="badge '+s[1]+'">'+s[0]+'</span>'+(acc?' · '+acc:'')
+      +'<div class="sub" style="margin:4px 0 0">Pièces déposées : <b>'+pc+'/'+FAM_PIECES.length+'</b>'+(b.missPieces.length?' — manque : '+b.missPieces.map(function(p){ return esc(p.lab); }).join(', '):' ✅')+'</div>'
+      +(b.aide?'<div style="margin-top:4px;font-weight:700;color:#b9770e">🙋 La famille a coché « j\'ai besoin d\'aide » — c\'est le moment de l\'accompagner.</div>':'')
+      +((d.foyer||d.email||d.tel)?'<div class="sub" style="margin:4px 0 0">👪 '+esc(d.foyer||'Famille')+(d.email?' · 📧 '+esc(d.email):'')+(d.tel?' · 📞 '+esc(d.tel):'')+'</div>':'')
+    +'</div>';
+  } else {
+    doss='<div class="sub" style="margin-top:10px;padding-top:10px;border-top:1px dashed var(--line)">🎒 Pas de dossier périscolaire — normal si la famille n\'utilise pas la garderie.</div>';
+  }
+  const okAll=b.manque===0;
+  return '<div class="card" style="margin-bottom:12px;border-left:4px solid '+(okAll?'#1f9d6b':'#dc8f38')+'">'
+    +'<div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:center">'
+      +'<b style="font-size:16px">🧒 '+name+'</b>'
+      +'<span>'+(b.aide?'<span class="badge b-demande">🙋 aide demandée</span> ':'')+'<span class="badge '+(okAll?'b-valide':'b-demande')+'">'+(okAll?'✅ complet':'⚠️ à compléter')+'</span></span>'
+    +'</div>'
+    +'<div class="ckgrid">'+chips+'</div>'
+    +doss
+  +'</div>';
+}
+window.renderFamilles=renderFamilles;
 
 function renderConges(){
   const box=$('#cgList'); if(!box) return;
