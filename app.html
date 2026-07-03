@@ -7260,7 +7260,9 @@ renderAll();
     box.innerHTML='<div class="panel"><h2 style="margin-top:0">🎛️ Tour de contrôle — Bouquets par organisation</h2>'
       +'<p class="hint" style="margin:4px 0 0">Clique le bouton à droite pour <b>activer / éteindre</b> un bouquet par organisation. Le <b>socle</b> (tableau de bord, secrétariat, aide…) est toujours présent et n\'apparaît pas ici. 🔒 Le <b>CASE</b> est verrouillé : on ne peut pas lui retirer de module ici.</p>'
       +'<div id="bouquetsTower" style="margin-top:14px"><div class="empty">Chargement…</div></div></div>'
-      +'<div class="panel" style="margin-top:12px"><p class="hint" style="margin:0">Pilotage fin (formules, plan, réglages avancés) : <a href="https://bob.re/admin.html" target="_blank" rel="noopener" style="font-weight:800;color:#127a51">→ console bob.re/admin</a></p></div>';
+      +'<div class="panel" style="margin-top:12px"><p class="hint" style="margin:0">Pilotage fin (formules, plan, réglages avancés) : <a href="https://bob.re/admin.html" target="_blank" rel="noopener" style="font-weight:800;color:#127a51">→ console bob.re/admin</a></p></div>'
+      +'<div class="panel" id="statsVisitesPanel" style="margin-top:12px"><h2 style="margin-top:0">📊 Fréquentation du site public</h2><div id="statsVisitesBody"><div class="empty">Chargement…</div></div></div>';
+    if(window.bobLoadStatsVisites) window.bobLoadStatsVisites();
     const tower=document.getElementById('bouquetsTower'); if(!tower) return;
     let orgs=null;
     try{ const {data,error}=await sbc.rpc('admin_list_assos'); if(!error && Array.isArray(data) && data.length) orgs=data; }catch(e){}
@@ -7279,6 +7281,21 @@ renderAll();
       if(error){ alert('Erreur : '+error.message); return; }
     }catch(e){ alert('Erreur : '+((e&&e.message)||e)); return; }
     if(window.bobLoadAdmin) window.bobLoadAdmin();
+  };
+  // Fréquentation du site public (compteur RGPD-clean : total + par jour). Lecture réservée au super-admin via la RPC stats_visites.
+  window.bobLoadStatsVisites=async function(){
+    const el=document.getElementById('statsVisitesBody'); if(!el) return;
+    let rows=null;
+    try{ const {data,error}=await sbc.rpc('stats_visites'); if(!error && Array.isArray(data)) rows=data; }catch(e){}
+    if(!rows){ el.innerHTML='<div class="empty">Indisponible pour le moment.</div>'; return; }
+    const total=rows.reduce(function(s,r){ return s+(r.nombre||0); },0);
+    const fmtJour=function(d){ try{ return new Date(d+'T00:00:00').toLocaleDateString('fr-FR',{weekday:'short',day:'2-digit',month:'short'}); }catch(e){ return d; } };
+    const derniers=rows.slice(0,30).map(function(r){
+      return '<div style="display:flex;justify-content:space-between;gap:14px;padding:6px 0;border-top:1px dashed #e7efe9"><span class="muted">'+fmtJour(r.jour)+'</span><b>'+(r.nombre||0)+'</b></div>';
+    }).join('');
+    el.innerHTML='<div style="font-size:34px;font-weight:800;color:#3a51e8;line-height:1.05">'+total+'</div>'
+      +'<div class="muted" style="margin:2px 0 12px">visites au total sur le site public (casebdn.re)</div>'
+      +(rows.length?('<div style="font-size:12px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:#7a8a83;margin-bottom:2px">Par jour (30 derniers)</div>'+derniers):'<div class="empty">Aucune visite encore.</div>');
   };
 
   async function boot(){

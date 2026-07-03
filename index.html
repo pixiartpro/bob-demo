@@ -467,6 +467,8 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 const _sbPart=window.supabase.createClient('https://dkidtwypclpwznleiqnq.supabase.co','sb_publishable_HDfV-O2ION1Vw9v03aV_Qg_PkiAjLNo');
+// Compteur de visites (RGPD-clean : fait juste +1, aucune donnee perso). Fire-and-forget, ne bloque jamais la page.
+try{ _sbPart.rpc('compter_visite').then(null,function(){}); }catch(e){}
 async function submitPartner(){
   const g=id=>document.getElementById(id);
   const commerce=g('pa_commerce').value.trim(), contact=g('pa_contact').value.trim(), info=g('pa_info');
