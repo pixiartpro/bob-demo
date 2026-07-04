@@ -206,6 +206,16 @@
   .qtile h3{margin:8px 0 4px;font-size:18px}
   .qtile .qlist{color:var(--muted);font-size:14px;margin:0}
   .qtile .qgo{display:inline-block;margin-top:10px;color:var(--vert-fonce);font-weight:800;font-size:13.5px}
+  /* Temps forts en cartes */
+  .evcard{background:var(--card);border:1px solid var(--line);border-top:4px solid var(--jaune);border-radius:16px;box-shadow:var(--shadow);overflow:hidden;transition:.18s}
+  .evcard:hover{box-shadow:var(--shadow-lg)}
+  .evhead{display:flex;align-items:center;gap:12px;width:100%;text-align:left;background:none;border:none;font:inherit;color:var(--ink);cursor:pointer;padding:16px}
+  .evhead:hover{background:#f7fbf9}
+  .evhead .aico{font-size:26px;flex:0 0 auto;width:32px;text-align:center}
+  .evhead .abody{flex:1;min-width:0}
+  .evhead .abody b{font-size:15.5px}
+  .evhead .abody span{display:block;color:var(--muted);font-size:13px}
+  .evhead .rgo{color:#c4d6cb;font-size:20px;font-weight:700;flex:0 0 auto}
   @media(max-width:520px){.actrow{flex-wrap:wrap}.actrow .abody{flex:1 1 auto}.actrow .btn{width:100%;margin-top:4px}}
   /* (ancien CSS agenda .agenda/.ag-item retiré — l'agenda utilise désormais .actrow/.actcat) */
   @media(max-width:680px){.contact-grid{grid-template-columns:1fr}.hero .deco{display:none}}
@@ -323,11 +333,11 @@
     <p class="eyebrow">Espace jeunes · 11–17 ans</p>
     <h2 class="title">La jeunesse aux commandes 🛹</h2>
     <p class="sub">Un secteur ados où les jeunes deviennent <strong>acteurs</strong> : accueil de loisirs les mercredis, samedis et vacances — et bien plus.</p>
-    <div class="actlist">
-      <div class="actrow"><span class="aico">🏠</span><div class="abody"><b>La Kaz Zados</b><span>Un lieu à eux, géré par eux : leurs projets, leur autonomie</span></div></div>
-      <div class="actrow"><span class="aico">🎤</span><div class="abody"><b>Ôté Kartié</b><span>Le projet phare des jeunes pour faire bouger le quartier</span></div></div>
-      <div class="actrow"><span class="aico">💃</span><div class="abody"><b>Danse &amp; créations</b><span>Danse, expression et activités menées avec les ados</span></div></div>
-      <div class="actrow"><span class="aico">📅</span><div class="abody"><b>Mercredi, samedi &amp; vacances</b><span>Un accueil régulier pour les 11–17 ans toute l'année</span></div></div>
+    <div class="qgrid">
+      <div class="card" style="border-top:4px solid var(--vert)"><div class="ico">🏠</div><h3>La Kaz Zados</h3><p>Un lieu à eux, géré par eux : leurs projets, leur autonomie.</p></div>
+      <div class="card" style="border-top:4px solid var(--ananas)"><div class="ico">🎤</div><h3>Ôté Kartié</h3><p>Le projet phare des jeunes pour faire bouger le quartier.</p></div>
+      <div class="card" style="border-top:4px solid #d2602f"><div class="ico">💃</div><h3>Danse &amp; créations</h3><p>Danse, expression et activités menées avec les ados.</p></div>
+      <div class="card" style="border-top:4px solid #3a9bd9"><div class="ico">📅</div><h3>Mercredi, samedi &amp; vacances</h3><p>Un accueil régulier pour les 11–17 ans toute l'année.</p></div>
     </div>
     <div style="text-align:center;margin-top:20px">
       <a class="btn primary" style="text-decoration:none" href="espace-adherent.html">🌴 Réserver une place (ACM, sorties) → Mon espace famille</a>
@@ -686,7 +696,7 @@ function actRowHtml(a){
   const complet=!bientot && places<=0;
   const badge = bientot ? '<span class="ptag soon">arrive bientôt</span>'
               : complet ? '<span class="ptag work">complet</span>'
-              : '<span class="ptag on">'+places+' place'+(places>1?'s':'')+' restante'+(places>1?'s':'')+'</span>';
+              : '<span class="ptag on">Inscriptions ouvertes</span>';
   const btn = (bientot||complet) ? '' : '<a class="btn primary" style="text-decoration:none" href="espace-adherent.html">Réserver →</a>';
   return '<div class="actrow">'
       +'<span class="aico">'+(a.emoji||'•')+'</span>'
@@ -700,6 +710,7 @@ const QFAM=[
   {key:'Sport & bien-être', emoji:'🤸', color:'#d2602f'},
   {key:'__vie__', label:'Vie de quartier', emoji:'☕', color:'#3a9bd9'}
 ];
+function collapseAcm(list){var out=[],seen=false;(list||[]).forEach(function(a){var nm=a.nom||'';if(nm.indexOf('ACM')>-1&&nm.indexOf('semaine')>-1){if(!seen){seen=true;out.push({nom:'ACM Ados — Été 2026',emoji:'🏕️',categorie:a.categorie,statut:'ouvert',capacite:1,nb_inscrits:0,quand:'27 juil → 7 août',description:'Du 27 juillet au 7 août · 2 semaines au choix (dans ton espace famille) · 11–17 ans'});}}else{out.push(a);}});return out;}
 let _actByCat={};
 async function loadActivitesPubliques(){
   const box=document.getElementById('actQuartiers'); if(!box) return;
@@ -707,10 +718,11 @@ async function loadActivitesPubliques(){
   if(error){ box.innerHTML='<p style="grid-column:1/-1;text-align:center;color:#c0392b">Impossible de charger les activités pour le moment.</p>'; return; }
   _actByCat={};
   (data||[]).forEach(a=>{ const c=a.categorie||'Autres'; (_actByCat[c]=_actByCat[c]||[]).push(a); });
+  Object.keys(_actByCat).forEach(function(k){_actByCat[k]=collapseAcm(_actByCat[k]);});
   box.innerHTML=QFAM.map((f,idx)=>{
     let names;
     if(f.key==='__vie__'){ names='Permanence du samedi (café offert) · Jeudi info population'; }
-    else { const list=_actByCat[f.key]||[]; names=list.map(a=>escP(String(a.nom||'').split('—')[0].trim())).join(' · ')||'Bientôt'; }
+    else { const list=_actByCat[f.key]||[]; names=list.map(a=>{const nm=String(a.nom||'');const m=nm.match(/semaine\s*(\d+)/i);return escP(m?'ACM sem. '+m[1]:nm.split('—')[0].trim());}).join(' · ')||'Bientôt'; }
     return '<button class="qtile" style="border-top-color:'+f.color+'" onclick="openActCat('+idx+')">'
       +'<span class="qi">'+f.emoji+'</span>'
       +'<h3>'+(f.label||escP(f.key))+'</h3>'
@@ -752,11 +764,11 @@ async function actSend(id){
    Le statut fait le libellé ; 3 chips max ; le bandeau reste caché s'il n'y a rien. */
 async function loadInsBar(){
   const bar=document.getElementById('insbar'); if(!bar) return;
-  const {data,error}=await _sbPart.from('activites').select('nom,emoji,statut,capacite,nb_inscrits')
+  const {data,error}=await _sbPart.from('activites').select('nom,emoji,statut,capacite,nb_inscrits,quand')
     .eq('publie',true).eq('type','activite').eq('categorie','Péri & extrascolaire')
-    .neq('statut','archive').order('ordre',{ascending:true}).limit(3);
+    .neq('statut','archive').order('ordre',{ascending:true}).limit(4);
   if(error||!data||!data.length) return;               // rien → pas de bandeau
-  bar.innerHTML='<span class="ib-tag">📣 Inscriptions</span>'+data.map(a=>{
+  bar.innerHTML='<span class="ib-tag">📣 Inscriptions</span>'+collapseAcm(data).map(a=>{
     const places=Math.max(0,(a.capacite||0)-(a.nb_inscrits||0));
     const bientot=a.statut==='bientot', complet=!bientot&&places<=0;
     const dot=bientot?'#2a5aa0':(complet?'#b23a23':'var(--vert)');
@@ -764,41 +776,53 @@ async function loadInsBar(){
     const stc=bientot?'#2a5aa0':(complet?'#b23a23':'var(--vert-fonce)');
     const href=bientot?'#activites':'espace-adherent.html';
     return '<a class="ib-chip" href="'+href+'"><span class="ib-dot" style="background:'+dot+'"></span>'
-      +(a.emoji?a.emoji+' ':'')+escP(a.nom)+'<span class="ib-st" style="color:'+stc+'">· '+st+'</span></a>';
+      +(a.emoji?a.emoji+' ':'')+escP(a.nom)+(a.quand?' <span style="color:var(--muted);font-weight:600;font-size:12px">· '+escP(a.quand)+'</span>':'')+'<span class="ib-st" style="color:'+stc+'">· '+st+'</span></a>';
   }).join('');
   bar.hidden=false;
 }
 /* ===== Temps forts : agenda dynamique (événements à venir) ===== */
 function todayISO(){ return new Date().toISOString().slice(0,10); }
 function formatDateFr(iso){ if(!iso) return ''; const M=['janv.','févr.','mars','avr.','mai','juin','juil.','août','sept.','oct.','nov.','déc.']; const p=String(iso).split('-'); return parseInt(p[2],10)+' '+M[parseInt(p[1],10)-1]+' '+p[0]; }
-function evRowHtml(e){
-  const badge = e.date_event ? '<span class="ptag on">'+escP(formatDateFr(e.date_event))+'</span>' : '<span class="ptag soon">date à venir</span>';
-  return '<div class="actrow agclick" onclick="actToggle(\''+e.id+'\')" style="cursor:pointer">'
-      +'<span class="aico">'+(e.emoji||'📅')+'</span>'
-      +'<div class="abody"><b>'+escP(e.nom)+'</b><span>'+escP(e.quand||e.lieu||'')+'</span></div>'
-      +badge+'<span class="rgo">›</span>'
-    +'</div>'
-    +'<div class="actform" id="actf_'+e.id+'" style="display:none">'
-      +(e.programme?'<p style="margin:0 0 8px;font-size:14px"><b>Au programme :</b> '+escP(e.programme)+'</p>':'')
-      +(e.lieu?'<p style="margin:0 0 8px;font-size:13.5px;color:var(--muted)">📍 '+escP(e.lieu)+'</p>':'')
-      +'<input id="actn_'+e.id+'" placeholder="Votre nom *">'
-      +'<input id="actc_'+e.id+'" placeholder="Téléphone ou email">'
-      +'<button class="btn primary" style="width:100%;margin-top:4px" onclick="actSend(\''+e.id+'\')">'+(e.date_event?'Je m\'inscris':'Prévenez-moi de la date')+'</button>'
-      +'<p id="acti_'+e.id+'" style="margin:6px 0 0;font-size:13px;font-weight:700;text-align:center"></p>'
-    +'</div>';
+let _evById={};
+function evCardHtml(e){
+  const dt = e.date_event ? escP(formatDateFr(e.date_event)) : 'À venir';
+  return `<button class="qtile" style="border-top-color:var(--jaune)" onclick="openEvent('${e.id}')">`
+    + `<span class="qi">${e.emoji||'📅'}</span>`
+    + `<h3>${escP(e.nom)}</h3>`
+    + `<p class="qlist">${escP(e.quand||'')||'&nbsp;'}</p>`
+    + `<span class="qgo">${dt} →</span>`
+    + `</button>`;
+}
+function openEvent(id){
+  const e=_evById[id]; if(!e) return;
+  const box=document.getElementById('pmodalBox'); if(!box) return;
+  const dateTxt = e.date_event ? formatDateFr(e.date_event) : 'Date à venir';
+  box.innerHTML = `<button class="px" onclick="closePlan()" aria-label="Fermer">✕</button>`
+    + `<div class="pico">${e.emoji||'📅'}</div>`
+    + `<span class="pill work"><i class="dot work"></i>${escP(dateTxt)}</span>`
+    + `<h3>${escP(e.nom)}</h3>`
+    + (e.programme?`<p style="color:var(--muted);margin:8px 0 0;white-space:pre-line">${escP(e.programme)}</p>`:``)
+    + (e.lieu?`<p style="margin:8px 0 0;font-size:13.5px;color:var(--muted)">📍 ${escP(e.lieu)}</p>`:``)
+    + `<div style="margin-top:14px">`
+    +   `<input id="actn_${e.id}" placeholder="Votre nom *" style="width:100%;margin:4px 0;padding:10px 12px;border:1px solid var(--line);border-radius:10px;font:inherit">`
+    +   `<input id="actc_${e.id}" placeholder="Téléphone ou email" style="width:100%;margin:4px 0;padding:10px 12px;border:1px solid var(--line);border-radius:10px;font:inherit">`
+    +   `<button class="btn primary" style="width:100%;margin-top:6px" onclick="actSend('${e.id}')">${e.date_event?`Je m'inscris`:`Préviens-moi de la date`}</button>`
+    +   `<p id="acti_${e.id}" style="margin:8px 0 0;font-size:13px;font-weight:700;text-align:center"></p>`
+    + `</div>`;
+  document.getElementById('pmodal').classList.add('open');
 }
 async function loadEvenements(){
   const box=document.getElementById('agendaList'); if(!box) return;
+  box.className='qgrid';
   const {data,error}=await _sbPart.from('activites').select('*').eq('publie',true).eq('type','evenement').neq('statut','archive');
-  if(error){ box.innerHTML='<p style="text-align:center;color:#c0392b">Impossible de charger l\'agenda.</p>'; return; }
+  if(error){ box.innerHTML=`<p style="grid-column:1/-1;text-align:center;color:#c0392b">Agenda indisponible pour le moment.</p>`; return; }
   const today=todayISO();
   const dated=(data||[]).filter(e=>e.date_event && e.date_event>=today).sort((a,b)=>a.date_event<b.date_event?-1:(a.date_event>b.date_event?1:0));
   const undated=(data||[]).filter(e=>!e.date_event);
-  if(!dated.length && !undated.length){ box.innerHTML='<p style="text-align:center;color:var(--muted)">Les prochains rendez-vous arrivent bientôt. 🍍</p>'; return; }
-  let html='';
-  if(dated.length) html+='<div class="actcat">Prochains rendez-vous</div>'+dated.map(evRowHtml).join('');
-  if(undated.length) html+='<div class="actcat">Date à venir · inscris-toi pour être prévenu</div>'+undated.map(evRowHtml).join('');
-  box.innerHTML=html;
+  const all=dated.concat(undated);
+  _evById={}; all.forEach(function(e){_evById[e.id]=e;});
+  if(!all.length){ box.innerHTML=`<p style="grid-column:1/-1;text-align:center;color:var(--muted)">Les prochains rendez-vous arrivent bientôt. 🍍</p>`; return; }
+  box.innerHTML=all.map(evCardHtml).join('');
 }
 /* ===== Nos lieux : fiches des locaux + liaison vers leurs activités ===== */
 async function loadLieux(){
