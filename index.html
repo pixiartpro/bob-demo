@@ -197,6 +197,15 @@
   .actnote{max-width:780px;margin:16px auto 0;text-align:center;color:var(--muted);font-size:14px}
   .actcat{max-width:780px;margin:18px auto 4px;font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:var(--vert);padding-left:2px}
   .actlist .actcat:first-child{margin-top:0}
+  /* Activités en 2x2 (quartiers) */
+  .qgrid{display:grid;grid-template-columns:1fr 1fr;gap:16px;max-width:780px;margin:0 auto}
+  @media(max-width:560px){.qgrid{grid-template-columns:1fr}}
+  .qtile{text-align:left;background:var(--card);border:1px solid var(--line);border-top:4px solid var(--vert);border-radius:18px;padding:20px;box-shadow:var(--shadow);cursor:pointer;transition:.18s;width:100%;font:inherit;color:var(--ink)}
+  .qtile:hover{transform:translateY(-4px);box-shadow:var(--shadow-lg)}
+  .qtile .qi{font-size:34px;line-height:1}
+  .qtile h3{margin:8px 0 4px;font-size:18px}
+  .qtile .qlist{color:var(--muted);font-size:14px;margin:0}
+  .qtile .qgo{display:inline-block;margin-top:10px;color:var(--vert-fonce);font-weight:800;font-size:13.5px}
   @media(max-width:520px){.actrow{flex-wrap:wrap}.actrow .abody{flex:1 1 auto}.actrow .btn{width:100%;margin-top:4px}}
   /* (ancien CSS agenda .agenda/.ag-item retiré — l'agenda utilise désormais .actrow/.actcat) */
   @media(max-width:680px){.contact-grid{grid-template-columns:1fr}.hero .deco{display:none}}
@@ -266,6 +275,7 @@
   <div class="wrap">
     <p class="eyebrow">Rentrée d'août</p>
     <h2 class="title">🎒 Inscrivez vos enfants au périscolaire <span class="y">matin &amp; soir</span></h2>
+    <p style="text-align:center;margin:2px 0 0"><span class="badge" style="background:#e3f6ec;color:#0f6b46;border-color:#bfe6d0">✨ Nouveau — le périscolaire du matin dès la rentrée</span></p>
     <p class="sub" style="max-width:720px">La rentrée, c'est le <b>lundi 18 août</b> — et les inscriptions sont déjà ouvertes. Le dépôt du dossier se fait dans votre <b>espace famille</b> : adhérez / connectez-vous, puis déposez vos pièces — vous pouvez les scanner directement depuis votre téléphone.</p>
     <div style="display:flex;gap:18px;flex-wrap:wrap;align-items:flex-start;margin-top:6px">
       <div style="flex:1;min-width:260px;background:#fff;border:1px solid #f1e2ad;border-radius:16px;padding:16px 18px">
@@ -300,11 +310,10 @@
     <p class="eyebrow">Nos activités</p>
     <h2 class="title">Il y en a pour tout le monde 🎉</h2>
     <p class="sub">Nos activités tournent déjà ! La page détaillée (horaires &amp; inscription en ligne) arrive bientôt — en attendant, <b>appelez-nous</b> pour vous inscrire, connaître les horaires ou passer nous voir. 🍍</p>
-    <div class="actlist" id="actList"></div>
+    <div class="qgrid" id="actQuartiers"></div>
     <div style="max-width:780px;margin:18px auto 0;text-align:center;background:#fff;border:1px solid var(--line);border-radius:16px;padding:16px 18px;box-shadow:var(--shadow);font-size:15px">
       <b style="color:var(--vert-fonce)">Envie de rejoindre une activité&nbsp;?</b> Appelez le <a href="tel:+262262293790" style="color:var(--vert-fonce);font-weight:700">0262&nbsp;29&nbsp;37&nbsp;90</a> ou écrivez-nous à <a href="mailto:contact@casebdn.re" style="color:var(--vert-fonce);font-weight:700">contact@casebdn.re</a> — on vous donne les horaires et on vous inscrit.
     </div>
-    <p class="actnote">Et aussi, en accès libre (sans inscription) : <b>permanence du samedi</b> (café offert) et <b>jeudi info population</b> (accès aux droits).</p>
   </div>
 </section>
 
@@ -618,15 +627,12 @@ const PLAN=[
   {emoji:'⚖️', nom:'Jeudi info population', statut:'actif', famille:'Vie de quartier',
    public:"Tous publics", horaires:"Le jeudi", lieu:"CASE Bois de Nèfles",
    desc:"Accompagnement vers l'accès aux droits et aux ressources (CRIJ, France Services…)."},
-  {emoji:'🌅', nom:'Périscolaire — le matin', statut:'travaux', famille:'Péri & extrascolaire',
+  {emoji:'🌅', nom:'Périscolaire — le matin', statut:'actif', famille:'Péri & extrascolaire',
    public:"Enfants scolarisés", horaires:"~1h le matin · dès la rentrée du lundi 18 août 2026", lieu:"CASE Bois de Nèfles",
    desc:"En préparation pour la rentrée du lundi 18 août : un accueil d'environ 1h le matin, en plus de l'après-midi. La grille tarifaire (selon le quotient familial) est en cours de réévaluation."},
   {emoji:'🏠', nom:'La Kaz Zados — espace dédié', statut:'travaux', famille:'Jeunesse · 11–17 ans',
    public:"11–17 ans", horaires:"En montage", lieu:"CASE Bois de Nèfles",
    desc:"Le projet pédagogique du secteur ados (2026-2030) : un espace géré par et pour les jeunes, en cours de montage avec les partenaires."},
-  {emoji:'🚧', nom:'Le CASE fait peau neuve', statut:'travaux', famille:'Le lieu',
-   public:"Tout le quartier", horaires:"Réouverture · inauguration de juillet", lieu:"CASE Bois de Nèfles",
-   desc:"Le centre se refait une beauté. Réouverture en fête lors de l'inauguration de juillet."},
   {emoji:'🤸', nom:'Sport & santé', statut:'bientot', famille:'Bien-être',
    public:"Tous publics", horaires:"À venir", lieu:"CASE Bois de Nèfles",
    desc:"Une offre sport & santé est à l'étude pour les prochaines saisons."},
@@ -688,14 +694,47 @@ function actRowHtml(a){
       +badge+btn
     +'</div>';
 }
+const QFAM=[
+  {key:'Péri & extrascolaire', emoji:'🎒', color:'var(--vert)'},
+  {key:'Culture & loisirs', emoji:'🎨', color:'var(--ananas)'},
+  {key:'Sport & bien-être', emoji:'🤸', color:'#d2602f'},
+  {key:'__vie__', label:'Vie de quartier', emoji:'☕', color:'#3a9bd9'}
+];
+let _actByCat={};
 async function loadActivitesPubliques(){
-  const box=document.getElementById('actList'); if(!box) return;
+  const box=document.getElementById('actQuartiers'); if(!box) return;
   const {data,error}=await _sbPart.from('activites').select('*').eq('publie',true).eq('type','activite').neq('statut','archive').order('ordre',{ascending:true});
-  if(error){ box.innerHTML='<p style="text-align:center;color:#c0392b">Impossible de charger les activités pour le moment.</p>'; return; }
-  if(!data||!data.length){ box.innerHTML='<p style="text-align:center;color:var(--muted)">Nos activités arrivent très bientôt ici. 🍍</p>'; return; }
-  const groups=[], map={};
-  data.forEach(a=>{ const c=a.categorie||'Autres'; if(!map[c]){ map[c]=[]; groups.push(c); } map[c].push(a); });
-  box.innerHTML=groups.map(c=>'<div class="actcat">'+escP(c)+'</div>'+map[c].map(actRowHtml).join('')).join('');
+  if(error){ box.innerHTML='<p style="grid-column:1/-1;text-align:center;color:#c0392b">Impossible de charger les activités pour le moment.</p>'; return; }
+  _actByCat={};
+  (data||[]).forEach(a=>{ const c=a.categorie||'Autres'; (_actByCat[c]=_actByCat[c]||[]).push(a); });
+  box.innerHTML=QFAM.map((f,idx)=>{
+    let names;
+    if(f.key==='__vie__'){ names='Permanence du samedi (café offert) · Jeudi info population'; }
+    else { const list=_actByCat[f.key]||[]; names=list.map(a=>escP(String(a.nom||'').split('—')[0].trim())).join(' · ')||'Bientôt'; }
+    return '<button class="qtile" style="border-top-color:'+f.color+'" onclick="openActCat('+idx+')">'
+      +'<span class="qi">'+f.emoji+'</span>'
+      +'<h3>'+(f.label||escP(f.key))+'</h3>'
+      +'<p class="qlist">'+names+'</p>'
+      +'<span class="qgo">Voir les activités →</span>'
+    +'</button>';
+  }).join('');
+}
+function openActCat(idx){
+  const f=QFAM[idx]; if(!f) return;
+  const box=document.getElementById('pmodalBox'); if(!box) return;
+  let inner='<button class="px" onclick="closePlan()" aria-label="Fermer">✕</button>';
+  if(f.key==='__vie__'){
+    inner+='<div class="pico">☕</div><h3>Vie de quartier</h3>'
+      +'<p style="color:var(--muted);margin:0 0 6px">En accès libre, sans inscription :</p>'
+      +'<div class="pmd-line"><span class="i">☕</span><div><b>Permanence du samedi</b><br>Un moment convivial, café offert.</div></div>'
+      +'<div class="pmd-line"><span class="i">⚖️</span><div><b>Jeudi info population</b><br>Accès aux droits et aux ressources.</div></div>';
+  } else {
+    const list=_actByCat[f.key]||[];
+    inner+='<div class="pico">'+f.emoji+'</div><h3>'+escP(f.key)+'</h3>'
+      +(list.length?('<div class="actlist" style="margin-top:10px">'+list.map(actRowHtml).join('')+'</div>'):'<p style="color:var(--muted)">Activités à venir.</p>');
+  }
+  box.innerHTML=inner;
+  document.getElementById('pmodal').classList.add('open');
 }
 function actToggle(id){ const f=document.getElementById('actf_'+id); if(!f) return; f.style.display=(f.style.display==='none')?'block':'none'; if(f.style.display==='block'){ const n=document.getElementById('actn_'+id); if(n) n.focus(); } }
 async function actSend(id){
