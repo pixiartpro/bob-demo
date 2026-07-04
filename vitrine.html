@@ -65,6 +65,7 @@
   .hero .site-line{font-weight:800;color:var(--vert-fonce);font-size:clamp(14px,1.55vw,17px);margin:0 0 18px}
   .hero .site-line b{color:#a35c00;letter-spacing:.02em;text-transform:uppercase}
   .hero .cta{display:flex;gap:12px;justify-content:flex-start;flex-wrap:wrap}
+  .hero .wrap{max-width:1240px}
   /* Zanana te guide : mascotte + bulle */
   .zguide{display:flex;align-items:center;gap:12px;justify-content:center;margin:0 auto 16px;max-width:560px}
   .zg-img{width:72px;height:auto;flex:0 0 auto;filter:drop-shadow(0 6px 10px rgba(16,60,40,.15))}
@@ -291,15 +292,7 @@
 
 <!-- (Section « Accès rapide » retirée : tout est désormais dans le menu du haut) -->
 
-<!-- LE PROJET : CE QUI TOURNE / CE QUI ARRIVE -->
-<section class="block bg-sun" id="plan">
-  <div class="wrap">
-    <p class="eyebrow">Le projet du CASE</p>
-    <h2 class="title">Ce qui arrive 🚧</h2>
-    <p class="sub">Les nouveautés qu'on prépare pour le quartier. Cliquez pour en savoir plus — et retrouvez tout ce qui tourne déjà dans <a href="#activites" style="color:var(--vert-fonce);font-weight:800">Nos activités</a>.</p>
-    <div class="ppanel arrive" id="panelArrive" style="max-width:640px;margin:0 auto"></div>
-  </div>
-</section>
+<!-- (section « Ce qui arrive » déplacée plus bas) -->
 
 <!-- ACTIVITÉS -->
 <section class="block bg-g" id="activites">
@@ -341,7 +334,8 @@
     <h2 class="title">Les grands rendez-vous 🎉</h2>
     <p class="sub">Les prochains rendez-vous du quartier. Cliquez pour le programme et pour vous inscrire.</p>
     <div class="actlist" id="agendaList"></div>
-    <div class="panel" style="max-width:640px;margin:24px auto 0;box-shadow:var(--shadow)">
+    <div style="text-align:center;margin-top:22px"><button class="btn ghost" onclick="toggleForm('tfForm')">💡 Proposer un temps fort</button></div>
+    <div id="tfForm" class="panel" style="display:none;max-width:640px;margin:16px auto 0;box-shadow:var(--shadow)">
       <h3 style="margin:0 0 6px">💡 Une idée de temps fort ?</h3>
       <p style="margin:0 0 12px;color:var(--muted);font-size:14px">Proposez votre idée : le CASE l'étudie, et si elle est retenue elle rejoindra l'agenda.</p>
       <div class="field"><label>Votre idée *</label><input id="tf_titre" placeholder="Ex. Marché nocturne, tournoi de dominos…"></div>
@@ -361,6 +355,16 @@
     <h2 class="title">Où nous trouver 🏠</h2>
     <p class="sub">Nos locaux, leur état, et ce qui s'y passe. Passez nous voir !</p>
     <div class="grid" id="lieuxList"></div>
+  </div>
+</section>
+
+<!-- LE PROJET : CE QUI TOURNE / CE QUI ARRIVE -->
+<section class="block bg-g" id="plan">
+  <div class="wrap">
+    <p class="eyebrow">Le projet du CASE</p>
+    <h2 class="title">Ce qui arrive 🚧</h2>
+    <p class="sub">Les nouveautés qu'on prépare pour le quartier. Cliquez pour en savoir plus — et retrouvez tout ce qui tourne déjà dans <a href="#activites" style="color:var(--vert-fonce);font-weight:800">Nos activités</a>.</p>
+    <div class="ppanel arrive" id="panelArrive" style="max-width:640px;margin:0 auto"></div>
   </div>
 </section>
 
@@ -421,7 +425,8 @@
       <img class="zg-img" src="zanana-thumb.png" onerror="this.src='mascotte-hero.png'" alt="Zanana">
       <span class="zg-bulle">Commerçant du quartier ? On fait équipe ! 👍</span>
     </div>
-    <div class="panel" style="max-width:640px;margin:0 auto;box-shadow:var(--shadow)">
+    <div style="text-align:center;margin-top:22px"><button class="btn sun" onclick="toggleForm('paForm')">🤝 Devenir partenaire</button></div>
+    <div id="paForm" class="panel" style="display:none;max-width:640px;margin:16px auto 0;box-shadow:var(--shadow)">
       <div class="field"><label>Nom du commerce / structure *</label><input id="pa_commerce" placeholder="Ex. Boulangerie du Moufia"></div>
       <div class="field"><label>Votre nom *</label><input id="pa_contact" placeholder="Prénom Nom"></div>
       <div class="field"><label>Email</label><input id="pa_email" type="email" placeholder="vous@exemple.re"></div>
@@ -441,7 +446,8 @@
     <h2 class="title">Et si on l'ouvrait ensemble ? 💡</h2>
     <p style="max-width:640px;margin:0 auto 22px;text-align:center;color:var(--muted);font-size:16px">Ces ateliers ouvriront dès qu'il y aura <b>assez d'inscrits</b> — et parfois, on cherche aussi <b>la personne qui saura les animer</b>. Que vous soyez simplement intéressé·e ou que vous ayez le talent pour animer : dites-le nous, ça compte !</p>
     <div class="grid" id="atGrid"><p style="grid-column:1/-1;text-align:center;color:var(--muted)">Chargement des ateliers…</p></div>
-    <div class="panel" style="max-width:640px;margin:26px auto 0;box-shadow:var(--shadow)">
+    <div style="text-align:center;margin-top:22px"><button class="btn ghost" onclick="toggleForm('aiForm')">💡 Proposer un atelier</button></div>
+    <div id="aiForm" class="panel" style="display:none;max-width:640px;margin:16px auto 0;box-shadow:var(--shadow)">
       <h3 style="margin:0 0 6px">💡 Vous avez une idée d'atelier ?</h3>
       <p style="margin:0 0 12px;color:var(--muted);font-size:14px">Proposez-la : le CASE l'étudie, et si elle est retenue elle apparaîtra ici pour recueillir les inscriptions.</p>
       <div class="field"><label>Votre idée d'atelier *</label><input id="ai_titre" placeholder="Ex. couture, échecs, danse classique..."></div>
@@ -471,6 +477,7 @@
 const _sbPart=window.supabase.createClient('https://dkidtwypclpwznleiqnq.supabase.co','sb_publishable_HDfV-O2ION1Vw9v03aV_Qg_PkiAjLNo');
 // Compteur de visites (RGPD-clean : fait juste +1, aucune donnee perso). Fire-and-forget, ne bloque jamais la page.
 try{ _sbPart.rpc('compter_visite').then(null,function(){}); }catch(e){}
+function toggleForm(id){var e=document.getElementById(id);if(!e)return;var show=(!e.style.display||e.style.display==='none');e.style.display=show?'block':'none';if(show){var f=e.querySelector('input,select,textarea');if(f)f.focus();e.scrollIntoView({block:'nearest'});}}
 async function submitPartner(){
   const g=id=>document.getElementById(id);
   const commerce=g('pa_commerce').value.trim(), contact=g('pa_contact').value.trim(), info=g('pa_info');
