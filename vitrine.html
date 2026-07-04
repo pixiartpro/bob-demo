@@ -61,9 +61,9 @@
   .hero-text{position:absolute;left:4.5%;top:50%;transform:translateY(-50%);max-width:44%;text-align:left}
   .hero h1{font-size:clamp(28px,4.6vw,52px);margin:8px 0 10px;font-weight:900;letter-spacing:-1px;line-height:1.04;color:var(--vert-fonce)}
   .hero p.lead{font-size:clamp(15px,1.8vw,19px);max-width:480px;margin:0 0 8px;color:#33473c;font-weight:600}
-  .hero p.lead b{color:var(--ananas)}
+  .hero p.lead b{color:#a35c00}
   .hero .site-line{font-weight:800;color:var(--vert-fonce);font-size:clamp(14px,1.55vw,17px);margin:0 0 18px}
-  .hero .site-line b{color:var(--ananas);letter-spacing:.02em;text-transform:uppercase}
+  .hero .site-line b{color:#a35c00;letter-spacing:.02em;text-transform:uppercase}
   .hero .cta{display:flex;gap:12px;justify-content:flex-start;flex-wrap:wrap}
   /* Zanana te guide : mascotte + bulle */
   .zguide{display:flex;align-items:center;gap:12px;justify-content:center;margin:0 auto 16px;max-width:560px}
@@ -139,19 +139,19 @@
   .newsbar .nb-tag{background:var(--jaune);color:#5b4300;font-weight:900;font-size:11px;letter-spacing:.06em;padding:3px 9px;border-radius:999px;text-transform:uppercase}
   .newsbar .nb-txt{font-weight:600}
   .newsbar .nb-link{color:#fff;font-weight:800;text-decoration:underline;white-space:nowrap}
-  .newsbar .nb-x{position:absolute;right:10px;top:50%;transform:translateY(-50%);background:rgba(255,255,255,.22);border:none;color:#fff;width:26px;height:26px;border-radius:50%;cursor:pointer;font-size:12px;line-height:1}
+  .newsbar .nb-x{position:absolute;right:10px;top:50%;transform:translateY(-50%);background:rgba(255,255,255,.22);border:none;color:#fff;width:34px;height:34px;border-radius:50%;cursor:pointer;font-size:13px;line-height:1}
   .newsbar .nb-x:hover{background:rgba(255,255,255,.4)}
   .newsbar.hidden{display:none}
   /* Bandeau inscriptions prioritaires (familles) — se remplit tout seul depuis la gestion,
      onglet 🎟️ Activités (catégorie « Péri & extrascolaire » + publié). Invisible si vide. */
   .insbar{display:flex;align-items:center;justify-content:center;gap:8px 10px;flex-wrap:wrap;
-          background:#fff7e8;border-bottom:1px solid #f1e2ad;padding:8px 14px;font-size:13.5px}
-  .insbar .ib-tag{color:#8a5a00;font-weight:900;font-size:11px;letter-spacing:.08em;text-transform:uppercase;white-space:nowrap}
+          background:#fff3da;border-bottom:1px solid #f1e2ad;padding:16px 14px;font-size:14px}
+  .insbar .ib-tag{color:#8a5300;font-weight:900;font-size:12px;letter-spacing:.08em;text-transform:uppercase;white-space:nowrap}
   .insbar a.ib-chip{display:inline-flex;align-items:center;gap:7px;background:#fff;border:1.5px solid #f1e2ad;
-          border-radius:999px;padding:4px 13px;font-weight:700;font-size:13.5px;text-decoration:none;color:var(--ink);transition:.15s}
+          border-radius:999px;padding:9px 17px;min-height:44px;font-weight:700;font-size:15px;text-decoration:none;color:var(--ink);box-shadow:var(--shadow);transition:.15s}
   .insbar a.ib-chip:hover{border-color:var(--ananas);transform:translateY(-1px)}
-  .insbar .ib-dot{width:8px;height:8px;border-radius:50%;flex:0 0 auto}
-  .insbar .ib-st{font-size:11.5px;font-weight:800;white-space:nowrap}
+  .insbar .ib-dot{width:9px;height:9px;border-radius:50%;flex:0 0 auto}
+  .insbar .ib-st{font-size:13px;font-weight:800;white-space:nowrap}
   /* ===== Plan « ce qui tourne / ce qui arrive » ===== */
   .dot{width:10px;height:10px;border-radius:50%;display:inline-block;flex:0 0 auto}
   .dot.on{background:#1f9d6b}.dot.work{background:var(--jaune)}.dot.soon{background:#4a90d9}
@@ -199,6 +199,10 @@
   @media(max-width:520px){.actrow{flex-wrap:wrap}.actrow .abody{flex:1 1 auto}.actrow .btn{width:100%;margin-top:4px}}
   /* (ancien CSS agenda .agenda/.ag-item retiré — l'agenda utilise désormais .actrow/.actcat) */
   @media(max-width:680px){.contact-grid{grid-template-columns:1fr}.hero .deco{display:none}}
+  /* Accessibilite (ajout audit 2026-07) : focus clavier visible + respect de « moins d'animations » */
+  a:focus-visible,button:focus-visible,.btn:focus-visible,.navpill:focus-visible,.ib-chip:focus-visible,.nb-x:focus-visible,.prow:focus-visible,.burger:focus-visible{outline:3px solid var(--vert-fonce);outline-offset:2px}
+  .field input:focus-visible,.field select:focus-visible{outline:3px solid var(--vert-fonce);outline-offset:2px}
+  @media (prefers-reduced-motion: reduce){*{transition:none!important;transform:none!important;scroll-behavior:auto!important}}
 </style>
 </head>
 <body>
@@ -219,7 +223,7 @@
       <a href="#partenaires">🤝 Partenaires</a>
       <a href="#contact">Contact</a>
       <span class="nav-sep"></span>
-      <a href="espace-adherent.html" class="navpill">🍍 Espace adhérent</a>
+      <a href="espace-adherent.html" class="navpill">🍍 Mon espace famille</a>
       <a href="connexion.html" class="navpill">🔐 Espace bureau</a>
       <a href="#adhesion" class="btn primary">Devenir adhérent</a>
     </nav>
@@ -234,12 +238,7 @@
   <button class="nb-x" onclick="closeNews()" aria-label="Fermer l'annonce">✕</button>
 </div>
 
-<!-- ===== BANDEAU INSCRIPTIONS (priorités familles) =====
-     RIEN À MODIFIER ICI : il se remplit tout seul depuis la gestion (onglet 🎟️ Activités).
-     Règle : catégorie « Péri & extrascolaire » + « Sur le site ? Oui » → l'activité monte ici
-     (3 max, tri par « Ordre ») ; son STATUT fait le libellé (ouvert / bientôt / complet).
-     S'il n'y a rien à afficher, le bandeau reste invisible. -->
-<div class="insbar" id="insbar" hidden></div>
+<!-- (bandeau inscriptions déplacé juste sous le hero — voir plus bas) -->
 
 <!-- HERO -->
 <section class="hero" id="accueil">
@@ -251,19 +250,22 @@
       <p class="lead">Un nouveau CASE pour le kartié.<br>Travaux terminés : réouverture <b>lundi 13 juillet</b>.</p>
       <p class="site-line">Retrouv' a nou en ligne : <b>casebdn.re</b></p>
       <div class="cta">
-        <a href="#adhesion" class="btn primary">S'inscrire en ligne</a>
+        <a href="espace-adherent.html" class="btn primary">S'inscrire en ligne</a>
         <a href="#activites" class="btn ghost">Découvrir nos activités</a>
       </div>
     </div>
   </div>
 </section>
 
+<!-- ===== BANDEAU INSCRIPTIONS (priorités familles) — remonté sous le hero. Se remplit tout seul depuis la gestion (categorie « Péri & extrascolaire » + publié, 3 max). Invisible si vide. ===== -->
+<div class="insbar" id="insbar" hidden></div>
+
 <!-- COMMUNICATION : INSCRIPTIONS PÉRISCOLAIRE (rentrée d'août) -->
 <section class="block" id="inscription-peri" style="background:linear-gradient(135deg,#fff3da,#ffe7c4)">
   <div class="wrap">
     <p class="eyebrow">Rentrée d'août</p>
     <h2 class="title">🎒 Inscrivez vos enfants au périscolaire <span class="y">matin &amp; soir</span></h2>
-    <p class="sub" style="max-width:720px">La rentrée, c'est le <b>lundi 18 août</b> — et les inscriptions sont déjà ouvertes. Le dépôt du dossier se fait dans votre <b>espace adhérent</b> : adhérez / connectez-vous, puis déposez vos pièces — vous pouvez les scanner directement depuis votre téléphone.</p>
+    <p class="sub" style="max-width:720px">La rentrée, c'est le <b>lundi 18 août</b> — et les inscriptions sont déjà ouvertes. Le dépôt du dossier se fait dans votre <b>espace famille</b> : adhérez / connectez-vous, puis déposez vos pièces — vous pouvez les scanner directement depuis votre téléphone.</p>
     <div style="display:flex;gap:18px;flex-wrap:wrap;align-items:flex-start;margin-top:6px">
       <div style="flex:1;min-width:260px;background:#fff;border:1px solid #f1e2ad;border-radius:16px;padding:16px 18px">
         <b style="color:var(--vert-fonce)">📋 Pièces à fournir</b>
@@ -327,7 +329,7 @@
     </div>
     <div style="text-align:center;margin-top:20px">
       <a class="btn primary" style="text-decoration:none" href="espace-adherent.html">🌴 Réserver une place (ACM, sorties) → Mon espace famille</a>
-      <p class="sub" style="margin:10px 0 0">Connectez-vous ou créez votre compte famille en 2 minutes. <b>Un parent adhérent</b> (10 €/an, du 1ᵉʳ août au 31 juillet) = <b>tous vos enfants</b> ont droit.</p>
+      <p class="sub" style="margin:10px 0 0">Connectez-vous ou créez votre espace famille en 2 minutes. <b>Un parent adhérent</b> (10 €/an, du 1ᵉʳ août au 31 juillet) = <b>tous vos enfants</b> ont droit.</p>
     </div>
   </div>
 </section>
@@ -373,12 +375,12 @@
       <span class="zg-bulle">Adhère en ligne en 2 minutes, je te montre ! ✏️</span>
     </div>
     <div class="panel">
-      <p style="margin:0 0 16px;color:var(--muted);font-size:15px">L'adhésion (<b>10 €</b>, valable du <b>1ᵉʳ août au 31 juillet</b>) ouvre l'accès aux activités — et <b>un seul parent adhérent suffit pour tous les enfants</b>. Créez votre <b>compte famille</b> : vous pourrez déposer votre dossier périscolaire, réserver vos activités et <b>payer votre adhésion en ligne</b> — ou la régulariser avec le bureau.</p>
+      <p style="margin:0 0 16px;color:var(--muted);font-size:15px">L'adhésion (<b>10 €</b>, valable du <b>1ᵉʳ août au 31 juillet</b>) ouvre l'accès aux activités — et <b>un seul parent adhérent suffit pour tous les enfants</b>. Créez votre <b>espace famille</b> : vous pourrez déposer votre dossier périscolaire, réserver vos activités et <b>payer votre adhésion en ligne</b> — ou la régulariser avec le bureau.</p>
       <div style="display:flex;flex-direction:column;gap:10px">
         <a class="btn primary" style="text-decoration:none;text-align:center" href="espace-adherent.html#adhSection">🪪 Payer mon adhésion — 10 €</a>
         <a class="btn primary" style="text-decoration:none;text-align:center" href="espace-adherent.html">🎒 Inscrire mon enfant au périscolaire</a>
         <a class="btn primary" style="text-decoration:none;text-align:center" href="espace-adherent.html">🌴 Réserver une activité / l'ACM</a>
-        <a class="btn ghost" style="text-decoration:none;text-align:center" href="connexion.html?role=famille">👨‍👩‍👧 Créer mon compte famille / Me connecter</a>
+        <a class="btn ghost" style="text-decoration:none;text-align:center" href="connexion.html?role=famille">👨‍👩‍👧 Accéder à Mon espace famille</a>
       </div>
       <p class="note">Tout se passe dans votre espace famille. <b>Paiement de l'adhésion en ligne</b> via HelloAsso — <b>sans frais pour vous</b> (la contribution HelloAsso est facultative, modifiable à <b>0 €</b>) ; possible aussi avec le bureau.</p>
     </div>
@@ -460,7 +462,7 @@
 <footer>
   <div class="pine">🍍</div>
   <p style="margin:6px 0 2px;font-weight:800;font-size:18px">CASE du Bois de Nèfles</p>
-  <p style="margin:0;opacity:.85">Centre social associatif · Saint-Denis · La Réunion</p>
+  <p style="margin:0;opacity:.85">Centre social associatif · Sainte-Clotilde, Saint-Denis · La Réunion</p>
   <p style="margin:10px 0 0;font-size:13px;opacity:.7">Ce site vous est confié par <a href="https://bob.re" target="_blank" rel="nofollow noopener" style="color:#fff;text-decoration:underline">Bob</a> 🤖</p>
 </footer>
 
