@@ -289,6 +289,7 @@
       <button data-tab="acmvac">🌴 Vacances</button>
       <button data-tab="lieux">🏠 Lieux</button>
       <button data-tab="reserver">🛎️ Réserver une salle</button>
+      <button data-tab="salles">🗓️ Salles</button>
     </div>
     <div class="tabgroup" data-group="bureau"><!-- étape2: ex data-group="projets" + secretariat/caprep rapatriés depuis outils -->
       <button data-tab="projects">📁 Projets</button>
@@ -430,6 +431,24 @@
       <h2>🛎️ Demandes de réservation de salle</h2>
       <p class="hint">Les adhérents et intervenants déposent leurs demandes de salle depuis leur espace ; tu valides ou refuses ici. Un membre <b>ne peut pas valider sa propre demande</b> (déport). <button class="ghost btn" onclick="if(window.loadReservations)loadReservations()">↻ Rafraîchir</button></p>
       <div id="resaList"></div>
+    </div>
+  </section>
+
+  <!-- SALLES — planning des créneaux (lecture seule, MVP 03/07/2026) -->
+  <section id="salles" class="page">
+    <div class="panel">
+      <h2>🗓️ Salles — planning des créneaux</h2>
+      <p class="hint">Le planning hebdo par salle. Cases <b style="color:#1d9e75">vertes = libres</b>, occupé = couleur de l'intervenant, <b style="color:#e24b4a">rouge = orphelin</b> (à reprendre). <b>Lecture pour l'instant</b> — l'édition arrivera bientôt.</p>
+      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:0 0 12px">
+        <label style="font-weight:700;font-size:14px">Salle :</label>
+        <select id="salleSelect" onchange="if(window.loadCreneaux)loadCreneaux()" style="font:inherit;padding:8px 12px;border:1.5px solid var(--line,#e7efe9);border-radius:10px;background:#fff">
+          <option value="danse">💃 Salle de danse</option>
+          <option value="musique">🎵 Salle de musique</option>
+          <option value="reunion">🏢 Salle de réunion (bureau)</option>
+        </select>
+        <button class="ghost btn" onclick="if(window.loadCreneaux)loadCreneaux()">↻ Rafraîchir</button>
+      </div>
+      <div id="planningSalles"></div>
     </div>
   </section>
 
@@ -2081,6 +2100,7 @@ document.querySelectorAll('nav.tabs button').forEach(b=>{
 
 /* ---- Aide : « Demande à Zanana » (FAQ + assistant par mots-clés, sans IA) ---- */
 const FAQ=[
+  {cat:'🗓️ Salles',q:"À quoi sert l'onglet Salles ?",kw:'salle salles planning creneau créneau danse grille horaire cours intervenant orphelin qui anime',a:"L'onglet 🗓️ Salles montre le planning hebdomadaire de la salle de danse : chaque créneau (jour, heure, cours) et qui l'anime. Les créneaux en rouge sont « orphelins » — l'intervenant est parti et le créneau est à reprendre. Pour l'instant c'est en lecture seule ; l'édition directe des créneaux arrivera bientôt."},
   {cat:'📊 Tableau de bord',q:"C'est quoi « Ton équipe » avec les ananas en haut de l'accueil ?",kw:"equipe ananas bob bobs sabine tresi nono roro secretaire tresoriere animateur rh personnage mascotte accueil qui veux voir carte cartes outils porte entree cliquer membre direction zanana",a:"En haut du tableau de bord, ton équipe Bob te sert de <b>porte d'entrée</b> : chaque personnage regroupe un métier — <b>Sabine</b> (le bureau : adhérents, agenda, répertoire, CA), <b>Trési</b> (la trésorerie : compta, subventions, bilan), <b>Nono</b> (l'animation : périscolaire, activités, vacances, ateliers) et <b>Roro</b> (les salariés : dossiers, congés, horaires). Clique un personnage pour voir tous ses outils et y aller directement ; « La Direction » juste au-dessus regroupe le pilotage (tableau de bord, projet, suivi). Tu ne vois que les personnages et outils auxquels <b>ton rôle a accès</b>. Tous les onglets restent aussi dans le menu en couleurs comme avant."},
   {cat:'🧰 Secrétariat',q:"Comment compter les voix d'une délibération et générer le procès-verbal (PV) ?",kw:"pv proces verbal procès délibération deliberation resolution voix compter compteur pour contre abstention sens adoptee rejetee reportee deport voter scrutin generer imprimer reunion seance conseil administration boutons plus moins",a:"Onglet <b>🧰 Secrétariat</b> → <b>« Réunions &amp; délibérations »</b>. Sur chaque délibération, les boutons <b>+ / −</b> comptent les voix <b>Pour / Contre / Abstention</b> ; le <b>sens</b> (adoptée / rejetée / reportée) se met à jour tout seul. Le bouton <b>⚖️ Déport</b> note qu'un membre se retire d'une résolution (conflit d'intérêts) — c'est repris au PV. Une fois les votes saisis, <b>🖨️ PV</b> génère le <b>procès-verbal officiel</b> (présents, quorum, déports, résolutions avec le détail des voix, signatures Président/Secrétaire). Le <b>🖨️ Relevé</b> reste, lui, un document de préparation. Le PV est <b>à valider et signer en séance</b> ; en cas de doute sur le formalisme : Hexopée."},
   {cat:'🗂️ Répertoire',q:"Comment protéger un identifiant ou un mot de passe dans les liens ?",kw:"lien liens mot de passe motdepasse code coffre chiffrer chiffré cadenas secret acces identifiant proteger confidentiel reveler reveler tam mairie orange portail securiser cacher",a:"Dans <b>🗂️ Répertoire</b>, section <b>Liens</b> : mets l'identifiant et le mot de passe dans la <b>note</b> du lien, puis clique <b>🔒</b> sur la ligne (ou <b>« Protéger les accès »</b> en haut de la liste) et choisis un <b>code du coffre</b> connu du bureau. La note devient <b>illisible</b> (chiffrée) — même en ligne, personne ne peut la lire sans le code. Pour la relire : bouton <b>« Révéler »</b> + le code ; pour la modifier : <b>🔓 Déprotéger</b>. Le code <b>n'est jamais enregistré</b> : on le tape à chaque fois. Si tu oublies le code, re-saisis l'accès (il existe aussi sur le vrai portail)."},
@@ -2323,6 +2343,7 @@ function pageHelpGotoAide(){ pageHelpClose(); const b=document.querySelector('na
 
 /* ---- ✨ Quoi de neuf (nouveautés + notice chronologique) ---- */
 const NEWS=[
+  {id:'2026-07-03-salles-planning',date:'2026-07-03',tab:'salles',titre:'🗓️ Salles — planning des créneaux',desc:"Nouvel onglet : le planning hebdo de la salle de danse (qui anime quel créneau). En lecture pour l'instant ; les créneaux « orphelins » (intervenant parti) sont en rouge. L'édition en 2 clics arrivera bientôt."},
   {id:'2026-07-03-referent-assistant-sanitaire',date:'2026-07-03',tab:'🎟️ Activités',titre:"👤 Un référent par activité + 🩺 l'accès aux fiches sanitaires",desc:"Sur chaque activité, tu peux désigner un <b>référent</b> (le salarié responsable) — il s'affiche sur la carte et aura accès aux <b>fiches sanitaires</b> des enfants de son activité. En haut de l'onglet, un panneau <b>🩺 Accès aux fiches sanitaires</b> (réservé président/trésorier) permet de cocher les <b>« assistants sanitaires »</b> (souvent titulaires du PSC1) : ces personnes voient toutes les fiches sanitaires, comme le bureau. C'est la 1re brique de la future <b>fiche sanitaire en ligne</b> (remplissable + signable par les familles) — la suite arrive."},
   {id:'2026-07-03-tag-educ-populaire',date:'2026-07-03',tab:'🎟️ Activités',titre:"🌱 Marquer une activité « éducation populaire »",desc:"Nouvelle case à cocher sur chaque activité (🎟️ Activités → à côté de la catégorie) : <b>🌱 Éducation populaire</b>. C'est un <b>marqueur transversal</b> (une de vos 3 valeurs), pas un rangement : l'activité reste dans son bloc (Périscolaire &amp; extrascolaire, Socioculturel, Temps forts) mais porte en plus le badge 🌱 — pratique pour repérer d'un coup d'œil, et pour valoriser dans un bilan ou auprès d'un financeur ce qui relève de l'éducation populaire. Visible côté bureau et côté salarié."},
   {id:'2026-07-03-activites-par-enfant',date:'2026-07-03',tab:'👥 Dossiers salariés',titre:"🎟️ Les activités par enfant + dépôt de documents, et les activités rangées en 3 blocs",desc:"Dans l'espace salarié → <b>Dossiers familles</b>, chaque enfant montre maintenant <b>toutes ses activités</b> (ACM Ados, VEPI, danse, événements…), pas seulement le périscolaire, avec leur statut. L'accueil peut y <b>déposer les pièces</b> selon le type : ACM / VEPI = checklist « accueil de mineurs » (CAF, impôts, domicile, assurance, vaccins, livret) ; activités sportives (Zumba, danse…) = certificat médical + assurance ; le reste = documents libres. On peut aussi <b>inscrire un enfant à une activité</b> depuis sa fiche. Et la liste des activités (côté salarié comme ici côté bureau) est désormais <b>rangée en 3 blocs</b> : 🎒 Périscolaire &amp; extrascolaire · 🎨 Socioculturel · 🎉 Temps forts (ponctuels)."},
@@ -5845,7 +5866,7 @@ renderAll();
     ateliers:'f_ateliers_partenaires', partenaires:'f_ateliers_partenaires',
     equipe:'f_rh_equipe', accompagnement:'f_rh_equipe', rh:'f_rh_equipe', personnel:'f_rh_equipe',
     suivi:'f_rh_equipe', conges:'f_rh_equipe', horaires:'f_rh_equipe', incidents:'f_rh_equipe',
-    periscolaire:'f_metier_acm', activites:'f_metier_acm', rdv:'f_metier_acm', acmvac:'f_metier_acm', lieux:'f_metier_acm'
+    periscolaire:'f_metier_acm', activites:'f_metier_acm', rdv:'f_metier_acm', acmvac:'f_metier_acm', lieux:'f_metier_acm', salles:'f_metier_acm'
   };
   function applyPerms(){
     const perms=Object.assign({}, (myProfile.perms&&typeof myProfile.perms==='object')?myProfile.perms:{});
@@ -5855,6 +5876,7 @@ renderAll();
     if(!canWrite){ perms.suivi='cache'; perms.conges='cache'; perms.horaires='cache'; } // Suivi, Congés & Horaires : bureau uniquement par défaut
     if(!canWrite) perms.acmvac='cache'; // 🌴 Vacances : outil interne de programmation → bureau uniquement
     if(!canWrite) perms.rdv='cache'; // 📅 Rendez-vous : gestion des plages/créneaux → bureau uniquement
+    if(!canWrite) perms.salles='cache'; // 🗓️ Salles : planning interne des créneaux → bureau uniquement
     // 📋 Docs inscription : panneau fusionné dans 🎒 Périscolaire (#docsPeriPanel) → masqué aux non-bureau via le css plus bas (étape2 23/06/2026)
     if(!canWrite) perms.caprep='cache'; // 📝 Préparer le CA : préparation du conseil → bureau uniquement
     if(!canWrite){ perms.accounting='cache'; perms.caisse='cache'; perms.dettes='cache'; perms.bilan='cache'; perms.previsionnel='cache'; } // 💶 Finances : trésorerie → bureau uniquement (verrou de DROIT, plus seulement « de fait » — étape2 22/06/2026)
@@ -5934,7 +5956,7 @@ renderAll();
     var EQUIPE=[
       {id:'sabine',nom:'Sabine',role:'La Secrétaire',img:'bob-sabine.png',tag:"Adhérents, agenda, répertoire et la vie du bureau.",tabs:[['🏛️','Adhérents','members'],['📅','Rendez-vous','rdv'],['🗂️','Répertoire','repertoire'],['🤝','Partenaires','partenaires'],['🧰','Secrétariat','secretariat'],['📝','Préparer le CA','caprep']]},
       {id:'tresi',nom:'Trési',role:'La Trésorière',img:'bob-tresi.png',tag:"Compta par site & action, subventions, bilan, prévisionnel.",tabs:[['💶','Comptabilité','accounting'],['💵','Caisse','caisse'],['💳','Dettes & créances','dettes'],['📈','Bilan','bilan'],['🔮','Prévisionnel','previsionnel'],['🏛️','Subventions','subventions'],['📁','Projets','projects']]},
-      {id:'nono',nom:'Nono',role:"L'Animateur",img:'bob-nono.png',tag:"Périscolaire, activités, ACM & vacances, ateliers, salles.",tabs:[['🎒','Périscolaire','periscolaire'],['🎟️','Activités','activites'],['🌴','Vacances','acmvac'],['🚀','Projet ados','projetados'],['💡','Ateliers','ateliers'],['🏠','Lieux','lieux'],['🛎️','Réserver une salle','reserver']]},
+      {id:'nono',nom:'Nono',role:"L'Animateur",img:'bob-nono.png',tag:"Périscolaire, activités, ACM & vacances, ateliers, salles.",tabs:[['🎒','Périscolaire','periscolaire'],['🎟️','Activités','activites'],['🌴','Vacances','acmvac'],['🚀','Projet ados','projetados'],['💡','Ateliers','ateliers'],['🏠','Lieux','lieux'],['🛎️','Réserver une salle','reserver'],['🗓️','Salles','salles']]},
       {id:'roro',nom:'Roro',role:'Le RH',img:'bob-roro.png',tag:"Dossiers salariés, équipe, congés, horaires, paie.",tabs:[['🧑‍💼','RH','rh'],['📒','Équipe','equipe'],['👥','Dossiers salariés','personnel'],['🏖️','Congés','conges'],['🗓️','Horaires','horaires']]}
     ];
     var DIRECTION=[['📊','Tableau de bord','dashboard'],['🧭','Projet & orientations','projet'],['✅','Suivi','suivi'],['⚠️','Événements','incidents'],['🧑‍🏫','Accompagnement','accompagnement']];
@@ -6770,6 +6792,68 @@ renderAll();
   function resaCreneau(r){ const a=(r.heure_debut||'').trim(), b=(r.heure_fin||'').trim(); return (a&&b)?(a+'–'+b):(a||b||'horaire non précisé'); }
   function resaMinutes(t){ t=(t||'').trim(); const x=t.split(':'); return x.length>=2?(parseInt(x[0],10)*60+parseInt(x[1],10)):NaN; }
   function resaOverlap(a1,a2,b1,b2){ const s1=resaMinutes(a1),e1=resaMinutes(a2),s2=resaMinutes(b1),e2=resaMinutes(b2); if([s1,e1,s2,e2].some(isNaN)) return false; return s1<e2 && s2<e1; }
+  window.loadCreneaux=async function(){
+    const box=document.getElementById('planningSalles'); if(!box) return;
+    if(!document.getElementById('cwStyle')){
+      const st=document.createElement('style'); st.id='cwStyle';
+      st.textContent='.cw-scroll{overflow-x:auto;border:1px solid var(--line,#e7efe9);border-radius:14px;background:#fff}'
+        +'.cw-legend{display:flex;flex-wrap:wrap;gap:8px 14px;margin:0 0 12px}'
+        +'.cw-chip{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;color:var(--muted,#62756b)}'
+        +'.cw-chip i{width:13px;height:13px;border-radius:4px;display:inline-block;flex:0 0 auto;border:1px solid rgba(0,0,0,.08)}'
+        +'.cw-grid{display:grid;grid-template-columns:46px repeat(6,minmax(118px,1fr));min-width:760px}'
+        +'.cw-head{position:sticky;top:0;background:#f7faf8;font-weight:800;font-size:13px;text-align:center;padding:8px 4px;border-bottom:1px solid var(--line,#e7efe9);border-left:1px solid #eef3f0;z-index:2}'
+        +'.cw-head.corner{border-left:none}'
+        +'.cw-col{position:relative;border-left:1px solid #eef3f0;background:#eafaf2}'
+        +'.cw-time{font-size:11px;color:#8a978f;text-align:right;padding:0 6px;border-top:1px solid #f0f4f1;box-sizing:border-box}'
+        +'.cw-hr{position:absolute;left:0;right:0;border-top:1px solid #eef3f0}'
+        +'.cw-ev{position:absolute;left:3px;right:3px;border-radius:7px;padding:3px 5px;overflow:hidden;box-sizing:border-box;border-left:4px solid #999;background:#eef1fb;font-size:11px;line-height:1.15;cursor:default}'
+        +'.cw-ev b{font-size:11.5px;display:block;font-weight:800}'
+        +'.cw-ev .cw-t{font-size:10px;color:#5a6b62;font-weight:700}'
+        +'.cw-ev .cw-w{font-size:10px}'
+        +'.cw-ev.orph{background:#fdeceb;border-left-color:#e24b4a}';
+      document.head.appendChild(st);
+    }
+    const sel=(document.getElementById('salleSelect')||{}).value||'danse';
+    box.innerHTML='<p class="hint">Chargement…</p>';
+    const {data,error}=await sbc.from('creneaux').select('*').eq('salle',sel).order('jour',{ascending:true}).order('debut',{ascending:true});
+    if(error){ box.innerHTML='<p class="hint" style="color:#c0392b">Impossible de charger le planning.</p>'; return; }
+    const rows=data||[];
+    const OPEN=8*60, CLOSE=21*60, PXMIN=620/(CLOSE-OPEN), H=(CLOSE-OPEN)*PXMIN;
+    const JOURS=['','Lun','Mar','Mer','Jeu','Ven','Sam'];
+    const palette=['#3a51e8','#127a51','#c8881f','#7a3b5e','#0e6b6b','#5a6b7a'];
+    const who=[...new Set(rows.filter(c=>c.intervenant).map(c=>c.intervenant))];
+    const colOf=(n)=> n?palette[who.indexOf(n)%palette.length]:'#9aa5a0';
+    const tint=(hex)=>{const r=parseInt(hex.slice(1,3),16),g=parseInt(hex.slice(3,5),16),b=parseInt(hex.slice(5,7),16);return 'rgba('+r+','+g+','+b+',.13)';};
+    const toMin=t=>{const p=String(t||'0:0').split(':');return (+p[0])*60+(+p[1]);};
+    const esc=s=>String(s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+    let html='<div class="cw-legend"><span class="cw-chip"><i style="background:#eafaf2"></i>Libre</span>'
+      +who.map(n=>'<span class="cw-chip"><i style="background:'+tint(colOf(n))+';border-left:4px solid '+colOf(n)+'"></i>'+esc(n)+'</span>').join('')
+      +'<span class="cw-chip"><i style="background:#eef1fb;border-left:4px solid #9aa5a0"></i>À préciser</span>'
+      +'<span class="cw-chip"><i style="background:#fdeceb;border-left:4px solid #e24b4a"></i>Orphelin</span></div>';
+    html+='<div class="cw-scroll"><div class="cw-grid"><div class="cw-head corner"></div>';
+    for(let j=1;j<=6;j++) html+='<div class="cw-head">'+JOURS[j]+'</div>';
+    html+='<div style="position:relative">';
+    for(let h=8;h<=21;h++){ html+='<div class="cw-time" style="height:'+(60*PXMIN)+'px">'+h+'h</div>'; }
+    html+='</div>';
+    for(let j=1;j<=6;j++){
+      html+='<div class="cw-col" style="height:'+H+'px">';
+      for(let h=9;h<=21;h++){ html+='<div class="cw-hr" style="top:'+((h*60-OPEN)*PXMIN)+'px"></div>'; }
+      rows.filter(c=>c.jour===j).forEach(c=>{
+        const orph=c.statut==='orphelin', col=orph?'#e24b4a':colOf(c.intervenant);
+        const top=(toMin(c.debut)-OPEN)*PXMIN, ht=Math.max(20,(toMin(c.fin)-toMin(c.debut))*PXMIN-2);
+        const bg=orph?'#fdeceb':(c.intervenant?tint(col):'#eef1fb'), showW=ht>=42;
+        const qui=c.intervenant||(orph?'à reprendre':(c.tiers?'prêt : '+c.tiers:'à préciser'));
+        html+='<div class="cw-ev'+(orph?' orph':'')+'" style="top:'+top+'px;height:'+ht+'px;border-left-color:'+col+';background:'+bg+'" title="'+esc(c.titre+' · '+qui+(c.public_vise?' · '+c.public_vise:''))+'">'
+          +'<b>'+esc(c.titre)+'</b>'
+          +'<span class="cw-t">'+esc(c.debut)+'–'+esc(c.fin)+(c.nature==='pret'?' · prêt':'')+'</span>'
+          +(showW?'<span class="cw-w" style="color:'+col+'">'+esc(qui)+'</span>':'')
+          +'</div>';
+      });
+      html+='</div>';
+    }
+    html+='</div></div>';
+    box.innerHTML=html;
+  };
   window.loadReservations=async function(){
     const box=document.getElementById('resaList'); if(!box) return;
     const {data,error}=await sbc.from('reservations').select('*').order('jour',{ascending:true}).order('heure_debut',{ascending:true});
@@ -7351,6 +7435,8 @@ renderAll();
     if(window.loadLieuxGestion) loadLieuxGestion();
     const reb=document.querySelector('nav.tabs button[data-tab="reserver"]'); if(reb) reb.addEventListener('click',()=>{ if(window.loadReservations) loadReservations(); });
     if(window.loadReservations) loadReservations();
+    const salb=document.querySelector('nav.tabs button[data-tab="salles"]'); if(salb) salb.addEventListener('click',()=>{ if(window.loadCreneaux) loadCreneaux(); });
+    if(window.loadCreneaux) loadCreneaux();
     if(window.loadActivitesGestion) loadActivitesGestion();
     const peb=document.querySelector('nav.tabs button[data-tab="periscolaire"]'); if(peb) peb.addEventListener('click',()=>{ if(window.loadDossiersPeri) loadDossiersPeri(); });
     if(window.loadDossiersPeri) loadDossiersPeri();
