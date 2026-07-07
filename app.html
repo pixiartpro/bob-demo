@@ -2196,6 +2196,8 @@ const FAQ=[
    a:"Le site public affiche un <b>bandeau « 📣 Inscriptions »</b> tout en haut, sous le menu. Tu n'as <b>rien de spécial à faire</b> : toute activité de catégorie <b>Péri &amp; extrascolaire</b> qui est <b>publiée sur le site</b> y monte automatiquement (3 au maximum, triées par le champ « Ordre »). Son <b>statut</b> fait le libellé que voient les familles : <b>Ouvert</b> (pastille verte) · <b>Arrive bientôt</b> (bleue) · <b>Complet</b> (quand la capacité est atteinte). Pour retirer une activité du bandeau : <b>🔒 Dépublier</b> ou passer son statut sur <b>Archivé</b>. S'il n'y a rien à annoncer, le bandeau disparaît complètement du site. Le panneau <b>« 📣 Le bandeau du site, en ce moment »</b> en haut de l'onglet 🎟️ Activités te montre en permanence ce que les familles voient."},
   {cat:'📅 Rendez-vous',q:"Comment proposer des rendez-vous (créneaux) aux familles ?",kw:"rendez vous rdv creneau creneaux plage plages horaire recurrent recurrente agenda coiffeur accompagnement vepi reserver disponibilite dispo heure",
    a:"En bas de l'onglet <b>🎟️ Activités</b>, panneau <b>« 📅 Rendez-vous »</b>. Tu définis tes <b>plages récurrentes</b> : un <b>jour</b> (ex : mardi), <b>de … à …</b> (ex : 14h-17h), la <b>durée d'un créneau</b> (30 min par défaut) et un <b>libellé</b>. Les familles voient alors uniquement les <b>créneaux LIBRES</b> dans l'espace famille (📅 Prendre rendez-vous) et en réservent un elles-mêmes — <b>tu n'as plus à rappeler</b>. Tu retrouves ici la liste des <b>rendez-vous pris</b> (date, heure, motif). Pour supprimer une plage : 🗑. Deux plages sont déjà posées par défaut, ajuste-les à ta convenance."},
+  {cat:'👶 Enfants',q:"Un enfant affiche « manque » une pièce pour l'ACM mais pas pour le périscolaire — pourquoi ?",kw:"complet manque piece pieces dossier accueil periscolaire acm fiche sanitaire exigence requis different manquant vert rouge completude documents",
+   a:"C'est normal : <b>chaque accueil a sa propre liste de pièces requises</b>. Périscolaire et ACM demandent les 6 mêmes pièces (CAF, impôts, domicile, assurance, vaccins, livret), mais <b>l'ACM exige EN PLUS la fiche sanitaire signée</b> — d'où un « ⚠️ manque Fiche sanitaire » possible côté ACM alors que le périscolaire est ✅. Les pièces sont <b>mutualisées</b> (une CAF déposée une fois compte pour tous les accueils de l'enfant/famille). La liste des pièces requises par accueil se règle dans le code — dis-le moi pour l'ajuster (retirer une pièce pour l'ACM, etc.)."},
   {cat:'👶 Enfants',q:"Où je vois tous les enfants et où va chacun (périscolaire, ACM, VEPI) ?",kw:"enfants tous liste ou va chaque enfant accueil accueils periscolaire acm vepi activites filtre voir vue ensemble unifiee ou vont onglet",
    a:"Onglet <b>👶 Enfants</b> (dans 👥 Adhérents). Tu vois la <b>liste de tous les enfants</b> et, pour chacun, <b>où il va</b> : 🎒 périscolaire (matin/soir), 🌴 sessions d'ACM, 📌 VEPI, 🎟️ autres activités — avec sa classe et son responsable. En haut, un <b>filtre par accueil</b> : clique <b>Tous / Périscolaire / ACM / VEPI</b> pour ne voir que les enfants de cet accueil. Un enfant présent sur plusieurs semaines ou accueils n'apparaît qu'<b>une fois</b>. Depuis la fiche d'un enfant, tu peux le <b>rattacher</b> à un accueil (menu « Rattacher vers » : périscolaire matin/soir · VEPI · une semaine d'ACM) et le <b>retirer / déplacer</b> avec le ✕ sur chaque puce (bureau + accueil). ⚠️ Le périscolaire ne peut être complété que si la famille a déjà ouvert son dossier (avec pièces / quotient) depuis son espace."},
   {cat:'🌴 Vacances',q:"Où je vois la liste des enfants inscrits en ACM ?",kw:"liste enfants acm inscrits inscrit vacances qui roster effectif combien session semaine ete toussaint voir consolidee tableau",
@@ -2376,6 +2378,7 @@ function pageHelpGotoAide(){ pageHelpClose(); const b=document.querySelector('na
 
 /* ---- ✨ Quoi de neuf (nouveautés + notice chronologique) ---- */
 const NEWS=[
+  {id:'2026-07-07-completude-accueil',date:'2026-07-07',tab:'👶 Enfants',titre:"✅ / ⚠️ Dossier complet ou pièce manquante, PAR accueil",desc:"Dans l'onglet 👶 Enfants, chaque enfant indique maintenant si son <b>dossier est complet</b> ou <b>ce qu'il manque</b>, <b>séparément pour chaque accueil</b> : 🎒 périscolaire et 🌴 ACM (l'ACM exige en plus la <b>fiche sanitaire signée</b>). Les pièces sont <b>mutualisées</b> : une attestation déposée une fois compte pour tous les accueils. C'est de la lecture des pièces déjà là (rien n'est déplacé). La liste des pièces requises par accueil est réglable."},
   {id:'2026-07-07-onglet-enfants',date:'2026-07-07',tab:'👶 Enfants',titre:"👶 Nouvel onglet « Enfants » : où va chaque enfant, d'un coup d'œil",desc:"Un nouvel onglet <b>👶 Enfants</b> (dans 👥 Adhérents) réunit tous les enfants et montre, pour chacun, <b>où il va</b> : périscolaire (matin/soir), sessions d'ACM, VEPI, autres activités — avec un <b>filtre par accueil</b> en haut : Tous · Périscolaire · ACM · VEPI. Un enfant présent sur plusieurs semaines ou accueils n'apparaît qu'une fois. C'est la vue « enfant au centre » : les accueils sont des filtres, pas des onglets. <b>Nouveau :</b> depuis la fiche d'un enfant, tu peux le <b>rattacher</b> à un accueil (périscolaire matin/soir · VEPI · une semaine d'ACM) et le <b>retirer / déplacer</b> avec le ✕ sur chaque puce. Bureau + accueil."},
   {id:'2026-07-07-liste-enfants-acm',date:'2026-07-07',tab:'🌴 Vacances',titre:"👶 La liste des enfants inscrits en ACM, d'un coup d'œil",desc:"Nouveau panneau en haut de l'onglet 🌴 Vacances : <b>👶 Enfants inscrits en ACM</b>. Tu vois combien d'enfants sont en ACM (regroupés par enfant, toutes semaines confondues — un enfant sur 2 semaines ne compte qu'une fois), le compte par session, et pour chaque enfant sa classe, son responsable et ses sessions. C'est la 1re brique de la future organisation « enfant au centre ». Lecture seule pour l'instant."},
   {id:'2026-07-07-verrou-grille-peri',date:'2026-07-07',tab:'🎒 Périscolaire',titre:"🔒 Grille tarifaire périscolaire protégée contre les modifications par erreur",desc:"Comme pour l'ACM, la grille tarifaire du périscolaire (🎒 Périscolaire → ⚙️ Paramétrage → 💶 Grille tarifaire) est désormais <b>verrouillée par défaut</b>. Pour la changer : <b>« 🔓 Déverrouiller pour modifier »</b> (avec confirmation), tu modifies, tu enregistres, et elle se <b>reverrouille automatiquement</b>. ⚠️ Réservé au bureau : les salariés voient la grille mais ne peuvent pas la déverrouiller."},
@@ -6632,12 +6635,13 @@ renderAll();
   window.loadEnfantsHub=async function(){
     const box=document.getElementById('enfantsHubList'); if(!box) return;
     if(typeof sbc==='undefined'||!sbc){ box.innerHTML='<p class="hint">Connecte-toi pour voir les enfants.</p>'; return; }
-    const [rf,rp,ria,ra,rpr]=await Promise.all([
+    const [rf,rp,ria,ra,rpr,rfs]=await Promise.all([
       sbc.from('enfants').select('id,prenom,nom,classe,ecole,naissance,parent_id'),
-      sbc.from('inscriptions_periscolaire').select('id,user_id,enfants'),
-      sbc.from('inscriptions_activite').select('id,enfant_id,activite_id'),
+      sbc.from('inscriptions_periscolaire').select('id,user_id,enfants,pieces'),
+      sbc.from('inscriptions_activite').select('id,enfant_id,activite_id,pieces'),
       sbc.from('activites').select('id,nom,categorie'),
-      sbc.from('profiles').select('id,full_name,email')
+      sbc.from('profiles').select('id,full_name,email'),
+      sbc.from('fiches_sanitaires').select('enfant_id,statut,signe_le')
     ]);
     if(rf.error){ box.innerHTML='<p class="hint" style="color:#c0392b">Erreur : '+esc(rf.error.message)+'</p>'; return; }
     const actById={}; (ra.data||[]).forEach(a=>{ if(a) actById[a.id]=a; });
@@ -6653,13 +6657,22 @@ renderAll();
     // destinations pour rattacher : périscolaire (dossier) + VEPI + sessions ACM (hors doublon « Périscolaire — matin & soir »)
     const dests=(ra.data||[]).filter(a=>a&&a.categorie==='Péri & extrascolaire'&&!isPeriAct(a));
     window.__enfHubDestOpts='<option value="PERI">🎒 Périscolaire (dossier)</option>'+dests.map(a=>'<option value="ACT:'+esc(a.id)+'">'+esc(a.nom||'activité')+'</option>').join('');
+    // 🧩 Complétude par accueil (Coup 2) : POT de pièces mutualisé par enfant = pièces du dossier famille + pièces des inscriptions activité (lecture des jsonb existants, zéro migration).
+    const keysOf=obj=>{ const s={}; if(obj&&typeof obj==='object') Object.keys(obj).forEach(k=>{ const p=obj[k]; if(p&&(p.path||p.name||p===true)) s[k]=true; }); return s; };
+    const piecesByParent={}; (rp.data||[]).forEach(ins=>{ if(ins.user_id){ piecesByParent[ins.user_id]=piecesByParent[ins.user_id]||{}; Object.assign(piecesByParent[ins.user_id], keysOf(ins.pieces)); } });
+    const actPiecesByEnfant={}; (ria.data||[]).forEach(i=>{ if(i.enfant_id){ actPiecesByEnfant[i.enfant_id]=actPiecesByEnfant[i.enfant_id]||{}; Object.assign(actPiecesByEnfant[i.enfant_id], keysOf(i.pieces)); } });
+    const ficheSet={}; ((rfs&&rfs.data)||[]).forEach(fx=>{ if(fx.enfant_id&&(fx.statut==='signee'||fx.signe_le)) ficheSet[fx.enfant_id]=true; });
+    // ⚙️ Exigences par accueil — CONFIG éditable (mêmes 6 pièces périscolaire & ACM d'après la base ; l'ACM exige EN PLUS la fiche sanitaire signée ; VEPI = sur RDV, pas de pièce en ligne).
+    const PLAB={caf:'CAF',impots:'Impôts',domicile:'Domicile',assurance:'Assurance',vaccin:'Vaccins',livret:'Livret'};
+    const EXIG={peri:{req:['caf','impots','domicile','assurance','vaccin','livret'],sanit:false}, acm:{req:['caf','impots','domicile','assurance','vaccin','livret'],sanit:true}};
+    const complFor=(kind,k)=>{ const cfg=EXIG[kind]; if(!cfg) return null; const pot=Object.assign({}, piecesByParent[k.parent_id]||{}, actPiecesByEnfant[k.id]||{}); const manque=cfg.req.filter(x=>!pot[x]).map(x=>PLAB[x]||x); if(cfg.sanit&&!ficheSet[k.id]) manque.push('Fiche sanitaire'); return {complete:manque.length===0, manque:manque}; };
     window.__enfHubModel=(rf.data||[]).map(k=>{
       const insList=(actByEnfant[k.id]||[]); const mem=[];
       const periD=periByEnfant[k.id]; const periActIns=insList.filter(i=>isPeriAct(actById[i.activite_id]));
-      if(periD) mem.push({kind:'peri',src:'dossier',dossierId:periD.dossierId,matin:periD.matin,soir:periD.soir});
-      else if(periActIns.length) mem.push({kind:'peri',src:'act',insId:periActIns[0].id});
+      if(periD) mem.push({kind:'peri',src:'dossier',dossierId:periD.dossierId,matin:periD.matin,soir:periD.soir,compl:complFor('peri',k)});
+      else if(periActIns.length) mem.push({kind:'peri',src:'act',insId:periActIns[0].id,compl:complFor('peri',k)});
       insList.forEach(i=>{ const a=actById[i.activite_id]; if(!a) return;
-        if(isACM(a)) mem.push({kind:'acm',insId:i.id,name:a.nom});
+        if(isACM(a)) mem.push({kind:'acm',insId:i.id,name:a.nom,compl:complFor('acm',k)});
         else if(isVEPI(a)) mem.push({kind:'vepi',insId:i.id,name:a.nom});
         else if(!isPeriAct(a)) mem.push({kind:'autre',insId:i.id,name:a.nom});
       });
@@ -6688,6 +6701,7 @@ renderAll();
         else { bg='#f5f2ec';c='#7a5a1a'; lab='🎟️ '+esc(x.name||''); rm='enfHubRemoveAct(\''+x.insId+'\')'; }
         return '<span class="pill" style="background:'+bg+';color:'+c+';font-size:11px;margin:0 3px 3px 0;display:inline-flex;align-items:center;gap:5px">'+lab+(canPeri?' <span onclick="'+rm+'" title="Retirer / déplacer" style="cursor:pointer;font-weight:700;opacity:.55">✕</span>':'')+'</span>';
       }).join('');
+      var complBlk=m.mem.filter(function(x){return x.compl;}).map(function(x){ var lab=(x.kind==='acm')?('🌴 '+esc(x.name||'ACM')):'🎒 Périscolaire'; return x.compl.complete?('<span style="font-size:11px;color:#127a51;margin:0 10px 3px 0;display:inline-block">'+lab+' : ✅ dossier complet</span>'):('<span style="font-size:11px;color:#b23a23;margin:0 10px 3px 0;display:inline-block">'+lab+' : ⚠️ manque '+x.compl.manque.map(esc).join(', ')+'</span>'); }).join('');
       const addCtrl=canPeri?('<div class="row" style="gap:6px;flex-wrap:wrap;align-items:center;margin-top:8px;background:#f4f8f5;border:1px dashed var(--line);border-radius:8px;padding:6px 8px">'
         +'<span style="font-size:12px;color:#5c7468">➕ Rattacher vers</span>'
         +'<select id="enf_dest_'+eid+'" onchange="enfHubDestChange(\''+eid+'\')" style="padding:5px 8px;border:1px solid var(--line);border-radius:8px;font:inherit;max-width:210px">'+(window.__enfHubDestOpts||'')+'</select>'
@@ -6700,6 +6714,7 @@ renderAll();
       return '<div class="panel" style="margin:8px 0;padding:10px 12px">'
         +'<div><strong>'+esc(((m.k.prenom||'')+' '+(m.k.nom||'')).trim()||'?')+'</strong>'+(m.k.classe?' <span class="muted" style="font-size:12px">· '+esc(m.k.classe)+'</span>':'')+(m.resp?' <span class="muted" style="font-size:12px">· '+esc(m.resp)+'</span>':'')+'</div>'
         +'<div style="margin-top:6px;display:flex;flex-wrap:wrap">'+(chips||'<span class="hint">— aucun accueil</span>')+'</div>'
+        +(complBlk?('<div style="margin-top:5px">'+complBlk+'</div>'):'')
         +addCtrl+'</div>';
     }).join('');
   }
