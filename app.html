@@ -2135,7 +2135,7 @@ const FAQ=[
   {cat:'🎒 Périscolaire',q:"Où je vois les dossiers d'inscription périscolaire déposés par les familles ?",kw:"periscolaire inscription dossier dossiers famille familles piece pieces caf assurance vaccin livret avis imposition justificatif domicile depose adherent matin soir rentree aout scan coffre",
    a:"Onglet <b>🎒 Périscolaire</b>, panneau <b>📨 Dossiers d'inscription</b> (en bas). Chaque famille dépose son dossier depuis <b>son espace famille</b> : enfants (matin et/ou soir) et les pièces (attestation CAF de <b>moins de 3 mois</b>, avis d'imposition, justificatif de domicile, attestation d'assurance, vaccins à jour, livret de famille). <b>Nouveau : la famille peut déposer dès la création de son compte</b>, sans attendre une validation — tu vois l'état des pièces, tu cliques pour <b>consulter</b> chacune, et tu marques le dossier <b>✅ Validé</b> ou <b>⚠️ Incomplet</b> (avec une note). Le dépôt est possible <b>même s'il manque une pièce</b> : tu la réclames via « Incomplet ». ⚠️ Pense à <b>régulariser l'adhésion (10 €)</b> de la famille — un seul parent adhérent suffit pour tous les enfants."},
   {cat:'🎒 Périscolaire',q:"Un dossier affiche « aucun enfant saisi » / l'enfant n'apparaît pas — comment le rattacher moi-même ?",kw:"aucun enfant saisi rattacher rattache enfant dossier inscription periscolaire famille parent bloque brouillon matin soir completer a la place accompagner cathie salarie personnel accueil bureau manquant absent liste deroulante ajouter retirer",
-   a:"Ça arrive quand la famille a déposé ses pièces mais n'a pas fini l'étape « enfant » : la fiche de l'enfant existe bien, mais elle n'a pas été reliée au dossier (qui reste en brouillon). Tu peux le faire pour elle : onglet <b>🎒 Périscolaire</b> → panneau <b>📨 Dossiers d'inscription</b> → sur la carte de la famille, ligne <b>« ➕ Rattacher un enfant »</b> : choisis l'enfant dans la liste (ce sont les fiches que la famille a déjà créées), coche <b>matin</b> et/ou <b>soir</b>, puis <b>Ajouter</b>. L'enfant apparaît aussitôt et tu peux chiffrer puis valider. Le <b>✕</b> à côté d'un enfant le retire du dossier (sa fiche n'est pas supprimée). <b>Le bureau ET l'accueil</b> (rôle personnel) peuvent le faire. ⚠️ On ne rattache que l'enfant + matin/soir : le <b>droit à l'image</b>, l'<b>autorisation de partir seul</b> et la <b>fiche sanitaire</b> restent à confirmer par le parent."},
+   a:"Ça arrive quand la famille a déposé ses pièces mais n'a pas fini l'étape « enfant » : la fiche de l'enfant existe bien, mais elle n'a pas été reliée au dossier (qui reste en brouillon). Tu peux le faire pour elle : onglet <b>🎒 Périscolaire</b> → panneau <b>📨 Dossiers d'inscription</b> → sur la carte de la famille, ligne <b>« ➕ Rattacher un enfant »</b> : choisis l'enfant dans la liste (ce sont les fiches que la famille a déjà créées), coche <b>matin</b> et/ou <b>soir</b>, puis <b>Ajouter</b>. L'enfant apparaît aussitôt et tu peux chiffrer puis valider. Le menu <b>« vers »</b> te laisse aussi l'inscrire à <b>VEPI</b> ou à une <b>semaine d'ACM ados</b> (l'ACM s'inscrit à la semaine) au lieu du périscolaire ; ses activités s'affichent alors sur la carte. Le <b>✕</b> à côté d'un enfant le retire du dossier (sa fiche n'est pas supprimée). <b>Le bureau ET l'accueil</b> (rôle personnel) peuvent le faire. ⚠️ On ne rattache que l'enfant + matin/soir : le <b>droit à l'image</b>, l'<b>autorisation de partir seul</b> et la <b>fiche sanitaire</b> restent à confirmer par le parent."},
   {cat:'🧰 Secrétariat',q:"Où sont les informations de l'assurance (MAIF) pour se connecter ?",kw:"assurance maif raqvam contrat sociétaire societaire cotisation garantie connexion identifiant mot de passe attestation sinistre responsabilite civile rc secretariat",
    a:"Onglet <b>🧰 Secrétariat</b>, panneau <b>🛡️ Assurance de l'association</b>. Tu y trouves le contrat : assureur <b>MAIF</b>, contrat <b>Raqvam</b> (réf. M4202RACA), cotisation 2026 de 1&nbsp;514,10&nbsp;€, les 4 sites assurés, les garanties, l'espace <b>espacepersonnel.maif.fr</b> et le <b>contact MAIF (09 78 97 98 99, gestionsocietaire@maif.fr)</b>. Le <b>n° de sociétaire</b> et l'<b>identifiant</b> de connexion se saisissent par le bureau (rangés dans le coffre privé, jamais publiés) ; le numéro figure sur l'avis d'échéance MAIF (dossier CASE/BDN/2026/Maif). 🔒 N'écris pas le mot de passe en clair : gestionnaire de mots de passe ou « identifiant/mot de passe oublié » sur le site MAIF."},
   {cat:'❓ Aide',q:"Comment présenter Bob et nos avancées (au DLA, à un partenaire) ?",kw:"presentation presenter bob demo montrer avancees fonctionnalites tour visite guidee charlotte dla partenaire pitch fil ecran decouvrir",
@@ -2353,7 +2353,7 @@ function pageHelpGotoAide(){ pageHelpClose(); const b=document.querySelector('na
 const NEWS=[
   {id:'2026-07-07-verrou-grille-peri',date:'2026-07-07',tab:'🎒 Périscolaire',titre:"🔒 Grille tarifaire périscolaire protégée contre les modifications par erreur",desc:"Comme pour l'ACM, la grille tarifaire du périscolaire (🎒 Périscolaire → ⚙️ Paramétrage → 💶 Grille tarifaire) est désormais <b>verrouillée par défaut</b>. Pour la changer : <b>« 🔓 Déverrouiller pour modifier »</b> (avec confirmation), tu modifies, tu enregistres, et elle se <b>reverrouille automatiquement</b>. ⚠️ Réservé au bureau : les salariés voient la grille mais ne peuvent pas la déverrouiller."},
   {id:'2026-07-07-verrou-tarif-acm',date:'2026-07-07',tab:'🌴 Vacances',titre:"🔒 Tarifs ACM protégés contre les modifications par erreur",desc:"La grille des tarifs ACM (onglet 🌴 Vacances → 💶 Tarif ACM) est désormais <b>verrouillée par défaut</b> : les cases sont figées tant que tu n'as pas cliqué <b>« 🔓 Déverrouiller pour modifier »</b> (avec confirmation). Tu modifies, tu cliques 💾 Enregistrer, et la grille se <b>reverrouille automatiquement</b>. Objectif : éviter qu'un tarif change par mégarde. Réservé au bureau."},
-  {id:'2026-07-07-rattacher-enfant-peri',date:'2026-07-07',tab:'🎒 Périscolaire',titre:"➕ Rattacher un enfant à un dossier périscolaire (bureau & accueil)",desc:"Quand une famille a déposé ses pièces mais pas fini l'étape « enfant » (le dossier reste en brouillon, « aucun enfant saisi »), tu peux le compléter pour elle : <b>🎒 Périscolaire → 📨 Dossiers d'inscription</b> → sur la carte de la famille, ligne <b>« ➕ Rattacher un enfant »</b> : choisis l'enfant (dans les fiches déjà créées par la famille), coche <b>matin</b> et/ou <b>soir</b>, puis <b>Ajouter</b>. Le <b>✕</b> à côté d'un enfant le retire du dossier (sa fiche n'est pas supprimée). <b>Le bureau ET l'accueil</b> (rôle personnel) peuvent le faire. On ne touche qu'à l'enfant + matin/soir : le droit à l'image, l'autorisation de partir seul et la fiche sanitaire restent confirmés par le parent."},
+  {id:'2026-07-07-rattacher-enfant-peri',date:'2026-07-07',tab:'🎒 Périscolaire',titre:"➕ Rattacher un enfant à un dossier périscolaire (bureau & accueil)",desc:"Quand une famille a déposé ses pièces mais pas fini l'étape « enfant » (le dossier reste en brouillon, « aucun enfant saisi »), tu peux le compléter pour elle : <b>🎒 Périscolaire → 📨 Dossiers d'inscription</b> → sur la carte de la famille, ligne <b>« ➕ Rattacher un enfant »</b> : choisis l'enfant (dans les fiches déjà créées par la famille), coche <b>matin</b> et/ou <b>soir</b>, puis <b>Ajouter</b>. Le <b>✕</b> à côté d'un enfant le retire du dossier (sa fiche n'est pas supprimée). <b>Le bureau ET l'accueil</b> (rôle personnel) peuvent le faire. On ne touche qu'à l'enfant + matin/soir : le droit à l'image, l'autorisation de partir seul et la fiche sanitaire restent confirmés par le parent. <b>Tu choisis aussi la destination</b> dans le menu « vers » : le périscolaire (dossier, matin/soir), <b>VEPI</b>, ou une <b>semaine d'ACM ados</b> (l'ACM s'inscrit à la semaine). Les activités déjà rattachées s'affichent sur la carte avec un ✕ pour les retirer."},
   {id:'2026-07-03-salles-planning',date:'2026-07-03',tab:'salles',titre:'🗓️ Salles — planning des créneaux',desc:"Nouvel onglet : le planning hebdo de la salle de danse (qui anime quel créneau). En lecture pour l'instant ; les créneaux « orphelins » (intervenant parti) sont en rouge. L'édition en 2 clics arrivera bientôt."},
   {id:'2026-07-03-referent-assistant-sanitaire',date:'2026-07-03',tab:'🎟️ Activités',titre:"👤 Un référent par activité + 🩺 l'accès aux fiches sanitaires",desc:"Sur chaque activité, tu peux désigner un <b>référent</b> (le salarié responsable) — il s'affiche sur la carte et aura accès aux <b>fiches sanitaires</b> des enfants de son activité. En haut de l'onglet, un panneau <b>🩺 Accès aux fiches sanitaires</b> (réservé président/trésorier) permet de cocher les <b>« assistants sanitaires »</b> (souvent titulaires du PSC1) : ces personnes voient toutes les fiches sanitaires, comme le bureau. C'est la 1re brique de la future <b>fiche sanitaire en ligne</b> (remplissable + signable par les familles) — la suite arrive."},
   {id:'2026-07-03-tag-educ-populaire',date:'2026-07-03',tab:'🎟️ Activités',titre:"🌱 Marquer une activité « éducation populaire »",desc:"Nouvelle case à cocher sur chaque activité (🎟️ Activités → à côté de la catégorie) : <b>🌱 Éducation populaire</b>. C'est un <b>marqueur transversal</b> (une de vos 3 valeurs), pas un rangement : l'activité reste dans son bloc (Périscolaire &amp; extrascolaire, Socioculturel, Temps forts) mais porte en plus le badge 🌱 — pratique pour repérer d'un coup d'œil, et pour valoriser dans un bilan ou auprès d'un financeur ce qui relève de l'éducation populaire. Visible côté bureau et côté salarié."},
@@ -6351,22 +6351,32 @@ renderAll();
     const sel=document.getElementById('peri_addsel_'+id);
     if(!sel||!sel.value){ alert("Choisis d'abord un enfant dans la liste."); return; }
     const enfantId=sel.value;
-    const matin=!!((document.getElementById('peri_addmatin_'+id)||{}).checked);
-    const soir=!!((document.getElementById('peri_addsoir_'+id)||{}).checked);
-    if(!matin&&!soir){ alert("Coche au moins « matin » ou « soir » pour cet enfant."); return; }
-    const [re,ri]=await Promise.all([
-      sbc.from('enfants').select('*').eq('id',enfantId).single(),
-      sbc.from('inscriptions_periscolaire').select('enfants').eq('id',id).single()
-    ]);
+    const destEl=document.getElementById('peri_adddest_'+id);
+    const dest=destEl?destEl.value:'PERI';
+    const re=await sbc.from('enfants').select('*').eq('id',enfantId).single();
     if(re.error||!re.data){ alert('Fiche enfant introuvable : '+((re.error&&re.error.message)||'')); return; }
-    if(ri.error){ alert('Erreur : '+ri.error.message); return; }
     const k=re.data;
-    const cur=Array.isArray(ri.data&&ri.data.enfants)?ri.data.enfants:[];
-    if(cur.some(x=>x&&x.enfant_id===enfantId)){ alert('Cet enfant est déjà rattaché à ce dossier.'); if(window.loadDossiersPeri)loadDossiersPeri(); return; }
-    const entry={enfant_id:k.id, prenom:k.prenom||'', nom:k.nom||'', ecole:k.ecole||'', classe:k.classe||'', naissance:k.naissance||'', matin:matin, soir:soir};
-    const {error}=await sbc.from('inscriptions_periscolaire').update({enfants:cur.concat([entry])}).eq('id',id);
-    if(error){ alert('Erreur : '+error.message); return; }
-    if(typeof setSync==='function')setSync('✓ enfant rattaché au dossier','#dff5e9');
+    if(dest==='PERI'){
+      const matin=!!((document.getElementById('peri_addmatin_'+id)||{}).checked);
+      const soir=!!((document.getElementById('peri_addsoir_'+id)||{}).checked);
+      if(!matin&&!soir){ alert("Coche au moins « matin » ou « soir » pour cet enfant."); return; }
+      const ri=await sbc.from('inscriptions_periscolaire').select('enfants').eq('id',id).single();
+      if(ri.error){ alert('Erreur : '+ri.error.message); return; }
+      const cur=Array.isArray(ri.data&&ri.data.enfants)?ri.data.enfants:[];
+      if(cur.some(x=>x&&x.enfant_id===enfantId)){ alert('Cet enfant est déjà dans le dossier périscolaire.'); if(window.loadDossiersPeri)loadDossiersPeri(); return; }
+      const entry={enfant_id:k.id, prenom:k.prenom||'', nom:k.nom||'', ecole:k.ecole||'', classe:k.classe||'', naissance:k.naissance||'', matin:matin, soir:soir};
+      const {error}=await sbc.from('inscriptions_periscolaire').update({enfants:cur.concat([entry])}).eq('id',id);
+      if(error){ alert('Erreur : '+error.message); return; }
+      if(typeof setSync==='function')setSync('✓ enfant rattaché au périscolaire','#dff5e9');
+    } else if(dest.indexOf('ACT:')===0){
+      const aid=dest.slice(4);
+      const rc=await sbc.from('inscriptions_activite').select('id').eq('activite_id',aid).eq('enfant_id',enfantId);
+      if(!rc.error&&rc.data&&rc.data.length){ alert('Cet enfant est déjà inscrit à cette activité.'); if(window.loadDossiersPeri)loadDossiersPeri(); return; }
+      const nom=(((k.prenom||'')+' '+(k.nom||'')).trim())||'';
+      const {error}=await sbc.from('inscriptions_activite').insert({asso_id:myAsso, activite_id:aid, enfant_id:enfantId, nom:nom, statut:'valide'});
+      if(error){ alert('Erreur : '+error.message); return; }
+      if(typeof setSync==='function')setSync("✓ enfant inscrit à l'activité",'#dff5e9');
+    } else { alert('Destination inconnue.'); return; }
     if(window.loadDossiersPeri)loadDossiersPeri();
   };
   window.periRemoveEnfant=async function(id,enfantId){
@@ -6379,6 +6389,18 @@ renderAll();
     if(error){ alert('Erreur : '+error.message); return; }
     if(typeof setSync==='function')setSync('✓ enfant retiré du dossier','#dff5e9');
     if(window.loadDossiersPeri)loadDossiersPeri();
+  };
+  window.periRemoveActivite=async function(insId){
+    if(!confirm("Retirer cette inscription à l'activité ? (la fiche enfant n'est PAS supprimée)")) return;
+    const {error}=await sbc.from('inscriptions_activite').delete().eq('id',insId);
+    if(error){ alert('Erreur : '+error.message); return; }
+    if(typeof setSync==='function')setSync("✓ inscription à l'activité retirée",'#dff5e9');
+    if(window.loadDossiersPeri)loadDossiersPeri();
+  };
+  window.periDestChange=function(id){
+    const destEl=document.getElementById('peri_adddest_'+id);
+    const ms=document.getElementById('peri_ms_'+id);
+    if(ms) ms.style.display=(destEl&&destEl.value==='PERI')?'':'none';
   };
   window.loadAdhesionsEnLigne=async function(){
     const box=document.getElementById('adhOnlineBox'); if(!box) return;
@@ -6402,14 +6424,22 @@ renderAll();
   };
   window.loadDossiersPeri=async function(){
     const box=document.getElementById('periDossiersList'); if(!box) return;
-    const [rd, rf, rp]=await Promise.all([
+    const [rd, rf, rp, ract, rina]=await Promise.all([
       sbc.from('inscriptions_periscolaire').select('*').order('updated_at',{ascending:false}),
       sbc.from('enfants').select('*'),
-      sbc.from('paiements').select('inscription_periscolaire_id,statut,paid_at').eq('statut','paye')
+      sbc.from('paiements').select('inscription_periscolaire_id,statut,paid_at').eq('statut','paye'),
+      sbc.from('activites').select('id,nom,categorie'),
+      sbc.from('inscriptions_activite').select('id,enfant_id,activite_id,statut')
     ]);
     if(rd.error){ box.innerHTML='<p class="hint" style="color:#c0392b">Erreur : '+esc(rd.error.message)+'</p>'; return; }
     const data=rd.data; const fmap={}; (rf.data||[]).forEach(f=>{ fmap[f.id]=f; });
     const paidSet={}; ((rp&&rp.data)||[]).forEach(p=>{ if(p.inscription_periscolaire_id) paidSet[p.inscription_periscolaire_id]=p; });
+    // Destinations « activité » = catégorie « Péri & extrascolaire » (VEPI, semaines d'ACM…), hors le doublon « Périscolaire — matin & soir » (le dossier ci-dessus fait foi)
+    const actById={}; (ract.data||[]).forEach(a=>{ if(a) actById[a.id]=a; });
+    const periActs=(ract.data||[]).filter(a=>a&&a.categorie==='Péri & extrascolaire'&&!/p[eé]riscolaire/i.test(a.nom||''));
+    const periDestOpts='<option value="PERI">🎒 Périscolaire (dossier)</option>'+periActs.map(a=>'<option value="ACT:'+esc(a.id)+'">'+esc(a.nom||'activité')+'</option>').join('');
+    const periCatIds=new Set((ract.data||[]).filter(a=>a&&a.categorie==='Péri & extrascolaire').map(a=>a.id));
+    const insActByEnfant={}; (rina.data||[]).forEach(i=>{ if(i.enfant_id&&periCatIds.has(i.activite_id)) (insActByEnfant[i.enfant_id]=insActByEnfant[i.enfant_id]||[]).push(i); });
     if(!data||!data.length){ box.innerHTML='<p class="hint">Aucun dossier déposé pour l\'instant. Les familles adhérentes déposent depuis leur espace adhérent.</p>'; return; }
     const isTodo=function(x){ return x.statut!=='valide'; };
     data.sort(function(a,b){ return (isTodo(a)?0:1)-(isTodo(b)?0:1); }); // les dossiers à traiter d'abord
@@ -6472,21 +6502,31 @@ renderAll();
           +(lines.length?'<br><span style="color:#8a6400">'+lines.join('<br>')+'</span>':'')
           +'</div>';
       }).join(' '):'<span class="hint">aucun enfant saisi</span>';
-      // ➕ Rattacher un enfant DÉJÀ créé par la famille (bureau + personnel) : on pioche dans ses fiches enfants non encore rattachées
-      const attachedIds=enfants.map(e=>e.enfant_id).filter(Boolean);
-      const famKids=(rf.data||[]).filter(k=>k&&k.parent_id===d.user_id&&attachedIds.indexOf(k.id)===-1);
+      // Toutes les fiches enfants de la famille — pour rattacher au périscolaire (dossier), à VEPI ou aux semaines d'ACM
+      const famKids=(rf.data||[]).filter(k=>k&&k.parent_id===d.user_id);
+      // Activités déjà rattachées aux enfants de cette famille (VEPI, ACM…), avec ✕ pour retirer
+      let actChipsHtml='';
+      famKids.forEach(k=>{ (insActByEnfant[k.id]||[]).forEach(i=>{ const a=actById[i.activite_id]||{};
+        actChipsHtml+='<span class="pill" style="background:#eef4ff;color:#23448a;font-size:12px;display:inline-block;padding:3px 8px;margin:2px 3px 0 0">🎟️ '+esc(((k.prenom||'').trim())||'?')+' — '+esc(a.nom||'activité')
+          +(canPeri?' <button class="ghost btn" title="Retirer cette inscription" style="font-size:11px;padding:0 6px;line-height:1.6" onclick="periRemoveActivite(\''+i.id+'\')">✕</button>':'')+'</span>';
+      }); });
+      const actChipsBlock=actChipsHtml?('<div style="margin-top:6px;display:flex;flex-wrap:wrap;align-items:center;gap:2px"><span class="muted" style="font-size:12px;margin-right:4px">Activités :</span>'+actChipsHtml+'</div>'):'';
       let addCtrl='';
       if(canPeri){
         if(famKids.length){
           const opts=famKids.map(k=>'<option value="'+esc(k.id)+'">'+esc((((k.prenom||'')+' '+(k.nom||'')).trim())||'(enfant)')+(k.classe?' · '+esc(k.classe):'')+'</option>').join('');
           addCtrl='<div class="row" style="gap:6px;flex-wrap:wrap;align-items:center;margin-top:8px;background:#f4f8f5;border:1px dashed var(--line);border-radius:8px;padding:8px">'
-            +'<span style="font-size:12px;font-weight:600">➕ Rattacher un enfant :</span>'
-            +'<select id="peri_addsel_'+d.id+'" style="padding:6px 8px;border:1px solid var(--line);border-radius:8px;font:inherit;max-width:220px">'+opts+'</select>'
+            +'<span style="font-size:12px;font-weight:600">➕ Rattacher :</span>'
+            +'<select id="peri_addsel_'+d.id+'" style="padding:6px 8px;border:1px solid var(--line);border-radius:8px;font:inherit;max-width:190px">'+opts+'</select>'
+            +'<span style="font-size:12px">vers</span>'
+            +'<select id="peri_adddest_'+d.id+'" onchange="periDestChange(\''+d.id+'\')" style="padding:6px 8px;border:1px solid var(--line);border-radius:8px;font:inherit;max-width:220px">'+periDestOpts+'</select>'
+            +'<span id="peri_ms_'+d.id+'" style="display:inline-flex;gap:8px;align-items:center">'
             +'<label style="font-size:12px;display:flex;align-items:center;gap:3px"><input type="checkbox" id="peri_addmatin_'+d.id+'"> matin</label>'
             +'<label style="font-size:12px;display:flex;align-items:center;gap:3px"><input type="checkbox" id="peri_addsoir_'+d.id+'" checked> soir</label>'
+            +'</span>'
             +'<button class="btn" onclick="periAddEnfant(\''+d.id+'\')">Ajouter</button>'
             +'</div>';
-        } else if(!enfants.length){
+        } else {
           addCtrl='<div class="muted" style="font-size:12px;margin-top:6px">Aucune fiche enfant créée par cette famille. Demande-lui de l\'ajouter depuis son espace, ou crée la fiche dans 👥 Membres.</div>';
         }
       }
@@ -6508,6 +6548,7 @@ renderAll();
         +((d.email||d.tel)?'<br><span class="muted" style="font-size:13px">'+esc(d.email||'')+((d.email&&d.tel)?' · ':'')+esc(d.tel||'')+'</span>':'')
         +'</div><span class="muted" style="font-size:12px">'+esc((d.updated_at||'').slice(0,10))+'</span></div>'
         +'<div style="margin-top:6px;display:flex;gap:5px;flex-wrap:wrap">'+enfHtml+'</div>'
+        +actChipsBlock
         +addCtrl
         +'<div style="margin-top:8px;display:flex;gap:5px;flex-wrap:wrap">'+pieceHtml+'</div>'
         +ctrl+(canWrite?periPayBlock(d):'')+'</div>';
