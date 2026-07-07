@@ -2197,7 +2197,7 @@ const FAQ=[
   {cat:'📅 Rendez-vous',q:"Comment proposer des rendez-vous (créneaux) aux familles ?",kw:"rendez vous rdv creneau creneaux plage plages horaire recurrent recurrente agenda coiffeur accompagnement vepi reserver disponibilite dispo heure",
    a:"En bas de l'onglet <b>🎟️ Activités</b>, panneau <b>« 📅 Rendez-vous »</b>. Tu définis tes <b>plages récurrentes</b> : un <b>jour</b> (ex : mardi), <b>de … à …</b> (ex : 14h-17h), la <b>durée d'un créneau</b> (30 min par défaut) et un <b>libellé</b>. Les familles voient alors uniquement les <b>créneaux LIBRES</b> dans l'espace famille (📅 Prendre rendez-vous) et en réservent un elles-mêmes — <b>tu n'as plus à rappeler</b>. Tu retrouves ici la liste des <b>rendez-vous pris</b> (date, heure, motif). Pour supprimer une plage : 🗑. Deux plages sont déjà posées par défaut, ajuste-les à ta convenance."},
   {cat:'👶 Enfants',q:"Où je vois tous les enfants et où va chacun (périscolaire, ACM, VEPI) ?",kw:"enfants tous liste ou va chaque enfant accueil accueils periscolaire acm vepi activites filtre voir vue ensemble unifiee ou vont onglet",
-   a:"Onglet <b>👶 Enfants</b> (dans 👥 Adhérents). Tu vois la <b>liste de tous les enfants</b> et, pour chacun, <b>où il va</b> : 🎒 périscolaire (matin/soir), 🌴 sessions d'ACM, 📌 VEPI, 🎟️ autres activités — avec sa classe et son responsable. En haut, un <b>filtre par accueil</b> : clique <b>Tous / Périscolaire / ACM / VEPI</b> pour ne voir que les enfants de cet accueil. Un enfant présent sur plusieurs semaines ou accueils n'apparaît qu'<b>une fois</b>. Lecture seule pour l'instant (pour inscrire ou déplacer un enfant, ça se passe sur son dossier)."},
+   a:"Onglet <b>👶 Enfants</b> (dans 👥 Adhérents). Tu vois la <b>liste de tous les enfants</b> et, pour chacun, <b>où il va</b> : 🎒 périscolaire (matin/soir), 🌴 sessions d'ACM, 📌 VEPI, 🎟️ autres activités — avec sa classe et son responsable. En haut, un <b>filtre par accueil</b> : clique <b>Tous / Périscolaire / ACM / VEPI</b> pour ne voir que les enfants de cet accueil. Un enfant présent sur plusieurs semaines ou accueils n'apparaît qu'<b>une fois</b>. Depuis la fiche d'un enfant, tu peux le <b>rattacher</b> à un accueil (menu « Rattacher vers » : périscolaire matin/soir · VEPI · une semaine d'ACM) et le <b>retirer / déplacer</b> avec le ✕ sur chaque puce (bureau + accueil). ⚠️ Le périscolaire ne peut être complété que si la famille a déjà ouvert son dossier (avec pièces / quotient) depuis son espace."},
   {cat:'🌴 Vacances',q:"Où je vois la liste des enfants inscrits en ACM ?",kw:"liste enfants acm inscrits inscrit vacances qui roster effectif combien session semaine ete toussaint voir consolidee tableau",
    a:"Onglet <b>🌴 Vacances</b>, panneau <b>👶 Enfants inscrits en ACM</b> tout en haut. Tu vois d'un coup d'œil <b>combien d'enfants</b> sont en ACM (regroupés par enfant — un enfant sur 2 semaines ne compte qu'une fois), le détail <b>par session</b>, et pour chaque enfant sa classe, son responsable et les sessions ACM où il est inscrit. Lecture seule (pour inscrire ou déplacer un enfant, ça se passe sur son dossier). Si des inscriptions ont été saisies au comptoir sans fiche enfant reliée, un rappel « ⚠️ X sans fiche enfant » s'affiche."},
   {cat:'🌴 Vacances',q:"Pourquoi je ne peux pas modifier les tarifs ACM ? Comment les débloquer ?",kw:"tarif tarifs acm grille modifier changer bloque verrou verrouille verrouillee securite deverrouiller cadenas proteger erreur quotient familial semaine petites grandes vacances prix bureau editer case grisee",
@@ -2376,7 +2376,7 @@ function pageHelpGotoAide(){ pageHelpClose(); const b=document.querySelector('na
 
 /* ---- ✨ Quoi de neuf (nouveautés + notice chronologique) ---- */
 const NEWS=[
-  {id:'2026-07-07-onglet-enfants',date:'2026-07-07',tab:'👶 Enfants',titre:"👶 Nouvel onglet « Enfants » : où va chaque enfant, d'un coup d'œil",desc:"Un nouvel onglet <b>👶 Enfants</b> (dans 👥 Adhérents) réunit tous les enfants et montre, pour chacun, <b>où il va</b> : périscolaire (matin/soir), sessions d'ACM, VEPI, autres activités — avec un <b>filtre par accueil</b> en haut : Tous · Périscolaire · ACM · VEPI. Un enfant présent sur plusieurs semaines ou accueils n'apparaît qu'une fois. C'est la 1re vue « enfant au centre » : les accueils sont des filtres, pas des onglets. Lecture seule pour l'instant (inscrire / déplacer viendra ensuite)."},
+  {id:'2026-07-07-onglet-enfants',date:'2026-07-07',tab:'👶 Enfants',titre:"👶 Nouvel onglet « Enfants » : où va chaque enfant, d'un coup d'œil",desc:"Un nouvel onglet <b>👶 Enfants</b> (dans 👥 Adhérents) réunit tous les enfants et montre, pour chacun, <b>où il va</b> : périscolaire (matin/soir), sessions d'ACM, VEPI, autres activités — avec un <b>filtre par accueil</b> en haut : Tous · Périscolaire · ACM · VEPI. Un enfant présent sur plusieurs semaines ou accueils n'apparaît qu'une fois. C'est la vue « enfant au centre » : les accueils sont des filtres, pas des onglets. <b>Nouveau :</b> depuis la fiche d'un enfant, tu peux le <b>rattacher</b> à un accueil (périscolaire matin/soir · VEPI · une semaine d'ACM) et le <b>retirer / déplacer</b> avec le ✕ sur chaque puce. Bureau + accueil."},
   {id:'2026-07-07-liste-enfants-acm',date:'2026-07-07',tab:'🌴 Vacances',titre:"👶 La liste des enfants inscrits en ACM, d'un coup d'œil",desc:"Nouveau panneau en haut de l'onglet 🌴 Vacances : <b>👶 Enfants inscrits en ACM</b>. Tu vois combien d'enfants sont en ACM (regroupés par enfant, toutes semaines confondues — un enfant sur 2 semaines ne compte qu'une fois), le compte par session, et pour chaque enfant sa classe, son responsable et ses sessions. C'est la 1re brique de la future organisation « enfant au centre ». Lecture seule pour l'instant."},
   {id:'2026-07-07-verrou-grille-peri',date:'2026-07-07',tab:'🎒 Périscolaire',titre:"🔒 Grille tarifaire périscolaire protégée contre les modifications par erreur",desc:"Comme pour l'ACM, la grille tarifaire du périscolaire (🎒 Périscolaire → ⚙️ Paramétrage → 💶 Grille tarifaire) est désormais <b>verrouillée par défaut</b>. Pour la changer : <b>« 🔓 Déverrouiller pour modifier »</b> (avec confirmation), tu modifies, tu enregistres, et elle se <b>reverrouille automatiquement</b>. ⚠️ Réservé au bureau : les salariés voient la grille mais ne peuvent pas la déverrouiller."},
   {id:'2026-07-07-verrou-tarif-acm',date:'2026-07-07',tab:'🌴 Vacances',titre:"🔒 Tarifs ACM protégés contre les modifications par erreur",desc:"La grille des tarifs ACM (onglet 🌴 Vacances → 💶 Tarif ACM) est désormais <b>verrouillée par défaut</b> : les cases sont figées tant que tu n'as pas cliqué <b>« 🔓 Déverrouiller pour modifier »</b> (avec confirmation). Tu modifies, tu cliques 💾 Enregistrer, et la grille se <b>reverrouille automatiquement</b>. Objectif : éviter qu'un tarif change par mégarde. Réservé au bureau."},
@@ -5973,6 +5973,7 @@ renderAll();
   };
   function applyPerms(){
     const perms=Object.assign({}, (myProfile.perms&&typeof myProfile.perms==='object')?myProfile.perms:{});
+    if(!canWrite && myProfile && myProfile.role==='personnel' && (perms.periscolaire==='gestion'||perms.activites==='gestion') && !perms.enfants) perms.enfants='gestion'; // l'écran 👶 Enfants (métier) est éditable par l'accueil qui gère déjà périscolaire/activités
     if(!canWrite) perms.aide='cache'; // l'Aide « Demande à Zanana » est réservée au bureau
     if(!canWrite) perms.accompagnement='cache'; // Accompagnement : contenu sensible (RH, gouvernance) → bureau uniquement par défaut
     if(!canWrite) perms.rh='cache'; // RH & Organisation : contenu sensible → bureau uniquement par défaut
@@ -6626,15 +6627,15 @@ renderAll();
     box.innerHTML=html;
   };
 
-  // 👶 Écran « Enfants » — vue unifiée « où va l'enfant » (Coup 1 archi « enfant au centre », LECTURE SEULE).
-  // Union dossier périscolaire (inscriptions_periscolaire.enfants) + inscriptions activité, dédoublonné par enfant.
+  // 👶 Écran « Enfants » — vue unifiée « où va l'enfant » (archi « enfant au centre »).
+  // Union dossier périscolaire + inscriptions activité, dédoublonné par enfant. Rattacher/retirer (métier) = bureau + personnel.
   window.loadEnfantsHub=async function(){
     const box=document.getElementById('enfantsHubList'); if(!box) return;
     if(typeof sbc==='undefined'||!sbc){ box.innerHTML='<p class="hint">Connecte-toi pour voir les enfants.</p>'; return; }
     const [rf,rp,ria,ra,rpr]=await Promise.all([
-      sbc.from('enfants').select('id,prenom,nom,classe,parent_id'),
-      sbc.from('inscriptions_periscolaire').select('user_id,enfants'),
-      sbc.from('inscriptions_activite').select('enfant_id,activite_id'),
+      sbc.from('enfants').select('id,prenom,nom,classe,ecole,naissance,parent_id'),
+      sbc.from('inscriptions_periscolaire').select('id,user_id,enfants'),
+      sbc.from('inscriptions_activite').select('id,enfant_id,activite_id'),
       sbc.from('activites').select('id,nom,categorie'),
       sbc.from('profiles').select('id,full_name,email')
     ]);
@@ -6644,40 +6645,110 @@ renderAll();
     const isVEPI=a=>a&&/vepi/i.test(a.nom||'');
     const isPeriAct=a=>a&&a.categorie==='Péri & extrascolaire'&&/p[eé]riscolaire/i.test(a.nom||'');
     const pmap={}; ((rpr&&rpr.data)||[]).forEach(p=>{ pmap[p.id]=p.full_name||p.email||''; });
-    const periDossier={};
-    (rp.data||[]).forEach(ins=>{ (Array.isArray(ins.enfants)?ins.enfants:[]).forEach(e=>{ if(e&&e.enfant_id){ const cur=periDossier[e.enfant_id]||{matin:false,soir:false}; cur.matin=cur.matin||!!e.matin; cur.soir=cur.soir||!!e.soir; periDossier[e.enfant_id]=cur; } }); });
+    const periByEnfant={};
+    (rp.data||[]).forEach(ins=>{ (Array.isArray(ins.enfants)?ins.enfants:[]).forEach(e=>{ if(e&&e.enfant_id){ const cur=periByEnfant[e.enfant_id]||{dossierId:ins.id,matin:false,soir:false}; cur.matin=cur.matin||!!e.matin; cur.soir=cur.soir||!!e.soir; cur.dossierId=cur.dossierId||ins.id; periByEnfant[e.enfant_id]=cur; } }); });
+    const dossierByParent={}; (rp.data||[]).forEach(ins=>{ if(ins.user_id&&!dossierByParent[ins.user_id]) dossierByParent[ins.user_id]=ins.id; });
     const actByEnfant={};
     (ria.data||[]).forEach(i=>{ if(i.enfant_id) (actByEnfant[i.enfant_id]=actByEnfant[i.enfant_id]||[]).push(i); });
+    // destinations pour rattacher : périscolaire (dossier) + VEPI + sessions ACM (hors doublon « Périscolaire — matin & soir »)
+    const dests=(ra.data||[]).filter(a=>a&&a.categorie==='Péri & extrascolaire'&&!isPeriAct(a));
+    window.__enfHubDestOpts='<option value="PERI">🎒 Périscolaire (dossier)</option>'+dests.map(a=>'<option value="ACT:'+esc(a.id)+'">'+esc(a.nom||'activité')+'</option>').join('');
     window.__enfHubModel=(rf.data||[]).map(k=>{
-      const acts=(actByEnfant[k.id]||[]).map(i=>actById[i.activite_id]).filter(Boolean);
-      const periD=periDossier[k.id], periByAct=acts.some(isPeriAct);
-      const peri=(periD||periByAct)?{matin:periD?periD.matin:false, soir:periD?periD.soir:false}:null;
-      return {k, resp:(k.parent_id&&pmap[k.parent_id])||'', peri:peri, acm:acts.filter(isACM).map(a=>a.nom), vepi:acts.some(isVEPI), autres:acts.filter(a=>!isACM(a)&&!isVEPI(a)&&!isPeriAct(a)).map(a=>a.nom)};
+      const insList=(actByEnfant[k.id]||[]); const mem=[];
+      const periD=periByEnfant[k.id]; const periActIns=insList.filter(i=>isPeriAct(actById[i.activite_id]));
+      if(periD) mem.push({kind:'peri',src:'dossier',dossierId:periD.dossierId,matin:periD.matin,soir:periD.soir});
+      else if(periActIns.length) mem.push({kind:'peri',src:'act',insId:periActIns[0].id});
+      insList.forEach(i=>{ const a=actById[i.activite_id]; if(!a) return;
+        if(isACM(a)) mem.push({kind:'acm',insId:i.id,name:a.nom});
+        else if(isVEPI(a)) mem.push({kind:'vepi',insId:i.id,name:a.nom});
+        else if(!isPeriAct(a)) mem.push({kind:'autre',insId:i.id,name:a.nom});
+      });
+      return {k, resp:(k.parent_id&&pmap[k.parent_id])||'', mem:mem};
     });
     renderEnfHub();
   };
   function renderEnfHub(){
     const box=document.getElementById('enfantsHubList'); if(!box) return;
     const model=window.__enfHubModel||[]; const f=window.__enfHubFilter||'tous';
-    const counts={tous:model.length, periscolaire:model.filter(m=>!!m.peri).length, acm:model.filter(m=>m.acm&&m.acm.length).length, vepi:model.filter(m=>m.vepi).length};
-    const inAcc=(m,acc)=> acc==='periscolaire'?!!m.peri : acc==='acm'?!!(m.acm&&m.acm.length) : acc==='vepi'?!!m.vepi : true;
+    const canPeri=canWrite||(myProfile&&myProfile.role==='personnel');
+    const has=(m,kind)=>m.mem.some(x=>x.kind===kind);
+    const counts={tous:model.length, periscolaire:model.filter(m=>has(m,'peri')).length, acm:model.filter(m=>has(m,'acm')).length, vepi:model.filter(m=>has(m,'vepi')).length};
+    const inAcc=(m,acc)=> acc==='periscolaire'?has(m,'peri') : acc==='acm'?has(m,'acm') : acc==='vepi'?has(m,'vepi') : true;
     const FILTERS=[['tous','Tous'],['periscolaire','🎒 Périscolaire'],['acm','🌴 ACM'],['vepi','📌 VEPI']];
     const bar='<div class="row" style="gap:6px;flex-wrap:wrap;margin-bottom:10px">'+FILTERS.map(function(ff){ const on=f===ff[0];
       return '<span onclick="enfHubSetFilter(\''+ff[0]+'\')" style="cursor:pointer;user-select:none;font-size:13px;font-weight:600;padding:5px 12px;border-radius:999px;border:1px solid '+(on?'#127a51':'var(--line)')+';background:'+(on?'#dff5e9':'#fff')+';color:'+(on?'#127a51':'#555')+'">'+ff[1]+' · '+(counts[ff[0]]||0)+'</span>';
     }).join('')+'</div>';
     const list=model.filter(m=>inAcc(m,f)).sort((a,b)=>(((a.k.nom||'')+(a.k.prenom||'')).toLowerCase()).localeCompare(((b.k.nom||'')+(b.k.prenom||'')).toLowerCase()));
     if(!list.length){ box.innerHTML=bar+'<p class="hint">Aucun enfant dans ce filtre.</p>'; return; }
-    const chip=(t,bg,c)=>'<span class="pill" style="background:'+bg+';color:'+c+';font-size:11px;margin:0 3px 3px 0;display:inline-block">'+t+'</span>';
-    box.innerHTML=bar+'<div style="overflow-x:auto;-webkit-overflow-scrolling:touch"><table style="min-width:560px"><thead><tr><th>Enfant</th><th>Classe</th><th>Responsable</th><th>Où il va</th></tr></thead><tbody>'
-      +list.map(function(m){ const chips=[];
-        if(m.peri){ const fm=[m.peri.matin?'matin':null,m.peri.soir?'soir':null].filter(Boolean).join(' & '); chips.push(chip('🎒 Périscolaire'+(fm?' ('+fm+')':''),'#eef3ef','#2f5d4c')); }
-        (m.acm||[]).forEach(n=>chips.push(chip('🌴 '+esc(n),'#eef4ff','#23448a')));
-        if(m.vepi) chips.push(chip('📌 VEPI','#f3ecfb','#5b3a9c'));
-        (m.autres||[]).forEach(n=>chips.push(chip('🎟️ '+esc(n),'#f5f2ec','#7a5a1a')));
-        return '<tr><td><strong>'+esc(((m.k.prenom||'')+' '+(m.k.nom||'')).trim()||'?')+'</strong></td><td>'+esc(m.k.classe||'—')+'</td><td>'+esc(m.resp||'—')+'</td><td>'+(chips.length?chips.join(''):'<span class="hint">— aucun accueil</span>')+'</td></tr>';
-      }).join('')+'</tbody></table></div>';
+    box.innerHTML=bar+list.map(function(m){ const eid=m.k.id;
+      const chips=m.mem.map(function(x){ var bg,c,lab,rm;
+        if(x.kind==='peri'){ bg='#eef3ef';c='#2f5d4c'; var fm=[x.matin?'matin':null,x.soir?'soir':null].filter(Boolean).join(' & '); lab='🎒 Périscolaire'+(fm?' ('+fm+')':''); rm=(x.src==='dossier')?('enfHubRemovePeri(\''+x.dossierId+'\',\''+eid+'\')'):('enfHubRemoveAct(\''+x.insId+'\')'); }
+        else if(x.kind==='acm'){ bg='#eef4ff';c='#23448a'; lab='🌴 '+esc(x.name||''); rm='enfHubRemoveAct(\''+x.insId+'\')'; }
+        else if(x.kind==='vepi'){ bg='#f3ecfb';c='#5b3a9c'; lab='📌 '+esc(x.name||'VEPI'); rm='enfHubRemoveAct(\''+x.insId+'\')'; }
+        else { bg='#f5f2ec';c='#7a5a1a'; lab='🎟️ '+esc(x.name||''); rm='enfHubRemoveAct(\''+x.insId+'\')'; }
+        return '<span class="pill" style="background:'+bg+';color:'+c+';font-size:11px;margin:0 3px 3px 0;display:inline-flex;align-items:center;gap:5px">'+lab+(canPeri?' <span onclick="'+rm+'" title="Retirer / déplacer" style="cursor:pointer;font-weight:700;opacity:.55">✕</span>':'')+'</span>';
+      }).join('');
+      const addCtrl=canPeri?('<div class="row" style="gap:6px;flex-wrap:wrap;align-items:center;margin-top:8px;background:#f4f8f5;border:1px dashed var(--line);border-radius:8px;padding:6px 8px">'
+        +'<span style="font-size:12px;color:#5c7468">➕ Rattacher vers</span>'
+        +'<select id="enf_dest_'+eid+'" onchange="enfHubDestChange(\''+eid+'\')" style="padding:5px 8px;border:1px solid var(--line);border-radius:8px;font:inherit;max-width:210px">'+(window.__enfHubDestOpts||'')+'</select>'
+        +'<span id="enf_ms_'+eid+'" style="display:inline-flex;gap:8px;align-items:center">'
+        +'<label style="font-size:12px;display:flex;align-items:center;gap:3px"><input type="checkbox" id="enf_matin_'+eid+'"> matin</label>'
+        +'<label style="font-size:12px;display:flex;align-items:center;gap:3px"><input type="checkbox" id="enf_soir_'+eid+'" checked> soir</label>'
+        +'</span>'
+        +'<button class="btn" style="padding:4px 12px" onclick="enfHubAdd(\''+eid+'\')">Ajouter</button>'
+        +'</div>'):'';
+      return '<div class="panel" style="margin:8px 0;padding:10px 12px">'
+        +'<div><strong>'+esc(((m.k.prenom||'')+' '+(m.k.nom||'')).trim()||'?')+'</strong>'+(m.k.classe?' <span class="muted" style="font-size:12px">· '+esc(m.k.classe)+'</span>':'')+(m.resp?' <span class="muted" style="font-size:12px">· '+esc(m.resp)+'</span>':'')+'</div>'
+        +'<div style="margin-top:6px;display:flex;flex-wrap:wrap">'+(chips||'<span class="hint">— aucun accueil</span>')+'</div>'
+        +addCtrl+'</div>';
+    }).join('');
   }
   window.enfHubSetFilter=function(f){ window.__enfHubFilter=f; renderEnfHub(); };
+  window.enfHubDestChange=function(eid){ const d=document.getElementById('enf_dest_'+eid), ms=document.getElementById('enf_ms_'+eid); if(ms) ms.style.display=(d&&d.value==='PERI')?'':'none'; };
+  window.enfHubAdd=async function(eid){
+    const d=document.getElementById('enf_dest_'+eid); const dest=d?d.value:'PERI';
+    const re=await sbc.from('enfants').select('id,prenom,nom,ecole,classe,naissance,parent_id').eq('id',eid).single();
+    if(re.error||!re.data){ alert('Fiche enfant introuvable.'); return; }
+    const k=re.data; const nom=(((k.prenom||'')+' '+(k.nom||'')).trim())||'';
+    if(dest==='PERI'){
+      const matin=!!((document.getElementById('enf_matin_'+eid)||{}).checked), soir=!!((document.getElementById('enf_soir_'+eid)||{}).checked);
+      if(!matin&&!soir){ alert("Coche au moins « matin » ou « soir »."); return; }
+      const rd=await sbc.from('inscriptions_periscolaire').select('id,enfants').eq('user_id',k.parent_id).limit(1);
+      if(rd.error){ alert('Erreur : '+rd.error.message); return; }
+      if(!rd.data||!rd.data.length){ alert("Cette famille n'a pas encore de dossier périscolaire (pièces / quotient). Il s'ouvre depuis l'espace famille du parent — l'inscription périscolaire se fait là."); return; }
+      const dossier=rd.data[0]; const cur=Array.isArray(dossier.enfants)?dossier.enfants:[];
+      if(cur.some(x=>x&&x.enfant_id===eid)){ alert('Cet enfant est déjà dans le dossier périscolaire.'); if(window.loadEnfantsHub)loadEnfantsHub(); return; }
+      const entry={enfant_id:k.id,prenom:k.prenom||'',nom:k.nom||'',ecole:k.ecole||'',classe:k.classe||'',naissance:k.naissance||'',matin:matin,soir:soir};
+      const {error}=await sbc.from('inscriptions_periscolaire').update({enfants:cur.concat([entry])}).eq('id',dossier.id);
+      if(error){ alert('Erreur : '+error.message); return; }
+      if(typeof setSync==='function')setSync('✓ enfant rattaché au périscolaire','#dff5e9');
+    } else if(dest.indexOf('ACT:')===0){
+      const aid=dest.slice(4);
+      const rc=await sbc.from('inscriptions_activite').select('id').eq('activite_id',aid).eq('enfant_id',eid);
+      if(!rc.error&&rc.data&&rc.data.length){ alert('Cet enfant est déjà inscrit à cette activité.'); if(window.loadEnfantsHub)loadEnfantsHub(); return; }
+      const {error}=await sbc.from('inscriptions_activite').insert({asso_id:myAsso,activite_id:aid,enfant_id:eid,nom:nom,statut:'valide'});
+      if(error){ alert('Erreur : '+error.message); return; }
+      if(typeof setSync==='function')setSync("✓ enfant inscrit à l'activité",'#dff5e9');
+    } else { return; }
+    if(window.loadEnfantsHub)loadEnfantsHub();
+  };
+  window.enfHubRemoveAct=async function(insId){
+    if(!confirm("Retirer cette inscription ? (la fiche enfant n'est pas supprimée)")) return;
+    const {error}=await sbc.from('inscriptions_activite').delete().eq('id',insId);
+    if(error){ alert('Erreur : '+error.message); return; }
+    if(typeof setSync==='function')setSync('✓ inscription retirée','#dff5e9');
+    if(window.loadEnfantsHub)loadEnfantsHub();
+  };
+  window.enfHubRemovePeri=async function(dossierId,eid){
+    if(!confirm("Retirer cet enfant du dossier périscolaire ? (sa fiche n'est pas supprimée)")) return;
+    const rd=await sbc.from('inscriptions_periscolaire').select('enfants').eq('id',dossierId).single();
+    if(rd.error){ alert('Erreur : '+rd.error.message); return; }
+    const cur=Array.isArray(rd.data&&rd.data.enfants)?rd.data.enfants:[];
+    const {error}=await sbc.from('inscriptions_periscolaire').update({enfants:cur.filter(x=>x&&x.enfant_id!==eid)}).eq('id',dossierId);
+    if(error){ alert('Erreur : '+error.message); return; }
+    if(typeof setSync==='function')setSync('✓ enfant retiré du périscolaire','#dff5e9');
+    if(window.loadEnfantsHub)loadEnfantsHub();
+  };
 
   // Ateliers participatifs — tables ateliers + atelier_inscriptions (hors coffre, comme partenaires)
   const AT_STATUTS={proposition:'💡 Proposition à étudier',inscriptions:'📝 Inscriptions ouvertes',ouvert:'✅ Atelier ouvert',archive:'📦 Archivé'};
