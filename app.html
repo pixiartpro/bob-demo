@@ -2217,7 +2217,7 @@ const FAQ=[
   {cat:'🌴 Vacances',q:"Comment préparer le programme des vacances (ACM) et suivre les intervenants ?",kw:"vacances acm ados programme catalogue activites origine maison partenaire payant intervenant contact statut appeler attente confirme objectif session jour planning sortie prepa preparation outil interne",
    a:"Onglet <b>🌴 Vacances</b> (réservé au bureau). Tu y tiens un <b>catalogue d'activités réutilisable</b> (il reste d'une session à l'autre) : pour chaque activité, son <b>origine</b> (🏠 maison / 🤝 partenaire / 💶 payant), l'<b>intervenant + téléphone</b>, et le <b>statut de la démarche</b> (💡 idée · 📞 à appeler · ⏳ en attente · ✅ confirmé · ❌ non) — pour voir d'un coup d'œil ce qui avance. Crée une <b>session</b> (ex : Été 2026) avec ses jours, puis pour chaque activité choisis un <b>jour</b> (ou « Réserve »). L'<b>objectif</b> s'affiche en haut : au moins 5 activités, dont une majorité « maison ». Le bouton <b>🌍 Carte publique</b> pousse le programme de la session (jour par jour) vers une carte du site — <b>seuls l'emoji + le nom</b> des activités sont publiés, jamais les contacts, notes ou coûts internes."},
   {cat:'🌴 Vacances',q:"Comment archiver une édition d'ACM en dossier-bilan (Été, Toussaint…) ?",kw:"edition editions archiver archive archivable archivee cloturer cloture bilan dossier compte rendu compte-rendu effectif roster photos demarches financeur preuve historique session terminee finie ranger pdf rouvrir tam sdjes",
-   a:"Onglet <b>🌴 Vacances</b> → panneau <b>🗄️ Éditions &amp; archives</b> tout en haut. Une <b>édition</b> = une période d'ACM (Été 2026, Toussaint…). Sur sa carte, coche les <b>activités publiques</b> qui la composent (« ACM Ados — Été 2026 », semaine 1…) : c'est de là que viennent l'<b>effectif</b> et les <b>photos</b>. Clique <b>📖 Dossier-bilan</b> pour voir au même endroit : l'<b>effectif</b> (qui / combien), les <b>photos</b> (albums des animateurs), un <b>compte-rendu</b> à écrire et une <b>checklist de démarches</b> (déclaration TAM/SDJES, fiche complémentaire…). Quand l'ACM est fini, clique <b>📦 Clôturer &amp; archiver</b> : l'effectif du jour est <b>figé</b>, l'édition sort de la vue active et rejoint <b>🗄️ Archives</b>. Depuis une archive, tu peux <b>🖨️ exporter le bilan en PDF</b> (preuve pour les financeurs) ou <b>↩︎ Rouvrir</b> l'édition. Réservé au bureau."},
+   a:"Onglet <b>🌴 Vacances</b> → panneau <b>🗄️ Éditions &amp; archives</b> tout en haut. Une <b>édition</b> = une période d'ACM (Été 2026, Toussaint…). Sur sa carte, coche les <b>activités publiques</b> qui la composent (« ACM Ados — Été 2026 », semaine 1…) : c'est de là que viennent l'<b>effectif</b> et les <b>photos</b>. Clique <b>📖 Dossier-bilan</b> pour voir au même endroit : l'<b>effectif</b> (qui / combien), les <b>photos</b> que tu <b>choisis une à une</b> (★) pour le dossier, un <b>compte-rendu</b>, et un <b>parcours de démarches en 3 temps</b> (⬅️ avant · ⏳ pendant · ➡️ après) dont les <b>échéances se calculent</b> depuis la <b>date de début</b> que tu saisis (J-8 fiche complémentaire — délai ferme, ~J-60 fiche initiale…). Chaque démarche se clique <b>à faire → fait → sans objet</b>, et la carte de l'édition affiche la <b>prochaine échéance</b>. Quand l'ACM est fini, clique <b>📦 Clôturer &amp; archiver</b> : l'effectif du jour est <b>figé</b>, l'édition sort de la vue active et rejoint <b>🗄️ Archives</b>. Depuis une archive, tu peux <b>🖨️ exporter le bilan en PDF</b> (preuve pour les financeurs) ou <b>↩︎ Rouvrir</b> l'édition. Réservé au bureau."},
   {cat:'🎒 Périscolaire',q:"Pourquoi je ne peux pas modifier la grille tarifaire du périscolaire ? Comment la débloquer ?",kw:"grille tarif tarifs periscolaire modifier changer bloque verrou verrouille verrouillee securite deverrouiller cadenas proteger erreur quotient familial jour supplement matin remise fratrie bureau editer case grisee grisees",
    a:"C'est <b>volontaire</b> : la grille tarifaire du périscolaire est <b>verrouillée par défaut</b> pour éviter qu'un tarif soit changé par erreur. Pour la modifier : onglet <b>🎒 Périscolaire</b> → dépliant <b>⚙️ Paramétrage</b> → panneau <b>💶 Grille tarifaire</b> → clique <b>« 🔓 Déverrouiller pour modifier »</b> (une confirmation te le demande), change les cases, puis <b>💾 Enregistrer la grille</b> — elle se <b>reverrouille toute seule</b> après. ⚠️ <b>Réservé au bureau</b> : les salariés voient la grille mais ne peuvent pas la déverrouiller."},
   {cat:'🎒 Périscolaire',q:"Comment gérer le périscolaire, les tarifs et ce que paient les familles ?",kw:"periscolaire garderie tarif grille quotient familial qf enfant inscription facture facturation matin apres-midi aprem fratrie remise extrascolaire acm vepi place",
@@ -2390,6 +2390,7 @@ function pageHelpGotoAide(){ pageHelpClose(); const b=document.querySelector('na
 
 /* ---- ✨ Quoi de neuf (nouveautés + notice chronologique) ---- */
 const NEWS=[
+  {id:'2026-07-07-acm-accompagnateur',date:'2026-07-07',tab:'🌴 Vacances',titre:"🧭 L'ACM s'accompagne : démarches avant/pendant/après + photos choisies",desc:"Le dossier-bilan d'une édition devient un <b>accompagnateur</b>. Saisis la <b>date de début</b> et Bob calcule les <b>échéances</b> des démarches, rangées en <b>3 temps</b> : ⬅️ <b>Avant</b> (projet pédagogique, déclaration TAM fiche initiale ~J-60, assurance, encadrement + honorabilité, <b>fiche complémentaire J-8 — délai ferme</b>), ⏳ <b>Pendant</b> (registre de présence…), ➡️ <b>Après</b> (bilan pédagogique, compte-rendu CAF, bilan financier, compte-rendu Mairie CERFA 15059). Chaque ligne se coche <b>à faire → fait → sans objet</b>, et la carte de l'édition montre la <b>prochaine échéance</b> (en rouge si en retard). Côté <b>photos</b> : tu <b>choisis (★) celles qui vont dans le dossier</b>, avec le rappel droit à l'image (usage interne ≠ diffusion Mairie). Réservé au bureau."},
   {id:'2026-07-07-editions-acm-archivables',date:'2026-07-07',tab:'🌴 Vacances',titre:"🗄️ Les éditions d'ACM s'archivent en dossier-bilan",desc:"Dans l'onglet 🌴 Vacances, un nouveau panneau <b>🗄️ Éditions &amp; archives</b> : chaque période d'ACM (Été, Toussaint…) devient une <b>édition</b> qu'on prépare puis qu'on <b>clôture en dossier-bilan</b>. Coche les <b>activités publiques</b> qui la composent, et le <b>📖 Dossier-bilan</b> réunit au même endroit l'<b>effectif</b> (qui / combien), les <b>photos</b>, un <b>compte-rendu</b> et une <b>checklist de démarches</b> (déclaration TAM/SDJES…). Une fois l'ACM fini, <b>📦 Clôturer &amp; archiver</b> fige l'effectif et range l'édition dans les <b>archives</b> — d'où tu peux <b>🖨️ sortir un bilan PDF</b> pour les financeurs, ou <b>↩︎ rouvrir</b>. Réservé au bureau."},
   {id:'2026-07-07-completude-accueil',date:'2026-07-07',tab:'👶 Enfants',titre:"✅ / ⚠️ Dossier complet ou pièce manquante, PAR accueil",desc:"Dans l'onglet 👶 Enfants, chaque enfant indique maintenant si son <b>dossier est complet</b> ou <b>ce qu'il manque</b>, <b>séparément pour chaque accueil</b> : 🎒 périscolaire et 🌴 ACM (l'ACM exige en plus la <b>fiche sanitaire signée</b>). Les pièces sont <b>mutualisées</b> : une attestation déposée une fois compte pour tous les accueils. C'est de la lecture des pièces déjà là (rien n'est déplacé). La liste des pièces requises par accueil est réglable."},
   {id:'2026-07-07-onglet-enfants',date:'2026-07-07',tab:'👶 Enfants',titre:"👶 Nouvel onglet « Enfants » : où va chaque enfant, d'un coup d'œil",desc:"Un nouvel onglet <b>👶 Enfants</b> (dans 👥 Adhérents) réunit tous les enfants et montre, pour chacun, <b>où il va</b> : périscolaire (matin/soir), sessions d'ACM, VEPI, autres activités — avec un <b>filtre par accueil</b> en haut : Tous · Périscolaire · ACM · VEPI. Un enfant présent sur plusieurs semaines ou accueils n'apparaît qu'une fois. C'est la vue « enfant au centre » : les accueils sont des filtres, pas des onglets. <b>Nouveau :</b> depuis la fiche d'un enfant, tu peux le <b>rattacher</b> à un accueil (périscolaire matin/soir · VEPI · une semaine d'ACM) et le <b>retirer / déplacer</b> avec le ✕ sur chaque puce. Bureau + accueil."},
@@ -5659,11 +5660,37 @@ function acmDb(){
     if(!s.bilan || typeof s.bilan!=='object') s.bilan={cr:'',demarches:[],effectif:null,closedAt:null,demSeeded:false};
     if(typeof s.bilan.cr!=='string') s.bilan.cr='';
     if(!Array.isArray(s.bilan.demarches)) s.bilan.demarches=[];
+    if(!Array.isArray(s.bilan.photoIds)) s.bilan.photoIds=[]; // Coup 1 : photos retenues pour le dossier (clé = chemin Storage)
+    if(typeof s.dateDebut!=='string') s.dateDebut=''; // Coup 1 : date de début → calcul des échéances
   });
   return a;
 }
 // Démarches ACM types (checklist par défaut d'une édition — la vraie « paperasse » d'un accueil de mineurs)
-const ACM_DEM_DEFAUT=['Déclaration TAM/SDJES — fiche initiale (2 mois avant)','Fiche complémentaire (au plus tard 8 jours avant l\'accueil)','Taux d\'encadrement & qualifications vérifiés (BAFA/BAFD)','Assurance responsabilité civile à jour','Bilan pédagogique & financier pour les financeurs'];
+// Coup 1 — parcours d'ACM en 3 phases, échéances DÉRIVÉES de la date de début (jamais un calendrier scolaire codé en dur : les vacances australes de la Réunion sont décalées).
+const ACM_PHASES=[{k:'avant',l:'⬅️ Avant',bg:'#eef4ff',fg:'#23448a'},{k:'pendant',l:'⏳ Pendant',bg:'#e3f5e9',fg:'#127a51'},{k:'apres',l:'➡️ Après',bg:'#f5efe3',fg:'#8a5a00'}];
+const ACM_PARCOURS=[
+  {phase:'avant',offset:-60,label:'Projet pédagogique rédigé (directeur)'},
+  {phase:'avant',offset:-60,label:'Déclaration TAM — fiche initiale (SDJES)',info:'~2 mois avant (délai exact à confirmer SDJES Réunion)'},
+  {phase:'avant',offset:-30,label:'Assurance responsabilité civile à jour'},
+  {phase:'avant',offset:-15,label:'Encadrement, qualifs (BAFA/BAFD) & honorabilité vérifiés'},
+  {phase:'avant',offset:-8,label:'Déclaration TAM — fiche complémentaire (effectif + équipe)',ferme:true,info:'délai FERME : au plus tard 8 jours avant'},
+  {phase:'pendant',offset:null,label:'Registre de présence tenu chaque jour'},
+  {phase:'pendant',offset:null,label:'Fiche complémentaire mise à jour si changement'},
+  {phase:'apres',offset:7,label:'Bilan pédagogique (réalisé / évalué)'},
+  {phase:'apres',offset:30,label:'Compte-rendu à la CAF (activité + financier)'},
+  {phase:'apres',offset:30,label:"Bilan financier de l'édition"},
+  {phase:'apres',offset:60,label:'Compte-rendu à la Mairie (CERFA 15059 si au-dessus du seuil)'}
+];
+function acmParseDate(s){ if(!s) return null; s=String(s).trim(); var m=s.match(/^(\d{4})-(\d{2})-(\d{2})$/); if(m) return new Date(+m[1],+m[2]-1,+m[3]); m=s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{2,4})$/); if(m){ var y=+m[3]; if(y<100)y+=2000; return new Date(y,+m[2]-1,+m[1]); } return null; }
+function acmEditionDebut(ed){ if(ed&&ed.dateDebut){ var d=acmParseDate(ed.dateDebut); if(d) return d; } var j=((ed&&ed.jours)||[]).find(function(x){return /\d{1,2}\/\d{1,2}/.test(x);}); if(j){ var mm=j.match(/(\d{1,2})\/(\d{1,2})/); if(mm){ var now=new Date(); return new Date(now.getFullYear(),+mm[2]-1,+mm[1]); } } return null; }
+function acmDueDate(ed,offset){ if(offset==null) return null; var d=acmEditionDebut(ed); if(!d) return null; var r=new Date(d.getTime()); r.setDate(r.getDate()+offset); return r; }
+function acmFmtD(dt){ if(!dt) return ''; return String(dt.getDate()).padStart(2,'0')+'/'+String(dt.getMonth()+1).padStart(2,'0')+'/'+dt.getFullYear(); }
+function acmDebutISO(ed){ if(ed&&ed.dateDebut) return ed.dateDebut; var d=acmEditionDebut(ed); return d?(d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')):''; }
+function acmNextEcheance(ed){ var dem=(ed&&ed.bilan&&ed.bilan.demarches)||[], best=null; dem.forEach(function(d){ if(d.statut==='fait'||d.statut==='na') return; var due=acmDueDate(ed,d.offset); if(!due) return; if(!best||due<best.due) best={label:d.label,due:due,ferme:!!d.ferme}; }); return best; }
+// Migration douce (ancien format plat {label,fait}) + amorçage du parcours-type. L'ancien tableau n'est remplacé qu'une fois le nouveau écrit.
+function acmEnsureParcours(ed){ if(!ed||!ed.bilan) return; var dem=ed.bilan.demarches;
+  if(Array.isArray(dem)&&dem.length&&dem.some(function(d){return !d.phase;})){ ed.bilan.demarches=dem.map(function(d){ return {id:d.id||uid(),label:d.label,phase:d.phase||'avant',offset:(d.offset!=null?d.offset:null),statut:d.statut||(d.fait?'fait':'a_faire')}; }); save(); return; }
+  if((!dem||!dem.length)&&!ed.bilan.demSeeded){ ed.bilan.demarches=ACM_PARCOURS.map(function(t){ return {id:uid(),label:t.label,phase:t.phase,offset:(t.offset!=null?t.offset:null),ferme:!!t.ferme,info:t.info||'',statut:'a_faire'}; }); ed.bilan.demSeeded=true; save(); } }
 function acmOrig(k){ return ACM_ORIG.find(o=>o.k===k)||ACM_ORIG[0]; }
 function acmStat(k){ return ACM_STAT.find(o=>o.k===k)||ACM_STAT[0]; }
 function acmBadge(o){ return '<span style="display:inline-block;padding:2px 9px;border-radius:999px;font-size:12px;font-weight:700;background:'+o.bg+';color:'+o.fg+'">'+o.l+'</span>'; }
@@ -5886,7 +5913,8 @@ function acmNewSession(){
   const start=prompt('Date du 1er jour (JJ/MM/AAAA) — laisse vide pour « Jour 1, 2, 3… ». Les week-ends sont sautés automatiquement.','');
   const nb=Math.max(1,Math.min(40,parseInt(prompt('Combien de jours d\'accueil ? (ex : 10)','10'),10)||10));
   const jours=acmGenJours(start,nb);
-  const s={id:uid(),nom:nom.trim(),jours,plan:{},statut:'ouverte',activiteIds:[],bilan:{cr:'',demarches:[],effectif:null,closedAt:null,demSeeded:false}};
+  const _dd=acmParseDate(start); const _ddISO=_dd?(_dd.getFullYear()+'-'+String(_dd.getMonth()+1).padStart(2,'0')+'-'+String(_dd.getDate()).padStart(2,'0')):'';
+  const s={id:uid(),nom:nom.trim(),jours,plan:{},statut:'ouverte',activiteIds:[],dateDebut:_ddISO,bilan:{cr:'',demarches:[],effectif:null,closedAt:null,demSeeded:false,photoIds:[]}};
   const a=acmDb(); a.sessions.push(s); a.cur=s.id; save();
   if(window.acmLoadEditionsData) acmLoadEditionsData();
 }
@@ -6683,7 +6711,7 @@ renderAll();
     const rp=await sbc.from('photos_album').select('album_id,chemin').in('album_id',albIds);
     const rows=((rp&&rp.data)||[]).slice(0,60); const out=[];
     for(const r of rows){ let url=''; try{ const s=await sbc.storage.from('photos-activites').createSignedUrl(r.chemin,3600); url=s&&s.data?s.data.signedUrl:''; }catch(e){}
-      const m=albMeta[r.album_id]||{}; if(url) out.push({url:url,titre:m.titre||'',mot:m.mot||'',jour:m.jour||''}); }
+      const m=albMeta[r.album_id]||{}; if(url) out.push({key:r.chemin,url:url,titre:m.titre||'',mot:m.mot||'',jour:m.jour||''}); }
     return out;
   }
   window.acmLoadEditionsData=async function(){
@@ -6717,7 +6745,9 @@ renderAll();
         return '<span onclick="acmEdToggleAct(\''+ed.id+'\',\''+ac.id+'\')" style="cursor:pointer;user-select:none;font-size:12px;padding:4px 10px;border-radius:999px;border:1px solid '+(on?'#127a51':'var(--line)')+';background:'+(on?'#dff5e9':'#fff')+';color:'+(on?'#127a51':'#666')+';margin:0 4px 4px 0;display:inline-block">'+(on?'✓ ':'')+esc(ac.nom||'')+'</span>'; }).join('');
       actBlk='<div style="margin:6px 0 2px"><span class="hint">🔗 Activités publiques rattachées (l\'effectif &amp; les photos en viennent) :</span><br>'+(acts.length?chips:'<span class="hint">— aucune activité « ACM » en base ; crée-les dans 🎟️ Activités —</span>')+'</div>';
     }
-    const dem=(ed.bilan&&ed.bilan.demarches)||[]; const demDone=dem.filter(function(d){return d.fait;}).length;
+    const dem=(ed.bilan&&ed.bilan.demarches)||[]; const demDone=dem.filter(function(d){return d.statut==='fait'||d.statut==='na';}).length;
+    let echChip='';
+    if(!archived){ const ne=acmNextEcheance(ed); if(ne){ const n=new Date(); n.setHours(0,0,0,0); const late=ne.due<n; const lab=ne.label.length>26?ne.label.slice(0,25)+'…':ne.label; echChip='<span class="pill" style="font-size:12px;background:'+(late?'#fbe4e4':'#fff3d6')+';color:'+(late?'#b02a2a':'#8a6400')+'">⏰ '+esc(lab)+' · '+acmFmtD(ne.due)+(late?' (en retard)':'')+'</span>'; } }
     let btns='<button class="ghost btn" onclick="acmOpenBilan(\''+ed.id+'\')">📖 Dossier-bilan</button>';
     if(!archived){ btns+=' <button class="ghost btn" style="color:#b06a00" onclick="acmCloreEdition(\''+ed.id+'\')">📦 Clôturer &amp; archiver</button> <button class="ghost btn" style="color:#c0392b" onclick="acmDelEdition(\''+ed.id+'\')">🗑️</button>'; }
     else { btns+=' <button class="ghost btn" onclick="acmBilanPDF(\''+ed.id+'\')">🖨️ Bilan PDF</button> <button class="ghost btn" onclick="acmRouvrirEdition(\''+ed.id+'\')">↩︎ Rouvrir</button>'; }
@@ -6726,6 +6756,7 @@ renderAll();
       +(per?'<span class="hint">'+esc(per)+'</span>':'')
       +'<span class="pill" style="background:#dff5e9;color:#127a51;font-size:12px">👶 '+effLbl+'</span>'
       +(dem.length?'<span class="pill" style="background:#eef4ff;color:#23448a;font-size:12px">📋 '+demDone+'/'+dem.length+'</span>':'')
+      +echChip
       +(archived&&ed.bilan&&ed.bilan.closedAt?'<span class="pill" style="background:#eef0f3;color:#555;font-size:12px">🗄️ '+fmtDate(ed.bilan.closedAt)+'</span>':'')
       +'</div>'+actBlk
       +'<div class="row" style="margin-top:8px;gap:6px;flex-wrap:wrap">'+btns+'</div></div>';
@@ -6744,10 +6775,28 @@ renderAll();
   };
   window.acmEdToggleAct=function(edId,actId){ const ed=acmDb().sessions.find(function(s){return s.id===edId;}); if(!ed)return; ed.activiteIds=ed.activiteIds||[]; const k=ed.activiteIds.indexOf(actId); if(k>=0) ed.activiteIds.splice(k,1); else ed.activiteIds.push(actId); save(); if(window.renderAcmEditions) renderAcmEditions(); if(window.__acmBilanCur===edId) acmOpenBilan(edId); };
   function acmDemHtml(ed,archived){
-    const dem=(ed.bilan&&ed.bilan.demarches)||[]; let h='';
-    if(!dem.length) h+='<p class="hint" style="margin:0 0 6px">Aucune démarche listée.</p>';
-    else h+=dem.map(function(d,i){ return '<label style="display:block;margin:3px 0"><input type="checkbox" '+(d.fait?'checked':'')+' '+(archived?'disabled':'')+' onchange="acmDemToggle(\''+ed.id+'\','+i+')"> '+(d.fait?'<s>'+esc(d.label)+'</s>':esc(d.label))+(archived?'':' <span onclick="acmDemDel(\''+ed.id+'\','+i+')" title="Retirer" style="cursor:pointer;color:#c0392b;opacity:.5">✕</span>')+'</label>'; }).join('');
-    if(!archived) h+='<button class="ghost btn" style="margin-top:6px" onclick="acmDemAdd(\''+ed.id+'\')">+ Ajouter une démarche</button>';
+    const dem=(ed.bilan&&ed.bilan.demarches)||[];
+    const debut=acmEditionDebut(ed);
+    const now=new Date(); now.setHours(0,0,0,0);
+    let h='';
+    if(!debut) h+='<p class="hint" style="margin:0 0 8px;color:#b06a00">📅 Renseigne la <b>date de début</b> (ci-dessus) pour calculer les échéances (J-8, J-60…).</p>';
+    ACM_PHASES.forEach(function(ph){
+      const items=dem.map(function(d,i){return {d:d,i:i};}).filter(function(x){return (x.d.phase||'avant')===ph.k;});
+      h+='<div style="margin:9px 0 2px"><span class="pill" style="background:'+ph.bg+';color:'+ph.fg+';font-size:12px;font-weight:700">'+ph.l+'</span></div>';
+      if(!items.length){ h+='<p class="hint" style="margin:2px 0 4px">—</p>'; }
+      else h+=items.map(function(x){ const d=x.d, i=x.i, done=d.statut==='fait', na=d.statut==='na';
+        const due=acmDueDate(ed,d.offset), late=due&&!done&&!na&&due<now;
+        let dueBadge='';
+        if(d.offset!=null){ const lbl=(d.offset<0?'J'+d.offset:(d.offset>0?'J+'+d.offset:'jour J')); dueBadge=' <span class="pill" style="font-size:11px;background:'+(late?'#fbe4e4':'#eef0f3')+';color:'+(late?'#b02a2a':'#555')+'">'+(due?'⏰ '+acmFmtD(due):lbl)+(d.ferme?' · ferme':'')+(late?' · en retard':'')+'</span>'; }
+        const box=na?'▪︎':(done?'☑':'☐');
+        const mark='<span '+(archived?'':'onclick="acmDemCycle(\''+ed.id+'\','+i+')" ')+'style="'+(archived?'':'cursor:pointer;')+'font-size:15px;margin-right:6px" title="À faire → fait → sans objet">'+box+'</span>';
+        const txt=done?'<s>'+esc(d.label)+'</s>':(na?'<span style="opacity:.5">'+esc(d.label)+'</span>':esc(d.label));
+        const del=archived?'':' <span onclick="acmDemDel(\''+ed.id+'\','+i+')" title="Retirer" style="cursor:pointer;color:#c0392b;opacity:.4">✕</span>';
+        const info=d.info?'<div class="hint" style="font-size:11px;margin-left:21px">'+esc(d.info)+'</div>':'';
+        return '<div style="margin:3px 0">'+mark+txt+dueBadge+del+info+'</div>';
+      }).join('');
+      if(!archived) h+='<button class="ghost btn" style="margin:2px 0 2px;padding:2px 8px;font-size:12px" onclick="acmDemAdd(\''+ed.id+'\',\''+ph.k+'\')">+ ajouter</button>';
+    });
     return h;
   }
   function acmFillEffectif(ed){
@@ -6767,21 +6816,39 @@ renderAll();
   async function acmFillPhotos(ed){
     const box=document.getElementById('acmBilanPhotos'); if(!box) return;
     const ids=ed.activiteIds||[];
-    if(!ids.length){ box.innerHTML='<p class="hint">Relie une activité publique à l\'édition pour voir ses albums (créés par les animateurs).</p>'; return; }
+    if(!ids.length){ window.__acmPhotos=null; box.innerHTML='<p class="hint">Relie une activité publique à l\'édition pour voir ses albums (créés par les animateurs).</p>'; return; }
+    box.innerHTML='<p class="hint">Chargement…</p>';
     let photos=[]; try{ photos=await acmPhotosFor(ids); }catch(e){ box.innerHTML='<p class="hint" style="color:#c0392b">Photos indisponibles.</p>'; return; }
-    if(!photos.length){ box.innerHTML='<p class="hint">Aucune photo (les albums sont créés par les animateurs depuis leur espace).</p>'; return; }
-    box.innerHTML='<div style="display:flex;flex-wrap:wrap;gap:8px">'+photos.map(function(p){ return '<figure style="margin:0;width:120px"><img src="'+esc(p.url)+'" alt="" loading="lazy" style="width:120px;height:90px;object-fit:cover;border-radius:8px;border:1px solid var(--line)">'+((p.titre||p.jour)?'<figcaption class="hint" style="font-size:11px;margin-top:2px">'+esc(p.titre||'')+(p.jour?' · '+fmtDate(p.jour):'')+'</figcaption>':'')+'</figure>'; }).join('')+'</div>';
+    window.__acmPhotos={edId:ed.id,photos:photos};
+    acmRenderPhotos(ed);
   }
+  function acmRenderPhotos(ed){
+    const box=document.getElementById('acmBilanPhotos'); if(!box) return;
+    const cache=window.__acmPhotos, photos=(cache&&cache.edId===ed.id)?cache.photos:[];
+    if(!photos.length){ box.innerHTML='<p class="hint">Aucune photo (les albums sont créés par les animateurs depuis leur espace).</p>'; return; }
+    const sel=ed.bilan.photoIds||[], archived=ed.statut==='archivee';
+    const nSel=photos.filter(function(p){return sel.indexOf(p.key)>=0;}).length;
+    let h='<div class="row" style="gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:4px"><span class="pill" style="background:#dff5e9;color:#127a51;font-weight:600">★ '+nSel+' retenue'+(nSel>1?'s':'')+' pour le dossier</span>'+(archived?'':'<span class="hint">clique une photo pour la mettre / la retirer du dossier</span>')+'</div>';
+    h+='<p class="hint" style="margin:0 0 8px;font-size:11px">🔒 Droit à l\'image : ne retiens que des photos autorisées. Une photo bonne pour l\'<b>album interne</b> n\'est pas forcément diffusable à l\'<b>extérieur</b> (Mairie) — vérifie l\'autorisation avant diffusion.</p>';
+    h+='<div style="display:flex;flex-wrap:wrap;gap:8px">'+photos.map(function(p){ const on=sel.indexOf(p.key)>=0;
+      return '<figure style="margin:0;width:120px;position:relative;'+(archived?'':'cursor:pointer')+'" '+(archived?'':'onclick="acmPhotoToggle(\''+ed.id+'\',\''+encodeURIComponent(p.key)+'\')"')+'>'
+        +'<img src="'+esc(p.url)+'" alt="" loading="lazy" style="width:120px;height:90px;object-fit:cover;border-radius:8px;border:2px solid '+(on?'#127a51':'var(--line)')+';'+(on?'':'opacity:.7')+'">'
+        +'<span style="position:absolute;top:3px;right:6px;font-size:16px;filter:drop-shadow(0 1px 1px rgba(0,0,0,.6))">'+(on?'★':'☆')+'</span>'
+        +((p.titre||p.jour)?'<figcaption class="hint" style="font-size:11px;margin-top:2px">'+esc(p.titre||'')+(p.jour?' · '+fmtDate(p.jour):'')+'</figcaption>':'')+'</figure>'; }).join('')+'</div>';
+    box.innerHTML=h;
+  }
+  window.acmPhotoToggle=function(edId,keyEnc){ const ed=acmDb().sessions.find(function(s){return s.id===edId;}); if(!ed)return; const key=decodeURIComponent(keyEnc); ed.bilan.photoIds=ed.bilan.photoIds||[]; const k=ed.bilan.photoIds.indexOf(key); if(k>=0) ed.bilan.photoIds.splice(k,1); else ed.bilan.photoIds.push(key); save(); acmRenderPhotos(ed); if(window.renderAcmEditions) renderAcmEditions(); };
   window.acmOpenBilan=function(edId){
     const ed=acmDb().sessions.find(function(s){return s.id===edId;}); const view=document.getElementById('acmBilanView'); if(!ed||!view) return;
     window.__acmBilanCur=edId; const archived=ed.statut==='archivee'; const per=acmEditionPeriode(ed);
-    if(ed.bilan&&!ed.bilan.demSeeded&&(!ed.bilan.demarches||!ed.bilan.demarches.length)){ ed.bilan.demarches=ACM_DEM_DEFAUT.map(function(l){return {label:l,fait:false};}); ed.bilan.demSeeded=true; save(); }
+    acmEnsureParcours(ed);
     let h='<div class="panel" style="border:2px solid #1d9e75">';
     h+='<div class="toolbar"><div><h2 style="margin:0">📖 Dossier-bilan — '+esc(ed.nom)+'</h2>'+(per?'<p class="hint" style="margin:2px 0 0">'+esc(per)+(archived&&ed.bilan.closedAt?' · 🗄️ archivée le '+fmtDate(ed.bilan.closedAt):'')+'</p>':'')+'</div><button class="ghost btn" onclick="acmCloseBilanView()">✕ Fermer</button></div>';
+    h+='<div class="row" style="gap:8px;align-items:center;flex-wrap:wrap;margin:8px 0 2px;padding:7px 9px;border:1px solid var(--line);border-radius:8px;background:#f6f8f7"><span class="hint">📅 <b>Date de début</b> de l\'édition</span><input type="date" '+(archived?'disabled':'')+' value="'+esc(acmDebutISO(ed))+'" onchange="acmSetDebut(\''+ed.id+'\',this.value)"><span class="hint">→ calcule les échéances (J-8, J-60…)</span></div>';
     h+='<h3 style="margin:12px 0 4px">👶 Effectif</h3><div id="acmBilanEff"><p class="hint">Chargement…</p></div>';
     h+='<h3 style="margin:14px 0 4px">📸 Photos</h3><div id="acmBilanPhotos"><p class="hint">Chargement…</p></div>';
     h+='<h3 style="margin:14px 0 4px">📝 Compte-rendu</h3><textarea id="acmBilanCR" '+(archived?'readonly':'')+' onchange="acmBilanCR(\''+ed.id+'\',this.value)" placeholder="Ce qu\'on a fait : temps forts, sorties, ce qui a marché / à améliorer… (enregistré quand tu cliques ailleurs)" style="width:100%;min-height:110px'+(archived?';background:#f6f7f8':'')+'">'+esc(ed.bilan.cr||'')+'</textarea>';
-    h+='<h3 style="margin:14px 0 4px">📋 Démarches de l\'édition</h3><div id="acmBilanDem">'+acmDemHtml(ed,archived)+'</div>';
+    h+='<h3 style="margin:14px 0 4px">📋 Parcours de démarches <span class="hint" style="font-weight:400;font-size:12px">— avant · pendant · après (à faire → fait → sans objet)</span></h3><div id="acmBilanDem">'+acmDemHtml(ed,archived)+'</div>';
     h+='<div class="row" style="margin-top:14px;gap:6px;flex-wrap:wrap">';
     if(archived) h+='<button class="btn" onclick="acmBilanPDF(\''+ed.id+'\')">🖨️ Exporter le bilan (PDF)</button> <button class="ghost btn" onclick="acmRouvrirEdition(\''+ed.id+'\')">↩︎ Rouvrir cette édition</button>';
     else h+='<button class="btn" style="background:#b06a00" onclick="acmCloreEdition(\''+ed.id+'\')">📦 Clôturer &amp; archiver</button> <button class="ghost btn" onclick="acmBilanPDF(\''+ed.id+'\')">🖨️ Aperçu PDF</button>';
@@ -6791,9 +6858,11 @@ renderAll();
   };
   window.acmCloseBilanView=function(){ window.__acmBilanCur=null; const v=document.getElementById('acmBilanView'); if(v) v.innerHTML=''; };
   window.acmBilanCR=function(edId,val){ const ed=acmDb().sessions.find(function(s){return s.id===edId;}); if(!ed)return; ed.bilan.cr=val; save(); };
-  window.acmDemToggle=function(edId,i){ const ed=acmDb().sessions.find(function(s){return s.id===edId;}); if(!ed||!ed.bilan.demarches[i])return; ed.bilan.demarches[i].fait=!ed.bilan.demarches[i].fait; save(); const b=document.getElementById('acmBilanDem'); if(b) b.innerHTML=acmDemHtml(ed,ed.statut==='archivee'); if(window.renderAcmEditions) renderAcmEditions(); };
-  window.acmDemAdd=function(edId){ const ed=acmDb().sessions.find(function(s){return s.id===edId;}); if(!ed)return; const l=prompt('Nouvelle démarche à suivre :'); if(!l||!l.trim())return; ed.bilan.demarches.push({label:l.trim(),fait:false}); save(); const b=document.getElementById('acmBilanDem'); if(b) b.innerHTML=acmDemHtml(ed,false); if(window.renderAcmEditions) renderAcmEditions(); };
-  window.acmDemDel=function(edId,i){ const ed=acmDb().sessions.find(function(s){return s.id===edId;}); if(!ed||!ed.bilan.demarches[i])return; if(!confirm('Retirer « '+ed.bilan.demarches[i].label+' » ?'))return; ed.bilan.demarches.splice(i,1); save(); const b=document.getElementById('acmBilanDem'); if(b) b.innerHTML=acmDemHtml(ed,false); if(window.renderAcmEditions) renderAcmEditions(); };
+  function acmDemRefresh(ed){ const b=document.getElementById('acmBilanDem'); if(b) b.innerHTML=acmDemHtml(ed,ed.statut==='archivee'); if(window.renderAcmEditions) renderAcmEditions(); }
+  window.acmDemCycle=function(edId,i){ const ed=acmDb().sessions.find(function(s){return s.id===edId;}); if(!ed||!ed.bilan.demarches[i])return; const d=ed.bilan.demarches[i]; d.statut=(d.statut==='a_faire'?'fait':(d.statut==='fait'?'na':'a_faire')); save(); acmDemRefresh(ed); };
+  window.acmDemAdd=function(edId,phase){ const ed=acmDb().sessions.find(function(s){return s.id===edId;}); if(!ed)return; const l=prompt('Nouvelle démarche à suivre :'); if(!l||!l.trim())return; ed.bilan.demarches.push({id:uid(),label:l.trim(),phase:phase||'avant',offset:null,statut:'a_faire'}); save(); acmDemRefresh(ed); };
+  window.acmDemDel=function(edId,i){ const ed=acmDb().sessions.find(function(s){return s.id===edId;}); if(!ed||!ed.bilan.demarches[i])return; if(!confirm('Retirer « '+ed.bilan.demarches[i].label+' » ?'))return; ed.bilan.demarches.splice(i,1); save(); acmDemRefresh(ed); };
+  window.acmSetDebut=function(edId,v){ const ed=acmDb().sessions.find(function(s){return s.id===edId;}); if(!ed)return; ed.dateDebut=v||''; save(); acmDemRefresh(ed); };
   window.acmCloreEdition=async function(edId){
     const ed=acmDb().sessions.find(function(s){return s.id===edId;}); if(!ed)return;
     if(!confirm('Clôturer l\'édition « '+ed.nom+' » ?\n\nSon effectif du jour sera figé et l\'édition rejoindra les archives (tu pourras toujours la rouvrir).'))return;
@@ -6815,9 +6884,10 @@ renderAll();
     const asso=(db&&db.identite&&db.identite.nom)||'CASE du Bois de Nèfles';
     const E=esc; // esc global : échappe aussi " et ' (robuste même si un champ passe un jour en attribut)
     const rows=(eff.roster||[]).map(function(r,i){return '<tr><td>'+(i+1)+'</td><td>'+E(r.nom)+'</td><td>'+E(r.classe)+'</td><td>'+E(r.resp)+'</td></tr>';}).join('')||'<tr><td colspan="4" style="color:#888">Aucun enfant.</td></tr>';
-    const dem=((ed.bilan&&ed.bilan.demarches)||[]).map(function(d){return '<li>'+(d.fait?'☑':'☐')+' '+E(d.label)+'</li>';}).join('')||'<li style="color:#888">—</li>';
+    const phLab={avant:'Avant',pendant:'Pendant',apres:'Après'};
+    const dem=['avant','pendant','apres'].map(function(ph){ const items=((ed.bilan&&ed.bilan.demarches)||[]).filter(function(d){return (d.phase||'avant')===ph;}); if(!items.length) return ''; return '<p style="margin:8px 0 2px;font-weight:600">'+phLab[ph]+'</p><ul style="list-style:none;padding-left:0;margin:0">'+items.map(function(d){ var mk=d.statut==='fait'?'☑':(d.statut==='na'?'▪︎':'☐'); var due=acmDueDate(ed,d.offset); return '<li>'+mk+' '+E(d.label)+(due?' <span style="color:#777">('+acmFmtD(due)+')</span>':'')+(d.statut==='na'?' <span style="color:#999">— sans objet</span>':'')+'</li>'; }).join('')+'</ul>'; }).join('')||'<p style="color:#888">—</p>';
     const cr=E(ed.bilan.cr||'').replace(/\n/g,'<br>')||'<span style="color:#888">—</span>';
-    const html='<!doctype html><html lang="fr"><head><meta charset="utf-8"><title>Bilan — '+E(ed.nom)+'</title><style>body{font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;color:#1a1a1a;max-width:820px;margin:22px auto;padding:0 20px;line-height:1.5}h1{font-size:22px;margin:0 0 2px}h2{font-size:15px;border-bottom:2px solid #1d9e75;padding-bottom:3px;margin:22px 0 8px;color:#127a51}.meta{color:#555;font-size:13px}table{border-collapse:collapse;width:100%;font-size:13px}th,td{border:1px solid #ccc;padding:5px 8px;text-align:left}th{background:#f0f5f2}ul{margin:4px 0}@media print{.noprint{display:none}}</style></head><body><div class="noprint" style="text-align:right;margin-bottom:10px"><button onclick="window.print()" style="padding:8px 14px;font-size:14px;cursor:pointer">🖨️ Imprimer / Enregistrer en PDF</button></div><h1>Bilan d\'édition ACM — '+E(ed.nom)+'</h1><p class="meta">'+E(asso)+(per?' · '+E(per):'')+(archived&&ed.bilan.closedAt?' · Clôturée le '+fmtDate(ed.bilan.closedAt):' · (édition en cours)')+'</p><h2>Effectif ('+eff.nb+')</h2><table><thead><tr><th>#</th><th>Enfant</th><th>Classe</th><th>Responsable</th></tr></thead><tbody>'+rows+'</tbody></table>'+(eff.sansFiche?'<p class="meta">+ '+eff.sansFiche+' inscription(s) « sans fiche enfant » (saisies au comptoir) au moment de la clôture.</p>':'')+'<h2>Compte-rendu</h2><div>'+cr+'</div><h2>Démarches</h2><ul style="list-style:none;padding-left:0">'+dem+'</ul><p class="meta" style="margin-top:30px">Document généré par Bob — '+E(asso)+'</p></body></html>';
+    const html='<!doctype html><html lang="fr"><head><meta charset="utf-8"><title>Bilan — '+E(ed.nom)+'</title><style>body{font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;color:#1a1a1a;max-width:820px;margin:22px auto;padding:0 20px;line-height:1.5}h1{font-size:22px;margin:0 0 2px}h2{font-size:15px;border-bottom:2px solid #1d9e75;padding-bottom:3px;margin:22px 0 8px;color:#127a51}.meta{color:#555;font-size:13px}table{border-collapse:collapse;width:100%;font-size:13px}th,td{border:1px solid #ccc;padding:5px 8px;text-align:left}th{background:#f0f5f2}ul{margin:4px 0}@media print{.noprint{display:none}}</style></head><body><div class="noprint" style="text-align:right;margin-bottom:10px"><button onclick="window.print()" style="padding:8px 14px;font-size:14px;cursor:pointer">🖨️ Imprimer / Enregistrer en PDF</button></div><h1>Bilan d\'édition ACM — '+E(ed.nom)+'</h1><p class="meta">'+E(asso)+(per?' · '+E(per):'')+(archived&&ed.bilan.closedAt?' · Clôturée le '+fmtDate(ed.bilan.closedAt):' · (édition en cours)')+'</p><h2>Effectif ('+eff.nb+')</h2><table><thead><tr><th>#</th><th>Enfant</th><th>Classe</th><th>Responsable</th></tr></thead><tbody>'+rows+'</tbody></table>'+(eff.sansFiche?'<p class="meta">+ '+eff.sansFiche+' inscription(s) « sans fiche enfant » (saisies au comptoir) au moment de la clôture.</p>':'')+'<h2>Compte-rendu</h2><div>'+cr+'</div><h2>Démarches (avant · pendant · après)</h2>'+dem+'<p class="meta" style="margin-top:30px">Document généré par Bob — '+E(asso)+'</p></body></html>';
     const w=window.open('','_blank'); if(!w){ alert('Autorise les fenêtres pop-up pour générer le PDF.'); return; } w.document.open(); w.document.write(html); w.document.close();
   };
 
