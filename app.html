@@ -908,6 +908,7 @@
       <div class="panel" style="margin-top:0">
         <h2 style="margin:0 0 4px">💶 Grille tarifaire (tarif par jour, selon le quotient familial)</h2>
         <p class="hint">Le tarif est <strong>par jour de présence</strong> : la facture du mois = tarif jour × nombre de jours dans le mois (≈ 16 en moyenne). Modifie une case puis clique 💾.</p>
+        <div id="periGrilleLockBar" class="row" style="gap:8px;align-items:center;flex-wrap:wrap;margin:0 0 10px;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:#eef3ef"></div>
         <table><thead><tr><th>Tranche</th><th>Quotient familial</th><th class="num">Après-midi / jour</th></tr></thead>
           <tbody id="periGrilleRows"></tbody></table>
         <div class="toolbar" style="flex-wrap:wrap;gap:10px;margin-top:12px">
@@ -915,7 +916,7 @@
           <div class="field" style="min-width:210px"><label>Remise par enfant supplémentaire (%)</label><input type="number" id="peri_remise" min="0" max="100" step="1"></div>
           <div class="field" style="min-width:170px"><label>Jours / mois (moyenne)</label><input type="number" id="peri_jours" min="1" max="26" step="1"></div>
         </div>
-        <div style="margin-top:10px"><button class="btn" onclick="savePeriGrille()">💾 Enregistrer la grille</button> <span class="hint" id="periGrilleSaved"></span></div>
+        <div style="margin-top:10px"><button class="btn" id="periSaveGrilleBtn" onclick="savePeriGrille()">💾 Enregistrer la grille</button> <span class="hint" id="periGrilleSaved"></span></div>
       </div>
 
       <div class="panel" id="docsPeriPanel">
@@ -978,12 +979,13 @@
     <details class="panel" id="acmTarifPanel" open style="margin:6px 0 14px">
       <summary style="cursor:pointer;font-weight:700;font-size:16px">💶 Tarif ACM <span class="hint" style="font-weight:400">— au quotient familial, par semaine (grille officielle Saint-Denis 2026-2027)</span></summary>
       <p class="hint" style="margin:8px 0 10px">Forfait <strong>5 jours / semaine</strong> : la facture d'une famille = <strong>prix de la semaine × nombre de semaines</strong> choisi. <strong>L'ACM d'été = grandes vacances.</strong> Recalculé si une semaine comporte un jour férié. Modifie une case puis clique 💾 — les familles voient aussitôt le bon tarif dans leur espace.</p>
+      <div id="acmLockBar" class="row" style="gap:8px;align-items:center;flex-wrap:wrap;margin:0 0 10px;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:#eef3ef"></div>
       <table><thead><tr><th>Tranche</th><th>Quotient familial</th><th class="num">Petites vac. (€/sem)</th><th class="num">Grandes vac. (€/sem)</th></tr></thead>
         <tbody id="acmTarifRows"></tbody></table>
       <div class="toolbar" style="flex-wrap:wrap;gap:10px;margin-top:12px">
-        <button class="ghost btn" onclick="acmGrandesFromPetites()" title="Recalcule la colonne Grandes vacances à −15 % des Petites vacances (hors commune inchangé)">↺ Grandes = Petites −15 %</button>
+        <button class="ghost btn" id="acmMirrorBtn" onclick="acmGrandesFromPetites()" title="Recalcule la colonne Grandes vacances à −15 % des Petites vacances (hors commune inchangé)">↺ Grandes = Petites −15 %</button>
       </div>
-      <div style="margin-top:10px"><button class="btn" onclick="saveAcmTarif()">💾 Enregistrer le tarif ACM</button> <span class="hint" id="acmTarifSaved"></span></div>
+      <div style="margin-top:10px"><button class="btn" id="acmSaveBtn" onclick="saveAcmTarif()">💾 Enregistrer le tarif ACM</button> <span class="hint" id="acmTarifSaved"></span></div>
     </details>
 
     <div id="acmSessionBar" class="row" style="gap:8px;flex-wrap:wrap;align-items:center;margin:12px 0"></div>
@@ -2173,8 +2175,12 @@ const FAQ=[
    a:"Le site public affiche un <b>bandeau « 📣 Inscriptions »</b> tout en haut, sous le menu. Tu n'as <b>rien de spécial à faire</b> : toute activité de catégorie <b>Péri &amp; extrascolaire</b> qui est <b>publiée sur le site</b> y monte automatiquement (3 au maximum, triées par le champ « Ordre »). Son <b>statut</b> fait le libellé que voient les familles : <b>Ouvert</b> (pastille verte) · <b>Arrive bientôt</b> (bleue) · <b>Complet</b> (quand la capacité est atteinte). Pour retirer une activité du bandeau : <b>🔒 Dépublier</b> ou passer son statut sur <b>Archivé</b>. S'il n'y a rien à annoncer, le bandeau disparaît complètement du site. Le panneau <b>« 📣 Le bandeau du site, en ce moment »</b> en haut de l'onglet 🎟️ Activités te montre en permanence ce que les familles voient."},
   {cat:'📅 Rendez-vous',q:"Comment proposer des rendez-vous (créneaux) aux familles ?",kw:"rendez vous rdv creneau creneaux plage plages horaire recurrent recurrente agenda coiffeur accompagnement vepi reserver disponibilite dispo heure",
    a:"En bas de l'onglet <b>🎟️ Activités</b>, panneau <b>« 📅 Rendez-vous »</b>. Tu définis tes <b>plages récurrentes</b> : un <b>jour</b> (ex : mardi), <b>de … à …</b> (ex : 14h-17h), la <b>durée d'un créneau</b> (30 min par défaut) et un <b>libellé</b>. Les familles voient alors uniquement les <b>créneaux LIBRES</b> dans l'espace famille (📅 Prendre rendez-vous) et en réservent un elles-mêmes — <b>tu n'as plus à rappeler</b>. Tu retrouves ici la liste des <b>rendez-vous pris</b> (date, heure, motif). Pour supprimer une plage : 🗑. Deux plages sont déjà posées par défaut, ajuste-les à ta convenance."},
+  {cat:'🌴 Vacances',q:"Pourquoi je ne peux pas modifier les tarifs ACM ? Comment les débloquer ?",kw:"tarif tarifs acm grille modifier changer bloque verrou verrouille verrouillee securite deverrouiller cadenas proteger erreur quotient familial semaine petites grandes vacances prix bureau editer case grisee",
+   a:"C'est <b>volontaire</b> : la grille des tarifs ACM est <b>verrouillée par défaut</b> pour éviter qu'un tarif soit changé par erreur (un clic malheureux dans une case). Pour la modifier : onglet <b>🌴 Vacances</b> → panneau <b>💶 Tarif ACM</b> → clique <b>« 🔓 Déverrouiller pour modifier »</b> (une confirmation te le demande), change les cases, puis <b>💾 Enregistrer</b> — la grille se <b>reverrouille toute seule</b> après. Réservé au bureau (l'onglet 🌴 Vacances n'est visible que par le bureau). Les familles voient aussitôt le nouveau tarif dans leur espace."},
   {cat:'🌴 Vacances',q:"Comment préparer le programme des vacances (ACM) et suivre les intervenants ?",kw:"vacances acm ados programme catalogue activites origine maison partenaire payant intervenant contact statut appeler attente confirme objectif session jour planning sortie prepa preparation outil interne",
    a:"Onglet <b>🌴 Vacances</b> (réservé au bureau). Tu y tiens un <b>catalogue d'activités réutilisable</b> (il reste d'une session à l'autre) : pour chaque activité, son <b>origine</b> (🏠 maison / 🤝 partenaire / 💶 payant), l'<b>intervenant + téléphone</b>, et le <b>statut de la démarche</b> (💡 idée · 📞 à appeler · ⏳ en attente · ✅ confirmé · ❌ non) — pour voir d'un coup d'œil ce qui avance. Crée une <b>session</b> (ex : Été 2026) avec ses jours, puis pour chaque activité choisis un <b>jour</b> (ou « Réserve »). L'<b>objectif</b> s'affiche en haut : au moins 5 activités, dont une majorité « maison ». Le bouton <b>🌍 Carte publique</b> pousse le programme de la session (jour par jour) vers une carte du site — <b>seuls l'emoji + le nom</b> des activités sont publiés, jamais les contacts, notes ou coûts internes."},
+  {cat:'🎒 Périscolaire',q:"Pourquoi je ne peux pas modifier la grille tarifaire du périscolaire ? Comment la débloquer ?",kw:"grille tarif tarifs periscolaire modifier changer bloque verrou verrouille verrouillee securite deverrouiller cadenas proteger erreur quotient familial jour supplement matin remise fratrie bureau editer case grisee grisees",
+   a:"C'est <b>volontaire</b> : la grille tarifaire du périscolaire est <b>verrouillée par défaut</b> pour éviter qu'un tarif soit changé par erreur. Pour la modifier : onglet <b>🎒 Périscolaire</b> → dépliant <b>⚙️ Paramétrage</b> → panneau <b>💶 Grille tarifaire</b> → clique <b>« 🔓 Déverrouiller pour modifier »</b> (une confirmation te le demande), change les cases, puis <b>💾 Enregistrer la grille</b> — elle se <b>reverrouille toute seule</b> après. ⚠️ <b>Réservé au bureau</b> : les salariés voient la grille mais ne peuvent pas la déverrouiller."},
   {cat:'🎒 Périscolaire',q:"Comment gérer le périscolaire, les tarifs et ce que paient les familles ?",kw:"periscolaire garderie tarif grille quotient familial qf enfant inscription facture facturation matin apres-midi aprem fratrie remise extrascolaire acm vepi place",
    a:"Onglet <b>🎒 Périscolaire</b>. La <b>grille tarifaire</b> est par <b>jour</b> selon le quotient familial (pré-remplie avec les tarifs 2024-2025) : modifie une case puis clique <b>💾 Enregistrer la grille</b> pour la réévaluer (ex. pour la rentrée d'août). Ajoute ensuite chaque <b>enfant</b> (tranche, matin et/ou après-midi, rang dans la fratrie) : Bob calcule tout seul ce qu'il doit par mois — <i>tarif jour × nombre de jours du mois, + supplément matin, − remise fratrie</i> — et le total des recettes attendues. C'est la gestion interne ; l'affichage des <b>places restantes</b> côté site public viendra ensuite."},
   {cat:'🚀 Démarrer',q:"Où je vois les nouveautés de Bob ?",kw:"nouveaute nouveau quoi de neuf notice changement evolution pastille rouge mise a jour decouvrir fonctionnalite",
@@ -2345,6 +2351,8 @@ function pageHelpGotoAide(){ pageHelpClose(); const b=document.querySelector('na
 
 /* ---- ✨ Quoi de neuf (nouveautés + notice chronologique) ---- */
 const NEWS=[
+  {id:'2026-07-07-verrou-grille-peri',date:'2026-07-07',tab:'🎒 Périscolaire',titre:"🔒 Grille tarifaire périscolaire protégée contre les modifications par erreur",desc:"Comme pour l'ACM, la grille tarifaire du périscolaire (🎒 Périscolaire → ⚙️ Paramétrage → 💶 Grille tarifaire) est désormais <b>verrouillée par défaut</b>. Pour la changer : <b>« 🔓 Déverrouiller pour modifier »</b> (avec confirmation), tu modifies, tu enregistres, et elle se <b>reverrouille automatiquement</b>. ⚠️ Réservé au bureau : les salariés voient la grille mais ne peuvent pas la déverrouiller."},
+  {id:'2026-07-07-verrou-tarif-acm',date:'2026-07-07',tab:'🌴 Vacances',titre:"🔒 Tarifs ACM protégés contre les modifications par erreur",desc:"La grille des tarifs ACM (onglet 🌴 Vacances → 💶 Tarif ACM) est désormais <b>verrouillée par défaut</b> : les cases sont figées tant que tu n'as pas cliqué <b>« 🔓 Déverrouiller pour modifier »</b> (avec confirmation). Tu modifies, tu cliques 💾 Enregistrer, et la grille se <b>reverrouille automatiquement</b>. Objectif : éviter qu'un tarif change par mégarde. Réservé au bureau."},
   {id:'2026-07-07-rattacher-enfant-peri',date:'2026-07-07',tab:'🎒 Périscolaire',titre:"➕ Rattacher un enfant à un dossier périscolaire (bureau & accueil)",desc:"Quand une famille a déposé ses pièces mais pas fini l'étape « enfant » (le dossier reste en brouillon, « aucun enfant saisi »), tu peux le compléter pour elle : <b>🎒 Périscolaire → 📨 Dossiers d'inscription</b> → sur la carte de la famille, ligne <b>« ➕ Rattacher un enfant »</b> : choisis l'enfant (dans les fiches déjà créées par la famille), coche <b>matin</b> et/ou <b>soir</b>, puis <b>Ajouter</b>. Le <b>✕</b> à côté d'un enfant le retire du dossier (sa fiche n'est pas supprimée). <b>Le bureau ET l'accueil</b> (rôle personnel) peuvent le faire. On ne touche qu'à l'enfant + matin/soir : le droit à l'image, l'autorisation de partir seul et la fiche sanitaire restent confirmés par le parent."},
   {id:'2026-07-03-salles-planning',date:'2026-07-03',tab:'salles',titre:'🗓️ Salles — planning des créneaux',desc:"Nouvel onglet : le planning hebdo de la salle de danse (qui anime quel créneau). En lecture pour l'instant ; les créneaux « orphelins » (intervenant parti) sont en rouge. L'édition en 2 clics arrivera bientôt."},
   {id:'2026-07-03-referent-assistant-sanitaire',date:'2026-07-03',tab:'🎟️ Activités',titre:"👤 Un référent par activité + 🩺 l'accès aux fiches sanitaires",desc:"Sur chaque activité, tu peux désigner un <b>référent</b> (le salarié responsable) — il s'affiche sur la carte et aura accès aux <b>fiches sanitaires</b> des enfants de son activité. En haut de l'onglet, un panneau <b>🩺 Accès aux fiches sanitaires</b> (réservé président/trésorier) permet de cocher les <b>« assistants sanitaires »</b> (souvent titulaires du PSC1) : ces personnes voient toutes les fiches sanitaires, comme le bureau. C'est la 1re brique de la future <b>fiche sanitaire en ligne</b> (remplissable + signable par les familles) — la suite arrive."},
@@ -4805,10 +4813,12 @@ function periFacture(e){
 function renderPeriscolaire(){
   if(!$('periGrilleRows')) return;
   const p=periDB(), g=p.grille;
+  const disG=window.__periGrilleUnlocked?'':'disabled ';
   $('periGrilleRows').innerHTML=g.tranches.map((t,i)=>
-    `<tr><td>${esc(t.label)}</td><td>${esc(t.qf)}</td><td class="num"><input type="number" min="0" step="0.01" value="${t.jour}" style="width:88px;text-align:right" oninput="periSetJour(${i},this.value)"> €</td></tr>`
+    `<tr><td>${esc(t.label)}</td><td>${esc(t.qf)}</td><td class="num"><input type="number" ${disG}min="0" step="0.01" value="${t.jour}" style="width:88px;text-align:right" oninput="periSetJour(${i},this.value)"> €</td></tr>`
   ).join('');
   $('peri_suppMatin').value=g.suppMatin; $('peri_remise').value=g.remise; $('peri_jours').value=g.jours;
+  renderPeriGrilleLock();
   const sel=$('pe_tranche'); if(sel && sel.options.length!==g.tranches.length){ sel.innerHTML=g.tranches.map((t,i)=>`<option value="${i}">${esc(t.label)}</option>`).join(''); }
   const rows=p.enfants.map(e=>{ const f=periFacture(e); const t=g.tranches[e.trancheIdx]||{};
     const formule=[e.aprem?'après-midi':null,e.matin?'matin':null].filter(Boolean).join(' + ')||'—';
@@ -4828,7 +4838,34 @@ function renderPeriscolaire(){
     + kpi('Recettes / mois',euro(totMois),'green','selon la grille et les présences saisies')
     + kpi("Sur l'année scolaire",euro(totMois*10),'green','estimation ~10 mois');
 }
-function periSetJour(i,v){ periDB().grille.tranches[i].jour=parseFloat(v)||0; }
+function periSetJour(i,v){ if(!window.__periGrilleUnlocked) return; periDB().grille.tranches[i].jour=parseFloat(v)||0; }
+// 🔒 Verrou anti-erreur de la grille périscolaire. Déverrouillage RÉSERVÉ AU BUREAU (l'onglet Périscolaire est visible par le personnel, contrairement à l'onglet Vacances).
+function renderPeriGrilleLock(){
+  const bar=$('periGrilleLockBar'); if(!bar) return;
+  const unlocked=!!window.__periGrilleUnlocked;
+  ['peri_suppMatin','peri_remise','peri_jours'].forEach(id=>{ const el=$(id); if(el) el.disabled=!unlocked; });
+  const sb=$('periSaveGrilleBtn'); if(sb) sb.disabled=!unlocked;
+  const isBureau=(typeof canWrite!=='undefined')&&canWrite;
+  if(unlocked){
+    bar.style.background='#fff5da'; bar.style.borderColor='#e9c766';
+    bar.innerHTML='<span style="font-weight:600;color:#8a6400">🔓 Sécurité désactivée — tu peux modifier la grille, puis clique 💾 Enregistrer.</span>'
+      +'<button class="ghost btn" style="margin-left:auto" onclick="periToggleGrilleLock()">🔒 Reverrouiller</button>';
+  } else {
+    bar.style.background='#eef3ef'; bar.style.borderColor='var(--line)';
+    bar.innerHTML='<span style="font-weight:600;color:#2f5d4c">🔒 Grille périscolaire verrouillée (protégée contre toute modification par erreur).</span>'
+      +(isBureau?'<button class="btn" style="margin-left:auto" onclick="periToggleGrilleLock()">🔓 Déverrouiller pour modifier</button>':'<span class="hint" style="margin-left:auto">Réservé au bureau</span>');
+  }
+}
+function periToggleGrilleLock(){
+  if(!window.__periGrilleUnlocked){
+    if(!((typeof canWrite!=='undefined')&&canWrite)){ alert('Seul le bureau peut déverrouiller la grille périscolaire.'); return; }
+    if(!confirm('Désactiver la sécurité et autoriser la modification de la grille périscolaire ?\n\nPense à enregistrer (ou reverrouiller) après tes changements.')) return;
+    window.__periGrilleUnlocked=true;
+  } else {
+    window.__periGrilleUnlocked=false;
+  }
+  renderPeriscolaire();
+}
 // P7 (21/06/2026) — publie une COPIE PUBLIQUE de la grille (table tarifs_publics) que lit le calculateur des familles.
 // Seuils QF officiels (stables) mappés par index sur les 9 tranches ; la 10e ligne = hors commune.
 const PERI_THRESHOLDS=[350.99,450.99,600.99,800.99,1000.99,1250.99,1500.99,2000.99,null];
@@ -4860,12 +4897,15 @@ async function syncProtocolesPublies(){
   }catch(e){ console.warn('syncProtocolesPublies', e); }
 }
 function savePeriGrille(){
+  if(!window.__periGrilleUnlocked){ alert('Déverrouille d\'abord la grille (bouton 🔓 Déverrouiller).'); return; }
   const g=periDB().grille;
   g.suppMatin=parseFloat($('peri_suppMatin').value)||0;
   g.remise=parseFloat($('peri_remise').value)||0;
   g.jours=parseInt($('peri_jours').value)||16;
-  save(); renderPeriscolaire(); publishTarifs();
-  const el=$('periGrilleSaved'); if(el){ el.textContent='Grille enregistrée ✔ (familles mises à jour)'; setTimeout(()=>{ el.textContent=''; },4000); }
+  save(); publishTarifs();
+  window.__periGrilleUnlocked=false; // re-verrouille automatiquement après enregistrement
+  renderPeriscolaire();
+  const el=$('periGrilleSaved'); if(el){ el.textContent='Grille enregistrée ✔ et reverrouillée (familles mises à jour)'; setTimeout(()=>{ el.textContent=''; },4000); }
 }
 function addEnfantPeri(){
   const nom=($('pe_nom').value||'').trim(); if(!nom){ alert("Indique le nom de l'enfant."); return; }
@@ -5622,27 +5662,60 @@ function acmTarifDB(){
 function renderAcmTarif(){
   if(!$('acmTarifRows')) return;
   const t=acmTarifDB();
+  const dis=window.__acmTarifUnlocked?'':'disabled ';
   let rows=ACM_QF.map((tr,i)=>
     `<tr><td>${esc(tr.lab)}</td><td>${esc(tr.qf)}</td>`
-    +`<td class="num"><input type="number" min="0" step="0.01" value="${t.petites[i]}" style="width:92px;text-align:right" oninput="acmSetTarif('petites',${i},this.value)"> €</td>`
-    +`<td class="num"><input type="number" min="0" step="0.01" value="${t.grandes[i]}" style="width:92px;text-align:right" oninput="acmSetTarif('grandes',${i},this.value)"> €</td></tr>`
+    +`<td class="num"><input type="number" ${dis}min="0" step="0.01" value="${t.petites[i]}" style="width:92px;text-align:right" oninput="acmSetTarif('petites',${i},this.value)"> €</td>`
+    +`<td class="num"><input type="number" ${dis}min="0" step="0.01" value="${t.grandes[i]}" style="width:92px;text-align:right" oninput="acmSetTarif('grandes',${i},this.value)"> €</td></tr>`
   ).join('');
   rows+=`<tr><td><strong>Hors commune</strong></td><td>—</td>`
-    +`<td class="num" colspan="2"><input type="number" min="0" step="0.01" value="${t.horsCommune}" style="width:92px;text-align:right" oninput="acmSetTarif('horsCommune',0,this.value)"> € <span class="hint">(même tarif petites &amp; grandes)</span></td></tr>`;
+    +`<td class="num" colspan="2"><input type="number" ${dis}min="0" step="0.01" value="${t.horsCommune}" style="width:92px;text-align:right" oninput="acmSetTarif('horsCommune',0,this.value)"> € <span class="hint">(même tarif petites &amp; grandes)</span></td></tr>`;
   $('acmTarifRows').innerHTML=rows;
+  renderAcmLock();
+}
+// 🔒 Verrou anti-erreur du tarif ACM : verrouillé par défaut, le bureau doit désactiver la sécurité pour éditer.
+function renderAcmLock(){
+  const bar=$('acmLockBar'); if(!bar) return;
+  const unlocked=!!window.__acmTarifUnlocked;
+  const mb=$('acmMirrorBtn'), sb=$('acmSaveBtn');
+  if(mb) mb.disabled=!unlocked;
+  if(sb) sb.disabled=!unlocked;
+  if(unlocked){
+    bar.style.background='#fff5da'; bar.style.borderColor='#e9c766';
+    bar.innerHTML='<span style="font-weight:600;color:#8a6400">🔓 Sécurité désactivée — tu peux modifier la grille, puis clique 💾 Enregistrer.</span>'
+      +'<button class="ghost btn" style="margin-left:auto" onclick="acmToggleLock()">🔒 Reverrouiller</button>';
+  } else {
+    bar.style.background='#eef3ef'; bar.style.borderColor='var(--line)';
+    bar.innerHTML='<span style="font-weight:600;color:#2f5d4c">🔒 Tarifs ACM verrouillés (protégés contre toute modification par erreur).</span>'
+      +'<button class="btn" style="margin-left:auto" onclick="acmToggleLock()">🔓 Déverrouiller pour modifier</button>';
+  }
+}
+function acmToggleLock(){
+  if(!window.__acmTarifUnlocked){
+    if(!confirm('Désactiver la sécurité et autoriser la modification des tarifs ACM ?\n\nPense à enregistrer (ou reverrouiller) après tes changements.')) return;
+    window.__acmTarifUnlocked=true;
+  } else {
+    window.__acmTarifUnlocked=false;
+  }
+  renderAcmTarif();
 }
 function acmSetTarif(col,i,v){
+  if(!window.__acmTarifUnlocked) return;
   const t=acmTarifDB(); const n=parseFloat(v)||0;
   if(col==='horsCommune') t.horsCommune=n; else if(t[col]) t[col][i]=n;
 }
 function acmGrandesFromPetites(){
+  if(!window.__acmTarifUnlocked){ alert('Déverrouille d\'abord les tarifs ACM (bouton 🔓 Déverrouiller).'); return; }
   const t=acmTarifDB();
   t.grandes=t.petites.map(p=>Math.round((p||0)*0.85*100)/100);
   save(); renderAcmTarif(); publishTarifs();
 }
 function saveAcmTarif(){
-  acmTarifDB(); save(); renderAcmTarif(); publishTarifs();
-  const el=$('acmTarifSaved'); if(el){ el.textContent='Tarif ACM enregistré ✔ (familles mises à jour)'; setTimeout(()=>{ el.textContent=''; },4000); }
+  if(!window.__acmTarifUnlocked){ alert('Déverrouille d\'abord les tarifs ACM (bouton 🔓 Déverrouiller).'); return; }
+  acmTarifDB(); save(); publishTarifs();
+  window.__acmTarifUnlocked=false; // re-verrouille automatiquement après enregistrement
+  renderAcmTarif();
+  const el=$('acmTarifSaved'); if(el){ el.textContent='Tarif ACM enregistré ✔ et reverrouillé (familles mises à jour)'; setTimeout(()=>{ el.textContent=''; },4000); }
 }
 function renderAcmVac(){
   if(!$('acmvac')) return;
