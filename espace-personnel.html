@@ -401,25 +401,34 @@ function phActName(a){
   const act=ME.acts.find(x=>x.id===a.activite_id);
   return act?((act.emoji?act.emoji+' ':'🎟️ ')+(act.nom||'Activité')):'🎟️ Activité';
 }
-function phAlerteHtml(){
-  const non=ME.kids.filter(k=>k.droit_image===false);
-  const inc=ME.kids.filter(k=>k.droit_image==null);
+// Enfants (à fiche) inscrits à l'accueil choisi : périscolaire (dossiers) OU une activité (inscriptions_activite).
+function phRosterIds(sel){
+  const set={};
+  if(!sel||sel==='periscolaire'){ (ME.famDoss||[]).forEach(function(d){ (Array.isArray(d.enfants)?d.enfants:[]).forEach(function(e){ if(e&&e.enfant_id) set[e.enfant_id]=true; }); }); }
+  else { (ME.ins||[]).forEach(function(i){ if(i.activite_id===sel&&i.enfant_id) set[i.enfant_id]=true; }); }
+  return set;
+}
+function phAlerteHtml(sel){
+  const ids=phRosterIds(sel);
   const nm=l=>l.map(k=>esc(((k.prenom||'')+' '+(k.nom||'')).trim())).join(', ');
+  const non=ME.kids.filter(k=>k.droit_image===false);                 // refus signé = jamais, partout → global (et court)
+  const inc=ME.kids.filter(k=>k.droit_image==null&&ids[k.id]);          // non renseigné → seulement l'accueil choisi (évite la liste-fleuve)
   if(!non.length&&!inc.length) return '';
   let h='<div class="card" style="border-left:4px solid #dc8f38;background:#fff8ec;margin-bottom:14px;border-radius:0 18px 18px 0"><b>📵 Avant de photographier</b>';
   if(non.length) h+='<div style="font-size:14px;margin-top:4px">🚫 <b>Jamais sur les photos</b> (refus signé) : '+nm(non)+'</div>';
-  if(inc.length) h+='<div style="font-size:14px;margin-top:4px;color:#8a6400">❔ Autorisation pas encore renseignée ('+inc.length+') : '+nm(inc.slice(0,25))+(inc.length>25?'…':'')+' — dans le doute, ne pas les cadrer.</div>';
+  if(inc.length) h+='<div style="font-size:14px;margin-top:4px;color:#8a6400">❔ Autorisation pas encore renseignée ('+inc.length+' à cet accueil) : '+nm(inc.slice(0,25))+(inc.length>25?'…':'')+' — dans le doute, ne pas les cadrer.</div>';
   h+='</div>'; return h;
 }
+window.phAlerteRefresh=function(sel){ const b=document.getElementById('phAlerteBox'); if(b) b.innerHTML=phAlerteHtml(sel); };
 function photosHTML(){
   const actOpts=ME.acts.map(a=>'<option value="'+a.id+'">'+esc((a.emoji?a.emoji+' ':'')+(a.nom||''))+'</option>').join('');
   const t=new Date(); const iso=t.getFullYear()+'-'+String(t.getMonth()+1).padStart(2,'0')+'-'+String(t.getDate()).padStart(2,'0');
   return '<section class="block">'
     +'<p class="sub">Partage aux familles les photos de la journée + un petit mot. <b>Seules les familles dont un enfant est inscrit</b> à l\'accueil concerné les voient — rien n\'est public, rien ne part sur les réseaux.</p>'
-    +phAlerteHtml()
+    +'<div id="phAlerteBox">'+phAlerteHtml('periscolaire')+'</div>'
     +'<div class="card" style="margin-bottom:14px"><h3 style="margin:0 0 10px">📸 Album du jour</h3>'
       +'<div class="row" style="margin-bottom:8px">'
-        +'<div style="flex:2"><label>Pour quel accueil ?</label><select id="ph_portee" style="width:100%"><option value="periscolaire">🎒 Garderie périscolaire</option>'+actOpts+'</select></div>'
+        +'<div style="flex:2"><label>Pour quel accueil ?</label><select id="ph_portee" style="width:100%" onchange="phAlerteRefresh(this.value)"><option value="periscolaire">🎒 Garderie périscolaire</option>'+actOpts+'</select></div>'
         +'<div><label>Jour</label><input id="ph_jour" type="date" value="'+iso+'" style="width:100%"></div>'
       +'</div>'
       +'<div class="row" style="margin-bottom:8px"><div style="flex:1"><label>Titre (facultatif)</label><input id="ph_titre" style="width:100%" placeholder="ex. Grand jeu, atelier cuisine…"></div></div>'
