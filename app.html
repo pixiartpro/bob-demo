@@ -997,6 +997,14 @@
     </div>
     <div id="acmBilanView" style="margin:10px 0"></div>
 
+    <!-- 📜 Projet éducatif (organisateur) — commun à toutes les éditions, pluriannuel. Coup 2b. -->
+    <details class="panel" id="acmProjEducPanel" style="margin:6px 0 14px">
+      <summary style="cursor:pointer;font-weight:700;font-size:16px">📜 Projet éducatif <span class="hint" style="font-weight:400">— commun à l'asso, écrit une fois (rappelé à chaque édition)</span></summary>
+      <p class="hint" style="margin:8px 0 8px">Le cadre éducatif de l'organisateur (le CASE), transmis à la SDJES, aux familles et à la CAF. Il ne se réécrit pas à chaque vacances — <strong>à revérifier seulement si un changement</strong> (direction, locaux, nature d'accueil…). Le <em>projet pédagogique</em>, lui, se fait par édition (dans son dossier-bilan).</p>
+      <textarea id="acmProjEduc" onchange="acmSetProjEduc(this.value)" placeholder="Finalités et valeurs éducatives du CASE, publics, moyens, engagement…" style="width:100%;min-height:120px"></textarea>
+      <div class="hint" id="acmProjEducMaj" style="margin-top:6px"></div>
+    </details>
+
     <!-- 👶 Enfants en ACM (lecture seule) — brique 1 de l'archi « enfant au centre » : liste consolidée, regroupée par enfant. Aucun objet nouveau en base. -->
     <div class="panel" id="acmEnfantsPanel">
       <div class="toolbar"><div>
@@ -2390,6 +2398,7 @@ function pageHelpGotoAide(){ pageHelpClose(); const b=document.querySelector('na
 
 /* ---- ✨ Quoi de neuf (nouveautés + notice chronologique) ---- */
 const NEWS=[
+  {id:'2026-07-07-acm-projet',date:'2026-07-07',tab:'🌴 Vacances',titre:"📝 Le « côté projet » de l'ACM : projet éducatif + projet pédagogique",desc:"Deux nouveautés dans 🌴 Vacances. En haut, un panneau <b>📜 Projet éducatif</b> : le cadre de l'asso, écrit <b>une seule fois</b> (pas à chaque vacances), rappelé à chaque édition. Et dans le dossier-bilan de chaque édition, un <b>📋 Projet pédagogique</b> avec les <b>sections cadrées par la loi</b> (R.227-25 : objectifs, activités, rythme activité/repos, participation des jeunes, locaux, équipe, handicap, évaluation), chacune en <b>« prévu » (avant)</b> puis <b>« réalisé » (après)</b> — on recopie le plan officiel, on n'invente rien. Le tout ressort dans le <b>bilan PDF</b>. Réservé au bureau."},
   {id:'2026-07-07-acm-encadrement',date:'2026-07-07',tab:'🌴 Vacances',titre:"🧑‍🏫 Un indicateur d'encadrement dans le dossier d'ACM",desc:"Dans le dossier-bilan d'une édition (🌴 Vacances → 🗄️ Éditions), une section <b>🧑‍🏫 Encadrement</b> : d'après l'effectif inscrit, Bob t'indique le <b>nombre minimum d'animateurs</b> (1 pour 12 pour les ≥ 6 ans, 1 pour 8 si des − 6 ans sont mélangés). Saisis le nombre d'animateurs prévus → ✅ taux atteint ou ⚠️ manque X. Une case rappelle l'<b>honorabilité</b> à vérifier pour chaque encadrant (elle n'entre PAS dans le calcul du taux, mais c'est le vrai point de vigilance). <b>⚠️ C'est un indicateur d'aide, non opposable</b> : le directeur reste seul responsable de la conformité (taux réel, âges, diplômes). Repris aussi dans le bilan PDF."},
   {id:'2026-07-07-acm-accompagnateur',date:'2026-07-07',tab:'🌴 Vacances',titre:"🧭 L'ACM s'accompagne : démarches avant/pendant/après + photos choisies",desc:"Le dossier-bilan d'une édition devient un <b>accompagnateur</b>. Saisis la <b>date de début</b> et Bob calcule les <b>échéances</b> des démarches, rangées en <b>3 temps</b> : ⬅️ <b>Avant</b> (projet pédagogique, déclaration TAM fiche initiale ~J-60, assurance, encadrement + honorabilité, <b>fiche complémentaire J-8 — délai ferme</b>), ⏳ <b>Pendant</b> (registre de présence…), ➡️ <b>Après</b> (bilan pédagogique, compte-rendu CAF, bilan financier, compte-rendu Mairie CERFA 15059). Chaque ligne se coche <b>à faire → fait → sans objet</b>, et la carte de l'édition montre la <b>prochaine échéance</b> (en rouge si en retard). Côté <b>photos</b> : tu <b>choisis (★) celles qui vont dans le dossier</b>, avec le rappel droit à l'image (usage interne ≠ diffusion Mairie). Réservé au bureau."},
   {id:'2026-07-07-editions-acm-archivables',date:'2026-07-07',tab:'🌴 Vacances',titre:"🗄️ Les éditions d'ACM s'archivent en dossier-bilan",desc:"Dans l'onglet 🌴 Vacances, un nouveau panneau <b>🗄️ Éditions &amp; archives</b> : chaque période d'ACM (Été, Toussaint…) devient une <b>édition</b> qu'on prépare puis qu'on <b>clôture en dossier-bilan</b>. Coche les <b>activités publiques</b> qui la composent, et le <b>📖 Dossier-bilan</b> réunit au même endroit l'<b>effectif</b> (qui / combien), les <b>photos</b>, un <b>compte-rendu</b> et une <b>checklist de démarches</b> (déclaration TAM/SDJES…). Une fois l'ACM fini, <b>📦 Clôturer &amp; archiver</b> fige l'effectif et range l'édition dans les <b>archives</b> — d'où tu peux <b>🖨️ sortir un bilan PDF</b> pour les financeurs, ou <b>↩︎ rouvrir</b>. Réservé au bureau."},
@@ -5654,6 +5663,7 @@ function acmDb(){
   var a=db.acmVac;
   if(!Array.isArray(a.fiches)) a.fiches=[];
   if(!Array.isArray(a.sessions)) a.sessions=[];
+  if(!a.projetEducatif||typeof a.projetEducatif!=='object') a.projetEducatif={texte:'',maj:''}; // Coup 2b : projet éducatif (organisateur, commun/pluriannuel)
   // Coup 3 — chaque session est une « édition » avec cycle de vie + dossier-bilan (rétro-compatible)
   a.sessions.forEach(function(s){
     if(s.statut!=='ouverte' && s.statut!=='archivee') s.statut='ouverte';
@@ -5664,6 +5674,7 @@ function acmDb(){
     if(!Array.isArray(s.bilan.photoIds)) s.bilan.photoIds=[]; // Coup 1 : photos retenues pour le dossier (clé = chemin Storage)
     if(typeof s.dateDebut!=='string') s.dateDebut=''; // Coup 1 : date de début → calcul des échéances
     if(!s.bilan.encadrement||typeof s.bilan.encadrement!=='object') s.bilan.encadrement={ageMix:'6plus',animateurs:null,honorabilite:false}; // Coup 2 : indicateur d'encadrement (aide, non opposable)
+    if(!s.bilan.peda||typeof s.bilan.peda!=='object') s.bilan.peda={}; // Coup 2b : projet pédagogique par édition (sections R.227-25, prévu/réalisé)
   });
   return a;
 }
@@ -5847,6 +5858,7 @@ function renderAcmVac(){
       cat.innerHTML=sorted.map(f=>acmFicheHtml(f,cs,plan)).join('');
     }
   }
+  const pe=$('acmProjEduc'); if(pe && document.activeElement!==pe){ const pj=acmDb().projetEducatif||{}; pe.value=pj.texte||''; const pem=$('acmProjEducMaj'); if(pem) pem.textContent=pj.maj?('maj '+fmtDate(pj.maj)):''; }
   if(window.renderAcmEditions) window.renderAcmEditions();
 }
 function acmFicheHtml(f,cs,plan){
@@ -6850,7 +6862,8 @@ renderAll();
     h+='<h3 style="margin:12px 0 4px">👶 Effectif</h3><div id="acmBilanEff"><p class="hint">Chargement…</p></div>';
     h+='<h3 style="margin:14px 0 4px">🧑‍🏫 Encadrement <span class="hint" style="font-weight:400;font-size:12px">— indicateur d\'aide, non opposable</span></h3><div id="acmBilanEncadr"><p class="hint">Chargement…</p></div>';
     h+='<h3 style="margin:14px 0 4px">📸 Photos</h3><div id="acmBilanPhotos"><p class="hint">Chargement…</p></div>';
-    h+='<h3 style="margin:14px 0 4px">📝 Compte-rendu</h3><textarea id="acmBilanCR" '+(archived?'readonly':'')+' onchange="acmBilanCR(\''+ed.id+'\',this.value)" placeholder="Ce qu\'on a fait : temps forts, sorties, ce qui a marché / à améliorer… (enregistré quand tu cliques ailleurs)" style="width:100%;min-height:110px'+(archived?';background:#f6f7f8':'')+'">'+esc(ed.bilan.cr||'')+'</textarea>';
+    h+='<h3 style="margin:14px 0 4px">📝 Compte-rendu <span class="hint" style="font-weight:400;font-size:12px">— mot libre / synthèse</span></h3><textarea id="acmBilanCR" '+(archived?'readonly':'')+' onchange="acmBilanCR(\''+ed.id+'\',this.value)" placeholder="Ce qu\'on a fait : temps forts, sorties, ce qui a marché / à améliorer… (enregistré quand tu cliques ailleurs)" style="width:100%;min-height:90px'+(archived?';background:#f6f7f8':'')+'">'+esc(ed.bilan.cr||'')+'</textarea>';
+    h+='<details style="margin:12px 0 0"><summary style="cursor:pointer;font-weight:700;font-size:15px">📋 Projet pédagogique <span class="hint" style="font-weight:400;font-size:12px">— cadré par la loi (R.227-25) · prévu (avant) → réalisé (après)</span></summary><div style="margin-top:6px">'+acmPedaHtml(ed,archived)+'</div></details>';
     h+='<h3 style="margin:14px 0 4px">📋 Parcours de démarches <span class="hint" style="font-weight:400;font-size:12px">— avant · pendant · après (à faire → fait → sans objet)</span></h3><div id="acmBilanDem">'+acmDemHtml(ed,archived)+'</div>';
     h+='<div class="row" style="margin-top:14px;gap:6px;flex-wrap:wrap">';
     if(archived) h+='<button class="btn" onclick="acmBilanPDF(\''+ed.id+'\')">🖨️ Exporter le bilan (PDF)</button> <button class="ghost btn" onclick="acmRouvrirEdition(\''+ed.id+'\')">↩︎ Rouvrir cette édition</button>';
@@ -6888,6 +6901,31 @@ renderAll();
   }
   function acmFillEncadrement(ed){ const box=document.getElementById('acmBilanEncadr'); if(!box) return; const eff=(ed.statut==='archivee'&&ed.bilan.effectif)?ed.bilan.effectif:acmEffectifFor(ed.activiteIds); box.innerHTML=acmEncadrementHtml(ed, eff||{nb:0}); }
   window.acmEncSet=function(edId,field,val){ const ed=acmDb().sessions.find(function(s){return s.id===edId;}); if(!ed)return; ed.bilan.encadrement=ed.bilan.encadrement||{ageMix:'6plus',animateurs:null,honorabilite:false}; ed.bilan.encadrement[field]=val; save(); acmFillEncadrement(ed); };
+  // Coup 2b — projet pédagogique : structure cadrée par l'art. R.227-25 CASF (on recopie le plan légal, on n'invente pas). Prévu (avant) → réalisé/évalué (après).
+  const ACM_PEDA_SECTIONS=[
+    {k:'objectifs',l:'🎯 Objectifs éducatifs de la période'},
+    {k:'activites',l:'🎲 Nature des activités proposées'},
+    {k:'rythme',l:"⏰ Rythme : temps d'activité / temps de repos"},
+    {k:'participation',l:'🙋 Participation & implication des mineurs'},
+    {k:'locaux',l:'🏠 Locaux & espaces utilisés'},
+    {k:'equipe',l:"🧑‍🏫 Équipe : composition & rôles"},
+    {k:'handicap',l:'♿ Mineurs en situation de handicap'},
+    {k:'evaluation',l:"📊 Modalités d'évaluation"}
+  ];
+  function acmPedaHtml(ed,archived){
+    const peda=ed.bilan.peda||{};
+    return ACM_PEDA_SECTIONS.map(function(s){ const v=peda[s.k]||{}; const done=(v.prevu||v.realise);
+      return '<details class="card" style="margin:6px 0;padding:0"><summary style="cursor:pointer;font-weight:600;padding:9px 12px">'+s.l+(done?' <span class="pill" style="background:#dff5e9;color:#127a51;font-size:11px">rempli</span>':'')+'</summary>'
+        +'<div style="padding:0 12px 12px">'
+        +'<label style="font-size:12px;color:#5c7468">Prévu (avant)</label>'
+        +'<textarea '+(archived?'readonly':'')+' onchange="acmPedaSet(\''+ed.id+'\',\''+s.k+'\',\'prevu\',this.value)" placeholder="ce qu\'on prévoit" style="width:100%;min-height:52px;margin-bottom:8px'+(archived?';background:#f6f7f8':'')+'">'+esc(v.prevu||'')+'</textarea>'
+        +'<label style="font-size:12px;color:#5c7468">Réalisé &amp; évaluation (après)</label>'
+        +'<textarea '+(archived?'readonly':'')+' onchange="acmPedaSet(\''+ed.id+'\',\''+s.k+'\',\'realise\',this.value)" placeholder="ce qui a été fait, ce qu\'on en retient" style="width:100%;min-height:52px'+(archived?';background:#f6f7f8':'')+'">'+esc(v.realise||'')+'</textarea>'
+        +'</div></details>';
+    }).join('');
+  }
+  window.acmPedaSet=function(edId,key,field,val){ const ed=acmDb().sessions.find(function(s){return s.id===edId;}); if(!ed)return; ed.bilan.peda=ed.bilan.peda||{}; ed.bilan.peda[key]=ed.bilan.peda[key]||{}; ed.bilan.peda[key][field]=val; save(); };
+  window.acmSetProjEduc=function(v){ const a=acmDb(); a.projetEducatif=a.projetEducatif||{texte:'',maj:''}; a.projetEducatif.texte=v; a.projetEducatif.maj=today(); save(); const m=document.getElementById('acmProjEducMaj'); if(m) m.textContent=a.projetEducatif.maj?('✔ enregistré · maj '+fmtDate(a.projetEducatif.maj)):''; };
   window.acmCloreEdition=async function(edId){
     const ed=acmDb().sessions.find(function(s){return s.id===edId;}); if(!ed)return;
     if(!confirm('Clôturer l\'édition « '+ed.nom+' » ?\n\nSon effectif du jour sera figé et l\'édition rejoindra les archives (tu pourras toujours la rouvrir).'))return;
@@ -6914,7 +6952,12 @@ renderAll();
     const cr=E(ed.bilan.cr||'').replace(/\n/g,'<br>')||'<span style="color:#888">—</span>';
     const enc=ed.bilan.encadrement||{}, ratioP=(enc.ageMix==='moins6'?8:12), besoinP=Math.ceil((eff.nb||0)/ratioP)||0, prevP=(enc.animateurs!=null&&enc.animateurs!=='')?parseInt(enc.animateurs,10):null;
     const encHtml='<h2>Encadrement</h2><p>'+(eff.nb||0)+' enfant(s), public '+(enc.ageMix==='moins6'?'incluant des − 6 ans (1 pour 8)':'ados / ≥ 6 ans (1 pour 12)')+' → au moins <b>'+besoinP+'</b> animateur(s)'+(prevP!=null?' · prévus : '+prevP+(prevP>=besoinP?' (taux atteint)':' (manque '+(besoinP-prevP)+')'):'')+'.<br>Honorabilité vérifiée pour chaque encadrant : <b>'+(enc.honorabilite?'oui':'non / à confirmer')+'</b>.<br><span style="color:#777">Indicateur d\'aide, non opposable — le directeur reste responsable de la conformité.</span></p>';
-    const html='<!doctype html><html lang="fr"><head><meta charset="utf-8"><title>Bilan — '+E(ed.nom)+'</title><style>body{font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;color:#1a1a1a;max-width:820px;margin:22px auto;padding:0 20px;line-height:1.5}h1{font-size:22px;margin:0 0 2px}h2{font-size:15px;border-bottom:2px solid #1d9e75;padding-bottom:3px;margin:22px 0 8px;color:#127a51}.meta{color:#555;font-size:13px}table{border-collapse:collapse;width:100%;font-size:13px}th,td{border:1px solid #ccc;padding:5px 8px;text-align:left}th{background:#f0f5f2}ul{margin:4px 0}@media print{.noprint{display:none}}</style></head><body><div class="noprint" style="text-align:right;margin-bottom:10px"><button onclick="window.print()" style="padding:8px 14px;font-size:14px;cursor:pointer">🖨️ Imprimer / Enregistrer en PDF</button></div><h1>Bilan d\'édition ACM — '+E(ed.nom)+'</h1><p class="meta">'+E(asso)+(per?' · '+E(per):'')+(archived&&ed.bilan.closedAt?' · Clôturée le '+fmtDate(ed.bilan.closedAt):' · (édition en cours)')+'</p><h2>Effectif ('+eff.nb+')</h2><table><thead><tr><th>#</th><th>Enfant</th><th>Classe</th><th>Responsable</th></tr></thead><tbody>'+rows+'</tbody></table>'+(eff.sansFiche?'<p class="meta">+ '+eff.sansFiche+' inscription(s) « sans fiche enfant » (saisies au comptoir) au moment de la clôture.</p>':'')+encHtml+'<h2>Compte-rendu</h2><div>'+cr+'</div><h2>Démarches (avant · pendant · après)</h2>'+dem+'<p class="meta" style="margin-top:30px">Document généré par Bob — '+E(asso)+'</p></body></html>';
+    const projEduc=(acmDb().projetEducatif||{}).texte||'';
+    const projEducHtml=projEduc?('<h2>Projet éducatif (organisateur)</h2><div>'+E(projEduc).replace(/\n/g,'<br>')+'</div>'):'';
+    const pedaObj=ed.bilan.peda||{};
+    const pedaBody=ACM_PEDA_SECTIONS.map(function(s){ const v=pedaObj[s.k]||{}; if(!v.prevu&&!v.realise) return ''; return '<h3 style="font-size:13px;margin:10px 0 2px;color:#127a51">'+E(s.l)+'</h3>'+(v.prevu?'<p style="margin:2px 0"><b>Prévu :</b> '+E(v.prevu).replace(/\n/g,'<br>')+'</p>':'')+(v.realise?'<p style="margin:2px 0"><b>Réalisé :</b> '+E(v.realise).replace(/\n/g,'<br>')+'</p>':''); }).join('');
+    const pedaSection=pedaBody?('<h2>Projet pédagogique</h2>'+pedaBody):'';
+    const html='<!doctype html><html lang="fr"><head><meta charset="utf-8"><title>Bilan — '+E(ed.nom)+'</title><style>body{font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;color:#1a1a1a;max-width:820px;margin:22px auto;padding:0 20px;line-height:1.5}h1{font-size:22px;margin:0 0 2px}h2{font-size:15px;border-bottom:2px solid #1d9e75;padding-bottom:3px;margin:22px 0 8px;color:#127a51}.meta{color:#555;font-size:13px}table{border-collapse:collapse;width:100%;font-size:13px}th,td{border:1px solid #ccc;padding:5px 8px;text-align:left}th{background:#f0f5f2}ul{margin:4px 0}@media print{.noprint{display:none}}</style></head><body><div class="noprint" style="text-align:right;margin-bottom:10px"><button onclick="window.print()" style="padding:8px 14px;font-size:14px;cursor:pointer">🖨️ Imprimer / Enregistrer en PDF</button></div><h1>Bilan d\'édition ACM — '+E(ed.nom)+'</h1><p class="meta">'+E(asso)+(per?' · '+E(per):'')+(archived&&ed.bilan.closedAt?' · Clôturée le '+fmtDate(ed.bilan.closedAt):' · (édition en cours)')+'</p><h2>Effectif ('+eff.nb+')</h2><table><thead><tr><th>#</th><th>Enfant</th><th>Classe</th><th>Responsable</th></tr></thead><tbody>'+rows+'</tbody></table>'+(eff.sansFiche?'<p class="meta">+ '+eff.sansFiche+' inscription(s) « sans fiche enfant » (saisies au comptoir) au moment de la clôture.</p>':'')+encHtml+'<h2>Compte-rendu</h2><div>'+cr+'</div>'+projEducHtml+pedaSection+'<h2>Démarches (avant · pendant · après)</h2>'+dem+'<p class="meta" style="margin-top:30px">Document généré par Bob — '+E(asso)+'</p></body></html>';
     const w=window.open('','_blank'); if(!w){ alert('Autorise les fenêtres pop-up pour générer le PDF.'); return; } w.document.open(); w.document.write(html); w.document.close();
   };
 
