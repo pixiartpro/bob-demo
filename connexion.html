@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Espace bureau — CASE du Bois de Nèfles</title>
+<title>Mon espace — CASE du Bois de Nèfles</title>
 <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
 <link rel="icon" type="image/png" sizes="16x16" href="favicon-16.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
@@ -69,11 +69,11 @@
 </div></header>
 
 <div class="wrap">
-  <h1 class="t">🔐 Espace bureau</h1>
-  <p class="sub">Connexion réservée à l'équipe et au bureau. Crée une demande d'accès ; un administrateur la validera.</p>
+  <h1 class="t">🍍 Mon espace CASE</h1>
+  <p class="sub">Connectez-vous à votre espace, ou créez votre compte en 2 minutes.</p>
   <div id="welcomeMascot" style="text-align:center;margin:4px 0 16px">
     <img src="zanana-wave.png" onerror="this.style.display='none'" alt="Zanana" style="width:92px;height:auto;filter:drop-shadow(0 8px 14px rgba(16,60,40,.18))">
-    <p style="margin:6px auto 0;font-weight:700;color:#3a5246;font-size:14.5px;max-width:420px">Salut, c'est <b style="color:#e8a32c">Zanana</b> ! Connecte-toi pour accéder à la gestion 🔐</p>
+    <p style="margin:6px auto 0;font-weight:700;color:#3a5246;font-size:14.5px;max-width:420px">Salut, c'est <b style="color:#e8a32c">Zanana</b> ! Connecte-toi à ton espace, ou crée ton compte 🍍</p>
   </div>
   <div id="app"><p class="muted">Chargement…</p></div>
 </div>
@@ -90,7 +90,7 @@ const $=s=>document.querySelector(s);
 
 /* ===== Multi-assos : "porte" d'entrée (slug dans l'URL : ?asso=bokaf, /bokaf, ou /bokaf.html) ===== */
 const ASSO_DOORS = {
-  case:  { pine:'🍍', nom:'CASE', nom2:'Bois de Nèfles', titre:'Espace bureau — CASE du Bois de Nèfles',
+  case:  { pine:'🍍', nom:'CASE', nom2:'Bois de Nèfles', titre:'Mon espace — CASE du Bois de Nèfles',
            theme:{ vert:'#1f9d6b', vertFonce:'#0f6b46' } },
   bokaf: { pine:'🎬', nom:'BOKAF', nom2:'', titre:'Espace bureau — association BOKAF', logoImg:'bokaf-logo.png',
            theme:{ vert:'#d81e5b', vertFonce:'#b3134a', dark:true, headerBg:'linear-gradient(100deg,#141318,#26182e 55%,#141318)', flagBg:'#221826', flagInk:'#f1c6d8' } },
@@ -397,7 +397,7 @@ async function renderLoggedIn(user){
       <span class="role-pill pill ${r.pill}">${r.label}</span>
       <span class="role-pill pill ${st.pill}">${st.label}</span></div>
     <div style="margin-left:auto;display:flex;gap:8px;flex-wrap:wrap">
-      ${(()=>{ if(p.role==='adherent') return p.statut!=='suspendu'?`<a class="btn p" style="text-decoration:none" href="espace-adherent.html">Mon espace famille →</a>`:''; if(p.role==='personnel') return p.statut==='actif'?`<a class="btn p" style="text-decoration:none" href="espace-personnel.html">Mon espace salarié →</a>`:''; if(['president','tresorier','bureau'].includes(p.role)) return p.statut==='actif'?`<a class="btn p" style="text-decoration:none" href="app.html">Entrer dans la gestion →</a>`:''; return ''; })()}
+      ${(()=>{ if(p.role==='adherent') return p.statut!=='suspendu'?`<a class="btn p" style="text-decoration:none" href="espace-adherent.html">Mon espace →</a>`:''; if(p.role==='personnel') return p.statut==='actif'?`<a class="btn p" style="text-decoration:none" href="espace-personnel.html">Mon espace salarié →</a>`:''; if(['president','tresorier','bureau'].includes(p.role)) return p.statut==='actif'?`<a class="btn p" style="text-decoration:none" href="app.html">Entrer dans la gestion →</a>`:''; return ''; })()}
       <button class="btn g" onclick="changePwd()">Mot de passe</button>
       <button class="btn g" onclick="signOut()">Déconnexion</button>
     </div></div>`;

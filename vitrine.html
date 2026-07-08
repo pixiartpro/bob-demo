@@ -243,8 +243,7 @@
       <a href="#partenaires">🤝 Partenaires</a>
       <a href="#contact">Contact</a>
       <span class="nav-sep"></span>
-      <a href="espace-adherent.html" class="navpill">🍍 Mon espace famille</a>
-      <a href="connexion.html" class="navpill">🔐 Espace bureau</a>
+      <a href="connexion.html" class="navpill">🍍 Mon espace</a>
       <a href="#adhesion" class="btn primary">Devenir adhérent</a>
     </nav>
   </div>
@@ -270,7 +269,7 @@
       <p class="lead">Un nouveau CASE pour le kartié.<br>Travaux terminés : réouverture <b>lundi 13 juillet</b>.</p>
       <p class="site-line">Retrouv' a nou en ligne : <b>casebdn.re</b></p>
       <div class="cta">
-        <a href="espace-adherent.html" class="btn primary">S'inscrire en ligne</a>
+        <a href="connexion.html?role=famille" class="btn primary">S'inscrire en ligne</a>
         <a href="#activites" class="btn ghost">Découvrir nos activités</a>
       </div>
     </div>
@@ -302,7 +301,7 @@
       <div style="flex:1;min-width:240px">
         <p style="margin:0 0 12px;color:#5b4a2a"><b>Comment faire ?</b><br>1. J'adhère / je me connecte à mon espace.<br>2. Je renseigne mes enfants (matin / soir).<br>3. Je dépose mes pièces. C'est tout !</p>
         <div class="cta">
-          <a href="espace-adherent.html" class="btn primary">🎒 Déposer mon dossier</a>
+          <a href="connexion.html?role=famille" class="btn primary">🎒 Déposer mon dossier</a>
           <a href="#adhesion" class="btn ghost">Adhérer au CASE</a>
         </div>
       </div>
@@ -340,7 +339,7 @@
       <div class="card" style="border-top:4px solid #3a9bd9"><div class="ico">📅</div><h3>Mercredi, samedi &amp; vacances</h3><p>Un accueil régulier pour les 11–17 ans toute l'année.</p></div>
     </div>
     <div style="text-align:center;margin-top:20px">
-      <a class="btn primary" style="text-decoration:none" href="espace-adherent.html">🌴 Réserver une place (ACM, sorties) → Mon espace famille</a>
+      <a class="btn primary" style="text-decoration:none" href="connexion.html?role=famille">🌴 Réserver une place (ACM, sorties) → Mon espace famille</a>
       <p class="sub" style="margin:10px 0 0">Connectez-vous ou créez votre espace famille en 2 minutes. <b>Un parent adhérent</b> (10 €/an, du 1ᵉʳ août au 31 juillet) = <b>tous vos enfants</b> ont droit.</p>
     </div>
   </div>
@@ -400,9 +399,9 @@
     <div class="panel">
       <p style="margin:0 0 16px;color:var(--muted);font-size:15px">L'adhésion (<b>10 €</b>, valable du <b>1ᵉʳ août au 31 juillet</b>) ouvre l'accès aux activités — et <b>un seul parent adhérent suffit pour tous les enfants</b>. Créez votre <b>espace famille</b> : vous pourrez déposer votre dossier périscolaire, réserver vos activités et <b>payer votre adhésion en ligne</b> — ou la régulariser avec le bureau.</p>
       <div style="display:flex;flex-direction:column;gap:10px">
-        <a class="btn primary" style="text-decoration:none;text-align:center" href="espace-adherent.html#adhSection">🪪 Payer mon adhésion — 10 €</a>
-        <a class="btn primary" style="text-decoration:none;text-align:center" href="espace-adherent.html">🎒 Inscrire mon enfant au périscolaire</a>
-        <a class="btn primary" style="text-decoration:none;text-align:center" href="espace-adherent.html">🌴 Réserver une activité / l'ACM</a>
+        <a class="btn primary" style="text-decoration:none;text-align:center" href="connexion.html?role=famille">🪪 Payer mon adhésion — 10 €</a>
+        <a class="btn primary" style="text-decoration:none;text-align:center" href="connexion.html?role=famille">🎒 Inscrire mon enfant au périscolaire</a>
+        <a class="btn primary" style="text-decoration:none;text-align:center" href="connexion.html?role=famille">🌴 Réserver une activité / l'ACM</a>
         <a class="btn ghost" style="text-decoration:none;text-align:center" href="connexion.html?role=famille">👨‍👩‍👧 Accéder à Mon espace famille</a>
       </div>
       <p class="note">Tout se passe dans votre espace famille. <b>Paiement de l'adhésion en ligne</b> via HelloAsso — <b>sans frais pour vous</b> (la contribution HelloAsso est facultative, modifiable à <b>0 €</b>) ; possible aussi avec le bureau.</p>
@@ -697,7 +696,7 @@ function actRowHtml(a){
   const badge = bientot ? '<span class="ptag soon">arrive bientôt</span>'
               : complet ? '<span class="ptag work">complet</span>'
               : '<span class="ptag on">Inscriptions ouvertes</span>';
-  const btn = (bientot||complet) ? '' : '<a class="btn primary" style="text-decoration:none" href="espace-adherent.html">Réserver →</a>';
+  const btn = (bientot||complet) ? '' : '<a class="btn primary" style="text-decoration:none" href="connexion.html?role=famille">Réserver →</a>';
   return '<div class="actrow">'
       +'<span class="aico">'+(a.emoji||'•')+'</span>'
       +'<div class="abody"><b>'+escP(a.nom)+'</b><span>'+escP(a.description||'')+'</span></div>'
@@ -774,7 +773,7 @@ async function loadInsBar(){
     const dot=bientot?'#2a5aa0':(complet?'#b23a23':'var(--vert)');
     const st=bientot?'bientôt':(complet?'complet':'ouvert');
     const stc=bientot?'#2a5aa0':(complet?'#b23a23':'var(--vert-fonce)');
-    const href=bientot?'#activites':'espace-adherent.html';
+    const href=bientot?'#activites':'connexion.html?role=famille';
     return '<a class="ib-chip" href="'+href+'"><span class="ib-dot" style="background:'+dot+'"></span>'
       +(a.emoji?a.emoji+' ':'')+escP(a.nom)+(a.quand?' <span style="color:var(--muted);font-weight:600;font-size:12px">· '+escP(a.quand)+'</span>':'')+'<span class="ib-st" style="color:'+stc+'">· '+st+'</span></a>';
   }).join('');
