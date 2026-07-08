@@ -86,7 +86,7 @@
 <section class="block" id="kidsSection" style="padding:22px 0 6px">
   <div class="wrap">
     <div class="card" style="border-left:5px solid var(--ananas);background:#fffaf2">
-      <h2 class="title" style="font-size:20px">👧 Mes enfants <small>— d'abord, enregistrez-les</small></h2>
+      <h2 class="title" style="font-size:20px">👧 Mes enfants <small>— si vous avez des enfants à inscrire</small></h2>
       <p class="sub" style="margin:2px 0 10px">Renseignez chaque enfant <b>une fois</b> (identité, allergies, santé, personnes autorisées). Ensuite, vous l'inscrivez à la <b>garderie</b>, aux <b>vacances (ACM)</b> ou au <b>VEPI</b> ci-dessous — sans le retaper.</p>
       <p class="sub" style="margin:0 0 10px;font-size:12.5px;background:#eef7f2;border:1px solid #cfe6da;border-radius:10px;padding:7px 11px">🔒 Compte personnel : <b>ne partagez pas votre mot de passe</b>. Les informations saisies (enfants, personnes autorisées) sont sous votre responsabilité.</p>
       <div id="kidsBody"><p class="sub">Chargement…</p></div>
@@ -1149,7 +1149,7 @@ function kidsRender(){
   const box=document.getElementById('kidsBody'); if(!box) return;
   if(!ACM.uid){ box.innerHTML='<p class="sub" style="margin:0">Connectez-vous pour gérer vos enfants. <a href="connexion.html" style="color:var(--vert-fonce);font-weight:800">Se connecter →</a></p>'; return; }
   let html='';
-  if(!KIDS.list.length){ html+='<p class="sub" style="margin:0 0 10px">Aucun enfant pour l\'instant. Ajoutez-les : ils seront réutilisés pour le périscolaire et l\'ACM.</p>'; }
+  if(!KIDS.list.length){ html+='<p class="sub" style="margin:0 0 10px">👶 <b>Vous avez des enfants à inscrire</b> (périscolaire, ACM, sorties) ? Ajoutez leur fiche ici — elle est réutilisée partout. Sinon, cette partie ne vous concerne pas : <b>vos</b> activités à vous sont dans 🎟️ Mes activités, plus haut.</p>'; }
   else html+='<div style="display:flex;flex-direction:column;gap:10px">'+KIDS.list.map(kidCard).join('')+'</div>';
   html+='<div style="margin-top:12px"><button class="btn use" onclick="kidAdd()">+ Ajouter un enfant</button></div>';
   box.innerHTML=html;
