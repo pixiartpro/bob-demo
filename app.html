@@ -283,6 +283,7 @@
     </div>
     <div class="tabgroup" data-group="adherents">
       <button data-tab="members">👥 Adhérents</button>
+      <button data-tab="messages">📨 Messages</button>
       <button data-tab="enfants">👶 Enfants</button>
       <button data-tab="periscolaire">🎒 Périscolaire</button>
       <button data-tab="activites">🎟️ Activités</button>
@@ -328,6 +329,39 @@
   </div>
 
   <!-- DASHBOARD -->
+  <!-- 📨 MESSAGES DES ADHÉRENTS (canal 2 sens — table messages_adherents) -->
+  <style id="maBureauCss">
+  #messages .ma-row{display:flex;gap:10px;align-items:center;justify-content:space-between;padding:11px 13px;border:1px solid var(--line);border-radius:12px;margin:7px 0;cursor:pointer;background:#fff;transition:.12s}
+  #messages .ma-row:hover{border-color:var(--brand);background:#f6fbf8}
+  #messages .ma-bthread{background:#f6f9f7;border:1px solid var(--line);border-radius:14px;padding:12px;min-height:180px;max-height:52vh;overflow:auto;display:flex;flex-direction:column;gap:9px}
+  #messages .ma-bb{max-width:82%;padding:9px 12px;border-radius:14px;font-size:14px;line-height:1.5;white-space:pre-wrap;overflow-wrap:anywhere}
+  #messages .ma-bb .w{font-size:11px;font-weight:800;opacity:.8;margin-bottom:2px}
+  #messages .ma-bb .t{font-size:10px;opacity:.6;margin-top:3px}
+  #messages .ma-bb.case{align-self:flex-end;background:#dff5e9;border:1px solid #bfe6d0;color:#0f5136;border-bottom-right-radius:4px}
+  #messages .ma-bb.adh{align-self:flex-start;background:#fff;border:1px solid #e6ece7;color:#26332e;border-bottom-left-radius:4px}
+  #messages .ma-breply{display:flex;gap:8px;margin-top:10px}
+  #messages .ma-breply textarea{flex:1;font:inherit;padding:10px 12px;border:1px solid var(--line);border-radius:12px;resize:none;height:54px;max-height:150px}
+  </style>
+  <section id="messages" class="page">
+    <div class="card">
+      <div class="toolbar" style="justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
+        <h2 style="margin:0">📨 Messages des adhérents</h2>
+        <span id="maCount"></span>
+      </div>
+      <p class="hint" style="margin:4px 0 12px">Le canal « 💬 Parler avec le CASE » de l'espace adhérent. Chaque adhérent a un fil privé ; réponds ici <b>au nom du CASE</b>. Accueil et bureau y ont accès.</p>
+      <div id="maListView"><div id="maList"><p class="hint">Chargement…</p></div></div>
+      <div id="maThreadView" style="display:none">
+        <button class="ghost btn" onclick="maBack()" style="margin-bottom:10px">← Tous les messages</button>
+        <div id="maThreadHead" style="font-weight:800;margin-bottom:8px"></div>
+        <div id="maThreadBody" class="ma-bthread"></div>
+        <div class="ma-breply">
+          <textarea id="maReplyInput" placeholder="Répondre à l'adhérent… (⌘/Ctrl + Entrée)" onkeydown="if(event.key==='Enter'&&(event.metaKey||event.ctrlKey)){event.preventDefault();maReply();}"></textarea>
+          <button class="btn" onclick="maReply()">Répondre</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
   <section id="dashboard" class="page active">
     <div id="dashEquipe"></div>
     <div id="dashWelcome"></div>
@@ -2074,6 +2108,7 @@ document.querySelectorAll('nav.tabs button').forEach(b=>{
     b.classList.add('active'); $(b.dataset.tab).classList.add('active');
     try{ localStorage.setItem('bob_last_tab', b.dataset.tab); }catch(e){}
     if(b.dataset.tab==='aide'){ const i=$('faqAsk'); if(i)i.focus(); if(window.loadQuestionsAide) loadQuestionsAide(); }
+    if(b.dataset.tab==='messages' && window.loadMessagesAdh){ loadMessagesAdh(); }
   };
 });
 
@@ -2148,6 +2183,7 @@ document.querySelectorAll('nav.tabs button').forEach(b=>{
 
 /* ---- Aide : « Demande à Zanana » (FAQ + assistant par mots-clés, sans IA) ---- */
 const FAQ=[
+  {cat:'📨 Messages',q:"Comment répondre aux messages des adhérents ?",kw:"messages adherent adherents repondre parler case fil conversation famille accueil bureau boite reception canal deux sens en attente courrier ecrire",a:"Onglet <b>📨 Messages</b> (famille 👥 Adhérents) : chaque adhérent qui écrit depuis son espace « 💬 Parler au CASE » a un <b>fil privé</b>. Les fils <b>« 🔴 à répondre »</b> (dernier message venu de l'adhérent) remontent en haut. Clique un fil pour lire la conversation et <b>répondre au nom du CASE</b> — accueil et bureau y ont accès. Une <b>pastille rouge</b> sur la famille 👥 Adhérents et une ligne « ⏰ À traiter » te préviennent des messages sans réponse."},
   {cat:'🗓️ Salles',q:"À quoi sert l'onglet Salles ?",kw:'salle salles planning creneau créneau danse grille horaire cours intervenant orphelin qui anime',a:"L'onglet 🗓️ Salles montre le planning hebdomadaire de la salle de danse : chaque créneau (jour, heure, cours) et qui l'anime. Les créneaux en rouge sont « orphelins » — l'intervenant est parti et le créneau est à reprendre. Pour l'instant c'est en lecture seule ; l'édition directe des créneaux arrivera bientôt."},
   {cat:'📊 Tableau de bord',q:"C'est quoi « Ton équipe » avec les ananas en haut de l'accueil ?",kw:"equipe ananas bob bobs sabine tresi nono roro secretaire tresoriere animateur rh personnage mascotte accueil qui veux voir carte cartes outils porte entree cliquer membre direction zanana",a:"En haut du tableau de bord, ton équipe Bob te sert de <b>porte d'entrée</b> : chaque personnage regroupe un métier — <b>Sabine</b> (le bureau : adhérents, agenda, répertoire, CA), <b>Trési</b> (la trésorerie : compta, subventions, bilan), <b>Nono</b> (l'animation : périscolaire, activités, vacances, ateliers) et <b>Roro</b> (les salariés : dossiers, congés, horaires). Clique un personnage pour voir tous ses outils et y aller directement ; « La Direction » juste au-dessus regroupe le pilotage (tableau de bord, projet, suivi). Tu ne vois que les personnages et outils auxquels <b>ton rôle a accès</b>. Tous les onglets restent aussi dans le menu en couleurs comme avant."},
   {cat:'🧰 Secrétariat',q:"Comment compter les voix d'une délibération et générer le procès-verbal (PV) ?",kw:"pv proces verbal procès délibération deliberation resolution voix compter compteur pour contre abstention sens adoptee rejetee reportee deport voter scrutin generer imprimer reunion seance conseil administration boutons plus moins",a:"Onglet <b>🧰 Secrétariat</b> → <b>« Réunions &amp; délibérations »</b>. Sur chaque délibération, les boutons <b>+ / −</b> comptent les voix <b>Pour / Contre / Abstention</b> ; le <b>sens</b> (adoptée / rejetée / reportée) se met à jour tout seul. Le bouton <b>⚖️ Déport</b> note qu'un membre se retire d'une résolution (conflit d'intérêts) — c'est repris au PV. Une fois les votes saisis, <b>🖨️ PV</b> génère le <b>procès-verbal officiel</b> (présents, quorum, déports, résolutions avec le détail des voix, signatures Président/Secrétaire). Le <b>🖨️ Relevé</b> reste, lui, un document de préparation. Le PV est <b>à valider et signer en séance</b> ; en cas de doute sur le formalisme : Hexopée."},
@@ -2419,6 +2455,7 @@ function pageHelpGotoAide(){ pageHelpClose(); const b=document.querySelector('na
 
 /* ---- ✨ Quoi de neuf (nouveautés + notice chronologique) ---- */
 const NEWS=[
+  {id:'2026-07-08-messagerie-adherents',date:'2026-07-08',tab:'📨 Messages',titre:"📨 Parler avec le CASE — messagerie à 2 sens",desc:"Nouveau canal direct entre les familles et le CASE. Depuis leur espace, les adhérents écrivent dans l'onglet <b>« 💬 Parler au CASE »</b> ; côté gestion, un nouvel onglet <b>📨 Messages</b> (famille 👥 Adhérents) réunit chaque <b>fil privé</b> — les messages <b>« à répondre »</b> remontent en haut, une <b>pastille rouge</b> te prévient sur la famille Adhérents et dans « ⏰ À traiter ». <b>Accueil et bureau</b> peuvent répondre au nom du CASE, et l'adhérent voit la réponse (point rouge sur son onglet)."},
   {id:'2026-07-08-acm-caf-ps',date:'2026-07-08',tab:'🌴 Vacances',titre:"💶 Estimation de la Prestation de service CAF (heures-enfants)",desc:"Nouveau panneau <b>💶 CAF — Prestation de service</b> dans 🌴 Vacances. La CAF974 compte en <b>heures-enfants</b> (jours × enfants × amplitude) et raisonne par <b>année civile</b>. Renseigne l'<b>amplitude horaire</b> de chaque édition : Bob additionne les heures-enfants de l'année et <b>estime la PS</b> (ados <b>0,94 €/h</b> en 2026, barème paramétrable car revalorisé chaque année). Il rappelle aussi les <b>4 échéances AFAS</b> (prévisionnel 31/03, actu T2 15/07, actu T3 15/10, bilan 31/03 N+1). ⚠️ C'est une <b>estimation d'aide</b> : la CAF compte les heures réalisées/facturées selon ta convention et plafonne au prix de revient réel. Réservé au bureau."},
   {id:'2026-07-07-acm-projet',date:'2026-07-07',tab:'🌴 Vacances',titre:"📝 Le « côté projet » de l'ACM : projet éducatif + projet pédagogique",desc:"Deux nouveautés dans 🌴 Vacances. En haut, un panneau <b>📜 Projet éducatif</b> : le cadre de l'asso, écrit <b>une seule fois</b> (pas à chaque vacances), rappelé à chaque édition. Et dans le dossier-bilan de chaque édition, un <b>📋 Projet pédagogique</b> avec les <b>sections cadrées par la loi</b> (R.227-25 : objectifs, activités, rythme activité/repos, participation des jeunes, locaux, équipe, handicap, évaluation), chacune en <b>« prévu » (avant)</b> puis <b>« réalisé » (après)</b> — on recopie le plan officiel, on n'invente rien. Le tout ressort dans le <b>bilan PDF</b>. Réservé au bureau."},
   {id:'2026-07-07-acm-encadrement',date:'2026-07-07',tab:'🌴 Vacances',titre:"🧑‍🏫 Un indicateur d'encadrement dans le dossier d'ACM",desc:"Dans le dossier-bilan d'une édition (🌴 Vacances → 🗄️ Éditions), une section <b>🧑‍🏫 Encadrement</b> : d'après l'effectif inscrit, Bob t'indique le <b>nombre minimum d'animateurs</b> (1 pour 12 pour les ≥ 6 ans, 1 pour 8 si des − 6 ans sont mélangés). Saisis le nombre d'animateurs prévus → ✅ taux atteint ou ⚠️ manque X. Une case rappelle l'<b>honorabilité</b> à vérifier pour chaque encadrant (elle n'entre PAS dans le calcul du taux, mais c'est le vrai point de vigilance). <b>⚠️ C'est un indicateur d'aide, non opposable</b> : le directeur reste seul responsable de la conformité (taux réel, âges, diplômes). Repris aussi dans le bilan PDF."},
@@ -6087,6 +6124,7 @@ renderAll();
     if(!canWrite) perms.caprep='cache'; // 📝 Préparer le CA : préparation du conseil → bureau uniquement
     if(!canWrite){ perms.accounting='cache'; perms.caisse='cache'; perms.dettes='cache'; perms.bilan='cache'; perms.previsionnel='cache'; } // 💶 Finances : trésorerie → bureau uniquement (verrou de DROIT, plus seulement « de fait » — étape2 22/06/2026)
     if(!canWrite){ perms.equipe='cache'; perms.personnel='cache'; perms.incidents='cache'; } // 🧑‍💼 Équipe : masse salariale, dossiers salariés & événements = données nominatives/RGPD → bureau uniquement (étape2 22/06/2026)
+    perms.messages = (canWrite || (myProfile && myProfile.role==='personnel')) ? 'gestion' : 'cache'; // 📨 Messages adhérents : bureau + salariés (personnel) lisent ET répondent ; caché aux autres rôles
     // === Abonnement (OPT-OUT) : un onglet est caché si SA fonction vaut explicitement false. Absent ou true = visible.
     //     Le CASE a des fonctions vides {} → rien n'est false → il garde TOUT (aucune donnée touchée). ===
     const feats=(window.bobFeatures&&window.bobFeatures())||{};
@@ -7880,6 +7918,56 @@ renderAll();
     loadChat();
   };
 
+  /* ===== 📨 Messages des adhérents — canal 2 sens (table messages_adherents) ===== */
+  const maB={threads:null, names:null, open:null};
+  function maFmt(t){ try{ return new Date(t).toLocaleString('fr-FR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}); }catch(e){ return ''; } }
+  window.loadMessagesAdh=async function(){
+    const list=document.getElementById('maList'); if(!list) return;
+    const {data,error}=await sbc.from('messages_adherents').select('*').eq('asso_id',myAsso).order('created_at',{ascending:true}).limit(2000);
+    if(error){ list.innerHTML='<p class="hint" style="color:#c0392b">Erreur : '+esc(error.message)+'</p>'; return; }
+    const msgs=data||[]; const byAdh={};
+    msgs.forEach(m=>{ (byAdh[m.adherent_id]=byAdh[m.adherent_id]||[]).push(m); });
+    const ids=Object.keys(byAdh); let nameById={};
+    if(ids.length){ try{ const {data:profs}=await sbc.from('profiles').select('id,full_name,email').in('id',ids); (profs||[]).forEach(p=>{ nameById[p.id]=(p.full_name||p.email||'').split('@')[0]; }); }catch(e){} }
+    maB.threads=byAdh; maB.names=nameById;
+    const threads=ids.map(id=>{ const arr=byAdh[id]; const last=arr[arr.length-1]; const wait=(last.sender==='adherent'); const nom=nameById[id]||((arr.find(x=>x.sender==='adherent')||{}).author_name)||'(adhérent)'; return {id,arr,last,wait,nom}; });
+    threads.sort((a,b)=> a.wait===b.wait ? (new Date(b.last.created_at)-new Date(a.last.created_at)) : (a.wait?-1:1));
+    const nbWait=threads.filter(t=>t.wait).length;
+    const cnt=document.getElementById('maCount');
+    if(cnt) cnt.innerHTML = !threads.length ? '' : (nbWait? '<span class="pill" style="background:#fbecea;color:#b23a23;font-weight:700">🔴 '+nbWait+' en attente</span>' : '<span class="pill" style="background:#dff5e9;color:#127a51;font-weight:700">✅ Tout est répondu</span>');
+    if(!threads.length){ list.innerHTML='<p class="hint" style="padding:12px">Aucun message des adhérents pour le moment.</p>'; return; }
+    list.innerHTML=threads.map(t=>{
+      const prev=esc((t.last.body||'').replace(/\s+/g,' ').slice(0,90));
+      const pre=(t.last.sender==='case')?'<span style="color:#127a51;font-weight:700">Vous : </span>':'';
+      return '<div class="ma-row" data-adh="'+esc(t.id)+'">'
+        +'<div style="flex:1;min-width:0"><b>'+esc(t.nom)+'</b>'+(t.wait?' <span class="pill" style="background:#fbecea;color:#b23a23;font-size:11px">🔴 à répondre</span>':'')+'<div class="muted" style="font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+pre+prev+'</div></div>'
+        +'<div class="muted" style="font-size:12px;white-space:nowrap">'+maFmt(t.last.created_at)+'</div></div>';
+    }).join('');
+    list.onclick=function(e){ var r=e.target.closest('.ma-row'); if(r&&r.dataset.adh) maOpen(r.dataset.adh); };
+  };
+  window.maOpen=function(id){
+    const arr=(maB.threads&&maB.threads[id])||[]; maB.open=id;
+    const nm=(maB.names&&maB.names[id])||((arr.find(x=>x.sender==='adherent')||{}).author_name)||'(adhérent)';
+    document.getElementById('maThreadHead').innerHTML='💬 '+esc(nm);
+    const body=document.getElementById('maThreadBody');
+    body.innerHTML=arr.map(m=>{ const own=(m.sender==='case'); const who=own?('🍍 '+esc(m.author_name||'CASE')):esc(nm); return '<div class="ma-bb '+(own?'case':'adh')+'"><div class="w">'+who+'</div>'+esc(m.body)+'<div class="t">'+maFmt(m.created_at)+'</div></div>'; }).join('');
+    document.getElementById('maListView').style.display='none';
+    document.getElementById('maThreadView').style.display='';
+    body.scrollTop=body.scrollHeight;
+    setTimeout(()=>{ const i=document.getElementById('maReplyInput'); if(i) i.focus(); },50);
+  };
+  window.maBack=function(){ maB.open=null; document.getElementById('maThreadView').style.display='none'; document.getElementById('maListView').style.display=''; loadMessagesAdh(); };
+  window.maReply=async function(){
+    const id=maB.open; if(!id) return;
+    const inp=document.getElementById('maReplyInput'); if(!inp) return;
+    const body=inp.value.trim(); if(!body) return;
+    const nom=(myProfile.full_name||myProfile.email||'').split('@')[0];
+    inp.value='';
+    const {error}=await sbc.from('messages_adherents').insert({asso_id:myAsso, adherent_id:id, sender:'case', author_id:myProfile.id, author_name:nom, body});
+    if(error){ alert(error.message); inp.value=body; return; }
+    await loadMessagesAdh(); maOpen(id);
+  };
+
   /* ===== Multi-assos : l'identité affichée suit l'asso du compte connecté (CASE = défaut, inchangé) ===== */
   const ASSO_IDENTITY = {
     'd617489c-b18b-499b-ab17-c31656d0f08a': { // CASE — valeurs actuelles, inchangées
@@ -8039,24 +8127,34 @@ renderAll();
   window.loadPersonnel=loadPersonnel; window.persNew=persNew; window.persEdit=persEdit; window.persCloseEdit=persCloseEdit; window.persSave=persSave; window.persLink=persLink; window.persUnlink=persUnlink; window.persDelete=persDelete; window.persImportSalaries=persImportSalaries; window.congeSet=congeSet; window.persDocsOpen=persDocsOpen; window.persDocUpload=persDocUpload; window.persDocToggle=persDocToggle; window.persDocDel=persDocDel; window.persDocView=persDocView;
 
   /* ===== 🔔 À TRAITER (tableau de bord des demandes en attente, réservé au bureau) ===== */
+  async function maWaitingCount(){
+    // fils d'adhérents dont le DERNIER message vient de l'adhérent = en attente de réponse du CASE
+    try{
+      const {data}=await sbc.from('messages_adherents').select('adherent_id,sender,created_at').eq('asso_id',myAsso).order('created_at',{ascending:true}).limit(3000);
+      const last={}; (data||[]).forEach(m=>{ last[m.adherent_id]=m.sender; });
+      return Object.values(last).filter(s=>s==='adherent').length;
+    }catch(e){ return 0; }
+  }
   async function loadTodo(){
     const box=$('dashTodo'); if(!box||!sbc||!myAsso) return;
     const q=(tbl,col,val)=>sbc.from(tbl).select('*',{count:'exact',head:true}).eq(col,val).then(r=>r.count||0).catch(()=>0);
-    const [cg,peri,cpt,part,ques,atel,resa]=await Promise.all([
+    const [cg,peri,cpt,part,ques,atel,resa,msgw]=await Promise.all([
       q('conges','statut','demande'),
       q('inscriptions_periscolaire','statut','depose'),
       q('profiles','statut','en_attente'),
       q('partenaires','statut','nouveau'),
       q('questions_aide','statut','nouvelle'),
       q('ateliers','statut','proposition'),
-      q('reservations','statut','demande')
+      q('reservations','statut','demande'),
+      maWaitingCount()
     ]);
-    window.bobTodoByZone={adherents:peri+resa, bureau:part+atel, equipe:cg, finances:0, site:0, _total:cg+peri+cpt+part+ques+atel+resa};
+    window.bobTodoByZone={adherents:peri+resa+msgw, bureau:part+atel, equipe:cg, finances:0, site:0, _total:cg+peri+cpt+part+ques+atel+resa+msgw};
     if(window.renderZoneCards) window.renderZoneCards();
     const items=[
       {n:cg,emo:'🏖️',lab:"demande(s) de congé à valider",act:"bobGoTab('conges')"},
       {n:peri,emo:'🎒',lab:"dossier(s) périscolaire déposé(s) à valider",act:"bobGoTab('periscolaire')"},
       {n:resa,emo:'🛎️',lab:"demande(s) de salle à valider",act:"bobGoTab('reserver')"},
+      {n:msgw,emo:'📨',lab:"message(s) d'adhérent sans réponse",act:"bobGoTab('messages')"},
       {n:cpt,emo:'🔑',lab:"demande(s) d'accès (comptes) à valider",act:"location.href='connexion.html'"},
       {n:part,emo:'🤝',lab:"demande(s) de partenariat à traiter",act:"bobGoTab('partenaires')"},
       {n:ques,emo:'❓',lab:"question(s) d'adhérent sans réponse",act:"bobGoTab('aide')"},

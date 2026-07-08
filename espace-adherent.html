@@ -73,6 +73,8 @@
   nav.adh-tabs button{flex:0 0 auto;border:none;background:transparent;color:var(--muted);padding:9px 13px;font-size:14px;font-weight:700;font-family:'Poppins',-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;cursor:pointer;border-radius:12px;white-space:nowrap;transition:.15s}
   nav.adh-tabs button:hover{background:#f0f7f3;color:var(--ink)}
   nav.adh-tabs button.active{background:var(--vert);color:#fff;box-shadow:0 3px 9px -3px rgba(31,157,107,.4)}
+  nav.adh-tabs button.has-dot{position:relative}
+  nav.adh-tabs button.has-dot::after{content:'';position:absolute;top:5px;right:6px;width:9px;height:9px;border-radius:50%;background:#e0483d;box-shadow:0 0 0 2px #fff}
   section[data-tab]{display:none}
   .fam-tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin:14px 0 4px}
   .fam-tile{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px 10px;cursor:pointer;text-align:center;transition:.15s;font-family:'Poppins',-apple-system,sans-serif}
@@ -80,6 +82,18 @@
   .fam-tile.active{background:var(--vert);color:#fff;box-shadow:0 6px 18px -6px rgba(31,157,107,.4)}
   .fam-tile .ico{font-size:32px;display:block;line-height:1}
   .fam-tile .txt{font-size:13px;font-weight:800;margin-top:6px}
+  /* ===== 💬 Parler avec le CASE (messagerie 2 sens) ===== */
+  .ma-wrap{max-width:720px;margin:0 auto}
+  .ma-intro{background:#f3faf6;border:1px solid var(--line);border-left:5px solid var(--vert);border-radius:14px;padding:12px 16px;margin:0 0 14px;color:#33473d;font-size:14px}
+  .ma-thread{background:#fff;border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);padding:14px;min-height:240px;max-height:56vh;overflow:auto;display:flex;flex-direction:column;gap:10px}
+  .ma-b{max-width:82%;padding:10px 13px;border-radius:16px;font-size:14.5px;line-height:1.5;white-space:pre-wrap;overflow-wrap:anywhere}
+  .ma-b .ma-who{font-size:11px;font-weight:800;opacity:.85;margin-bottom:2px;letter-spacing:.2px}
+  .ma-b .ma-time{font-size:10.5px;opacity:.65;margin-top:3px}
+  .ma-b.me{align-self:flex-end;background:var(--vert);color:#fff;border-bottom-right-radius:5px}
+  .ma-b.case{align-self:flex-start;background:#fff7e6;border:1px solid #f1e2ad;color:#4a3d13;border-bottom-left-radius:5px}
+  .ma-empty{margin:auto;text-align:center;color:var(--muted);padding:22px;line-height:1.6}
+  .ma-bar{display:flex;gap:8px;margin-top:12px}
+  .ma-bar textarea{flex:1;font:inherit;padding:11px 13px;border:1px solid var(--line);border-radius:12px;resize:none;height:52px;max-height:140px}
 </style>
 </head>
 <body>
@@ -102,6 +116,7 @@
   <button data-tab="photos" onclick="showTab('photos')">📸 Photos</button>
   <button data-tab="salle" onclick="showTab('salle')">🛎️ Salle</button>
   <button data-tab="aide" onclick="showTab('aide')">📅 Aide &amp; RDV</button>
+  <button data-tab="messages" onclick="showTab('messages');window.maLoad&&maLoad()">💬 Parler au CASE</button>
 </nav>
 <script>
   var __activeFam='kids';
@@ -279,6 +294,23 @@
   </div>
 </section>
 
+<!-- 💬 PARLER AVEC LE CASE (messagerie 2 sens — table messages_adherents) -->
+<section class="block" data-tab="messages">
+  <div class="wrap">
+    <div class="ma-wrap">
+      <h2 class="title">💬 Parler avec le CASE</h2>
+      <p class="sub" style="margin:2px 0 12px">Une question, une demande, un mot pour l'équipe&nbsp;? Écris ici&nbsp;: le CASE te répond directement, et vous gardez tout le fil de la conversation. 🍍</p>
+      <div class="ma-intro" id="maIntro">👋 Ce fil est <b>privé</b> entre toi et l'équipe du CASE (accueil + bureau). Personne d'autre ne le voit.</div>
+      <div class="ma-thread" id="maThread"><p class="ma-empty">Chargement…</p></div>
+      <div class="ma-bar">
+        <textarea id="maInput" placeholder="Écris ton message au CASE…" onkeydown="if(event.key==='Enter'&&(event.metaKey||event.ctrlKey)){event.preventDefault();maSend();}"></textarea>
+        <button class="btn win" onclick="maSend()">Envoyer</button>
+      </div>
+      <p class="sub" style="font-size:12.5px;margin:8px 2px 0;color:var(--muted)">Astuce&nbsp;: <b>⌘/Ctrl + Entrée</b> pour envoyer. Le CASE te répondra ici même.</p>
+    </div>
+  </div>
+</section>
+
 <footer>🍍 <b>CASE du Bois de Nèfles</b> — Espace adhérent · ce site vous est confié par <a href="https://bob.re" target="_blank" rel="nofollow noopener" style="color:#dff3e9;text-decoration:underline">Bob</a> 🤖</footer>
 <div id="toast"></div>
 
@@ -366,7 +398,9 @@ const AQ=[
   {cat:'🌴 Activités & ACM',q:"Comment je réserve une place à l'ACM ?",kw:"acm reserver place activite sortie vacances ado inscrire reservation ete enfant",
    a:"Dans <b>🌴 Mes activités & sorties</b> (en haut de votre espace), choisissez l'activité, cliquez <b>« 🌴 Réserver une place »</b>, indiquez le prénom de votre enfant et validez. La réservation est reliée à votre famille ; le bureau confirme (et régularise l'adhésion si besoin)."},
   {cat:'🌴 Activités & ACM',q:"Faut-il être adhérent pour l'ACM ?",kw:"adherent adhesion obligatoire acm activite droit famille parent assurance payer venir",
-   a:"Oui : pour participer, la famille doit être <b>adhérente</b> (10 €/an, du 1ᵉʳ août au 31 juillet) — c'est aussi l'assurance. <b>Un seul parent adhérent suffit pour tous les enfants.</b> Vous pouvez réserver en ligne tout de suite ; le règlement des 10 € se fait avec le bureau."}
+   a:"Oui : pour participer, la famille doit être <b>adhérente</b> (10 €/an, du 1ᵉʳ août au 31 juillet) — c'est aussi l'assurance. <b>Un seul parent adhérent suffit pour tous les enfants.</b> Vous pouvez réserver en ligne tout de suite ; le règlement des 10 € se fait avec le bureau."},
+  {cat:'💬 Parler au CASE',q:"Comment envoyer un message au CASE ?",kw:"parler message ecrire contacter question demande equipe bureau accueil discuter repondre reponse fil conversation chat courrier joindre",
+   a:"Dans l'onglet <b>💬 Parler au CASE</b>, écris ton message et clique <b>Envoyer</b> (ou ⌘/Ctrl + Entrée). L'équipe du CASE (accueil et bureau) te répond directement dans le <b>même fil</b> — tu gardes toute la conversation au même endroit, et un <b>point rouge</b> sur l'onglet t'avertit dès qu'il y a une réponse. C'est <b>privé</b> entre toi et le CASE. 🍍"}
 ];
 function aqNorm(s){return (s||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^a-z0-9 ]/g,' ').replace(/\s+/g,' ').trim();}
 const AQ_STOP=new Set("le la les un une des de du au aux et ou a a je tu il on en y ce que qui quoi est sont pour dans sur mes mon ma ta ton se sa ses comment est-ce faire fait puis peux peut nous vous me te".split(' '));
@@ -1609,6 +1643,48 @@ async function adhBoot(){
 }
 _sbAt.auth.onAuthStateChange((event)=>{ if(event==='SIGNED_IN'||event==='SIGNED_OUT'){ periBoot(); adhBoot(); } });
 periBoot(); adhBoot();
+</script>
+
+<!-- 💬 Parler avec le CASE — messagerie 2 sens (table messages_adherents) -->
+<script>
+async function maLoad(){
+  const box=document.getElementById('maThread'); if(!box) return;
+  if(!FBME.id){ box.innerHTML='<p class="ma-empty">🔒 Connecte-toi à ton compte famille pour écrire au CASE.<br><a href="connexion.html" style="color:var(--vert-fonce);font-weight:800">Se connecter →</a></p>'; return; }
+  try{ localStorage.setItem('case_msg_seen_'+FBME.id, String(Date.now())); }catch(e){}
+  { const _mb=document.querySelector('nav.adh-tabs button[data-tab="messages"]'); if(_mb) _mb.classList.remove('has-dot'); }
+  const {data,error}=await _sbAt.from('messages_adherents').select('*').eq('adherent_id',FBME.id).order('created_at',{ascending:true}).limit(500);
+  if(error){ box.innerHTML='<p class="ma-empty">Impossible de charger la conversation pour le moment. Réessaie dans un instant.</p>'; return; }
+  if(!data||!data.length){ box.innerHTML='<div class="ma-empty">✍️ Écris ton premier message au CASE.<br>On te répond ici, tranquillement. 🍍</div>'; return; }
+  const fmt=t=>{try{return new Date(t).toLocaleString('fr-FR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});}catch(e){return'';}};
+  box.innerHTML=data.map(m=>{
+    const me=(m.sender==='adherent');
+    const who=me?'Moi':('🍍 CASE'+(m.author_name?' · '+aqEsc(m.author_name):''));
+    return '<div class="ma-b '+(me?'me':'case')+'"><div class="ma-who">'+who+'</div>'+aqEsc(m.body)+'<div class="ma-time">'+fmt(m.created_at)+'</div></div>';
+  }).join('');
+  box.scrollTop=box.scrollHeight;
+}
+window.maLoad=maLoad;
+window.maSend=async function(){
+  const inp=document.getElementById('maInput'); if(!inp) return;
+  const body=inp.value.trim(); if(!body){ toast('Écris ton message'); return; }
+  if(!FBME.id){ toast('Connecte-toi pour écrire au CASE'); return; }
+  if(FBME.statut && FBME.statut!=='actif'){ toast('Ton compte doit être validé par le bureau'); return; }
+  inp.value='';
+  const {error}=await _sbAt.from('messages_adherents').insert({ asso_id:FBME.asso, adherent_id:FBME.id, sender:'adherent', author_id:FBME.id, author_name:FBME.name, body });
+  if(error){ toast('Erreur : '+(error.message||error)); inp.value=body; return; }
+  await maLoad();
+};
+window.maAdhBadge=async function(){
+  try{
+    if(!window.FBME||!FBME.id) return;
+    const {data}=await _sbAt.from('messages_adherents').select('created_at').eq('adherent_id',FBME.id).eq('sender','case').order('created_at',{ascending:false}).limit(1);
+    const last=(data&&data[0])?new Date(data[0].created_at).getTime():0;
+    let seen=0; try{ seen=parseInt(localStorage.getItem('case_msg_seen_'+FBME.id))||0; }catch(e){}
+    const btn=document.querySelector('nav.adh-tabs button[data-tab="messages"]');
+    if(btn) btn.classList.toggle('has-dot', last>seen);
+  }catch(e){}
+};
+(function(){ function t(n){ if(window.FBME&&FBME.id){ maAdhBadge(); } else if(n<25){ setTimeout(function(){t(n+1);},300); } } window.addEventListener('load', function(){ t(0); }); })();
 </script>
 </body>
 </html>
