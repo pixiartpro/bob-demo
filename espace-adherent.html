@@ -129,7 +129,8 @@
     <div class="fam-tiles">
       <div class="fam-tile active" data-fam="kids" onclick="showFam('kids')"><span class="ico">👧</span><span class="txt">Mes enfants</span></div>
       <div class="fam-tile" data-fam="peri" onclick="showFam('peri')"><span class="ico">🎒</span><span class="txt">Périscolaire</span></div>
-      <div class="fam-tile" data-fam="acm" onclick="showFam('acm')"><span class="ico">🌴</span><span class="txt">Vacances · ACM · VEPI</span></div>
+      <div class="fam-tile" data-fam="acm" onclick="showFam('acm')"><span class="ico">🌴</span><span class="txt">Vacances · ACM</span></div>
+      <div class="fam-tile" data-fam="vepi" onclick="showFam('vepi')"><span class="ico">📅</span><span class="txt">VEPI</span></div>
     </div>
   </div>
 </section>
@@ -195,6 +196,17 @@
         <div id="acmCalcBody" style="display:none;margin-top:8px"></div>
       </div>
       <div id="acmBody"><p class="sub">Chargement…</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- 📅 VEPI — sur rendez-vous (mode 'rdv'), séparé de l'ACM -->
+<section class="block" data-tab="familia" data-fam="vepi" id="vepiSection" style="padding:8px 0 6px">
+  <div class="wrap">
+    <div class="card" style="border-left:5px solid var(--jaune);background:#fffdf5">
+      <h2 class="title" style="font-size:20px">📅 VEPI <small>— sur rendez-vous</small></h2>
+      <p class="sub" style="margin:2px 0 10px">Réservez une place pour vos enfants. Le VEPI se gère <b>sur rendez-vous</b> avec le CASE (on récupère puis on dépose le dossier ensemble).</p>
+      <div id="vepiBody"><p class="sub">Chargement…</p></div>
     </div>
   </div>
 </section>
@@ -699,12 +711,13 @@ window.periSave=async function(depose){
 const ACM = { uid:null, profile:null, asso:null, mineById:{} };
 function acmEsc(s){return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 async function acmBoot(){
-  const body=document.getElementById('acmBody'); if(!body) return;
+  const body=document.getElementById('acmBody'); const vbody=document.getElementById('vepiBody'); if(!body) return;
   if(!ACM.uid){
-    body.innerHTML='<p class="sub" style="margin:0">Connectez-vous à votre compte famille pour réserver une place. <a href="connexion.html" style="color:var(--vert-fonce);font-weight:800">Se connecter / créer mon compte →</a></p>';
+    const lk='<p class="sub" style="margin:0">Connectez-vous à votre compte famille pour réserver une place. <a href="connexion.html" style="color:var(--vert-fonce);font-weight:800">Se connecter / créer mon compte →</a></p>';
+    body.innerHTML=lk; if(vbody) vbody.innerHTML=lk;
     return;
   }
-  body.innerHTML='<p class="sub">Chargement…</p>';
+  body.innerHTML='<p class="sub">Chargement…</p>'; if(vbody) vbody.innerHTML='<p class="sub">Chargement…</p>';
   let acts=[], mine=[];
   try{
     const [ra,rm,rf]=await Promise.all([
@@ -716,10 +729,9 @@ async function acmBoot(){
     mine=rm.data||[];
     // Branchement fiche sanitaire : un enfant dont la fiche de l'année est SIGNÉE n'a plus à redéposer sa « fiche de liaison ».
     ACM.signedByKid={}; (rf&&rf.data?rf.data:[]).forEach(f=>{ if(f.statut==='signee') ACM.signedByKid[f.enfant_id]=true; });
-  }catch(e){ body.innerHTML='<p class="sub" style="color:#b23a23">Impossible de charger les activités pour le moment.</p>'; return; }
+  }catch(e){ const er='<p class="sub" style="color:#b23a23">Impossible de charger pour le moment.</p>'; body.innerHTML=er; if(vbody) vbody.innerHTML=er; return; }
   const byAct={}; ACM.mineById={}; mine.forEach(m=>{ ACM.mineById[m.id]=m; (byAct[m.activite_id]=byAct[m.activite_id]||[]).push(m); });
-  if(!acts.length){ body.innerHTML='<p class="sub" style="margin:0">Aucune activité ouverte à la réservation pour le moment. 🍍</p>'; return; }
-  body.innerHTML='<div class="grid">'+acts.map(a=>{
+  function acmCardHtml(a){
     const places=Math.max(0,(a.capacite||0)-(a.nb_inscrits||0));
     const complet=places<=0;
     const myK=byAct[a.id]||[];
@@ -735,7 +747,10 @@ async function acmBoot(){
       +'<p id="acmi_'+a.id+'" style="margin:2px 0 0;font-size:13px;font-weight:700;text-align:center"></p>'
       +(complet?'':'<button class="btn use" style="align-self:flex-start" onclick="acmOpen(\''+a.id+'\')">🌴 Réserver une place</button>')
       +'</div>';
-  }).join('')+'</div>';
+  }
+  const vepiActs=acts.filter(function(a){return (a.mode||'')==='rdv';}), acmActs=acts.filter(function(a){return (a.mode||'')!=='rdv';});
+  body.innerHTML = acmActs.length ? '<div class="grid">'+acmActs.map(acmCardHtml).join('')+'</div>' : '<p class="sub" style="margin:0">Aucune activité vacances / ACM ouverte pour le moment. 🍍</p>';
+  if(vbody) vbody.innerHTML = vepiActs.length ? '<div class="grid">'+vepiActs.map(acmCardHtml).join('')+'</div>' : '<p class="sub" style="margin:0">Aucun créneau VEPI ouvert pour le moment. 🍍</p>';
 }
 window.acmOpen=function(id){
   const f=document.getElementById('acmf_'+id); if(!f) return; f.style.display='block';
