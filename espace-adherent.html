@@ -71,7 +71,7 @@
 </style>
 </head>
 <body>
-<div class="demo-flag">🍍 Espace famille — votre <b>dossier périscolaire</b> et vos <b>activités extrascolaires</b> (ACM, sorties) en un seul endroit.</div>
+<div class="demo-flag">🍍 Mon espace — mon adhésion, mes activités, et le dossier de mes enfants, en un seul endroit.</div>
 <header>
   <div class="bar">
     <a href="vitrine.html" class="logo"><span class="pine">🍍</span> <span><b>CASE</b> <span>Bois de Nèfles</span></span></a>
@@ -105,6 +105,17 @@
   </div>
 </section>
 
+<!-- 🎟️ MES ACTIVITÉS — activités adultes / tout public, inscription en ligne (compte adhérent, sans enfant) -->
+<section class="block" id="actiSection" style="padding:8px 0 6px">
+  <div class="wrap">
+    <div class="card" style="border-left:5px solid var(--vert);background:#f3faf6">
+      <h2 class="title" style="font-size:20px">🎟️ Mes activités <small>— pour moi (adultes &amp; tout public)</small></h2>
+      <p class="sub" style="margin:2px 0 10px">Danse, musique, sport… <b>inscrivez-vous en un clic</b>. Être adhérent (10 €/an) suffit ; votre demande part au bureau, qui confirme.</p>
+      <div id="actiBody"><p class="sub">Chargement…</p></div>
+    </div>
+  </div>
+</section>
+
 <!-- INSCRIPTION PÉRISCOLAIRE (réel — réservé aux adhérents connectés) -->
 <section class="block" id="periSection" style="padding:22px 0 6px">
   <div class="wrap">
@@ -126,7 +137,7 @@
     <div class="card" style="border-left:5px solid var(--vert);background:#f3faf6">
       <h2 class="title" style="font-size:20px">🌴 Vacances, VEPI &amp; sorties <small>— accueil de loisirs (ACM)</small></h2>
       <p class="sub" style="margin:2px 0 10px">Réservez une place pour vos enfants. <b>Un parent adhérent</b> (10 € / an, du 1ᵉʳ août au 31 juillet) suffit pour <b>tous vos enfants</b>.</p>
-      <p class="sub" style="margin:0 0 10px;font-size:13px;background:#eef7f2;border:1px solid #cfe6da;border-radius:10px;padding:8px 12px">👨‍👩‍👧 Ici, <b>uniquement les activités pour vos enfants</b> (périscolaire, ACM, sorties). Les <b>activités adultes</b> et les autres (danse, musique, ateliers…) sont sur le <a href="vitrine.html" style="color:var(--vert-fonce);font-weight:700">site public →</a></p>
+      <p class="sub" style="margin:0 0 10px;font-size:13px;background:#eef7f2;border:1px solid #cfe6da;border-radius:10px;padding:8px 12px">👨‍👩‍👧 Ici, <b>uniquement les activités pour vos enfants</b> (périscolaire, ACM, sorties). <b>Vos</b> activités à vous (danse, musique, sport…) sont dans <b>🎟️ Mes activités</b> plus haut.</p>
       <div class="card" style="border-left:5px solid var(--jaune);background:#fffdf5;margin:0 0 12px;padding:12px 14px">
         <h2 class="title" style="font-size:17px;cursor:pointer;user-select:none;margin:0" onclick="acmCalcToggle()">💶 Estimez votre tarif vacances (ACM) <small>— au quotient familial, par semaine</small> <span id="acmCalcChev" style="float:right">▾</span></h2>
         <div id="acmCalcBody" style="display:none;margin-top:8px"></div>
@@ -286,6 +297,8 @@ const AQ=[
    a:"Dans <b>📸 Les photos de la journée</b>, dans votre espace : les animateurs y partagent les photos des activités et un petit mot. Vous ne voyez que les albums des accueils où <b>vos enfants</b> sont inscrits — rien n'est public, les photos sont hébergées en Europe et supprimées en fin d'année scolaire. Pensez à signer l'<b>autorisation de droit à l'image</b> du dossier d'inscription : sans elle, l'équipe veille à ce que votre enfant n'apparaisse pas sur les photos. Merci de ne pas republier les photos sur les réseaux sociaux. 🍍"},
   {cat:'📜 Mon espace',q:"Comment j'adhère au CASE ?",kw:"adherer adhesion inscription devenir membre cotisation rejoindre carte adherent 10 euros",
    a:"L'adhésion (<b>10 €</b>, valable du <b>1ᵉʳ août au 31 juillet</b>) se règle auprès du <b>bureau du CASE</b>. <b>Un seul parent adhérent suffit pour tous les enfants.</b> Vous pouvez déjà créer votre compte, déposer votre dossier périscolaire et réserver vos activités en ligne — le bureau régularise l'adhésion."},
+  {cat:'🎟️ Mes activités',q:"Comment je m'inscris à une activité pour moi (danse, musique, sport) ?",kw:"mes activites adulte danse musique zumba sport renforcement inscrire inscription moi meme tout public loisir bien etre",
+   a:"Dans <b>🎟️ Mes activités</b> (dans votre espace), vous voyez les activités ouvertes aux adultes — danse, musique, zumba, renforcement… Cliquez <b>« 🎟️ M'inscrire »</b> : votre demande part au <b>bureau du CASE</b>, qui confirme. Être adhérent (10 €/an) suffit. Les activités de vos <b>enfants</b> (périscolaire, ACM) sont plus bas, dans la partie « Famille ». 🍍"},
   {cat:'🌴 Activités & ACM',q:"Comment je réserve une place à l'ACM ?",kw:"acm reserver place activite sortie vacances ado inscrire reservation ete enfant",
    a:"Dans <b>🌴 Mes activités & sorties</b> (en haut de votre espace), choisissez l'activité, cliquez <b>« 🌴 Réserver une place »</b>, indiquez le prénom de votre enfant et validez. La réservation est reliée à votre famille ; le bureau confirme (et régularise l'adhésion si besoin)."},
   {cat:'🌴 Activités & ACM',q:"Faut-il être adhérent pour l'ACM ?",kw:"adherent adhesion obligatoire acm activite droit famille parent assurance payer venir",
@@ -411,12 +424,12 @@ async function periBoot(){
   const body=document.getElementById('periBody'); if(!body) return;
   let session=null;
   try{ session=(await _sbAt.auth.getSession()).data.session; }catch(e){ session=null; }
-  if(!session){ ACM.uid=null; ACM.profile=null; ACM.asso=null; acmBoot(); rdvBoot(); salleBoot(); photosBoot(); KIDS.list=[]; kidsRender(); periRenderLocked('connexion'); return; }
+  if(!session){ ACM.uid=null; ACM.profile=null; ACM.asso=null; acmBoot(); actiBoot(); rdvBoot(); salleBoot(); photosBoot(); KIDS.list=[]; kidsRender(); periRenderLocked('connexion'); return; }
   PERI.uid=session.user.id;
   const {data:prof}=await _sbAt.from('profiles').select('full_name,email,statut,role,asso_id').eq('id',PERI.uid).maybeSingle();
   PERI.profile=prof||null;
   // Contexte partagé pour la réservation d'activités/ACM (même compte famille)
-  ACM.uid=PERI.uid; ACM.profile=prof||null; ACM.asso=prof?prof.asso_id:null; acmBoot(); rdvBoot(); salleBoot(); photosBoot();
+  ACM.uid=PERI.uid; ACM.profile=prof||null; ACM.asso=prof?prof.asso_id:null; acmBoot(); actiBoot(); rdvBoot(); salleBoot(); photosBoot();
   if(!prof){ periRenderLocked('noprofile'); return; }
   PERI.asso=prof.asso_id;
   PERI.statut=prof.statut;
@@ -700,6 +713,57 @@ window.acmReserve=async function(id, override, enfantId){
   if(info){ info.style.color='var(--vert-fonce)'; info.textContent='✅ Place réservée ! Le bureau confirmera (et l\'adhésion si besoin).'; }
   toast('✅ Place réservée !');
   setTimeout(acmBoot, 1400);
+};
+/* ===== 🎟️ Mes activités (adultes / tout public) — inscription en ligne, réutilise inscriptions_activite SANS enfant ===== */
+const ACTI_CATS=['Culture & loisirs','Sport & bien-être'];
+async function actiBoot(){
+  const body=document.getElementById('actiBody'); if(!body) return;
+  if(!ACM.uid){
+    body.innerHTML='<p class="sub" style="margin:0">Connectez-vous à votre compte pour vous inscrire. <a href="connexion.html" style="color:var(--vert-fonce);font-weight:800">Se connecter / créer mon compte →</a></p>';
+    return;
+  }
+  body.innerHTML='<p class="sub">Chargement…</p>';
+  let acts=[], mine=[];
+  try{
+    const [ra,rm]=await Promise.all([
+      _sbAt.from('activites').select('*').eq('publie',true).eq('type','activite').eq('statut','ouvert').order('ordre',{ascending:true}),
+      _sbAt.from('inscriptions_activite').select('id,activite_id,statut').eq('user_id',ACM.uid).is('enfant_id',null)
+    ]);
+    acts=(ra.data||[]).filter(function(a){ return ACTI_CATS.indexOf(a.categorie||'')>=0; });
+    mine=rm.data||[];
+  }catch(e){ body.innerHTML='<p class="sub" style="color:#b23a23">Impossible de charger les activités pour le moment.</p>'; return; }
+  const mineByAct={}; mine.forEach(function(m){ mineByAct[m.activite_id]=m; });
+  if(!acts.length){ body.innerHTML='<p class="sub" style="margin:0">Aucune activité adulte ouverte pour le moment. 🍍</p>'; return; }
+  body.innerHTML='<div class="grid">'+acts.map(function(a){
+    const cap=(a.capacite!=null?a.capacite:0);
+    const hasCap=(cap>0);
+    const places=Math.max(0,cap-(a.nb_inscrits||0));
+    const inscriptible=(hasCap && places>0);
+    const complet=(hasCap && places<=0);
+    const m=mineByAct[a.id];
+    let action;
+    if(m){ action='<div style="background:#eef7f2;border:1px solid #cfe6da;border-radius:10px;padding:7px 11px;font-size:13px">✅ <b>'+((m.statut==='valide')?'Inscription confirmée':'Inscrit·e')+'</b>'+((m.statut!=='valide')?' — le bureau confirmera.':'')+'</div>'; }
+    else if(inscriptible){ action='<p id="actii_'+a.id+'" style="margin:2px 0 0;font-size:13px;font-weight:700;text-align:center"></p><button class="btn use" style="align-self:flex-start" onclick="actiInscrire(\''+a.id+'\')">🎟️ M\'inscrire</button>'; }
+    else if(complet){ action='<span style="font-weight:800;font-size:13px;color:#b23a23">Complet</span>'; }
+    else { action='<div style="font-size:12.5px;color:var(--muted)">ℹ️ Inscription auprès du CASE (pas encore ouverte en ligne).</div>'; }
+    return '<div class="card" style="box-shadow:none;border:1px solid var(--line);gap:6px">'
+      +'<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px">'
+      +'<div><div style="font-size:24px">'+(a.emoji||'🎟️')+'</div><b>'+acmEsc(a.nom)+'</b>'
+      +(a.quand?'<div class="when">'+acmEsc(a.quand)+'</div>':'')
+      +(a.lieu?'<div class="when">📍 '+acmEsc(a.lieu)+'</div>':'')+'</div>'
+      +(hasCap?'<span style="flex:0 0 auto;font-weight:800;font-size:13px;color:'+(complet?'#b23a23':'var(--vert-fonce)')+'">'+(complet?'Complet':places+' place'+(places>1?'s':''))+'</span>':'')
+      +'</div>'+action+'</div>';
+  }).join('')+'</div>';
+}
+window.actiInscrire=async function(id){
+  const info=document.getElementById('actii_'+id);
+  const nom=(ACM.profile&&ACM.profile.full_name)||(ACM.profile&&ACM.profile.email)||'Adhérent';
+  const contact=(ACM.profile&&ACM.profile.email)||'';
+  const {error}=await _sbAt.from('inscriptions_activite').insert({activite_id:id, nom:nom, responsable:nom, contact:contact, user_id:ACM.uid, enfant_id:null, statut:'reserve'});
+  if(error){ if(info){ info.style.color='#c0392b'; info.textContent=(error.code==='23505')?'Déjà inscrit·e 😉':'Oups, une erreur. Réessayez.'; } return; }
+  if(info){ info.style.color='var(--vert-fonce)'; info.textContent='✅ Inscrit·e ! Le bureau confirmera.'; }
+  toast('✅ Inscription envoyée !');
+  setTimeout(actiBoot, 1400);
 };
 function acmStatusHtml(a, myK){
   return myK.map(function(m){
