@@ -1005,6 +1005,13 @@
       <div class="hint" id="acmProjEducMaj" style="margin-top:6px"></div>
     </details>
 
+    <!-- 💶 CAF — Prestation de service ALSH par année civile (Coup 3) : heures-enfants → estimation PS + échéances AFAS. Transverse (plusieurs éditions/an). -->
+    <details class="panel" id="acmCafPanel" style="margin:6px 0 14px">
+      <summary style="cursor:pointer;font-weight:700;font-size:16px">💶 CAF — Prestation de service <span class="hint" style="font-weight:400">— heures-enfants &amp; estimation PS par année civile</span></summary>
+      <p class="hint" style="margin:8px 0 8px">La CAF974 raisonne par <strong>année civile</strong> et compte en <strong>heures-enfants</strong> (jours × enfants × amplitude). Bob l'estime pour t'aider à préparer la déclaration <strong>AFAS</strong> — ce n'est pas la déclaration elle-même.</p>
+      <div id="acmCafBody"><p class="hint">Chargement…</p></div>
+    </details>
+
     <!-- 👶 Enfants en ACM (lecture seule) — brique 1 de l'archi « enfant au centre » : liste consolidée, regroupée par enfant. Aucun objet nouveau en base. -->
     <div class="panel" id="acmEnfantsPanel">
       <div class="toolbar"><div>
@@ -2398,6 +2405,7 @@ function pageHelpGotoAide(){ pageHelpClose(); const b=document.querySelector('na
 
 /* ---- ✨ Quoi de neuf (nouveautés + notice chronologique) ---- */
 const NEWS=[
+  {id:'2026-07-08-acm-caf-ps',date:'2026-07-08',tab:'🌴 Vacances',titre:"💶 Estimation de la Prestation de service CAF (heures-enfants)",desc:"Nouveau panneau <b>💶 CAF — Prestation de service</b> dans 🌴 Vacances. La CAF974 compte en <b>heures-enfants</b> (jours × enfants × amplitude) et raisonne par <b>année civile</b>. Renseigne l'<b>amplitude horaire</b> de chaque édition : Bob additionne les heures-enfants de l'année et <b>estime la PS</b> (ados <b>0,94 €/h</b> en 2026, barème paramétrable car revalorisé chaque année). Il rappelle aussi les <b>4 échéances AFAS</b> (prévisionnel 31/03, actu T2 15/07, actu T3 15/10, bilan 31/03 N+1). ⚠️ C'est une <b>estimation d'aide</b> : la CAF compte les heures réalisées/facturées selon ta convention et plafonne au prix de revient réel. Réservé au bureau."},
   {id:'2026-07-07-acm-projet',date:'2026-07-07',tab:'🌴 Vacances',titre:"📝 Le « côté projet » de l'ACM : projet éducatif + projet pédagogique",desc:"Deux nouveautés dans 🌴 Vacances. En haut, un panneau <b>📜 Projet éducatif</b> : le cadre de l'asso, écrit <b>une seule fois</b> (pas à chaque vacances), rappelé à chaque édition. Et dans le dossier-bilan de chaque édition, un <b>📋 Projet pédagogique</b> avec les <b>sections cadrées par la loi</b> (R.227-25 : objectifs, activités, rythme activité/repos, participation des jeunes, locaux, équipe, handicap, évaluation), chacune en <b>« prévu » (avant)</b> puis <b>« réalisé » (après)</b> — on recopie le plan officiel, on n'invente rien. Le tout ressort dans le <b>bilan PDF</b>. Réservé au bureau."},
   {id:'2026-07-07-acm-encadrement',date:'2026-07-07',tab:'🌴 Vacances',titre:"🧑‍🏫 Un indicateur d'encadrement dans le dossier d'ACM",desc:"Dans le dossier-bilan d'une édition (🌴 Vacances → 🗄️ Éditions), une section <b>🧑‍🏫 Encadrement</b> : d'après l'effectif inscrit, Bob t'indique le <b>nombre minimum d'animateurs</b> (1 pour 12 pour les ≥ 6 ans, 1 pour 8 si des − 6 ans sont mélangés). Saisis le nombre d'animateurs prévus → ✅ taux atteint ou ⚠️ manque X. Une case rappelle l'<b>honorabilité</b> à vérifier pour chaque encadrant (elle n'entre PAS dans le calcul du taux, mais c'est le vrai point de vigilance). <b>⚠️ C'est un indicateur d'aide, non opposable</b> : le directeur reste seul responsable de la conformité (taux réel, âges, diplômes). Repris aussi dans le bilan PDF."},
   {id:'2026-07-07-acm-accompagnateur',date:'2026-07-07',tab:'🌴 Vacances',titre:"🧭 L'ACM s'accompagne : démarches avant/pendant/après + photos choisies",desc:"Le dossier-bilan d'une édition devient un <b>accompagnateur</b>. Saisis la <b>date de début</b> et Bob calcule les <b>échéances</b> des démarches, rangées en <b>3 temps</b> : ⬅️ <b>Avant</b> (projet pédagogique, déclaration TAM fiche initiale ~J-60, assurance, encadrement + honorabilité, <b>fiche complémentaire J-8 — délai ferme</b>), ⏳ <b>Pendant</b> (registre de présence…), ➡️ <b>Après</b> (bilan pédagogique, compte-rendu CAF, bilan financier, compte-rendu Mairie CERFA 15059). Chaque ligne se coche <b>à faire → fait → sans objet</b>, et la carte de l'édition montre la <b>prochaine échéance</b> (en rouge si en retard). Côté <b>photos</b> : tu <b>choisis (★) celles qui vont dans le dossier</b>, avec le rappel droit à l'image (usage interne ≠ diffusion Mairie). Réservé au bureau."},
@@ -5664,6 +5672,7 @@ function acmDb(){
   if(!Array.isArray(a.fiches)) a.fiches=[];
   if(!Array.isArray(a.sessions)) a.sessions=[];
   if(!a.projetEducatif||typeof a.projetEducatif!=='object') a.projetEducatif={texte:'',maj:''}; // Coup 2b : projet éducatif (organisateur, commun/pluriannuel)
+  if(!a.baremeCAF||typeof a.baremeCAF!=='object') a.baremeCAF={annee:2026,ados:0.94,peri:0.60,extra:0.64}; // Coup 3 : barème PS ALSH CAF974 (revalorisé chaque année → paramètre)
   // Coup 3 — chaque session est une « édition » avec cycle de vie + dossier-bilan (rétro-compatible)
   a.sessions.forEach(function(s){
     if(s.statut!=='ouverte' && s.statut!=='archivee') s.statut='ouverte';
@@ -5675,6 +5684,7 @@ function acmDb(){
     if(typeof s.dateDebut!=='string') s.dateDebut=''; // Coup 1 : date de début → calcul des échéances
     if(!s.bilan.encadrement||typeof s.bilan.encadrement!=='object') s.bilan.encadrement={ageMix:'6plus',animateurs:null,honorabilite:false}; // Coup 2 : indicateur d'encadrement (aide, non opposable)
     if(!s.bilan.peda||typeof s.bilan.peda!=='object') s.bilan.peda={}; // Coup 2b : projet pédagogique par édition (sections R.227-25, prévu/réalisé)
+    if(!('amplitude' in s)) s.amplitude=null; // Coup 3 : amplitude horaire journalière (h) → heures-enfants CAF
   });
   return a;
 }
@@ -5859,6 +5869,7 @@ function renderAcmVac(){
     }
   }
   const pe=$('acmProjEduc'); if(pe && document.activeElement!==pe){ const pj=acmDb().projetEducatif||{}; pe.value=pj.texte||''; const pem=$('acmProjEducMaj'); if(pem) pem.textContent=pj.maj?('maj '+fmtDate(pj.maj)):''; }
+  if(window.renderAcmCaf) renderAcmCaf();
   if(window.renderAcmEditions) window.renderAcmEditions();
 }
 function acmFicheHtml(f,cs,plan){
@@ -6926,6 +6937,45 @@ renderAll();
   }
   window.acmPedaSet=function(edId,key,field,val){ const ed=acmDb().sessions.find(function(s){return s.id===edId;}); if(!ed)return; ed.bilan.peda=ed.bilan.peda||{}; ed.bilan.peda[key]=ed.bilan.peda[key]||{}; ed.bilan.peda[key][field]=val; save(); };
   window.acmSetProjEduc=function(v){ const a=acmDb(); a.projetEducatif=a.projetEducatif||{texte:'',maj:''}; a.projetEducatif.texte=v; a.projetEducatif.maj=today(); save(); const m=document.getElementById('acmProjEducMaj'); if(m) m.textContent=a.projetEducatif.maj?('✔ enregistré · maj '+fmtDate(a.projetEducatif.maj)):''; };
+  // Coup 3 — heures-enfants (jours × enfants × amplitude) → estimation PS par année civile. Estimation d'aide, pas la déclaration AFAS.
+  function acmHeuresEnfants(ed){
+    const nbJ=((ed.jours||[]).length)||0;
+    const amp=(typeof ed.amplitude==='number'&&ed.amplitude>0)?ed.amplitude:null;
+    let eff=null;
+    if(ed.statut==='archivee'&&ed.bilan.effectif) eff=ed.bilan.effectif.nb;
+    else { const e=acmEffectifFor(ed.activiteIds); eff=e?e.nb:null; }
+    const heures=(amp!=null&&eff!=null)?nbJ*eff*amp:null;
+    return {nbJ:nbJ, amp:amp, eff:eff, heures:heures};
+  }
+  function acmNum(n){ try{ return n.toLocaleString('fr-FR'); }catch(e){ return String(n); } }
+  window.renderAcmCaf=function(){
+    const box=document.getElementById('acmCafBody'); if(!box) return;
+    const a=acmDb(), bar=a.baremeCAF||{ados:0.94,annee:2026};
+    const rate=(typeof bar.ados==='number'&&bar.ados>0)?bar.ados:0.94;
+    let h='<div class="row" style="gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:8px"><span class="hint">Barème PS ados</span><input type="number" step="0.01" min="0" value="'+rate+'" onchange="acmSetBaremeCAF(\'ados\',this.value)" style="width:82px;padding:4px 6px"><span class="hint">€ / heure-enfant · revalorisé chaque année (paramètre) — 2026 : 0,94</span></div>';
+    const byYear={}; a.sessions.forEach(function(ed){ const d=acmEditionDebut(ed); const y=d?d.getFullYear():null; if(y==null) return; (byYear[y]=byYear[y]||[]).push(ed); });
+    const years=Object.keys(byYear).map(Number).sort(function(x,y){return x-y;});
+    if(!years.length){ box.innerHTML=h+'<p class="hint">Aucune édition datée. Renseigne la <b>date de début</b> des éditions (dans leur dossier-bilan) pour calculer les heures-enfants.</p>'; return; }
+    years.forEach(function(y){
+      const eds=byYear[y]; let totH=0, miss=false;
+      const rows=eds.map(function(ed){ const c=acmHeuresEnfants(ed); if(c.heures==null) miss=true; else totH+=c.heures;
+        return '<tr><td>'+esc(ed.nom)+(ed.statut==='archivee'?' <span class="hint">(archivée)</span>':'')+'</td><td class="num">'+c.nbJ+'</td><td class="num">'+(c.eff!=null?c.eff:'?')+'</td>'
+          +'<td><input type="number" step="0.5" min="0" placeholder="h/j" value="'+(c.amp!=null?c.amp:'')+'" onchange="acmSetAmplitude(\''+ed.id+'\',this.value)" style="width:62px;padding:2px 5px"></td>'
+          +'<td class="num">'+(c.heures!=null?acmNum(c.heures):'—')+'</td></tr>';
+      }).join('');
+      const ps=totH*rate;
+      h+='<div style="margin:12px 0 4px;font-weight:700">🗓️ Année '+y+'</div>'
+        +'<div style="overflow-x:auto"><table style="min-width:470px"><thead><tr><th>Édition</th><th class="num">Jours</th><th class="num">Enfants</th><th>Amplitude (h/j)</th><th class="num">Heures-enfants</th></tr></thead><tbody>'+rows+'</tbody></table></div>'
+        +'<div class="row" style="gap:10px;flex-wrap:wrap;margin:6px 0"><span class="pill" style="background:#eef4ff;color:#23448a;font-weight:600">Σ '+acmNum(totH)+' heures-enfants</span>'
+        +'<span class="pill" style="background:#dff5e9;color:#127a51;font-weight:700">≈ '+acmNum(Math.round(ps))+' € de PS estimée</span>'
+        +(miss?'<span class="pill" style="background:#fff5da;color:#8a6400;font-size:12px">⚠️ amplitude ou effectif manquant</span>':'')+'</div>'
+        +'<p class="hint" style="margin:2px 0 8px;font-size:12px">📅 AFAS '+y+' : prévisionnel <b>31/03/'+y+'</b> (40 %) · actu T2 <b>15/07/'+y+'</b> (20 %) · actu T3 <b>15/10/'+y+'</b> (10 %) · bilan <b>31/03/'+(y+1)+'</b> (solde). PJ : attestation URSSAF &lt; 6 mois.</p>';
+    });
+    h+='<p class="hint" style="margin-top:6px;font-size:11px">⚠️ <b>Estimation d\'aide</b> (heures-enfants = jours × enfants × amplitude). La CAF compte les heures <b>réalisées ou facturées</b> selon ta convention, et la PS est <b>plafonnée à ton prix de revient réel</b> (à affiner avec la compta). À déclarer au compte <b>70623</b>.</p>';
+    box.innerHTML=h;
+  };
+  window.acmSetAmplitude=function(edId,v){ const ed=acmDb().sessions.find(function(s){return s.id===edId;}); if(!ed)return; ed.amplitude=(v===''||v==null)?null:(parseFloat(v)||null); save(); if(window.renderAcmCaf) renderAcmCaf(); };
+  window.acmSetBaremeCAF=function(field,v){ const a=acmDb(); a.baremeCAF=a.baremeCAF||{annee:2026,ados:0.94,peri:0.60,extra:0.64}; a.baremeCAF[field]=parseFloat(v)||0; save(); if(window.renderAcmCaf) renderAcmCaf(); };
   window.acmCloreEdition=async function(edId){
     const ed=acmDb().sessions.find(function(s){return s.id===edId;}); if(!ed)return;
     if(!confirm('Clôturer l\'édition « '+ed.nom+' » ?\n\nSon effectif du jour sera figé et l\'édition rejoindra les archives (tu pourras toujours la rouvrir).'))return;
