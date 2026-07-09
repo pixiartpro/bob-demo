@@ -318,6 +318,7 @@
       <button data-tab="dettes">💳 Dettes & créances</button>
       <button data-tab="bilan">📈 Bilan</button>
       <button data-tab="previsionnel">🔮 Prévisionnel</button>
+      <button data-tab="pilotage">🎯 Budget par action</button>
     </div>
     <div class="tabgroup" data-group="regl"><!-- étape2: ex data-group="outils", secretariat/caprep partis vers bureau, admin rapatrié -->
       <button data-tab="aide">❓ Aide</button>
@@ -1100,6 +1101,22 @@
   </section>
 
   <!-- BILAN -->
+  <!-- 🎯 BUDGET PAR ACTION (pivot « action » — Étape A : fiches ; Étape B : budget chiffré) -->
+  <section id="pilotage" class="page">
+    <div class="panel">
+      <h2>Créer une action</h2>
+      <p class="hint">Une « action » = une activité du CASE (périscolaire, ACM, VEPI, événement…). Elle devient le <strong>point d'accroche unique</strong> de son budget : les dépenses et les subventions déjà saisies dans Bob se relient à elle par son nom, sans double saisie. Ouvre le <strong>budget détaillé</strong> d'une action pour le coût du personnel (coût horaire × heures affectées), les dépenses par poste, les recettes (subventions + participations), les contributions en nature et l'<strong>aperçu à recopier</strong> pour le dossier Mairie. Les onglets <strong>📊 Consolidé</strong> et <strong>👤 Charge salariés</strong> donnent la vue annuelle et le garde-fou anti-double-comptage.</p>
+      <div class="row">
+        <div class="field" style="flex:2"><label>Nom de l'action</label><input id="fa_nom" placeholder="Ex. Périscolaire Piton, ACM Ados, VEPI…"></div>
+        <div class="field"><label>Type</label>
+          <select id="fa_type"><option>Périscolaire</option><option>ACM</option><option>VEPI</option><option>Événement</option><option>Autre</option></select>
+        </div>
+        <div class="field" style="flex:0"><label>&nbsp;</label><button class="btn" onclick="addFicheAction()">+ Créer</button></div>
+      </div>
+    </div>
+    <div id="pilotageRows"></div>
+  </section>
+
   <section id="bilan" class="page">
     <div class="panel">
       <div class="toolbar">
@@ -2183,6 +2200,7 @@ document.querySelectorAll('nav.tabs button').forEach(b=>{
 
 /* ---- Aide : « Demande à Zanana » (FAQ + assistant par mots-clés, sans IA) ---- */
 const FAQ=[
+  {cat:'🎯 Budget par action', q:"À quoi sert l'onglet Budget par action et comment créer une action ?", kw:"action actions budget par action pilotage fiche creer dossier mgdis mairie periscolaire acm vepi evenement financeur subvention depense pivot secteur activite responsable beneficiaires cloturee suivi budget", a:"L'onglet <b>🎯 Budget par action</b> (famille 💶 Finances, réservé au bureau) réunit chaque <b>action</b> du CASE — périscolaire, ACM, VEPI, événement… — en une <b>fiche unique</b>. Tu crées une action (nom + type), puis tu précises sa période, son site, son ou sa responsable, son <b>n° de dossier Mairie (MGDIS)</b>, ses bénéficiaires et si elle est financée par la Mairie. Cette fiche devient le <b>point d'accroche unique</b> de son budget : les dépenses et les subventions déjà saisies dans Bob se relient à elle <b>par son nom</b>, sans double saisie. Ouvre le <b>budget détaillé</b> d'une action : le <b>coût du personnel</b> se calcule tout seul (coût horaire chargé × heures affectées), les <b>dépenses</b> réelles et les <b>recettes</b> (subventions versées) remontent automatiquement de la comptabilité, et un <b>aperçu « plan financier »</b> se copie en un clic pour le dossier Mairie. Deux vues complètent : <b>📊 Consolidé annuel</b> (toutes les actions) et <b>👤 Charge salariés</b> (Σ des heures par salarié vs sa capacité — le garde-fou anti-double-comptage). Supprimer une fiche ne touche <b>pas</b> les écritures comptables reliées."},
   {cat:'📨 Messages',q:"Comment répondre aux messages des adhérents ?",kw:"messages adherent adherents repondre parler case fil conversation famille accueil bureau boite reception canal deux sens en attente courrier ecrire",a:"Onglet <b>📨 Messages</b> (famille 👥 Adhérents) : chaque adhérent qui écrit depuis son espace « 💬 Parler au CASE » a un <b>fil privé</b>. Les fils <b>« 🔴 à répondre »</b> (dernier message venu de l'adhérent) remontent en haut. Clique un fil pour lire la conversation et <b>répondre au nom du CASE</b> — accueil et bureau y ont accès. Une <b>pastille rouge</b> sur la famille 👥 Adhérents et une ligne « ⏰ À traiter » te préviennent des messages sans réponse."},
   {cat:'🗓️ Salles',q:"À quoi sert l'onglet Salles ?",kw:'salle salles planning creneau créneau danse grille horaire cours intervenant orphelin qui anime',a:"L'onglet 🗓️ Salles montre le planning hebdomadaire de la salle de danse : chaque créneau (jour, heure, cours) et qui l'anime. Les créneaux en rouge sont « orphelins » — l'intervenant est parti et le créneau est à reprendre. Pour l'instant c'est en lecture seule ; l'édition directe des créneaux arrivera bientôt."},
   {cat:'📊 Tableau de bord',q:"C'est quoi « Ton équipe » avec les ananas en haut de l'accueil ?",kw:"equipe ananas bob bobs sabine tresi nono roro secretaire tresoriere animateur rh personnage mascotte accueil qui veux voir carte cartes outils porte entree cliquer membre direction zanana",a:"En haut du tableau de bord, ton équipe Bob te sert de <b>porte d'entrée</b> : chaque personnage regroupe un métier — <b>Sabine</b> (le bureau : adhérents, agenda, répertoire, CA), <b>Trési</b> (la trésorerie : compta, subventions, bilan), <b>Nono</b> (l'animation : périscolaire, activités, vacances, ateliers) et <b>Roro</b> (les salariés : dossiers, congés, horaires). Clique un personnage pour voir tous ses outils et y aller directement ; « La Direction » juste au-dessus regroupe le pilotage (tableau de bord, projet, suivi). Tu ne vois que les personnages et outils auxquels <b>ton rôle a accès</b>. Tous les onglets restent aussi dans le menu en couleurs comme avant."},
@@ -2455,6 +2473,7 @@ function pageHelpGotoAide(){ pageHelpClose(); const b=document.querySelector('na
 
 /* ---- ✨ Quoi de neuf (nouveautés + notice chronologique) ---- */
 const NEWS=[
+  {id:'2026-07-09-budget-par-action',date:'2026-07-09',tab:'🎯 Budget par action',titre:"🎯 Nouveau : le Budget par action",desc:"Un nouvel onglet <b>🎯 Budget par action</b> (famille 💶 Finances, réservé au bureau) : chaque activité du CASE — <b>périscolaire, ACM, VEPI, événement…</b> — devient une <b>fiche unique</b> (type, période, site, responsable, <b>n° de dossier Mairie</b>, bénéficiaires). Et son <b>budget</b> avec : ouvre le budget détaillé et tu vois le <b>coût du personnel</b> (coût horaire × heures affectées), les <b>dépenses</b> et <b>recettes</b> réelles remontées <b>automatiquement</b> de la compta et des subventions (zéro double saisie), les contributions en nature, et un <b>aperçu à recopier</b> pour le dossier Mairie. Plus une vue <b>📊 Consolidée annuelle</b> et une vue <b>👤 Charge par salarié</b> qui alerte si quelqu'un est compté sur trop d'actions à la fois."},
   {id:'2026-07-08-messagerie-adherents',date:'2026-07-08',tab:'📨 Messages',titre:"📨 Parler avec le CASE — messagerie à 2 sens",desc:"Nouveau canal direct entre les familles et le CASE. Depuis leur espace, les adhérents écrivent dans l'onglet <b>« 💬 Parler au CASE »</b> ; côté gestion, un nouvel onglet <b>📨 Messages</b> (famille 👥 Adhérents) réunit chaque <b>fil privé</b> — les messages <b>« à répondre »</b> remontent en haut, une <b>pastille rouge</b> te prévient sur la famille Adhérents et dans « ⏰ À traiter ». <b>Accueil et bureau</b> peuvent répondre au nom du CASE, et l'adhérent voit la réponse (point rouge sur son onglet)."},
   {id:'2026-07-08-acm-caf-ps',date:'2026-07-08',tab:'🌴 Vacances',titre:"💶 Estimation de la Prestation de service CAF (heures-enfants)",desc:"Nouveau panneau <b>💶 CAF — Prestation de service</b> dans 🌴 Vacances. La CAF974 compte en <b>heures-enfants</b> (jours × enfants × amplitude) et raisonne par <b>année civile</b>. Renseigne l'<b>amplitude horaire</b> de chaque édition : Bob additionne les heures-enfants de l'année et <b>estime la PS</b> (ados <b>0,94 €/h</b> en 2026, barème paramétrable car revalorisé chaque année). Il rappelle aussi les <b>4 échéances AFAS</b> (prévisionnel 31/03, actu T2 15/07, actu T3 15/10, bilan 31/03 N+1). ⚠️ C'est une <b>estimation d'aide</b> : la CAF compte les heures réalisées/facturées selon ta convention et plafonne au prix de revient réel. Réservé au bureau."},
   {id:'2026-07-07-acm-projet',date:'2026-07-07',tab:'🌴 Vacances',titre:"📝 Le « côté projet » de l'ACM : projet éducatif + projet pédagogique",desc:"Deux nouveautés dans 🌴 Vacances. En haut, un panneau <b>📜 Projet éducatif</b> : le cadre de l'asso, écrit <b>une seule fois</b> (pas à chaque vacances), rappelé à chaque édition. Et dans le dossier-bilan de chaque édition, un <b>📋 Projet pédagogique</b> avec les <b>sections cadrées par la loi</b> (R.227-25 : objectifs, activités, rythme activité/repos, participation des jeunes, locaux, équipe, handicap, évaluation), chacune en <b>« prévu » (avant)</b> puis <b>« réalisé » (après)</b> — on recopie le plan officiel, on n'invente rien. Le tout ressort dans le <b>bilan PDF</b>. Réservé au bureau."},
@@ -2999,7 +3018,7 @@ const LIST_DEFS={
 };
 function usedFor(key){
   if(key==='sites')return db.ops.flatMap(o=>getSplits(o).map(s=>(s.site||'').trim()));
-  if(key==='actions')return db.ops.flatMap(o=>getSplits(o).map(s=>(s.action||'').trim()));
+  if(key==='actions')return db.ops.flatMap(o=>getSplits(o).map(s=>(s.action||'').trim())).concat((db.actionsFiches||[]).map(f=>(f.nom||'').trim()));
   if(key==='cats')return db.ops.map(o=>(o.cat||'').trim());
   if(key==='typesAdh')return (db.members||[]).map(m=>(m.typeAdh||'').trim());
   return [];
@@ -3377,6 +3396,197 @@ function renderRapprochement(){
 }
 
 /* ---- Projects ---- */
+/* ===== 🎯 BUDGET PAR ACTION — « action = objet pivot » (Étapes A + B) =====
+   La fiche action vit dans le coffre db.actionsFiches (clé NEUVE, additive). Elle se relie
+   à la compta / aux subventions par son NOM (le libellé déjà utilisé partout dans les splits
+   et les subventions) — aucune migration, aucun risque sur l'existant.
+   RÉEL dépenses/recettes = tiré AUTOMATIQUEMENT des splits db.ops (zéro double saisie).
+   RECETTES prévues (subventions) = tirées de db.subventions par action.
+   PERSONNEL = coût/h travaillé × heures affectées (la seule donnée neuve, sur la fiche).
+   ⚠️ LIT db.salaries en lecture seule (via le coût horaire) ; n'y ÉCRIT JAMAIS, ni dans db.horaires
+   (session « Dashboard employés »). */
+const PILOT_TYPES=['Périscolaire','ACM','VEPI','Événement','Autre'];
+const PILOT_STATUTS=['En préparation','En cours','Clôturée'];
+const PILOT_HTRAV=1607, PILOT_HPAYE=1820;   // base coût/h travaillé (paramétrable plus tard, cf. plan §1)
+const PILOT_TAUXBEN=11.88;                    // valorisation du bénévolat €/h (SMIC, paramétrable)
+const PILOT_POSTES=['Alimentation / goûter','Matériel pédagogique','Transport','Sorties / activités','Prestataires / intervenants','Hébergement / séjour','Communication','Assurance','Fluides & divers','Autre'];
+function pilotDB(){ if(!Array.isArray(db.actionsFiches)) db.actionsFiches=[]; db.actionsFiches.forEach(pilotFiche); return db.actionsFiches; }
+function pilotFiche(f){ if(!Array.isArray(f.personnel)) f.personnel=[]; if(!Array.isArray(f.charges)) f.charges=[]; if(!Array.isArray(f.nature)) f.nature=[]; if(!Array.isArray(f.recAutres)) f.recAutres=[]; return f; }
+function pilotSalaries(){ return [...new Set((db.salaries||[]).map(s=>s.name).filter(Boolean))]; }
+function pilotSal(id){ return (db.salaries||[]).find(s=>s.id===id); }
+function pilotCoutHTrav(sal){ if(!sal) return 0; return (sal.bruth||0)*(1+(sal.charges||0)/100)*PILOT_HPAYE/PILOT_HTRAV; }
+function pilotEur(n){ return (Math.round(n||0)).toLocaleString('fr-FR')+' €'; }
+function pilotYear(){ return window._pilotYear || String(new Date().getFullYear()); }
+function pilotYears(){ const ys=new Set([String(new Date().getFullYear())]); (db.ops||[]).forEach(o=>{ const y=(o.date||'').slice(0,4); if(/^\d{4}$/.test(y)) ys.add(y); }); return [...ys].sort().reverse(); }
+function pilotReel(nom,type){ const y=pilotYear(); let tot=0; (db.ops||[]).forEach(o=>{ if(o.type!==type) return; if(y && (o.date||'').slice(0,4)!==y) return; getSplits(o).forEach(s=>{ if((s.action||'').trim()===(nom||'').trim()) tot+=(s.amount||0); }); }); return tot; }
+function pilotSubs(nom){ return (db.subventions||[]).filter(sub=>(sub.action||'').trim()===(nom||'').trim() && !sub.refusee); }
+function pilotNat(n){ return n.type==='benevolat'?(n.q||0)*PILOT_TAUXBEN:(n.q||0)*(n.pu||0); }
+function pilotTotals(f){
+  pilotFiche(f); const t={persPrev:0,persReel:0,autrePrev:0,recSubPrev:0,recAutrePrev:0,nat:0,mairiePrev:0};
+  f.personnel.forEach(p=>{ const c=pilotCoutHTrav(pilotSal(p.sid)); t.persPrev+=c*(p.hPrev||0); t.persReel+=c*(p.hReel||0); });
+  f.charges.forEach(c=>{ t.autrePrev+=(c.prev||0); });
+  f.recAutres.forEach(r=>{ t.recAutrePrev+=(r.prev||0); });
+  pilotSubs(f.nom).forEach(s=>{ t.recSubPrev+=(s.demande||0); if(/mairie/i.test(s.structure||'')) t.mairiePrev+=(s.demande||0); });
+  f.nature.forEach(n=>{ t.nat+=pilotNat(n); });
+  t.autreReel=pilotReel(f.nom,'out'); t.recReel=pilotReel(f.nom,'in');
+  t.recPrev=t.recSubPrev+t.recAutrePrev;
+  t.depPrev=t.persPrev+t.autrePrev; t.depReel=t.persReel+t.autreReel;
+  t.soldePrev=t.recPrev-t.depPrev; t.soldeReel=t.recReel-t.depReel;
+  return t;
+}
+function addFicheAction(){
+  const nom=($('fa_nom').value||'').trim();
+  if(!nom){ alert("Donne un nom à l'action."); return; }
+  if(pilotDB().some(f=>(f.nom||'').trim().toLowerCase()===nom.toLowerCase())){ alert('Une action porte déjà ce nom.'); return; }
+  pilotDB().push(pilotFiche({id:uid(), nom, type:$('fa_type').value, periode:'', site:'', responsable:'', statut:'En préparation', mairie:false, dossier:'', effectif:0}));
+  $('fa_nom').value=''; save();
+}
+function pilotSet(id,champ,val){ const f=pilotDB().find(x=>x.id===id); if(!f) return; if(champ==='mairie') f.mairie=!!val; else if(champ==='effectif') f.effectif=parseFloat(val)||0; else f[champ]=val; save(); }
+function delFicheAction(id){ const f=pilotDB().find(x=>x.id===id); if(!f) return; if(confirm('Supprimer la fiche action « '+f.nom+' » ?\n(Les écritures comptables et subventions reliées ne sont PAS touchées.)')){ db.actionsFiches=pilotDB().filter(x=>x.id!==id); save(); } }
+function _pf(id){ return pilotDB().find(x=>x.id===id); }
+function pilotAddPers(id){ const f=_pf(id); if(f){ f.personnel.push({sid:'',hPrev:0,hReel:0}); save(); } }
+function pilotSetPers(id,i,ch,v){ const f=_pf(id); if(f&&f.personnel[i]){ f.personnel[i][ch]=ch==='sid'?v:(parseFloat(v)||0); save(); } }
+function pilotDelPers(id,i){ const f=_pf(id); if(f){ f.personnel.splice(i,1); save(); } }
+function pilotAddCharge(id){ const f=_pf(id); if(f){ f.charges.push({poste:'Autre',lib:'',prev:0}); save(); } }
+function pilotSetCharge(id,i,ch,v){ const f=_pf(id); if(f&&f.charges[i]){ f.charges[i][ch]=(ch==='prev')?(parseFloat(v)||0):v; save(); } }
+function pilotDelCharge(id,i){ const f=_pf(id); if(f){ f.charges.splice(i,1); save(); } }
+function pilotAddRec(id){ const f=_pf(id); if(f){ f.recAutres.push({lib:'Participations familles',prev:0}); save(); } }
+function pilotSetRec(id,i,ch,v){ const f=_pf(id); if(f&&f.recAutres[i]){ f.recAutres[i][ch]=(ch==='prev')?(parseFloat(v)||0):v; save(); } }
+function pilotDelRec(id,i){ const f=_pf(id); if(f){ f.recAutres.splice(i,1); save(); } }
+function pilotAddNat(id){ const f=_pf(id); if(f){ f.nature.push({lib:'Bénévolat',type:'benevolat',q:0,pu:0}); save(); } }
+function pilotSetNat(id,i,ch,v){ const f=_pf(id); if(f&&f.nature[i]){ f.nature[i][ch]=(ch==='lib'||ch==='type')?v:(parseFloat(v)||0); save(); } }
+function pilotDelNat(id,i){ const f=_pf(id); if(f){ f.nature.splice(i,1); save(); } }
+function pilotMode(m){ window._pilotMode=m; renderPilotage(); }
+function pilotToggle(id){ window._pilotOpen=window._pilotOpen||{}; window._pilotOpen[id]=!window._pilotOpen[id]; renderPilotage(); }
+function pilotSetYear(y){ window._pilotYear=y; renderPilotage(); }
+function pilotApercuText(f){
+  const t=pilotTotals(f), P=(s,n)=>{ s=''+s; return s.length>n?s.slice(0,n):s+' '.repeat(n-s.length); }, L=(s,n)=>{ s=''+s; return ' '.repeat(Math.max(0,n-s.length))+s; };
+  const o=[]; o.push('DOSSIER '+(f.dossier||'(n° à compléter)')+' — '+f.nom); o.push('Type '+(f.type||'')+' · Période '+(f.periode||'')+' · '+(f.effectif||0)+' bénéficiaires'); o.push('Exercice '+pilotYear()); o.push('');
+  o.push(P('CHARGES',42)+L('Prévu',12)+L('Réel',12));
+  o.push(P('  64 Charges de personnel',42)+L(pilotEur(t.persPrev),12)+L(pilotEur(t.persReel),12));
+  o.push(P('  60/61/62 Autres dépenses',42)+L(pilotEur(t.autrePrev),12)+L(pilotEur(t.autreReel),12));
+  o.push(P('  TOTAL CHARGES',42)+L(pilotEur(t.depPrev),12)+L(pilotEur(t.depReel),12)); o.push('');
+  o.push(P('PRODUITS',42)+L('Prévu',12)+L('Réel',12));
+  pilotSubs(f.nom).forEach(s=>o.push(P('  74 '+(s.structure||s.name||'Subvention'),42)+L(pilotEur(s.demande||0),12)+L(pilotEur(s.verse||0),12)));
+  f.recAutres.forEach(r=>o.push(P('  70 '+(r.lib||'Autre produit'),42)+L(pilotEur(r.prev||0),12)+L('',12)));
+  o.push(P('  TOTAL PRODUITS',42)+L(pilotEur(t.recPrev),12)+L(pilotEur(t.recReel),12)); o.push('');
+  o.push(P('CONTRIBUTIONS EN NATURE (86 = 87)',42)+L(pilotEur(t.nat),12)); o.push('');
+  o.push(t.soldePrev>=0?'=> Previsionnel equilibre':'=> RESTE A FINANCER (prev.) : '+pilotEur(-t.soldePrev));
+  return o.join('\n');
+}
+function pilotCopyApercu(id){ const pre=$('pilotApercu_'+id); if(pre&&navigator.clipboard){ navigator.clipboard.writeText(pre.textContent).then(()=>{ const b=$('pilotCopyBtn_'+id); if(b){ const o=b.textContent; b.textContent='Copié ✓'; setTimeout(()=>{b.textContent=o;},1500); } }); } }
+function renderPilotage(){
+  const el=$('pilotageRows'); if(!el) return;
+  window._pilotMode=window._pilotMode||'list'; window._pilotOpen=window._pilotOpen||{};
+  const yOpts=pilotYears().map(y=>`<option ${y===pilotYear()?'selected':''}>${y}</option>`).join('');
+  const seg=(m,lbl)=>`<button class="btn" style="${window._pilotMode===m?'background:var(--brand,#3a51e8);color:#fff;border-color:transparent':''}" onclick="pilotMode('${m}')">${lbl}</button>`;
+  const bar=`<div class="row" style="justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px">
+      <div class="row" style="gap:6px;flex-wrap:wrap">${seg('list','📋 Par action')}${seg('conso','📊 Consolidé annuel')}${seg('charge','👤 Charge salariés')}</div>
+      <div class="field" style="flex:0"><label>Exercice</label><select onchange="pilotSetYear(this.value)">${yOpts}</select></div>
+    </div>`;
+  let body;
+  if(window._pilotMode==='conso') body=pilotConsoView();
+  else if(window._pilotMode==='charge') body=pilotChargeView();
+  else body=pilotListView();
+  el.innerHTML=bar+body;
+}
+function pilotListView(){
+  const fiches=pilotDB();
+  if(!fiches.length) return '<div class="panel"><div class="empty">Aucune action pour le moment. Crée ta première action ci-dessus (ex. « Périscolaire Piton », « ACM Ados »…).</div></div>';
+  const salDl='<datalist id="pilotSalDl">'+pilotSalaries().map(n=>`<option value="${esc(n)}">`).join('')+'</datalist>';
+  const typeOpts=sel=>PILOT_TYPES.map(t=>`<option ${t===sel?'selected':''}>${t}</option>`).join('');
+  const statOpts=sel=>PILOT_STATUTS.map(t=>`<option ${t===sel?'selected':''}>${t}</option>`).join('');
+  return salDl+fiches.map(f=>{
+    const t=pilotTotals(f), st=f.statut==='Clôturée'?'ok':f.statut==='En cours'?'in':'wait', open=!!window._pilotOpen[f.id];
+    return `<div class="panel" style="margin-bottom:12px">
+      <div class="row" style="justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
+        <div style="font-weight:800;font-size:17px">${esc(f.nom)} ${f.mairie?'<span class="pill ok">Mairie</span>':''} <span class="pill ${st}">${esc(f.statut)}</span></div>
+        <div class="row" style="gap:8px">
+          <button class="btn" onclick="pilotToggle('${f.id}')">${open?'▾ Fermer le budget':'▸ Budget détaillé'}</button>
+          <button class="danger btn" onclick="delFicheAction('${f.id}')">🗑</button>
+        </div>
+      </div>
+      <div class="row muted" style="margin-top:8px;gap:16px;flex-wrap:wrap;font-size:13px">
+        <span>Dépenses prévu <b>${pilotEur(t.depPrev)}</b> · réel <b>${pilotEur(t.depReel)}</b></span>
+        <span>Recettes prévu <b>${pilotEur(t.recPrev)}</b> · réel <b>${pilotEur(t.recReel)}</b></span>
+        <span>Solde prévu <b style="color:${t.soldePrev>=0?'#3b6d11':'#a32d2d'}">${pilotEur(t.soldePrev)}</b></span>
+      </div>
+      <div class="row" style="margin-top:10px;flex-wrap:wrap;gap:10px">
+        <div class="field"><label>Type</label><select onchange="pilotSet('${f.id}','type',this.value)">${typeOpts(f.type)}</select></div>
+        <div class="field"><label>Statut</label><select onchange="pilotSet('${f.id}','statut',this.value)">${statOpts(f.statut)}</select></div>
+        <div class="field"><label>Période</label><input value="${esc(f.periode||'')}" placeholder="ex. 01–12/2026" onchange="pilotSet('${f.id}','periode',this.value)"></div>
+        <div class="field"><label>Site</label><input list="sites" value="${esc(f.site||'')}" placeholder="Site" onchange="pilotSet('${f.id}','site',this.value)"></div>
+        <div class="field"><label>Responsable</label><input list="pilotSalDl" value="${esc(f.responsable||'')}" placeholder="Salarié·e" onchange="pilotSet('${f.id}','responsable',this.value)"></div>
+        <div class="field"><label>N° dossier (MGDIS)</label><input value="${esc(f.dossier||'')}" placeholder="ex. 00005420" onchange="pilotSet('${f.id}','dossier',this.value)"></div>
+        <div class="field" style="flex:0"><label>Bénéficiaires</label><input type="number" min="0" step="1" value="${f.effectif||0}" style="width:90px" onchange="pilotSet('${f.id}','effectif',this.value)"></div>
+        <div class="field" style="flex:0"><label>Financée Mairie</label><input type="checkbox" ${f.mairie?'checked':''} onchange="pilotSet('${f.id}','mairie',this.checked)"></div>
+      </div>
+      ${open?pilotDetail(f,t):''}
+    </div>`;
+  }).join('');
+}
+function pilotDetail(f,t){
+  const eur=pilotEur, sals=(db.salaries||[]);
+  const salOpts=sel=>'<option value="">— salarié —</option>'+sals.map(s=>`<option value="${s.id}" ${s.id===sel?'selected':''}>${esc(s.name)}</option>`).join('');
+  const posteOpts=sel=>PILOT_POSTES.map(p=>`<option ${p===sel?'selected':''}>${esc(p)}</option>`).join('');
+  let h='<div style="border-top:1px solid var(--line,#e4e2da);margin-top:12px;padding-top:12px;display:grid;gap:16px">';
+  h+='<div><div style="font-weight:700;margin-bottom:6px">👥 Personnel <span class="muted" style="font-weight:400;font-size:12px">coût/h travaillé (base '+PILOT_HTRAV+'/'+PILOT_HPAYE+') × heures affectées</span></div><div class="scroll" style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:13px"><tr style="text-align:left;color:var(--muted)"><th>Salarié·e</th><th style="text-align:right">Coût/h</th><th style="text-align:right">H. prév.</th><th style="text-align:right">H. réel.</th><th style="text-align:right">Prévu (64)</th><th style="text-align:right">Réel est.</th><th></th></tr>';
+  f.personnel.forEach((p,i)=>{ const c=pilotCoutHTrav(pilotSal(p.sid)); h+=`<tr><td><select onchange="pilotSetPers('${f.id}',${i},'sid',this.value)">${salOpts(p.sid)}</select></td><td style="text-align:right">${c.toFixed(2).replace('.',',')}</td><td style="text-align:right"><input type="number" min="0" step="1" value="${p.hPrev||0}" style="width:70px;text-align:right" onchange="pilotSetPers('${f.id}',${i},'hPrev',this.value)"></td><td style="text-align:right"><input type="number" min="0" step="1" value="${p.hReel||0}" style="width:70px;text-align:right" onchange="pilotSetPers('${f.id}',${i},'hReel',this.value)"></td><td style="text-align:right">${eur(c*(p.hPrev||0))}</td><td style="text-align:right">${eur(c*(p.hReel||0))}</td><td><button class="danger btn" onclick="pilotDelPers('${f.id}',${i})">✕</button></td></tr>`; });
+  h+=`<tr style="font-weight:700;border-top:1px solid var(--line,#e4e2da)"><td colspan="4">Total personnel</td><td style="text-align:right">${eur(t.persPrev)}</td><td style="text-align:right">${eur(t.persReel)}</td><td></td></tr></table></div><button class="btn" style="margin-top:8px" onclick="pilotAddPers('${f.id}')">+ Ajouter un·e salarié·e</button></div>`;
+  h+='<div><div style="font-weight:700;margin-bottom:6px">🧾 Autres dépenses <span class="muted" style="font-weight:400;font-size:12px">prévu saisi ici · réel tiré automatiquement de la compta (splits par action)</span></div><div class="scroll" style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:13px"><tr style="text-align:left;color:var(--muted)"><th>Poste</th><th>Libellé</th><th style="text-align:right">Prévu</th><th></th></tr>';
+  f.charges.forEach((c,i)=>{ h+=`<tr><td><select onchange="pilotSetCharge('${f.id}',${i},'poste',this.value)">${posteOpts(c.poste)}</select></td><td><input value="${esc(c.lib||'')}" placeholder="détail" style="width:100%" onchange="pilotSetCharge('${f.id}',${i},'lib',this.value)"></td><td style="text-align:right"><input type="number" step="1" value="${c.prev||0}" style="width:90px;text-align:right" onchange="pilotSetCharge('${f.id}',${i},'prev',this.value)"></td><td><button class="danger btn" onclick="pilotDelCharge('${f.id}',${i})">✕</button></td></tr>`; });
+  h+=`<tr style="font-weight:700;border-top:1px solid var(--line,#e4e2da)"><td colspan="2">Total autres dépenses prévu</td><td style="text-align:right">${eur(t.autrePrev)}</td><td></td></tr></table></div><button class="btn" style="margin-top:8px" onclick="pilotAddCharge('${f.id}')">+ Ajouter un poste prévu</button><p class="hint" style="margin:8px 0 0">💶 Réel dépensé sur cette action (exercice ${pilotYear()}) : <b>${eur(t.autreReel)}</b> — somme des dépenses de la compta taguées sur « ${esc(f.nom)} ».</p></div>`;
+  h+='<div><div style="font-weight:700;margin-bottom:6px">💰 Recettes</div>';
+  const subs=pilotSubs(f.nom);
+  h+='<div class="scroll" style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:13px"><tr style="text-align:left;color:var(--muted)"><th>Financeur (subventions — onglet 🏛️)</th><th style="text-align:right">Demandé</th><th style="text-align:right">Accordé</th><th style="text-align:right">Versé</th></tr>';
+  if(subs.length) subs.forEach(s=>{ h+=`<tr><td>${esc(s.structure||s.name||'—')}</td><td style="text-align:right">${eur(s.demande||0)}</td><td style="text-align:right">${eur(s.accorde||0)}</td><td style="text-align:right">${eur(s.verse||0)}</td></tr>`; });
+  else h+='<tr><td colspan="4" class="muted">Aucune subvention rattachée (le champ « Action » d\'une subvention doit valoir ce nom).</td></tr>';
+  h+='</table></div>';
+  h+='<div class="scroll" style="overflow-x:auto;margin-top:8px"><table style="width:100%;border-collapse:collapse;font-size:13px"><tr style="text-align:left;color:var(--muted)"><th>Autres produits prévus (participations familles…)</th><th style="text-align:right">Prévu</th><th></th></tr>';
+  f.recAutres.forEach((r,i)=>{ h+=`<tr><td><input value="${esc(r.lib||'')}" style="width:100%" onchange="pilotSetRec('${f.id}',${i},'lib',this.value)"></td><td style="text-align:right"><input type="number" step="1" value="${r.prev||0}" style="width:90px;text-align:right" onchange="pilotSetRec('${f.id}',${i},'prev',this.value)"></td><td><button class="danger btn" onclick="pilotDelRec('${f.id}',${i})">✕</button></td></tr>`; });
+  h+=`</table></div><button class="btn" style="margin-top:8px" onclick="pilotAddRec('${f.id}')">+ Ajouter un produit prévu</button>`;
+  h+=`<p class="hint" style="margin:8px 0 0">Prévu recettes : <b>${eur(t.recPrev)}</b> (subventions demandées ${eur(t.recSubPrev)} + autres ${eur(t.recAutrePrev)}). Réel encaissé (exercice ${pilotYear()}) : <b>${eur(t.recReel)}</b> — recettes de la compta taguées sur l\'action, subventions versées incluses.</p></div>`;
+  h+='<div><div style="font-weight:700;margin-bottom:6px">🤝 Contributions en nature <span class="muted" style="font-weight:400;font-size:12px">86 = 87 · hors équilibre monétaire</span></div><div class="scroll" style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:13px"><tr style="text-align:left;color:var(--muted)"><th>Nature</th><th>Type</th><th style="text-align:right">Quantité</th><th style="text-align:right">Valeur unit.</th><th style="text-align:right">Valorisation</th><th></th></tr>';
+  f.nature.forEach((n,i)=>{ h+=`<tr><td><input value="${esc(n.lib||'')}" style="width:100%" onchange="pilotSetNat('${f.id}',${i},'lib',this.value)"></td><td><select onchange="pilotSetNat('${f.id}',${i},'type',this.value)"><option value="benevolat" ${n.type==='benevolat'?'selected':''}>bénévolat</option><option value="local" ${n.type!=='benevolat'?'selected':''}>mise à dispo</option></select></td><td style="text-align:right"><input type="number" step="1" value="${n.q||0}" style="width:70px;text-align:right" onchange="pilotSetNat('${f.id}',${i},'q',this.value)"></td><td style="text-align:right">${n.type==='benevolat'?(PILOT_TAUXBEN.toFixed(2).replace('.',',')+' €/h'):`<input type="number" step="1" value="${n.pu||0}" style="width:70px;text-align:right" onchange="pilotSetNat('${f.id}',${i},'pu',this.value)">`}</td><td style="text-align:right">${eur(pilotNat(n))}</td><td><button class="danger btn" onclick="pilotDelNat('${f.id}',${i})">✕</button></td></tr>`; });
+  h+=`<tr style="font-weight:700;border-top:1px solid var(--line,#e4e2da)"><td colspan="4">Total contributions en nature</td><td style="text-align:right">${eur(t.nat)}</td><td></td></tr></table></div><button class="btn" style="margin-top:8px" onclick="pilotAddNat('${f.id}')">+ Ajouter</button></div>`;
+  const dep=t.mairiePrev&&t.depPrev?Math.round(t.mairiePrev/t.depPrev*100):0;
+  h+=`<div><div style="font-weight:700;margin-bottom:6px">⚖️ Synthèse</div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px">
+      <div class="panel" style="margin:0"><div class="muted" style="font-size:12px">Solde prévu</div><div style="font-size:20px;font-weight:700;color:${t.soldePrev>=0?'#3b6d11':'#a32d2d'}">${eur(t.soldePrev)}</div></div>
+      <div class="panel" style="margin:0"><div class="muted" style="font-size:12px">Solde réel à ce jour</div><div style="font-size:20px;font-weight:700;color:${t.soldeReel>=0?'#3b6d11':'#a32d2d'}">${eur(t.soldeReel)}</div></div>
+      <div class="panel" style="margin:0"><div class="muted" style="font-size:12px">Dépendance Mairie (prévu)</div><div style="font-size:20px;font-weight:700">${dep} %</div></div>
+      <div class="panel" style="margin:0"><div class="muted" style="font-size:12px">Effet de levier (nature)</div><div style="font-size:20px;font-weight:700">${eur(t.nat)}</div></div>
+    </div>
+    ${t.soldePrev<0?`<p class="hint" style="margin:8px 0 0;color:#a32d2d">⚠️ Prévisionnel non équilibré : manque ${eur(-t.soldePrev)} à financer.</p>`:''}</div>`;
+  h+=`<div><div style="font-weight:700;margin-bottom:6px">📄 Aperçu « plan financier » à recopier (dossier Mairie / MGDIS)</div><pre id="pilotApercu_${f.id}" style="background:var(--card2,#faf9f6);border:1px solid var(--line,#e4e2da);border-radius:8px;padding:12px;font-size:12px;white-space:pre-wrap;overflow-x:auto;margin:0 0 8px">${esc(pilotApercuText(f))}</pre><button class="btn" id="pilotCopyBtn_${f.id}" onclick="pilotCopyApercu('${f.id}')">Copier l'aperçu</button></div>`;
+  h+='</div>';
+  return h;
+}
+function pilotConsoView(){
+  const fiches=pilotDB();
+  if(!fiches.length) return '<div class="panel"><div class="empty">Aucune action à consolider pour le moment.</div></div>';
+  const g={depPrev:0,recPrev:0,soldePrev:0,depReel:0,recReel:0,nat:0};
+  let rows='';
+  fiches.forEach(f=>{ const t=pilotTotals(f); g.depPrev+=t.depPrev;g.recPrev+=t.recPrev;g.soldePrev+=t.soldePrev;g.depReel+=t.depReel;g.recReel+=t.recReel;g.nat+=t.nat;
+    rows+=`<tr><td>${esc(f.nom)}${f.mairie?'':' <span class="muted" style="font-size:11px">hors Mairie</span>'}</td><td>${esc(f.type||'')}</td><td style="text-align:right">${pilotEur(t.depPrev)}</td><td style="text-align:right">${pilotEur(t.recPrev)}</td><td style="text-align:right;color:${t.soldePrev>=0?'#3b6d11':'#a32d2d'}">${pilotEur(t.soldePrev)}</td><td style="text-align:right">${pilotEur(t.depReel)}</td><td style="text-align:right">${pilotEur(t.recReel)}</td><td style="text-align:right">${pilotEur(t.nat)}</td></tr>`; });
+  return `<div class="panel"><h2 style="margin-top:0">📊 Vue annuelle consolidée <span class="muted" style="font-weight:400;font-size:13px">exercice ${pilotYear()} · toutes les actions</span></h2>
+    <p class="hint">Ce que le CASE fait sur l'année — financé Mairie ou non — pour le bilan et préparer les demandes de l'an prochain.</p>
+    <div class="scroll" style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:13px"><tr style="text-align:left;color:var(--muted)"><th>Action</th><th>Type</th><th style="text-align:right">Dép. prévu</th><th style="text-align:right">Rec. prévu</th><th style="text-align:right">Solde prévu</th><th style="text-align:right">Dép. réel</th><th style="text-align:right">Rec. réel</th><th style="text-align:right">En nature</th></tr>
+    ${rows}
+    <tr style="font-weight:800;border-top:2px solid var(--line,#cfcdc4)"><td>TOTAL ${fiches.length} action(s)</td><td></td><td style="text-align:right">${pilotEur(g.depPrev)}</td><td style="text-align:right">${pilotEur(g.recPrev)}</td><td style="text-align:right;color:${g.soldePrev>=0?'#3b6d11':'#a32d2d'}">${pilotEur(g.soldePrev)}</td><td style="text-align:right">${pilotEur(g.depReel)}</td><td style="text-align:right">${pilotEur(g.recReel)}</td><td style="text-align:right">${pilotEur(g.nat)}</td></tr></table></div></div>`;
+}
+function pilotChargeView(){
+  const fiches=pilotDB(), sals=(db.salaries||[]).filter(s=>s.name);
+  if(!sals.length) return '<div class="panel"><div class="empty">Aucun salarié renseigné — la charge par salarié apparaîtra dès que l\'équipe est saisie (onglet Dossiers salariés).</div></div>';
+  let rows='';
+  sals.forEach(s=>{ const cap=Math.round(PILOT_HTRAV*((s.hsem||0)/35)); let hp=0,hr=0; fiches.forEach(f=>{ pilotFiche(f).personnel.forEach(p=>{ if(p.sid===s.id){ hp+=(p.hPrev||0); hr+=(p.hReel||0); } }); });
+    const pct=cap?Math.round(hp/cap*100):0, col=pct>100?'#a32d2d':(pct>90?'#854f0b':'#3b6d11');
+    rows+=`<tr><td>${esc(s.name)} <span class="muted" style="font-size:11px">${s.hsem||0} h/sem</span></td><td style="text-align:right">${cap} h</td><td style="text-align:right">${Math.round(hp)} h</td><td style="text-align:right;color:${col};font-weight:700">${pct} %${pct>100?' ⚠️':''}</td><td style="text-align:right">${Math.round(hr)} h</td></tr>`; });
+  return `<div class="panel"><h2 style="margin-top:0">👤 Charge annuelle par salarié <span class="pill wait">garde-fou anti-double-comptage</span></h2>
+    <p class="hint">Somme des heures affectées à TOUTES les actions, comparée au temps de travail annuel (capacité = 1607 h × h-sem ÷ 35). Au-delà de 100 %, le·la salarié·e est sur-affecté·e — le piège de l'audit des 13 dossiers Mairie.</p>
+    <div class="scroll" style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:13px"><tr style="text-align:left;color:var(--muted)"><th>Salarié·e</th><th style="text-align:right">Capacité annuelle</th><th style="text-align:right">Σ h. prévues</th><th style="text-align:right">Charge prévue</th><th style="text-align:right">Σ h. réelles</th></tr>${rows}</table></div>
+    <p class="hint" style="margin-top:8px">Rouge = sur-affecté·e sur l'année : à corriger avant de déposer des dossiers concomitants qui compteraient deux fois le même temps.</p></div>`;
+}
 function addProject(){
   const name=$('p_name').value.trim();
   if(!name){ alert('Donne un nom au projet.'); return; }
@@ -5997,7 +6207,7 @@ function acmNewSession(){
 /* acmDelSession retiré (Coup 3) : la suppression d'une édition passe désormais par acmDelEdition (statut-aware). */
 function b64ToUtf8(s){ try{ return new TextDecoder().decode(Uint8Array.from(atob(s),c=>c.charCodeAt(0))); }catch(e){ return ''; } }
 function renderCoffre(){ try{ document.querySelectorAll('[data-coffre]').forEach(function(el){ var k=el.getAttribute('data-coffre'); var v=(window.db&&db.coffreHtml&&db.coffreHtml[k])||''; el.innerHTML = v ? b64ToUtf8(v) : ''; }); }catch(e){} }
-function renderAll(){ renderCoffre(); renderDashboard(); renderZoneCards(); renderMembers(); renderRelances(); renderOps(); renderCaisse(); renderRapprochement(); renderProjects(); renderSubventions(); renderEcheancier(); renderBilan(); renderPrevisionnel(); renderEquipe(); renderRepertoire(); renderSecretariat(); renderDemarches(); renderAssurance(); renderCaMembres(); renderReunions(); renderCaprep(); renderIncidents(); renderDettes(); renderOfficialLinks(); refreshComptes(); renderListParams(); renderJournal(); renderPeriscolaire(); renderFaqList(); renderNews(); renderAccompagnement(); renderRH(); renderProjet(); renderProjetAdos(); renderActions(); renderConges(); renderFermetures(); renderHoraires(); renderAcmVac(); if(window.renderDocsPeri)window.renderDocsPeri(); }
+function renderAll(){ renderCoffre(); renderDashboard(); renderZoneCards(); renderMembers(); renderRelances(); renderOps(); renderCaisse(); renderRapprochement(); renderProjects(); renderSubventions(); renderEcheancier(); renderBilan(); renderPrevisionnel(); renderPilotage(); renderEquipe(); renderRepertoire(); renderSecretariat(); renderDemarches(); renderAssurance(); renderCaMembres(); renderReunions(); renderCaprep(); renderIncidents(); renderDettes(); renderOfficialLinks(); refreshComptes(); renderListParams(); renderJournal(); renderPeriscolaire(); renderFaqList(); renderNews(); renderAccompagnement(); renderRH(); renderProjet(); renderProjetAdos(); renderActions(); renderConges(); renderFermetures(); renderHoraires(); renderAcmVac(); if(window.renderDocsPeri)window.renderDocsPeri(); }
 
 /* ---- Data import/export ---- */
 function exportJSON(motif){
@@ -6114,6 +6324,7 @@ renderAll();
     const perms=Object.assign({}, (myProfile.perms&&typeof myProfile.perms==='object')?myProfile.perms:{});
     if(!canWrite && myProfile && myProfile.role==='personnel' && (perms.periscolaire==='gestion'||perms.activites==='gestion') && !perms.enfants) perms.enfants='gestion'; // l'écran 👶 Enfants (métier) est éditable par l'accueil qui gère déjà périscolaire/activités
     if(!canWrite) perms.aide='cache'; // l'Aide « Demande à Zanana » est réservée au bureau
+    if(!canWrite) perms.pilotage='cache'; // 🎯 Budget par action : pilotage budgétaire interne → bureau uniquement
     if(!canWrite) perms.accompagnement='cache'; // Accompagnement : contenu sensible (RH, gouvernance) → bureau uniquement par défaut
     if(!canWrite) perms.rh='cache'; // RH & Organisation : contenu sensible → bureau uniquement par défaut
     if(!canWrite){ perms.suivi='cache'; perms.conges='cache'; perms.horaires='cache'; } // Suivi, Congés & Horaires : bureau uniquement par défaut
