@@ -2200,7 +2200,7 @@ document.querySelectorAll('nav.tabs button').forEach(b=>{
 
 /* ---- Aide : « Demande à Zanana » (FAQ + assistant par mots-clés, sans IA) ---- */
 const FAQ=[
-  {cat:'🎯 Budget par action', q:"À quoi sert l'onglet Budget par action et comment créer une action ?", kw:"action actions budget par action pilotage fiche creer dossier mgdis mairie periscolaire acm vepi evenement financeur subvention depense pivot secteur activite responsable beneficiaires cloturee suivi budget", a:"L'onglet <b>🎯 Budget par action</b> (famille 💶 Finances, réservé au bureau) réunit chaque <b>action</b> du CASE — périscolaire, ACM, VEPI, événement… — en une <b>fiche unique</b>. Tu crées une action (nom + type), puis tu précises sa période, son site, son ou sa responsable, son <b>n° de dossier Mairie (MGDIS)</b>, ses bénéficiaires et si elle est financée par la Mairie. Cette fiche devient le <b>point d'accroche unique</b> de son budget : les dépenses et les subventions déjà saisies dans Bob se relient à elle <b>par son nom</b>, sans double saisie. Ouvre le <b>budget détaillé</b> d'une action : le <b>coût du personnel</b> se calcule tout seul (coût horaire chargé × heures affectées), les <b>dépenses</b> réelles et les <b>recettes</b> (subventions versées) remontent automatiquement de la comptabilité, et un <b>aperçu « plan financier »</b> se copie en un clic pour le dossier Mairie. Deux vues complètent : <b>📊 Consolidé annuel</b> (toutes les actions) et <b>👤 Charge salariés</b> (Σ des heures par salarié vs sa capacité — le garde-fou anti-double-comptage). Supprimer une fiche ne touche <b>pas</b> les écritures comptables reliées."},
+  {cat:'🎯 Budget par action', q:"À quoi sert l'onglet Budget par action et comment créer une action ?", kw:"action actions budget par action pilotage fiche creer dossier mgdis mairie periscolaire acm vepi evenement financeur subvention depense pivot secteur activite responsable beneficiaires cloturee suivi budget", a:"L'onglet <b>🎯 Budget par action</b> (famille 💶 Finances, réservé au bureau) réunit chaque <b>action</b> du CASE — périscolaire, ACM, VEPI, événement… — en une <b>fiche unique</b>. Les actions <b>déjà utilisées dans Bob</b> (compta, subventions) apparaissent en haut de la liste, à créer en <b>un clic</b> — pas besoin de retaper leur nom. Tu crées une action (nom + type), puis tu précises sa période, son site, son ou sa responsable, son <b>n° de dossier Mairie (MGDIS)</b>, ses bénéficiaires et si elle est financée par la Mairie. Cette fiche devient le <b>point d'accroche unique</b> de son budget : les dépenses et les subventions déjà saisies dans Bob se relient à elle <b>par son nom</b>, sans double saisie. Ouvre le <b>budget détaillé</b> d'une action : le <b>coût du personnel</b> se calcule tout seul (coût horaire chargé × heures affectées), les <b>dépenses</b> réelles et les <b>recettes</b> (subventions versées) remontent automatiquement de la comptabilité, et un <b>aperçu « plan financier »</b> se copie en un clic pour le dossier Mairie. Deux vues complètent : <b>📊 Consolidé annuel</b> (toutes les actions) et <b>👤 Charge salariés</b> (Σ des heures par salarié vs sa capacité — le garde-fou anti-double-comptage). Supprimer une fiche ne touche <b>pas</b> les écritures comptables reliées."},
   {cat:'📨 Messages',q:"Comment répondre aux messages des adhérents ?",kw:"messages adherent adherents repondre parler case fil conversation famille accueil bureau boite reception canal deux sens en attente courrier ecrire",a:"Onglet <b>📨 Messages</b> (famille 👥 Adhérents) : chaque adhérent qui écrit depuis son espace « 💬 Parler au CASE » a un <b>fil privé</b>. Les fils <b>« 🔴 à répondre »</b> (dernier message venu de l'adhérent) remontent en haut. Clique un fil pour lire la conversation et <b>répondre au nom du CASE</b> — accueil et bureau y ont accès. Une <b>pastille rouge</b> sur la famille 👥 Adhérents et une ligne « ⏰ À traiter » te préviennent des messages sans réponse."},
   {cat:'🗓️ Salles',q:"À quoi sert l'onglet Salles ?",kw:'salle salles planning creneau créneau danse grille horaire cours intervenant orphelin qui anime',a:"L'onglet 🗓️ Salles montre le planning hebdomadaire de la salle de danse : chaque créneau (jour, heure, cours) et qui l'anime. Les créneaux en rouge sont « orphelins » — l'intervenant est parti et le créneau est à reprendre. Pour l'instant c'est en lecture seule ; l'édition directe des créneaux arrivera bientôt."},
   {cat:'📊 Tableau de bord',q:"C'est quoi « Ton équipe » avec les ananas en haut de l'accueil ?",kw:"equipe ananas bob bobs sabine tresi nono roro secretaire tresoriere animateur rh personnage mascotte accueil qui veux voir carte cartes outils porte entree cliquer membre direction zanana",a:"En haut du tableau de bord, ton équipe Bob te sert de <b>porte d'entrée</b> : chaque personnage regroupe un métier — <b>Sabine</b> (le bureau : adhérents, agenda, répertoire, CA), <b>Trési</b> (la trésorerie : compta, subventions, bilan), <b>Nono</b> (l'animation : périscolaire, activités, vacances, ateliers) et <b>Roro</b> (les salariés : dossiers, congés, horaires). Clique un personnage pour voir tous ses outils et y aller directement ; « La Direction » juste au-dessus regroupe le pilotage (tableau de bord, projet, suivi). Tu ne vois que les personnages et outils auxquels <b>ton rôle a accès</b>. Tous les onglets restent aussi dans le menu en couleurs comme avant."},
@@ -3490,13 +3490,35 @@ function renderPilotage(){
   else body=pilotListView();
   el.innerHTML=bar+body;
 }
+function pilotUnmatched(){
+  const have=new Set(pilotDB().map(f=>(f.nom||'').trim().toLowerCase()));
+  const src=(typeof listValues==='function')?listValues('actions'):[];
+  return src.filter(l=>l && !have.has(l.trim().toLowerCase()));
+}
+function pilotAdopt(nom){
+  nom=(nom||'').trim(); if(!nom) return;
+  if(pilotDB().some(f=>(f.nom||'').trim().toLowerCase()===nom.toLowerCase())) return;
+  const n=nom.toLowerCase(); let type='Autre';
+  if(/vepi/.test(n)) type='VEPI';
+  else if(/acm|loisir|ados|kaz/.test(n)) type='ACM';
+  else if(/p[eé]ri/.test(n)) type='Périscolaire';
+  else if(/f[eê]te|f[eê]t |journ|[eé]v[eé]n|kart/.test(n)) type='Événement';
+  pilotDB().push(pilotFiche({id:uid(),nom,type,periode:'',site:'',responsable:'',statut:'En cours',mairie:false,dossier:'',effectif:0}));
+  save();
+}
+function pilotUnmatchedPanel(){
+  const list=pilotUnmatched(); if(!list.length) return '';
+  const btns=list.map(l=>{ const has=(pilotReel(l,'out')||pilotReel(l,'in')||pilotSubs(l).length)?' <span class="pill in" style="font-size:10px;font-weight:600">données présentes</span>':''; return `<button class="btn" style="margin:3px 6px 3px 0" onclick="pilotAdopt('${esc(l).replace(/'/g,"\\'")}')">➕ ${esc(l)}${has}</button>`; }).join('');
+  return `<div class="panel" style="background:var(--card2,#faf9f6)"><div style="font-weight:700;margin-bottom:4px">🔗 Actions déjà présentes dans Bob, sans fiche budget</div><p class="hint" style="margin:0 0 8px">Ces actions existent déjà dans ta compta / tes subventions. Clique pour créer leur fiche en un geste — le budget déjà saisi sous ce nom se reliera aussitôt.</p>${btns}</div>`;
+}
 function pilotListView(){
   const fiches=pilotDB();
-  if(!fiches.length) return '<div class="panel"><div class="empty">Aucune action pour le moment. Crée ta première action ci-dessus (ex. « Périscolaire Piton », « ACM Ados »…).</div></div>';
+  const sugg=pilotUnmatchedPanel();
+  if(!fiches.length) return sugg+'<div class="panel"><div class="empty">Aucune fiche action pour le moment. Crée-en une ci-dessus, ou adopte une action déjà présente dans Bob (bloc ci-dessus).</div></div>';
   const salDl='<datalist id="pilotSalDl">'+pilotSalaries().map(n=>`<option value="${esc(n)}">`).join('')+'</datalist>';
   const typeOpts=sel=>PILOT_TYPES.map(t=>`<option ${t===sel?'selected':''}>${t}</option>`).join('');
   const statOpts=sel=>PILOT_STATUTS.map(t=>`<option ${t===sel?'selected':''}>${t}</option>`).join('');
-  return salDl+fiches.map(f=>{
+  return sugg+salDl+fiches.map(f=>{
     const t=pilotTotals(f), st=f.statut==='Clôturée'?'ok':f.statut==='En cours'?'in':'wait', open=!!window._pilotOpen[f.id];
     return `<div class="panel" style="margin-bottom:12px">
       <div class="row" style="justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
