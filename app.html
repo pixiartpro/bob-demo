@@ -2200,6 +2200,7 @@ document.querySelectorAll('nav.tabs button').forEach(b=>{
 
 /* ---- Aide : « Demande à Zanana » (FAQ + assistant par mots-clés, sans IA) ---- */
 const FAQ=[
+  {cat:'👶 Enfants',q:"Comment déplacer un enfant d'un accueil (ou d'une semaine d'ACM) à un autre sans perdre l'historique ?",kw:"deplacer deplace bouger changer semaine acm accueil vepi activite transferer muter passer autre effacer supprimer annuler historique mouvement bascule retirer",a:"Onglet <b>👶 Enfants</b> (dans 👥 Adhérents). Sur la puce de l'accueil concerné (🌴 ACM, 📌 VEPI, 🎟️ activité), clique <b>⇄</b> : choisis la <b>destination</b> puis valide. Bob <b>crée la nouvelle inscription</b> et met l'ancienne en <b>« déplacée »</b> — <b>rien n'est effacé</b>, tout reste dans l'historique (le petit <b>🕘</b> sous l'enfant). Le <b>✕</b> à côté ne supprime pas non plus : il passe l'inscription en <b>« annulée »</b> (conservée). Les <b>places restantes</b> et l'<b>effectif des éditions d'ACM</b> ne comptent que les inscriptions actives — les déplacées/annulées sont ignorées. Réservé au <b>bureau et à l'accueil</b>. 💡 C'est aussi l'outil pour basculer, en septembre, les inscrits du parapluie « ACM Ados — Été 2026 » vers les semaines."},
   {cat:'🎯 Budget par action', q:"À quoi sert l'onglet Budget par action et comment créer une action ?", kw:"action actions budget par action pilotage fiche creer dossier mgdis mairie periscolaire acm vepi evenement financeur subvention depense pivot secteur activite responsable beneficiaires cloturee suivi budget", a:"L'onglet <b>🎯 Budget par action</b> (famille 💶 Finances, réservé au bureau) réunit chaque <b>action</b> du CASE — périscolaire, ACM, VEPI, événement… — en une <b>fiche unique</b>. Les actions <b>déjà utilisées dans Bob</b> (compta, subventions) apparaissent en haut de la liste, à créer en <b>un clic</b> — pas besoin de retaper leur nom. Tu crées une action (nom + type), puis tu précises sa période, son site, son ou sa responsable, son <b>n° de dossier Mairie (MGDIS)</b>, ses bénéficiaires et si elle est financée par la Mairie. Cette fiche devient le <b>point d'accroche unique</b> de son budget : les dépenses et les subventions déjà saisies dans Bob se relient à elle <b>par son nom</b>, sans double saisie. Ouvre le <b>budget détaillé</b> d'une action : le <b>coût du personnel</b> se calcule tout seul (coût horaire chargé × heures affectées), les <b>dépenses</b> réelles et les <b>recettes</b> (subventions versées) remontent automatiquement de la comptabilité, et un <b>aperçu « plan financier »</b> se copie en un clic pour le dossier Mairie. Deux vues complètent : <b>📊 Consolidé annuel</b> (toutes les actions) et <b>👤 Charge salariés</b> (Σ des heures par salarié vs sa capacité — le garde-fou anti-double-comptage). Supprimer une fiche ne touche <b>pas</b> les écritures comptables reliées."},
   {cat:'📨 Messages',q:"Comment répondre aux messages des adhérents ?",kw:"messages adherent adherents repondre parler case fil conversation famille accueil bureau boite reception canal deux sens en attente courrier ecrire",a:"Onglet <b>📨 Messages</b> (famille 👥 Adhérents) : chaque adhérent qui écrit depuis son espace « 💬 Parler au CASE » a un <b>fil privé</b>. Les fils <b>« 🔴 à répondre »</b> (dernier message venu de l'adhérent) remontent en haut. Clique un fil pour lire la conversation et <b>répondre au nom du CASE</b> — accueil et bureau y ont accès. Une <b>pastille rouge</b> sur la famille 👥 Adhérents et une ligne « ⏰ À traiter » te préviennent des messages sans réponse."},
   {cat:'🗓️ Salles',q:"À quoi sert l'onglet Salles ?",kw:'salle salles planning creneau créneau danse grille horaire cours intervenant orphelin qui anime',a:"L'onglet 🗓️ Salles montre le planning hebdomadaire de la salle de danse : chaque créneau (jour, heure, cours) et qui l'anime. Les créneaux en rouge sont « orphelins » — l'intervenant est parti et le créneau est à reprendre. Pour l'instant c'est en lecture seule ; l'édition directe des créneaux arrivera bientôt."},
@@ -2473,6 +2474,7 @@ function pageHelpGotoAide(){ pageHelpClose(); const b=document.querySelector('na
 
 /* ---- ✨ Quoi de neuf (nouveautés + notice chronologique) ---- */
 const NEWS=[
+  {id:'2026-07-09-deplacer-enfant',date:'2026-07-09',tab:'👶 Enfants',titre:"↔️ Déplacer un enfant d'un accueil à l'autre — sans rien perdre",desc:"Dans l'onglet <b>👶 Enfants</b>, chaque inscription (ACM, VEPI, activité) a maintenant un bouton <b>⇄</b> pour <b>déplacer</b> l'enfant vers un autre accueil (par ex. d'une semaine d'ACM à une autre). Bob crée la nouvelle inscription <b>et conserve l'ancienne en « déplacée »</b> : <b>rien n'est effacé</b>. De même, le <b>✕</b> ne supprime plus — il marque l'inscription <b>« annulée »</b>. Un petit <b>🕘 historique des mouvements</b> apparaît sous l'enfant. Les <b>places restantes</b> et l'<b>effectif des éditions d'ACM</b> ignorent automatiquement les inscriptions déplacées/annulées. Réservé au bureau et à l'accueil."},
   {id:'2026-07-09-budget-par-action',date:'2026-07-09',tab:'🎯 Budget par action',titre:"🎯 Nouveau : le Budget par action",desc:"Un nouvel onglet <b>🎯 Budget par action</b> (famille 💶 Finances, réservé au bureau) : chaque activité du CASE — <b>périscolaire, ACM, VEPI, événement…</b> — devient une <b>fiche unique</b> (type, période, site, responsable, <b>n° de dossier Mairie</b>, bénéficiaires). Et son <b>budget</b> avec : ouvre le budget détaillé et tu vois le <b>coût du personnel</b> (coût horaire × heures affectées), les <b>dépenses</b> et <b>recettes</b> réelles remontées <b>automatiquement</b> de la compta et des subventions (zéro double saisie), les contributions en nature, et un <b>aperçu à recopier</b> pour le dossier Mairie. Plus une vue <b>📊 Consolidée annuelle</b> et une vue <b>👤 Charge par salarié</b> qui alerte si quelqu'un est compté sur trop d'actions à la fois."},
   {id:'2026-07-08-messagerie-adherents',date:'2026-07-08',tab:'📨 Messages',titre:"📨 Parler avec le CASE — messagerie à 2 sens",desc:"Nouveau canal direct entre les familles et le CASE. Depuis leur espace, les adhérents écrivent dans l'onglet <b>« 💬 Parler au CASE »</b> ; côté gestion, un nouvel onglet <b>📨 Messages</b> (famille 👥 Adhérents) réunit chaque <b>fil privé</b> — les messages <b>« à répondre »</b> remontent en haut, une <b>pastille rouge</b> te prévient sur la famille Adhérents et dans « ⏰ À traiter ». <b>Accueil et bureau</b> peuvent répondre au nom du CASE, et l'adhérent voit la réponse (point rouge sur son onglet)."},
   {id:'2026-07-08-acm-caf-ps',date:'2026-07-08',tab:'🌴 Vacances',titre:"💶 Estimation de la Prestation de service CAF (heures-enfants)",desc:"Nouveau panneau <b>💶 CAF — Prestation de service</b> dans 🌴 Vacances. La CAF974 compte en <b>heures-enfants</b> (jours × enfants × amplitude) et raisonne par <b>année civile</b>. Renseigne l'<b>amplitude horaire</b> de chaque édition : Bob additionne les heures-enfants de l'année et <b>estime la PS</b> (ados <b>0,94 €/h</b> en 2026, barème paramétrable car revalorisé chaque année). Il rappelle aussi les <b>4 échéances AFAS</b> (prévisionnel 31/03, actu T2 15/07, actu T3 15/10, bilan 31/03 N+1). ⚠️ C'est une <b>estimation d'aide</b> : la CAF compte les heures réalisées/facturées selon ta convention et plafonne au prix de revient réel. Réservé au bureau."},
@@ -6771,8 +6773,8 @@ renderAll();
       if(typeof setSync==='function')setSync('✓ enfant rattaché au périscolaire','#dff5e9');
     } else if(dest.indexOf('ACT:')===0){
       const aid=dest.slice(4);
-      const rc=await sbc.from('inscriptions_activite').select('id').eq('activite_id',aid).eq('enfant_id',enfantId);
-      if(!rc.error&&rc.data&&rc.data.length){ alert('Cet enfant est déjà inscrit à cette activité.'); if(window.loadDossiersPeri)loadDossiersPeri(); return; }
+      const rc=await sbc.from('inscriptions_activite').select('id,statut').eq('activite_id',aid).eq('enfant_id',enfantId);
+      if(!rc.error&&(rc.data||[]).some(r=>r.statut!=='deplace'&&r.statut!=='annule')){ alert('Cet enfant est déjà inscrit à cette activité.'); if(window.loadDossiersPeri)loadDossiersPeri(); return; }
       const nom=(((k.prenom||'')+' '+(k.nom||'')).trim())||'';
       const {error}=await sbc.from('inscriptions_activite').insert({asso_id:myAsso, activite_id:aid, enfant_id:enfantId, nom:nom, statut:'valide'});
       if(error){ alert('Erreur : '+error.message); return; }
@@ -6792,10 +6794,10 @@ renderAll();
     if(window.loadDossiersPeri)loadDossiersPeri();
   };
   window.periRemoveActivite=async function(insId){
-    if(!confirm("Retirer cette inscription à l'activité ? (la fiche enfant n'est PAS supprimée)")) return;
-    const {error}=await sbc.from('inscriptions_activite').delete().eq('id',insId);
+    if(!confirm("Retirer cette inscription à l'activité ?\n\nRien n'est effacé : elle est marquée « annulée » et reste dans l'historique.")) return;
+    const {error}=await sbc.from('inscriptions_activite').update({statut:'annule'}).eq('id',insId);
     if(error){ alert('Erreur : '+error.message); return; }
-    if(typeof setSync==='function')setSync("✓ inscription à l'activité retirée",'#dff5e9');
+    if(typeof setSync==='function')setSync("✓ inscription à l'activité annulée (historisée)",'#dff5e9');
     if(window.loadDossiersPeri)loadDossiersPeri();
   };
   window.periDestChange=function(id){
@@ -6840,7 +6842,7 @@ renderAll();
     const periActs=(ract.data||[]).filter(a=>a&&a.categorie==='Péri & extrascolaire'&&!/p[eé]riscolaire/i.test(a.nom||''));
     const periDestOpts='<option value="PERI">🎒 Périscolaire (dossier)</option>'+periActs.map(a=>'<option value="ACT:'+esc(a.id)+'">'+esc(a.nom||'activité')+'</option>').join('');
     const periCatIds=new Set((ract.data||[]).filter(a=>a&&a.categorie==='Péri & extrascolaire').map(a=>a.id));
-    const insActByEnfant={}; (rina.data||[]).forEach(i=>{ if(i.enfant_id&&periCatIds.has(i.activite_id)) (insActByEnfant[i.enfant_id]=insActByEnfant[i.enfant_id]||[]).push(i); });
+    const insActByEnfant={}; (rina.data||[]).forEach(i=>{ if(i.enfant_id&&periCatIds.has(i.activite_id)&&i.statut!=='deplace'&&i.statut!=='annule') (insActByEnfant[i.enfant_id]=insActByEnfant[i.enfant_id]||[]).push(i); });
     if(!data||!data.length){ box.innerHTML='<p class="hint">Aucun dossier déposé pour l\'instant. Les familles adhérentes déposent depuis leur espace adhérent.</p>'; return; }
     const isTodo=function(x){ return x.statut!=='valide'; };
     data.sort(function(a,b){ return (isTodo(a)?0:1)-(isTodo(b)?0:1); }); // les dossiers à traiter d'abord
@@ -6975,7 +6977,7 @@ renderAll();
     const pmap={}; ((rp&&rp.data)||[]).forEach(p=>{ pmap[p.id]=p.full_name||p.email||''; });
     const perSession={}; acmIds.forEach(id=>{ perSession[id]=0; });
     const byEnfant={}; let sansFiche=0;
-    (ri.data||[]).filter(i=>acmActs[i.activite_id]).forEach(i=>{
+    (ri.data||[]).filter(i=>acmActs[i.activite_id] && i.statut!=='deplace' && i.statut!=='annule').forEach(i=>{
       perSession[i.activite_id]=(perSession[i.activite_id]||0)+1;
       if(i.enfant_id&&fmap[i.enfant_id]) (byEnfant[i.enfant_id]=byEnfant[i.enfant_id]||[]).push(i);
       else sansFiche++;
@@ -7029,7 +7031,7 @@ renderAll();
     if(typeof sbc==='undefined'||!sbc){ if(box) box.innerHTML='<p class="hint">Connecte-toi pour gérer les éditions.</p>'; return; }
     const [ra,ri,rf,rp]=await Promise.all([
       sbc.from('activites').select('id,nom,categorie,statut,capacite'),
-      sbc.from('inscriptions_activite').select('enfant_id,activite_id'),
+      sbc.from('inscriptions_activite').select('enfant_id,activite_id,statut'),
       sbc.from('enfants').select('id,prenom,nom,classe,parent_id'),
       sbc.from('profiles').select('id,full_name,email')
     ]);
@@ -7037,7 +7039,7 @@ renderAll();
     const enf={}; ((rf&&rf.data)||[]).forEach(function(e){ enf[e.id]=e; });
     const resp={}; ((rp&&rp.data)||[]).forEach(function(p){ resp[p.id]=p.full_name||p.email||''; });
     const insByAct={},insNoEnfByAct={},actSet={}; acts.forEach(function(a){ actSet[a.id]=true; insByAct[a.id]=[]; insNoEnfByAct[a.id]=0; });
-    ((ri&&ri.data)||[]).forEach(function(i){ if(!actSet[i.activite_id])return; if(i.enfant_id&&enf[i.enfant_id]) insByAct[i.activite_id].push(i.enfant_id); else insNoEnfByAct[i.activite_id]++; });
+    ((ri&&ri.data)||[]).forEach(function(i){ if(!actSet[i.activite_id])return; if(i.statut==='deplace'||i.statut==='annule')return; if(i.enfant_id&&enf[i.enfant_id]) insByAct[i.activite_id].push(i.enfant_id); else insNoEnfByAct[i.activite_id]++; });
     window.__acmData={acts:acts,enf:enf,resp:resp,insByAct:insByAct,insNoEnfByAct:insNoEnfByAct};
     if(window.renderAcmEditions) renderAcmEditions();
     if(window.__acmBilanCur){ const ed=acmDb().sessions.find(function(s){return s.id===window.__acmBilanCur;}); if(ed) acmFillEffectif(ed); }
@@ -7304,7 +7306,7 @@ renderAll();
     const [rf,rp,ria,ra,rpr,rfs]=await Promise.all([
       sbc.from('enfants').select('id,prenom,nom,classe,ecole,naissance,parent_id'),
       sbc.from('inscriptions_periscolaire').select('id,user_id,enfants,pieces'),
-      sbc.from('inscriptions_activite').select('id,enfant_id,activite_id,pieces'),
+      sbc.from('inscriptions_activite').select('id,enfant_id,activite_id,pieces,statut,note_bureau'),
       sbc.from('activites').select('id,nom,categorie'),
       sbc.from('profiles').select('id,full_name,email'),
       sbc.from('fiches_sanitaires').select('enfant_id,statut,signe_le')
@@ -7323,26 +7325,31 @@ renderAll();
     // destinations pour rattacher : périscolaire (dossier) + VEPI + sessions ACM (hors doublon « Périscolaire — matin & soir »)
     const dests=(ra.data||[]).filter(a=>a&&a.categorie==='Péri & extrascolaire'&&!isPeriAct(a));
     window.__enfHubDestOpts='<option value="PERI">🎒 Périscolaire (dossier)</option>'+dests.map(a=>'<option value="ACT:'+esc(a.id)+'">'+esc(a.nom||'activité')+'</option>').join('');
+    // Coup 3 « déplacer » : destinations activité (sans le périscolaire-dossier) + noms d'activités pour les libellés
+    window.__enfHubMoveDests=dests.map(a=>({id:a.id,nom:a.nom||'activité'}));
+    window.__enfHubActName={}; (ra.data||[]).forEach(a=>{ if(a) window.__enfHubActName[a.id]=a.nom||''; });
     // 🧩 Complétude par accueil (Coup 2) : POT de pièces mutualisé par enfant = pièces du dossier famille + pièces des inscriptions activité (lecture des jsonb existants, zéro migration).
     const keysOf=obj=>{ const s={}; if(obj&&typeof obj==='object') Object.keys(obj).forEach(k=>{ const p=obj[k]; if(p&&(p.path||p.name||p===true)) s[k]=true; }); return s; };
     const piecesByParent={}; (rp.data||[]).forEach(ins=>{ if(ins.user_id){ piecesByParent[ins.user_id]=piecesByParent[ins.user_id]||{}; Object.assign(piecesByParent[ins.user_id], keysOf(ins.pieces)); } });
-    const actPiecesByEnfant={}; (ria.data||[]).forEach(i=>{ if(i.enfant_id){ actPiecesByEnfant[i.enfant_id]=actPiecesByEnfant[i.enfant_id]||{}; Object.assign(actPiecesByEnfant[i.enfant_id], keysOf(i.pieces)); } });
+    const actPiecesByEnfant={}; (ria.data||[]).forEach(i=>{ if(i.enfant_id && i.statut!=='annule'){ actPiecesByEnfant[i.enfant_id]=actPiecesByEnfant[i.enfant_id]||{}; Object.assign(actPiecesByEnfant[i.enfant_id], keysOf(i.pieces)); } });
     const ficheSet={}; ((rfs&&rfs.data)||[]).forEach(fx=>{ if(fx.enfant_id&&(fx.statut==='signee'||fx.signe_le)) ficheSet[fx.enfant_id]=true; });
     // ⚙️ Exigences par accueil — CONFIG éditable (mêmes 6 pièces périscolaire & ACM d'après la base ; l'ACM exige EN PLUS la fiche sanitaire signée ; VEPI = sur RDV, pas de pièce en ligne).
     const PLAB={caf:'CAF',impots:'Impôts',domicile:'Domicile',assurance:'Assurance',vaccin:'Vaccins',livret:'Livret'};
     const EXIG={peri:{req:['caf','impots','domicile','assurance','vaccin','livret'],sanit:false}, acm:{req:['caf','impots','domicile','assurance','vaccin','livret'],sanit:true}};
     const complFor=(kind,k)=>{ const cfg=EXIG[kind]; if(!cfg) return null; const pot=Object.assign({}, piecesByParent[k.parent_id]||{}, actPiecesByEnfant[k.id]||{}); const manque=cfg.req.filter(x=>!pot[x]).map(x=>PLAB[x]||x); if(cfg.sanit&&!ficheSet[k.id]) manque.push('Fiche sanitaire'); return {complete:manque.length===0, manque:manque}; };
+    const inactif=i=>i.statut==='deplace'||i.statut==='annule';
     window.__enfHubModel=(rf.data||[]).map(k=>{
-      const insList=(actByEnfant[k.id]||[]); const mem=[];
-      const periD=periByEnfant[k.id]; const periActIns=insList.filter(i=>isPeriAct(actById[i.activite_id]));
+      const insList=(actByEnfant[k.id]||[]); const mem=[]; const hist=[];
+      const periD=periByEnfant[k.id]; const periActIns=insList.filter(i=>isPeriAct(actById[i.activite_id])&&!inactif(i));
       if(periD) mem.push({kind:'peri',src:'dossier',dossierId:periD.dossierId,matin:periD.matin,soir:periD.soir,compl:complFor('peri',k)});
       else if(periActIns.length) mem.push({kind:'peri',src:'act',insId:periActIns[0].id,compl:complFor('peri',k)});
       insList.forEach(i=>{ const a=actById[i.activite_id]; if(!a) return;
-        if(isACM(a)) mem.push({kind:'acm',insId:i.id,name:a.nom,compl:complFor('acm',k)});
-        else if(isVEPI(a)) mem.push({kind:'vepi',insId:i.id,name:a.nom});
-        else if(!isPeriAct(a)) mem.push({kind:'autre',insId:i.id,name:a.nom});
+        if(inactif(i)){ hist.push({name:a.nom,statut:i.statut,note:i.note_bureau||''}); return; }
+        if(isACM(a)) mem.push({kind:'acm',insId:i.id,aid:i.activite_id,name:a.nom,compl:complFor('acm',k)});
+        else if(isVEPI(a)) mem.push({kind:'vepi',insId:i.id,aid:i.activite_id,name:a.nom});
+        else if(!isPeriAct(a)) mem.push({kind:'autre',insId:i.id,aid:i.activite_id,name:a.nom});
       });
-      return {k, resp:(k.parent_id&&pmap[k.parent_id])||'', mem:mem};
+      return {k, resp:(k.parent_id&&pmap[k.parent_id])||'', mem:mem, hist:hist};
     });
     renderEnfHub();
   };
@@ -7359,13 +7366,19 @@ renderAll();
     }).join('')+'</div>';
     const list=model.filter(m=>inAcc(m,f)).sort((a,b)=>(((a.k.nom||'')+(a.k.prenom||'')).toLowerCase()).localeCompare(((b.k.nom||'')+(b.k.prenom||'')).toLowerCase()));
     if(!list.length){ box.innerHTML=bar+'<p class="hint">Aucun enfant dans ce filtre.</p>'; return; }
-    box.innerHTML=bar+list.map(function(m){ const eid=m.k.id;
+    box.innerHTML=bar+list.map(function(m){ const eid=m.k.id; var moveBoxes='';
       const chips=m.mem.map(function(x){ var bg,c,lab,rm;
         if(x.kind==='peri'){ bg='#eef3ef';c='#2f5d4c'; var fm=[x.matin?'matin':null,x.soir?'soir':null].filter(Boolean).join(' & '); lab='🎒 Périscolaire'+(fm?' ('+fm+')':''); rm=(x.src==='dossier')?('enfHubRemovePeri(\''+x.dossierId+'\',\''+eid+'\')'):('enfHubRemoveAct(\''+x.insId+'\')'); }
         else if(x.kind==='acm'){ bg='#eef4ff';c='#23448a'; lab='🌴 '+esc(x.name||''); rm='enfHubRemoveAct(\''+x.insId+'\')'; }
         else if(x.kind==='vepi'){ bg='#f3ecfb';c='#5b3a9c'; lab='📌 '+esc(x.name||'VEPI'); rm='enfHubRemoveAct(\''+x.insId+'\')'; }
         else { bg='#f5f2ec';c='#7a5a1a'; lab='🎟️ '+esc(x.name||''); rm='enfHubRemoveAct(\''+x.insId+'\')'; }
-        return '<span class="pill" style="background:'+bg+';color:'+c+';font-size:11px;margin:0 3px 3px 0;display:inline-flex;align-items:center;gap:5px">'+lab+(canPeri?' <span onclick="'+rm+'" title="Retirer / déplacer" style="cursor:pointer;font-weight:700;opacity:.55">✕</span>':'')+'</span>';
+        var moveBtn='';
+        if(canPeri && x.aid && x.kind!=='peri'){
+          var opts=(window.__enfHubMoveDests||[]).filter(function(d){return d.id!==x.aid;}).map(function(d){return '<option value="'+esc(d.id)+'">'+esc(d.nom)+'</option>';}).join('');
+          if(opts){ moveBtn=' <span onclick="enfHubMoveToggle(\''+x.insId+'\')" title="Déplacer vers un autre accueil (sans perte)" style="cursor:pointer;font-weight:700;opacity:.55">⇄</span>';
+            moveBoxes+='<div id="enfmovebox_'+x.insId+'" style="display:none;margin:4px 0;padding:6px 8px;background:#eef4ff;border:1px dashed #9db8e8;border-radius:8px;font-size:12px">↪ Déplacer <b>'+esc(x.name||'')+'</b> vers <select id="enfmove_'+x.insId+'" style="font:inherit;padding:3px 6px;border:1px solid var(--line);border-radius:6px;max-width:180px">'+opts+'</select> <button class="btn" style="padding:2px 10px" onclick="enfHubMove(\''+x.insId+'\',\''+eid+'\',\''+x.aid+'\')">Déplacer</button> <span onclick="enfHubMoveToggle(\''+x.insId+'\')" style="cursor:pointer;color:#8a8f98;margin-left:4px">annuler</span></div>'; }
+        }
+        return '<span class="pill" style="background:'+bg+';color:'+c+';font-size:11px;margin:0 3px 3px 0;display:inline-flex;align-items:center;gap:5px">'+lab+moveBtn+(canPeri?' <span onclick="'+rm+'" title="Annuler / retirer (conservé en historique)" style="cursor:pointer;font-weight:700;opacity:.55">✕</span>':'')+'</span>';
       }).join('');
       var complBlk=m.mem.filter(function(x){return x.compl;}).map(function(x){ var lab=(x.kind==='acm')?('🌴 '+esc(x.name||'ACM')):'🎒 Périscolaire'; return x.compl.complete?('<span style="font-size:11px;color:#127a51;margin:0 10px 3px 0;display:inline-block">'+lab+' : ✅ dossier complet</span>'):('<span style="font-size:11px;color:#b23a23;margin:0 10px 3px 0;display:inline-block">'+lab+' : ⚠️ manque '+x.compl.manque.map(esc).join(', ')+'</span>'); }).join('');
       const addCtrl=canPeri?('<div class="row" style="gap:6px;flex-wrap:wrap;align-items:center;margin-top:8px;background:#f4f8f5;border:1px dashed var(--line);border-radius:8px;padding:6px 8px">'
@@ -7377,10 +7390,13 @@ renderAll();
         +'</span>'
         +'<button class="btn" style="padding:4px 12px" onclick="enfHubAdd(\''+eid+'\')">Ajouter</button>'
         +'</div>'):'';
+      var histBlk=(m.hist&&m.hist.length)?('<div style="margin-top:4px"><span onclick="var n=this.nextElementSibling;n.style.display=n.style.display===\'none\'?\'\':\'none\'" style="cursor:pointer;font-size:11px;color:#8a8f98">🕘 '+m.hist.length+' mouvement'+(m.hist.length>1?'s':'')+' — historique</span><div style="display:none;margin-top:3px">'+m.hist.map(function(h){return '<div style="font-size:11px;color:#8a8f98">'+(h.statut==='deplace'?'↪ déplacé':'✕ annulé')+' · '+esc(h.name||'')+(h.note?' <span style="color:#a7abb2">— '+esc(h.note)+'</span>':'')+'</div>';}).join('')+'</div></div>'):'';
       return '<div class="panel" style="margin:8px 0;padding:10px 12px">'
         +'<div><strong>'+esc(((m.k.prenom||'')+' '+(m.k.nom||'')).trim()||'?')+'</strong>'+(m.k.classe?' <span class="muted" style="font-size:12px">· '+esc(m.k.classe)+'</span>':'')+(m.resp?' <span class="muted" style="font-size:12px">· '+esc(m.resp)+'</span>':'')+'</div>'
         +'<div style="margin-top:6px;display:flex;flex-wrap:wrap">'+(chips||'<span class="hint">— aucun accueil</span>')+'</div>'
+        +(moveBoxes||'')
         +(complBlk?('<div style="margin-top:5px">'+complBlk+'</div>'):'')
+        +histBlk
         +addCtrl+'</div>';
     }).join('');
   }
@@ -7405,8 +7421,8 @@ renderAll();
       if(typeof setSync==='function')setSync('✓ enfant rattaché au périscolaire','#dff5e9');
     } else if(dest.indexOf('ACT:')===0){
       const aid=dest.slice(4);
-      const rc=await sbc.from('inscriptions_activite').select('id').eq('activite_id',aid).eq('enfant_id',eid);
-      if(!rc.error&&rc.data&&rc.data.length){ alert('Cet enfant est déjà inscrit à cette activité.'); if(window.loadEnfantsHub)loadEnfantsHub(); return; }
+      const rc=await sbc.from('inscriptions_activite').select('id,statut').eq('activite_id',aid).eq('enfant_id',eid);
+      if(!rc.error&&(rc.data||[]).some(r=>r.statut!=='deplace'&&r.statut!=='annule')){ alert('Cet enfant est déjà inscrit à cette activité.'); if(window.loadEnfantsHub)loadEnfantsHub(); return; }
       const {error}=await sbc.from('inscriptions_activite').insert({asso_id:myAsso,activite_id:aid,enfant_id:eid,nom:nom,statut:'valide'});
       if(error){ alert('Erreur : '+error.message); return; }
       if(typeof setSync==='function')setSync("✓ enfant inscrit à l'activité",'#dff5e9');
@@ -7414,10 +7430,10 @@ renderAll();
     if(window.loadEnfantsHub)loadEnfantsHub();
   };
   window.enfHubRemoveAct=async function(insId){
-    if(!confirm("Retirer cette inscription ? (la fiche enfant n'est pas supprimée)")) return;
-    const {error}=await sbc.from('inscriptions_activite').delete().eq('id',insId);
+    if(!confirm("Retirer cette inscription ?\n\nRien n'est effacé : elle est marquée « annulée » et reste dans l'historique.")) return;
+    const {error}=await sbc.from('inscriptions_activite').update({statut:'annule'}).eq('id',insId);
     if(error){ alert('Erreur : '+error.message); return; }
-    if(typeof setSync==='function')setSync('✓ inscription retirée','#dff5e9');
+    if(typeof setSync==='function')setSync('✓ inscription annulée (historisée)','#dff5e9');
     if(window.loadEnfantsHub)loadEnfantsHub();
   };
   window.enfHubRemovePeri=async function(dossierId,eid){
@@ -7428,6 +7444,34 @@ renderAll();
     const {error}=await sbc.from('inscriptions_periscolaire').update({enfants:cur.filter(x=>x&&x.enfant_id!==eid)}).eq('id',dossierId);
     if(error){ alert('Erreur : '+error.message); return; }
     if(typeof setSync==='function')setSync('✓ enfant retiré du périscolaire','#dff5e9');
+    if(window.loadEnfantsHub)loadEnfantsHub();
+  };
+  // Coup 3 — « déplacer un enfant » NON destructif : nouvelle inscription + ancienne passée en statut 'deplace' (jamais de DELETE ; historique conservé, compteur de places corrigé côté base).
+  window.enfHubMoveToggle=function(insId){ const b=document.getElementById('enfmovebox_'+insId); if(b) b.style.display=(b.style.display==='none'?'':'none'); };
+  window.enfHubMove=async function(insId,eid,srcAid){
+    const sel=document.getElementById('enfmove_'+insId); const destAid=sel?sel.value:'';
+    if(!destAid){ alert('Choisis une destination.'); return; }
+    if(destAid===srcAid){ alert("C'est déjà sa place actuelle."); return; }
+    const destName=(window.__enfHubActName&&window.__enfHubActName[destAid])||'la destination';
+    if(!confirm('Déplacer vers « '+destName+' » ?\n\nL\'inscription actuelle est CONSERVÉE en historique (statut « déplacée »), pas supprimée.')) return;
+    // anti-doublon : déjà une inscription ACTIVE sur la destination ?
+    const rc=await sbc.from('inscriptions_activite').select('id,statut').eq('activite_id',destAid).eq('enfant_id',eid);
+    if(!rc.error&&(rc.data||[]).some(r=>r.statut!=='deplace'&&r.statut!=='annule')){ alert('Cet enfant est déjà inscrit sur « '+destName+' ».'); return; }
+    const re=await sbc.from('enfants').select('prenom,nom').eq('id',eid).single();
+    const nom=(re&&re.data)?(((re.data.prenom||'')+' '+(re.data.nom||'')).trim()):'';
+    // 1) créer la NOUVELLE inscription (on n'écrase jamais)
+    const ins=await sbc.from('inscriptions_activite').insert({asso_id:myAsso,activite_id:destAid,enfant_id:eid,nom:nom,statut:'valide'}).select('id');
+    if(ins.error){ alert('Erreur (création de la nouvelle inscription) : '+ins.error.message); return; }
+    const newId=(ins.data&&ins.data[0])?ins.data[0].id:null;
+    // 2) marquer l'ANCIENNE « déplacée » (jamais de suppression → historique conservé)
+    const upd=await sbc.from('inscriptions_activite').update({statut:'deplace',note_bureau:'↪ déplacé vers '+destName+' le '+today()}).eq('id',insId);
+    if(upd.error){
+      // compensation : annuler la nouvelle inscription pour ne PAS laisser deux inscriptions actives
+      if(newId){ try{ await sbc.from('inscriptions_activite').update({statut:'annule'}).eq('id',newId); }catch(e){} }
+      alert('⚠️ Déplacement annulé : l\'ancienne inscription n\'a pas pu être marquée « déplacée » ('+upd.error.message+').\nRien n\'a été modifié — réessaie.');
+      if(window.loadEnfantsHub)loadEnfantsHub(); return;
+    }
+    if(typeof setSync==='function')setSync('✓ enfant déplacé vers « '+destName+' » (ancienne inscription historisée)','#dff5e9');
     if(window.loadEnfantsHub)loadEnfantsHub();
   };
 
@@ -7543,7 +7587,7 @@ renderAll();
     ]);
     if(ra.error){ box.innerHTML='<p class="hint" style="color:#c0392b">Erreur : '+esc(ra.error.message)+'</p>'; return; }
     const acts=(ra.data||[]).slice().sort((a,b)=>((a.type==='evenement')!==(b.type==='evenement'))?(a.type==='evenement'?1:-1):((a.ordre||0)-(b.ordre||0))), byA={};
-    (ri.data||[]).forEach(i=>{ (byA[i.activite_id]=byA[i.activite_id]||[]).push(i); });
+    (ri.data||[]).forEach(i=>{ if(i.statut==='deplace'||i.statut==='annule')return; (byA[i.activite_id]=byA[i.activite_id]||[]).push(i); });
     /* Comptes salariés : référent d'activité + désignation assistant sanitaire */
     const staff=rp.data||[]; window.ACTG_STAFFNAME={}; staff.forEach(function(p){ window.ACTG_STAFFNAME[p.id]=p.full_name||p.email||'?'; });
     const selRef=document.getElementById('ag_referent');
@@ -7718,7 +7762,7 @@ renderAll();
     g('ag_btn').textContent='Enregistrer'; g('ag_nom').focus(); g('ag_nom').scrollIntoView({behavior:'smooth',block:'center'});
   };
   window.delActivite=async function(id){ if(!confirm('Supprimer définitivement cette activité et ses inscriptions ?'))return; const {error}=await sbc.from('activites').delete().eq('id',id); if(error){alert(error.message);return;} loadActivitesGestion(); };
-  window.delInscriptionActivite=async function(id){ if(!confirm('Retirer cette inscription ?'))return; const {error}=await sbc.from('inscriptions_activite').delete().eq('id',id); if(error){alert(error.message);return;} loadActivitesGestion(); };
+  window.delInscriptionActivite=async function(id){ if(!confirm('Retirer cette inscription ?\n\nRien n\'est effacé : elle est marquée « annulée » et reste dans l\'historique.'))return; const {error}=await sbc.from('inscriptions_activite').update({statut:'annule'}).eq('id',id); if(error){alert(error.message);return;} loadActivitesGestion(); };
   window.addInscriptionActivite=async function(aid){
     const gv=id=>{ const e=document.getElementById(id); return e?e.value.trim():''; };
     const nom=gv('ai_nom_'+aid); if(!nom){ alert('Indique au moins le nom.'); return; }

@@ -760,7 +760,8 @@ async function acmBoot(){
       _sbAt.from('fiches_sanitaires').select('enfant_id,statut').eq('annee',PERI.ANNEE)
     ]);
     acts=(ra.data||[]).filter(a=>(a.categorie||'')==='Péri & extrascolaire' && !/p[ée]riscol/i.test(a.nom||''));
-    mine=rm.data||[];
+    // Coup 3 : ne pas montrer à la famille les inscriptions annulées/déplacées par le bureau (sinon fantômes + risque de « résurrection » via redépôt).
+    mine=(rm.data||[]).filter(m=>m.statut!=='deplace'&&m.statut!=='annule');
     // Branchement fiche sanitaire : un enfant dont la fiche de l'année est SIGNÉE n'a plus à redéposer sa « fiche de liaison ».
     ACM.signedByKid={}; (rf&&rf.data?rf.data:[]).forEach(f=>{ if(f.statut==='signee') ACM.signedByKid[f.enfant_id]=true; });
   }catch(e){ const er='<p class="sub" style="color:#b23a23">Impossible de charger pour le moment.</p>'; body.innerHTML=er; if(vbody) vbody.innerHTML=er; return; }
@@ -831,7 +832,8 @@ async function actiBoot(){
       _sbAt.from('inscriptions_activite').select('id,activite_id,statut').eq('user_id',ACM.uid).is('enfant_id',null)
     ]);
     acts=(ra.data||[]).filter(function(a){ return ACTI_CATS.indexOf(a.categorie||'')>=0; });
-    mine=rm.data||[];
+    // Coup 3 : masquer les inscriptions annulées/déplacées (sinon la famille se voit « inscrite » et ne peut pas se réinscrire).
+    mine=(rm.data||[]).filter(function(m){ return m.statut!=='deplace'&&m.statut!=='annule'; });
   }catch(e){ body.innerHTML='<p class="sub" style="color:#b23a23">Impossible de charger les activités pour le moment.</p>'; return; }
   const mineByAct={}; mine.forEach(function(m){ mineByAct[m.activite_id]=m; });
   if(!acts.length){ body.innerHTML='<p class="sub" style="margin:0">Aucune activité adulte ouverte pour le moment. 🍍</p>'; return; }

@@ -303,7 +303,7 @@ async function loadActs(){
       sb.from('activites').select('*').order('created_at',{ascending:true}),
       sb.from('inscriptions_activite').select('*').order('created_at',{ascending:true})
     ]);
-    ME.acts=ra.data||[]; ME.ins=ri.data||[];
+    ME.acts=ra.data||[]; ME.ins=(ri.data||[]).filter(i=>i.statut!=='deplace'&&i.statut!=='annule'); // Coup 3 : ignorer les inscriptions déplacées/annulées
   }catch(e){ ME.acts=[]; ME.ins=[]; }
 }
 // Regroupement des activités en 3 blocs de lecture (la catégorie est un champ LIBRE côté bureau
@@ -378,10 +378,10 @@ window.spAddIns=async function(aid){
   if(el) el.value=''; await loadActs(); renderActs(); toast('✅ '+nom+' inscrit·e');
 };
 window.spDelIns=async function(id){
-  if(!confirm('Retirer cette inscription ?')) return;
-  const {error}=await sb.from('inscriptions_activite').delete().eq('id',id);
+  if(!confirm('Retirer cette inscription ? (rien n\'est effacé : marquée « annulée », conservée en historique)')) return;
+  const {error}=await sb.from('inscriptions_activite').update({statut:'annule'}).eq('id',id);
   if(error){ toast('Erreur : '+error.message); return; }
-  await loadActs(); renderActs(); toast('Inscription retirée');
+  await loadActs(); renderActs(); toast('Inscription annulée');
 };
 function kv(k,v){ return '<div class="kv"><span class="k">'+esc(k)+'</span><span class="v">'+(v?esc(v):'—')+'</span></div>'; }
 
@@ -800,10 +800,10 @@ window.famAddToAct=async function(kid){
   await loadActs(); renderFamilles(); toast('✅ '+nom+' inscrit·e');
 };
 window.famDelIns=async function(id){
-  if(!confirm('Retirer cette inscription à l\'activité ?')) return;
-  const {error}=await sb.from('inscriptions_activite').delete().eq('id',id);
+  if(!confirm('Retirer cette inscription à l\'activité ? (rien n\'est effacé : marquée « annulée », conservée)')) return;
+  const {error}=await sb.from('inscriptions_activite').update({statut:'annule'}).eq('id',id);
   if(error){ toast('Erreur : '+error.message); return; }
-  await loadActs(); renderFamilles(); toast('Inscription retirée');
+  await loadActs(); renderFamilles(); toast('Inscription annulée');
 };
 window.famActUpload=async function(insId, key, input){
   const ins=ME.ins.find(function(x){ return x.id===insId; }); if(!ins) return;
