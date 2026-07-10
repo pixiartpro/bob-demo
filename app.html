@@ -1476,8 +1476,25 @@
       <div style="margin-top:10px"><label style="display:flex;align-items:center;gap:8px;font-size:14px"><input type="checkbox" id="fm_vraiephoto"> ⚠️ Mes produits/services ne se montrent qu'en <strong>vraie photo</strong> (l'IA n'invente jamais un produit vendu)</label></div>
     </div>
 
+    <!-- 5 · Logo : détour fal.ai (payant, 1 crédit) + extraction couleurs (navigateur, gratuit) -->
     <div class="panel">
-      <h2>5 · Coordonnées <span class="muted" style="font-weight:400;font-size:13px">— ce qui peut apparaître sur tes posts</span></h2>
+      <h2>5 · Ton logo <span class="muted" style="font-weight:400;font-size:13px">— fond enlevé &amp; couleurs automatiques</span></h2>
+      <p class="hint">Dépose ton logo : l'expert <strong>enlève le fond</strong> (pour l'utiliser proprement sur tes visuels) et <strong>en tire tes couleurs</strong>. Le détourage coûte <strong>≈ 1 crédit</strong> (une fraction de centime, plafonné) ; les couleurs sont <strong>gratuites</strong>.</p>
+      <div class="row" style="align-items:flex-end">
+        <div class="field" style="flex:2"><label>Ton fichier logo (PNG, JPG…)</label><input type="file" id="fm_logo_file" accept="image/*" onchange="if(window.fmLogoPreview)fmLogoPreview(this)"></div>
+        <div class="field" style="flex:0;min-width:230px"><label>&nbsp;</label><button class="btn" id="fm_logo_go" onclick="fmDetourLogo()">✂️ Détourer le logo · ≈ 1 crédit</button></div>
+      </div>
+      <span id="fm_logo_status" class="muted" style="display:block;margin-top:6px;font-size:13px"></span>
+      <div class="row" style="gap:18px;margin-top:10px;flex-wrap:wrap">
+        <div id="fm_logo_before_wrap" style="display:none"><div class="muted" style="font-size:12px;margin-bottom:4px">Avant</div><img id="fm_logo_before" alt="logo avant détourage" style="max-height:110px;max-width:210px;border:1px solid #eee;border-radius:8px;background:#fff;padding:6px"></div>
+        <div id="fm_logo_after_wrap" style="display:none"><div class="muted" style="font-size:12px;margin-bottom:4px">Après (fond enlevé)</div><img id="fm_logo_after" alt="logo détouré" style="max-height:110px;max-width:210px;border:1px solid #eee;border-radius:8px;background-image:linear-gradient(45deg,#e9e9f2 25%,transparent 25%),linear-gradient(-45deg,#e9e9f2 25%,transparent 25%),linear-gradient(45deg,transparent 75%,#e9e9f2 75%),linear-gradient(-45deg,transparent 75%,#e9e9f2 75%);background-size:16px 16px;background-position:0 0,0 8px,8px -8px,-8px 0;padding:6px"></div>
+      </div>
+      <div id="fm_palette" style="display:none;margin-top:12px"></div>
+      <p class="hint" style="margin-top:8px">Le fond enlevé et les couleurs se sauvegardent avec ta fiche (bouton « 💾 Enregistrer » en bas).</p>
+    </div>
+
+    <div class="panel">
+      <h2>6 · Coordonnées <span class="muted" style="font-weight:400;font-size:13px">— ce qui peut apparaître sur tes posts</span></h2>
       <p class="hint">Les vraies infos que l'expert peut mettre dans un <strong>appel à l'action</strong> (« inscris-toi ici », « viens nous voir »). Sans elles, il laisse un crochet <strong>[à compléter]</strong> plutôt que d'inventer. <em>Ce sont des infos <strong>publiques</strong> — jamais un contact interne ni un mot de passe.</em></p>
       <div class="row">
         <div class="field" style="flex:2"><label>Adresse (publique)</label><input id="fm_adresse" placeholder="Ex. 132 Route des Ananas, 97490 Sainte-Clotilde"></div>
@@ -2425,6 +2442,7 @@ const FAQ=[
    a:"Onglet <b>💶 Comptabilité</b>, panneau <b>🏦 Rapprochement bancaire</b>, bouton <b>« 📥 Importer le relevé »</b> : choisis un fichier <b>.csv</b> (colonnes <i>compte ; date ; sens ; montant ; libellé ; réf</i> — celui que Claude prépare depuis tes PDF, ou l'export de ta banque). Bob <b>coche tout seul</b> les opérations qu'il reconnaît (même montant, même sens, date proche), écarte les <b>rejets</b> et les <b>virements internes</b>, garde les <b>salaires</b>, et t'affiche : ce qui est <b>à valider</b> (plusieurs opérations au même montant → tu choisis), ce qui est <b>sur le relevé mais pas dans Bob</b> (à saisir), et ce qui est <b>dans Bob mais pas sur le relevé</b> (chèque non débité, doublon…). Le bouton <b>« 🗑️ Réinitialiser le relevé »</b> annule tout (et décoche ce que Bob avait coché ; ton pointage à la main reste). Rien n'est modifié dans tes écritures : Bob ne fait que les <b>cocher</b>."},
   {cat:'📣 Communication',q:"À quoi sert l'onglet Communication ?",kw:"communication com post reseaux sociaux marque voix charte fiche de marque publication facebook instagram identite ton couleurs redaction ecrire posts curseurs bannir creole",a:"L'onglet <b>📣 Communication</b> garde la <b>fiche de marque</b> du CASE : qui on est, à qui on parle, <b>notre voix</b> (avec de vrais exemples de posts et des curseurs proche/pro, rigolo/sérieux…), nos couleurs et nos règles. C'est la <b>mémoire</b> qui permettra de préparer des posts <b>qui nous ressemblent</b>, sans partir de la page blanche. Remplis-la une fois, affine-la quand tu veux. Réservé au bureau et aux salariés."},
   {cat:'📣 Communication',q:"Comment générer un post carrousel dans notre voix ?",kw:"carrousel carousel generer creer redaction ecrire post publication vignettes slides texte legende sujet objectif reseau swap test expert idee page blanche instagram facebook",a:"Dans l'onglet <b>📣 Communication</b>, sous la fiche de marque, le bloc <b>« ✨ Créer un carrousel dans ta voix »</b> : écris le <b>sujet</b> du post, choisis ton <b>objectif</b> (faire venir, informer, donner envie, valoriser), le <b>réseau</b> et le nombre de vignettes, puis clique <b>« ✨ Générer »</b>. L'expert écrit le texte du carrousel <b>dans notre voix</b> (celle de la fiche), se relit pour l'<b>ancrer chez nous</b> (le « swap test » : éviter un post passe-partout), et te propose les <b>vignettes</b> + une <b>légende</b> à copier. Tu peux <b>régénérer</b> ou ajuster. <b>Rien n'est publié tout seul</b> : tu copies le texte où tu veux. Ça coûte une fraction de centime, plafonné. Réservé au bureau et aux salariés."},
+  {cat:'📣 Communication',q:"Comment détourer mon logo et récupérer mes couleurs ?",kw:"logo detourer detourage detoure fond enlever transparent png charte identite visuelle image palette couleurs automatiques principale secondaire pastille",a:"Dans l'onglet <b>📣 Communication</b>, section <b>« 5 · Ton logo »</b> : choisis ton fichier logo puis clique <b>« ✂️ Détourer le logo »</b>. L'expert <b>enlève le fond</b> (ton logo devient utilisable proprement sur tes visuels) et <b>en tire tes couleurs</b> — clique une pastille pour la couleur <b>principale</b>, une 2ᵉ pour la <b>secondaire</b>. Le détourage coûte <b>≈ 1 crédit</b> (une fraction de centime, plafonné) ; les couleurs sont <b>gratuites</b>. Pense à <b>« 💾 Enregistrer »</b> : le fond enlevé et les couleurs restent avec ta fiche. Réservé au bureau et aux salariés."},
   {cat:'🗂️ Répertoire',q:"Où déposer les conventions CAF, les PV signés, les documents officiels ?",kw:"convention conventions caf mairie pv statuts reglement document officiel officiels coffre gouvernance deposer televerser telecharger visualiser pdf scan",a:"Onglet <b>🗂️ Répertoire</b> → panneau <b>« 📁 Documents officiels &amp; conventions »</b>. Clique <b>« Déposer un document »</b> et choisis un ou plusieurs PDF/scans : ils vont dans le <b>coffre privé</b> (visibles seulement une fois connecté, <b>jamais sur le site public</b>). Ensuite <b>👁️ Visualiser</b> ou <b>⬇️ Télécharger</b>. Tu peux <b>rattacher</b> chaque document à un financeur (Mairie, CAF…) : il apparaît alors aussi dans sa fiche, onglet <b>🏛️ Structures &amp; financeurs</b>. Réservé au bureau."},
   {cat:'📊 Tableau de bord',q:"Comment retrouver une rubrique ou un onglet dans Bob ?",kw:"navigation naviguer circuler onglet onglets rubrique rubriques famille familles barre menu trouver chercher retrouver ranger perdu",a:"Les onglets sont rangés par <b>familles</b> dans la barre du haut (👥 Adhérents, 🎨 Animation, 🏠 Lieux &amp; Salles, 💬 Communication, 💶 Finances, 🧑‍💼 Équipe / RH, 🏛️ Vie associative, 🧰 Réglages). Clique une famille : sa rangée d'onglets <b>reste affichée en permanence</b> juste en dessous, et tu vois toujours où tu es (la famille et l'onglet actifs sont surlignés). Le plus rapide pour sauter n'importe où : tape 2-3 lettres dans <b>« 🔎 Aller à un onglet… »</b> en haut à gauche, Bob t'y emmène directement."},
   {cat:'👶 Enfants',q:"Comment déplacer un enfant d'un accueil (ou d'une semaine d'ACM) à un autre sans perdre l'historique ?",kw:"deplacer deplace bouger changer semaine acm accueil vepi activite transferer muter passer autre effacer supprimer annuler historique mouvement bascule retirer",a:"Onglet <b>👶 Enfants</b> (dans 👥 Adhérents). Sur la puce de l'accueil concerné (🌴 ACM, 📌 VEPI, 🎟️ activité), clique <b>⇄</b> : choisis la <b>destination</b> puis valide. Bob <b>crée la nouvelle inscription</b> et met l'ancienne en <b>« déplacée »</b> — <b>rien n'est effacé</b>, tout reste dans l'historique (le petit <b>🕘</b> sous l'enfant). Le <b>✕</b> à côté ne supprime pas non plus : il passe l'inscription en <b>« annulée »</b> (conservée). Les <b>places restantes</b> et l'<b>effectif des éditions d'ACM</b> ne comptent que les inscriptions actives — les déplacées/annulées sont ignorées. Réservé au <b>bureau et à l'accueil</b>. 💡 C'est aussi l'outil pour basculer, en septembre, les inscrits du parapluie « ACM Ados — Été 2026 » vers les semaines."},
@@ -2706,6 +2724,7 @@ function pageHelpGotoAide(){ pageHelpClose(); const b=document.querySelector('na
 
 /* ---- ✨ Quoi de neuf (nouveautés + notice chronologique) ---- */
 const NEWS=[
+  {id:'2026-07-10-charte-logo',date:'2026-07-10',tab:'📣 Communication',titre:"🎨 Ton logo détouré + tes couleurs auto",desc:"Dans l'onglet <b>📣 Communication</b>, la nouvelle section <b>« 5 · Ton logo »</b> : dépose ton logo et l'expert <b>enlève le fond</b> (pour l'utiliser proprement sur tes visuels) puis <b>en tire tes couleurs</b> — un clic pour la principale, un clic pour la secondaire. Le détourage coûte <b>≈ 1 crédit</b> (une fraction de centime, plafonné) ; les couleurs sont <b>gratuites</b>. Rien n'est publié : tu enregistres, c'est tout. Réservé au bureau et aux salariés."},
   {id:'2026-07-10-carrousel',date:'2026-07-10',tab:'📣 Communication',titre:"✨ Générer un post carrousel dans notre voix",desc:"Dans l'onglet <b>📣 Communication</b>, juste sous la fiche de marque, un nouveau bloc <b>« ✨ Créer un carrousel dans ta voix »</b> écrit pour toi le <b>texte d'un carrousel</b> (plusieurs vignettes + une légende) à partir de notre fiche : <b>notre voix</b>, nos piliers, notre ancrage Bois de Nèfles. Tu donnes le <b>sujet</b>, ton <b>objectif</b> (faire venir, informer…) et le réseau, l'expert rédige — puis <b>se relit tout seul</b> pour que ça ne ressemble pas à un post passe-partout (le « swap test »). Tu vérifies, tu ajustes, tu <b>copies où tu veux</b>. <b>Rien n'est publié automatiquement.</b> Ça coûte une fraction de centime, plafonné. Réservé au bureau et aux salariés."},
   {id:'2026-07-10-encaissement-acm',date:'2026-07-10',tab:'🎟️ Activités',titre:"🌴 Encaisser les activités & l'ACM par famille",desc:"L'encaissement par famille arrive aussi sur les <b>activités</b> (ACM…). Dans 🎟️ Activités, le bureau <b>chiffre la participation</b> via la grille ACM (quotient familial × semaines), puis le bureau ou l'accueil <b>« 💵 Encaisse »</b> (chèque, espèces…), et le bouton <b>« 💶 Verser en compta »</b> crée les recettes taguées sur le nom de l'activité (espèces en caisse), sans doublon. La CAF et la Mairie restent des subventions à part."},
   {id:'2026-07-10-versement-compta-periscolaire',date:'2026-07-10',tab:'🎒 Périscolaire',titre:"💶 Les encaissements du périscolaire entrent en compta tout seuls",desc:"Après avoir encaissé un règlement (chèque, espèces…), le <b>bureau</b> clique <b>« 💶 Verser en compta »</b> en haut des Dossiers d'inscription : Bob crée les <b>recettes</b> correspondantes, taguées <b>« Périscolaire »</b> (espèces → caisse, reste → banque), <b>sans re-saisie et sans doublon</b> (un verrou empêche de verser deux fois). Elles remontent ensuite dans le 🎯 Budget par action et le rapprochement bancaire. L'accueil encaisse, le bureau verse — chacun son rôle."},
@@ -7350,6 +7369,11 @@ renderAll();
     if(c1&&c1.hex&&document.getElementById('fm_coul1')) document.getElementById('fm_coul1').value=c1.hex;
     if(c2&&c2.hex&&document.getElementById('fm_coul2')) document.getElementById('fm_coul2').value=c2.hex;
     set('fm_charte_notes',f.charte_notes);
+    // logo détouré déjà rangé (bucket public 'chartes') → aperçu "après"
+    window._fmLogoPath=f.logo_path||null;
+    try{ const aw=document.getElementById('fm_logo_after_wrap'), ai=document.getElementById('fm_logo_after');
+      if(f.logo_path&&ai&&aw){ const pu=sbc.storage.from('chartes').getPublicUrl(f.logo_path); const u=pu&&pu.data&&pu.data.publicUrl;
+        if(u){ ai.src=u+'?t='+Date.now(); ai.style.display=''; aw.style.display=''; } } }catch(e){}
     const vp=document.getElementById('fm_vraiephoto'); if(vp) vp.checked=!!f.produit_vraie_photo_only;
     set('fm_adresse',f.adresse); set('fm_telephone',f.telephone); set('fm_email',f.email);
     set('fm_lien_inscription',f.lien_inscription); set('fm_horaires_public',f.horaires_public);
@@ -7374,6 +7398,7 @@ renderAll();
       a_bannir:fmSplit('fm_bannir',','),
       couleurs:[{role:'primaire',hex:val('fm_coul1')},{role:'secondaire',hex:val('fm_coul2')}],
       charte_notes:val('fm_charte_notes')||null,
+      logo_path:(window._fmLogoPath||null),
       produit_vraie_photo_only:!!(document.getElementById('fm_vraiephoto')&&document.getElementById('fm_vraiephoto').checked),
       adresse:val('fm_adresse')||null, telephone:val('fm_telephone')||null, email:val('fm_email')||null,
       lien_inscription:val('fm_lien_inscription')||null, horaires_public:val('fm_horaires_public')||null
@@ -7382,6 +7407,76 @@ renderAll();
     if(error){ if(st){ st.style.color='#c0392b'; st.textContent='Erreur : '+error.message; } return; }
     if(st){ st.style.color='#127a51'; st.textContent='✅ Fiche enregistrée'; }
   };
+  // ── Volet IMAGE : détour du logo (fal.ai, payant) + extraction des couleurs (navigateur, gratuit) ──
+  window._fmLogoPath=window._fmLogoPath||null;
+  // Aperçu "avant" dès qu'un fichier est choisi (local, aucun coût)
+  window.fmLogoPreview=function(input){
+    const f=input&&input.files&&input.files[0]; const w=document.getElementById('fm_logo_before_wrap'), im=document.getElementById('fm_logo_before');
+    if(!f||!im||!w) return; const u=URL.createObjectURL(f); im.onload=()=>{ try{URL.revokeObjectURL(u);}catch(e){} }; im.src=u; w.style.display='';
+    const st=document.getElementById('fm_logo_status'); if(st){ st.style.color=''; st.textContent='Prêt à détourer « '+f.name+' ».'; }
+  };
+  // Réduit (max 1024px) + réencode le logo en dataURL PNG pour l'envoyer au détourage
+  function fmFileToDataURL(file,maxDim){
+    return new Promise((resolve,reject)=>{ const fr=new FileReader();
+      fr.onload=function(){ const img=new Image();
+        img.onload=function(){ let w=img.width,h=img.height; const m=maxDim||1024;
+          if(w>m||h>m){ const s=Math.min(m/w,m/h); w=Math.round(w*s); h=Math.round(h*s); }
+          const cv=document.createElement('canvas'); cv.width=Math.max(1,w); cv.height=Math.max(1,h);
+          cv.getContext('2d').drawImage(img,0,0,cv.width,cv.height);
+          try{ resolve(cv.toDataURL('image/png')); }catch(e){ reject(e); } };
+        img.onerror=reject; img.src=fr.result; };
+      fr.onerror=reject; fr.readAsDataURL(file); });
+  }
+  // Extraction de palette côté navigateur (gratuit) : couleurs dominantes hors transparent/blanc/noir
+  function fmExtractPalette(imgSrc){
+    return new Promise((resolve)=>{ const img=new Image(); img.crossOrigin='anonymous';
+      img.onload=function(){ try{
+        const S=72; const cv=document.createElement('canvas'); cv.width=S; cv.height=S;
+        const cx=cv.getContext('2d'); cx.drawImage(img,0,0,S,S); const d=cx.getImageData(0,0,S,S).data; const buckets={};
+        for(let i=0;i<d.length;i+=4){ const a=d[i+3]; if(a<128) continue; const r=d[i],g=d[i+1],b=d[i+2];
+          const mx=Math.max(r,g,b),mn=Math.min(r,g,b); if(mx>245&&mn>238) continue; if(mx<18) continue; // ignore quasi-blanc / quasi-noir
+          const key=((r>>3)<<10)|((g>>3)<<5)|(b>>3); const q=buckets[key]||(buckets[key]={n:0,r:0,g:0,b:0}); q.n++; q.r+=r; q.g+=g; q.b+=b; }
+        let arr=Object.keys(buckets).map(k=>{ const q=buckets[k]; return {n:q.n,r:Math.round(q.r/q.n),g:Math.round(q.g/q.n),b:Math.round(q.b/q.n)}; });
+        arr.sort((a,b)=>b.n-a.n); const out=[];
+        for(const c of arr){ if(out.length>=6) break; if(out.some(o=>Math.abs(o.r-c.r)+Math.abs(o.g-c.g)+Math.abs(o.b-c.b)<44)) continue; out.push(c); }
+        const hx=n=>('0'+Math.max(0,Math.min(255,n)).toString(16)).slice(-2);
+        resolve(out.map(c=>'#'+hx(c.r)+hx(c.g)+hx(c.b))); }catch(e){ resolve([]); } };
+      img.onerror=function(){ resolve([]); }; img.src=imgSrc; });
+  }
+  // Affiche la palette : 1er clic → couleur principale, 2e clic → secondaire (remplit la section 4 ci-dessus)
+  function fmRenderPalette(pal){
+    const box=document.getElementById('fm_palette'); if(!box) return;
+    if(!pal||!pal.length){ box.innerHTML='<span class="muted" style="font-size:13px">Pas de couleur nette détectée — choisis à la main en section « Tes couleurs » ci-dessus.</span>'; box.style.display=''; return; }
+    let h='<div class="muted" style="font-size:12.5px;margin-bottom:6px">🎨 Couleurs de ton logo — clique une pastille pour la mettre en <b>principale</b>, une 2ᵉ pour la <b>secondaire</b> :</div><div style="display:flex;flex-wrap:wrap;gap:8px">';
+    pal.forEach(hex=>{ h+='<button type="button" class="fm-swatch" data-hex="'+hex+'" title="'+hex+'" style="width:40px;height:40px;border-radius:9px;border:1px solid #d5d5e0;cursor:pointer;background:'+hex+'"></button>'; });
+    h+='</div><div id="fm_pal_echo" class="muted" style="font-size:12px;margin-top:6px">1er clic → principale · 2ᵉ clic → secondaire</div>';
+    box.innerHTML=h; box.style.display=''; let step=0;
+    box.querySelectorAll('.fm-swatch').forEach(b=>{ b.addEventListener('click',()=>{ const hex=b.getAttribute('data-hex');
+      const target=(step%2===0)?'fm_coul1':'fm_coul2'; const el=document.getElementById(target); if(el) el.value=hex; step++;
+      const echo=document.getElementById('fm_pal_echo'); if(echo){ echo.innerHTML=(step%2===1)?('✅ Principale = <b>'+hex+'</b> — clique une 2ᵉ pastille pour la secondaire.'):('✅ Secondaire = <b>'+hex+'</b>. Pense à « 💾 Enregistrer ».'); } }); });
+  }
+  window.fmDetourLogo=async function(){
+    const fileEl=document.getElementById('fm_logo_file'), st=document.getElementById('fm_logo_status'), btn=document.getElementById('fm_logo_go');
+    const file=fileEl&&fileEl.files&&fileEl.files[0];
+    if(!file){ if(st){ st.style.color='#c0392b'; st.textContent='Choisis d\'abord ton fichier logo.'; } return; }
+    if(typeof sbc==='undefined'||!sbc){ alert('Connecte-toi d\'abord.'); return; }
+    if(btn) btn.disabled=true; if(st){ st.style.color=''; st.textContent='✂️ Détourage en cours… (quelques secondes)'; }
+    try{
+      const dataURL=await fmFileToDataURL(file,1024);
+      const { data, error } = await sbc.functions.invoke('run-expert', { body:{ task:'charte.logo', logo_data:dataURL } });
+      if(btn) btn.disabled=false;
+      if(error){ if(st){ st.style.color='#c0392b'; st.textContent='Erreur : '+(error.message||error); } return; }
+      if(!data||!data.ok){ if(st){ st.style.color='#c0392b'; st.textContent=(data&&data.error)||'Détourage impossible pour le moment.'; } return; }
+      window._fmLogoPath=data.logo_path||null;
+      const aw=document.getElementById('fm_logo_after_wrap'), ai=document.getElementById('fm_logo_after');
+      if(ai&&aw&&data.logo_url){ ai.src=data.logo_url; ai.style.display=''; aw.style.display=''; }
+      if(st){ st.style.color='#127a51'; st.textContent='✅ Fond enlevé. J\'en tire les couleurs…'; }
+      const pal=await fmExtractPalette(data.logo_url||'');
+      fmRenderPalette(pal);
+      if(st){ st.style.color='#127a51'; st.textContent='✅ Logo détouré et couleurs proposées. Applique-les, puis « 💾 Enregistrer ».'; }
+    }catch(e){ if(btn) btn.disabled=false; if(st){ st.style.color='#c0392b'; st.textContent='Erreur : '+e; } }
+  };
+
   window.fmPrefill=async function(){
     const src=document.getElementById('fm_source_url');
     const url=((src&&src.value)||'').trim();
