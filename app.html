@@ -90,6 +90,19 @@
   nav.tabs .tabgroup[data-group="equipe"] button.active{background:#7a3b5e}
   nav.tabs .tabgroup[data-group="finances"] button.active{background:#c8881f}
   nav.tabs .tabgroup[data-group="regl"] button.active{background:#7d8a83}
+  /* Étape B (10/07/2026) : couleurs des nouveaux domaines animation/lieux/comm + Vie associative recolorée (violet, pour ne pas se confondre avec le teal de Lieux). Réversible : supprimer ce bloc. */
+  nav.famtabs button[data-group="animation"]{border-bottom-color:#c14b7a}
+  nav.famtabs button[data-group="lieux"]{border-bottom-color:#2f8f8f}
+  nav.famtabs button[data-group="comm"]{border-bottom-color:#4a63b8}
+  nav.famtabs button[data-group="bureau"]{border-bottom-color:#6b5bb5}
+  nav.famtabs button[data-group="animation"].on{background:linear-gradient(160deg,#cf5d88,#a03a63);--famSh:rgba(193,75,122,.5)}
+  nav.famtabs button[data-group="lieux"].on{background:linear-gradient(160deg,#39a3a3,#1f6f6f);--famSh:rgba(47,143,143,.5)}
+  nav.famtabs button[data-group="comm"].on{background:linear-gradient(160deg,#5a73c8,#37489a);--famSh:rgba(74,99,184,.5)}
+  nav.famtabs button[data-group="bureau"].on{background:linear-gradient(160deg,#7d6cc8,#54459a);--famSh:rgba(107,91,181,.5)}
+  nav.tabs .tabgroup[data-group="animation"] button.active{background:#c14b7a}
+  nav.tabs .tabgroup[data-group="lieux"] button.active{background:#2f8f8f}
+  nav.tabs .tabgroup[data-group="comm"] button.active{background:#4a63b8}
+  nav.tabs .tabgroup[data-group="bureau"] button.active{background:#6b5bb5}
   /* mobile : cibles tactiles confortables ≥44px */
   @media(max-width:560px){
     nav.famtabs{gap:7px}
@@ -267,62 +280,71 @@
     <input id="tabJumpInput" type="search" autocomplete="off" placeholder="🔎 Aller à un onglet…" aria-label="Aller à un onglet" aria-expanded="false">
     <div id="tabJumpResults" class="tabjump-res" role="listbox" aria-label="Onglets correspondants"></div>
   </div>
+  <!-- Étape B (10/07/2026) : re-rangement par DOMAINE (7 tiroirs purs). Réversible : restaurer le bloc nav 6-familles du backup app.html.BACKUP-etapeB-*. Les data-group KEYS existantes sont conservées (bureau=Vie associative, equipe=Équipe/RH) pour ne pas casser les références JS ; ajout de animation/lieux/comm. -->
   <nav class="famtabs" aria-label="Familles d'onglets">
     <button class="fam famhome" data-tab="dashboard">📊 Tableau de bord</button>
-    <button class="fam" data-group="accueil">🏠 Accueil</button>
     <button class="fam" data-group="adherents">👥 Adhérents</button>
-    <button class="fam" data-group="bureau">🏛️ Bureau</button><!-- étape2: ex data-group="projets" -->
-    <button class="fam" data-group="equipe">🧑‍💼 Équipe</button>
+    <button class="fam" data-group="animation">🎨 Animation</button>
+    <button class="fam" data-group="lieux">🏠 Lieux &amp; Salles</button>
+    <button class="fam" data-group="comm">💬 Communication</button>
     <button class="fam" data-group="finances">💶 Finances</button>
-    <button class="fam" data-group="regl">🧰 Réglages</button><!-- étape2: ex data-group="outils" -->
+    <button class="fam" data-group="equipe">🧑‍💼 Équipe / RH</button>
+    <button class="fam" data-group="bureau">🏛️ Vie associative</button>
+    <button class="fam" data-group="regl">🧰 Réglages</button>
   </nav>
   <nav class="tabs">
-    <div class="tabgroup" data-group="accueil">
+    <div class="tabgroup" data-group="accueil"><!-- famille dissoute : ne reste que l'accueil, atteint par le bouton 📊 direct -->
       <button data-tab="dashboard" class="active">📊 Tableau de bord</button>
-      <button data-tab="projet">🧭 Projet &amp; orientations</button>
-      <button data-tab="projetados">🚀 Projet ados</button>
     </div>
     <div class="tabgroup" data-group="adherents">
       <button data-tab="members">👥 Adhérents</button>
-      <button data-tab="messages">📨 Messages</button>
       <button data-tab="enfants">👶 Enfants</button>
-      <button data-tab="periscolaire">🎒 Périscolaire</button>
-      <button data-tab="activites">🎟️ Activités</button>
-      <button data-tab="rdv">📅 Rendez-vous</button>
-      <button data-tab="acmvac">🌴 Vacances</button>
-      <button data-tab="lieux">🏠 Lieux</button>
-      <button data-tab="reserver">🛎️ Réserver une salle</button>
-      <button data-tab="salles">🗓️ Salles</button>
     </div>
-    <div class="tabgroup" data-group="bureau"><!-- étape2: ex data-group="projets" + secretariat/caprep rapatriés depuis outils -->
-      <button data-tab="projects">📁 Projets</button>
-      <button data-tab="subventions">🏛️ Subventions</button>
+    <div class="tabgroup" data-group="animation">
+      <button data-tab="activites">🎟️ Activités</button>
+      <button data-tab="periscolaire">🎒 Périscolaire</button>
+      <button data-tab="acmvac">🌴 Vacances</button>
+      <button data-tab="ateliers">💡 Ateliers</button>
+      <button data-tab="projetados">🚀 Projet ados</button>
+      <button data-tab="incidents">⚠️ Événements</button>
+    </div>
+    <div class="tabgroup" data-group="lieux">
+      <button data-tab="lieux">🏠 Lieux</button>
+      <button data-tab="salles">🗓️ Salles</button>
+      <button data-tab="reserver">🛎️ Réserver une salle</button>
+    </div>
+    <div class="tabgroup" data-group="comm">
+      <button data-tab="messages">📨 Messages</button>
+      <button data-tab="rdv">📅 Rendez-vous</button>
+      <button data-tab="secretariat">🧰 Secrétariat</button>
       <button data-tab="repertoire">🗂️ Répertoire</button>
       <button data-tab="partenaires">🤝 Partenaires</button>
       <button data-tab="communication">📣 Communication</button>
-      <button data-tab="ateliers">💡 Ateliers</button>
-      <button data-tab="secretariat">🧰 Secrétariat</button>
-      <button data-tab="caprep">📝 Préparer le CA</button>
-    </div>
-    <div class="tabgroup" data-group="equipe">
-      <button data-tab="equipe">📒 Équipe</button>
-      <button data-tab="accompagnement">🧑‍🏫 Accompagnement</button>
-      <button data-tab="rh">🧑‍💼 RH</button>
-      <button data-tab="personnel">👥 Dossiers salariés</button>
-      <button data-tab="suivi">✅ Suivi</button>
-      <button data-tab="conges">🏖️ Congés</button>
-      <button data-tab="horaires">🗓️ Horaires</button>
-      <button data-tab="incidents">⚠️ Événements</button>
     </div>
     <div class="tabgroup" data-group="finances">
       <button data-tab="accounting">💶 Comptabilité</button>
       <button data-tab="caisse">💵 Caisse</button>
       <button data-tab="dettes">💳 Dettes & créances</button>
+      <button data-tab="subventions">🏛️ Subventions</button>
       <button data-tab="bilan">📈 Bilan</button>
       <button data-tab="previsionnel">🔮 Prévisionnel</button>
       <button data-tab="pilotage">🎯 Budget par action</button>
     </div>
-    <div class="tabgroup" data-group="regl"><!-- étape2: ex data-group="outils", secretariat/caprep partis vers bureau, admin rapatrié -->
+    <div class="tabgroup" data-group="equipe">
+      <button data-tab="equipe">📒 Équipe</button>
+      <button data-tab="rh">🧑‍💼 RH</button>
+      <button data-tab="personnel">👥 Dossiers salariés</button>
+      <button data-tab="suivi">✅ Suivi</button>
+      <button data-tab="conges">🏖️ Congés</button>
+      <button data-tab="horaires">🗓️ Horaires</button>
+    </div>
+    <div class="tabgroup" data-group="bureau">
+      <button data-tab="projet">🧭 Projet &amp; orientations</button>
+      <button data-tab="projects">📁 Projets</button>
+      <button data-tab="caprep">📝 Préparer le CA</button>
+      <button data-tab="accompagnement">🧑‍🏫 Accompagnement</button>
+    </div>
+    <div class="tabgroup" data-group="regl">
       <button data-tab="aide">❓ Aide</button>
       <button data-tab="journal" style="display:none">🕘 Historique</button>
       <button data-tab="data">⚙️ Données</button>
@@ -2262,7 +2284,7 @@ document.querySelectorAll('nav.tabs button').forEach(b=>{
   const input=document.getElementById('tabJumpInput');
   const box=document.getElementById('tabJumpResults');
   if(!input||!box) return;
-  const FAM={accueil:'Accueil',adherents:'Adhérents',bureau:'Bureau',equipe:'Équipe',finances:'Finances',regl:'Réglages'};
+  const FAM={accueil:'Accueil',adherents:'Adhérents',animation:'Animation',lieux:'Lieux & Salles',comm:'Communication',bureau:'Vie associative',equipe:'Équipe / RH',finances:'Finances',regl:'Réglages'};
   const norm=s=>(s||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
   function items(){
     return [...document.querySelectorAll('nav.tabs .tabgroup button[data-tab]')]
@@ -2299,7 +2321,7 @@ document.querySelectorAll('nav.tabs button').forEach(b=>{
 const FAQ=[
   {cat:'📣 Communication',q:"À quoi sert l'onglet Communication ?",kw:"communication com post reseaux sociaux marque voix charte fiche de marque publication facebook instagram identite ton couleurs redaction ecrire posts curseurs bannir creole",a:"L'onglet <b>📣 Communication</b> garde la <b>fiche de marque</b> du CASE : qui on est, à qui on parle, <b>notre voix</b> (avec de vrais exemples de posts et des curseurs proche/pro, rigolo/sérieux…), nos couleurs et nos règles. C'est la <b>mémoire</b> qui permettra de préparer des posts <b>qui nous ressemblent</b>, sans partir de la page blanche. Remplis-la une fois, affine-la quand tu veux. Réservé au bureau et aux salariés."},
   {cat:'🗂️ Répertoire',q:"Où déposer les conventions CAF, les PV signés, les documents officiels ?",kw:"convention conventions caf mairie pv statuts reglement document officiel officiels coffre gouvernance deposer televerser telecharger visualiser pdf scan",a:"Onglet <b>🗂️ Répertoire</b> → panneau <b>« 📁 Documents officiels &amp; conventions »</b>. Clique <b>« Déposer un document »</b> et choisis un ou plusieurs PDF/scans : ils vont dans le <b>coffre privé</b> (visibles seulement une fois connecté, <b>jamais sur le site public</b>). Ensuite <b>👁️ Visualiser</b> ou <b>⬇️ Télécharger</b>. Tu peux <b>rattacher</b> chaque document à un financeur (Mairie, CAF…) : il apparaît alors aussi dans sa fiche, onglet <b>🏛️ Structures &amp; financeurs</b>. Réservé au bureau."},
-  {cat:'📊 Tableau de bord',q:"Comment retrouver une rubrique ou un onglet dans Bob ?",kw:"navigation naviguer circuler onglet onglets rubrique rubriques famille familles barre menu trouver chercher retrouver ranger perdu",a:"Les onglets sont rangés par <b>familles</b> dans la barre du haut (👥 Adhérents, 🏛️ Bureau, 🧑‍💼 Équipe, 💶 Finances, 🧰 Réglages). Clique une famille : sa rangée d'onglets <b>reste affichée en permanence</b> juste en dessous, et tu vois toujours où tu es (la famille et l'onglet actifs sont surlignés). Le plus rapide pour sauter n'importe où : tape 2-3 lettres dans <b>« 🔎 Aller à un onglet… »</b> en haut à gauche, Bob t'y emmène directement."},
+  {cat:'📊 Tableau de bord',q:"Comment retrouver une rubrique ou un onglet dans Bob ?",kw:"navigation naviguer circuler onglet onglets rubrique rubriques famille familles barre menu trouver chercher retrouver ranger perdu",a:"Les onglets sont rangés par <b>familles</b> dans la barre du haut (👥 Adhérents, 🎨 Animation, 🏠 Lieux &amp; Salles, 💬 Communication, 💶 Finances, 🧑‍💼 Équipe / RH, 🏛️ Vie associative, 🧰 Réglages). Clique une famille : sa rangée d'onglets <b>reste affichée en permanence</b> juste en dessous, et tu vois toujours où tu es (la famille et l'onglet actifs sont surlignés). Le plus rapide pour sauter n'importe où : tape 2-3 lettres dans <b>« 🔎 Aller à un onglet… »</b> en haut à gauche, Bob t'y emmène directement."},
   {cat:'👶 Enfants',q:"Comment déplacer un enfant d'un accueil (ou d'une semaine d'ACM) à un autre sans perdre l'historique ?",kw:"deplacer deplace bouger changer semaine acm accueil vepi activite transferer muter passer autre effacer supprimer annuler historique mouvement bascule retirer",a:"Onglet <b>👶 Enfants</b> (dans 👥 Adhérents). Sur la puce de l'accueil concerné (🌴 ACM, 📌 VEPI, 🎟️ activité), clique <b>⇄</b> : choisis la <b>destination</b> puis valide. Bob <b>crée la nouvelle inscription</b> et met l'ancienne en <b>« déplacée »</b> — <b>rien n'est effacé</b>, tout reste dans l'historique (le petit <b>🕘</b> sous l'enfant). Le <b>✕</b> à côté ne supprime pas non plus : il passe l'inscription en <b>« annulée »</b> (conservée). Les <b>places restantes</b> et l'<b>effectif des éditions d'ACM</b> ne comptent que les inscriptions actives — les déplacées/annulées sont ignorées. Réservé au <b>bureau et à l'accueil</b>. 💡 C'est aussi l'outil pour basculer, en septembre, les inscrits du parapluie « ACM Ados — Été 2026 » vers les semaines."},
   {cat:'🎯 Budget par action', q:"À quoi sert l'onglet Budget par action et comment créer une action ?", kw:"action actions budget par action pilotage fiche creer dossier mgdis mairie periscolaire acm vepi evenement financeur subvention depense pivot secteur activite responsable beneficiaires cloturee suivi budget", a:"L'onglet <b>🎯 Budget par action</b> (famille 💶 Finances, réservé au bureau) réunit chaque <b>action</b> du CASE — périscolaire, ACM, VEPI, événement… — en une <b>fiche unique</b>. Les actions <b>déjà utilisées dans Bob</b> (compta, subventions) apparaissent en haut de la liste, à créer en <b>un clic</b> — pas besoin de retaper leur nom. Tu crées une action (nom + type), puis tu précises sa période, son site, son ou sa responsable, son <b>n° de dossier Mairie (MGDIS)</b>, ses bénéficiaires et si elle est financée par la Mairie. Cette fiche devient le <b>point d'accroche unique</b> de son budget : les dépenses et les subventions déjà saisies dans Bob se relient à elle <b>par son nom</b>, sans double saisie. Ouvre le <b>budget détaillé</b> d'une action : le <b>coût du personnel</b> se calcule tout seul (coût horaire chargé × heures affectées), les <b>dépenses</b> réelles et les <b>recettes</b> (subventions versées) remontent automatiquement de la comptabilité, et un <b>aperçu « plan financier »</b> se copie en un clic pour le dossier Mairie. Deux vues complètent : <b>📊 Consolidé annuel</b> (toutes les actions) et <b>👤 Charge salariés</b> (Σ des heures par salarié vs sa capacité — le garde-fou anti-double-comptage). Supprimer une fiche ne touche <b>pas</b> les écritures comptables reliées."},
   {cat:'📨 Messages',q:"Comment répondre aux messages des adhérents ?",kw:"messages adherent adherents repondre parler case fil conversation famille accueil bureau boite reception canal deux sens en attente courrier ecrire",a:"Onglet <b>📨 Messages</b> (famille 👥 Adhérents) : chaque adhérent qui écrit depuis son espace « 💬 Parler au CASE » a un <b>fil privé</b>. Les fils <b>« 🔴 à répondre »</b> (dernier message venu de l'adhérent) remontent en haut. Clique un fil pour lire la conversation et <b>répondre au nom du CASE</b> — accueil et bureau y ont accès. Une <b>pastille rouge</b> sur la famille 👥 Adhérents et une ligne « ⏰ À traiter » te préviennent des messages sans réponse."},
@@ -2575,6 +2597,7 @@ function pageHelpGotoAide(){ pageHelpClose(); const b=document.querySelector('na
 
 /* ---- ✨ Quoi de neuf (nouveautés + notice chronologique) ---- */
 const NEWS=[
+  {id:'2026-07-10-tiroirs-domaines',date:'2026-07-10',tab:'📊 Tableau de bord',titre:"🗂️ Le menu rangé par domaines (Animation a enfin sa place)",desc:"Les onglets sont désormais rangés par <b>grands domaines</b>, pour que chaque famille corresponde à un vrai « métier ». <b>🎨 Animation</b> réunit enfin tout le programme (activités, périscolaire, vacances, ateliers, projet ados) ; <b>🏠 Lieux &amp; Salles</b> regroupe les locaux et le guichet de réservation ; <b>💬 Communication</b> réunit messages, rendez-vous, secrétariat, répertoire et partenaires ; l'ancien fourre-tout « Bureau » devient <b>🏛️ Vie associative</b> (la gouvernance : projet, préparation du CA…) ; les <b>Subventions</b> rejoignent 💶 <b>Finances</b> (là où vit le Budget par action) ; et 🧑‍💼 <b>Équipe / RH</b> pour les salariés. <b>Rien n'a été supprimé</b> : les onglets ont juste changé de tiroir, et la rangée du tiroir ouvert reste affichée. Le raccourci <b>« 🔎 Aller à un onglet… »</b> reste là si tu cherches quelque chose. Réservé au bureau."},
   {id:'2026-07-10-fiche-marque',date:'2026-07-10',tab:'📣 Communication',titre:"📣 Nouveau : ta fiche de marque",desc:"Un nouvel onglet <b>📣 Communication</b> (famille Bureau) accueille la <b>fiche de marque</b> du CASE : <b>qui on est</b>, <b>à qui on parle</b>, <b>notre voix</b> (avec de vrais exemples de posts et des curseurs proche/pro, rigolo/sérieux…), nos <b>couleurs</b> et nos règles (dont « mes produits ne se montrent qu'en vraie photo »). C'est la <b>mémoire</b> qui servira, très bientôt, à préparer des <b>posts qui nous ressemblent</b> — jamais un texte passe-partout. Pour l'instant tu la remplis à la main ; le pré-remplissage depuis notre site arrive ensuite. Réservé au bureau et aux salariés."},
   {id:'2026-07-10-docs-officiels',date:'2026-07-10',tab:'🗂️ Répertoire',titre:"📁 Nouveau : coffre « Documents officiels &amp; conventions »",desc:"Dans <b>🗂️ Répertoire</b>, un panneau <b>📁 Documents officiels &amp; conventions</b> pour ranger les <b>conventions</b> (CAF, Mairie…), les <b>PV signés</b>, les <b>statuts</b> — les documents officiels de l'association. Clique <b>« Déposer un document »</b> et choisis un ou plusieurs PDF/scans : ils vont dans le <b>coffre privé</b>, visibles <b>seulement une fois connecté</b> et <b>jamais sur le site public</b>. Puis <b>👁️ Visualiser</b> / <b>⬇️ Télécharger</b> en un clic. Tu peux <b>rattacher</b> un document à un financeur (Mairie, CAF) pour le retrouver aussi depuis sa fiche dans <b>🏛️ Structures &amp; financeurs</b>. Réservé au bureau."},
   {id:'2026-07-10-nav-persistante',date:'2026-07-10',tab:'📊 Tableau de bord',titre:"🗂️ Tes rubriques restent affichées en permanence",desc:"La barre de navigation a été revue. Quand tu ouvres une <b>famille</b> (👥 Adhérents, 💶 Finances, 🧑‍💼 Équipe…), la rangée de ses <b>onglets reste affichée en permanence</b> en dessous, au lieu de se refermer dès que tu cliques. Tu vois donc toujours <b>où tu es</b> — la famille <b>et</b> l'onglet en cours sont surlignés — et les onglets voisins d'un coup d'œil. Cliquer sur une famille t'amène directement à sa première rubrique. La recherche <b>« 🔎 Aller à un onglet… »</b> reste là comme raccourci. Rien n'a changé dans les rubriques elles-mêmes : c'est juste plus clair pour circuler."},
@@ -4506,14 +4529,14 @@ function renderZoneCards(){
     s.style.display=n>0?'inline-block':'none'; s.textContent=n;
     fb.title=n>0?(n+(n>1?' choses à traiter':' chose à traiter')+' dans cette rubrique'):'';
   };
-  if(z){ famBadge('adherents',z.adherents||0); famBadge('bureau',z.bureau||0); famBadge('equipe',z.equipe||0); }
+  if(z){ famBadge('animation',z.animation||0); famBadge('lieux',z.lieux||0); famBadge('comm',z.comm||0); famBadge('equipe',z.equipe||0); }
   // accès discret au site public (remplace l'ancienne grosse carte « Site public »)
   const box=document.getElementById('zoneCards');
   if(box) box.innerHTML='<a href="https://pixiartpro.github.io/bob-demo/" target="_blank" rel="noopener" style="display:inline-block;margin:2px 0;font-size:13px;color:var(--muted);text-decoration:none">🌐 Voir le site public du CASE ↗</a>'
     +'<button onclick="afficheQR()" style="margin-left:14px;border:none;background:transparent;padding:2px 0;font-size:13px;font-weight:600;color:var(--brand);cursor:pointer">📣 Affiche à partager (QR code)</button>';
   const st=document.getElementById('dashState');
   if(st){
-    const total=z?((typeof z._total==='number')?z._total:((z.adherents||0)+(z.bureau||0)+(z.equipe||0))):0;
+    const total=z?((typeof z._total==='number')?z._total:((z.animation||0)+(z.lieux||0)+(z.comm||0)+(z.equipe||0))):0;
     st.innerHTML = total>0
       ? '<div class="dashstate-in act">📌 <b>'+total+'</b> '+(total>1?'choses t\'attendent':'chose t\'attend')+' — vois la liste « ⏰ À traiter » ci-dessous, ou les pastilles rouges sur le menu en haut.</div>'
       : '<div class="dashstate-in ok">✅ Tout est à jour, rien ne t\'attend aujourd\'hui.</div>';
@@ -8887,7 +8910,7 @@ renderAll();
       q('reservations','statut','demande'),
       maWaitingCount()
     ]);
-    window.bobTodoByZone={adherents:peri+resa+msgw, bureau:part+atel, equipe:cg, finances:0, site:0, _total:cg+peri+cpt+part+ques+atel+resa+msgw};
+    window.bobTodoByZone={adherents:0, animation:peri+atel, lieux:resa, comm:msgw+part, equipe:cg, finances:0, bureau:0, site:0, _total:cg+peri+cpt+part+ques+atel+resa+msgw};
     if(window.renderZoneCards) window.renderZoneCards();
     const items=[
       {n:cg,emo:'🏖️',lab:"demande(s) de congé à valider",act:"bobGoTab('conges')"},
