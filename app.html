@@ -2374,6 +2374,7 @@ document.querySelectorAll('nav.tabs button').forEach(b=>{
 
 /* ---- Aide : « Demande à Zanana » (FAQ + assistant par mots-clés, sans IA) ---- */
 const FAQ=[
+  {cat:'🎟️ Activités',q:"Comment chiffrer et encaisser une inscription ACM (participation famille) ?",kw:"acm activite encaisser encaissement chiffrer participation famille cheque especes grille quotient familial semaine verser compta reste payer inscription ados vacances",a:"Onglet <b>🎟️ Activités</b> : sous chaque inscription à une activité (ACM…), le <b>bureau</b> chiffre la <b>participation</b> avec la <b>grille ACM</b> (tranche de quotient familial × prix de la semaine × nombre de semaines) → <b>Calculer &amp; enregistrer</b>. Le dossier affiche alors <b>Dû / Payé / Reste</b>, et le <b>bureau OU l'accueil</b> clique <b>« 💵 Encaisser »</b> (espèces, chèque…). Enfin, le bouton <b>« 💶 Verser les encaissements activité en compta »</b> (en haut de l'onglet, réservé au bureau) crée les <b>recettes</b>, taguées sur le <b>nom de l'activité</b> (ex. « ACM Ados — semaine 1 »), espèces en caisse, sans doublon. 💡 La <b>CAF</b> et la <b>Mairie</b> restent des <b>subventions</b> (module Subventions), à part de la participation des familles."},
   {cat:'🎒 Périscolaire',q:"Comment envoyer les encaissements du périscolaire dans la comptabilité ?",kw:"verser versement compta comptabilite recette encaissement periscolaire cheque especes caisse banque budget action double saisie op bureau participation famille solde",a:"Une fois un règlement encaissé (bouton « 💵 Encaisser »), le <b>bureau</b> le fait entrer en comptabilité en un clic : en haut du panneau <b>📨 Dossiers d'inscription</b>, le bouton <b>« 💶 Verser en compta (N) »</b> crée les <b>recettes</b> correspondantes — taguées <b>« Périscolaire »</b>, les <b>espèces</b> dans la <b>caisse</b> et le reste en <b>banque</b>. Un <b>verrou</b> garantit qu'un encaissement <b>n'entre qu'une seule fois</b> (pas de double compte). Ces recettes remontent ensuite toutes seules dans le <b>🎯 Budget par action</b> et le rapprochement bancaire. ⚖️ Réservé au bureau (l'accueil encaisse, le bureau verse). 💡 Ne saisis pas ces recettes « Périscolaire » à la main dans la Comptabilité : elles arriveraient en double (Bob te préviendra)."},
   {cat:'🎒 Périscolaire',q:"Comment noter qu'une famille a payé le périscolaire en chèque ou en espèces ?",kw:"periscolaire paiement paye payer encaisser encaissement cheque especes liquide virement regle reglement famille reste a payer impaye impayes qui a paye du solde recu comptoir accueil bureau dossier",a:"Onglet <b>🎒 Périscolaire</b>, panneau <b>📨 Dossiers d'inscription</b>. Sur le dossier d'une famille (une fois le <b>forfait du mois chiffré</b>), le <b>bureau ET l'accueil</b> voient un bouton <b>« 💵 Encaisser (chèque / espèces…) »</b> : choisis le <b>montant</b> (pré-rempli au reste dû), le <b>mode</b> (💵 Espèces, 🧾 Chèque, 🏦 Virement…), la <b>date</b> et le <b>n° de chèque</b>, puis <b>Enregistrer</b>. Le dossier affiche alors <b>Dû / Payé / Reste</b>, et la liste des dossiers indique en haut combien sont <b>« à encaisser »</b>. Un <b>🧾 reçu</b> imprimable est dispo sur chaque règlement. En cas d'erreur ou de chèque rejeté, le <b>bureau</b> clique <b>✕</b> pour l'annuler — ça n'efface rien, ça crée une <b>ligne négative</b> tracée. Le bureau clique ensuite <b>« 💶 Verser en compta »</b> pour créer les recettes correspondantes (voir la question dédiée)."},
   {cat:'💶 Comptabilité',q:"Comment rapprocher automatiquement en important mon relevé ?",kw:"importer releve automatique auto rapprochement cocher fichier csv banque bnp export incoherences valider salaires rejets virements internes gagner temps comptabilite",
@@ -2660,6 +2661,7 @@ function pageHelpGotoAide(){ pageHelpClose(); const b=document.querySelector('na
 
 /* ---- ✨ Quoi de neuf (nouveautés + notice chronologique) ---- */
 const NEWS=[
+  {id:'2026-07-10-encaissement-acm',date:'2026-07-10',tab:'🎟️ Activités',titre:"🌴 Encaisser les activités & l'ACM par famille",desc:"L'encaissement par famille arrive aussi sur les <b>activités</b> (ACM…). Dans 🎟️ Activités, le bureau <b>chiffre la participation</b> via la grille ACM (quotient familial × semaines), puis le bureau ou l'accueil <b>« 💵 Encaisse »</b> (chèque, espèces…), et le bouton <b>« 💶 Verser en compta »</b> crée les recettes taguées sur le nom de l'activité (espèces en caisse), sans doublon. La CAF et la Mairie restent des subventions à part."},
   {id:'2026-07-10-versement-compta-periscolaire',date:'2026-07-10',tab:'🎒 Périscolaire',titre:"💶 Les encaissements du périscolaire entrent en compta tout seuls",desc:"Après avoir encaissé un règlement (chèque, espèces…), le <b>bureau</b> clique <b>« 💶 Verser en compta »</b> en haut des Dossiers d'inscription : Bob crée les <b>recettes</b> correspondantes, taguées <b>« Périscolaire »</b> (espèces → caisse, reste → banque), <b>sans re-saisie et sans doublon</b> (un verrou empêche de verser deux fois). Elles remontent ensuite dans le 🎯 Budget par action et le rapprochement bancaire. L'accueil encaisse, le bureau verse — chacun son rôle."},
   {id:'2026-07-10-encaissement-periscolaire',date:'2026-07-10',tab:'🎒 Périscolaire',titre:"💵 Encaisser le périscolaire par famille (chèque, espèces…)",desc:"Sur un dossier d'inscription périscolaire dont le forfait du mois est chiffré, un nouveau bouton <b>« 💵 Encaisser »</b> (bureau <b>et</b> accueil) permet de noter qu'une famille a réglé — <b>espèces, chèque, virement</b>, avec la date et le n° de chèque. Le dossier affiche <b>Dû / Payé / Reste</b>, la liste indique combien de familles restent <b>« à encaisser »</b>, et un <b>🧾 reçu</b> imprimable est dispo. Une annulation (chèque rejeté, remboursement) se fait proprement par une <b>ligne négative</b>, sans rien effacer. Prochaine étape : le versement automatique en comptabilité."},
   {id:'2026-07-10-comptoir-fiche-auto',date:'2026-07-10',tab:'🎟️ Activités',titre:"🧾 Au comptoir, la fiche enfant se crée toute seule",desc:"Quand tu inscris un enfant au comptoir (« ➕ inscrire ») sur un <b>accueil de mineurs</b> — <b>périscolaire, ACM, VEPI</b> —, Bob <b>crée sa fiche enfant automatiquement</b> et la relie à l'inscription. Fini les enfants « ⚠️ à ficher » : ils apparaissent directement dans <b>👶 Enfants</b>, où tu complètes naissance, école, parent et pièces. Pour les <b>événements / temps forts</b>, rien ne change (nom seul — ça peut être un adulte)."},
@@ -8471,15 +8473,20 @@ renderAll();
   };
   window.loadActivitesGestion=async function(){
     const box=document.getElementById('actgList'); if(!box) return;
-    const [ra,ri,rp]=await Promise.all([
+    const [ra,ri,rp,rpay]=await Promise.all([
       sbc.from('activites').select('*').order('ordre',{ascending:true}).order('created_at',{ascending:true}),
       sbc.from('inscriptions_activite').select('*').order('created_at',{ascending:true}),
-      sbc.from('profiles').select('id,full_name,email,role,assistant_sanitaire,psc1_note').eq('asso_id',myAsso).in('role',['personnel','bureau','president','tresorier']).eq('statut','actif').order('full_name',{ascending:true})
+      sbc.from('profiles').select('id,full_name,email,role,assistant_sanitaire,psc1_note').eq('asso_id',myAsso).in('role',['personnel','bureau','president','tresorier']).eq('statut','actif').order('full_name',{ascending:true}),
+      sbc.from('paiements').select('id,inscription_activite_id,montant_cents,mode,ref_piece,motif,paid_at,created_at').eq('objet','activite').eq('statut','paye')
     ]);
     if(ra.error){ box.innerHTML='<p class="hint" style="color:#c0392b">Erreur : '+esc(ra.error.message)+'</p>'; return; }
     const acts=(ra.data||[]).slice().sort((a,b)=>((a.type==='evenement')!==(b.type==='evenement'))?(a.type==='evenement'?1:-1):((a.ordre||0)-(b.ordre||0))), byA={};
     (ri.data||[]).forEach(i=>{ if(i.statut==='deplace'||i.statut==='annule')return; (byA[i.activite_id]=byA[i.activite_id]||[]).push(i); });
     window.__actById={}; acts.forEach(function(a){ window.__actById[a.id]={categorie:a.categorie||'',type:a.type||'',nom:a.nom||''}; }); // cache léger → addInscriptionActivite sait si l'activité est un accueil d'enfants (fiche d'emblée)
+    // Phase 3 : paiements activité par inscription (pour le bloc paiement des cartes) + compteur « à verser »
+    window.__actPayByIns={}; ((rpay&&rpay.data)||[]).forEach(function(p){ if(p.inscription_activite_id){ (window.__actPayByIns[p.inscription_activite_id]=window.__actPayByIns[p.inscription_activite_id]||[]).push(p); } });
+    const _versedAct=new Set((db.ops||[]).map(o=>o.paiement_id).filter(Boolean));
+    const aVerserAct=((rpay&&rpay.data)||[]).filter(p=>p.mode&&!_versedAct.has(p.id));
     /* Comptes salariés : référent d'activité + désignation assistant sanitaire */
     const staff=rp.data||[]; window.ACTG_STAFFNAME={}; staff.forEach(function(p){ window.ACTG_STAFFNAME[p.id]=p.full_name||p.email||'?'; });
     const selRef=document.getElementById('ag_referent');
@@ -8568,7 +8575,8 @@ renderAll();
     const _AB=[{k:'peri',l:'🎒 Périscolaire & extrascolaire'},{k:'socio',l:'🎨 Socioculturel'},{k:'ponctuel',l:'🎉 Temps forts'}];
     const _bkey=(a)=>{ if(a.type==='evenement'||/temps *fort/i.test(a.categorie||'')) return 'ponctuel'; const c=norm(a.categorie||''); if(c.indexOf('peri')>=0||c.indexOf('extrascol')>=0) return 'peri'; return 'socio'; };
     const _grp={peri:[],socio:[],ponctuel:[]}; acts.forEach(a=>{ (_grp[_bkey(a)]||_grp.socio).push(a); });
-    box.innerHTML=_AB.filter(b=>_grp[b.k].length).map(b=>'<h3 style="margin:16px 0 4px;font-size:16px">'+b.l+' <span class="hint" style="font-weight:400">· '+_grp[b.k].length+'</span></h3>'+_grp[b.k].map(_actCard).join('')).join('');
+    const _verserBar=(canWrite&&aVerserAct.length)?('<div class="row" style="margin:6px 0 4px"><button class="btn" onclick="actiVerserCompta()">💶 Verser les encaissements activité en compta ('+aVerserAct.length+')</button></div>'):'';
+    box.innerHTML=_verserBar+_AB.filter(b=>_grp[b.k].length).map(b=>'<h3 style="margin:16px 0 4px;font-size:16px">'+b.l+' <span class="hint" style="font-weight:400">· '+_grp[b.k].length+'</span></h3>'+_grp[b.k].map(_actCard).join('')).join('');
   };
   function bureauActInsCard(a, i){
     const who=esc(i.nom||''); const st=i.statut||'reserve';
@@ -8596,8 +8604,113 @@ renderAll();
       +bodyh
       +(i.besoin_aide?'<div style="font-size:12px;color:#8a6400;font-weight:700;margin-top:4px">🙋 La famille demande de l\'aide (RDV au CASE)</div>':'')
       +'<div class="row" style="gap:6px;margin-top:6px"><input id="insnote_'+i.id+'" value="'+esc(i.note_bureau||'')+'" placeholder="Note (ce qui manque, précisions RDV…)" style="flex:1;padding:6px 9px;border:1px solid var(--line);border-radius:8px;font:inherit;font-size:13px"><button class="ghost btn" style="font-size:12px" onclick="insactNote(\''+i.id+'\')">💾</button></div>'
+      +(window.actiPayBlock?actiPayBlock(a,i):'')
       +'</div>';
   }
+  // ===== Phase 3 : chiffrage (grille ACM) + encaissement + versement des inscriptions ACTIVITÉ =====
+  // Bloc paiement injecté sous chaque carte d'inscription (dossier/rdv). Lit window.__actPayByIns (posé par loadActivitesGestion).
+  window.actiPayBlock=function(a,i){
+    const canPeri=canWrite||(myProfile&&myProfile.role==='personnel');
+    const eur=c=>(c/100).toLocaleString('fr-FR',{minimumFractionDigits:2})+' €';
+    const bs='border-top:1px dashed var(--line);margin-top:8px;padding-top:8px';
+    const pays=(((window.__actPayByIns||{})[i.id])||[]).slice().sort((x,y)=>((y.paid_at||y.created_at||'')).localeCompare((x.paid_at||x.created_at||'')));
+    const versed=new Set((db.ops||[]).map(o=>o.paiement_id).filter(Boolean));
+    const du=i.montant_du_cents||0, paid=pays.reduce((s,p)=>s+(p.montant_cents||0),0), reste=du-paid;
+    const paysHtml=pays.length?('<div style="margin-top:6px;display:flex;flex-direction:column;gap:2px">'+pays.map(p=>{
+      const neg=(p.montant_cents||0)<0, dt=(p.paid_at||p.created_at||'').slice(0,10);
+      return '<div class="row" style="gap:6px;align-items:center;font-size:12px;'+(neg?'color:#b23a23':'')+'">'
+        +'<span>'+(neg?'↩︎ ':'')+esc(p.mode?modeLabel(p.mode):'💳 En ligne')+'</span><strong>'+eur(p.montant_cents||0)+'</strong>'
+        +(dt?'<span class="muted">'+dt+'</span>':'')+(p.ref_piece?'<span class="muted">n° '+esc(p.ref_piece)+'</span>':'')
+        +(p.motif?'<span class="muted">('+esc(p.motif)+')</span>':'')
+        +(versed.has(p.id)?' <span class="pill" style="background:#eef4ff;color:#23744a;font-size:10px">✓ compta</span>':'')
+        +((canWrite&&!neg)?' <button class="ghost btn" style="padding:0 6px;font-size:11px" onclick="periAnnulerEncaissement(\''+p.id+'\')" title="Annuler (ligne négative, n\'efface rien)">✕</button>':'')
+        +'</div>';
+    }).join('')+'</div>'):'';
+    let synth;
+    if(du>0){ const solde=reste<=0;
+      synth='<div class="row" style="gap:6px;flex-wrap:wrap;align-items:center">'
+        +'<span class="pill" style="background:#f2f6f3;color:#444;font-size:11px">Dû '+eur(du)+'</span>'
+        +'<span class="pill" style="background:#eef4ff;color:#23448a;font-size:11px">Payé '+eur(paid)+'</span>'
+        +'<span class="pill" style="background:'+(solde?'#dff5e9':'#fff5da')+';color:'+(solde?'#127a51':'#8a6400')+';font-weight:600;font-size:11px">'+(solde?'✅ Soldé':'Reste '+eur(reste))+'</span></div>';
+    } else { synth='<span class="muted" style="font-size:12px">Participation pas encore chiffrée'+(canWrite?' — chiffre-la ci-dessous.':'.')+'</span>'; }
+    let chiffrage='';
+    if(canWrite){
+      const qfOpts=(typeof ACM_QF!=='undefined'?ACM_QF:[]).map((tr,idx)=>'<option value="'+idx+'">'+esc(tr.lab)+'</option>').join('');
+      chiffrage='<div class="row" style="gap:5px;flex-wrap:wrap;align-items:center;margin-top:6px;background:#f4f8f5;border:1px dashed var(--line);border-radius:8px;padding:6px 8px">'
+        +'<span style="font-size:11.5px;font-weight:600">💶 Chiffrer (grille ACM) :</span>'
+        +'<select id="acq_'+i.id+'" style="padding:5px 7px;border:1px solid var(--line);border-radius:7px;font:inherit;font-size:12px">'+qfOpts+'</select>'
+        +'<select id="acp_'+i.id+'" style="padding:5px 7px;border:1px solid var(--line);border-radius:7px;font:inherit;font-size:12px"><option value="grandes">Été (gdes vac.)</option><option value="petites">Petites vac.</option><option value="horsCommune">Hors commune</option></select>'
+        +'<input id="acw_'+i.id+'" type="number" min="1" step="1" value="1" title="Nombre de semaines" style="width:52px;padding:5px 7px;border:1px solid var(--line);border-radius:7px;font:inherit"><span class="muted" style="font-size:12px">sem.</span>'
+        +'<button class="btn" style="padding:4px 9px;font-size:12px" onclick="actiChiffrer(\''+i.id+'\')">Calculer &amp; enregistrer</button></div>';
+    }
+    let enc='';
+    if(canPeri){
+      enc='<div style="margin-top:6px"><button class="btn" style="padding:4px 10px;font-size:12px" onclick="var b=document.getElementById(\'aenc_'+i.id+'\');if(b)b.style.display=(b.style.display===\'none\'?\'\':\'none\')">💵 Encaisser</button>'
+        +'<div id="aenc_'+i.id+'" style="display:none;margin-top:6px;background:#f4f8f5;border:1px dashed var(--line);border-radius:8px;padding:7px"><div class="row" style="gap:5px;flex-wrap:wrap;align-items:center">'
+        +'<input id="aem_'+i.id+'" type="number" min="0" step="0.01" placeholder="€" value="'+(reste>0?(reste/100).toFixed(2):'')+'" style="width:84px;padding:6px 8px;border:1px solid var(--line);border-radius:7px;font:inherit">'
+        +'<select id="aemode_'+i.id+'" style="padding:6px 8px;border:1px solid var(--line);border-radius:7px;font:inherit">'+PAY_MODES.map(m=>'<option value="'+m[0]+'"'+(m[0]==='cheque'?' selected':'')+'>'+m[1]+'</option>').join('')+'</select>'
+        +'<input id="aeref_'+i.id+'" placeholder="n° chèque" style="width:104px;padding:6px 8px;border:1px solid var(--line);border-radius:7px;font:inherit">'
+        +'<input id="aedate_'+i.id+'" type="date" value="'+new Date().toISOString().slice(0,10)+'" style="padding:6px 8px;border:1px solid var(--line);border-radius:7px;font:inherit">'
+        +'<button class="btn" style="padding:4px 9px;font-size:12px" onclick="actiEncaisser(\''+i.id+'\')">✓ Enregistrer</button></div></div></div>';
+    }
+    return '<div style="'+bs+'">'+synth+paysHtml+chiffrage+enc+'</div>';
+  };
+  window.actiChiffrer=async function(insId){
+    const q=document.getElementById('acq_'+insId), pe=document.getElementById('acp_'+insId), w=document.getElementById('acw_'+insId);
+    if(!q||!pe||!w) return;
+    const idx=parseInt(q.value)||0, per=pe.value, sem=parseInt(w.value)||0;
+    if(!(sem>0)){ alert('Indique un nombre de semaines.'); return; }
+    const t=acmTarifDB();
+    const prix=(per==='horsCommune')?(t.horsCommune||0):((t[per]&&t[per][idx])||0);
+    const euros=prix*sem;
+    if(!(euros>0)){ alert('Tarif introuvable pour cette tranche.'); return; }
+    const detail={tranche:idx+1, periode:per, prix_semaine:prix, semaines:sem, total:euros};
+    const {error}=await sbc.rpc('acti_valider_montant',{p_inscription_id:insId,p_montant_cents:Math.round(euros*100),p_detail:detail});
+    if(error){ alert('Erreur : '+error.message); return; }
+    if(typeof setSync==='function') setSync('✓ participation chiffrée : '+euros.toLocaleString('fr-FR',{minimumFractionDigits:2})+' €','#dff5e9');
+    loadActivitesGestion();
+  };
+  window.actiEncaisser=async function(insId){
+    const m=document.getElementById('aem_'+insId), mode=document.getElementById('aemode_'+insId), ref=document.getElementById('aeref_'+insId), d=document.getElementById('aedate_'+insId);
+    if(!m||!mode) return;
+    const euros=parseFloat(String(m.value).replace(',','.'));
+    if(!(euros>0)){ alert('Indique un montant supérieur à 0.'); return; }
+    const {error}=await sbc.rpc('acti_encaisser',{p_inscription_id:insId,p_montant_cents:Math.round(euros*100),p_mode:mode.value,p_date:(d&&d.value)||null,p_ref:(ref&&ref.value)||null,p_libelle:null});
+    if(error){ alert('Erreur : '+error.message); return; }
+    if(typeof setSync==='function') setSync('✓ encaissement enregistré','#dff5e9');
+    loadActivitesGestion();
+  };
+  window.actiVerserCompta=async function(){
+    if(!canWrite){ alert('Réservé au bureau.'); return; }
+    const rq=await sbc.from('paiements').select('id,inscription_activite_id,montant_cents,mode,paid_at,created_at').eq('objet','activite').eq('statut','paye');
+    if(rq.error){ alert('Erreur : '+rq.error.message); return; }
+    const versed=new Set((db.ops||[]).map(o=>o.paiement_id).filter(Boolean));
+    const todo=(rq.data||[]).filter(p=>p.mode && !versed.has(p.id));
+    if(!todo.length){ alert('Aucun encaissement activité à verser : tout est déjà en comptabilité.'); return; }
+    const insIds=[...new Set(todo.map(p=>p.inscription_activite_id).filter(Boolean))];
+    const insMap={};
+    if(insIds.length){ const ri=await sbc.from('inscriptions_activite').select('id,activite_id,nom').in('id',insIds); ((ri&&ri.data)||[]).forEach(x=>{ insMap[x.id]=x; }); }
+    const actIds=[...new Set(Object.keys(insMap).map(k=>insMap[k].activite_id).filter(Boolean))];
+    const actMap={};
+    if(actIds.length){ const ra=await sbc.from('activites').select('id,nom').in('id',actIds); ((ra&&ra.data)||[]).forEach(x=>{ actMap[x.id]=x.nom||''; }); }
+    if(!confirm('Verser '+todo.length+' encaissement(s) d\'activité en comptabilité ?\n\nRecettes taguées sur le nom de l\'activité (ex. « ACM Ados — semaine 1 »), espèces en caisse.')) return;
+    let n=0;
+    for(const p of todo){
+      if(versed.has(p.id)) continue;
+      const ins=insMap[p.inscription_activite_id]||{}, actNom=actMap[ins.activite_id]||'Activité';
+      const euros=(p.montant_cents||0)/100, neg=euros<0;
+      db.ops.push({id:uid(), paiement_id:p.id, type:'in',
+        label:(neg?'Annulation — ':'')+actNom+(ins.nom?' — '+ins.nom:''),
+        cat:'Participation familles', compte:'706 - Prestations de services',
+        amount:euros, date:(p.paid_at||p.created_at||today()).slice(0,10),
+        project:'', mode:p.mode, account:accountFromMode(p.mode), photo:'',
+        splits:[{site:'', action:actNom, amount:euros}]});
+      versed.add(p.id); n++;
+    }
+    save();
+    loadActivitesGestion();
+    alert('✅ '+n+' encaissement(s) d\'activité versé(s) en comptabilité.');
+  };
   window.setInsact=async function(id,patch){ const {error}=await sbc.from('inscriptions_activite').update(patch).eq('id',id); if(error){alert(error.message);return;} loadActivitesGestion(); };
   window.setInsactRdv=function(id,kind){ const el=document.getElementById((kind==='recup'?'rdvr_':'rdvd_')+id); const v=el?el.value:''; if(!v){alert('Choisis une date.');return;} setInsact(id, kind==='recup'?{rdv_recup:v,statut:'rdv_recup'}:{rdv_depot:v,statut:'rdv_depot'}); };
   window.insactNote=async function(id){ const el=document.getElementById('insnote_'+id); const {error}=await sbc.from('inscriptions_activite').update({note_bureau:el?el.value:''}).eq('id',id); setSync(error?('⚠️ '+error.message):'✓ note enregistrée', error?'#ffd9d0':'#dff5e9'); };
