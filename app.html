@@ -1202,6 +1202,22 @@
       </div>
       <div style="overflow-x:auto;-webkit-overflow-scrolling:touch"><table style="min-width:520px"><thead><tr><th>Type</th><th>Document</th><th>Accès</th><th></th></tr></thead><tbody id="docRows"></tbody></table></div>
     </div>
+    <div class="panel" id="structuresPanel" style="border:2px solid var(--brand)">
+      <h2>🏛️ Structures &amp; financeurs</h2>
+      <p class="hint">Tes partenaires institutionnels (DRAJES/SDJES, CAF, Mairie…) : leur fiche, leur dossier, leur correspondant — et surtout <strong>les dates à ne pas rater</strong> (un 📤 dépôt à rendre, un 📥 versement à recevoir). Ces échéances remontent toutes seules dans l'échéancier et le tableau de bord.</p>
+      <div class="row">
+        <div class="field" style="flex:2"><label>Nom de la structure</label><input id="st_nom" placeholder="Ex. DRAJES / SDJES Réunion"></div>
+        <div class="field" style="flex:0;min-width:200px"><label>Type</label><input id="st_type" list="stTypes" placeholder="État, CAF, Mairie…">
+          <datalist id="stTypes"><option>État / SDJES-DRAJES</option><option>CAF</option><option>Mairie / collectivité</option><option>Autre financeur</option><option>Partenaire</option></datalist></div>
+        <div class="field" style="flex:0"><label>&nbsp;</label><button class="btn" onclick="addStructure()">Ajouter</button></div>
+      </div>
+      <div class="row" style="margin-top:8px">
+        <div class="field" style="flex:2"><label>Dossier (lien, optionnel)</label><input id="st_url" placeholder="https://… (dossier de la structure)"></div>
+        <div class="field" style="flex:3"><label>Correspondant / note (optionnel)</label><input id="st_note" placeholder="Ex. Réf. Didier Laravine · drajes.acm@ac-reunion.fr · 02 62 20 54 54"></div>
+      </div>
+      <div id="echeancesSoonBox" style="margin-top:16px"></div>
+      <div id="structuresBody" style="margin-top:8px"><p class="hint">Chargement…</p></div>
+    </div>
   </section>
 
   <!-- SECRETARIAT -->
@@ -2207,6 +2223,7 @@ const FAQ=[
   {cat:'📊 Tableau de bord',q:"C'est quoi « Ton équipe » avec les ananas en haut de l'accueil ?",kw:"equipe ananas bob bobs sabine tresi nono roro secretaire tresoriere animateur rh personnage mascotte accueil qui veux voir carte cartes outils porte entree cliquer membre direction zanana",a:"En haut du tableau de bord, ton équipe Bob te sert de <b>porte d'entrée</b> : chaque personnage regroupe un métier — <b>Sabine</b> (le bureau : adhérents, agenda, répertoire, CA), <b>Trési</b> (la trésorerie : compta, subventions, bilan), <b>Nono</b> (l'animation : périscolaire, activités, vacances, ateliers) et <b>Roro</b> (les salariés : dossiers, congés, horaires). Clique un personnage pour voir tous ses outils et y aller directement ; « La Direction » juste au-dessus regroupe le pilotage (tableau de bord, projet, suivi). Tu ne vois que les personnages et outils auxquels <b>ton rôle a accès</b>. Tous les onglets restent aussi dans le menu en couleurs comme avant."},
   {cat:'🧰 Secrétariat',q:"Comment compter les voix d'une délibération et générer le procès-verbal (PV) ?",kw:"pv proces verbal procès délibération deliberation resolution voix compter compteur pour contre abstention sens adoptee rejetee reportee deport voter scrutin generer imprimer reunion seance conseil administration boutons plus moins",a:"Onglet <b>🧰 Secrétariat</b> → <b>« Réunions &amp; délibérations »</b>. Sur chaque délibération, les boutons <b>+ / −</b> comptent les voix <b>Pour / Contre / Abstention</b> ; le <b>sens</b> (adoptée / rejetée / reportée) se met à jour tout seul. Le bouton <b>⚖️ Déport</b> note qu'un membre se retire d'une résolution (conflit d'intérêts) — c'est repris au PV. Une fois les votes saisis, <b>🖨️ PV</b> génère le <b>procès-verbal officiel</b> (présents, quorum, déports, résolutions avec le détail des voix, signatures Président/Secrétaire). Le <b>🖨️ Relevé</b> reste, lui, un document de préparation. Le PV est <b>à valider et signer en séance</b> ; en cas de doute sur le formalisme : Hexopée."},
   {cat:'🗂️ Répertoire',q:"Comment protéger un identifiant ou un mot de passe dans les liens ?",kw:"lien liens mot de passe motdepasse code coffre chiffrer chiffré cadenas secret acces identifiant proteger confidentiel reveler reveler tam mairie orange portail securiser cacher",a:"Dans <b>🗂️ Répertoire</b>, section <b>Liens</b> : mets l'identifiant et le mot de passe dans la <b>note</b> du lien, puis clique <b>🔒</b> sur la ligne (ou <b>« Protéger les accès »</b> en haut de la liste) et choisis un <b>code du coffre</b> connu du bureau. La note devient <b>illisible</b> (chiffrée) — même en ligne, personne ne peut la lire sans le code. Pour la relire : bouton <b>« Révéler »</b> + le code ; pour la modifier : <b>🔓 Déprotéger</b>. Le code <b>n'est jamais enregistré</b> : on le tape à chaque fois. Si tu oublies le code, re-saisis l'accès (il existe aussi sur le vrai portail)."},
+  {cat:'🗂️ Répertoire',q:"Comment suivre une structure (DRAJES, CAF, Mairie) et ses dates à ne pas rater ?",kw:"structure structures financeur financeurs partenaire partenaires institutionnel drajes sdjes caf mairie collectivite echeance echeances depot versement dossier date rater declaration correspondant fiche a rendre a recevoir tombe bientot",a:"Dans <b>🗂️ Répertoire</b>, panneau <b>🏛️ Structures &amp; financeurs</b> : ajoute une structure (DRAJES/SDJES, CAF, Mairie…) avec son type, le lien vers son dossier et une note (correspondant, mail, téléphone). Sur sa fiche, ajoute ses <b>échéances</b> : un <b>📤 dépôt</b> (un document à rendre) ou un <b>📥 versement</b> (de l'argent à recevoir), avec sa date, un montant et un statut (à faire / bloqué / fait). Le bloc <b>« 📅 Ce qui tombe bientôt »</b> les classe par date (rouge = en retard ou imminent), et elles remontent <b>automatiquement</b> dans l'échéancier général et le tableau de bord. Réservé au bureau."},
   {cat:'🛎️ Réserver une salle',q:"Comment réserver une salle, et comment valider une demande ?",kw:"reserver salle reservation demande creneau local kaz zados bringelliers occupation valider refuser bureau intervenant adherent guichet deport",a:"Onglet <b>🛎️ Réserver une salle</b>. Les adhérents et intervenants déposent leur demande depuis leur espace adhérent (salle, jour, créneau, motif). La demande tombe ici et dans <b>⏰ À traiter</b>. Le bureau valide ou refuse — et un membre <b>ne peut pas valider sa propre demande</b> (déport, un autre membre doit le faire). Les réservations validées forment l'occupation des locaux."},
   {cat:'📊 Tableau de bord', q:"Où sont passés les onglets ? Comment marche la nouvelle barre en couleur ?", kw:"onglet onglets barre famille familles couleur couleurs ranger retrouver navigation menu reglages outils bureau finances adherents equipe perdu trouve trouver disparu deplace deplacer organisation secretariat",
    a:"La barre du haut est rangée en <b>4 familles colorées</b> : 👥 <b>Adhérents</b> (vert — membres, périscolaire, activités, lieux…), 🏛️ <b>Bureau</b> (sarcelle — projets, subventions, partenaires, ateliers, répertoire, secrétariat, préparer le CA), 🧑‍💼 <b>Équipe</b> (prune — RH, dossiers salariés, congés, horaires, suivi…) et 💶 <b>Finances</b> (ambre — compta, caisse, dettes, bilan, prévisionnel). Plus 🏠 <b>Accueil</b> (tableau de bord + présentation/projet) et 🧰 <b>Réglages</b> (données, aide, historique). Clique une famille pour ouvrir ses onglets — Bob ouvre <b>directement le premier onglet</b> de la famille (par ex. Accueil → Tableau de bord), plus besoin d'un second clic. Quand une rubrique a quelque chose à traiter, une <b>petite pastille rouge</b> apparaît sur sa famille dans la barre. <b>Rien n'a été supprimé</b> : tout est juste regroupé par couleur pour s'y retrouver plus vite, surtout sur téléphone."},
@@ -2474,6 +2491,7 @@ function pageHelpGotoAide(){ pageHelpClose(); const b=document.querySelector('na
 
 /* ---- ✨ Quoi de neuf (nouveautés + notice chronologique) ---- */
 const NEWS=[
+  {id:'2026-07-10-structures-financeurs',date:'2026-07-10',tab:'🗂️ Répertoire',titre:"🏛️ Nouveau : Structures &amp; financeurs (avec leurs dates à ne pas rater)",desc:"Dans <b>🗂️ Répertoire</b>, un panneau <b>🏛️ Structures &amp; financeurs</b> : range tes partenaires institutionnels (DRAJES/SDJES, CAF, Mairie…) avec leur <b>correspondant</b>, leur dossier, et surtout leurs <b>échéances</b> — un <b>📤 dépôt</b> à rendre ou un <b>📥 versement</b> à recevoir, avec date, montant et statut (à faire / bloqué / fait). Le bloc <b>« 📅 Ce qui tombe bientôt »</b> les trie par date, et elles remontent <b>toutes seules</b> dans l'échéancier général et le tableau de bord (« à déposer » / « à recevoir »). Réservé au bureau."},
   {id:'2026-07-09-acm-pdf-photos',date:'2026-07-09',tab:'🌴 Vacances',titre:"📸 Les photos choisies (★) entrent dans le bilan PDF",desc:"Le <b>dossier-bilan PDF</b> d'une édition (🌴 Vacances → 🗄️ Éditions) inclut désormais, en annexe, les <b>photos que tu retiens (★)</b>, et un <b>en-tête d'identité de l'accueil</b> plus complet : organisateur, <b>lieu</b> (nouveau champ à saisir dans le dossier-bilan), période, <b>capacité</b> et <b>activités déclarées</b> (repris automatiquement des activités rattachées). Le PDF est <b>régénéré à chaque impression</b> : une photo retirée du stockage n'y apparaît plus (droit à l'image respecté). Rappel affiché sur le document : une photo bonne pour l'album interne n'est pas forcément diffusable à un tiers comme la Mairie. Réservé au bureau."},
   {id:'2026-07-09-deplacer-enfant',date:'2026-07-09',tab:'👶 Enfants',titre:"↔️ Déplacer un enfant d'un accueil à l'autre — sans rien perdre",desc:"Dans l'onglet <b>👶 Enfants</b>, chaque inscription (ACM, VEPI, activité) a maintenant un bouton <b>⇄</b> pour <b>déplacer</b> l'enfant vers un autre accueil (par ex. d'une semaine d'ACM à une autre). Bob crée la nouvelle inscription <b>et conserve l'ancienne en « déplacée »</b> : <b>rien n'est effacé</b>. De même, le <b>✕</b> ne supprime plus — il marque l'inscription <b>« annulée »</b>. Un petit <b>🕘 historique des mouvements</b> apparaît sous l'enfant. Les <b>places restantes</b> et l'<b>effectif des éditions d'ACM</b> ignorent automatiquement les inscriptions déplacées/annulées. Réservé au bureau et à l'accueil."},
   {id:'2026-07-09-budget-par-action',date:'2026-07-09',tab:'🎯 Budget par action',titre:"🎯 Nouveau : le Budget par action",desc:"Un nouvel onglet <b>🎯 Budget par action</b> (famille 💶 Finances, réservé au bureau) : chaque activité du CASE — <b>périscolaire, ACM, VEPI, événement…</b> — devient une <b>fiche unique</b> (type, période, site, responsable, <b>n° de dossier Mairie</b>, bénéficiaires). Et son <b>budget</b> avec : ouvre le budget détaillé et tu vois le <b>coût du personnel</b> (coût horaire × heures affectées), les <b>dépenses</b> et <b>recettes</b> réelles remontées <b>automatiquement</b> de la compta et des subventions (zéro double saisie), les contributions en nature, et un <b>aperçu à recopier</b> pour le dossier Mairie. Plus une vue <b>📊 Consolidée annuelle</b> et une vue <b>👤 Charge par salarié</b> qui alerte si quelqu'un est compté sur trop d'actions à la fois."},
@@ -3760,7 +3778,7 @@ function renderDashboard(){
   // rappels (≤ 60 jours) : subventions + échéances générales
   const al=[];
   (db.subventions||[]).forEach(s=>{ const d=subEcheance(s); if(d){ const j=daysTo(d); if(j<=60) al.push({titre:s.name,sous:(s.structure||'')+' — à déposer',d,j,lien:s.lien}); } });
-  (db.echeances||[]).forEach(e=>{ const d=gEcheance(e); if(d){ const j=daysTo(d); if(j<=60) al.push({titre:e.label,sous:e.recurrent?'échéance annuelle':'échéance',d,j,lien:''}); } });
+  (db.echeances||[]).forEach(e=>{ if(e.statut==='fait') return; const d=gEcheance(e); if(d){ const j=daysTo(d); if(j<=60) al.push({titre:e.label,sous:e.sens==='versement'?'à recevoir':(e.structureId?'à déposer':(e.recurrent?'échéance annuelle':'échéance')),d,j,lien:''}); } });
   al.sort((a,b)=>a.j-b.j);
   $('dashAlerts').innerHTML = urgHtml + (al.length ? `<div class="panel" style="border-left:4px solid var(--amber)">
     <h2>⏰ Échéances à venir</h2>`+al.map(({titre,sous,d,j,lien})=>`<div class="kv">
@@ -4067,6 +4085,7 @@ function renderRepertoire(){
     <td style="font-size:13px">${d.url?`<a href="${esc(d.url)}" target="_blank" rel="noopener">Ouvrir ↗</a>`:'<span class="muted">—</span>'}</td>
     <td style="white-space:nowrap"><button class="ghost btn" style="padding:4px 9px;font-size:12px" onclick="openEdit('docs','${d.id}')" title="Modifier">✏️</button><button class="danger" onclick="delDoc('${d.id}')">Suppr.</button></td></tr>`).join('')
     : '<tr><td colspan="4" class="empty">Aucun document. Ajoute les statuts, le RIB, le récépissé de préfecture…</td></tr>';
+  try{ renderStructures(); }catch(e){ console.warn('renderStructures', e); }
 }
 function addDoc(){
   const label=$('d_label').value.trim()||$('d_type').value.trim();
@@ -4076,6 +4095,74 @@ function addDoc(){
   ['d_type','d_label','d_url'].forEach(i=>$(i).value=''); save();
 }
 function delDoc(id){ if(confirm('Supprimer ce document ?')){ db.docs=db.docs.filter(d=>d.id!==id); save(); } }
+/* ---- 🏛️ Structures & financeurs — fiches + échéances greffées sur db.echeances (additif, réversible) ---- */
+const STRUCT_STATUTS={a_faire:{lbl:'À faire',pill:''},bloque:{lbl:'Bloqué (en attente)',pill:'wait'},fait:{lbl:'Fait',pill:'ok'}};
+function addStructure(){
+  const nom=$('st_nom').value.trim(); if(!nom){ alert('Indique le nom de la structure.'); return; }
+  let url=$('st_url').value.trim(); if(url && !/^https?:\/\//i.test(url)) url='https://'+url;
+  db.structures=db.structures||[];
+  db.structures.push({id:uid(),nom,type:$('st_type').value.trim(),url_dossier:url,note:$('st_note').value.trim()});
+  ['st_nom','st_type','st_url','st_note'].forEach(i=>$(i).value=''); save();
+}
+function delStructure(id){
+  const nbE=(db.echeances||[]).filter(e=>e.structureId===id).length;
+  if(!confirm('Supprimer cette structure ?'+(nbE?'\n\n⚠️ Ses '+nbE+' échéance(s) rattachée(s) seront aussi retirées.':''))) return;
+  db.structures=(db.structures||[]).filter(s=>s.id!==id);
+  db.echeances=(db.echeances||[]).filter(e=>e.structureId!==id);
+  save();
+}
+function addStructEch(sid){
+  const s=(db.structures||[]).find(x=>x.id===sid); if(!s) return;
+  const lbl=$('se_lbl_'+sid).value.trim(); if(!lbl){ alert('Indique un intitulé (ex. « Déclaration données ALSH »).'); return; }
+  const sens=$('se_sens_'+sid).value||'depot';
+  const date=$('se_date_'+sid).value||'';
+  const montant=parseFloat($('se_mont_'+sid).value)||0;
+  const statut=$('se_stat_'+sid).value||'a_faire';
+  db.echeances=db.echeances||[];
+  db.echeances.push({id:uid(),label:s.nom+' — '+lbl+' ('+(sens==='versement'?'versement':'dépôt')+')',date,recurrent:false,structureId:sid,sens,statut,montant,note:''});
+  ['se_lbl_'+sid,'se_date_'+sid,'se_mont_'+sid].forEach(i=>{ const el=$(i); if(el) el.value=''; });
+  save();
+}
+function setStructEchStatut(id,v){ const e=(db.echeances||[]).find(x=>x.id===id); if(e){ e.statut=v; save(); } }
+function structEchLine(s,e){
+  const d=gEcheance(e); const j=(d!=null)?daysTo(d):null;
+  const disp=e.label.indexOf(s.nom+' — ')===0?e.label.slice((s.nom+' — ').length):e.label;
+  return '<div class="kv" style="font-size:13px"><span>'+(e.sens==='versement'?'📥':'📤')+' '+esc(disp)+' — '+(e.date?fmtDate(e.date):'<span class="muted">date à confirmer</span>')+(e.montant?' · '+euro(e.montant):'')+'</span>'
+    +'<span style="white-space:nowrap"><select onchange="setStructEchStatut(\''+e.id+'\',this.value)" style="font-size:12px;padding:2px 4px">'
+    +Object.keys(STRUCT_STATUTS).map(function(k){return '<option value="'+k+'"'+(e.statut===k?' selected':'')+'>'+STRUCT_STATUTS[k].lbl+'</option>';}).join('')
+    +'</select> <button class="danger" onclick="delEcheance(\''+e.id+'\');renderRepertoire()">Suppr.</button></span></div>';
+}
+function renderStructures(){
+  const box=$('structuresBody'); if(!box) return;
+  db.structures=db.structures||[]; db.echeances=db.echeances||[];
+  const soon=[];
+  (db.echeances||[]).forEach(function(e){ if(!e.structureId||e.statut==='fait') return; const d=gEcheance(e); if(!d) return; soon.push({e:e,d:d,j:daysTo(d)}); });
+  soon.sort(function(a,b){return a.j-b.j;});
+  const sbox=$('echeancesSoonBox');
+  if(sbox){ sbox.innerHTML = soon.length ? '<div class="card" style="background:#f4f8f6;border-top:3px solid var(--brand)"><strong>📅 Ce qui tombe bientôt</strong>'+soon.slice(0,8).map(function(o){
+    const j=o.j; const pill=(j<0||j<=3)?'no':j<=30?'wait':'ok'; const txt=j<0?'en retard de '+(-j)+' j':j===0?"aujourd'hui":'dans '+j+' j';
+    return '<div class="kv"><span>'+(o.e.sens==='versement'?'📥':'📤')+' <strong>'+esc(o.e.label)+'</strong> — '+fmtDate(isoDate(o.d))+(o.e.montant?' · '+euro(o.e.montant):'')+'</span><span class="pill '+pill+'">'+txt+'</span></div>';
+  }).join('')+'</div>' : ''; }
+  box.innerHTML = db.structures.length ? db.structures.map(function(s){
+    const es=(db.echeances||[]).filter(function(e){return e.structureId===s.id;}).sort(function(a,b){return (a.date||'').localeCompare(b.date||'');});
+    const rows=es.length? es.map(function(e){return structEchLine(s,e);}).join('') : '<p class="hint" style="margin:4px 0">Aucune échéance. Ajoute un dépôt à rendre ou un versement à recevoir.</p>';
+    return '<details class="card" style="margin-bottom:8px"><summary style="cursor:pointer;font-weight:600">'+esc(s.nom)+(s.type?' <span class="pill" style="background:#eef2fb;color:#1f4fc4">'+esc(s.type)+'</span>':'')+' <span class="muted" style="font-weight:400">· '+es.length+' échéance(s)</span></summary>'
+      +'<div style="margin-top:8px">'
+      +(s.note?'<p class="hint" style="margin:0 0 6px">'+esc(s.note)+'</p>':'')
+      +(s.url_dossier?'<p style="margin:0 0 8px"><a class="ghost btn" href="'+esc(s.url_dossier)+'" target="_blank" rel="noopener">📂 Ouvrir le dossier ↗</a></p>':'')
+      +'<div style="margin:6px 0">'+rows+'</div>'
+      +'<div class="row" style="align-items:flex-end;gap:6px;margin-top:8px;background:#fafbfc;padding:8px;border-radius:8px">'
+      +'<div class="field" style="flex:0;min-width:150px"><label style="font-size:12px">Sens</label><select id="se_sens_'+s.id+'"><option value="depot">📤 Dépôt (à rendre)</option><option value="versement">📥 Versement (à recevoir)</option></select></div>'
+      +'<div class="field" style="flex:2"><label style="font-size:12px">Intitulé</label><input id="se_lbl_'+s.id+'" placeholder="Ex. Déclaration données ALSH 2026"></div>'
+      +'<div class="field" style="flex:0;min-width:140px"><label style="font-size:12px">Date</label><input id="se_date_'+s.id+'" type="date"></div>'
+      +'<div class="field" style="flex:0;min-width:110px"><label style="font-size:12px">Montant (opt.)</label><input id="se_mont_'+s.id+'" type="number" placeholder="€"></div>'
+      +'<div class="field" style="flex:0;min-width:150px"><label style="font-size:12px">Statut</label><select id="se_stat_'+s.id+'"><option value="a_faire">À faire</option><option value="bloque">Bloqué (en attente)</option><option value="fait">Fait</option></select></div>'
+      +'<div class="field" style="flex:0"><label style="font-size:12px">&nbsp;</label><button class="btn" onclick="addStructEch(\''+s.id+'\')">＋ Échéance</button></div>'
+      +'</div>'
+      +'<div style="margin-top:8px"><button class="danger" onclick="delStructure(\''+s.id+'\')">🗑️ Supprimer la structure</button></div>'
+      +'</div></details>';
+  }).join('') : '<p class="empty">Aucune structure. Ajoute la DRAJES, la CAF, la Mairie…</p>';
+}
 
 /* ---- Secrétariat : mémo, échéancier général, courriers ---- */
 function addNote(){
