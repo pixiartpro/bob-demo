@@ -1476,6 +1476,20 @@
       <div style="margin-top:10px"><label style="display:flex;align-items:center;gap:8px;font-size:14px"><input type="checkbox" id="fm_vraiephoto"> ⚠️ Mes produits/services ne se montrent qu'en <strong>vraie photo</strong> (l'IA n'invente jamais un produit vendu)</label></div>
     </div>
 
+    <div class="panel">
+      <h2>5 · Coordonnées <span class="muted" style="font-weight:400;font-size:13px">— ce qui peut apparaître sur tes posts</span></h2>
+      <p class="hint">Les vraies infos que l'expert peut mettre dans un <strong>appel à l'action</strong> (« inscris-toi ici », « viens nous voir »). Sans elles, il laisse un crochet <strong>[à compléter]</strong> plutôt que d'inventer. <em>Ce sont des infos <strong>publiques</strong> — jamais un contact interne ni un mot de passe.</em></p>
+      <div class="row">
+        <div class="field" style="flex:2"><label>Adresse (publique)</label><input id="fm_adresse" placeholder="Ex. 132 Route des Ananas, 97490 Sainte-Clotilde"></div>
+        <div class="field" style="flex:1"><label>Téléphone</label><input id="fm_telephone" placeholder="Ex. 0262 …"></div>
+      </div>
+      <div class="row">
+        <div class="field" style="flex:1"><label>Email public</label><input id="fm_email" placeholder="Ex. contact@casebdn.re"></div>
+        <div class="field" style="flex:2"><label>Lien / page d'inscription</label><input id="fm_lien_inscription" placeholder="https://… (le lien où les gens s'inscrivent)"></div>
+      </div>
+      <div class="field"><label>Horaires d'accueil du public</label><input id="fm_horaires_public" placeholder="Ex. lun-ven 9h-12h / 14h-17h30 (PAS les horaires des salariés)"></div>
+    </div>
+
     <div class="panel" style="position:sticky;bottom:0;z-index:5">
       <div class="toolbar">
         <div><button class="btn" onclick="saveFicheMarque()">💾 Enregistrer ma fiche de marque</button>
@@ -7337,6 +7351,10 @@ renderAll();
     if(c2&&c2.hex&&document.getElementById('fm_coul2')) document.getElementById('fm_coul2').value=c2.hex;
     set('fm_charte_notes',f.charte_notes);
     const vp=document.getElementById('fm_vraiephoto'); if(vp) vp.checked=!!f.produit_vraie_photo_only;
+    set('fm_adresse',f.adresse); set('fm_telephone',f.telephone); set('fm_email',f.email);
+    set('fm_lien_inscription',f.lien_inscription); set('fm_horaires_public',f.horaires_public);
+    // Adresse par défaut = fiche associations (source unique) tant que la fiche de marque ne l'a pas
+    if(!f.adresse||!String(f.adresse).trim()){ try{ const {data:a}=await sbc.from('associations').select('adresse').eq('id',myAsso).maybeSingle(); const ad=document.getElementById('fm_adresse'); if(ad&&!ad.value&&a&&a.adresse) ad.value=a.adresse; }catch(e){} }
   };
   const fmSplit=(id,sep)=>{ const el=document.getElementById(id); if(!el||!el.value.trim()) return []; return el.value.split(sep).map(s=>s.trim()).filter(Boolean); };
   window.saveFicheMarque=async function(){
@@ -7356,7 +7374,9 @@ renderAll();
       a_bannir:fmSplit('fm_bannir',','),
       couleurs:[{role:'primaire',hex:val('fm_coul1')},{role:'secondaire',hex:val('fm_coul2')}],
       charte_notes:val('fm_charte_notes')||null,
-      produit_vraie_photo_only:!!(document.getElementById('fm_vraiephoto')&&document.getElementById('fm_vraiephoto').checked)
+      produit_vraie_photo_only:!!(document.getElementById('fm_vraiephoto')&&document.getElementById('fm_vraiephoto').checked),
+      adresse:val('fm_adresse')||null, telephone:val('fm_telephone')||null, email:val('fm_email')||null,
+      lien_inscription:val('fm_lien_inscription')||null, horaires_public:val('fm_horaires_public')||null
     };
     const {error}=await sbc.from('fiches_marque').upsert(rec,{onConflict:'asso_id'});
     if(error){ if(st){ st.style.color='#c0392b'; st.textContent='Erreur : '+error.message; } return; }
