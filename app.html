@@ -2374,6 +2374,7 @@ document.querySelectorAll('nav.tabs button').forEach(b=>{
 
 /* ---- Aide : « Demande à Zanana » (FAQ + assistant par mots-clés, sans IA) ---- */
 const FAQ=[
+  {cat:'🎒 Périscolaire',q:"Comment noter qu'une famille a payé le périscolaire en chèque ou en espèces ?",kw:"periscolaire paiement paye payer encaisser encaissement cheque especes liquide virement regle reglement famille reste a payer impaye impayes qui a paye du solde recu comptoir accueil bureau dossier",a:"Onglet <b>🎒 Périscolaire</b>, panneau <b>📨 Dossiers d'inscription</b>. Sur le dossier d'une famille (une fois le <b>forfait du mois chiffré</b>), le <b>bureau ET l'accueil</b> voient un bouton <b>« 💵 Encaisser (chèque / espèces…) »</b> : choisis le <b>montant</b> (pré-rempli au reste dû), le <b>mode</b> (💵 Espèces, 🧾 Chèque, 🏦 Virement…), la <b>date</b> et le <b>n° de chèque</b>, puis <b>Enregistrer</b>. Le dossier affiche alors <b>Dû / Payé / Reste</b>, et la liste des dossiers indique en haut combien sont <b>« à encaisser »</b>. Un <b>🧾 reçu</b> imprimable est dispo sur chaque règlement. En cas d'erreur ou de chèque rejeté, le <b>bureau</b> clique <b>✕</b> pour l'annuler — ça n'efface rien, ça crée une <b>ligne négative</b> tracée. ⚠️ Pour l'instant, cet encaissement <b>ne s'écrit pas encore tout seul en comptabilité</b> (c'est la prochaine étape)."},
   {cat:'💶 Comptabilité',q:"Comment rapprocher automatiquement en important mon relevé ?",kw:"importer releve automatique auto rapprochement cocher fichier csv banque bnp export incoherences valider salaires rejets virements internes gagner temps comptabilite",
    a:"Onglet <b>💶 Comptabilité</b>, panneau <b>🏦 Rapprochement bancaire</b>, bouton <b>« 📥 Importer le relevé »</b> : choisis un fichier <b>.csv</b> (colonnes <i>compte ; date ; sens ; montant ; libellé ; réf</i> — celui que Claude prépare depuis tes PDF, ou l'export de ta banque). Bob <b>coche tout seul</b> les opérations qu'il reconnaît (même montant, même sens, date proche), écarte les <b>rejets</b> et les <b>virements internes</b>, garde les <b>salaires</b>, et t'affiche : ce qui est <b>à valider</b> (plusieurs opérations au même montant → tu choisis), ce qui est <b>sur le relevé mais pas dans Bob</b> (à saisir), et ce qui est <b>dans Bob mais pas sur le relevé</b> (chèque non débité, doublon…). Le bouton <b>« 🗑️ Réinitialiser le relevé »</b> annule tout (et décoche ce que Bob avait coché ; ton pointage à la main reste). Rien n'est modifié dans tes écritures : Bob ne fait que les <b>cocher</b>."},
   {cat:'📣 Communication',q:"À quoi sert l'onglet Communication ?",kw:"communication com post reseaux sociaux marque voix charte fiche de marque publication facebook instagram identite ton couleurs redaction ecrire posts curseurs bannir creole",a:"L'onglet <b>📣 Communication</b> garde la <b>fiche de marque</b> du CASE : qui on est, à qui on parle, <b>notre voix</b> (avec de vrais exemples de posts et des curseurs proche/pro, rigolo/sérieux…), nos couleurs et nos règles. C'est la <b>mémoire</b> qui permettra de préparer des posts <b>qui nous ressemblent</b>, sans partir de la page blanche. Remplis-la une fois, affine-la quand tu veux. Réservé au bureau et aux salariés."},
@@ -2658,6 +2659,7 @@ function pageHelpGotoAide(){ pageHelpClose(); const b=document.querySelector('na
 
 /* ---- ✨ Quoi de neuf (nouveautés + notice chronologique) ---- */
 const NEWS=[
+  {id:'2026-07-10-encaissement-periscolaire',date:'2026-07-10',tab:'🎒 Périscolaire',titre:"💵 Encaisser le périscolaire par famille (chèque, espèces…)",desc:"Sur un dossier d'inscription périscolaire dont le forfait du mois est chiffré, un nouveau bouton <b>« 💵 Encaisser »</b> (bureau <b>et</b> accueil) permet de noter qu'une famille a réglé — <b>espèces, chèque, virement</b>, avec la date et le n° de chèque. Le dossier affiche <b>Dû / Payé / Reste</b>, la liste indique combien de familles restent <b>« à encaisser »</b>, et un <b>🧾 reçu</b> imprimable est dispo. Une annulation (chèque rejeté, remboursement) se fait proprement par une <b>ligne négative</b>, sans rien effacer. Prochaine étape : le versement automatique en comptabilité."},
   {id:'2026-07-10-comptoir-fiche-auto',date:'2026-07-10',tab:'🎟️ Activités',titre:"🧾 Au comptoir, la fiche enfant se crée toute seule",desc:"Quand tu inscris un enfant au comptoir (« ➕ inscrire ») sur un <b>accueil de mineurs</b> — <b>périscolaire, ACM, VEPI</b> —, Bob <b>crée sa fiche enfant automatiquement</b> et la relie à l'inscription. Fini les enfants « ⚠️ à ficher » : ils apparaissent directement dans <b>👶 Enfants</b>, où tu complètes naissance, école, parent et pièces. Pour les <b>événements / temps forts</b>, rien ne change (nom seul — ça peut être un adulte)."},
   {id:'2026-07-10-onglet-vepi',date:'2026-07-10',tab:'📌 VEPI',titre:"📌 Nouvel onglet VEPI (accueil 6-11 ans, suivi comme l'ACM)",desc:"Un nouvel onglet <b>📌 VEPI</b> (menu 🎨 Animation) pour l'accueil des <b>6-11 ans</b>, suivi <b>comme l'ACM</b> : <b>2 éditions par an</b>, chacune avec son roster et son dossier à venir (SDJES / CAF). En haut, <b>tous les inscrits VEPI</b> — y compris ceux saisis <b>au comptoir sans fiche</b>, affichés par leur nom avec un badge <b>⚠️ à ficher</b>. Accessible au <b>bureau et à l'accueil</b>."},
   {id:'2026-07-10-rapprochement-auto',date:'2026-07-10',tab:'💶 Comptabilité',titre:"⚡ Le rapprochement bancaire devient automatique",desc:"Dans <b>💶 Comptabilité → 🏦 Rapprochement bancaire</b>, un nouveau bouton <b>« 📥 Importer le relevé »</b>. Tu importes un fichier .csv de ton relevé et <b>Bob coche tout seul</b> les opérations qu'il reconnaît (même montant, même sens, date proche) — fini le pointage ligne à ligne. Il écarte les <b>rejets de prélèvement</b> et les <b>virements entre tes comptes</b>, garde les <b>salaires</b>, et te montre clairement <b>ce qui reste</b> : les opérations <b>à valider</b> (plusieurs au même montant), celles <b>sur le relevé mais pas dans Bob</b>, et celles <b>dans Bob mais pas sur le relevé</b>. Rien n'est modifié dans tes écritures : Bob ne fait que les cocher, et le bouton <b>« 🗑️ Réinitialiser »</b> annule tout. Réservé au bureau."},
@@ -7476,18 +7478,69 @@ renderAll();
         +'</tbody></table></div>';
     }catch(e){ box.innerHTML='<p class="hint" style="color:#c0392b">Impossible de charger les paiements en ligne : '+esc((e&&e.message)||'erreur')+'</p>'; }
   };
+  // --- Encaissement au comptoir (chèque / espèces…) : bureau + accueil. Écrit dans `paiements` via RPC ;
+  //     ne touche PAS la compta (Phase 2). Annulation = ligne négative (bureau), jamais de suppression. ---
+  window.periEncaisser=async function(id){
+    const mEl=document.getElementById('enc_m_'+id), modeEl=document.getElementById('enc_mode_'+id),
+          refEl=document.getElementById('enc_ref_'+id), dEl=document.getElementById('enc_date_'+id);
+    if(!mEl||!modeEl) return;
+    const euros=parseFloat(String(mEl.value).replace(',','.'));
+    if(!(euros>0)){ alert('Indique un montant supérieur à 0.'); return; }
+    const {error}=await sbc.rpc('peri_encaisser',{p_inscription_id:id,p_enfant_id:null,p_montant_cents:Math.round(euros*100),p_mode:modeEl.value,p_date:(dEl&&dEl.value)||null,p_ref:(refEl&&refEl.value)||null,p_libelle:null});
+    if(error){ alert('Erreur : '+error.message); return; }
+    if(typeof setSync==='function') setSync('✓ encaissement enregistré','#dff5e9');
+    if(window.loadDossiersPeri) window.loadDossiersPeri();
+  };
+  window.periAnnulerEncaissement=async function(pid){
+    const motif=prompt('Annuler cet encaissement — motif ? Tape : rejet (chèque revenu), remboursement ou avoir.');
+    if(motif===null) return;
+    const m=String(motif).trim().toLowerCase();
+    if(!['rejet','remboursement','avoir'].includes(m)){ alert('Motif attendu : rejet, remboursement ou avoir.'); return; }
+    const {error}=await sbc.rpc('peri_annuler_encaissement',{p_paiement_id:pid,p_motif:m});
+    if(error){ alert('Erreur : '+error.message); return; }
+    if(typeof setSync==='function') setSync('✓ encaissement annulé (ligne négative)','#dff5e9');
+    if(window.loadDossiersPeri) window.loadDossiersPeri();
+  };
+  window.periRecu=async function(inscId,paiementId){
+    const rp=await sbc.from('paiements').select('montant_cents,mode,ref_piece,paid_at,created_at').eq('id',paiementId).single();
+    if(rp.error||!rp.data){ alert('Reçu indisponible : '+((rp.error&&rp.error.message)||'')); return; }
+    const p=rp.data;
+    const ri=await sbc.from('inscriptions_periscolaire').select('foyer,annee').eq('id',inscId).single();
+    const d=(ri&&ri.data)||{};
+    const eur2=c=>(c/100).toLocaleString('fr-FR',{minimumFractionDigits:2})+' €';
+    const dt=(p.paid_at||p.created_at||'').slice(0,10);
+    const asso='CASE du Bois de Nèfles';
+    const row=(k,v)=>'<tr><td style="padding:6px 0;color:#5c7468">'+k+'</td><td style="text-align:right"><b>'+v+'</b></td></tr>';
+    const html='<div style="font-family:Poppins,system-ui,sans-serif;max-width:520px;margin:20px auto;padding:24px;color:#1c2b22">'
+      +'<h2 style="margin:0 0 4px">Reçu de paiement — Périscolaire</h2>'
+      +'<div style="color:#5c7468;margin-bottom:16px">'+esc(asso)+(d.annee?' · année '+esc(d.annee):'')+'</div>'
+      +'<table style="width:100%;border-collapse:collapse;font-size:14px">'
+      +row('Famille',esc(d.foyer||'—'))
+      +row('Montant',eur2(p.montant_cents||0))
+      +row('Mode',esc(modeText(p.mode)||p.mode||'—'))
+      +(p.ref_piece?row('Référence',esc(p.ref_piece)):'')
+      +row('Date',esc(dt))
+      +'</table>'
+      +'<p style="margin-top:20px;font-size:12px;color:#8a9a90">Reçu établi par '+esc(asso)+'. Atteste du règlement ci-dessus.</p>'
+      +'<div style="margin-top:16px"><button onclick="window.print()" style="padding:8px 16px;border-radius:8px;border:0;background:#3a51e8;color:#fff;font:inherit;cursor:pointer">🖨️ Imprimer</button></div></div>';
+    const w=window.open('','_blank');
+    if(!w){ alert('Autorise les fenêtres pop-up pour afficher le reçu.'); return; }
+    w.document.write('<!doctype html><meta charset="utf-8"><title>Reçu périscolaire</title>'+html);
+    w.document.close();
+  };
   window.loadDossiersPeri=async function(){
     const box=document.getElementById('periDossiersList'); if(!box) return;
     const [rd, rf, rp, ract, rina]=await Promise.all([
       sbc.from('inscriptions_periscolaire').select('*').order('updated_at',{ascending:false}),
       sbc.from('enfants').select('*'),
-      sbc.from('paiements').select('inscription_periscolaire_id,statut,paid_at').eq('statut','paye'),
+      sbc.from('paiements').select('id,inscription_periscolaire_id,statut,paid_at,montant_cents,mode,ref_piece,motif,created_at').eq('statut','paye'),
       sbc.from('activites').select('id,nom,categorie'),
       sbc.from('inscriptions_activite').select('id,enfant_id,activite_id,statut')
     ]);
     if(rd.error){ box.innerHTML='<p class="hint" style="color:#c0392b">Erreur : '+esc(rd.error.message)+'</p>'; return; }
     const data=rd.data; const fmap={}; (rf.data||[]).forEach(f=>{ fmap[f.id]=f; });
-    const paidSet={}; ((rp&&rp.data)||[]).forEach(p=>{ if(p.inscription_periscolaire_id) paidSet[p.inscription_periscolaire_id]=p; });
+    const payByInsc={}; ((rp&&rp.data)||[]).forEach(p=>{ if(p.inscription_periscolaire_id){ (payByInsc[p.inscription_periscolaire_id]=payByInsc[p.inscription_periscolaire_id]||[]).push(p); } });
+    const paidSumOf=id=>(payByInsc[id]||[]).reduce((s,p)=>s+(p.montant_cents||0),0);
     // Destinations « activité » = catégorie « Péri & extrascolaire » (VEPI, semaines d'ACM…), hors le doublon « Périscolaire — matin & soir » (le dossier ci-dessus fait foi)
     const actById={}; (ract.data||[]).forEach(a=>{ if(a) actById[a.id]=a; });
     const periActs=(ract.data||[]).filter(a=>a&&a.categorie==='Péri & extrascolaire'&&!/p[eé]riscolaire/i.test(a.nom||''));
@@ -7498,9 +7551,11 @@ renderAll();
     const isTodo=function(x){ return x.statut!=='valide'; };
     data.sort(function(a,b){ return (isTodo(a)?0:1)-(isTodo(b)?0:1); }); // les dossiers à traiter d'abord
     const nbTodo=data.filter(isTodo).length;
+    const nbImp=data.filter(d=>(d.montant_du_cents||0)>0 && ((d.montant_du_cents||0)-paidSumOf(d.id))>0).length;
     const todoOnly=!!window.__periDosTodoOnly;
     const hdr='<div class="row" style="align-items:center;gap:10px;margin-bottom:8px;flex-wrap:wrap">'
       +'<span class="pill" style="background:'+(nbTodo?'#fbecea':'#dff5e9')+';color:'+(nbTodo?'#b23a23':'#127a51')+';font-weight:600">'+(nbTodo?('🔴 '+nbTodo+' dossier'+(nbTodo>1?'s':'')+' à traiter'):'✅ Tous les dossiers sont traités')+'</span>'
+      +(nbImp?'<span class="pill" style="background:#fff5da;color:#8a6400;font-weight:600">💰 '+nbImp+' à encaisser</span>':'')
       +'<label style="font-size:12px;display:flex;align-items:center;gap:5px;cursor:pointer"><input type="checkbox" '+(todoOnly?'checked':'')+' onchange="periDosToggle(this.checked)"> à traiter seulement</label>'
       +'</div>';
     const list=todoOnly?data.filter(isTodo):data;
@@ -7508,29 +7563,63 @@ renderAll();
     const canPeri=canWrite||(myProfile&&myProfile.role==='personnel'); // métier : bureau OU personnel peut compléter le dossier (rattacher enfant + matin/soir) ; validation & paiement restent au bureau (canWrite)
     const periPayBlock=(d)=>{
       const bs='border-top:1px solid var(--line);margin-top:10px;padding-top:10px';
-      const paid=paidSet[d.id];
-      if(paid){
-        return '<div style="'+bs+'"><span class="pill" style="background:#dff5e9;color:#127a51;font-weight:600">✅ Payé en ligne'
-          +(paid.paid_at?(' le '+esc((paid.paid_at||'').slice(0,10))):'')
-          +(d.montant_du_cents?(' — '+eur(d.montant_du_cents)):'')+'</span></div>';
+      const du=d.montant_du_cents||0;
+      const pays=(payByInsc[d.id]||[]).slice().sort((a,b)=>((b.paid_at||b.created_at||'')).localeCompare((a.paid_at||a.created_at||'')));
+      const paid=paidSumOf(d.id);
+      const reste=du-paid;
+      // Encaissements déjà enregistrés (mode, date, montant, réf). ✕ annuler = bureau (ligne négative, jamais d'effacement).
+      const paysHtml=pays.length?('<div style="margin-top:8px;display:flex;flex-direction:column;gap:3px">'+pays.map(p=>{
+        const neg=(p.montant_cents||0)<0;
+        const lbl=p.mode?modeLabel(p.mode):'💳 En ligne';
+        const dt=(p.paid_at||p.created_at||'').slice(0,10);
+        return '<div class="row" style="gap:6px;align-items:center;font-size:12.5px;'+(neg?'color:#b23a23':'')+'">'
+          +'<span>'+(neg?'↩︎ ':'')+esc(lbl)+'</span><strong>'+eur(p.montant_cents||0)+'</strong>'
+          +(dt?'<span class="muted">'+dt+'</span>':'')
+          +(p.ref_piece?'<span class="muted">n° '+esc(p.ref_piece)+'</span>':'')
+          +(p.motif?'<span class="muted">('+esc(p.motif)+')</span>':'')
+          +(p.mode?' <button class="ghost btn" style="padding:1px 7px;font-size:11px" onclick="periRecu(\''+d.id+'\',\''+p.id+'\')" title="Reçu imprimable">🧾</button>':'')
+          +((canWrite&&!neg)?' <button class="ghost btn" style="padding:1px 7px;font-size:11px" onclick="periAnnulerEncaissement(\''+p.id+'\')" title="Annuler (crée une ligne négative, n\'efface rien)">✕</button>':'')
+          +'</div>';
+      }).join('')+'</div>'):'';
+      let synth='';
+      if(du>0){
+        const solde=reste<=0;
+        synth='<div class="row" style="gap:6px;flex-wrap:wrap;align-items:center">'
+          +'<span class="pill" style="background:#f2f6f3;color:#444;font-size:12px">Dû '+eur(du)+'</span>'
+          +'<span class="pill" style="background:#eef4ff;color:#23448a;font-size:12px">Payé '+eur(paid)+'</span>'
+          +'<span class="pill" style="background:'+(solde?'#dff5e9':'#fff5da')+';color:'+(solde?'#127a51':'#8a6400')+';font-weight:600;font-size:12px">'+(solde?'✅ Soldé':'Reste '+eur(reste))+'</span></div>';
+      } else {
+        synth='<div class="muted" style="font-size:12px">Forfait du mois pas encore chiffré'+(canWrite?' — chiffre-le ci-dessous.':'.')+'</div>';
       }
-      if(d.montant_du_cents&&d.pay_token){
-        const url=new URL('payer.html',location.href).href+'?t='+d.pay_token;
-        const det=(d.tarif_detail&&d.tarif_detail.jours)?(' <span class="muted" style="font-size:12px">('+d.tarif_detail.jours+' j × '+eur(Math.round((d.tarif_detail.tarif_jour||0)*100))+')</span>'):'';
-        return '<div style="'+bs+'"><div class="row" style="gap:8px;flex-wrap:wrap;align-items:center">'
-          +'<span class="pill" style="background:#fff5da;color:#8a6400;font-weight:600">💳 À régler : '+eur(d.montant_du_cents)+'</span>'+det
-          +'<button class="ghost btn" onclick="periCopyLien(\''+esc(url)+'\')">🔗 Copier le lien</button>'
-          +'<button class="ghost btn" onclick="periEditMontant(\''+d.id+'\')">✏️ Modifier</button>'
-          +'</div><div class="muted" style="font-size:12px;margin-top:5px;word-break:break-all">'+esc(url)+'</div></div>';
+      const encForm=canPeri?('<div id="encbox_'+d.id+'" style="display:none;margin-top:8px;background:#f4f8f5;border:1px dashed var(--line);border-radius:8px;padding:8px">'
+          +'<div class="row" style="gap:6px;flex-wrap:wrap;align-items:center">'
+          +'<input id="enc_m_'+d.id+'" type="number" min="0" step="0.01" placeholder="€" value="'+(reste>0?(reste/100).toFixed(2):'')+'" style="width:92px;padding:7px 10px;border:1px solid var(--line);border-radius:8px;font:inherit">'
+          +'<select id="enc_mode_'+d.id+'" style="padding:7px 10px;border:1px solid var(--line);border-radius:8px;font:inherit">'+PAY_MODES.map(m=>'<option value="'+m[0]+'"'+(m[0]==='cheque'?' selected':'')+'>'+m[1]+'</option>').join('')+'</select>'
+          +'<input id="enc_ref_'+d.id+'" placeholder="n° chèque" style="width:118px;padding:7px 10px;border:1px solid var(--line);border-radius:8px;font:inherit">'
+          +'<input id="enc_date_'+d.id+'" type="date" value="'+new Date().toISOString().slice(0,10)+'" style="padding:7px 10px;border:1px solid var(--line);border-radius:8px;font:inherit">'
+          +'<button class="btn" onclick="periEncaisser(\''+d.id+'\')">✓ Enregistrer</button>'
+          +'<button class="ghost btn" onclick="var b=document.getElementById(\'encbox_'+d.id+'\');if(b)b.style.display=\'none\'">Annuler</button>'
+          +'</div><div class="muted" style="font-size:11px;margin-top:4px">Règlement reçu (chèque, espèces…). N\'écrit pas encore en comptabilité.</div></div>'):'';
+      const encBtn=canPeri?('<button class="btn" onclick="var b=document.getElementById(\'encbox_'+d.id+'\');if(b)b.style.display=(b.style.display===\'none\'?\'\':\'none\')">💵 Encaisser (chèque / espèces…)</button>'):'';
+      let chiffrage='';
+      if(canWrite){
+        if(du&&d.pay_token){
+          const url=new URL('payer.html',location.href).href+'?t='+d.pay_token;
+          chiffrage='<div class="row" style="gap:8px;flex-wrap:wrap;align-items:center;margin-top:2px">'
+            +'<button class="ghost btn" onclick="periCopyLien(\''+esc(url)+'\')">🔗 Lien de paiement en ligne</button>'
+            +'<button class="ghost btn" onclick="periEditMontant(\''+d.id+'\')">✏️ Modifier le montant</button></div>';
+        } else if(!du){
+          chiffrage='<div style="margin-top:2px"><div class="row" style="gap:6px;flex-wrap:wrap;align-items:center">'
+            +'<input id="pjour_'+d.id+'" type="number" min="0" step="0.01" placeholder="€ / jour" oninput="periCalc(\''+d.id+'\')" style="width:96px;padding:7px 10px;border:1px solid var(--line);border-radius:8px;font:inherit">'
+            +'<span class="muted">×</span>'
+            +'<input id="pnb_'+d.id+'" type="number" min="1" step="1" value="16" oninput="periCalc(\''+d.id+'\')" style="width:74px;padding:7px 10px;border:1px solid var(--line);border-radius:8px;font:inherit"> <span class="muted">jours</span>'
+            +'<span class="muted">=</span><strong id="ptot_'+d.id+'" style="min-width:64px">—</strong>'
+            +'<button class="btn" onclick="periValiderMontant(\''+d.id+'\')">🔒 Valider &amp; générer le lien</button>'
+            +'</div><div class="muted" style="font-size:12px;margin-top:4px">Forfait = tarif/jour (selon le QF) × nombre de jours du mois.</div></div>';
+        }
       }
-      return '<div style="'+bs+'"><div style="font-size:13px;font-weight:600;margin-bottom:6px">💳 Paiement en ligne (forfait du mois)</div>'
-        +'<div class="row" style="gap:6px;flex-wrap:wrap;align-items:center">'
-        +'<input id="pjour_'+d.id+'" type="number" min="0" step="0.01" placeholder="€ / jour" oninput="periCalc(\''+d.id+'\')" style="width:96px;padding:7px 10px;border:1px solid var(--line);border-radius:8px;font:inherit">'
-        +'<span class="muted">×</span>'
-        +'<input id="pnb_'+d.id+'" type="number" min="1" step="1" value="16" oninput="periCalc(\''+d.id+'\')" style="width:74px;padding:7px 10px;border:1px solid var(--line);border-radius:8px;font:inherit"> <span class="muted">jours</span>'
-        +'<span class="muted">=</span><strong id="ptot_'+d.id+'" style="min-width:64px">—</strong>'
-        +'<button class="btn" onclick="periValiderMontant(\''+d.id+'\')">🔒 Valider &amp; générer le lien</button>'
-        +'</div><div class="muted" style="font-size:12px;margin-top:4px">Forfait = tarif/jour (selon le QF, onglet Périscolaire) × nombre de jours du mois. Ajuste les jours pour un mois partiel (ex. rentrée le 5). Montant verrouillé pour la famille.</div></div>';
+      const actionsRow=encBtn?('<div class="row" style="gap:8px;flex-wrap:wrap;align-items:center;margin-top:8px">'+encBtn+'</div>'):'';
+      return '<div style="'+bs+'">'+synth+paysHtml+actionsRow+encForm+chiffrage+'</div>';
     };
     box.innerHTML=hdr+list.map(d=>{
       const st=PERI_DOS_ST[d.statut]||PERI_DOS_ST.brouillon;
@@ -7605,7 +7694,7 @@ renderAll();
         +actChipsBlock
         +addCtrl
         +'<div style="margin-top:8px;display:flex;gap:5px;flex-wrap:wrap">'+pieceHtml+'</div>'
-        +ctrl+(canWrite?periPayBlock(d):'')+'</div>';
+        +ctrl+periPayBlock(d)+'</div>';
     }).join('');
   };
 
