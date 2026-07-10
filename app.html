@@ -1395,6 +1395,36 @@
       <p class="hint" style="margin-top:4px">✨ Colle l'adresse et clique : l'expert <b>lit la page et remplit la fiche pour toi</b>. Tu vérifies et tu ajustes ensuite. (Ça coûte une fraction de centime, plafonné.)</p>
     </div>
 
+    <!-- ✨ Génère un carrousel dans la voix de la fiche (tâche post.generate de run-expert) -->
+    <div class="panel" id="fmgen" style="border-left:4px solid var(--brand)">
+      <h2 style="margin:0 0 4px">✨ Créer un carrousel dans ta voix</h2>
+      <p class="hint">L'expert écrit le <strong>texte d'un carrousel</strong> (plusieurs vignettes) à partir de <strong>ta fiche ci-dessous</strong> — ta voix, tes piliers, ton ancrage de quartier. Tu vérifies, tu ajustes, tu publies où tu veux. <em>Rien n'est publié automatiquement.</em></p>
+      <div class="field"><label>De quoi parle ce post ? (le sujet)</label><input id="pg_sujet" placeholder="Ex. le forum des ados samedi · l'atelier cuisine · la rentrée…"></div>
+      <div class="row" style="gap:18px;flex-wrap:wrap">
+        <div class="field" style="flex:1;min-width:200px"><label>Ton objectif</label>
+          <select id="pg_objectif">
+            <option value="faire_venir">Faire venir du monde</option>
+            <option value="informer" selected>Informer</option>
+            <option value="vendre">Donner envie (vendre / réserver)</option>
+            <option value="valoriser">Valoriser / remercier</option>
+          </select></div>
+        <div class="field" style="flex:1;min-width:160px"><label>Réseau</label>
+          <select id="pg_reseau">
+            <option value="general" selected>Peu importe</option>
+            <option value="instagram">Instagram</option>
+            <option value="facebook">Facebook</option>
+          </select></div>
+        <div class="field" style="flex:0;min-width:120px"><label>Vignettes</label>
+          <select id="pg_nb"><option>3</option><option>4</option><option selected>5</option><option>6</option><option>7</option></select></div>
+      </div>
+      <div class="toolbar" style="margin-top:8px">
+        <button class="btn" id="pg_go" onclick="fmGeneratePost()">✨ Générer le carrousel · ≈ 2 crédits</button>
+        <span class="muted" style="font-size:12.5px">≈ une fraction de centime, plafonné par ton quota.</span>
+      </div>
+      <span id="pg_status" class="muted" style="display:block;margin-top:8px;font-size:13px"></span>
+      <div id="pg_result" style="display:none;margin-top:12px"></div>
+    </div>
+
     <div class="panel">
       <h2>1 · Qui es-tu ?</h2>
       <div class="row">
@@ -2380,6 +2410,7 @@ const FAQ=[
   {cat:'💶 Comptabilité',q:"Comment rapprocher automatiquement en important mon relevé ?",kw:"importer releve automatique auto rapprochement cocher fichier csv banque bnp export incoherences valider salaires rejets virements internes gagner temps comptabilite",
    a:"Onglet <b>💶 Comptabilité</b>, panneau <b>🏦 Rapprochement bancaire</b>, bouton <b>« 📥 Importer le relevé »</b> : choisis un fichier <b>.csv</b> (colonnes <i>compte ; date ; sens ; montant ; libellé ; réf</i> — celui que Claude prépare depuis tes PDF, ou l'export de ta banque). Bob <b>coche tout seul</b> les opérations qu'il reconnaît (même montant, même sens, date proche), écarte les <b>rejets</b> et les <b>virements internes</b>, garde les <b>salaires</b>, et t'affiche : ce qui est <b>à valider</b> (plusieurs opérations au même montant → tu choisis), ce qui est <b>sur le relevé mais pas dans Bob</b> (à saisir), et ce qui est <b>dans Bob mais pas sur le relevé</b> (chèque non débité, doublon…). Le bouton <b>« 🗑️ Réinitialiser le relevé »</b> annule tout (et décoche ce que Bob avait coché ; ton pointage à la main reste). Rien n'est modifié dans tes écritures : Bob ne fait que les <b>cocher</b>."},
   {cat:'📣 Communication',q:"À quoi sert l'onglet Communication ?",kw:"communication com post reseaux sociaux marque voix charte fiche de marque publication facebook instagram identite ton couleurs redaction ecrire posts curseurs bannir creole",a:"L'onglet <b>📣 Communication</b> garde la <b>fiche de marque</b> du CASE : qui on est, à qui on parle, <b>notre voix</b> (avec de vrais exemples de posts et des curseurs proche/pro, rigolo/sérieux…), nos couleurs et nos règles. C'est la <b>mémoire</b> qui permettra de préparer des posts <b>qui nous ressemblent</b>, sans partir de la page blanche. Remplis-la une fois, affine-la quand tu veux. Réservé au bureau et aux salariés."},
+  {cat:'📣 Communication',q:"Comment générer un post carrousel dans notre voix ?",kw:"carrousel carousel generer creer redaction ecrire post publication vignettes slides texte legende sujet objectif reseau swap test expert idee page blanche instagram facebook",a:"Dans l'onglet <b>📣 Communication</b>, sous la fiche de marque, le bloc <b>« ✨ Créer un carrousel dans ta voix »</b> : écris le <b>sujet</b> du post, choisis ton <b>objectif</b> (faire venir, informer, donner envie, valoriser), le <b>réseau</b> et le nombre de vignettes, puis clique <b>« ✨ Générer »</b>. L'expert écrit le texte du carrousel <b>dans notre voix</b> (celle de la fiche), se relit pour l'<b>ancrer chez nous</b> (le « swap test » : éviter un post passe-partout), et te propose les <b>vignettes</b> + une <b>légende</b> à copier. Tu peux <b>régénérer</b> ou ajuster. <b>Rien n'est publié tout seul</b> : tu copies le texte où tu veux. Ça coûte une fraction de centime, plafonné. Réservé au bureau et aux salariés."},
   {cat:'🗂️ Répertoire',q:"Où déposer les conventions CAF, les PV signés, les documents officiels ?",kw:"convention conventions caf mairie pv statuts reglement document officiel officiels coffre gouvernance deposer televerser telecharger visualiser pdf scan",a:"Onglet <b>🗂️ Répertoire</b> → panneau <b>« 📁 Documents officiels &amp; conventions »</b>. Clique <b>« Déposer un document »</b> et choisis un ou plusieurs PDF/scans : ils vont dans le <b>coffre privé</b> (visibles seulement une fois connecté, <b>jamais sur le site public</b>). Ensuite <b>👁️ Visualiser</b> ou <b>⬇️ Télécharger</b>. Tu peux <b>rattacher</b> chaque document à un financeur (Mairie, CAF…) : il apparaît alors aussi dans sa fiche, onglet <b>🏛️ Structures &amp; financeurs</b>. Réservé au bureau."},
   {cat:'📊 Tableau de bord',q:"Comment retrouver une rubrique ou un onglet dans Bob ?",kw:"navigation naviguer circuler onglet onglets rubrique rubriques famille familles barre menu trouver chercher retrouver ranger perdu",a:"Les onglets sont rangés par <b>familles</b> dans la barre du haut (👥 Adhérents, 🎨 Animation, 🏠 Lieux &amp; Salles, 💬 Communication, 💶 Finances, 🧑‍💼 Équipe / RH, 🏛️ Vie associative, 🧰 Réglages). Clique une famille : sa rangée d'onglets <b>reste affichée en permanence</b> juste en dessous, et tu vois toujours où tu es (la famille et l'onglet actifs sont surlignés). Le plus rapide pour sauter n'importe où : tape 2-3 lettres dans <b>« 🔎 Aller à un onglet… »</b> en haut à gauche, Bob t'y emmène directement."},
   {cat:'👶 Enfants',q:"Comment déplacer un enfant d'un accueil (ou d'une semaine d'ACM) à un autre sans perdre l'historique ?",kw:"deplacer deplace bouger changer semaine acm accueil vepi activite transferer muter passer autre effacer supprimer annuler historique mouvement bascule retirer",a:"Onglet <b>👶 Enfants</b> (dans 👥 Adhérents). Sur la puce de l'accueil concerné (🌴 ACM, 📌 VEPI, 🎟️ activité), clique <b>⇄</b> : choisis la <b>destination</b> puis valide. Bob <b>crée la nouvelle inscription</b> et met l'ancienne en <b>« déplacée »</b> — <b>rien n'est effacé</b>, tout reste dans l'historique (le petit <b>🕘</b> sous l'enfant). Le <b>✕</b> à côté ne supprime pas non plus : il passe l'inscription en <b>« annulée »</b> (conservée). Les <b>places restantes</b> et l'<b>effectif des éditions d'ACM</b> ne comptent que les inscriptions actives — les déplacées/annulées sont ignorées. Réservé au <b>bureau et à l'accueil</b>. 💡 C'est aussi l'outil pour basculer, en septembre, les inscrits du parapluie « ACM Ados — Été 2026 » vers les semaines."},
@@ -2661,6 +2692,7 @@ function pageHelpGotoAide(){ pageHelpClose(); const b=document.querySelector('na
 
 /* ---- ✨ Quoi de neuf (nouveautés + notice chronologique) ---- */
 const NEWS=[
+  {id:'2026-07-10-carrousel',date:'2026-07-10',tab:'📣 Communication',titre:"✨ Générer un post carrousel dans notre voix",desc:"Dans l'onglet <b>📣 Communication</b>, juste sous la fiche de marque, un nouveau bloc <b>« ✨ Créer un carrousel dans ta voix »</b> écrit pour toi le <b>texte d'un carrousel</b> (plusieurs vignettes + une légende) à partir de notre fiche : <b>notre voix</b>, nos piliers, notre ancrage Bois de Nèfles. Tu donnes le <b>sujet</b>, ton <b>objectif</b> (faire venir, informer…) et le réseau, l'expert rédige — puis <b>se relit tout seul</b> pour que ça ne ressemble pas à un post passe-partout (le « swap test »). Tu vérifies, tu ajustes, tu <b>copies où tu veux</b>. <b>Rien n'est publié automatiquement.</b> Ça coûte une fraction de centime, plafonné. Réservé au bureau et aux salariés."},
   {id:'2026-07-10-encaissement-acm',date:'2026-07-10',tab:'🎟️ Activités',titre:"🌴 Encaisser les activités & l'ACM par famille",desc:"L'encaissement par famille arrive aussi sur les <b>activités</b> (ACM…). Dans 🎟️ Activités, le bureau <b>chiffre la participation</b> via la grille ACM (quotient familial × semaines), puis le bureau ou l'accueil <b>« 💵 Encaisse »</b> (chèque, espèces…), et le bouton <b>« 💶 Verser en compta »</b> crée les recettes taguées sur le nom de l'activité (espèces en caisse), sans doublon. La CAF et la Mairie restent des subventions à part."},
   {id:'2026-07-10-versement-compta-periscolaire',date:'2026-07-10',tab:'🎒 Périscolaire',titre:"💶 Les encaissements du périscolaire entrent en compta tout seuls",desc:"Après avoir encaissé un règlement (chèque, espèces…), le <b>bureau</b> clique <b>« 💶 Verser en compta »</b> en haut des Dossiers d'inscription : Bob crée les <b>recettes</b> correspondantes, taguées <b>« Périscolaire »</b> (espèces → caisse, reste → banque), <b>sans re-saisie et sans doublon</b> (un verrou empêche de verser deux fois). Elles remontent ensuite dans le 🎯 Budget par action et le rapprochement bancaire. L'accueil encaisse, le bureau verse — chacun son rôle."},
   {id:'2026-07-10-encaissement-periscolaire',date:'2026-07-10',tab:'🎒 Périscolaire',titre:"💵 Encaisser le périscolaire par famille (chèque, espèces…)",desc:"Sur un dossier d'inscription périscolaire dont le forfait du mois est chiffré, un nouveau bouton <b>« 💵 Encaisser »</b> (bureau <b>et</b> accueil) permet de noter qu'une famille a réglé — <b>espèces, chèque, virement</b>, avec la date et le n° de chèque. Le dossier affiche <b>Dû / Payé / Reste</b>, la liste indique combien de familles restent <b>« à encaisser »</b>, et un <b>🧾 reçu</b> imprimable est dispo. Une annulation (chèque rejeté, remboursement) se fait proprement par une <b>ligne négative</b>, sans rien effacer. Prochaine étape : le versement automatique en comptabilité."},
@@ -7353,6 +7385,53 @@ renderAll();
       if(st){ st.style.color='#127a51'; st.textContent='✨ Pré-rempli ! Vérifie, ajuste ce qu\'il faut, puis enregistre.'; }
     }catch(e){ if(st){ st.style.color='#c0392b'; st.textContent='Erreur : '+e; } }
   };
+
+  // ✨ Génère le TEXTE d'un carrousel dans la voix de la fiche (run-expert, tâche post.generate → même videur que le pré-remplissage)
+  const pgEsc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+  window.fmGeneratePost=async function(){
+    const gv=id=>{ const el=document.getElementById(id); return el?el.value:''; };
+    const sujet=(gv('pg_sujet')||'').trim();
+    const st=document.getElementById('pg_status'), btn=document.getElementById('pg_go');
+    if(!sujet){ if(st){ st.style.color='#c0392b'; st.textContent='Dis d\'abord de quoi parle ce post.'; } return; }
+    if(typeof sbc==='undefined'||!sbc){ alert('Connecte-toi d\'abord.'); return; }
+    if(btn) btn.disabled=true;
+    if(st){ st.style.color=''; st.textContent='✨ Rédaction dans ta voix… (quelques secondes)'; }
+    try{
+      const { data, error } = await sbc.functions.invoke('run-expert', { body:{ task:'post.generate', sujet, objectif:gv('pg_objectif'), reseau:gv('pg_reseau'), nb_slides:gv('pg_nb') } });
+      if(btn) btn.disabled=false;
+      if(error){ if(st){ st.style.color='#c0392b'; st.textContent='Erreur : '+(error.message||error); } return; }
+      if(!data||!data.ok){ if(st){ st.style.color='#c0392b'; st.textContent=(data&&data.error)||'Génération impossible pour le moment.'; } return; }
+      if(st){ st.style.color='#127a51'; st.textContent='✅ Prêt — vérifie, ajuste, copie.'; }
+      pgRender(data);
+    }catch(e){ if(btn) btn.disabled=false; if(st){ st.style.color='#c0392b'; st.textContent='Erreur : '+e; } }
+  };
+  function pgRender(data){
+    const res=document.getElementById('pg_result'); if(!res) return;
+    const c=data.carrousel||{}, slides=Array.isArray(c.slides)?c.slides:[];
+    const roleLbl={couverture:'Couverture',contenu:'Vignette',final:'Appel à l\'action'};
+    let h='<div class="row" style="flex-wrap:wrap;gap:10px">';
+    slides.forEach((s,i)=>{ h+='<div style="flex:1;min-width:190px;border:1px solid #e6e6ee;border-radius:10px;padding:12px;background:#fff">'
+      +'<div class="muted" style="font-size:11px;text-transform:uppercase;letter-spacing:.5px">'+(i+1)+' · '+pgEsc(roleLbl[s.role]||s.role||'')+'</div>'
+      +'<div style="font-weight:700;margin:4px 0">'+pgEsc(s.titre)+'</div>'
+      +'<div style="font-size:14px;line-height:1.5">'+pgEsc(s.texte)+'</div></div>'; });
+    h+='</div>';
+    const tags=(Array.isArray(c.hashtags)?c.hashtags:[]).map(t=>String(t)[0]==='#'?t:'#'+t).join(' ');
+    if(c.legende){ h+='<div class="field" style="margin-top:12px"><label>Légende à publier</label><textarea id="pg_legende" rows="4" style="width:100%;font-family:inherit;font-size:14px">'+pgEsc(c.legende)+(tags?('\n\n'+pgEsc(tags)):'')+'</textarea></div>'; }
+    const sw=c.swap_test||{};
+    if(sw.verdict){ const ok=sw.verdict==='ancre_local';
+      h+='<div style="margin-top:8px;padding:8px 10px;border-radius:8px;font-size:13px;background:'+(ok?'#e9f7ef':'#fff5da')+';color:'+(ok?'#127a51':'#8a6400')+'">'
+        +(ok?'✅ Swap test : ancré localement':'⚠️ Swap test : encore un peu générique')
+        +(Array.isArray(sw.ancrages)&&sw.ancrages.length?(' — '+pgEsc(sw.ancrages.join(', '))):'')
+        +(sw.note?('<br><span style="opacity:.85">'+pgEsc(sw.note)+'</span>'):'')+'</div>'; }
+    const usd=data.cost&&data.cost.usd;
+    h+='<div class="toolbar" style="margin-top:10px"><div>'
+      +'<button class="ghost btn" onclick="fmGeneratePost()">🔄 Régénérer</button> '
+      +'<button class="ghost btn" onclick="pgCopy()">📋 Copier la légende</button></div>'
+      +'<span class="muted" style="font-size:12px">'+(data.cost?('a coûté '+(data.cost.credits||2)+' crédits'+(usd?(' · ~'+usd+' $'):'')):'')+'</span></div>';
+    res.innerHTML=h; res.style.display='';
+  }
+  window.pgCopy=function(){ const t=document.getElementById('pg_legende'); if(!t) return; t.select(); try{ document.execCommand('copy'); }catch(e){}
+    const st=document.getElementById('pg_status'); if(st){ st.style.color='#127a51'; st.textContent='📋 Légende copiée.'; } };
 
   // Dossiers d'inscription périscolaire déposés par les familles (table inscriptions_periscolaire + coffre dossiers-periscolaire)
   const PERI_PIECES=[['caf','Attestation CAF'],['impots',"Avis d'imposition"],['domicile','Justif. domicile'],['assurance','Assurance'],['vaccin','Vaccins'],['livret','Livret de famille']];
