@@ -1390,9 +1390,9 @@
       <p class="hint">Cette fiche est la <strong>mémoire</strong> de ta communication : elle garde qui tu es, à qui tu parles, <strong>ta voix</strong> et tes couleurs, pour que chaque post te ressemble — jamais un texte passe-partout. Remplis-la une fois, affine-la quand tu veux.</p>
       <div class="row" style="align-items:flex-end">
         <div class="field" style="flex:3"><label>🔗 Adresse de ton site ou d'une page Facebook / Insta</label><input id="fm_source_url" placeholder="https://…"></div>
-        <div class="field" style="flex:0;min-width:230px"><label>&nbsp;</label><button class="ghost btn" onclick="fmPrefillSoon()">✨ Pré-remplir depuis l'adresse</button></div>
+        <div class="field" style="flex:0;min-width:230px"><label>&nbsp;</label><button class="ghost btn" onclick="fmPrefill()">✨ Pré-remplir depuis l'adresse</button></div>
       </div>
-      <p class="hint" style="margin-top:4px">✨ Le pré-remplissage automatique (l'expert lit la page pour toi) arrive très bientôt. En attendant, remplis à la main ci-dessous — c'est rapide.</p>
+      <p class="hint" style="margin-top:4px">✨ Colle l'adresse et clique : l'expert <b>lit la page et remplit la fiche pour toi</b>. Tu vérifies et tu ajustes ensuite. (Ça coûte une fraction de centime, plafonné.)</p>
     </div>
 
     <div class="panel">
@@ -6862,7 +6862,7 @@ renderAll();
     if(!canWrite) perms.rh='cache'; // RH & Organisation : contenu sensible → bureau uniquement par défaut
     if(!canWrite){ perms.suivi='cache'; perms.conges='cache'; perms.horaires='cache'; } // Suivi, Congés & Horaires : bureau uniquement par défaut
     if(!canWrite) perms.acmvac='cache'; // 🌴 Vacances : outil interne de programmation → bureau uniquement
-    perms.vepi = (canWrite || (myProfile && myProfile.role==='personnel')) ? 'gestion' : 'cache'; // 📌 VEPI : accueil suivi comme l'ACM → bureau + accueil (personnel, ex. Cathy) ; caché aux autres rôles (adhérent, intervenant)
+    if(!canWrite && myProfile && myProfile.role!=='personnel') perms.vepi='cache'; // 📌 VEPI : masqué aux rôles hors bureau/personnel (adhérent, intervenant). Pour le PERSONNEL, l'accès SUIT l'encoche par salarié (🔧 Rubriques) : « gestion » = peut créer une fiche, « lecture » = voit seulement (sans bouton), « caché » = masqué. Défaut personnel non réglé = lecture (visible). Le bureau garde « gestion ».
     if(!canWrite) perms.rdv='cache'; // 📅 Rendez-vous : gestion des plages/créneaux → bureau uniquement
     if(!canWrite) perms.salles='cache'; // 🗓️ Salles : planning interne des créneaux → bureau uniquement
     // 📋 Docs inscription : panneau fusionné dans 🎒 Périscolaire (#docsPeriPanel) → masqué aux non-bureau via le css plus bas (étape2 23/06/2026)
@@ -7318,7 +7318,29 @@ renderAll();
     if(error){ if(st){ st.style.color='#c0392b'; st.textContent='Erreur : '+error.message; } return; }
     if(st){ st.style.color='#127a51'; st.textContent='✅ Fiche enregistrée'; }
   };
-  window.fmPrefillSoon=function(){ alert('✨ Le pré-remplissage automatique depuis ton adresse arrive très bientôt. Pour l\'instant, remplis la fiche à la main — c\'est rapide, et l\'expert s\'en servira pour écrire dans TA voix.'); };
+  window.fmPrefill=async function(){
+    const src=document.getElementById('fm_source_url');
+    const url=((src&&src.value)||'').trim();
+    if(!url){ alert('Colle d\'abord l\'adresse de ton site ou d\'une page Facebook / Insta.'); return; }
+    if(typeof sbc==='undefined'||!sbc){ alert('Connecte-toi d\'abord.'); return; }
+    const st=document.getElementById('fm_status');
+    if(st){ st.style.color=''; st.textContent='✨ Lecture de la page et remplissage… (quelques secondes)'; }
+    try{
+      const { data, error } = await sbc.functions.invoke('run-expert', { body:{ url } });
+      if(error){ if(st){ st.style.color='#c0392b'; st.textContent='Erreur : '+(error.message||error); } return; }
+      if(!data||!data.ok){ if(st){ st.style.color='#c0392b'; st.textContent=(data&&data.error)||'Pré-remplissage impossible pour le moment.'; } return; }
+      const f=data.fiche||{};
+      const set=(id,v)=>{ const el=document.getElementById(id); if(el&&v!=null&&v!=='') el.value=v; };
+      set('fm_nom',f.nom); set('fm_activite',f.activite); set('fm_ville',f.ville); set('fm_quartier',f.quartier);
+      set('fm_cible',f.cible); set('fm_promesse',f.promesse); set('fm_resultat',f.resultat_voulu);
+      if(Array.isArray(f.piliers)&&f.piliers.length) set('fm_piliers',f.piliers.join(', '));
+      set('fm_voix_resume',f.voix_resume);
+      if(Array.isArray(f.a_bannir)&&f.a_bannir.length) set('fm_bannir',f.a_bannir.join(', '));
+      const ch=document.getElementById('fm_creole'); if(ch&&typeof f.creole==='boolean') ch.checked=f.creole;
+      if(src&&data.source_url) src.value=data.source_url;
+      if(st){ st.style.color='#127a51'; st.textContent='✨ Pré-rempli ! Vérifie, ajuste ce qu\'il faut, puis enregistre.'; }
+    }catch(e){ if(st){ st.style.color='#c0392b'; st.textContent='Erreur : '+e; } }
+  };
 
   // Dossiers d'inscription périscolaire déposés par les familles (table inscriptions_periscolaire + coffre dossiers-periscolaire)
   const PERI_PIECES=[['caf','Attestation CAF'],['impots',"Avis d'imposition"],['domicile','Justif. domicile'],['assurance','Assurance'],['vaccin','Vaccins'],['livret','Livret de famille']];
@@ -7640,7 +7662,7 @@ renderAll();
       ((D.insNoEnfNamesByAct&&D.insNoEnfNamesByAct[aid])||[]).forEach(function(nm){ sansFicheNames.push(nm); }); // VEPI : noms des inscrits saisis au comptoir sans fiche (badge « à ficher »)
     });
     roster.sort(function(a,b){return a.nom.toLowerCase().localeCompare(b.nom.toLowerCase());});
-    sansFicheNames.sort(function(a,b){return a.toLowerCase().localeCompare(b.toLowerCase());});
+    sansFicheNames.sort(function(a,b){return (a.nom||'').toLowerCase().localeCompare((b.nom||'').toLowerCase());});
     return {nb:roster.length, roster:roster, sansFiche:sansFiche, sansFicheNames:sansFicheNames};
   }
   async function acmPhotosFor(ids){
@@ -7681,7 +7703,7 @@ renderAll();
     if(typeof sbc==='undefined'||!sbc){ if(box) box.innerHTML='<p class="hint">Connecte-toi pour gérer les éditions.</p>'; return; }
     const [ra,ri,rf,rp]=await Promise.all([
       sbc.from('activites').select('id,nom,categorie,statut,capacite'),
-      sbc.from('inscriptions_activite').select('enfant_id,activite_id,statut,nom'),
+      sbc.from('inscriptions_activite').select('id,enfant_id,activite_id,statut,nom'),
       sbc.from('enfants').select('id,prenom,nom,classe,parent_id'),
       sbc.from('profiles').select('id,full_name,email')
     ]);
@@ -7692,7 +7714,7 @@ renderAll();
     const resp={}; ((rp&&rp.data)||[]).forEach(function(p){ resp[p.id]=p.full_name||p.email||''; });
     const insByAct={},insNoEnfByAct={},insNoEnfNamesByAct={},actSet={};
     acts.concat(actsVepi).forEach(function(a){ actSet[a.id]=true; insByAct[a.id]=[]; insNoEnfByAct[a.id]=0; insNoEnfNamesByAct[a.id]=[]; });
-    ((ri&&ri.data)||[]).forEach(function(i){ if(!actSet[i.activite_id])return; if(i.statut==='deplace'||i.statut==='annule')return; if(i.enfant_id&&enf[i.enfant_id]) insByAct[i.activite_id].push(i.enfant_id); else { insNoEnfByAct[i.activite_id]++; insNoEnfNamesByAct[i.activite_id].push((i.nom||'').trim()||'(sans nom)'); } });
+    ((ri&&ri.data)||[]).forEach(function(i){ if(!actSet[i.activite_id])return; if(i.statut==='deplace'||i.statut==='annule')return; if(i.enfant_id&&enf[i.enfant_id]) insByAct[i.activite_id].push(i.enfant_id); else { insNoEnfByAct[i.activite_id]++; insNoEnfNamesByAct[i.activite_id].push({insId:i.id, nom:(i.nom||'').trim()||'(sans nom)'}); } });
     window.__acmData={acts:acts,actsVepi:actsVepi,enf:enf,resp:resp,insByAct:insByAct,insNoEnfByAct:insNoEnfByAct,insNoEnfNamesByAct:insNoEnfNamesByAct};
     if(window.renderAcmEditions) renderAcmEditions(); if(window.renderVepi) renderVepi();
     if(window.__acmBilanCur){ const ed=acmDb().sessions.find(function(s){return s.id===window.__acmBilanCur;}); if(ed) acmFillEffectif(ed); }
@@ -7758,7 +7780,7 @@ renderAll();
         else {
           h+='<table><thead><tr><th>Enfant</th><th>Classe</th><th>Responsable</th></tr></thead><tbody>';
           e.roster.forEach(function(r){ h+='<tr><td>'+esc(r.nom)+'</td><td>'+esc(r.classe)+'</td><td>'+esc(r.resp)+'</td></tr>'; });
-          e.sansFicheNames.forEach(function(nm){ h+='<tr><td>'+esc(nm)+' <span class="pill" style="background:#fbe9d6;color:#8a4b00;font-size:11px">⚠️ à ficher</span></td><td class="hint">—</td><td class="hint">—</td></tr>'; });
+          e.sansFicheNames.forEach(function(nm){ h+='<tr><td>'+esc(nm.nom)+' <span class="pill" style="background:#fbe9d6;color:#8a4b00;font-size:11px">⚠️ à ficher</span></td><td class="hint">—</td><td><button class="ghost btn" style="padding:2px 10px;font-size:12px" onclick="vepiCreerFiche(\''+nm.insId+'\')">➕ Créer la fiche</button></td></tr>'; });
           h+='</tbody></table>';
           if(e.sansFiche) h+='<p class="hint" style="margin-top:6px">Les « à ficher » sont saisis au comptoir sans fiche enfant. Crée leur fiche dans 👶 Enfants / 🎒 Périscolaire pour les relier à une famille et compléter leur dossier.</p>';
         }
@@ -7777,6 +7799,26 @@ renderAll();
       if(arch.length){ h+='<details style="margin-top:12px"><summary style="cursor:pointer;font-weight:700">🗄️ Archives ('+arch.length+')</summary><div style="margin-top:8px">'+arch.map(function(ed){return acmEditionCard(ed,true,D);}).join('')+'</div></details>'; }
       edBox.innerHTML=h;
     }
+  };
+  // 📌 VEPI — transforme un « à ficher » (inscription au comptoir sans fiche) en vraie fiche enfant + relie l'inscription. Réservé bureau/personnel (RLS enf_ins_staff + bouton masqué en lecture seule).
+  window.vepiCreerFiche=async function(insId){
+    if(typeof sbc==='undefined'||!sbc){ alert('Connecte-toi pour créer une fiche.'); return; }
+    if(!(canWrite || (myProfile && myProfile.role==='personnel'))){ alert('Réservé au bureau et à l\'accueil.'); return; }
+    var nomBrut=''; var D=window.__acmData;
+    if(D&&D.insNoEnfNamesByAct){ Object.keys(D.insNoEnfNamesByAct).forEach(function(aid){ (D.insNoEnfNamesByAct[aid]||[]).forEach(function(o){ if(o&&o.insId===insId) nomBrut=o.nom; }); }); }
+    nomBrut=(nomBrut||'').trim();
+    if(!nomBrut){ alert('Nom introuvable — clique « ↻ Rafraîchir » puis réessaie.'); return; }
+    var parts=nomBrut.split(/\s+/); var nomFam=parts.shift()||nomBrut; var prenom=parts.join(' '); // « NOM Prénom » → nom = 1er mot, prénom = le reste (corrigeable ensuite dans 👶 Enfants)
+    if(!confirm('Créer la fiche enfant de « '+nomBrut+' » et la relier à son inscription VEPI ?\n\n• Nom : '+nomFam+(prenom?'\n• Prénom : '+prenom:'')+'\n\nTu complèteras ensuite naissance, école, parent et pièces dans 👶 Enfants.')) return;
+    try{
+      var ins=await sbc.from('enfants').insert({asso_id:myAsso, nom:nomFam, prenom:prenom}).select('id').single();
+      if(ins.error||!ins.data){ alert('Création impossible : '+((ins.error&&ins.error.message)||'erreur inconnue')+'\n(Vérifie tes droits ou réessaie.)'); return; }
+      var upd=await sbc.from('inscriptions_activite').update({enfant_id:ins.data.id}).eq('id',insId);
+      if(upd.error){ alert('La fiche a été créée (visible dans 👶 Enfants) mais le lien à l\'inscription a échoué : '+upd.error.message+'\nRelie-la à la main.'); }
+      if(window.acmLoadEditionsData) await acmLoadEditionsData(); // recharge → l'enfant passe de « à ficher » à fiché
+      if(window.loadEnfantsHub){ try{ loadEnfantsHub(); }catch(e){} }
+      alert('✅ Fiche créée pour « '+nomBrut+' ». Complète-la dans 👶 Enfants (naissance, école, parent, pièces).');
+    }catch(e){ alert('Erreur : '+((e&&e.message)||e)); }
   };
   window.acmEdToggleAct=function(edId,actId){ const ed=acmDb().sessions.find(function(s){return s.id===edId;}); if(!ed)return; ed.activiteIds=ed.activiteIds||[]; const k=ed.activiteIds.indexOf(actId); if(k>=0) ed.activiteIds.splice(k,1); else ed.activiteIds.push(actId); save(); if(window.renderAcmEditions) renderAcmEditions(); if(window.renderVepi) renderVepi(); if(window.__acmBilanCur===edId) acmOpenBilan(edId); };
   function acmDemHtml(ed,archived){
