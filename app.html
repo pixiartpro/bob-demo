@@ -2491,6 +2491,7 @@ function pageHelpGotoAide(){ pageHelpClose(); const b=document.querySelector('na
 
 /* ---- ✨ Quoi de neuf (nouveautés + notice chronologique) ---- */
 const NEWS=[
+  {id:'2026-07-10-acm-echeances-redatees',date:'2026-07-10',tab:'🌴 Vacances',titre:"⏰ Les éditions d'ACM déjà créées affichent enfin leurs échéances",desc:"Correctif : les éditions d'ACM créées avant l'arrivée du séquenceur daté n'affichaient pas leurs dates d'échéance (J-8 fiche complémentaire, J-60 fiche initiale…). Désormais, quand tu ouvres le <b>📖 Dossier-bilan</b> d'une telle édition et que tu saisis sa <b>date de début</b>, Bob <b>re-date automatiquement</b> ses démarches (sans toucher à ce que tu as déjà coché) et affiche la <b>prochaine échéance en rouge</b> sur la carte. Concrètement pour l'<b>ACM ados été 2026</b> : la <b>fiche complémentaire TAM</b> tombe le <b>19/07</b> (délai ferme). Réservé au bureau."},
   {id:'2026-07-10-structures-financeurs',date:'2026-07-10',tab:'🗂️ Répertoire',titre:"🏛️ Nouveau : Structures &amp; financeurs (avec leurs dates à ne pas rater)",desc:"Dans <b>🗂️ Répertoire</b>, un panneau <b>🏛️ Structures &amp; financeurs</b> : range tes partenaires institutionnels (DRAJES/SDJES, CAF, Mairie…) avec leur <b>correspondant</b>, leur dossier, et surtout leurs <b>échéances</b> — un <b>📤 dépôt</b> à rendre ou un <b>📥 versement</b> à recevoir, avec date, montant et statut (à faire / bloqué / fait). Le bloc <b>« 📅 Ce qui tombe bientôt »</b> les trie par date, et elles remontent <b>toutes seules</b> dans l'échéancier général et le tableau de bord (« à déposer » / « à recevoir »). Réservé au bureau."},
   {id:'2026-07-09-acm-pdf-photos',date:'2026-07-09',tab:'🌴 Vacances',titre:"📸 Les photos choisies (★) entrent dans le bilan PDF",desc:"Le <b>dossier-bilan PDF</b> d'une édition (🌴 Vacances → 🗄️ Éditions) inclut désormais, en annexe, les <b>photos que tu retiens (★)</b>, et un <b>en-tête d'identité de l'accueil</b> plus complet : organisateur, <b>lieu</b> (nouveau champ à saisir dans le dossier-bilan), période, <b>capacité</b> et <b>activités déclarées</b> (repris automatiquement des activités rattachées). Le PDF est <b>régénéré à chaque impression</b> : une photo retirée du stockage n'y apparaît plus (droit à l'image respecté). Rappel affiché sur le document : une photo bonne pour l'album interne n'est pas forcément diffusable à un tiers comme la Mairie. Réservé au bureau."},
   {id:'2026-07-09-deplacer-enfant',date:'2026-07-09',tab:'👶 Enfants',titre:"↔️ Déplacer un enfant d'un accueil à l'autre — sans rien perdre",desc:"Dans l'onglet <b>👶 Enfants</b>, chaque inscription (ACM, VEPI, activité) a maintenant un bouton <b>⇄</b> pour <b>déplacer</b> l'enfant vers un autre accueil (par ex. d'une semaine d'ACM à une autre). Bob crée la nouvelle inscription <b>et conserve l'ancienne en « déplacée »</b> : <b>rien n'est effacé</b>. De même, le <b>✕</b> ne supprime plus — il marque l'inscription <b>« annulée »</b>. Un petit <b>🕘 historique des mouvements</b> apparaît sous l'enfant. Les <b>places restantes</b> et l'<b>effectif des éditions d'ACM</b> ignorent automatiquement les inscriptions déplacées/annulées. Réservé au bureau et à l'accueil."},
@@ -6078,6 +6079,20 @@ const ACM_PARCOURS=[
   {phase:'apres',offset:30,label:"Bilan financier de l'édition"},
   {phase:'apres',offset:60,label:'Compte-rendu à la Mairie (CERFA 15059 si au-dessus du seuil)'}
 ];
+// Coup 4 — clé de correspondance libellé → poste du parcours-type, pour RE-DATER les éditions semées avant le séquenceur daté (offsets manquants).
+function acmDemKey(s){ var t=(s==null?'':String(s)).toLowerCase();
+  if(/compl[eé]mentaire/.test(t)) return /mise [aà] jour|changement/.test(t)?'comp_maj':'tam_comp';
+  if(/initiale/.test(t)) return 'tam_init';
+  if(/assurance/.test(t)) return 'assurance';
+  if(/encadrement|qualif|honorabilit|bafa|bafd/.test(t)) return 'encadrement';
+  if(/registre|pr[eé]sence/.test(t)) return 'registre';
+  if(/bilan p[eé]dagogique/.test(t)) return 'bilan_peda';
+  if(/projet p[eé]dagogique|p[eé]dagogique/.test(t)) return 'projet_peda';
+  if(/caf/.test(t)) return 'caf';
+  if(/financier/.test(t)) return 'financier';
+  if(/mairie|cerfa/.test(t)) return 'mairie';
+  return 'x:'+t.slice(0,28); }
+var ACM_PARCOURS_BYKEY={}; ACM_PARCOURS.forEach(function(t){ var k=acmDemKey(t.label); if(!(k in ACM_PARCOURS_BYKEY)) ACM_PARCOURS_BYKEY[k]=t; });
 function acmParseDate(s){ if(!s) return null; s=String(s).trim(); var m=s.match(/^(\d{4})-(\d{2})-(\d{2})$/); if(m) return new Date(+m[1],+m[2]-1,+m[3]); m=s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{2,4})$/); if(m){ var y=+m[3]; if(y<100)y+=2000; return new Date(y,+m[2]-1,+m[1]); } return null; }
 function acmEditionDebut(ed){ if(ed&&ed.dateDebut){ var d=acmParseDate(ed.dateDebut); if(d) return d; } var j=((ed&&ed.jours)||[]).find(function(x){return /\d{1,2}\/\d{1,2}/.test(x);}); if(j){ var mm=j.match(/(\d{1,2})\/(\d{1,2})/); if(mm){ var now=new Date(); return new Date(now.getFullYear(),+mm[2]-1,+mm[1]); } } return null; }
 function acmDueDate(ed,offset){ if(offset==null) return null; var d=acmEditionDebut(ed); if(!d) return null; var r=new Date(d.getTime()); r.setDate(r.getDate()+offset); return r; }
@@ -6087,6 +6102,8 @@ function acmNextEcheance(ed){ var dem=(ed&&ed.bilan&&ed.bilan.demarches)||[], be
 // Migration douce (ancien format plat {label,fait}) + amorçage du parcours-type. L'ancien tableau n'est remplacé qu'une fois le nouveau écrit.
 function acmEnsureParcours(ed){ if(!ed||!ed.bilan) return; var dem=ed.bilan.demarches;
   if(Array.isArray(dem)&&dem.length&&dem.some(function(d){return !d.phase;})){ ed.bilan.demarches=dem.map(function(d){ return {id:d.id||uid(),label:d.label,phase:d.phase||'avant',offset:(d.offset!=null?d.offset:null),statut:d.statut||(d.fait?'fait':'a_faire')}; }); save(); return; }
+  // Coup 4 — RE-DATER en place les éditions semées avant le séquenceur daté : démarches présentes mais AUCUN offset → on remplit offset/ferme/phase depuis le parcours-type (par mot-clé), sans toucher aux libellés ni aux statuts déjà cochés. Idempotent (ne se redéclenche plus une fois daté). Jamais sur une édition archivée (on ne réécrit pas l'historique).
+  if(Array.isArray(dem)&&dem.length&&ed.statut!=='archivee'&&dem.every(function(d){return d.offset==null;})){ var chg=false; ed.bilan.demarches=dem.map(function(d){ var t=ACM_PARCOURS_BYKEY[acmDemKey(d.label)]; if(t){ chg=true; return {id:d.id||uid(),label:d.label,phase:t.phase,offset:(t.offset!=null?t.offset:null),ferme:!!t.ferme,info:d.info||t.info||'',statut:d.statut||'a_faire'}; } return d; }); if(chg) save(); return; }
   if((!dem||!dem.length)&&!ed.bilan.demSeeded){ ed.bilan.demarches=ACM_PARCOURS.map(function(t){ return {id:uid(),label:t.label,phase:t.phase,offset:(t.offset!=null?t.offset:null),ferme:!!t.ferme,info:t.info||'',statut:'a_faire'}; }); ed.bilan.demSeeded=true; save(); } }
 function acmOrig(k){ return ACM_ORIG.find(o=>o.k===k)||ACM_ORIG[0]; }
 function acmStat(k){ return ACM_STAT.find(o=>o.k===k)||ACM_STAT[0]; }
