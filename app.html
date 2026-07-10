@@ -299,6 +299,7 @@
       <button data-tab="subventions">🏛️ Subventions</button>
       <button data-tab="repertoire">🗂️ Répertoire</button>
       <button data-tab="partenaires">🤝 Partenaires</button>
+      <button data-tab="communication">📣 Communication</button>
       <button data-tab="ateliers">💡 Ateliers</button>
       <button data-tab="secretariat">🧰 Secrétariat</button>
       <button data-tab="caprep">📝 Préparer le CA</button>
@@ -1372,6 +1373,79 @@
   </section>
 
   <!-- DATA -->
+  <!-- 📣 EXPERT COMMUNICATION — fiche de marque (mémoire de l'expert, table fiches_marque) -->
+  <section id="communication" class="page">
+    <style>#communication input[type=range],#communication input[type=checkbox]{accent-color:var(--brand)}</style>
+    <div class="panel" style="border-left:4px solid var(--brand)">
+      <h2 style="margin:0 0 4px">📣 Ta marque, en une fiche</h2>
+      <p class="hint">Cette fiche est la <strong>mémoire</strong> de ta communication : elle garde qui tu es, à qui tu parles, <strong>ta voix</strong> et tes couleurs, pour que chaque post te ressemble — jamais un texte passe-partout. Remplis-la une fois, affine-la quand tu veux.</p>
+      <div class="row" style="align-items:flex-end">
+        <div class="field" style="flex:3"><label>🔗 Adresse de ton site ou d'une page Facebook / Insta</label><input id="fm_source_url" placeholder="https://…"></div>
+        <div class="field" style="flex:0;min-width:230px"><label>&nbsp;</label><button class="ghost btn" onclick="fmPrefillSoon()">✨ Pré-remplir depuis l'adresse</button></div>
+      </div>
+      <p class="hint" style="margin-top:4px">✨ Le pré-remplissage automatique (l'expert lit la page pour toi) arrive très bientôt. En attendant, remplis à la main ci-dessous — c'est rapide.</p>
+    </div>
+
+    <div class="panel">
+      <h2>1 · Qui es-tu ?</h2>
+      <div class="row">
+        <div class="field" style="flex:2"><label>Nom</label><input id="fm_nom" placeholder="Ex. CASE du Bois de Nèfles"></div>
+        <div class="field" style="flex:2"><label>Activité</label><input id="fm_activite" placeholder="Ex. centre social de quartier"></div>
+      </div>
+      <div class="row">
+        <div class="field" style="flex:1"><label>Ville</label><input id="fm_ville" placeholder="Ex. Saint-Denis"></div>
+        <div class="field" style="flex:1"><label>Quartier</label><input id="fm_quartier" placeholder="Ex. Bois de Nèfles"></div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>2 · À qui, et pourquoi ?</h2>
+      <div class="row">
+        <div class="field" style="flex:1"><label>À qui tu parles (ta cible)</label><input id="fm_cible" placeholder="Ex. les familles du quartier"></div>
+        <div class="field" style="flex:1"><label>Ta promesse</label><input id="fm_promesse" placeholder="Ex. du lien et des activités près de chez toi"></div>
+      </div>
+      <div class="row">
+        <div class="field" style="flex:1"><label>Ce que tu veux obtenir</label><input id="fm_resultat" placeholder="Ex. faire venir aux ateliers"></div>
+        <div class="field" style="flex:1"><label>Tes 3 à 5 piliers (séparés par des virgules)</label><input id="fm_piliers" placeholder="Ex. proximité, gratuité, créole, familles"></div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>3 · Ta voix <span class="muted" style="font-weight:400;font-size:13px">— le plus important</span></h2>
+      <p class="hint">On ne capte pas une voix avec des adjectifs. Colle <strong>2 ou 3 vrais posts</strong> que tu as aimés, et règle les curseurs.</p>
+      <div class="field"><label>2-3 exemples de posts (un par ligne)</label><textarea id="fm_exemples" rows="4" style="width:100%;font-family:inherit;font-size:14px" placeholder="Colle ici un post que tu as aimé…&#10;puis un autre à la ligne…"></textarea></div>
+      <div class="field"><label>Résumé de ta voix (optionnel)</label><input id="fm_voix_resume" placeholder="Ex. chaleureux, direct, on tutoie, un mot de créole"></div>
+      <div class="row" style="gap:18px;flex-wrap:wrap;margin-top:6px">
+        <div class="field" style="flex:1;min-width:220px"><label>Proche ⟷ Pro</label><input id="fm_c_proche" type="range" min="0" max="100" value="50"></div>
+        <div class="field" style="flex:1;min-width:220px"><label>Rigolo ⟷ Sérieux</label><input id="fm_c_rigolo" type="range" min="0" max="100" value="50"></div>
+      </div>
+      <div class="row" style="gap:18px;flex-wrap:wrap">
+        <div class="field" style="flex:1;min-width:220px"><label>Court ⟷ Détaillé</label><input id="fm_c_court" type="range" min="0" max="100" value="50"></div>
+        <div class="field" style="flex:1;min-width:220px"><label>Je ⟷ Nous</label><input id="fm_c_je" type="range" min="0" max="100" value="50"></div>
+      </div>
+      <div style="margin-top:8px"><label style="display:flex;align-items:center;gap:8px;font-size:14px"><input type="checkbox" id="fm_creole"> On peut glisser du <strong>créole</strong></label></div>
+      <div class="field" style="margin-top:10px"><label>Mots / expressions à bannir (séparés par des virgules)</label><input id="fm_bannir" placeholder="Ex. impacter, synergie, révolutionner"></div>
+    </div>
+
+    <div class="panel">
+      <h2>4 · Tes couleurs &amp; tes règles</h2>
+      <div class="row" style="align-items:flex-end">
+        <div class="field" style="flex:0;min-width:150px"><label>Couleur principale</label><input id="fm_coul1" type="color" value="#3a51e8" style="height:40px;padding:2px"></div>
+        <div class="field" style="flex:0;min-width:150px"><label>Couleur secondaire</label><input id="fm_coul2" type="color" value="#ffb02e" style="height:40px;padding:2px"></div>
+        <div class="field" style="flex:2"><label>Notes de charte (optionnel)</label><input id="fm_charte_notes" placeholder="Ex. logo sur fond clair, éviter le rouge vif"></div>
+      </div>
+      <div style="margin-top:10px"><label style="display:flex;align-items:center;gap:8px;font-size:14px"><input type="checkbox" id="fm_vraiephoto"> ⚠️ Mes produits/services ne se montrent qu'en <strong>vraie photo</strong> (l'IA n'invente jamais un produit vendu)</label></div>
+    </div>
+
+    <div class="panel" style="position:sticky;bottom:0;z-index:5">
+      <div class="toolbar">
+        <div><button class="btn" onclick="saveFicheMarque()">💾 Enregistrer ma fiche de marque</button>
+        <span id="fm_status" class="muted" style="margin-left:10px;font-size:13px"></span></div>
+        <button class="ghost btn" onclick="if(window.loadFicheMarque)loadFicheMarque()">↻ Recharger</button>
+      </div>
+    </div>
+  </section>
+
   <section id="partenaires" class="page">
     <div class="panel">
       <div class="toolbar">
@@ -2223,6 +2297,7 @@ document.querySelectorAll('nav.tabs button').forEach(b=>{
 
 /* ---- Aide : « Demande à Zanana » (FAQ + assistant par mots-clés, sans IA) ---- */
 const FAQ=[
+  {cat:'📣 Communication',q:"À quoi sert l'onglet Communication ?",kw:"communication com post reseaux sociaux marque voix charte fiche de marque publication facebook instagram identite ton couleurs redaction ecrire posts curseurs bannir creole",a:"L'onglet <b>📣 Communication</b> garde la <b>fiche de marque</b> du CASE : qui on est, à qui on parle, <b>notre voix</b> (avec de vrais exemples de posts et des curseurs proche/pro, rigolo/sérieux…), nos couleurs et nos règles. C'est la <b>mémoire</b> qui permettra de préparer des posts <b>qui nous ressemblent</b>, sans partir de la page blanche. Remplis-la une fois, affine-la quand tu veux. Réservé au bureau et aux salariés."},
   {cat:'🗂️ Répertoire',q:"Où déposer les conventions CAF, les PV signés, les documents officiels ?",kw:"convention conventions caf mairie pv statuts reglement document officiel officiels coffre gouvernance deposer televerser telecharger visualiser pdf scan",a:"Onglet <b>🗂️ Répertoire</b> → panneau <b>« 📁 Documents officiels &amp; conventions »</b>. Clique <b>« Déposer un document »</b> et choisis un ou plusieurs PDF/scans : ils vont dans le <b>coffre privé</b> (visibles seulement une fois connecté, <b>jamais sur le site public</b>). Ensuite <b>👁️ Visualiser</b> ou <b>⬇️ Télécharger</b>. Tu peux <b>rattacher</b> chaque document à un financeur (Mairie, CAF…) : il apparaît alors aussi dans sa fiche, onglet <b>🏛️ Structures &amp; financeurs</b>. Réservé au bureau."},
   {cat:'📊 Tableau de bord',q:"Comment retrouver une rubrique ou un onglet dans Bob ?",kw:"navigation naviguer circuler onglet onglets rubrique rubriques famille familles barre menu trouver chercher retrouver ranger perdu",a:"Les onglets sont rangés par <b>familles</b> dans la barre du haut (👥 Adhérents, 🏛️ Bureau, 🧑‍💼 Équipe, 💶 Finances, 🧰 Réglages). Clique une famille : sa rangée d'onglets <b>reste affichée en permanence</b> juste en dessous, et tu vois toujours où tu es (la famille et l'onglet actifs sont surlignés). Le plus rapide pour sauter n'importe où : tape 2-3 lettres dans <b>« 🔎 Aller à un onglet… »</b> en haut à gauche, Bob t'y emmène directement."},
   {cat:'👶 Enfants',q:"Comment déplacer un enfant d'un accueil (ou d'une semaine d'ACM) à un autre sans perdre l'historique ?",kw:"deplacer deplace bouger changer semaine acm accueil vepi activite transferer muter passer autre effacer supprimer annuler historique mouvement bascule retirer",a:"Onglet <b>👶 Enfants</b> (dans 👥 Adhérents). Sur la puce de l'accueil concerné (🌴 ACM, 📌 VEPI, 🎟️ activité), clique <b>⇄</b> : choisis la <b>destination</b> puis valide. Bob <b>crée la nouvelle inscription</b> et met l'ancienne en <b>« déplacée »</b> — <b>rien n'est effacé</b>, tout reste dans l'historique (le petit <b>🕘</b> sous l'enfant). Le <b>✕</b> à côté ne supprime pas non plus : il passe l'inscription en <b>« annulée »</b> (conservée). Les <b>places restantes</b> et l'<b>effectif des éditions d'ACM</b> ne comptent que les inscriptions actives — les déplacées/annulées sont ignorées. Réservé au <b>bureau et à l'accueil</b>. 💡 C'est aussi l'outil pour basculer, en septembre, les inscrits du parapluie « ACM Ados — Été 2026 » vers les semaines."},
@@ -2500,6 +2575,7 @@ function pageHelpGotoAide(){ pageHelpClose(); const b=document.querySelector('na
 
 /* ---- ✨ Quoi de neuf (nouveautés + notice chronologique) ---- */
 const NEWS=[
+  {id:'2026-07-10-fiche-marque',date:'2026-07-10',tab:'📣 Communication',titre:"📣 Nouveau : ta fiche de marque",desc:"Un nouvel onglet <b>📣 Communication</b> (famille Bureau) accueille la <b>fiche de marque</b> du CASE : <b>qui on est</b>, <b>à qui on parle</b>, <b>notre voix</b> (avec de vrais exemples de posts et des curseurs proche/pro, rigolo/sérieux…), nos <b>couleurs</b> et nos règles (dont « mes produits ne se montrent qu'en vraie photo »). C'est la <b>mémoire</b> qui servira, très bientôt, à préparer des <b>posts qui nous ressemblent</b> — jamais un texte passe-partout. Pour l'instant tu la remplis à la main ; le pré-remplissage depuis notre site arrive ensuite. Réservé au bureau et aux salariés."},
   {id:'2026-07-10-docs-officiels',date:'2026-07-10',tab:'🗂️ Répertoire',titre:"📁 Nouveau : coffre « Documents officiels &amp; conventions »",desc:"Dans <b>🗂️ Répertoire</b>, un panneau <b>📁 Documents officiels &amp; conventions</b> pour ranger les <b>conventions</b> (CAF, Mairie…), les <b>PV signés</b>, les <b>statuts</b> — les documents officiels de l'association. Clique <b>« Déposer un document »</b> et choisis un ou plusieurs PDF/scans : ils vont dans le <b>coffre privé</b>, visibles <b>seulement une fois connecté</b> et <b>jamais sur le site public</b>. Puis <b>👁️ Visualiser</b> / <b>⬇️ Télécharger</b> en un clic. Tu peux <b>rattacher</b> un document à un financeur (Mairie, CAF) pour le retrouver aussi depuis sa fiche dans <b>🏛️ Structures &amp; financeurs</b>. Réservé au bureau."},
   {id:'2026-07-10-nav-persistante',date:'2026-07-10',tab:'📊 Tableau de bord',titre:"🗂️ Tes rubriques restent affichées en permanence",desc:"La barre de navigation a été revue. Quand tu ouvres une <b>famille</b> (👥 Adhérents, 💶 Finances, 🧑‍💼 Équipe…), la rangée de ses <b>onglets reste affichée en permanence</b> en dessous, au lieu de se refermer dès que tu cliques. Tu vois donc toujours <b>où tu es</b> — la famille <b>et</b> l'onglet en cours sont surlignés — et les onglets voisins d'un coup d'œil. Cliquer sur une famille t'amène directement à sa première rubrique. La recherche <b>« 🔎 Aller à un onglet… »</b> reste là comme raccourci. Rien n'a changé dans les rubriques elles-mêmes : c'est juste plus clair pour circuler."},
   {id:'2026-07-10-reset-motdepasse',date:'2026-07-10',tab:'⚙️ Données',titre:"🔒 « Tout effacer » demande maintenant ton mot de passe",desc:"Le bouton <b>« 🗑️ Tout effacer et repartir de zéro »</b> (onglet <b>⚙️ Données</b>) est une action <b>irréversible</b>. En plus de la confirmation et de la sauvegarde automatique déjà en place, Bob te demande désormais de saisir ton <b>mot de passe de connexion</b>, <b>vérifié en ligne</b>, avant d'effacer quoi que ce soit. Objectif : éviter tout effacement accidentel — ou depuis une session laissée ouverte. Si tu te connectes par <b>lien magique</b> sans mot de passe, tu peux en définir un via « Mot de passe oublié ? » sur la page de connexion. Réservé au bureau."},
@@ -6585,6 +6661,7 @@ renderAll();
     if(!canWrite){ perms.accounting='cache'; perms.caisse='cache'; perms.dettes='cache'; perms.bilan='cache'; perms.previsionnel='cache'; } // 💶 Finances : trésorerie → bureau uniquement (verrou de DROIT, plus seulement « de fait » — étape2 22/06/2026)
     if(!canWrite){ perms.equipe='cache'; perms.personnel='cache'; perms.incidents='cache'; } // 🧑‍💼 Équipe : masse salariale, dossiers salariés & événements = données nominatives/RGPD → bureau uniquement (étape2 22/06/2026)
     perms.messages = (canWrite || (myProfile && myProfile.role==='personnel')) ? 'gestion' : 'cache'; // 📨 Messages adhérents : bureau + salariés (personnel) lisent ET répondent ; caché aux autres rôles
+    perms.communication = (canWrite || (myProfile && myProfile.role==='personnel')) ? 'gestion' : 'cache'; // 📣 Communication : fiche de marque = métier → bureau + salariés (is_staff), aligné sur la RLS de fiches_marque
     // === Abonnement (OPT-OUT) : un onglet est caché si SA fonction vaut explicitement false. Absent ou true = visible.
     //     Le CASE a des fonctions vides {} → rien n'est false → il garde TOUT (aucune donnée touchée). ===
     const feats=(window.bobFeatures&&window.bobFeatures())||{};
@@ -6984,6 +7061,55 @@ renderAll();
     </div>`).join('');
   };
   window.setPartStatut=async function(id,st){ const {error}=await sbc.from('partenaires').update({statut:st}).eq('id',id); if(error){alert(error.message);return;} window.loadPartenaires(); };
+
+  // 📣 EXPERT COMMUNICATION — fiche de marque (table fiches_marque, 1 par asso, RLS staff)
+  window.loadFicheMarque=async function(){
+    if(typeof sbc==='undefined'||!sbc||!myAsso) return;
+    const st=document.getElementById('fm_status'); if(st){ st.style.color=''; st.textContent=''; }
+    const {data,error}=await sbc.from('fiches_marque').select('*').eq('asso_id',myAsso).limit(1);
+    if(error){ if(st){ st.style.color='#c0392b'; st.textContent='Erreur : '+error.message; } return; }
+    const f=(data&&data[0])||{};
+    const set=(id,v)=>{ const el=document.getElementById(id); if(el) el.value=(v==null?'':v); };
+    set('fm_source_url',f.source_url); set('fm_nom',f.nom); set('fm_activite',f.activite);
+    set('fm_ville',f.ville); set('fm_quartier',f.quartier);
+    set('fm_cible',f.cible); set('fm_promesse',f.promesse); set('fm_resultat',f.resultat_voulu);
+    set('fm_piliers',(f.piliers||[]).join(', '));
+    set('fm_exemples',(f.voix_exemples||[]).join('\n')); set('fm_voix_resume',f.voix_resume);
+    const cur=f.curseurs||{}; const setc=(id,v)=>{ const el=document.getElementById(id); if(el&&v!=null) el.value=v; };
+    setc('fm_c_proche',cur.proche_pro); setc('fm_c_rigolo',cur.rigolo_serieux); setc('fm_c_court',cur.court_detaille); setc('fm_c_je',cur.je_nous);
+    const ch=document.getElementById('fm_creole'); if(ch) ch.checked=!!f.creole;
+    set('fm_bannir',(f.a_bannir||[]).join(', '));
+    const cols=f.couleurs||[]; const c1=cols.find(c=>c&&c.role==='primaire'), c2=cols.find(c=>c&&c.role==='secondaire');
+    if(c1&&c1.hex&&document.getElementById('fm_coul1')) document.getElementById('fm_coul1').value=c1.hex;
+    if(c2&&c2.hex&&document.getElementById('fm_coul2')) document.getElementById('fm_coul2').value=c2.hex;
+    set('fm_charte_notes',f.charte_notes);
+    const vp=document.getElementById('fm_vraiephoto'); if(vp) vp.checked=!!f.produit_vraie_photo_only;
+  };
+  const fmSplit=(id,sep)=>{ const el=document.getElementById(id); if(!el||!el.value.trim()) return []; return el.value.split(sep).map(s=>s.trim()).filter(Boolean); };
+  window.saveFicheMarque=async function(){
+    if(typeof sbc==='undefined'||!sbc||!myAsso){ alert('Connecte-toi d\'abord.'); return; }
+    const st=document.getElementById('fm_status'); if(st){ st.style.color=''; st.textContent='Enregistrement…'; }
+    const val=id=>{ const el=document.getElementById(id); return el?el.value.trim():null; };
+    const num=id=>{ const el=document.getElementById(id); return el?Number(el.value):null; };
+    const rec={
+      asso_id:myAsso,
+      source_url:val('fm_source_url')||null, nom:val('fm_nom')||null, activite:val('fm_activite')||null,
+      ville:val('fm_ville')||null, quartier:val('fm_quartier')||null,
+      cible:val('fm_cible')||null, promesse:val('fm_promesse')||null, resultat_voulu:val('fm_resultat')||null,
+      piliers:fmSplit('fm_piliers',','),
+      voix_exemples:fmSplit('fm_exemples','\n'), voix_resume:val('fm_voix_resume')||null,
+      curseurs:{proche_pro:num('fm_c_proche'),rigolo_serieux:num('fm_c_rigolo'),court_detaille:num('fm_c_court'),je_nous:num('fm_c_je')},
+      creole:!!(document.getElementById('fm_creole')&&document.getElementById('fm_creole').checked),
+      a_bannir:fmSplit('fm_bannir',','),
+      couleurs:[{role:'primaire',hex:val('fm_coul1')},{role:'secondaire',hex:val('fm_coul2')}],
+      charte_notes:val('fm_charte_notes')||null,
+      produit_vraie_photo_only:!!(document.getElementById('fm_vraiephoto')&&document.getElementById('fm_vraiephoto').checked)
+    };
+    const {error}=await sbc.from('fiches_marque').upsert(rec,{onConflict:'asso_id'});
+    if(error){ if(st){ st.style.color='#c0392b'; st.textContent='Erreur : '+error.message; } return; }
+    if(st){ st.style.color='#127a51'; st.textContent='✅ Fiche enregistrée'; }
+  };
+  window.fmPrefillSoon=function(){ alert('✨ Le pré-remplissage automatique depuis ton adresse arrive très bientôt. Pour l\'instant, remplis la fiche à la main — c\'est rapide, et l\'expert s\'en servira pour écrire dans TA voix.'); };
 
   // Dossiers d'inscription périscolaire déposés par les familles (table inscriptions_periscolaire + coffre dossiers-periscolaire)
   const PERI_PIECES=[['caf','Attestation CAF'],['impots',"Avis d'imposition"],['domicile','Justif. domicile'],['assurance','Assurance'],['vaccin','Vaccins'],['livret','Livret de famille']];
@@ -8928,6 +9054,7 @@ renderAll();
     applyPerms();
     const hb=document.querySelector('nav.tabs button[data-tab="aide"]'); if(hb) hb.addEventListener('click',()=>{ newsMarkRead(); });
     const pb=document.querySelector('nav.tabs button[data-tab="partenaires"]'); if(pb) pb.addEventListener('click',()=>{ if(window.loadPartenaires) loadPartenaires(); });
+    const fmb=document.querySelector('nav.tabs button[data-tab="communication"]'); if(fmb) fmb.addEventListener('click',()=>{ if(window.loadFicheMarque) loadFicheMarque(); });
     if(window.loadPartenaires) loadPartenaires();
     const ab=document.querySelector('nav.tabs button[data-tab="ateliers"]'); if(ab) ab.addEventListener('click',()=>{ if(window.loadAteliers) loadAteliers(); });
     if(window.loadAteliers) loadAteliers();
