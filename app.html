@@ -2458,6 +2458,8 @@ const FAQ=[
    a:"En bas de l'onglet <b>🎟️ Activités</b>, panneau <b>« 📅 Rendez-vous »</b>. Tu définis tes <b>plages récurrentes</b> : un <b>jour</b> (ex : mardi), <b>de … à …</b> (ex : 14h-17h), la <b>durée d'un créneau</b> (30 min par défaut) et un <b>libellé</b>. Les familles voient alors uniquement les <b>créneaux LIBRES</b> dans l'espace famille (📅 Prendre rendez-vous) et en réservent un elles-mêmes — <b>tu n'as plus à rappeler</b>. Tu retrouves ici la liste des <b>rendez-vous pris</b> (date, heure, motif). Pour supprimer une plage : 🗑. Deux plages sont déjà posées par défaut, ajuste-les à ta convenance."},
   {cat:'👶 Enfants',q:"Un enfant affiche « manque » une pièce pour l'ACM mais pas pour le périscolaire — pourquoi ?",kw:"complet manque piece pieces dossier accueil periscolaire acm fiche sanitaire exigence requis different manquant vert rouge completude documents",
    a:"C'est normal : <b>chaque accueil a sa propre liste de pièces requises</b>. Périscolaire et ACM demandent les 6 mêmes pièces (CAF, impôts, domicile, assurance, vaccins, livret), mais <b>l'ACM exige EN PLUS la fiche sanitaire signée</b> — d'où un « ⚠️ manque Fiche sanitaire » possible côté ACM alors que le périscolaire est ✅. Les pièces sont <b>mutualisées</b> (une CAF déposée une fois compte pour tous les accueils de l'enfant/famille). La liste des pièces requises par accueil se règle dans le code — dis-le moi pour l'ajuster (retirer une pièce pour l'ACM, etc.)."},
+  {cat:'🎟️ Activités',q:"Quand j'inscris un enfant au comptoir, sa fiche se crée-t-elle ?",kw:"comptoir inscrire fiche enfant automatique acm vepi periscolaire accueil mineurs a ficher cree lien evenement adulte inscription",
+   a:"Oui, pour les <b>accueils de mineurs</b> (périscolaire, ACM, VEPI) : quand tu utilises <b>« ➕ inscrire (au comptoir) »</b>, Bob <b>crée la fiche enfant</b> (nom/prénom) et la <b>relie</b> à l'inscription — l'enfant n'est plus « à ficher ». Tu complètes ensuite sa fiche dans <b>👶 Enfants</b> (naissance, école, parent, pièces). Pour un <b>événement / temps fort</b> ou une activité socioculturelle, l'inscription reste au <b>nom seul</b> (pas de fiche — ça peut être un adulte). Réservé au bureau."},
   {cat:'📌 VEPI',q:"C'est quoi l'onglet VEPI et où voir les inscrits (même ceux sans fiche) ?",kw:"vepi accueil mineurs 6 11 ans edition editions roster inscrits sans fiche a ficher comptoir dossier sdjes caf suivi comme acm animation onglet nouveau",
    a:"Onglet <b>📌 VEPI</b> (menu 🎨 Animation) : un accueil de mineurs (6-11 ans) suivi <b>comme l'ACM</b>, avec <b>2 éditions par an</b>. En haut, <b>📋 Inscrits VEPI</b> liste <b>tous</b> les enfants inscrits — ceux saisis au comptoir <b>sans fiche</b> apparaissent par leur nom avec un badge <b>⚠️ à ficher</b> (à compléter dans 👶 Enfants / 🎒 Périscolaire pour les relier à une famille). En dessous, <b>🗄️ Éditions VEPI</b> : crée une édition, rattache-lui l'activité VEPI pour en tirer l'effectif, puis clôture-la en <b>dossier-bilan</b> comme l'ACM. Accessible au <b>bureau et à l'accueil</b> (personnel)."},
   {cat:'👶 Enfants',q:"Où je vois tous les enfants et où va chacun (périscolaire, ACM, VEPI) ?",kw:"enfants tous liste ou va chaque enfant accueil accueils periscolaire acm vepi activites filtre voir vue ensemble unifiee ou vont onglet",
@@ -2656,6 +2658,7 @@ function pageHelpGotoAide(){ pageHelpClose(); const b=document.querySelector('na
 
 /* ---- ✨ Quoi de neuf (nouveautés + notice chronologique) ---- */
 const NEWS=[
+  {id:'2026-07-10-comptoir-fiche-auto',date:'2026-07-10',tab:'🎟️ Activités',titre:"🧾 Au comptoir, la fiche enfant se crée toute seule",desc:"Quand tu inscris un enfant au comptoir (« ➕ inscrire ») sur un <b>accueil de mineurs</b> — <b>périscolaire, ACM, VEPI</b> —, Bob <b>crée sa fiche enfant automatiquement</b> et la relie à l'inscription. Fini les enfants « ⚠️ à ficher » : ils apparaissent directement dans <b>👶 Enfants</b>, où tu complètes naissance, école, parent et pièces. Pour les <b>événements / temps forts</b>, rien ne change (nom seul — ça peut être un adulte)."},
   {id:'2026-07-10-onglet-vepi',date:'2026-07-10',tab:'📌 VEPI',titre:"📌 Nouvel onglet VEPI (accueil 6-11 ans, suivi comme l'ACM)",desc:"Un nouvel onglet <b>📌 VEPI</b> (menu 🎨 Animation) pour l'accueil des <b>6-11 ans</b>, suivi <b>comme l'ACM</b> : <b>2 éditions par an</b>, chacune avec son roster et son dossier à venir (SDJES / CAF). En haut, <b>tous les inscrits VEPI</b> — y compris ceux saisis <b>au comptoir sans fiche</b>, affichés par leur nom avec un badge <b>⚠️ à ficher</b>. Accessible au <b>bureau et à l'accueil</b>."},
   {id:'2026-07-10-rapprochement-auto',date:'2026-07-10',tab:'💶 Comptabilité',titre:"⚡ Le rapprochement bancaire devient automatique",desc:"Dans <b>💶 Comptabilité → 🏦 Rapprochement bancaire</b>, un nouveau bouton <b>« 📥 Importer le relevé »</b>. Tu importes un fichier .csv de ton relevé et <b>Bob coche tout seul</b> les opérations qu'il reconnaît (même montant, même sens, date proche) — fini le pointage ligne à ligne. Il écarte les <b>rejets de prélèvement</b> et les <b>virements entre tes comptes</b>, garde les <b>salaires</b>, et te montre clairement <b>ce qui reste</b> : les opérations <b>à valider</b> (plusieurs au même montant), celles <b>sur le relevé mais pas dans Bob</b>, et celles <b>dans Bob mais pas sur le relevé</b>. Rien n'est modifié dans tes écritures : Bob ne fait que les cocher, et le bouton <b>« 🗑️ Réinitialiser »</b> annule tout. Réservé au bureau."},
   {id:'2026-07-10-fusion-equipe-rh',date:'2026-07-10',tab:'🧑‍💼 RH',titre:"🧑‍💼 « Équipe » et « RH » réunis en un seul onglet",desc:"Les deux onglets « Équipe » et « RH » relevaient d'un seul métier (le RH) : ils sont maintenant <b>réunis dans l'onglet 🧑‍💼 RH</b>, avec deux vues d'un clic — <b>👥 Équipe &amp; contrats</b> (dossiers, contrats, accueil des nouveaux, protocoles) et <b>🎯 Organisation &amp; carrières</b> (organisation cible, fiches de poste, ancienneté, bascule ÉCLAT, embauche). Et comme la <b>💰 Masse salariale</b> répond à une question d'argent (ce que le personnel coûte), elle rejoint la famille <b>💶 Finances</b>, là où vit déjà le Budget par action qu'elle alimente. Rien n'a été supprimé — tout est au même endroit, juste mieux rangé. Réservé au bureau."},
@@ -8346,6 +8349,7 @@ renderAll();
     if(ra.error){ box.innerHTML='<p class="hint" style="color:#c0392b">Erreur : '+esc(ra.error.message)+'</p>'; return; }
     const acts=(ra.data||[]).slice().sort((a,b)=>((a.type==='evenement')!==(b.type==='evenement'))?(a.type==='evenement'?1:-1):((a.ordre||0)-(b.ordre||0))), byA={};
     (ri.data||[]).forEach(i=>{ if(i.statut==='deplace'||i.statut==='annule')return; (byA[i.activite_id]=byA[i.activite_id]||[]).push(i); });
+    window.__actById={}; acts.forEach(function(a){ window.__actById[a.id]={categorie:a.categorie||'',type:a.type||'',nom:a.nom||''}; }); // cache léger → addInscriptionActivite sait si l'activité est un accueil d'enfants (fiche d'emblée)
     /* Comptes salariés : référent d'activité + désignation assistant sanitaire */
     const staff=rp.data||[]; window.ACTG_STAFFNAME={}; staff.forEach(function(p){ window.ACTG_STAFFNAME[p.id]=p.full_name||p.email||'?'; });
     const selRef=document.getElementById('ag_referent');
@@ -8524,9 +8528,22 @@ renderAll();
   window.addInscriptionActivite=async function(aid){
     const gv=id=>{ const e=document.getElementById(id); return e?e.value.trim():''; };
     const nom=gv('ai_nom_'+aid); if(!nom){ alert('Indique au moins le nom.'); return; }
-    const {error}=await sbc.from('inscriptions_activite').insert({ asso_id:myAsso, activite_id:aid, nom, responsable:gv('ai_resp_'+aid), contact:gv('ai_contact_'+aid), statut:'valide' });
+    const resp=gv('ai_resp_'+aid), contact=gv('ai_contact_'+aid);
+    // Accueil d'enfants (périscolaire / ACM / VEPI) : on crée la fiche enfant D'EMBLÉE + on relie → plus jamais de « à ficher ».
+    // Événements / temps forts / socioculturel : inchangé (nom seul — peut être un adulte). RLS enf_ins_staff + set_enfant (parent_id null) déjà en place.
+    const a=(window.__actById||{})[aid]||{};
+    const estAccueilEnfant = (a.type==='activite') && (a.categorie==='Péri & extrascolaire');
+    let enfantId=null;
+    if(estAccueilEnfant){
+      const parts=nom.split(/\s+/); const nomFam=parts.shift()||nom; const prenom=parts.join(' ');
+      const insE=await sbc.from('enfants').insert({asso_id:myAsso, nom:nomFam, prenom:prenom}).select('id').single();
+      if(insE.error||!insE.data){ alert('Création de la fiche enfant impossible : '+((insE.error&&insE.error.message)||'erreur inconnue')+'\nRéessaie.'); return; }
+      enfantId=insE.data.id;
+    }
+    const {error}=await sbc.from('inscriptions_activite').insert({ asso_id:myAsso, activite_id:aid, enfant_id:enfantId, nom, responsable:resp, contact, statut:'valide' });
     if(error){ alert(error.message); return; }
     loadActivitesGestion();
+    if(estAccueilEnfant){ if(window.acmLoadEditionsData){ try{ acmLoadEditionsData(); }catch(e){} } if(window.loadEnfantsHub){ try{ loadEnfantsHub(); }catch(e){} } }
   };
   window.updInscriptionActivite=async function(id,field,val){
     const {error}=await sbc.from('inscriptions_activite').update({[field]:(val||'').trim()}).eq('id',id);
