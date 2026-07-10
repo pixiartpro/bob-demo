@@ -2374,7 +2374,8 @@ document.querySelectorAll('nav.tabs button').forEach(b=>{
 
 /* ---- Aide : « Demande à Zanana » (FAQ + assistant par mots-clés, sans IA) ---- */
 const FAQ=[
-  {cat:'🎒 Périscolaire',q:"Comment noter qu'une famille a payé le périscolaire en chèque ou en espèces ?",kw:"periscolaire paiement paye payer encaisser encaissement cheque especes liquide virement regle reglement famille reste a payer impaye impayes qui a paye du solde recu comptoir accueil bureau dossier",a:"Onglet <b>🎒 Périscolaire</b>, panneau <b>📨 Dossiers d'inscription</b>. Sur le dossier d'une famille (une fois le <b>forfait du mois chiffré</b>), le <b>bureau ET l'accueil</b> voient un bouton <b>« 💵 Encaisser (chèque / espèces…) »</b> : choisis le <b>montant</b> (pré-rempli au reste dû), le <b>mode</b> (💵 Espèces, 🧾 Chèque, 🏦 Virement…), la <b>date</b> et le <b>n° de chèque</b>, puis <b>Enregistrer</b>. Le dossier affiche alors <b>Dû / Payé / Reste</b>, et la liste des dossiers indique en haut combien sont <b>« à encaisser »</b>. Un <b>🧾 reçu</b> imprimable est dispo sur chaque règlement. En cas d'erreur ou de chèque rejeté, le <b>bureau</b> clique <b>✕</b> pour l'annuler — ça n'efface rien, ça crée une <b>ligne négative</b> tracée. ⚠️ Pour l'instant, cet encaissement <b>ne s'écrit pas encore tout seul en comptabilité</b> (c'est la prochaine étape)."},
+  {cat:'🎒 Périscolaire',q:"Comment envoyer les encaissements du périscolaire dans la comptabilité ?",kw:"verser versement compta comptabilite recette encaissement periscolaire cheque especes caisse banque budget action double saisie op bureau participation famille solde",a:"Une fois un règlement encaissé (bouton « 💵 Encaisser »), le <b>bureau</b> le fait entrer en comptabilité en un clic : en haut du panneau <b>📨 Dossiers d'inscription</b>, le bouton <b>« 💶 Verser en compta (N) »</b> crée les <b>recettes</b> correspondantes — taguées <b>« Périscolaire »</b>, les <b>espèces</b> dans la <b>caisse</b> et le reste en <b>banque</b>. Un <b>verrou</b> garantit qu'un encaissement <b>n'entre qu'une seule fois</b> (pas de double compte). Ces recettes remontent ensuite toutes seules dans le <b>🎯 Budget par action</b> et le rapprochement bancaire. ⚖️ Réservé au bureau (l'accueil encaisse, le bureau verse). 💡 Ne saisis pas ces recettes « Périscolaire » à la main dans la Comptabilité : elles arriveraient en double (Bob te préviendra)."},
+  {cat:'🎒 Périscolaire',q:"Comment noter qu'une famille a payé le périscolaire en chèque ou en espèces ?",kw:"periscolaire paiement paye payer encaisser encaissement cheque especes liquide virement regle reglement famille reste a payer impaye impayes qui a paye du solde recu comptoir accueil bureau dossier",a:"Onglet <b>🎒 Périscolaire</b>, panneau <b>📨 Dossiers d'inscription</b>. Sur le dossier d'une famille (une fois le <b>forfait du mois chiffré</b>), le <b>bureau ET l'accueil</b> voient un bouton <b>« 💵 Encaisser (chèque / espèces…) »</b> : choisis le <b>montant</b> (pré-rempli au reste dû), le <b>mode</b> (💵 Espèces, 🧾 Chèque, 🏦 Virement…), la <b>date</b> et le <b>n° de chèque</b>, puis <b>Enregistrer</b>. Le dossier affiche alors <b>Dû / Payé / Reste</b>, et la liste des dossiers indique en haut combien sont <b>« à encaisser »</b>. Un <b>🧾 reçu</b> imprimable est dispo sur chaque règlement. En cas d'erreur ou de chèque rejeté, le <b>bureau</b> clique <b>✕</b> pour l'annuler — ça n'efface rien, ça crée une <b>ligne négative</b> tracée. Le bureau clique ensuite <b>« 💶 Verser en compta »</b> pour créer les recettes correspondantes (voir la question dédiée)."},
   {cat:'💶 Comptabilité',q:"Comment rapprocher automatiquement en important mon relevé ?",kw:"importer releve automatique auto rapprochement cocher fichier csv banque bnp export incoherences valider salaires rejets virements internes gagner temps comptabilite",
    a:"Onglet <b>💶 Comptabilité</b>, panneau <b>🏦 Rapprochement bancaire</b>, bouton <b>« 📥 Importer le relevé »</b> : choisis un fichier <b>.csv</b> (colonnes <i>compte ; date ; sens ; montant ; libellé ; réf</i> — celui que Claude prépare depuis tes PDF, ou l'export de ta banque). Bob <b>coche tout seul</b> les opérations qu'il reconnaît (même montant, même sens, date proche), écarte les <b>rejets</b> et les <b>virements internes</b>, garde les <b>salaires</b>, et t'affiche : ce qui est <b>à valider</b> (plusieurs opérations au même montant → tu choisis), ce qui est <b>sur le relevé mais pas dans Bob</b> (à saisir), et ce qui est <b>dans Bob mais pas sur le relevé</b> (chèque non débité, doublon…). Le bouton <b>« 🗑️ Réinitialiser le relevé »</b> annule tout (et décoche ce que Bob avait coché ; ton pointage à la main reste). Rien n'est modifié dans tes écritures : Bob ne fait que les <b>cocher</b>."},
   {cat:'📣 Communication',q:"À quoi sert l'onglet Communication ?",kw:"communication com post reseaux sociaux marque voix charte fiche de marque publication facebook instagram identite ton couleurs redaction ecrire posts curseurs bannir creole",a:"L'onglet <b>📣 Communication</b> garde la <b>fiche de marque</b> du CASE : qui on est, à qui on parle, <b>notre voix</b> (avec de vrais exemples de posts et des curseurs proche/pro, rigolo/sérieux…), nos couleurs et nos règles. C'est la <b>mémoire</b> qui permettra de préparer des posts <b>qui nous ressemblent</b>, sans partir de la page blanche. Remplis-la une fois, affine-la quand tu veux. Réservé au bureau et aux salariés."},
@@ -2659,6 +2660,7 @@ function pageHelpGotoAide(){ pageHelpClose(); const b=document.querySelector('na
 
 /* ---- ✨ Quoi de neuf (nouveautés + notice chronologique) ---- */
 const NEWS=[
+  {id:'2026-07-10-versement-compta-periscolaire',date:'2026-07-10',tab:'🎒 Périscolaire',titre:"💶 Les encaissements du périscolaire entrent en compta tout seuls",desc:"Après avoir encaissé un règlement (chèque, espèces…), le <b>bureau</b> clique <b>« 💶 Verser en compta »</b> en haut des Dossiers d'inscription : Bob crée les <b>recettes</b> correspondantes, taguées <b>« Périscolaire »</b> (espèces → caisse, reste → banque), <b>sans re-saisie et sans doublon</b> (un verrou empêche de verser deux fois). Elles remontent ensuite dans le 🎯 Budget par action et le rapprochement bancaire. L'accueil encaisse, le bureau verse — chacun son rôle."},
   {id:'2026-07-10-encaissement-periscolaire',date:'2026-07-10',tab:'🎒 Périscolaire',titre:"💵 Encaisser le périscolaire par famille (chèque, espèces…)",desc:"Sur un dossier d'inscription périscolaire dont le forfait du mois est chiffré, un nouveau bouton <b>« 💵 Encaisser »</b> (bureau <b>et</b> accueil) permet de noter qu'une famille a réglé — <b>espèces, chèque, virement</b>, avec la date et le n° de chèque. Le dossier affiche <b>Dû / Payé / Reste</b>, la liste indique combien de familles restent <b>« à encaisser »</b>, et un <b>🧾 reçu</b> imprimable est dispo. Une annulation (chèque rejeté, remboursement) se fait proprement par une <b>ligne négative</b>, sans rien effacer. Prochaine étape : le versement automatique en comptabilité."},
   {id:'2026-07-10-comptoir-fiche-auto',date:'2026-07-10',tab:'🎟️ Activités',titre:"🧾 Au comptoir, la fiche enfant se crée toute seule",desc:"Quand tu inscris un enfant au comptoir (« ➕ inscrire ») sur un <b>accueil de mineurs</b> — <b>périscolaire, ACM, VEPI</b> —, Bob <b>crée sa fiche enfant automatiquement</b> et la relie à l'inscription. Fini les enfants « ⚠️ à ficher » : ils apparaissent directement dans <b>👶 Enfants</b>, où tu complètes naissance, école, parent et pièces. Pour les <b>événements / temps forts</b>, rien ne change (nom seul — ça peut être un adulte)."},
   {id:'2026-07-10-onglet-vepi',date:'2026-07-10',tab:'📌 VEPI',titre:"📌 Nouvel onglet VEPI (accueil 6-11 ans, suivi comme l'ACM)",desc:"Un nouvel onglet <b>📌 VEPI</b> (menu 🎨 Animation) pour l'accueil des <b>6-11 ans</b>, suivi <b>comme l'ACM</b> : <b>2 éditions par an</b>, chacune avec son roster et son dossier à venir (SDJES / CAF). En haut, <b>tous les inscrits VEPI</b> — y compris ceux saisis <b>au comptoir sans fiche</b>, affichés par leur nom avec un badge <b>⚠️ à ficher</b>. Accessible au <b>bureau et à l'accueil</b>."},
@@ -2969,6 +2971,9 @@ function addOp(){
        !confirm('La répartition ('+euro(sum)+') ne correspond pas au montant total ('+euro(total)+').\nEnregistrer quand même ?')) return;
   }
   const mode=$('a_mode').value;
+  if($('a_type').value==='in' && splits.some(s=>/p[eé]riscol/i.test(s.action||''))){
+    if(!confirm('⚠️ Les encaissements du périscolaire se versent tout seuls depuis l\'onglet 🎒 Périscolaire (bouton « 💶 Verser en compta »).\n\nSaisir cette recette « Périscolaire » à la main risque de compter l\'argent EN DOUBLE.\n\nContinuer quand même ?')) return;
+  }
   const data={type:$('a_type').value, label, cat:$('a_cat').value.trim(), compte:$('a_compte').value.trim(),
     amount:total, date:$('a_date').value||today(), project:$('a_project').value||'',
     mode, account:accountFromMode(mode), photo:pendingPhoto||'', splits};
@@ -7528,12 +7533,43 @@ renderAll();
     w.document.write('<!doctype html><meta charset="utf-8"><title>Reçu périscolaire</title>'+html);
     w.document.close();
   };
+  // --- Phase 2 : le BUREAU verse les encaissements périscolaire en compta (crée les recettes dans le coffre db.ops). ---
+  //     Chaque écriture porte `paiement_id` → « déjà versé » = une écriture existe pour ce paiement (anti-double-compte).
+  //     Front-only, aucune écriture serveur ; espèces → caisse, reste → banque ; fabriqué comme « versement de subvention ».
+  window.periVerserCompta=async function(){
+    if(!canWrite){ alert('Réservé au bureau.'); return; }
+    const rq=await sbc.from('paiements').select('id,inscription_periscolaire_id,montant_cents,mode,paid_at,created_at').eq('objet','periscolaire').eq('statut','paye');
+    if(rq.error){ alert('Erreur : '+rq.error.message); return; }
+    const versed=new Set((db.ops||[]).map(o=>o.paiement_id).filter(Boolean));
+    const todo=(rq.data||[]).filter(p=>p.mode && !versed.has(p.id));
+    if(!todo.length){ alert('Aucun encaissement à verser : tout est déjà en comptabilité.'); return; }
+    const insIds=[...new Set(todo.map(p=>p.inscription_periscolaire_id).filter(Boolean))];
+    const foyerById={};
+    if(insIds.length){ const ri=await sbc.from('inscriptions_periscolaire').select('id,foyer').in('id',insIds); ((ri&&ri.data)||[]).forEach(x=>{ foyerById[x.id]=x.foyer||''; }); }
+    if(!confirm('Verser '+todo.length+' encaissement(s) en comptabilité ?\n\nBob crée les recettes correspondantes (taguées « Périscolaire » — espèces en caisse, le reste en banque), sans doublon.')) return;
+    let n=0;
+    for(const p of todo){
+      if(versed.has(p.id)) continue;
+      const euros=(p.montant_cents||0)/100, neg=euros<0;
+      const foyer=foyerById[p.inscription_periscolaire_id]||'Famille';
+      db.ops.push({id:uid(), paiement_id:p.id, type:'in',
+        label:(neg?'Périscolaire — annulation — ':'Périscolaire — ')+foyer,
+        cat:'Participation familles', compte:'706 - Prestations de services',
+        amount:euros, date:(p.paid_at||p.created_at||today()).slice(0,10),
+        project:'', mode:p.mode, account:accountFromMode(p.mode), photo:'',
+        splits:[{site:'', action:'Périscolaire', amount:euros}]});
+      versed.add(p.id); n++;
+    }
+    save();
+    if(window.loadDossiersPeri) window.loadDossiersPeri();
+    alert('✅ '+n+' encaissement(s) versé(s) en comptabilité.\nRecettes taguées « Périscolaire » — espèces en caisse, le reste en banque.');
+  };
   window.loadDossiersPeri=async function(){
     const box=document.getElementById('periDossiersList'); if(!box) return;
     const [rd, rf, rp, ract, rina]=await Promise.all([
       sbc.from('inscriptions_periscolaire').select('*').order('updated_at',{ascending:false}),
       sbc.from('enfants').select('*'),
-      sbc.from('paiements').select('id,inscription_periscolaire_id,statut,paid_at,montant_cents,mode,ref_piece,motif,created_at').eq('statut','paye'),
+      sbc.from('paiements').select('id,inscription_periscolaire_id,statut,paid_at,montant_cents,mode,ref_piece,motif,op_id,created_at').eq('statut','paye'),
       sbc.from('activites').select('id,nom,categorie'),
       sbc.from('inscriptions_activite').select('id,enfant_id,activite_id,statut')
     ]);
@@ -7541,6 +7577,9 @@ renderAll();
     const data=rd.data; const fmap={}; (rf.data||[]).forEach(f=>{ fmap[f.id]=f; });
     const payByInsc={}; ((rp&&rp.data)||[]).forEach(p=>{ if(p.inscription_periscolaire_id){ (payByInsc[p.inscription_periscolaire_id]=payByInsc[p.inscription_periscolaire_id]||[]).push(p); } });
     const paidSumOf=id=>(payByInsc[id]||[]).reduce((s,p)=>s+(p.montant_cents||0),0);
+    const versedPmt=new Set((db.ops||[]).map(o=>o.paiement_id).filter(Boolean)); // encaissements déjà versés (marqués dans le coffre par paiement_id)
+    const isVerse=p=>versedPmt.has(p.id);
+    const aVerser=Object.keys(payByInsc).reduce((a,k)=>a.concat(payByInsc[k]),[]).filter(p=>p.mode&&!isVerse(p));
     // Destinations « activité » = catégorie « Péri & extrascolaire » (VEPI, semaines d'ACM…), hors le doublon « Périscolaire — matin & soir » (le dossier ci-dessus fait foi)
     const actById={}; (ract.data||[]).forEach(a=>{ if(a) actById[a.id]=a; });
     const periActs=(ract.data||[]).filter(a=>a&&a.categorie==='Péri & extrascolaire'&&!/p[eé]riscolaire/i.test(a.nom||''));
@@ -7556,6 +7595,7 @@ renderAll();
     const hdr='<div class="row" style="align-items:center;gap:10px;margin-bottom:8px;flex-wrap:wrap">'
       +'<span class="pill" style="background:'+(nbTodo?'#fbecea':'#dff5e9')+';color:'+(nbTodo?'#b23a23':'#127a51')+';font-weight:600">'+(nbTodo?('🔴 '+nbTodo+' dossier'+(nbTodo>1?'s':'')+' à traiter'):'✅ Tous les dossiers sont traités')+'</span>'
       +(nbImp?'<span class="pill" style="background:#fff5da;color:#8a6400;font-weight:600">💰 '+nbImp+' à encaisser</span>':'')
+      +((canWrite&&aVerser.length)?'<button class="btn" style="padding:4px 10px;font-size:12px" onclick="periVerserCompta()">💶 Verser en compta ('+aVerser.length+')</button>':'')
       +'<label style="font-size:12px;display:flex;align-items:center;gap:5px;cursor:pointer"><input type="checkbox" '+(todoOnly?'checked':'')+' onchange="periDosToggle(this.checked)"> à traiter seulement</label>'
       +'</div>';
     const list=todoOnly?data.filter(isTodo):data;
@@ -7577,6 +7617,7 @@ renderAll();
           +(dt?'<span class="muted">'+dt+'</span>':'')
           +(p.ref_piece?'<span class="muted">n° '+esc(p.ref_piece)+'</span>':'')
           +(p.motif?'<span class="muted">('+esc(p.motif)+')</span>':'')
+          +(isVerse(p)?' <span class="pill" style="background:#eef4ff;color:#23744a;font-size:10.5px">✓ compta</span>':'')
           +(p.mode?' <button class="ghost btn" style="padding:1px 7px;font-size:11px" onclick="periRecu(\''+d.id+'\',\''+p.id+'\')" title="Reçu imprimable">🧾</button>':'')
           +((canWrite&&!neg)?' <button class="ghost btn" style="padding:1px 7px;font-size:11px" onclick="periAnnulerEncaissement(\''+p.id+'\')" title="Annuler (crée une ligne négative, n\'efface rien)">✕</button>':'')
           +'</div>';
