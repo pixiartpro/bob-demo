@@ -42,7 +42,8 @@
   nav.famtabs button.on{background:var(--brand);color:#fff;border-color:var(--brand)}
   nav.tabs{display:block;margin:0;position:relative}
   nav.tabs .tabgroup{display:none;gap:6px;flex-wrap:wrap}
-  nav.tabs .tabgroup.show{display:flex;position:absolute;top:2px;left:0;right:0;background:var(--card);border:1px solid var(--line);border-radius:14px;box-shadow:0 14px 32px rgba(16,48,42,.17);padding:10px;z-index:60;max-width:760px}
+  /* Rangée PERSISTANTE (10/07/2026) : la famille active reste dépliée en flux, plus de popover flottant. Réversible : remettre position:absolute;top:2px;left:0;right:0;box-shadow:0 14px 32px…;z-index:60;max-width:760px */
+  nav.tabs .tabgroup.show{display:flex;position:static;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:8px 10px;margin-top:3px;box-shadow:0 2px 10px -6px rgba(16,48,42,.22)}
   nav.famtabs button.famhome{border-bottom-color:#5a6b7a;font-weight:800}
   nav.famtabs button[data-group].open{box-shadow:0 6px 16px rgba(18,122,81,.30);transform:translateY(-1px)}
   nav.famtabs button[data-group]::after{content:" ▾";opacity:.5;font-size:11px}
@@ -2145,35 +2146,36 @@ document.querySelectorAll('nav.tabs button').forEach(b=>{
   };
 });
 
-/* ---- Menu par familles en TIROIRS DÉROULANTS (02/07/2026) : barre compacte, une famille s'ouvre en dropdown ; 📊 Tableau de bord = bouton direct. Réversible : restaurer l'ancien openGroup + le CSS .tabgroup.show inline. ---- */
+/* ---- Menu par familles en RANGÉE PERSISTANTE (10/07/2026) : la barre des familles reste, et la rangée de sous-onglets de la famille ACTIVE reste affichée en permanence (fini le menu flottant qui se refermait). État actif surligné sur la famille ET l'onglet. Réversible : restaurer l'IIFE « tiroirs déroulants » du 02/07 + le CSS .tabgroup.show flottant. ---- */
 (function(){
   const famNav=document.querySelector('nav.famtabs'); if(!famNav) return;
   const groups=document.querySelectorAll('nav.tabs .tabgroup');
-  function closeDrawers(){ groups.forEach(d=>d.classList.remove('show')); famNav.querySelectorAll('button[data-group]').forEach(x=>x.classList.remove('open')); }
+  const visible=t=>{ try{ return getComputedStyle(t).display!=='none'; }catch(e){ return true; } };
+  function showGroup(g){ groups.forEach(d=>d.classList.toggle('show', d.dataset.group===g)); }
   function markFam(g){
-    famNav.querySelectorAll('button[data-group]').forEach(x=>x.classList.toggle('on', x.dataset.group===g));
-    const home=famNav.querySelector('.famhome'); if(home) home.classList.toggle('on', g===null);
+    famNav.querySelectorAll('button[data-group]').forEach(x=>{ const on=x.dataset.group===g; x.classList.toggle('on', on); x.classList.toggle('open', on); });
   }
-  function toggleDrawer(g){
-    const grp=document.querySelector('nav.tabs .tabgroup[data-group="'+g+'"]');
-    const wasOpen=grp&&grp.classList.contains('show');
-    closeDrawers();
-    if(!wasOpen&&grp){ grp.classList.add('show'); const b=famNav.querySelector('button[data-group="'+g+'"]'); if(b) b.classList.add('open'); }
+  // la rangée persistante = celle de l'onglet ACTIF ; le bouton 📊 s'allume sur le tableau de bord
+  function sync(){
+    const act=document.querySelector('nav.tabs button[data-tab].active');
+    const grp=act&&act.closest('.tabgroup');
+    const g=grp?grp.dataset.group:'accueil';
+    showGroup(g); markFam(g);
+    const home=famNav.querySelector('.famhome'); if(home) home.classList.toggle('on', !!act && act.dataset.tab==='dashboard');
   }
-  window.openTabGroup=function(g){ markFam(g); };
-  // clic sur une famille = ouvre/ferme son tiroir (ne change pas d'onglet)
-  famNav.querySelectorAll('button[data-group]').forEach(b=> b.addEventListener('click', ()=>toggleDrawer(b.dataset.group)) );
-  // 📊 bouton direct (data-tab) : va à l'onglet + ferme les tiroirs
+  window.openTabGroup=function(g){ showGroup(g); markFam(g); };
+  // clic sur une famille = affiche sa rangée ET va à son 1er onglet visible (navigation décidée, plus de survol flottant)
+  famNav.querySelectorAll('button[data-group]').forEach(b=> b.addEventListener('click', ()=>{
+    const g=b.dataset.group; showGroup(g); markFam(g);
+    const first=[...document.querySelectorAll('nav.tabs .tabgroup[data-group="'+g+'"] button[data-tab]')].find(visible);
+    if(first && !first.classList.contains('active')) first.click();
+  }) );
+  // 📊 bouton direct (data-tab) : va à l'onglet
   famNav.querySelectorAll('button[data-tab]').forEach(b=> b.addEventListener('click', ()=>{ const t=document.querySelector('nav.tabs button[data-tab="'+b.dataset.tab+'"]'); if(t) t.click(); }) );
-  // clic sur un onglet (réel OU programmatique via .click()) = ferme les tiroirs + marque sa famille (accueil = tableau de bord)
-  document.querySelectorAll('nav.tabs button[data-tab]').forEach(b=>{
-    const g=b.closest('.tabgroup');
-    b.addEventListener('click', ()=>{ closeDrawers(); markFam(b.dataset.tab==='dashboard' ? null : (g?g.dataset.group:null)); });
-  });
-  // clic hors du menu = ferme les tiroirs
-  document.addEventListener('click', function(e){ if(!e.target.closest('.navwrap')) closeDrawers(); });
-  // état initial : tiroirs fermés, on est sur le Tableau de bord
-  closeDrawers(); markFam(null);
+  // clic sur un onglet (réel OU programmatique via .click()) = la rangée persistante suit l'onglet actif
+  document.querySelectorAll('nav.tabs button[data-tab]').forEach(b=> b.addEventListener('click', sync) );
+  // état initial : la rangée de l'onglet actif est affichée d'emblée
+  sync();
 })();
 
 /* ---- Recherche d'onglet « Aller à… » (30/06/2026, additif/revertible) : tape 2-3 lettres → saute à l'onglet via bobGoTab() ---- */
@@ -2356,7 +2358,7 @@ const FAQ=[
   {cat:'⚙️ Données',q:"Comment je sauvegarde mes données ?",kw:"sauvegarde sauvegarder backup exporter enregistrer copie securite proteger",
    a:"Onglet <b>⚙️ Données</b> → <b>« Exporter une sauvegarde »</b> : un fichier est téléchargé sur ton ordinateur. Fais-le régulièrement, surtout après une grosse saisie. Tes données sont aussi enregistrées en ligne automatiquement."},
   {cat:'⚙️ Données',q:"Comment je récupère une sauvegarde / je reviens en arrière ?",kw:"recuperer restaurer importer sauvegarde revenir arriere annuler retrouver backup",
-   a:"Onglet <b>⚙️ Données</b> → <b>« Importer une sauvegarde »</b>, puis choisis ton fichier. Bob te demande confirmation et <b>télécharge automatiquement une sauvegarde de l'état actuel avant de remplacer</b> (fichier <code>sauvegarde-CASE-avant-import-…</code>) — donc même en cas de fausse manip, tu reviens en arrière en réimportant ce fichier de secours. Même filet automatique avant une <b>remise à zéro</b> (fichier <code>…-avant-remise-a-zero-…</code>)."},
+   a:"Onglet <b>⚙️ Données</b> → <b>« Importer une sauvegarde »</b>, puis choisis ton fichier. Bob te demande confirmation et <b>télécharge automatiquement une sauvegarde de l'état actuel avant de remplacer</b> (fichier <code>sauvegarde-CASE-avant-import-…</code>) — donc même en cas de fausse manip, tu reviens en arrière en réimportant ce fichier de secours. Même filet automatique avant une <b>remise à zéro</b> (fichier <code>…-avant-remise-a-zero-…</code>). En plus, la remise à zéro te demande ton <b>mot de passe de connexion</b> (vérifié en ligne) avant d'effacer — sécurité supplémentaire contre les fausses manips."},
   {cat:'⚙️ Données',q:"Comment je paramètre les listes (sites, actions, catégories…) ?",kw:"parametrer listes site action categorie type adhesion plan comptable ajouter modifier supprimer choix deroulant",
    a:"Onglet <b>⚙️ Données</b> : tu peux <b>ajouter, modifier ou supprimer</b> les éléments de chaque liste (Site, Action, Catégorie, Type d'adhésion…), comme pour le plan comptable. Ces choix apparaissent ensuite dans les menus déroulants."},
   {cat:'🛟 Le reste',q:"À quoi sert le chat et la boîte à idées 💡 ?",kw:"chat message boite idee ampoule suggestion bug signaler discuter communiquer guillaume",
@@ -2491,6 +2493,7 @@ function pageHelpGotoAide(){ pageHelpClose(); const b=document.querySelector('na
 
 /* ---- ✨ Quoi de neuf (nouveautés + notice chronologique) ---- */
 const NEWS=[
+  {id:'2026-07-10-reset-motdepasse',date:'2026-07-10',tab:'⚙️ Données',titre:"🔒 « Tout effacer » demande maintenant ton mot de passe",desc:"Le bouton <b>« 🗑️ Tout effacer et repartir de zéro »</b> (onglet <b>⚙️ Données</b>) est une action <b>irréversible</b>. En plus de la confirmation et de la sauvegarde automatique déjà en place, Bob te demande désormais de saisir ton <b>mot de passe de connexion</b>, <b>vérifié en ligne</b>, avant d'effacer quoi que ce soit. Objectif : éviter tout effacement accidentel — ou depuis une session laissée ouverte. Si tu te connectes par <b>lien magique</b> sans mot de passe, tu peux en définir un via « Mot de passe oublié ? » sur la page de connexion. Réservé au bureau."},
   {id:'2026-07-10-acm-echeances-redatees',date:'2026-07-10',tab:'🌴 Vacances',titre:"⏰ Les éditions d'ACM déjà créées affichent enfin leurs échéances",desc:"Correctif : les éditions d'ACM créées avant l'arrivée du séquenceur daté n'affichaient pas leurs dates d'échéance (J-8 fiche complémentaire, J-60 fiche initiale…). Désormais, quand tu ouvres le <b>📖 Dossier-bilan</b> d'une telle édition et que tu saisis sa <b>date de début</b>, Bob <b>re-date automatiquement</b> ses démarches (sans toucher à ce que tu as déjà coché) et affiche la <b>prochaine échéance en rouge</b> sur la carte. Concrètement pour l'<b>ACM ados été 2026</b> : la <b>fiche complémentaire TAM</b> tombe le <b>19/07</b> (délai ferme). Réservé au bureau."},
   {id:'2026-07-10-structures-financeurs',date:'2026-07-10',tab:'🗂️ Répertoire',titre:"🏛️ Nouveau : Structures &amp; financeurs (avec leurs dates à ne pas rater)",desc:"Dans <b>🗂️ Répertoire</b>, un panneau <b>🏛️ Structures &amp; financeurs</b> : range tes partenaires institutionnels (DRAJES/SDJES, CAF, Mairie…) avec leur <b>correspondant</b>, leur dossier, et surtout leurs <b>échéances</b> — un <b>📤 dépôt</b> à rendre ou un <b>📥 versement</b> à recevoir, avec date, montant et statut (à faire / bloqué / fait). Le bloc <b>« 📅 Ce qui tombe bientôt »</b> les trie par date, et elles remontent <b>toutes seules</b> dans l'échéancier général et le tableau de bord (« à déposer » / « à recevoir »). Réservé au bureau."},
   {id:'2026-07-09-acm-pdf-photos',date:'2026-07-09',tab:'🌴 Vacances',titre:"📸 Les photos choisies (★) entrent dans le bilan PDF",desc:"Le <b>dossier-bilan PDF</b> d'une édition (🌴 Vacances → 🗄️ Éditions) inclut désormais, en annexe, les <b>photos que tu retiens (★)</b>, et un <b>en-tête d'identité de l'accueil</b> plus complet : organisateur, <b>lieu</b> (nouveau champ à saisir dans le dossier-bilan), période, <b>capacité</b> et <b>activités déclarées</b> (repris automatiquement des activités rattachées). Le PDF est <b>régénéré à chaque impression</b> : une photo retirée du stockage n'y apparaît plus (droit à l'image respecté). Rappel affiché sur le document : une photo bonne pour l'album interne n'est pas forcément diffusable à un tiers comme la Mairie. Réservé au bureau."},
@@ -6477,10 +6480,26 @@ function exportComptaCSV(){
 function download(blob,name){
   const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=name; a.click(); URL.revokeObjectURL(a.href);
 }
-function resetAll(){
+async function resetAll(){
   if(!confirm('⚠️ Tout effacer et repartir de zéro ?\n\nCela supprime DÉFINITIVEMENT toutes les données de l\'association en ligne (adhérents, comptabilité, subventions…).\n\nPar sécurité, une sauvegarde de l\'état actuel va d\'abord être téléchargée.\n\nÊtes-vous sûr ?')){ return; }
+  // 🔒 Double sécurité : on exige le mot de passe de connexion de la personne (vérifié en ligne) AVANT d'effacer.
+  if(typeof window.bobReauth!=='function'){
+    alert('Sécurité : la vérification du mot de passe n\'est pas disponible (il faut être connecté à Bob). Rien n\'a été effacé.');
+    return;
+  }
+  const pw=prompt('🔒 Action irréversible.\n\nPour confirmer la suppression de TOUTES les données de l\'association en ligne, saisis ton mot de passe de connexion Bob :');
+  if(pw===null){ return; }            // annulé
+  if(!pw.trim()){ alert('Aucun mot de passe saisi — rien n\'a été effacé.'); return; }
+  const chk=await window.bobReauth(pw);
+  if(!chk.ok){
+    alert(chk.reason==='noauth'
+      ? 'Impossible de vérifier ton mot de passe (connexion requise) — rien n\'a été effacé.'
+      : 'Mot de passe incorrect — rien n\'a été effacé.\n\n(Si tu te connectes par lien magique et n\'as pas de mot de passe, tu peux en définir un via « Mot de passe oublié ? » sur la page de connexion.)');
+    return;
+  }
   try{ exportJSON('avant-remise-a-zero'); }catch(e){}
-  db=blank(); _jPrev=null; db.journal=[jEntry('Données','🧹 Toutes les données ont été effacées (remise à zéro)')]; save();
+  db=blank(); _jPrev=null; db.journal=[jEntry('Données','🧹 Toutes les données ont été effacées (remise à zéro, confirmée par mot de passe)')]; save();
+  alert('✅ Remise à zéro effectuée. Une sauvegarde de l\'état précédent a été téléchargée dans tes fichiers.');
 }
 /* init */
 $('m_date').value=today(); $('a_date').value=today(); $('t_date').value=today(); $('q_date').value=today(); $('r_date').value=today(); $('i_date').value=today(); $('de_date').value=today();
@@ -8801,6 +8820,18 @@ renderAll();
     canWrite=['president','tresorier','bureau'].includes(prof.role);
     window._bobUser=(prof.full_name||prof.email||'').split('@')[0];
     window.bobMe={id:prof.id,role:prof.role,email:prof.email||'',nom:(prof.full_name||prof.email||''),canWrite:canWrite};
+    // 🔒 Vérifie le mot de passe de connexion de la personne AVANT une action sensible (ex. remise à zéro).
+    //    Utilise un client Supabase JETABLE (sans persistance) pour NE PAS toucher à la session en cours.
+    window.bobReauth=async function(pw){
+      try{
+        const email=(myProfile&&myProfile.email)||'';
+        if(!email||!window.supabase||!window.supabase.createClient) return {ok:false,reason:'noauth'};
+        const tmp=window.supabase.createClient(SB_URL,SB_KEY,{auth:{persistSession:false,autoRefreshToken:false,storageKey:'bob-reauth-check'}});
+        const {error}=await tmp.auth.signInWithPassword({email:email,password:pw});
+        try{ await tmp.auth.signOut({scope:'local'}); }catch(e){}  // 'local' : ne révoque QUE le client jetable, jamais la session Bob en cours
+        return error?{ok:false,reason:'bad'}:{ok:true};
+      }catch(e){ return {ok:false,reason:'err'}; }
+    };
     // onglet Historique : réservé au bureau (retiré du navigateur pour les autres rôles)
     const jBtn=document.querySelector('nav.tabs button[data-tab="journal"]'), jSec=document.getElementById('journal');
     if(canWrite){ if(jBtn) jBtn.style.display=''; }
