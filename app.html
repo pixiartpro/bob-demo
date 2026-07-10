@@ -3433,7 +3433,7 @@ const PILOT_HTRAV=1607, PILOT_HPAYE=1820;   // base coût/h travaillé (paramét
 const PILOT_TAUXBEN=11.88;                    // valorisation du bénévolat €/h (SMIC, paramétrable)
 const PILOT_POSTES=['Alimentation / goûter','Matériel pédagogique','Transport','Sorties / activités','Prestataires / intervenants','Hébergement / séjour','Communication','Assurance','Fluides & divers','Autre'];
 function pilotDB(){ if(!Array.isArray(db.actionsFiches)) db.actionsFiches=[]; db.actionsFiches.forEach(pilotFiche); return db.actionsFiches; }
-function pilotFiche(f){ if(!Array.isArray(f.personnel)) f.personnel=[]; if(!Array.isArray(f.charges)) f.charges=[]; if(!Array.isArray(f.nature)) f.nature=[]; if(!Array.isArray(f.recAutres)) f.recAutres=[]; if(!Array.isArray(f.sessions)) f.sessions=[]; return f; }
+function pilotFiche(f){ if(!Array.isArray(f.personnel)) f.personnel=[]; if(!Array.isArray(f.charges)) f.charges=[]; if(!Array.isArray(f.nature)) f.nature=[]; if(!Array.isArray(f.recAutres)) f.recAutres=[]; if(!Array.isArray(f.sessions)) f.sessions=[]; f.sessions.forEach(s=>{ if(!Array.isArray(s.personnel)) s.personnel=[]; }); return f; }
 function pilotSalaries(){ return [...new Set((db.salaries||[]).map(s=>s.name).filter(Boolean))]; }
 function pilotSal(id){ return (db.salaries||[]).find(s=>s.id===id); }
 function pilotCoutHTrav(sal){ if(!sal) return 0; return (sal.bruth||0)*(1+(sal.charges||0)/100)*PILOT_HPAYE/PILOT_HTRAV; }
@@ -3446,6 +3446,7 @@ function pilotNat(n){ return n.type==='benevolat'?(n.q||0)*PILOT_TAUXBEN:(n.q||0
 function pilotTotals(f){
   pilotFiche(f); const t={persPrev:0,persReel:0,autrePrev:0,recSubPrev:0,recAutrePrev:0,nat:0,mairiePrev:0};
   f.personnel.forEach(p=>{ const c=pilotCoutHTrav(pilotSal(p.sid)); t.persPrev+=c*(p.hPrev||0); t.persReel+=c*(p.hReel||0); });
+  (f.sessions||[]).forEach(se=>{ (se.personnel||[]).forEach(p=>{ const c=pilotCoutHTrav(pilotSal(p.sid)); t.persPrev+=c*(p.hPrev||0); t.persReel+=c*(p.hReel||0); }); });
   f.charges.forEach(c=>{ t.autrePrev+=(c.prev||0); });
   f.recAutres.forEach(r=>{ t.recAutrePrev+=(r.prev||0); });
   pilotSubs(f.nom).forEach(s=>{ t.recSubPrev+=(s.demande||0); if(/mairie/i.test(s.structure||'')) t.mairiePrev+=(s.demande||0); });
@@ -3578,26 +3579,48 @@ function pilotReelPeriode(nom,type,du,au){
 function pilotAddSession(id){ const f=_pf(id); if(f){ if(!Array.isArray(f.sessions)) f.sessions=[]; f.sessions.push({id:uid(),nom:'',du:'',au:'',cible:0}); save(); } }
 function pilotSetSession(id,i,ch,v){ const f=_pf(id); if(f&&f.sessions&&f.sessions[i]){ f.sessions[i][ch]=(ch==='cible')?(parseFloat(v)||0):v; save(); } }
 function pilotDelSession(id,i){ const f=_pf(id); if(f&&f.sessions){ f.sessions.splice(i,1); save(); } }
+function pilotSessToggle(fid,i){ window._pilotSessOpen=window._pilotSessOpen||{}; const k=fid+'|'+i; window._pilotSessOpen[k]=!window._pilotSessOpen[k]; renderPilotage(); }
+function pilotAddSessPers(fid,i){ const f=_pf(fid); if(f&&f.sessions&&f.sessions[i]){ if(!Array.isArray(f.sessions[i].personnel)) f.sessions[i].personnel=[]; f.sessions[i].personnel.push({sid:'',hPrev:0,hReel:0}); save(); } }
+function pilotSetSessPers(fid,i,pi,ch,v){ const f=_pf(fid); if(f&&f.sessions&&f.sessions[i]&&f.sessions[i].personnel&&f.sessions[i].personnel[pi]){ f.sessions[i].personnel[pi][ch]=ch==='sid'?v:(parseFloat(v)||0); save(); } }
+function pilotDelSessPers(fid,i,pi){ const f=_pf(fid); if(f&&f.sessions&&f.sessions[i]&&f.sessions[i].personnel){ f.sessions[i].personnel.splice(pi,1); save(); } }
+function pilotSessPersCout(se){ let prev=0,reel=0; (se.personnel||[]).forEach(p=>{ const c=pilotCoutHTrav(pilotSal(p.sid)); prev+=c*(p.hPrev||0); reel+=c*(p.hReel||0); }); return {prev:prev,reel:reel}; }
 function pilotSessionsSection(f){
-  pilotFiche(f); const eur=pilotEur; let sumCible=0;
-  const rows=f.sessions.map((s,i)=>{
+  pilotFiche(f); const eur=pilotEur; window._pilotSessOpen=window._pilotSessOpen||{};
+  const sals=(db.salaries||[]);
+  const salOpts=sel=>'<option value="">— salarié —</option>'+sals.map(x=>`<option value="${x.id}" ${x.id===sel?'selected':''}>${esc(x.name)}</option>`).join('');
+  let sumCible=0;
+  const blocs=f.sessions.map((s,i)=>{
     const dep=pilotReelPeriode(f.nom,'out',s.du,s.au), rec=pilotReelPeriode(f.nom,'in',s.du,s.au);
     sumCible+=(s.cible||0);
-    const reste=(s.cible?(s.cible-(dep||0)):null);
-    return `<tr>
-      <td><input value="${esc(s.nom||'')}" placeholder="ex. Janvier" style="width:110px" onchange="pilotSetSession('${f.id}',${i},'nom',this.value)"></td>
-      <td><input type="date" value="${esc(s.du||'')}" onchange="pilotSetSession('${f.id}',${i},'du',this.value)"></td>
-      <td><input type="date" value="${esc(s.au||'')}" onchange="pilotSetSession('${f.id}',${i},'au',this.value)"></td>
-      <td style="text-align:right"><input type="number" step="1" value="${s.cible||0}" style="width:90px;text-align:right" onchange="pilotSetSession('${f.id}',${i},'cible',this.value)"></td>
-      <td style="text-align:right">${dep==null?'<span class="muted">—</span>':eur(dep)}</td>
-      <td style="text-align:right">${reste==null?'<span class="muted">—</span>':'<b style="color:'+(reste>=0?'#3b6d11':'#a32d2d')+'">'+eur(reste)+'</b>'}</td>
-      <td style="text-align:right">${rec==null?'<span class="muted">—</span>':eur(rec)}</td>
-      <td><button class="danger btn" onclick="pilotDelSession('${f.id}',${i})">✕</button></td>
-    </tr>`;
+    const pc=pilotSessPersCout(s);
+    const reste=(s.cible?(s.cible-(dep||0)-pc.reel):null);
+    const open=!!window._pilotSessOpen[f.id+'|'+i];
+    let perso='';
+    if(open){
+      const rowsP=(s.personnel||[]).map((p,pi)=>{ const c=pilotCoutHTrav(pilotSal(p.sid)); return `<tr><td><select onchange="pilotSetSessPers('${f.id}',${i},${pi},'sid',this.value)">${salOpts(p.sid)}</select></td><td style="text-align:right">${c.toFixed(2).replace('.',',')}</td><td style="text-align:right"><input type="number" min="0" step="1" value="${p.hPrev||0}" style="width:62px;text-align:right" onchange="pilotSetSessPers('${f.id}',${i},${pi},'hPrev',this.value)"></td><td style="text-align:right"><input type="number" min="0" step="1" value="${p.hReel||0}" style="width:62px;text-align:right" onchange="pilotSetSessPers('${f.id}',${i},${pi},'hReel',this.value)"></td><td style="text-align:right">${eur(c*(p.hPrev||0))}</td><td style="text-align:right">${eur(c*(p.hReel||0))}</td><td><button class="danger btn" onclick="pilotDelSessPers('${f.id}',${i},${pi})">✕</button></td></tr>`; }).join('');
+      perso=`<div style="margin-top:8px;padding:8px 10px;background:var(--card2,#faf9f6);border-radius:8px"><div style="font-weight:600;font-size:13px;margin-bottom:4px">👥 Qui encadre cet ACM ?</div><div class="scroll" style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:12.5px"><tr style="text-align:left;color:var(--muted)"><th>Salarié·e</th><th style="text-align:right">Coût/h</th><th style="text-align:right">H. prév.</th><th style="text-align:right">H. réel.</th><th style="text-align:right">Coût prévu</th><th style="text-align:right">Coût réel</th><th></th></tr>${rowsP||'<tr><td colspan="7" class="muted">Personne pour l\'instant.</td></tr>'}<tr style="font-weight:700;border-top:1px solid var(--line,#e4e2da)"><td colspan="4">Total personnel de cet ACM</td><td style="text-align:right">${eur(pc.prev)}</td><td style="text-align:right">${eur(pc.reel)}</td><td></td></tr></table></div><button class="btn" style="margin-top:6px" onclick="pilotAddSessPers('${f.id}',${i})">+ Ajouter un·e encadrant·e</button></div>`;
+    }
+    return `<div class="panel" style="margin:0 0 10px;padding:12px 14px">
+      <div class="row" style="align-items:center;gap:8px;flex-wrap:wrap">
+        <input value="${esc(s.nom||'')}" placeholder="ex. Janvier" style="width:130px;font-weight:600" onchange="pilotSetSession('${f.id}',${i},'nom',this.value)">
+        <span class="muted" style="font-size:12px">du</span><input type="date" value="${esc(s.du||'')}" onchange="pilotSetSession('${f.id}',${i},'du',this.value)">
+        <span class="muted" style="font-size:12px">au</span><input type="date" value="${esc(s.au||'')}" onchange="pilotSetSession('${f.id}',${i},'au',this.value)">
+        <span class="muted" style="font-size:12px">objectif</span><input type="number" step="1" value="${s.cible||0}" style="width:88px;text-align:right" onchange="pilotSetSession('${f.id}',${i},'cible',this.value)"> €
+        <button class="danger btn" style="margin-left:auto" onclick="pilotDelSession('${f.id}',${i})">✕</button>
+      </div>
+      <div class="row muted" style="margin-top:6px;gap:14px;flex-wrap:wrap;font-size:12.5px;align-items:center">
+        <span>Dépensé ${dep==null?'—':'<b>'+eur(dep)+'</b>'}</span>
+        <span>Personnel <b>${eur(pc.reel)}</b></span>
+        <span>Reçu ${rec==null?'—':'<b>'+eur(rec)+'</b>'}</span>
+        ${reste==null?'':'<span>Reste sur objectif <b style="color:'+(reste>=0?'#3b6d11':'#a32d2d')+'">'+eur(reste)+'</b></span>'}
+        <button class="btn" style="padding:2px 10px;margin-left:auto" onclick="pilotSessToggle('${f.id}',${i})">${open?'▾ personnel':'▸ personnel'}</button>
+      </div>
+      ${perso}
+    </div>`;
   }).join('');
   let env=0; pilotSubs(f.nom).forEach(x=>env+=(x.demande||0));
-  const note=f.sessions.length?`<p class="hint" style="margin:8px 0 0">Objectifs répartis : <b>${eur(sumCible)}</b>${env?' sur l\'enveloppe demandée <b>'+eur(env)+'</b> → reste à répartir <b>'+eur(env-sumCible)+'</b>':''}.</p>`:'';
-  return `<div><div style="font-weight:700;margin-bottom:6px">🗂️ Les ACM de l'année <span class="muted" style="font-weight:400;font-size:12px">chaque session à part · dépensé/reçu calculés sur les dates</span></div><div class="scroll" style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:13px"><tr style="text-align:left;color:var(--muted)"><th>Session</th><th>Du</th><th>Au</th><th style="text-align:right">Objectif €</th><th style="text-align:right">Dépensé</th><th style="text-align:right">Reste</th><th style="text-align:right">Reçu</th><th></th></tr>${rows||'<tr><td colspan="8" class="muted">Aucune session. Ajoute tes ACM (Janvier, Été, Octobre…) avec leurs dates pour les suivre séparément.</td></tr>'}</table></div><button class="btn" style="margin-top:8px" onclick="pilotAddSession('${f.id}')">+ Ajouter un ACM / une session</button>${note}</div>`;
+  const note=f.sessions.length?`<p class="hint" style="margin:6px 0 0">Objectifs répartis : <b>${eur(sumCible)}</b>${env?' sur l\'enveloppe demandée <b>'+eur(env)+'</b> → reste à répartir <b>'+eur(env-sumCible)+'</b>':''}. Le personnel saisi dans un ACM se cumule dans le total de l\'action et dans « 👤 Charge salariés ».</p>`:'';
+  return `<div><div style="font-weight:700;margin-bottom:6px">🗂️ Les ACM de l'année <span class="muted" style="font-weight:400;font-size:12px">chaque ACM à part · dépensé/reçu sur les dates · son propre personnel</span></div>${blocs||'<div class="empty">Aucun ACM. Ajoute Janvier, Été, Octobre… avec leurs dates pour les suivre séparément.</div>'}<button class="btn" style="margin-top:4px" onclick="pilotAddSession('${f.id}')">+ Ajouter un ACM / une session</button>${note}</div>`;
 }
 function pilotDetail(f,t){
   const eur=pilotEur, sals=(db.salaries||[]);
@@ -3654,7 +3677,7 @@ function pilotChargeView(){
   const fiches=pilotDB(), sals=(db.salaries||[]).filter(s=>s.name);
   if(!sals.length) return '<div class="panel"><div class="empty">Aucun salarié renseigné — la charge par salarié apparaîtra dès que l\'équipe est saisie (onglet Dossiers salariés).</div></div>';
   let rows='';
-  sals.forEach(s=>{ const cap=Math.round(PILOT_HTRAV*((s.hsem||0)/35)); let hp=0,hr=0; fiches.forEach(f=>{ pilotFiche(f).personnel.forEach(p=>{ if(p.sid===s.id){ hp+=(p.hPrev||0); hr+=(p.hReel||0); } }); });
+  sals.forEach(s=>{ const cap=Math.round(PILOT_HTRAV*((s.hsem||0)/35)); let hp=0,hr=0; fiches.forEach(f=>{ pilotFiche(f); f.personnel.forEach(p=>{ if(p.sid===s.id){ hp+=(p.hPrev||0); hr+=(p.hReel||0); } }); (f.sessions||[]).forEach(se=>(se.personnel||[]).forEach(p=>{ if(p.sid===s.id){ hp+=(p.hPrev||0); hr+=(p.hReel||0); } })); });
     const pct=cap?Math.round(hp/cap*100):0, col=pct>100?'#a32d2d':(pct>90?'#854f0b':'#3b6d11');
     rows+=`<tr><td>${esc(s.name)} <span class="muted" style="font-size:11px">${s.hsem||0} h/sem</span></td><td style="text-align:right">${cap} h</td><td style="text-align:right">${Math.round(hp)} h</td><td style="text-align:right;color:${col};font-weight:700">${pct} %${pct>100?' ⚠️':''}</td><td style="text-align:right">${Math.round(hr)} h</td></tr>`; });
   return `<div class="panel"><h2 style="margin-top:0">👤 Charge annuelle par salarié <span class="pill wait">garde-fou anti-double-comptage</span></h2>
