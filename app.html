@@ -656,6 +656,27 @@
         </div>
       </div>
     </div>
+
+    <div class="panel" id="rapprochement">
+      <h2 style="margin:0 0 4px">🏦 Rapprochement bancaire</h2>
+      <p class="hint">Relevé bancaire en main : coche chaque opération que tu retrouves sur le relevé, et saisis le solde indiqué en bas du relevé. Quand l'écart tombe à <strong>0,00 €</strong>, la compta de Bob et la banque racontent la même histoire. S'il reste un écart : opération oubliée dans Bob, chèque pas encore débité, ou erreur de saisie.</p>
+      <div class="row" style="align-items:flex-end;gap:10px;margin:4px 0 2px;flex-wrap:wrap">
+        <div class="field" style="flex:1;min-width:240px"><label>⚡ Rapprochement automatique — importe ton relevé</label>
+          <p class="hint" style="margin:0">Bob <b>coche tout seul</b> ce qu'il reconnaît (même montant + même sens + date proche) et te sort les <b>incohérences</b> dans les deux sens. Fichier <b>.csv</b> — colonnes <code>compte ; date ; sens ; montant ; libellé ; réf</code> (celui que Claude prépare depuis tes PDF, ou l'export de ta banque). Salaires inclus ; rejets et virements internes écartés.</p></div>
+        <div class="field" style="flex:0"><label>&nbsp;</label>
+          <button class="btn" onclick="document.getElementById('rap_file').click()">📥 Importer le relevé</button>
+          <input type="file" id="rap_file" accept=".csv,.txt" style="display:none" onchange="rapImportFile(event)"></div>
+      </div>
+      <div class="toolbar" style="flex-wrap:wrap;gap:10px;margin-top:6px">
+        <div class="field" style="min-width:170px"><label>Solde du relevé (€)</label><input type="number" id="rap_solde" step="0.01" onchange="setRapInfo()" placeholder="En bas du relevé"></div>
+        <div class="field" style="min-width:150px"><label>Date du relevé</label><input type="date" id="rap_date" onchange="setRapInfo()"></div>
+        <div class="field" style="flex:0"><label>&nbsp;</label><button class="ghost btn" id="rapShowBtn" onclick="rapToggleAll()">Voir aussi les pointées</button></div>
+      </div>
+      <div class="cards" id="rapKpis" style="margin-top:8px"></div>
+      <div id="rapAuto"></div>
+      <table style="margin-top:10px"><thead><tr><th style="width:34px">✓</th><th>Date</th><th>Libellé</th><th class="num">Montant</th></tr></thead>
+        <tbody id="rapRows"></tbody></table>
+    </div>
   </section>
 
   <!-- CAISSE -->
@@ -678,19 +699,6 @@
       </div>
       <div style="overflow-x:auto;-webkit-overflow-scrolling:touch"><table style="min-width:640px"><thead><tr><th>Date</th><th>Libellé</th><th>Type</th><th class="num">Montant</th><th class="num">Solde caisse</th></tr></thead>
         <tbody id="caisseRows"></tbody></table></div>
-    </div>
-
-    <div class="panel" id="rapprochement">
-      <h2 style="margin:0 0 4px">🏦 Rapprochement bancaire</h2>
-      <p class="hint">Relevé bancaire en main : coche chaque opération que tu retrouves sur le relevé, et saisis le solde indiqué en bas du relevé. Quand l'écart tombe à <strong>0,00 €</strong>, la compta de Bob et la banque racontent la même histoire. S'il reste un écart : opération oubliée dans Bob, chèque pas encore débité, ou erreur de saisie.</p>
-      <div class="toolbar" style="flex-wrap:wrap;gap:10px;margin-top:6px">
-        <div class="field" style="min-width:170px"><label>Solde du relevé (€)</label><input type="number" id="rap_solde" step="0.01" onchange="setRapInfo()" placeholder="En bas du relevé"></div>
-        <div class="field" style="min-width:150px"><label>Date du relevé</label><input type="date" id="rap_date" onchange="setRapInfo()"></div>
-        <div class="field" style="flex:0"><label>&nbsp;</label><button class="ghost btn" id="rapShowBtn" onclick="rapToggleAll()">Voir aussi les pointées</button></div>
-      </div>
-      <div class="cards" id="rapKpis" style="margin-top:8px"></div>
-      <table style="margin-top:10px"><thead><tr><th style="width:34px">✓</th><th>Date</th><th>Libellé</th><th class="num">Montant</th></tr></thead>
-        <tbody id="rapRows"></tbody></table>
     </div>
   </section>
 
@@ -2074,7 +2082,7 @@ Deux locaux complémentaires — le Bois de Nèfles (« le haut » : jeunesse, a
       <h3 style="margin:0 0 10px">🧭 Tout ce que Bob sait faire</h3>
       <div class="cards">
         <div class="card"><div class="label">📊 Pilotage</div><div class="sub" style="margin-top:6px;font-size:13px">Tableau de bord (alertes auto : trésorerie, dettes, fins d'aides) · Bilan (compte de résultat + N−1) · Prévisionnel (+ simulateur garderie du matin)</div></div>
-        <div class="card"><div class="label">💶 Finances</div><div class="sub" style="margin-top:6px;font-size:13px">Comptabilité · Caisse + rapprochement bancaire · Dettes &amp; créances (échéanciers) · Subventions · Échéancier</div></div>
+        <div class="card"><div class="label">💶 Finances</div><div class="sub" style="margin-top:6px;font-size:13px">Comptabilité + rapprochement bancaire · Caisse · Dettes &amp; créances (échéanciers) · Subventions · Échéancier</div></div>
         <div class="card"><div class="label">👥 Public &amp; activités</div><div class="sub" style="margin-top:6px;font-size:13px">Adhérents (+ relances) · Périscolaire (grille au quotient familial + facturation auto) · Activités &amp; places · Lieux · Ateliers</div></div>
         <div class="card"><div class="label">🧑‍💼 RH &amp; équipe</div><div class="sub" style="margin-top:6px;font-size:13px">Équipe (masse salariale, contrats) · RH &amp; Organisation · Suivi des actions · Congés (demande + validation)</div></div>
         <div class="card"><div class="label">🤝 Accompagnement &amp; réseau</div><div class="sub" style="margin-top:6px;font-size:13px">Accompagnement (DLA, MDA, ressources expertes) · Partenaires · Répertoire · Secrétariat · Événements</div></div>
@@ -2340,6 +2348,8 @@ document.querySelectorAll('nav.tabs button').forEach(b=>{
 
 /* ---- Aide : « Demande à Zanana » (FAQ + assistant par mots-clés, sans IA) ---- */
 const FAQ=[
+  {cat:'💶 Comptabilité',q:"Comment rapprocher automatiquement en important mon relevé ?",kw:"importer releve automatique auto rapprochement cocher fichier csv banque bnp export incoherences valider salaires rejets virements internes gagner temps comptabilite",
+   a:"Onglet <b>💶 Comptabilité</b>, panneau <b>🏦 Rapprochement bancaire</b>, bouton <b>« 📥 Importer le relevé »</b> : choisis un fichier <b>.csv</b> (colonnes <i>compte ; date ; sens ; montant ; libellé ; réf</i> — celui que Claude prépare depuis tes PDF, ou l'export de ta banque). Bob <b>coche tout seul</b> les opérations qu'il reconnaît (même montant, même sens, date proche), écarte les <b>rejets</b> et les <b>virements internes</b>, garde les <b>salaires</b>, et t'affiche : ce qui est <b>à valider</b> (plusieurs opérations au même montant → tu choisis), ce qui est <b>sur le relevé mais pas dans Bob</b> (à saisir), et ce qui est <b>dans Bob mais pas sur le relevé</b> (chèque non débité, doublon…). Le bouton <b>« 🗑️ Réinitialiser le relevé »</b> annule tout (et décoche ce que Bob avait coché ; ton pointage à la main reste). Rien n'est modifié dans tes écritures : Bob ne fait que les <b>cocher</b>."},
   {cat:'📣 Communication',q:"À quoi sert l'onglet Communication ?",kw:"communication com post reseaux sociaux marque voix charte fiche de marque publication facebook instagram identite ton couleurs redaction ecrire posts curseurs bannir creole",a:"L'onglet <b>📣 Communication</b> garde la <b>fiche de marque</b> du CASE : qui on est, à qui on parle, <b>notre voix</b> (avec de vrais exemples de posts et des curseurs proche/pro, rigolo/sérieux…), nos couleurs et nos règles. C'est la <b>mémoire</b> qui permettra de préparer des posts <b>qui nous ressemblent</b>, sans partir de la page blanche. Remplis-la une fois, affine-la quand tu veux. Réservé au bureau et aux salariés."},
   {cat:'🗂️ Répertoire',q:"Où déposer les conventions CAF, les PV signés, les documents officiels ?",kw:"convention conventions caf mairie pv statuts reglement document officiel officiels coffre gouvernance deposer televerser telecharger visualiser pdf scan",a:"Onglet <b>🗂️ Répertoire</b> → panneau <b>« 📁 Documents officiels &amp; conventions »</b>. Clique <b>« Déposer un document »</b> et choisis un ou plusieurs PDF/scans : ils vont dans le <b>coffre privé</b> (visibles seulement une fois connecté, <b>jamais sur le site public</b>). Ensuite <b>👁️ Visualiser</b> ou <b>⬇️ Télécharger</b>. Tu peux <b>rattacher</b> chaque document à un financeur (Mairie, CAF…) : il apparaît alors aussi dans sa fiche, onglet <b>🏛️ Structures &amp; financeurs</b>. Réservé au bureau."},
   {cat:'📊 Tableau de bord',q:"Comment retrouver une rubrique ou un onglet dans Bob ?",kw:"navigation naviguer circuler onglet onglets rubrique rubriques famille familles barre menu trouver chercher retrouver ranger perdu",a:"Les onglets sont rangés par <b>familles</b> dans la barre du haut (👥 Adhérents, 🎨 Animation, 🏠 Lieux &amp; Salles, 💬 Communication, 💶 Finances, 🧑‍💼 Équipe / RH, 🏛️ Vie associative, 🧰 Réglages). Clique une famille : sa rangée d'onglets <b>reste affichée en permanence</b> juste en dessous, et tu vois toujours où tu es (la famille et l'onglet actifs sont surlignés). Le plus rapide pour sauter n'importe où : tape 2-3 lettres dans <b>« 🔎 Aller à un onglet… »</b> en haut à gauche, Bob t'y emmène directement."},
@@ -2502,8 +2512,8 @@ const FAQ=[
    a:"Onglet <b>📈 Bilan</b> : tu obtiens le compte de résultat (recettes et dépenses) <b>par catégorie</b> et aussi <b>par code comptable</b> (pratique pour l'expert-comptable et le compte rendu financier des subventions)."},
   {cat:'📈 Bilan',q:"Comment comparer avec l'année dernière (N-1) ?",kw:"bilan annee derniere precedente n-1 comparer comparaison evolution variation exercice precedent",
    a:"Onglet <b>📈 Bilan</b> : dès qu'un exercice précédent contient des écritures, une colonne <b>N−1</b> et une colonne <b>Évol. %</b> apparaissent automatiquement à côté de chaque ligne, et le résultat de l'an dernier s'affiche sous le résultat de l'année. Astuce : importe la compta de l'année passée (⚙️ Données) pour activer la comparaison."},
-  {cat:'💵 Caisse',q:"Comment faire le rapprochement bancaire ?",kw:"rapprochement bancaire pointage pointer releve banque solde ecart verifier compte coche",
-   a:"Onglet <b>💵 Caisse</b>, panneau <b>🏦 Rapprochement bancaire</b> : relevé en main, <b>coche</b> chaque opération que tu retrouves sur le relevé et saisis le <b>solde indiqué en bas du relevé</b>. Quand l'écart affiche 0,00 € en vert, c'est rapproché ✅. S'il reste un écart : opération oubliée dans Bob, chèque pas encore passé, ou erreur de montant."},
+  {cat:'💶 Comptabilité',q:"Comment faire le rapprochement bancaire ?",kw:"rapprochement bancaire pointage pointer releve banque solde ecart verifier compte coche comptabilite",
+   a:"Onglet <b>💶 Comptabilité</b>, panneau <b>🏦 Rapprochement bancaire</b> : relevé en main, <b>coche</b> chaque opération que tu retrouves sur le relevé et saisis le <b>solde indiqué en bas du relevé</b>. Quand l'écart affiche 0,00 € en vert, c'est rapproché ✅. S'il reste un écart : opération oubliée dans Bob, chèque pas encore passé, ou erreur de montant."},
   {cat:'📊 Tableau de bord',q:"C'est quoi les alertes importantes en rouge ?",kw:"alerte rouge importante urgent solde negatif dette retard echeance aide pec fin surveiller",
    a:"Le bloc <b>🚨 Alertes importantes</b> du tableau de bord surveille tout seul : <b>solde négatif</b> (global, banque ou caisse), <b>échéances de dettes</b> à moins de 14 jours ou en retard (ex. URSSAF), et <b>fins d'aides au poste</b> (PEC) à moins de 90 jours pour anticiper le surcoût. Il n'apparaît que s'il y a quelque chose à traiter — pas de bloc = tout va bien."},
   {cat:'🔮 Prévisionnel',q:"À quoi sert le prévisionnel ?",kw:"previsionnel budget projection prevision fin annee estimer decembre recurrent futur anticiper",
@@ -2618,6 +2628,7 @@ function pageHelpGotoAide(){ pageHelpClose(); const b=document.querySelector('na
 
 /* ---- ✨ Quoi de neuf (nouveautés + notice chronologique) ---- */
 const NEWS=[
+  {id:'2026-07-10-rapprochement-auto',date:'2026-07-10',tab:'💶 Comptabilité',titre:"⚡ Le rapprochement bancaire devient automatique",desc:"Dans <b>💶 Comptabilité → 🏦 Rapprochement bancaire</b>, un nouveau bouton <b>« 📥 Importer le relevé »</b>. Tu importes un fichier .csv de ton relevé et <b>Bob coche tout seul</b> les opérations qu'il reconnaît (même montant, même sens, date proche) — fini le pointage ligne à ligne. Il écarte les <b>rejets de prélèvement</b> et les <b>virements entre tes comptes</b>, garde les <b>salaires</b>, et te montre clairement <b>ce qui reste</b> : les opérations <b>à valider</b> (plusieurs au même montant), celles <b>sur le relevé mais pas dans Bob</b>, et celles <b>dans Bob mais pas sur le relevé</b>. Rien n'est modifié dans tes écritures : Bob ne fait que les cocher, et le bouton <b>« 🗑️ Réinitialiser »</b> annule tout. Réservé au bureau."},
   {id:'2026-07-10-fusion-equipe-rh',date:'2026-07-10',tab:'🧑‍💼 RH',titre:"🧑‍💼 « Équipe » et « RH » réunis en un seul onglet",desc:"Les deux onglets « Équipe » et « RH » relevaient d'un seul métier (le RH) : ils sont maintenant <b>réunis dans l'onglet 🧑‍💼 RH</b>, avec deux vues d'un clic — <b>👥 Équipe &amp; contrats</b> (dossiers, contrats, accueil des nouveaux, protocoles) et <b>🎯 Organisation &amp; carrières</b> (organisation cible, fiches de poste, ancienneté, bascule ÉCLAT, embauche). Et comme la <b>💰 Masse salariale</b> répond à une question d'argent (ce que le personnel coûte), elle rejoint la famille <b>💶 Finances</b>, là où vit déjà le Budget par action qu'elle alimente. Rien n'a été supprimé — tout est au même endroit, juste mieux rangé. Réservé au bureau."},
   {id:'2026-07-10-tiroirs-domaines',date:'2026-07-10',tab:'📊 Tableau de bord',titre:"🗂️ Le menu rangé par domaines (Animation a enfin sa place)",desc:"Les onglets sont désormais rangés par <b>grands domaines</b>, pour que chaque famille corresponde à un vrai « métier ». <b>🎨 Animation</b> réunit enfin tout le programme (activités, périscolaire, vacances, ateliers, projet ados) ; <b>🏠 Lieux &amp; Salles</b> regroupe les locaux et le guichet de réservation ; <b>💬 Communication</b> réunit messages, rendez-vous, secrétariat, répertoire et partenaires ; l'ancien fourre-tout « Bureau » devient <b>🏛️ Vie associative</b> (la gouvernance : projet, préparation du CA…) ; les <b>Subventions</b> rejoignent 💶 <b>Finances</b> (là où vit le Budget par action) ; et 🧑‍💼 <b>Équipe / RH</b> pour les salariés. <b>Rien n'a été supprimé</b> : les onglets ont juste changé de tiroir, et la rangée du tiroir ouvert reste affichée. Le raccourci <b>« 🔎 Aller à un onglet… »</b> reste là si tu cherches quelque chose. Réservé au bureau."},
   {id:'2026-07-10-fiche-marque',date:'2026-07-10',tab:'📣 Communication',titre:"📣 Nouveau : ta fiche de marque",desc:"Un nouvel onglet <b>📣 Communication</b> (famille Bureau) accueille la <b>fiche de marque</b> du CASE : <b>qui on est</b>, <b>à qui on parle</b>, <b>notre voix</b> (avec de vrais exemples de posts et des curseurs proche/pro, rigolo/sérieux…), nos <b>couleurs</b> et nos règles (dont « mes produits ne se montrent qu'en vraie photo »). C'est la <b>mémoire</b> qui servira, très bientôt, à préparer des <b>posts qui nous ressemblent</b> — jamais un texte passe-partout. Pour l'instant tu la remplis à la main ; le pré-remplissage depuis notre site arrive ensuite. Réservé au bureau et aux salariés."},
@@ -2752,7 +2763,7 @@ const NEWS=[
    desc:"Celui que tu lis ! À chaque évolution de Bob, une carte arrive ici et une pastille rouge s'affiche sur l'onglet Aide. Les cartes lues restent : c'est la notice de Bob au fil du temps."},
   {id:'2026-06-12-alertes',date:'2026-06-12',tab:'📊 Tableau de bord',titre:'🚨 Alertes importantes',
    desc:"Bob surveille tout seul : solde négatif (global, banque ou caisse), échéances de dettes à moins de 14 jours ou en retard (pense à saisir les échéanciers dans 💳 Dettes), et fins d'aides PEC à moins de 90 jours. Le bloc rouge n'apparaît que s'il y a quelque chose à traiter."},
-  {id:'2026-06-12-rap',date:'2026-06-12',tab:'💵 Caisse',titre:'🏦 Rapprochement bancaire',
+  {id:'2026-06-12-rap',date:'2026-06-12',tab:'💶 Comptabilité',titre:'🏦 Rapprochement bancaire',
    desc:"Relevé en main : coche chaque opération retrouvée sur le relevé, saisis le solde du relevé — écart à 0,00 € en vert = la compta et la banque racontent la même chose."},
   {id:'2026-06-12-n1',date:'2026-06-12',tab:'📈 Bilan',titre:'📊 Comparaison N−1 du compte de résultat',
    desc:"Dès qu'un exercice précédent contient des écritures, des colonnes N−1 et Évolution % apparaissent sur chaque ligne du bilan, et le résultat de l'an dernier s'affiche sous celui de l'année."},
@@ -3528,8 +3539,128 @@ function bankMoves(){
 function toggleRap(id){ const o=db.ops.find(x=>x.id===id); if(o){ o.rap=!o.rap; save(); } }
 function setRapInfo(){ db.rapSolde=$('rap_solde').value===''?null:(parseFloat($('rap_solde').value)||0); db.rapDate=$('rap_date').value||''; save(); }
 function rapToggleAll(){ rapShowAll=!rapShowAll; const b=$('rapShowBtn'); if(b) b.textContent=rapShowAll?'Masquer les pointées':'Voir aussi les pointées'; renderRapprochement(); }
+/* ===== 🏦 RAPPROCHEMENT AUTO (Phase 1, 10/07/2026) — import du relevé + auto-cochage =====
+   Greffé sur le pointage manuel existant (drapeau o.rap, réversible). ADDITIF : le relevé
+   importé vit dans db.releveLignes (clé NEUVE). On NE touche JAMAIS aux montants des écritures
+   db.ops — seulement le drapeau o.rap (« pointée »). Règles trésorier : rejets exclus,
+   virements internes exclus, salaires inclus. Match montant+sens+date (la date départage) ;
+   1 candidat = coché auto, ≥2 = à valider. Puis 2 listes d'incohérences. */
+function rapDiffDays(a,b){ return Math.abs((new Date(a)-new Date(b))/86400000); }
+function rapEmp(l){ return [l.compte,l.date,l.sens,(l.montant||0).toFixed(2),(l.libelle||'').slice(0,40)].join('|').toLowerCase(); }
+function rapImportFile(e){ const f=e.target.files[0]; if(!f) return; const r=new FileReader(); r.onload=()=>rapImportText(r.result); r.readAsText(f,'utf-8'); e.target.value=''; }
+function rapImportText(raw){
+  const lignes=rapParseReleve(raw);
+  if(!lignes.length){ alert("Aucune ligne de relevé reconnue.\n\nFormat attendu (avec une ligne d'en-tête) :\ncompte ; date ; sens ; montant ; libellé ; réf\n(sens = débit/crédit, ou un montant négatif = dépense)"); return; }
+  if(!Array.isArray(db.releveLignes)) db.releveLignes=[];
+  const vus=new Set(db.releveLignes.map(rapEmp)); let add=0,dup=0;
+  lignes.forEach(l=>{ const e=rapEmp(l); if(vus.has(e)){dup++;return;} vus.add(e); db.releveLignes.push(l); add++; });
+  rapRunMatch(); save();
+  alert("Relevé importé ✅\n"+add+" ligne(s) ajoutée(s)"+(dup?" · "+dup+" doublon(s) ignoré(s)":"")+".\n\nBob a coché tout seul les opérations qu'il a reconnues. Vérifie le bloc « à valider » et les 2 listes d'incohérences juste en dessous.");
+}
+function rapParseReleve(raw){
+  raw=(raw||'').replace(/\s+$/,''); if(!raw.trim()) return [];
+  const lines=raw.split(/\r?\n/).filter(l=>l.trim());
+  const sep=lines[0].includes('\t')?'\t':(lines[0].includes(';')?';':',');
+  const rows=lines.map(l=>l.split(sep).map(c=>c.trim().replace(/^"|"$/g,'')));
+  const h=rows[0].map(c=>c.toLowerCase());
+  const find=(...ks)=>h.findIndex(c=>ks.some(k=>c.includes(k)));
+  const iC=find('compte'), iD=find('date'), iS=find('sens'),
+        iM=find('montant','somme','valeur'), iDeb=find('débit','debit'), iCred=find('crédit','credit'),
+        iL=find('libell','intitul','nature','operation','opération'), iR=find('réf','ref');
+  const hasHeader=(iD>=0||iM>=0||iDeb>=0||iCred>=0);
+  if(hasHeader) rows.shift();
+  const out=[];
+  rows.forEach(r=>{
+    let montant, sens='';
+    if(iDeb>=0||iCred>=0){ const d=impAmount(r[iDeb]||''), c=impAmount(r[iCred]||''); if(d>0){montant=d;sens='out';} else if(c>0){montant=c;sens='in';} else return; }
+    else { const rawM=(iM>=0?r[iM]:r[3])||''; montant=impAmount(rawM); const neg=/^\s*[-(]/.test(rawM);
+      if(iS>=0){ const s=(r[iS]||'').toLowerCase(); sens=/cr[ée]d|rec|entr|\+/.test(s)?'in':(/d[ée]b|dep|sort|out/.test(s)?'out':(neg?'out':'in')); }
+      else sens=neg?'out':'in'; }
+    if(!(montant>0)) return;
+    out.push({ compte:(iC>=0?(r[iC]||''):'').trim(), date:impDate(iD>=0?r[iD]:(r[0]||'')), sens,
+      montant:Math.round(montant*100)/100, libelle:((iL>=0?r[iL]:(r[1]||''))||'').trim()||'(sans libellé)',
+      ref:(iR>=0?(r[iR]||''):'').trim(), statut:'', opId:null, cand:[] });
+  });
+  return out;
+}
+function rapRunMatch(){
+  const L=db.releveLignes||[]; if(!L.length) return;
+  L.forEach(l=>{ l.statut=''; l.opId=null; l.cand=[]; });
+  L.forEach(l=>{ if(/^\s*rejet/i.test(l.libelle)) l.statut='rejet'; });                 // rejets exclus
+  const libres=()=>L.filter(l=>!l.statut);
+  libres().filter(l=>l.sens==='out').forEach(o=>{                                        // virements internes exclus
+    if(o.statut) return;
+    const m=libres().find(i=>i!==o && i.sens==='in' && i.compte && o.compte && i.compte!==o.compte
+      && Math.abs(i.montant-o.montant)<0.005 && rapDiffDays(i.date,o.date)<=3);
+    if(m){ o.statut='interne'; m.statut='interne'; }
+  });
+  const bank=bankMoves().filter(m=>!m.o.rap && m.o.type!=='transfer').map(m=>({o:m.o, sens:m.o.type==='in'?'in':'out', used:false}));
+  const cand=(l,win)=>bank.filter(b=>!b.used && b.sens===l.sens && Math.abs(b.o.amount-l.montant)<0.005 && rapDiffDays(b.o.date,l.date)<=win);
+  [0,1,3,7,15,30,45].forEach(win=>{                                                       // match, la date départe
+    L.filter(l=>!l.statut).sort((a,b)=>(a.date||'').localeCompare(b.date||'')).forEach(l=>{
+      if(l.statut) return;
+      const c=cand(l,win);
+      if(c.length===1){ c[0].used=true; c[0].o.rap=true; l.statut='auto'; l.opId=c[0].o.id; }   // 1 candidat = coché auto
+    });
+  });
+  L.filter(l=>!l.statut).forEach(l=>{
+    const c=cand(l,60);
+    if(c.length>=1){ l.statut='valider'; l.cand=c.map(x=>x.o.id); }                       // ≥2 = à valider
+    else {
+      const deja=bankMoves().some(m=>m.o.rap && m.o.type!=='transfer' && (m.o.type==='in'?'in':'out')===l.sens
+        && Math.abs(m.o.amount-l.montant)<0.005 && rapDiffDays(m.o.date,l.date)<=60);
+      l.statut=deja?'deja':'saisir';                                                      // déjà pointé, ou à saisir
+    }
+  });
+}
+function rapReset(){
+  if(!confirm("Effacer le relevé importé et DÉCOCHER les opérations que Bob avait cochées automatiquement ?\n(Ton pointage manuel, lui, est conservé.)")) return;
+  const autos=new Set((db.releveLignes||[]).filter(l=>l.statut==='auto'&&l.opId).map(l=>l.opId));
+  db.ops.forEach(o=>{ if(autos.has(o.id)) o.rap=false; });
+  db.releveLignes=[]; save();
+}
+function renderRapAuto(){
+  const box=$('rapAuto'); if(!box) return;
+  const L=db.releveLignes||[];
+  if(!L.length){ box.innerHTML=''; return; }
+  const dates=L.map(l=>l.date).filter(Boolean).sort(); const dmin=dates[0]||'', dmax=dates[dates.length-1]||'';
+  const by=s=>L.filter(l=>l.statut===s);
+  const auto=by('auto'), valider=by('valider'), saisir=by('saisir'), rejet=by('rejet'), interne=by('interne'), deja=by('deja');
+  const orph=bankMoves().filter(m=>!m.o.rap && m.o.type!=='transfer' && m.o.date>=dmin && m.o.date<=dmax);
+  const sensLbl=s=>s==='out'?'dépense':'recette';
+  const opById=id=>db.ops.find(o=>o.id===id);
+  const badge=(n,txt,bg)=>`<span style="display:inline-block;margin:0 6px 6px 0;padding:3px 10px;border-radius:20px;font-size:12px;background:${bg}">${txt} : <b>${n}</b></span>`;
+  const tbl=(rows,cols)=>`<div style="overflow-x:auto;-webkit-overflow-scrolling:touch"><table style="min-width:520px"><thead><tr>${cols.map(c=>`<th${/€|montant/i.test(c)?' class="num"':''}>${c}</th>`).join('')}</tr></thead><tbody>${rows}</tbody></table></div>`;
+  let h=`<div style="border-top:1px solid var(--line);margin-top:14px;padding-top:10px">
+    <div class="toolbar" style="flex-wrap:wrap;gap:8px"><h3 style="margin:0">📥 Relevé importé${dmin?' ('+fmtDate(dmin)+' → '+fmtDate(dmax)+')':''}</h3>
+      <button class="ghost btn" onclick="rapReset()">🗑️ Réinitialiser le relevé</button></div>
+    <div style="margin:10px 0">`
+    + badge(auto.length,'✅ cochés auto','#e2efda')
+    + badge(valider.length,'⚠️ à valider','#fce4d6')
+    + badge(saisir.length,'🔴 sur relevé, pas dans Bob','#f8cbad')
+    + badge(orph.length,'🟠 dans Bob, pas sur relevé','#ffe9c7')
+    + (rejet.length?badge(rejet.length,'↩️ rejets exclus','#ededed'):'')
+    + (interne.length?badge(interne.length,'🔁 virements internes exclus','#ededed'):'')
+    + (deja.length?badge(deja.length,'☑️ déjà pointées','#ededed'):'')
+    + '</div>';
+  if(valider.length){
+    const rows=valider.map(l=>`<tr><td>${fmtDate(l.date)}</td><td>${esc(l.libelle)}</td><td class="num">${euro(l.montant)}</td><td>${(l.cand||[]).map(id=>{const o=opById(id);return o?esc(o.label)+' ('+fmtDate(o.date)+')':'';}).filter(Boolean).join(' <b>ou</b> ')}</td></tr>`).join('');
+    h+='<h4 style="margin:14px 0 4px">⚠️ À valider — plusieurs écritures au même montant. Choisis la bonne en la cochant dans la liste à pointer ci-dessous.</h4>'+tbl(rows,['Date','Libellé du relevé','Montant','Candidats dans Bob']);
+  }
+  if(saisir.length){
+    const rows=saisir.map(l=>`<tr><td>${fmtDate(l.date)}</td><td>${l.compte?esc(l.compte)+' · ':''}${esc(l.libelle)}</td><td>${sensLbl(l.sens)}</td><td class="num">${euro(l.montant)}</td></tr>`).join('');
+    h+='<h4 style="margin:14px 0 4px">🔴 Sur le relevé, pas dans Bob — à saisir ou à vérifier</h4>'+tbl(rows,['Date','Libellé du relevé','Sens','Montant']);
+  }
+  if(orph.length){
+    const rows=orph.slice(0,200).map(m=>`<tr><td>${fmtDate(m.o.date)}</td><td>${esc(m.o.label)}</td><td>${sensLbl(m.o.type==='in'?'in':'out')}</td><td class="num">${euro(m.o.amount)}</td></tr>`).join('');
+    h+='<h4 style="margin:14px 0 4px">🟠 Dans Bob, pas sur le relevé — écriture non retrouvée (chèque non débité, doublon, ou pas encore passée)</h4>'+tbl(rows,['Date','Libellé Bob','Sens','Montant'])+(orph.length>200?'<p class="hint">… et '+(orph.length-200)+' autres.</p>':'');
+  }
+  h+='</div>';
+  box.innerHTML=h;
+}
 function renderRapprochement(){
   const tb=$('rapRows'); if(!tb) return;
+  renderRapAuto();
   const sEl=$('rap_solde'); if(sEl && document.activeElement!==sEl) sEl.value=(db.rapSolde==null?'':db.rapSolde);
   const dEl=$('rap_date'); if(dEl && document.activeElement!==dEl) dEl.value=db.rapDate||'';
   const moves=bankMoves().sort((a,b)=>(b.o.date||'').localeCompare(a.o.date||''));
