@@ -103,6 +103,10 @@
   nav.tabs .tabgroup[data-group="lieux"] button.active{background:#2f8f8f}
   nav.tabs .tabgroup[data-group="comm"] button.active{background:#4a63b8}
   nav.tabs .tabgroup[data-group="bureau"] button.active{background:#6b5bb5}
+  /* Fusion Équipe/RH (10/07) : sous-onglets internes de l'onglet RH */
+  #rh .rhsubbar{display:flex;gap:8px;margin:0 0 14px;flex-wrap:wrap}
+  #rh .rhsubbtn{border:1px solid var(--line);background:var(--card);color:var(--muted);padding:8px 15px;border-radius:999px;font-weight:700;font-size:13.5px;cursor:pointer}
+  #rh .rhsubbtn.active{background:#7a3b5e;color:#fff;border-color:#7a3b5e}
   /* mobile : cibles tactiles confortables ≥44px */
   @media(max-width:560px){
     nav.famtabs{gap:7px}
@@ -329,9 +333,9 @@
       <button data-tab="bilan">📈 Bilan</button>
       <button data-tab="previsionnel">🔮 Prévisionnel</button>
       <button data-tab="pilotage">🎯 Budget par action</button>
+      <button data-tab="massesalariale">💰 Masse salariale</button>
     </div>
     <div class="tabgroup" data-group="equipe">
-      <button data-tab="equipe">📒 Équipe</button>
       <button data-tab="rh">🧑‍💼 RH</button>
       <button data-tab="personnel">👥 Dossiers salariés</button>
       <button data-tab="suivi">✅ Suivi</button>
@@ -772,7 +776,7 @@
   </section>
 
   <!-- ÉQUIPE -->
-  <section id="equipe" class="page">
+  <section id="massesalariale" class="page">
     <div class="panel" id="masseSalariale">
       <h2 style="margin:0 0 4px">💰 Masse salariale — ce que le personnel coûte vraiment</h2>
       <p class="hint">Pour chaque salarié : son brut horaire, ses heures, le taux de charges patronales et l'aide éventuelle (PEC…). Bob calcule le coût employeur <strong>au mois, à l'année et à l'heure</strong>. Le % de charges se lit sur un bulletin de paie : (coût total employeur − salaire brut) ÷ brut × 100 — demande le chiffre exact à la gestionnaire de paie, il varie selon les exonérations.</p>
@@ -793,57 +797,6 @@
       <div style="overflow-x:auto;-webkit-overflow-scrolling:touch"><table style="margin-top:10px;min-width:1080px"><thead><tr><th>Salarié</th><th>Contrat</th><th class="num">h / sem</th><th class="num">Brut / mois</th><th class="num">Coût employeur / mois</th><th class="num">Aide / mois</th><th class="num">Reste à charge / an</th><th class="num">Coût horaire chargé</th><th></th></tr></thead>
         <tbody id="msRows"></tbody></table></div>
       <p class="hint" style="margin:8px 0 0">💡 Le « coût horaire chargé » de la dernière colonne est exactement le chiffre à reporter dans le <strong>📐 Simulateur</strong> de l'onglet 🔮 Prévisionnel.</p>
-    </div>
-
-    <div class="panel" id="contratsTravailPanel">
-      <h2 style="margin:0 0 4px">📄 Contrats de travail</h2>
-      <p class="hint">Chaque contrat signé (CDD, CDI, avenant…) avec ses points clés : qui, quoi, quand, le temps de travail, la convention et la rémunération. C'est la fiche de référence quand on cherche « que dit le contrat de… ». Le coût employeur global, lui, se lit dans 💰 Masse salariale juste au-dessus.</p>
-      <div class="toolbar" style="flex-wrap:wrap;gap:10px;margin-top:8px">
-        <input type="hidden" id="kt_id">
-        <div class="field" style="min-width:170px"><label>Salarié·e</label><input id="kt_salarie" placeholder="Ex. Nom Prénom"></div>
-        <div class="field" style="min-width:120px"><label>Type</label><input id="kt_type" list="ctTravailTypes" placeholder="CDD, CDI…">
-          <datalist id="ctTravailTypes"><option>CDD</option><option>CDD (remplacement)</option><option>CDI</option><option>Avenant</option><option>Service Civique</option><option>PEC</option><option>Stage</option></datalist></div>
-        <div class="field" style="min-width:170px"><label>Fonction</label><input id="kt_fonction" placeholder="Ex. Animatrice périscolaire"></div>
-        <div class="field" style="min-width:135px"><label>Début</label><input type="date" id="kt_debut"></div>
-        <div class="field" style="min-width:135px"><label>Fin (terme)</label><input type="date" id="kt_fin"></div>
-        <div class="field" style="min-width:100px"><label>h / sem</label><input type="number" id="kt_hsem" min="0" step="0.5"></div>
-        <div class="field" style="min-width:130px"><label>Brut / mois (€)</label><input type="number" id="kt_brutmois" min="0" step="0.01"></div>
-        <div class="field" style="flex:0"><label>&nbsp;</label><button class="btn" id="kt_btn" onclick="addContratTravail()">Ajouter</button></div>
-      </div>
-      <p class="hint" style="margin:6px 0 0">💡 Après l'ajout, clique sur ✏️ pour compléter le reste (motif, lieu, horaires détaillés, convention/coefficient, taux horaire, période d'essai, indemnités, lien du contrat).</p>
-      <div id="contratsTravailList" style="margin-top:10px"></div>
-    </div>
-
-    <div class="panel">
-      <h2 style="margin:0 0 4px">👋 Accueil des nouveaux arrivants</h2>
-      <p class="hint">Le mot d'accueil et l'essentiel pour toute personne qui rejoint l'équipe.</p>
-      <textarea id="accueilIntro" onchange="saveAccueilIntro()" style="width:100%;min-height:90px;font:inherit;padding:10px 12px;border:1px solid #e6ece7;border-radius:10px;resize:vertical" placeholder="Ex. Bienvenue au CASE du Bois de Nèfles ! Voici l'essentiel pour bien démarrer…"></textarea>
-      <h3 style="margin:16px 0 8px;font-size:15px">Les statuts / contrats</h3>
-      <p class="hint">Service Civique, PEC, CDI… : pour chaque statut, ses spécificités (durée, temps de travail, congés, indemnité…).</p>
-      <div class="row" style="margin-bottom:8px">
-        <div class="field" style="flex:0;min-width:200px"><label>Statut / contrat</label><input id="ct_type" list="ctTypes" placeholder="Ex. Service Civique">
-          <datalist id="ctTypes"><option>Service Civique</option><option>PEC (Parcours Emploi Compétences)</option><option>CDI</option><option>CDD</option><option>Stage</option><option>Bénévole</option></datalist></div>
-        <div class="field" style="flex:2"><label>Spécificités</label><input id="ct_desc" placeholder="Durée, temps de travail, congés, indemnité…"></div>
-        <div class="field" style="flex:0"><label>&nbsp;</label><button class="btn" onclick="addContrat()">Ajouter</button></div>
-      </div>
-      <div id="contratList"></div>
-      <div class="row" style="margin-top:6px"><button class="ghost btn" onclick="seedContrats()" title="Pré-remplir Service Civique, PEC et CDI">＋ Ajouter les statuts courants</button></div>
-    </div>
-
-    <div class="panel">
-      <h2 style="margin:0 0 4px">📋 Protocoles &amp; procédures</h2>
-      <p class="hint">Les protocoles et procédures internes, consultables par toute l'équipe (sécurité, accueil du public, ouverture/fermeture des locaux, gestion d'un incident…).</p>
-      <div class="row" style="margin-bottom:8px">
-        <div class="field" style="flex:2"><label>Titre</label><input id="pr_titre" placeholder="Ex. Procédure d'évacuation"></div>
-        <div class="field"><label>Catégorie</label><input id="pr_cat" list="prCats" placeholder="Sécurité, Accueil, RH…">
-          <datalist id="prCats"><option>Sécurité</option><option>Accueil du public</option><option>RH</option><option>Locaux</option><option>Activités</option><option>Administratif</option></datalist></div>
-      </div>
-      <div class="row" style="margin-bottom:8px">
-        <div class="field" style="flex:3"><label>Contenu / consignes</label><input id="pr_contenu" placeholder="Les étapes, les consignes essentielles…"></div>
-        <div class="field" style="flex:2"><label>Lien (document Drive, PDF…)</label><input id="pr_url" placeholder="https://…"></div>
-        <div class="field" style="flex:0"><label>&nbsp;</label><button class="btn" onclick="addProtocole()">Ajouter</button></div>
-      </div>
-      <div id="protocoleList"></div>
     </div>
   </section>
 
@@ -1578,6 +1531,63 @@
 
   <!-- RH & ORGANISATION -->
   <section id="rh" class="page">
+    <div class="rhsubbar">
+      <button class="rhsubbtn active" data-rhsub="contrats">👥 Équipe &amp; contrats</button>
+      <button class="rhsubbtn" data-rhsub="orga">🎯 Organisation &amp; carrières</button>
+    </div>
+    <div class="rhsub" data-rhsub="contrats">
+<div class="panel" id="contratsTravailPanel">
+      <h2 style="margin:0 0 4px">📄 Contrats de travail</h2>
+      <p class="hint">Chaque contrat signé (CDD, CDI, avenant…) avec ses points clés : qui, quoi, quand, le temps de travail, la convention et la rémunération. C'est la fiche de référence quand on cherche « que dit le contrat de… ». Le coût employeur global, lui, se lit dans l'onglet 💰 Masse salariale (Finances).</p>
+      <div class="toolbar" style="flex-wrap:wrap;gap:10px;margin-top:8px">
+        <input type="hidden" id="kt_id">
+        <div class="field" style="min-width:170px"><label>Salarié·e</label><input id="kt_salarie" placeholder="Ex. Nom Prénom"></div>
+        <div class="field" style="min-width:120px"><label>Type</label><input id="kt_type" list="ctTravailTypes" placeholder="CDD, CDI…">
+          <datalist id="ctTravailTypes"><option>CDD</option><option>CDD (remplacement)</option><option>CDI</option><option>Avenant</option><option>Service Civique</option><option>PEC</option><option>Stage</option></datalist></div>
+        <div class="field" style="min-width:170px"><label>Fonction</label><input id="kt_fonction" placeholder="Ex. Animatrice périscolaire"></div>
+        <div class="field" style="min-width:135px"><label>Début</label><input type="date" id="kt_debut"></div>
+        <div class="field" style="min-width:135px"><label>Fin (terme)</label><input type="date" id="kt_fin"></div>
+        <div class="field" style="min-width:100px"><label>h / sem</label><input type="number" id="kt_hsem" min="0" step="0.5"></div>
+        <div class="field" style="min-width:130px"><label>Brut / mois (€)</label><input type="number" id="kt_brutmois" min="0" step="0.01"></div>
+        <div class="field" style="flex:0"><label>&nbsp;</label><button class="btn" id="kt_btn" onclick="addContratTravail()">Ajouter</button></div>
+      </div>
+      <p class="hint" style="margin:6px 0 0">💡 Après l'ajout, clique sur ✏️ pour compléter le reste (motif, lieu, horaires détaillés, convention/coefficient, taux horaire, période d'essai, indemnités, lien du contrat).</p>
+      <div id="contratsTravailList" style="margin-top:10px"></div>
+    </div>
+
+    <div class="panel">
+      <h2 style="margin:0 0 4px">👋 Accueil des nouveaux arrivants</h2>
+      <p class="hint">Le mot d'accueil et l'essentiel pour toute personne qui rejoint l'équipe.</p>
+      <textarea id="accueilIntro" onchange="saveAccueilIntro()" style="width:100%;min-height:90px;font:inherit;padding:10px 12px;border:1px solid #e6ece7;border-radius:10px;resize:vertical" placeholder="Ex. Bienvenue au CASE du Bois de Nèfles ! Voici l'essentiel pour bien démarrer…"></textarea>
+      <h3 style="margin:16px 0 8px;font-size:15px">Les statuts / contrats</h3>
+      <p class="hint">Service Civique, PEC, CDI… : pour chaque statut, ses spécificités (durée, temps de travail, congés, indemnité…).</p>
+      <div class="row" style="margin-bottom:8px">
+        <div class="field" style="flex:0;min-width:200px"><label>Statut / contrat</label><input id="ct_type" list="ctTypes" placeholder="Ex. Service Civique">
+          <datalist id="ctTypes"><option>Service Civique</option><option>PEC (Parcours Emploi Compétences)</option><option>CDI</option><option>CDD</option><option>Stage</option><option>Bénévole</option></datalist></div>
+        <div class="field" style="flex:2"><label>Spécificités</label><input id="ct_desc" placeholder="Durée, temps de travail, congés, indemnité…"></div>
+        <div class="field" style="flex:0"><label>&nbsp;</label><button class="btn" onclick="addContrat()">Ajouter</button></div>
+      </div>
+      <div id="contratList"></div>
+      <div class="row" style="margin-top:6px"><button class="ghost btn" onclick="seedContrats()" title="Pré-remplir Service Civique, PEC et CDI">＋ Ajouter les statuts courants</button></div>
+    </div>
+
+    <div class="panel">
+      <h2 style="margin:0 0 4px">📋 Protocoles &amp; procédures</h2>
+      <p class="hint">Les protocoles et procédures internes, consultables par toute l'équipe (sécurité, accueil du public, ouverture/fermeture des locaux, gestion d'un incident…).</p>
+      <div class="row" style="margin-bottom:8px">
+        <div class="field" style="flex:2"><label>Titre</label><input id="pr_titre" placeholder="Ex. Procédure d'évacuation"></div>
+        <div class="field"><label>Catégorie</label><input id="pr_cat" list="prCats" placeholder="Sécurité, Accueil, RH…">
+          <datalist id="prCats"><option>Sécurité</option><option>Accueil du public</option><option>RH</option><option>Locaux</option><option>Activités</option><option>Administratif</option></datalist></div>
+      </div>
+      <div class="row" style="margin-bottom:8px">
+        <div class="field" style="flex:3"><label>Contenu / consignes</label><input id="pr_contenu" placeholder="Les étapes, les consignes essentielles…"></div>
+        <div class="field" style="flex:2"><label>Lien (document Drive, PDF…)</label><input id="pr_url" placeholder="https://…"></div>
+        <div class="field" style="flex:0"><label>&nbsp;</label><button class="btn" onclick="addProtocole()">Ajouter</button></div>
+      </div>
+      <div id="protocoleList"></div>
+    </div>
+    </div>
+    <div class="rhsub" data-rhsub="orga" style="display:none">
     <div class="panel" style="background:linear-gradient(135deg,#eef2fb,#f5f8ff);border:1px solid #d4ddf2">
       <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap">
         <div style="font-size:40px;flex:0 0 auto">🧑‍💼</div>
@@ -1596,13 +1606,13 @@
 
     <div class="panel">
       <h3 style="margin:0 0 4px">🪪 Fiches de poste (salariés)</h3>
-      <p class="hint" style="margin:0 0 10px">Les fiches sont reconstituées depuis la <strong>masse salariale</strong> (onglet 📒 Équipe) — poste, contrat, temps de travail, date d'entrée et brut mensuel. Réservé au bureau ; rien de nominatif n'est publié sur le site. Pour la projection ÉCLAT par salarié (coefficient, groupe), voir le panneau <strong>🔄 Bascule</strong> ci-dessous.</p>
+      <p class="hint" style="margin:0 0 10px">Les fiches sont reconstituées depuis la <strong>masse salariale</strong> (onglet 💰 Masse salariale, dans Finances) — poste, contrat, temps de travail, date d'entrée et brut mensuel. Réservé au bureau ; rien de nominatif n'est publié sur le site. Pour la projection ÉCLAT par salarié (coefficient, groupe), voir le panneau <strong>🔄 Bascule</strong> ci-dessous.</p>
       <div id="fichesPosteList"></div>
     </div>
 
     <div class="panel">
       <h3 style="margin:0 0 4px">📅 Ancienneté de l'équipe</h3>
-      <p class="hint" style="margin:0 0 10px">Calculée automatiquement à partir de la <strong>date d'entrée</strong> de chaque salarié (saisie dans 📒 Équipe), reprise d'ancienneté incluse. Du plus ancien au plus récent.</p>
+      <p class="hint" style="margin:0 0 10px">Calculée automatiquement à partir de la <strong>date d'entrée</strong> de chaque salarié (saisie dans 💰 Masse salariale), reprise d'ancienneté incluse. Du plus ancien au plus récent.</p>
       <div style="margin:0 0 10px;padding:9px 12px;background:#fff7e6;border:1px solid #ffd98a;border-radius:8px;font-size:13px;line-height:1.45">
         <strong>⚠️ Projection ÉCLAT — les bulletins de paie sont encore en ALISFA.</strong><br>
         Les <strong>points</strong> et la <strong>prime/mois</strong> ci-dessous sont calculés selon la <strong>future convention ÉCLAT</strong> (2 pts/an × V1 7,23 €). Tant que la bascule ALISFA → ÉCLAT n'est pas effective sur la paie, ils <strong>ne correspondent pas</strong> au montant inscrit sur le bulletin actuel <span class="muted">(la projection ÉCLAT diffère du montant ALISFA du bulletin)</span>. Chiffrage officiel : paie / Hexopée.
@@ -1679,6 +1689,7 @@
         </tbody>
       </table>
       <p class="hint" style="margin:8px 0 0">Dis-moi ce que tu veux ajuster (rôles, coefficients, postes à créer) et je mets à jour.</p>
+    </div>
     </div>
   </section>
 
@@ -2279,6 +2290,16 @@ document.querySelectorAll('nav.tabs button').forEach(b=>{
   sync();
 })();
 
+/* ---- Sous-onglets internes de l'onglet RH (10/07/2026, fusion Équipe+RH) : additif, revertible ---- */
+(function(){
+  var bar=document.querySelector('#rh .rhsubbar'); if(!bar) return;
+  bar.addEventListener('click',function(e){ var b=e.target.closest('.rhsubbtn'); if(!b) return;
+    var k=b.getAttribute('data-rhsub');
+    bar.querySelectorAll('.rhsubbtn').forEach(function(x){ x.classList.toggle('active', x===b); });
+    document.querySelectorAll('#rh .rhsub').forEach(function(v){ v.style.display=(v.getAttribute('data-rhsub')===k)?'':'none'; });
+  });
+})();
+
 /* ---- Recherche d'onglet « Aller à… » (30/06/2026, additif/revertible) : tape 2-3 lettres → saute à l'onglet via bobGoTab() ---- */
 (function(){
   const input=document.getElementById('tabJumpInput');
@@ -2504,11 +2525,11 @@ const FAQ=[
    a:"D'abord renseigne <b>tous</b> les membres du CA dans le panneau <b>👥 Membres du CA</b> (c'est l'effectif qui sert au calcul). Ensuite, sur une réunion, déplie <b>👥 Présence &amp; quorum</b> et choisis pour chacun : Présent / Excusé / Absent / Pouvoir à… Bob calcule le <b>quorum automatiquement</b> : présents + pouvoirs valides ≥ <b>un tiers</b> des membres (art.13). Le bouton <b>🖨️ Feuille d'émargement</b> imprime la liste à signer. Le quorum affiché est indicatif : sa constatation officielle revient au CA en séance."},
   {cat:'🧰 Secrétariat',q:"Où j'enregistre une réunion ou une décision du bureau ?",kw:"reunion decision bureau conseil administration assemblee compte rendu proces verbal pv ordre du jour",
    a:"Onglet <b>🧰 Secrétariat</b> → section <b>Réunions & décisions</b> : enregistre la date, le type (bureau, CA, AG…), les présents, l'ordre du jour, les décisions, et un lien vers le compte-rendu."},
-  {cat:'📒 Équipe',q:"Où sont les infos sur les salariés et les contrats (PEC, Service Civique…) ?",kw:"equipe salarie contrat statut pec service civique cdi protocole procedure accueil arrivant personnel",
+  {cat:'🧑‍💼 RH',q:"Où sont les infos sur les salariés et les contrats (PEC, Service Civique…) ?",kw:"equipe salarie contrat statut pec service civique cdi protocole procedure accueil arrivant personnel",
    a:"Onglet <b>📒 Équipe</b> : le mot d'accueil des nouveaux arrivants, les <b>statuts/contrats</b> (Service Civique, PEC, CDI… avec leurs spécificités) et les <b>protocoles & procédures</b> internes consultables par toute l'équipe."},
-  {cat:'📒 Équipe',q:"Comment publier un protocole aux salariés (espace salarié) ?",kw:"protocole procedure publier valider statut construction valide brouillon equipe salarie espace caisse afficher montrer diffuser lecture seule accordeon publie",
+  {cat:'🧑‍💼 RH',q:"Comment publier un protocole aux salariés (espace salarié) ?",kw:"protocole procedure publier valider statut construction valide brouillon equipe salarie espace caisse afficher montrer diffuser lecture seule accordeon publie",
    a:"Onglet <b>📒 Équipe</b>, panneau <b>📋 Protocoles & procédures</b>. Chaque protocole a un statut : <b>📝 En construction</b> (visible du bureau seulement) ou <b>✅ Validé</b> (publié dans l'<b>espace salarié</b>, en lecture seule, en accordéon). Clique <b>« 📝 Valider → »</b> pour le publier à toute l'équipe, ou <b>« ✅ Validé · publié »</b> pour le retirer. La liste du bureau est rangée en deux paquets : validés / en construction."},
-  {cat:'📒 Équipe',q:"Combien nous coûte le personnel par an (salaires + charges) ?",kw:"masse salariale cout personnel salaire charges patronales brut horaire annuel mensuel employeur aide pec combien coute",
+  {cat:'💰 Masse salariale',q:"Combien nous coûte le personnel par an (salaires + charges) ?",kw:"masse salariale cout personnel salaire charges patronales brut horaire annuel mensuel employeur aide pec combien coute",
    a:"Onglet <b>📒 Équipe</b>, panneau <b>💰 Masse salariale</b> (en haut) : saisis chaque salarié avec son bulletin de paie sous les yeux (brut horaire, heures/semaine, % de charges patronales, % d'aide PEC). Bob calcule le <b>coût employeur au mois et à l'année</b>, déduit les aides, et donne le <b>coût horaire chargé</b> de chacun — c'est ce chiffre qu'on reporte dans le 📐 Simulateur du Prévisionnel. Le % de charges exact se lit sur un bulletin : (coût total employeur − brut) ÷ brut."},
   {cat:'⚠️ Incidents',q:"Comment je déclare un accident ou un incident ?",kw:"evenement incident accident chute blessure conflit dommage declarer indesirable securite fiche signalement",
    a:"Onglet <b>⚠️ Événements</b> → <b>Déclarer un événement indésirable</b> : renseigne les faits (accident, chute, blessure, conflit…). Bob génère automatiquement la fiche de déclaration que tu peux imprimer ou archiver."},
@@ -2597,6 +2618,7 @@ function pageHelpGotoAide(){ pageHelpClose(); const b=document.querySelector('na
 
 /* ---- ✨ Quoi de neuf (nouveautés + notice chronologique) ---- */
 const NEWS=[
+  {id:'2026-07-10-fusion-equipe-rh',date:'2026-07-10',tab:'🧑‍💼 RH',titre:"🧑‍💼 « Équipe » et « RH » réunis en un seul onglet",desc:"Les deux onglets « Équipe » et « RH » relevaient d'un seul métier (le RH) : ils sont maintenant <b>réunis dans l'onglet 🧑‍💼 RH</b>, avec deux vues d'un clic — <b>👥 Équipe &amp; contrats</b> (dossiers, contrats, accueil des nouveaux, protocoles) et <b>🎯 Organisation &amp; carrières</b> (organisation cible, fiches de poste, ancienneté, bascule ÉCLAT, embauche). Et comme la <b>💰 Masse salariale</b> répond à une question d'argent (ce que le personnel coûte), elle rejoint la famille <b>💶 Finances</b>, là où vit déjà le Budget par action qu'elle alimente. Rien n'a été supprimé — tout est au même endroit, juste mieux rangé. Réservé au bureau."},
   {id:'2026-07-10-tiroirs-domaines',date:'2026-07-10',tab:'📊 Tableau de bord',titre:"🗂️ Le menu rangé par domaines (Animation a enfin sa place)",desc:"Les onglets sont désormais rangés par <b>grands domaines</b>, pour que chaque famille corresponde à un vrai « métier ». <b>🎨 Animation</b> réunit enfin tout le programme (activités, périscolaire, vacances, ateliers, projet ados) ; <b>🏠 Lieux &amp; Salles</b> regroupe les locaux et le guichet de réservation ; <b>💬 Communication</b> réunit messages, rendez-vous, secrétariat, répertoire et partenaires ; l'ancien fourre-tout « Bureau » devient <b>🏛️ Vie associative</b> (la gouvernance : projet, préparation du CA…) ; les <b>Subventions</b> rejoignent 💶 <b>Finances</b> (là où vit le Budget par action) ; et 🧑‍💼 <b>Équipe / RH</b> pour les salariés. <b>Rien n'a été supprimé</b> : les onglets ont juste changé de tiroir, et la rangée du tiroir ouvert reste affichée. Le raccourci <b>« 🔎 Aller à un onglet… »</b> reste là si tu cherches quelque chose. Réservé au bureau."},
   {id:'2026-07-10-fiche-marque',date:'2026-07-10',tab:'📣 Communication',titre:"📣 Nouveau : ta fiche de marque",desc:"Un nouvel onglet <b>📣 Communication</b> (famille Bureau) accueille la <b>fiche de marque</b> du CASE : <b>qui on est</b>, <b>à qui on parle</b>, <b>notre voix</b> (avec de vrais exemples de posts et des curseurs proche/pro, rigolo/sérieux…), nos <b>couleurs</b> et nos règles (dont « mes produits ne se montrent qu'en vraie photo »). C'est la <b>mémoire</b> qui servira, très bientôt, à préparer des <b>posts qui nous ressemblent</b> — jamais un texte passe-partout. Pour l'instant tu la remplis à la main ; le pré-remplissage depuis notre site arrive ensuite. Réservé au bureau et aux salariés."},
   {id:'2026-07-10-docs-officiels',date:'2026-07-10',tab:'🗂️ Répertoire',titre:"📁 Nouveau : coffre « Documents officiels &amp; conventions »",desc:"Dans <b>🗂️ Répertoire</b>, un panneau <b>📁 Documents officiels &amp; conventions</b> pour ranger les <b>conventions</b> (CAF, Mairie…), les <b>PV signés</b>, les <b>statuts</b> — les documents officiels de l'association. Clique <b>« Déposer un document »</b> et choisis un ou plusieurs PDF/scans : ils vont dans le <b>coffre privé</b>, visibles <b>seulement une fois connecté</b> et <b>jamais sur le site public</b>. Puis <b>👁️ Visualiser</b> / <b>⬇️ Télécharger</b> en un clic. Tu peux <b>rattacher</b> un document à un financeur (Mairie, CAF) pour le retrouver aussi depuis sa fiche dans <b>🏛️ Structures &amp; financeurs</b>. Réservé au bureau."},
@@ -4508,7 +4530,7 @@ const ZONE_ICONS={
 const BOB_ZONES=[
   {key:'adherents', cls:'z-adherents', titre:'Adhérents & familles', desc:'Membres, périscolaire, activités, lieux', tab:'members', tabs:['members','periscolaire','activites','rdv','acmvac','lieux']},
   {key:'bureau', cls:'z-bureau', titre:'Bureau & projets', desc:'Projets, subventions, partenaires, secrétariat', tab:'projects', tabs:['projects','subventions','repertoire','partenaires','ateliers','secretariat','caprep']},
-  {key:'equipe', cls:'z-equipe', titre:'Équipe & salariés', desc:'RH, dossiers, congés, horaires, suivi', tab:'rh', tabs:['equipe','accompagnement','rh','personnel','suivi','conges','horaires','incidents']},
+  {key:'equipe', cls:'z-equipe', titre:'Équipe & salariés', desc:'RH, dossiers, congés, horaires, suivi', tab:'rh', tabs:['accompagnement','rh','personnel','suivi','conges','horaires','incidents']},
   {key:'finances', cls:'z-finances', titre:'Finances', desc:'Compta, caisse, dettes, bilan, prévisionnel', tab:'accounting', tabs:['accounting','caisse','dettes','bilan','previsionnel']},
   {key:'site', cls:'z-site', titre:'Site public', desc:'Voir la vitrine publique du CASE', href:'https://pixiartpro.github.io/bob-demo/', tabs:[]}
 ];
@@ -6759,9 +6781,9 @@ renderAll();
     }
     var EQUIPE=[
       {id:'sabine',nom:'Sabine',role:'La Secrétaire',img:'bob-sabine.png',tag:"Adhérents, agenda, répertoire et la vie du bureau.",tabs:[['🏛️','Adhérents','members'],['📅','Rendez-vous','rdv'],['🗂️','Répertoire','repertoire'],['🤝','Partenaires','partenaires'],['🧰','Secrétariat','secretariat'],['📝','Préparer le CA','caprep']]},
-      {id:'tresi',nom:'Trési',role:'La Trésorière',img:'bob-tresi.png',tag:"Compta par site & action, subventions, bilan, prévisionnel.",tabs:[['💶','Comptabilité','accounting'],['💵','Caisse','caisse'],['💳','Dettes & créances','dettes'],['📈','Bilan','bilan'],['🔮','Prévisionnel','previsionnel'],['🎯','Budget par action','pilotage'],['🏛️','Subventions','subventions'],['📁','Projets','projects']]},
+      {id:'tresi',nom:'Trési',role:'La Trésorière',img:'bob-tresi.png',tag:"Compta par site & action, subventions, bilan, prévisionnel.",tabs:[['💶','Comptabilité','accounting'],['💵','Caisse','caisse'],['💳','Dettes & créances','dettes'],['📈','Bilan','bilan'],['🔮','Prévisionnel','previsionnel'],['🎯','Budget par action','pilotage'],['🏛️','Subventions','subventions'],['📁','Projets','projects'],['💰','Masse salariale','massesalariale']]},
       {id:'nono',nom:'Nono',role:"L'Animateur",img:'bob-nono.png',tag:"Périscolaire, activités, ACM & vacances, ateliers, salles.",tabs:[['🎒','Périscolaire','periscolaire'],['🎟️','Activités','activites'],['🌴','Vacances','acmvac'],['🚀','Ados / Jeunesse','projetados'],['💡','Ateliers','ateliers'],['🏠','Lieux','lieux'],['🛎️','Réservations','reserver'],['🗓️','Salles','salles']]},
-      {id:'roro',nom:'Roro',role:'Le RH',img:'bob-roro.png',tag:"Dossiers salariés, équipe, congés, horaires, paie.",tabs:[['🧑‍💼','RH','rh'],['📒','Équipe','equipe'],['👥','Dossiers salariés','personnel'],['🏖️','Congés','conges'],['🗓️','Horaires','horaires']]}
+      {id:'roro',nom:'Roro',role:'Le RH',img:'bob-roro.png',tag:"Dossiers salariés, équipe, congés, horaires, paie.",tabs:[['🧑‍💼','RH','rh'],['👥','Dossiers salariés','personnel'],['🏖️','Congés','conges'],['🗓️','Horaires','horaires']]}
     ];
     var DIRECTION=[['📊','Tableau de bord','dashboard'],['🧭','Projet & orientations','projet'],['✅','Suivi','suivi'],['⚠️','Incidents','incidents'],['🧑‍🏫','Accompagnement','accompagnement']];
     function tb(t){return document.querySelector('nav.tabs button[data-tab="'+t+'"]');}
