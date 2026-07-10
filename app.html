@@ -1203,6 +1203,11 @@
       </div>
       <div style="overflow-x:auto;-webkit-overflow-scrolling:touch"><table style="min-width:520px"><thead><tr><th>Type</th><th>Document</th><th>Accès</th><th></th></tr></thead><tbody id="docRows"></tbody></table></div>
     </div>
+    <div class="panel" id="docsOffPanel">
+      <h2>📁 Documents officiels &amp; conventions</h2>
+      <p class="hint">Les documents officiels de l'association (conventions CAF / Mairie, PV signés, statuts…) déposés dans le <strong>coffre privé</strong> : visibles seulement une fois connecté, jamais sur le site public. PDF, scan ou photo.</p>
+      <div id="docsOffBox"><p class="hint">Chargement…</p></div>
+    </div>
     <div class="panel" id="structuresPanel" style="border:2px solid var(--brand)">
       <h2>🏛️ Structures &amp; financeurs</h2>
       <p class="hint">Tes partenaires institutionnels (DRAJES/SDJES, CAF, Mairie…) : leur fiche, leur dossier, leur correspondant — et surtout <strong>les dates à ne pas rater</strong> (un 📤 dépôt à rendre, un 📥 versement à recevoir). Ces échéances remontent toutes seules dans l'échéancier et le tableau de bord.</p>
@@ -2218,6 +2223,7 @@ document.querySelectorAll('nav.tabs button').forEach(b=>{
 
 /* ---- Aide : « Demande à Zanana » (FAQ + assistant par mots-clés, sans IA) ---- */
 const FAQ=[
+  {cat:'🗂️ Répertoire',q:"Où déposer les conventions CAF, les PV signés, les documents officiels ?",kw:"convention conventions caf mairie pv statuts reglement document officiel officiels coffre gouvernance deposer televerser telecharger visualiser pdf scan",a:"Onglet <b>🗂️ Répertoire</b> → panneau <b>« 📁 Documents officiels &amp; conventions »</b>. Clique <b>« Déposer un document »</b> et choisis un ou plusieurs PDF/scans : ils vont dans le <b>coffre privé</b> (visibles seulement une fois connecté, <b>jamais sur le site public</b>). Ensuite <b>👁️ Visualiser</b> ou <b>⬇️ Télécharger</b>. Réservé au bureau."},
   {cat:'📊 Tableau de bord',q:"Comment retrouver une rubrique ou un onglet dans Bob ?",kw:"navigation naviguer circuler onglet onglets rubrique rubriques famille familles barre menu trouver chercher retrouver ranger perdu",a:"Les onglets sont rangés par <b>familles</b> dans la barre du haut (👥 Adhérents, 🏛️ Bureau, 🧑‍💼 Équipe, 💶 Finances, 🧰 Réglages). Clique une famille : sa rangée d'onglets <b>reste affichée en permanence</b> juste en dessous, et tu vois toujours où tu es (la famille et l'onglet actifs sont surlignés). Le plus rapide pour sauter n'importe où : tape 2-3 lettres dans <b>« 🔎 Aller à un onglet… »</b> en haut à gauche, Bob t'y emmène directement."},
   {cat:'👶 Enfants',q:"Comment déplacer un enfant d'un accueil (ou d'une semaine d'ACM) à un autre sans perdre l'historique ?",kw:"deplacer deplace bouger changer semaine acm accueil vepi activite transferer muter passer autre effacer supprimer annuler historique mouvement bascule retirer",a:"Onglet <b>👶 Enfants</b> (dans 👥 Adhérents). Sur la puce de l'accueil concerné (🌴 ACM, 📌 VEPI, 🎟️ activité), clique <b>⇄</b> : choisis la <b>destination</b> puis valide. Bob <b>crée la nouvelle inscription</b> et met l'ancienne en <b>« déplacée »</b> — <b>rien n'est effacé</b>, tout reste dans l'historique (le petit <b>🕘</b> sous l'enfant). Le <b>✕</b> à côté ne supprime pas non plus : il passe l'inscription en <b>« annulée »</b> (conservée). Les <b>places restantes</b> et l'<b>effectif des éditions d'ACM</b> ne comptent que les inscriptions actives — les déplacées/annulées sont ignorées. Réservé au <b>bureau et à l'accueil</b>. 💡 C'est aussi l'outil pour basculer, en septembre, les inscrits du parapluie « ACM Ados — Été 2026 » vers les semaines."},
   {cat:'🎯 Budget par action', q:"À quoi sert l'onglet Budget par action et comment créer une action ?", kw:"action actions budget par action pilotage fiche creer dossier mgdis mairie periscolaire acm vepi evenement financeur subvention depense pivot secteur activite responsable beneficiaires cloturee suivi budget", a:"L'onglet <b>🎯 Budget par action</b> (famille 💶 Finances, réservé au bureau) réunit chaque <b>action</b> du CASE — périscolaire, ACM, VEPI, événement… — en une <b>fiche unique</b>. Les actions <b>déjà utilisées dans Bob</b> (compta, subventions) apparaissent en haut de la liste, à créer en <b>un clic</b> — pas besoin de retaper leur nom. Tu crées une action (nom + type), puis tu précises sa période, son site, son ou sa responsable, son <b>n° de dossier Mairie (MGDIS)</b>, ses bénéficiaires et si elle est financée par la Mairie. Cette fiche devient le <b>point d'accroche unique</b> de son budget : les dépenses et les subventions déjà saisies dans Bob se relient à elle <b>par son nom</b>, sans double saisie. Ouvre le <b>budget détaillé</b> d'une action : le <b>coût du personnel</b> se calcule tout seul (coût horaire chargé × heures affectées), les <b>dépenses</b> réelles et les <b>recettes</b> (subventions versées) remontent automatiquement de la comptabilité, et un <b>aperçu « plan financier »</b> se copie en un clic pour le dossier Mairie. Deux vues complètent : <b>📊 Consolidé annuel</b> (toutes les actions) et <b>👤 Charge salariés</b> (Σ des heures par salarié vs sa capacité — le garde-fou anti-double-comptage). Supprimer une fiche ne touche <b>pas</b> les écritures comptables reliées."},
@@ -2494,6 +2500,7 @@ function pageHelpGotoAide(){ pageHelpClose(); const b=document.querySelector('na
 
 /* ---- ✨ Quoi de neuf (nouveautés + notice chronologique) ---- */
 const NEWS=[
+  {id:'2026-07-10-docs-officiels',date:'2026-07-10',tab:'🗂️ Répertoire',titre:"📁 Nouveau : coffre « Documents officiels &amp; conventions »",desc:"Dans <b>🗂️ Répertoire</b>, un panneau <b>📁 Documents officiels &amp; conventions</b> pour ranger les <b>conventions</b> (CAF, Mairie…), les <b>PV signés</b>, les <b>statuts</b> — les documents officiels de l'association. Clique <b>« Déposer un document »</b> et choisis un ou plusieurs PDF/scans : ils vont dans le <b>coffre privé</b>, visibles <b>seulement une fois connecté</b> et <b>jamais sur le site public</b>. Puis <b>👁️ Visualiser</b> / <b>⬇️ Télécharger</b> en un clic. Réservé au bureau."},
   {id:'2026-07-10-nav-persistante',date:'2026-07-10',tab:'📊 Tableau de bord',titre:"🗂️ Tes rubriques restent affichées en permanence",desc:"La barre de navigation a été revue. Quand tu ouvres une <b>famille</b> (👥 Adhérents, 💶 Finances, 🧑‍💼 Équipe…), la rangée de ses <b>onglets reste affichée en permanence</b> en dessous, au lieu de se refermer dès que tu cliques. Tu vois donc toujours <b>où tu es</b> — la famille <b>et</b> l'onglet en cours sont surlignés — et les onglets voisins d'un coup d'œil. Cliquer sur une famille t'amène directement à sa première rubrique. La recherche <b>« 🔎 Aller à un onglet… »</b> reste là comme raccourci. Rien n'a changé dans les rubriques elles-mêmes : c'est juste plus clair pour circuler."},
   {id:'2026-07-10-reset-motdepasse',date:'2026-07-10',tab:'⚙️ Données',titre:"🔒 « Tout effacer » demande maintenant ton mot de passe",desc:"Le bouton <b>« 🗑️ Tout effacer et repartir de zéro »</b> (onglet <b>⚙️ Données</b>) est une action <b>irréversible</b>. En plus de la confirmation et de la sauvegarde automatique déjà en place, Bob te demande désormais de saisir ton <b>mot de passe de connexion</b>, <b>vérifié en ligne</b>, avant d'effacer quoi que ce soit. Objectif : éviter tout effacement accidentel — ou depuis une session laissée ouverte. Si tu te connectes par <b>lien magique</b> sans mot de passe, tu peux en définir un via « Mot de passe oublié ? » sur la page de connexion. Réservé au bureau."},
   {id:'2026-07-10-acm-echeances-redatees',date:'2026-07-10',tab:'🌴 Vacances',titre:"⏰ Les éditions d'ACM déjà créées affichent enfin leurs échéances",desc:"Correctif : les éditions d'ACM créées avant l'arrivée du séquenceur daté n'affichaient pas leurs dates d'échéance (J-8 fiche complémentaire, J-60 fiche initiale…). Désormais, quand tu ouvres le <b>📖 Dossier-bilan</b> d'une telle édition et que tu saisis sa <b>date de début</b>, Bob <b>re-date automatiquement</b> ses démarches (sans toucher à ce que tu as déjà coché) et affiche la <b>prochaine échéance en rouge</b> sur la carte. Concrètement pour l'<b>ACM ados été 2026</b> : la <b>fiche complémentaire TAM</b> tombe le <b>19/07</b> (délai ferme). Réservé au bureau."},
@@ -6430,7 +6437,7 @@ function acmNewSession(){
 /* acmDelSession retiré (Coup 3) : la suppression d'une édition passe désormais par acmDelEdition (statut-aware). */
 function b64ToUtf8(s){ try{ return new TextDecoder().decode(Uint8Array.from(atob(s),c=>c.charCodeAt(0))); }catch(e){ return ''; } }
 function renderCoffre(){ try{ document.querySelectorAll('[data-coffre]').forEach(function(el){ var k=el.getAttribute('data-coffre'); var v=(window.db&&db.coffreHtml&&db.coffreHtml[k])||''; el.innerHTML = v ? b64ToUtf8(v) : ''; }); }catch(e){} }
-function renderAll(){ renderCoffre(); renderDashboard(); renderZoneCards(); renderMembers(); renderRelances(); renderOps(); renderCaisse(); renderRapprochement(); renderProjects(); renderSubventions(); renderEcheancier(); renderBilan(); renderPrevisionnel(); renderPilotage(); renderEquipe(); renderRepertoire(); renderSecretariat(); renderDemarches(); renderAssurance(); renderCaMembres(); renderReunions(); renderCaprep(); renderIncidents(); renderDettes(); renderOfficialLinks(); refreshComptes(); renderListParams(); renderJournal(); renderPeriscolaire(); renderFaqList(); renderNews(); renderAccompagnement(); renderRH(); renderProjet(); renderProjetAdos(); renderActions(); renderConges(); renderFermetures(); renderHoraires(); renderAcmVac(); if(window.renderDocsPeri)window.renderDocsPeri(); }
+function renderAll(){ renderCoffre(); renderDashboard(); renderZoneCards(); renderMembers(); renderRelances(); renderOps(); renderCaisse(); renderRapprochement(); renderProjects(); renderSubventions(); renderEcheancier(); renderBilan(); renderPrevisionnel(); renderPilotage(); renderEquipe(); renderRepertoire(); renderSecretariat(); renderDemarches(); renderAssurance(); renderCaMembres(); renderReunions(); renderCaprep(); renderIncidents(); renderDettes(); renderOfficialLinks(); refreshComptes(); renderListParams(); renderJournal(); renderPeriscolaire(); renderFaqList(); renderNews(); renderAccompagnement(); renderRH(); renderProjet(); renderProjetAdos(); renderActions(); renderConges(); renderFermetures(); renderHoraires(); renderAcmVac(); if(window.renderDocsPeri)window.renderDocsPeri(); if(window.renderDocsOff)window.renderDocsOff(); }
 
 /* ---- Data import/export ---- */
 function exportJSON(motif){
@@ -6888,6 +6895,63 @@ renderAll();
 
   // Demandes de partenariat (commerçants) — table partenaires
   const PART_STATUTS={nouveau:'🆕 Nouveau',contacte:'📞 Contacté',partenaire:'✅ Partenaire',refuse:'✖️ Refusé'};
+  // === Documents officiels & conventions (coffre prive « gouvernance ») ===
+  window.renderDocsOff=function(){
+    const box=$('docsOffBox'); if(!box) return;
+    const list=(window.db&&db.docsOff)||[];
+    const up=canWrite?'<div style="margin:0 0 12px"><button class="btn" onclick="docsOffUpload()">⬆️ Déposer un document</button> <span class="muted" style="font-size:12px">— PDF, scan ou photo ; tu peux en choisir plusieurs d\'un coup</span></div>':'';
+    let rows;
+    if(list.length){
+      rows='<div style="overflow-x:auto;-webkit-overflow-scrolling:touch"><table style="width:100%;min-width:520px;border-collapse:collapse"><thead><tr><th style="text-align:left;padding:8px">Type</th><th style="text-align:left;padding:8px">Document</th><th style="padding:8px"></th></tr></thead><tbody>'+list.map(function(d){
+        const dt=d.ts?('<br><span class="muted" style="font-size:12px">déposé le '+new Date(d.ts).toLocaleDateString('fr-FR')+'</span>'):'';
+        const del=canWrite?' <button class="danger" onclick="docsOffDel(\''+d.id+'\')">Suppr.</button>':'';
+        return '<tr><td style="padding:8px;border-top:1px solid #eee"><span class="pill" style="background:#fcf2de;color:#a9742a">'+esc(d.cat||'Document')+'</span></td><td style="padding:8px;border-top:1px solid #eee"><b>'+esc(d.label||d.file||'')+'</b>'+dt+'</td><td style="padding:8px;border-top:1px solid #eee;text-align:right;white-space:nowrap"><button class="ghost btn" onclick="docsOffView(\''+d.id+'\')">👁️ Visualiser</button> <button class="ghost btn" onclick="docsOffDownload(\''+d.id+'\')">⬇️ Télécharger</button>'+del+'</td></tr>';
+      }).join('')+'</tbody></table></div>';
+    }else{
+      rows='<p class="empty" style="padding:10px 0">Aucun document officiel déposé pour l\'instant.'+(canWrite?' Clique « Déposer un document » pour ajouter une convention, un PV signé, les statuts…':'')+'</p>';
+    }
+    box.innerHTML=up+rows;
+  };
+  window.docsOffUpload=function(){
+    if(!canWrite){ alert('Réservé au bureau.'); return; }
+    const inp=document.createElement('input'); inp.type='file'; inp.multiple=true; inp.accept='.pdf,image/*';
+    inp.onchange=async function(){
+      const files=inp.files?Array.from(inp.files):[]; if(!files.length) return;
+      const cat=(prompt('Type de document ? (Convention, PV, Statuts, Autre)','Convention')||'Document').trim()||'Document';
+      let userId; try{ userId=(myProfile&&myProfile.id)||((await sbc.auth.getUser()).data.user.id); }catch(e){ userId='x'; }
+      if(!window.db.docsOff) db.docsOff=[];
+      let ok=0; const skip=[];
+      for(const f of files){
+        try{
+          const safe=(f.name||'document').replace(/[^A-Za-z0-9._-]/g,'_');
+          const path=myAsso+'/officiels/'+userId+'-'+Date.now()+'-'+safe;
+          const upr=await sbc.storage.from('gouvernance').upload(path,f,{upsert:true,contentType:f.type||'application/octet-stream'});
+          if(upr.error){ skip.push(f.name+' — '+upr.error.message); continue; }
+          db.docsOff.push({id:uid(),cat:cat,label:(f.name||'').replace(/\.[^.]+$/,''),file:f.name,path:path,ts:new Date().toISOString()});
+          ok++;
+        }catch(e){ skip.push(f.name); }
+      }
+      save(); schedulePush(); window.renderDocsOff();
+      alert('✅ '+ok+' document(s) déposé(s) dans le coffre.'+(skip.length?'\n\nNon déposés :\n- '+skip.join('\n- '):''));
+    };
+    inp.click();
+  };
+  window.docsOffView=async function(id){
+    const d=((window.db&&db.docsOff)||[]).find(function(x){return x.id===id;}); if(!d||!d.path){ alert('Document introuvable.'); return; }
+    try{ const r=await sbc.storage.from('gouvernance').createSignedUrl(d.path,3600); if(r.error||!r.data){ alert('Document indisponible.'); return; } docView(r.data.signedUrl,(d.file||d.label||'Document')); }catch(e){ alert('Document indisponible.'); }
+  };
+  window.docsOffDownload=async function(id){
+    const d=((window.db&&db.docsOff)||[]).find(function(x){return x.id===id;}); if(!d||!d.path){ alert('Document introuvable.'); return; }
+    try{ const r=await sbc.storage.from('gouvernance').createSignedUrl(d.path,3600,{download:d.file||true}); if(r.error||!r.data){ alert('Document indisponible.'); return; } const a=document.createElement('a'); a.href=r.data.signedUrl; a.download=d.file||''; document.body.appendChild(a); a.click(); a.remove(); }catch(e){ alert('Document indisponible.'); }
+  };
+  window.docsOffDel=async function(id){
+    if(!canWrite){ alert('Réservé au bureau.'); return; }
+    const d=((window.db&&db.docsOff)||[]).find(function(x){return x.id===id;}); if(!d) return;
+    if(!confirm('Supprimer « '+((d.label||d.file)||'')+' » du coffre ? (définitif)')) return;
+    try{ if(d.path) await sbc.storage.from('gouvernance').remove([d.path]); }catch(e){}
+    db.docsOff=((window.db&&db.docsOff)||[]).filter(function(x){return x.id!==id;});
+    save(); schedulePush(); window.renderDocsOff();
+  };
   window.loadPartenaires=async function(){
     const box=document.getElementById('partList'); if(!box) return;
     const {data,error}=await sbc.from('partenaires').select('*').order('created_at',{ascending:false});
