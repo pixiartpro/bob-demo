@@ -1018,6 +1018,17 @@
     </div>
     <div id="acmBilanView" style="margin:10px 0"></div>
 
+    <!-- 🔄 Miroir salariées (étape 3, 11/07/2026) : publie le reflet lecture (acm_reflet) que les salariées voient dans « Mon ACM », et traite leurs propositions (acm_propositions). Additif, ne touche jamais au moteur db.acmVac. Masqué hors bureau (gating dans renderAcmVac). -->
+    <div class="panel" id="acmPartagePanel" style="display:none">
+      <div class="toolbar"><div>
+        <h2 style="margin:0">🔄 Partage avec les salariées</h2>
+        <p class="hint" style="margin:2px 0 0">Publie le <strong>reflet</strong> (planning · démarches · projet éducatif) que les salariées consultent dans « Mon ACM », et traite leurs <strong>propositions</strong>. Rien ne part tant que tu ne cliques pas « Publier ».</p>
+      </div><button class="btn" onclick="acmDoPublishReflet()">📢 Publier aux salariées</button></div>
+      <div class="hint" id="acmRefletMaj" style="margin:6px 0 0"></div>
+      <h3 style="margin:14px 0 4px">📥 À valider <span class="hint" style="font-weight:400" id="acmInboxCount"></span> <button class="ghost btn" style="padding:2px 8px;font-size:12px" onclick="if(window.acmLoadInbox)acmLoadInbox()">↻</button></h3>
+      <div id="acmInboxBody"><p class="hint">Chargement…</p></div>
+    </div>
+
     <!-- 📜 Projet éducatif (organisateur) — commun à toutes les éditions, pluriannuel. Coup 2b. -->
     <details class="panel" id="acmProjEducPanel" style="margin:6px 0 14px">
       <summary style="cursor:pointer;font-weight:700;font-size:16px">📜 Projet éducatif <span class="hint" style="font-weight:400">— commun à l'asso, écrit une fois (rappelé à chaque édition)</span></summary>
@@ -2350,6 +2361,7 @@ document.querySelectorAll('nav.tabs button').forEach(b=>{
     try{ localStorage.setItem('bob_last_tab', b.dataset.tab); }catch(e){}
     if(b.dataset.tab==='aide'){ const i=$('faqAsk'); if(i)i.focus(); if(window.loadQuestionsAide) loadQuestionsAide(); }
     if(b.dataset.tab==='messages' && window.loadMessagesAdh){ loadMessagesAdh(); }
+    if(b.dataset.tab==='acmvac' && window.acmLoadInbox){ acmLoadInbox(); }
   };
 });
 
@@ -2544,6 +2556,8 @@ const FAQ=[
    a:"Deux choses distinctes. Le <b>📜 Projet éducatif</b> (le cadre de l'asso) s'écrit <b>une seule fois</b>, dans le panneau <b>📜 Projet éducatif</b> en haut de l'onglet 🌴 Vacances — il ne se réécrit pas à chaque vacances (à revérifier seulement en cas de changement : direction, locaux…). Le <b>📋 Projet pédagogique</b>, lui, se fait <b>par édition</b> : ouvre le <b>Dossier-bilan</b> d'une édition et déplie <b>📋 Projet pédagogique</b> : tu remplis les <b>8 sections cadrées par la loi</b> (objectifs, activités, rythme activité/repos, participation des jeunes, locaux, équipe, handicap, évaluation), chacune en <b>« prévu »</b> (avant) puis <b>« réalisé »</b> (après). On recopie le plan officiel, on n'invente rien. Les deux ressortent dans le <b>bilan PDF</b>. Réservé au bureau."},
   {cat:'🌴 Vacances',q:"Comment Bob estime la prestation de service (PS) de la CAF ? C'est quoi les heures-enfants ?",kw:"caf prestation service ps alsh afas heures enfants amplitude bareme argent subvention financement montant annee civile estimation declaration previsionnel actualisation urssaf 70623 combien touche cef",
    a:"Onglet 🌴 Vacances → panneau <b>💶 CAF — Prestation de service</b>. La CAF974 compte en <b>heures-enfants = jours × enfants × amplitude horaire</b>, par <b>année civile</b>. Renseigne l'<b>amplitude</b> (heures d'accueil par jour) de chaque édition : Bob additionne les heures-enfants de l'année et affiche une <b>estimation de la PS</b> (ados <b>0,94 €/heure-enfant</b> en 2026 ; le barème est modifiable car il est revalorisé chaque année). Il rappelle aussi les <b>4 échéances AFAS</b> (prévisionnel 31/03, actu T2 15/07, actu T3 15/10, bilan 31/03 N+1) et la pièce à joindre (attestation URSSAF de moins de 6 mois). ⚠️ C'est une <b>estimation pour t'aider à préparer</b> la déclaration : la CAF compte les heures <b>réalisées ou facturées</b> selon ta convention et <b>plafonne au prix de revient réel</b>. À déclarer au compte 70623. Réservé au bureau."},
+  {cat:'🌴 Vacances',q:"Comment partager le planning ACM avec les salariées et traiter leurs propositions ?",kw:"partage salariee salarie salaries mon acm reflet publier planning demarches projet educatif propositions bannette a valider accepter refuser animatrice directrice betty alyssa proposer activite placement budget miroir espace personnel montent preparer",
+   a:"En haut de l'onglet 🌴 Vacances, le panneau <b>🔄 Partage avec les salariées</b>. Le bouton <b>📢 Publier aux salariées</b> envoie un <b>reflet en lecture</b> (le planning, les démarches et le projet éducatif) que chaque salariée retrouve dans son espace, écran <b>« 🌴 Mon ACM »</b> — rien ne part tant que tu n'as pas cliqué « Publier ». En dessous, <b>📥 À valider</b> reçoit leurs <b>propositions</b> (une activité, un placement sur un jour, une démarche, un texte pour le projet pédagogique, une ligne de budget matériel) : tu <b>Acceptes</b> (l'activité rejoint le catalogue, la démarche l'accueil, le texte le projet éducatif ; placement et budget sont à reporter à la main) ou tu <b>Refuses</b> avec un motif. Les salariées <b>préparent et proposent</b> ; le bureau garde la <b>validation, l'argent et la publication</b>. Réservé au bureau."},
   {cat:'🏠 Lieux',q:"À quoi sert l'onglet 🏠 Lieux et comment publier un local sur le site ?",kw:"lieux lieu local locaux salle batiment adresse horaires etat renovation photo publier site public implantation bringelliers ou se deroule activite carte",
    a:"Onglet <b>🏠 Lieux</b> : tu y gères tes <b>locaux</b> — nom, <b>état</b> (ouvert / en rénovation…), adresse, horaires, une photo (lien) — et tu choisis de les <b>publier sur le site</b> ou non. Sur le site public, chaque lieu affiche aussi les <b>activités qui s'y déroulent</b> (d'après le champ « Lieu » de chaque activité dans 🎟️ Activités). C'est aussi là que tu retrouves tes <b>lieux d'implantation</b> (utile pour les annexes CAF / DRAJES). Clique <b>+ Créer</b> pour ajouter un lieu, puis modifie-le dans la liste dessous. Réservé au bureau."},
   {cat:'💡 Ateliers',q:"À quoi sert l'onglet 💡 Ateliers et comment gérer les inscriptions ?",kw:"ateliers atelier creer inscription inscriptions inscrits participants seance groupe gerer liste rafraichir workshop",
@@ -2724,6 +2738,7 @@ function pageHelpGotoAide(){ pageHelpClose(); const b=document.querySelector('na
 
 /* ---- ✨ Quoi de neuf (nouveautés + notice chronologique) ---- */
 const NEWS=[
+  {id:'2026-07-11-partage-acm-salariees',date:'2026-07-11',tab:'🌴 Vacances',titre:"🔄 Monter l'ACM avec les salariées",desc:"Nouveau panneau <b>🔄 Partage avec les salariées</b> en haut de l'onglet 🌴 Vacances. D'un clic sur <b>📢 Publier aux salariées</b>, tu leur envoies un <b>reflet en lecture</b> du planning, des démarches et du projet éducatif — elles le voient dans leur espace, écran <b>« 🌴 Mon ACM »</b>. Et elles peuvent te faire des <b>propositions</b> (une activité, un placement sur un jour, une démarche, un texte pédago, une ligne de budget matériel) qui arrivent dans <b>📥 À valider</b> : tu <b>Acceptes</b> ou <b>Refuses</b> avec un motif. Elles préparent, tu gardes la validation, l'argent et la publication. Réservé au bureau."},
   {id:'2026-07-10-charte-logo',date:'2026-07-10',tab:'📣 Communication',titre:"🎨 Ton logo détouré + tes couleurs auto",desc:"Dans l'onglet <b>📣 Communication</b>, la nouvelle section <b>« 5 · Ton logo »</b> : dépose ton logo et l'expert <b>enlève le fond</b> (pour l'utiliser proprement sur tes visuels) puis <b>en tire tes couleurs</b> — un clic pour la principale, un clic pour la secondaire. Le détourage coûte <b>≈ 1 crédit</b> (une fraction de centime, plafonné) ; les couleurs sont <b>gratuites</b>. Rien n'est publié : tu enregistres, c'est tout. Réservé au bureau et aux salariés."},
   {id:'2026-07-10-carrousel',date:'2026-07-10',tab:'📣 Communication',titre:"✨ Générer un post carrousel dans notre voix",desc:"Dans l'onglet <b>📣 Communication</b>, juste sous la fiche de marque, un nouveau bloc <b>« ✨ Créer un carrousel dans ta voix »</b> écrit pour toi le <b>texte d'un carrousel</b> (plusieurs vignettes + une légende) à partir de notre fiche : <b>notre voix</b>, nos piliers, notre ancrage Bois de Nèfles. Tu donnes le <b>sujet</b>, ton <b>objectif</b> (faire venir, informer…) et le réseau, l'expert rédige — puis <b>se relit tout seul</b> pour que ça ne ressemble pas à un post passe-partout (le « swap test »). Tu vérifies, tu ajustes, tu <b>copies où tu veux</b>. <b>Rien n'est publié automatiquement.</b> Ça coûte une fraction de centime, plafonné. Réservé au bureau et aux salariés."},
   {id:'2026-07-10-encaissement-acm',date:'2026-07-10',tab:'🎟️ Activités',titre:"🌴 Encaisser les activités & l'ACM par famille",desc:"L'encaissement par famille arrive aussi sur les <b>activités</b> (ACM…). Dans 🎟️ Activités, le bureau <b>chiffre la participation</b> via la grille ACM (quotient familial × semaines), puis le bureau ou l'accueil <b>« 💵 Encaisse »</b> (chèque, espèces…), et le bouton <b>« 💶 Verser en compta »</b> crée les recettes taguées sur le nom de l'activité (espèces en caisse), sans doublon. La CAF et la Mairie restent des subventions à part."},
@@ -5793,6 +5808,43 @@ async function syncProtocolesPublies(){
     for(const r of (existing||[])){ if(!keep.has(r.id)) await sbc.from('protocoles_publies').delete().eq('id',r.id); }
   }catch(e){ console.warn('syncProtocolesPublies', e); }
 }
+// Miroir ACM (étape 3, 11/07/2026) — publie le REFLET lecture des salariées (table acm_reflet) : par édition OUVERTE le planning + les démarches, + le projet éducatif (global). Jumeau de publishTarifs : lit le coffre db.acmVac, N'Y TOUCHE JAMAIS. Le salarié le consulte dans « Mon ACM » (espace-personnel.html). Contrat JSON figé côté lecteur — voir la mémoire bob-acm-planning-salarie-miroir.
+async function syncAcmReflet(){
+  try{
+    if(!myAsso||!canWrite||!sbc) return;
+    const a=acmDb();
+    const now=new Date(); now.setHours(0,0,0,0);
+    const stamp=new Date().toISOString();
+    const rows=[]; const keep=new Set();
+    a.sessions.filter(function(s){return s.statut==='ouverte' && s.type!=='vepi';}).forEach(function(s){ // ⚠️ VEPI = même moteur mais cloisonné (cf. mémoire) : le reflet « Mon ACM » ne reflète QUE les accueils ACM
+      acmEnsureParcours(s); // healer AVANT snapshot : re-date les démarches (offset) — jamais de forme brute (cf. mémoire)
+      const plan=s.plan||{};
+      const jours=(s.jours||[]).map(function(j){
+        const fs=a.fiches.filter(function(f){return plan[f.id]===j;});
+        return {jour:j, activites:fs.map(function(f){return {nom:f.nom||'', emoji:f.emoji||'', pole:f.pole||''};})};
+      });
+      const reserve=a.fiches.filter(function(f){return plan[f.id]==='reserve';}).map(function(f){return {nom:f.nom||'', emoji:f.emoji||''};});
+      rows.push({asso_id:myAsso, edition_ref:s.id, edition_nom:s.nom||'', volet:'planning', contenu:{jours:jours, reserve:reserve}, updated_at:stamp});
+      keep.add(s.id+'|planning');
+      const items=((s.bilan&&s.bilan.demarches)||[]).map(function(d){
+        const due=acmDueDate(s,d.offset), done=d.statut==='fait', na=d.statut==='na';
+        return {label:d.label||'', phase:d.phase||'avant', statut:d.statut||'a_faire', echeance:(due?acmFmtD(due):''), ferme:!!d.ferme, retard:!!(due&&!done&&!na&&due<now), info:d.info||''};
+      });
+      rows.push({asso_id:myAsso, edition_ref:s.id, edition_nom:s.nom||'', volet:'demarches', contenu:{items:items}, updated_at:stamp});
+      keep.add(s.id+'|demarches');
+    });
+    const pj=a.projetEducatif||{texte:'',maj:''};
+    if((pj.texte||'').trim()){ // projet éducatif global — sentinelle edition_ref '_global' (colonne NOT NULL) ; le lecteur prend le plus récent
+      rows.push({asso_id:myAsso, edition_ref:'_global', edition_nom:null, volet:'projet_educatif', contenu:{texte:pj.texte, maj:pj.maj||''}, updated_at:stamp});
+      keep.add('_global|projet_educatif');
+    }
+    if(rows.length){ const up=await sbc.from('acm_reflet').upsert(rows,{onConflict:'asso_id,edition_ref,volet'}); if(up.error) throw up.error; }
+    // réconciliation : retirer du reflet les éditions clôturées/supprimées (ou le PE effacé) depuis la dernière publication
+    const {data:existing}=await sbc.from('acm_reflet').select('id,edition_ref,volet').eq('asso_id',myAsso);
+    for(const r of (existing||[])){ if(!keep.has(r.edition_ref+'|'+r.volet)) await sbc.from('acm_reflet').delete().eq('id',r.id); }
+    return true;
+  }catch(e){ console.warn('syncAcmReflet', e); return false; }
+}
 function savePeriGrille(){
   if(!window.__periGrilleUnlocked){ alert('Déverrouille d\'abord la grille (bouton 🔓 Déverrouiller).'); return; }
   const g=periDB().grille;
@@ -6724,6 +6776,8 @@ function renderAcmVac(){
   const pe=$('acmProjEduc'); if(pe && document.activeElement!==pe){ const pj=acmDb().projetEducatif||{}; pe.value=pj.texte||''; const pem=$('acmProjEducMaj'); if(pem) pem.textContent=pj.maj?('maj '+fmtDate(pj.maj)):''; }
   if(window.renderAcmCaf) renderAcmCaf();
   if(window.renderAcmEditions) window.renderAcmEditions();
+  const pp=$('acmPartagePanel'); if(pp) pp.style.display=canWrite?'':'none'; // 🔄 miroir salariées : réservé au bureau
+  if(window.renderAcmInbox) window.renderAcmInbox(); // rend depuis le cache window.__acmInbox (chargé à l'ouverture de l'onglet)
 }
 function acmFicheHtml(f,cs,plan){
   const o=acmOrig(f.origine), st=acmStat(f.statut);
@@ -8290,6 +8344,88 @@ renderAll();
   }
   window.acmPedaSet=function(edId,key,field,val){ const ed=acmDb().sessions.find(function(s){return s.id===edId;}); if(!ed)return; ed.bilan.peda=ed.bilan.peda||{}; ed.bilan.peda[key]=ed.bilan.peda[key]||{}; ed.bilan.peda[key][field]=val; save(); };
   window.acmSetProjEduc=function(v){ const a=acmDb(); a.projetEducatif=a.projetEducatif||{texte:'',maj:''}; a.projetEducatif.texte=v; a.projetEducatif.maj=today(); save(); const m=document.getElementById('acmProjEducMaj'); if(m) m.textContent=a.projetEducatif.maj?('✔ enregistré · maj '+fmtDate(a.projetEducatif.maj)):''; };
+
+  /* ===== 🔄 Miroir salariées (étape 3) — publier le reflet + traiter la bannette de propositions (acm_propositions). Additif, réservé au bureau (canWrite). ===== */
+  window.acmDoPublishReflet=async function(){
+    if(!canWrite){ alert('Réservé au bureau.'); return; }
+    const el=document.getElementById('acmRefletMaj'); if(el) el.textContent='Publication en cours…';
+    const ok=await syncAcmReflet();
+    if(el) el.textContent=ok?('✔ Reflet publié le '+fmtDate(today())+' — visible par les salariées dans « Mon ACM ».'):'⚠️ La publication a échoué — vérifie la connexion et réessaie.';
+  };
+  window.acmLoadInbox=async function(){
+    if(!canWrite||!sbc){ window.__acmInbox=[]; if(window.renderAcmInbox) renderAcmInbox(); return; }
+    try{ const {data}=await sbc.from('acm_propositions').select('*').eq('statut','en_attente').order('created_at',{ascending:true}); window.__acmInbox=data||[]; }
+    catch(e){ window.__acmInbox=[]; }
+    if(window.renderAcmInbox) renderAcmInbox();
+  };
+  function acmInboxDate(iso){ try{ return new Date(iso).toLocaleDateString('fr-FR',{day:'2-digit',month:'2-digit'}); }catch(e){ return ''; } }
+  function acmInboxEdName(ref){ const s=acmDb().sessions.find(function(x){return x.id===ref;}); return s?(s.nom||ref):ref; }
+  function acmInboxSummary(p){
+    const c=p.contenu||{};
+    if(p.type==='activite') return acmEsc((c.emoji?c.emoji+' ':'')+(c.nom||'(activité)'))+(c.description?' <span class="hint">— '+acmEsc(c.description)+'</span>':'');
+    if(p.type==='placement') return '📅 '+acmEsc(c.activite||'?')+' → <b>'+acmEsc(c.jour||'?')+'</b>';
+    if(p.type==='demarche') return '📋 '+acmEsc(c.label||'?')+(c.phase?' <span class="hint">('+acmEsc(c.phase)+')</span>':'');
+    if(p.type==='projet_peda') return '📖 '+(c.section?'<b>'+acmEsc(c.section)+'</b> — ':'')+acmEsc(c.texte||'');
+    if(p.type==='budget_prev'){ const m=(c.montant!=null&&c.montant!=='')?(' · <b>'+acmEsc(String(c.montant))+' €</b>'):''; const q=(c.quantite&&c.prix_unitaire)?(' <span class="hint">('+acmEsc(String(c.quantite))+' × '+acmEsc(String(c.prix_unitaire))+' €)</span>'):''; return '💶 '+acmEsc(c.poste||'?')+m+q+(c.commentaire?' <span class="hint">— '+acmEsc(c.commentaire)+'</span>':''); }
+    return acmEsc(JSON.stringify(c));
+  }
+  window.renderAcmInbox=function(){
+    const box=document.getElementById('acmInboxBody'); if(!box) return;
+    const cnt=document.getElementById('acmInboxCount');
+    if(!canWrite){ box.innerHTML='<p class="hint">Réservé au bureau.</p>'; if(cnt) cnt.textContent=''; return; }
+    const list=window.__acmInbox;
+    if(list==null){ box.innerHTML='<p class="hint">Chargement…</p>'; if(cnt) cnt.textContent=''; return; }
+    if(!list.length){ box.innerHTML='<p class="hint">Aucune proposition en attente. 👌</p>'; if(cnt) cnt.textContent=''; return; }
+    if(cnt) cnt.textContent='· '+list.length+' en attente';
+    const TL={activite:'🎪 Activité',placement:'📅 Placement',demarche:'📋 Démarche',projet_peda:'📖 Projet péda',budget_prev:'💶 Budget'};
+    box.innerHTML=list.map(function(p){
+      const edN=(p.edition_ref&&p.edition_ref!=='_global')?(' · '+acmEsc(acmInboxEdName(p.edition_ref))):'';
+      return '<div class="card" style="margin-bottom:10px;border-left:4px solid #dc8f38">'
+        +'<div><b>'+(TL[p.type]||acmEsc(p.type))+'</b> <span class="hint">· '+acmEsc(p.auteur_nom||'salarié·e')+' · '+acmInboxDate(p.created_at)+edN+'</span></div>'
+        +'<div style="margin:4px 0;font-size:14px">'+acmInboxSummary(p)+'</div>'
+        +(p.note?'<div class="hint">📝 '+acmEsc(p.note)+'</div>':'')
+        +'<div class="row" style="gap:6px;margin-top:6px"><button class="btn" style="padding:4px 12px" onclick="acmPropAccept(\''+p.id+'\')">✅ Accepter</button>'
+          +'<button class="ghost btn" style="padding:4px 12px" onclick="acmPropRefuse(\''+p.id+'\')">✖️ Refuser</button></div>'
+      +'</div>';
+    }).join('');
+  };
+  window.acmPropRefuse=async function(id){
+    if(!canWrite){ alert('Réservé au bureau.'); return; }
+    const motif=(prompt('Motif du refus (visible par la salariée — facultatif) :')||'').trim();
+    try{ const up=await sbc.from('acm_propositions').update({statut:'refusee', motif_refus:motif||null, traite_par:(myProfile&&myProfile.id)||null, traite_le:new Date().toISOString()}).eq('id',id).eq('statut','en_attente').select('id'); if(up.error) throw up.error; if(!up.data||!up.data.length){ alert('Déjà traitée (ou modifiée) — rien à faire.'); if(window.acmLoadInbox) acmLoadInbox(); return; } }
+    catch(e){ alert('Erreur : '+(e.message||e)); return; }
+    if(window.acmLoadInbox) acmLoadInbox();
+  };
+  window.acmPropAccept=async function(id){
+    if(!canWrite){ alert('Réservé au bureau.'); return; }
+    const p=(window.__acmInbox||[]).find(function(x){return x.id===id;}); if(!p) return;
+    // 1) valider EN BASE d'abord : si l'update échoue (ou 0 ligne = déjà traitée), on ne touche pas au coffre
+    try{ const up=await sbc.from('acm_propositions').update({statut:'acceptee', traite_par:(myProfile&&myProfile.id)||null, traite_le:new Date().toISOString()}).eq('id',id).eq('statut','en_attente').select('id'); if(up.error) throw up.error; if(!up.data||!up.data.length){ alert('Déjà traitée (ou modifiée) — rien à faire.'); if(window.acmLoadInbox) acmLoadInbox(); return; } }
+    catch(e){ alert('Erreur : '+(e.message||e)); return; }
+    // 2) intégration SÛRE et additive dans le coffre (jamais placement/budget en auto : le bureau les reporte à la main)
+    const a=acmDb(), c=p.contenu||{}; let integre='';
+    if(p.type==='activite'){
+      a.fiches.push({id:uid(), nom:c.nom||'Activité proposée', emoji:c.emoji||'', pole:'Autre', origine:'maison', statut:'idee', cout:'', intervenant:'', tel:'', lieu:'', note:(c.description||'')+(p.auteur_nom?(' — proposé par '+p.auteur_nom):'')});
+      integre='ajoutée au catalogue';
+    } else if(p.type==='demarche'){
+      const s=a.sessions.find(function(x){return x.id===p.edition_ref && x.statut==='ouverte' && x.type!=='vepi';}); // jamais dans une édition VEPI (cloisonnement)
+      if(s){ s.bilan=s.bilan||{}; s.bilan.demarches=s.bilan.demarches||[]; s.bilan.demarches.push({id:uid(), label:c.label||'Démarche', phase:c.phase||'avant', offset:null, statut:'a_faire'}); integre='ajoutée aux démarches de « '+(s.nom||'')+' »'; }
+      else { integre='marquée acceptée (à ajouter à la main — aucune édition ouverte ciblée)'; }
+    } else if(p.type==='projet_peda'){
+      a.projetEducatif=a.projetEducatif||{texte:'',maj:''};
+      const bloc='— (proposé'+(p.auteur_nom?' par '+p.auteur_nom:'')+')'+(c.section?' ['+c.section+']':'')+' '+(c.texte||'');
+      a.projetEducatif.texte=((a.projetEducatif.texte||'').trim()?(a.projetEducatif.texte.replace(/\s+$/,'')+'\n\n'):'')+bloc;
+      a.projetEducatif.maj=today();
+      integre='ajoutée en note au projet éducatif';
+    } else {
+      integre='marquée acceptée — à reporter à la main ('+(p.type==='placement'?'placement sur le planning':'ligne de budget dans la fiche-action')+')';
+    }
+    save();
+    try{ await syncAcmReflet(); }catch(e){}
+    if(window.acmLoadInbox) acmLoadInbox();
+    renderAcmVac();
+    alert('✅ Proposition acceptée — '+integre+'.');
+  };
   // Coup 3 — heures-enfants (jours × enfants × amplitude) → estimation PS par année civile. Estimation d'aide, pas la déclaration AFAS.
   function acmHeuresEnfants(ed){
     const nbJ=((ed.jours||[]).length)||0;

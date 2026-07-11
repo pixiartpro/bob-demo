@@ -118,7 +118,7 @@ const SB_URL='https://dkidtwypclpwznleiqnq.supabase.co';
 const SB_KEY='sb_publishable_HDfV-O2ION1Vw9v03aV_Qg_PkiAjLNo';
 const sb=window.supabase.createClient(SB_URL,SB_KEY);
 const $=s=>document.querySelector(s);
-const ME={session:null,prof:null,fiche:null,conges:[],docs:[],acts:[],ins:[],asso:null,protos:[],albums:[],photos:[],kids:[],famKids:[],famDoss:[],famOnlyMiss:false,famEdit:null};
+const ME={session:null,prof:null,fiche:null,conges:[],docs:[],acts:[],ins:[],asso:null,protos:[],albums:[],photos:[],kids:[],famKids:[],famDoss:[],famOnlyMiss:false,famEdit:null,acmReflet:[],acmProps:[]};
 function esc(s){return (s==null?'':String(s)).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2600);}
 function euroDays(n){return (n==null?'0':(Math.round(n*100)/100).toString().replace('.',','));}
@@ -144,7 +144,7 @@ async function boot(){
   // rôle personnel : fiche RH facultative (la partie gestion ne dépend pas d'elle)
   const {data:fiche}=await sb.from('personnel').select('*').eq('user_id',session.user.id).maybeSingle();
   ME.fiche=fiche||null;
-  const jobs=[loadActs(), loadProtocoles(), loadPhotos(), loadFamilles()];
+  const jobs=[loadActs(), loadProtocoles(), loadPhotos(), loadFamilles(), loadAcm()];
   if(fiche){ jobs.push(loadConges(), loadDocs()); }
   await Promise.all(jobs);
   renderAll();
@@ -183,6 +183,7 @@ function renderView(){
   else if(ME.view==='photos'){ vp.innerHTML=backBar('📸 Photos du jour')+photosHTML(); renderAlbums(); }
   else if(ME.view==='rh'){ vp.innerHTML=backBar('🧑‍💼 Mon RH')+rhHTML(); if(ME.fiche){ renderConges(); renderDocs(); } }
   else if(ME.view==='procedures'){ vp.innerHTML=backBar('📋 Procédures du CASE')+proceduresHTML(); }
+  else if(ME.view==='acm'){ vp.innerHTML=backBar('🌴 Mon ACM')+acmBlockHTML(); acmMountForm(); }
   else { vp.innerHTML=hubHTML(); }
 }
 function backBar(t){ return '<div class="backbar"><button class="btn ghost" onclick="spView(\'hub\')">← Retour</button><span class="backttl">'+esc(t)+'</span></div>'; }
@@ -200,11 +201,17 @@ function hubHTML(){
   } else { rhSub='Activé par le bureau dès qu\'il crée ta fiche'; }
   const nbAlb=ME.albums.length;
   const phSub=nbAlb?(nbAlb+' album'+(nbAlb>1?'s':'')+' partagé'+(nbAlb>1?'s':'')+' avec les familles'):'Partage les photos de la journée aux familles';
+  const acmEd=new Set((ME.acmReflet||[]).filter(function(r){return (r.volet==='planning'||r.volet==='demarches')&&r.edition_ref;}).map(function(r){return r.edition_ref;})).size;
+  const acmAtt=(ME.acmProps||[]).filter(function(p){return p.statut==='en_attente';}).length;
+  const acmSub=acmEd?(acmEd+' accueil'+(acmEd>1?'s':'')+' · planning publié par le bureau'):'Consulte le planning ACM & propose tes idées au bureau';
+  const acmBadge=acmAtt?' <span class="badge b-demande">'+acmAtt+' en attente</span>':'';
   return '<section class="block"><h2 class="title">Que veux-tu faire ?</h2>'
     +'<p class="sub" style="margin:-4px 0 14px">Choisis un espace — tu pourras toujours revenir ici.</p>'
     +'<div class="hubgrid">'
       +'<button class="hubcard" onclick="spView(\'activites\')"><div class="hubico">🎒</div>'
         +'<div class="hubname">Mes activités</div><div class="hubsub">'+esc(actSub)+'</div><div class="hubgo">Entrer →</div></button>'
+      +'<button class="hubcard" onclick="spView(\'acm\')"><div class="hubico">🌴</div>'
+        +'<div class="hubname">Mon ACM'+acmBadge+'</div><div class="hubsub">'+esc(acmSub)+'</div><div class="hubgo">Entrer →</div></button>'
       +'<button class="hubcard" onclick="spView(\'photos\')"><div class="hubico">📸</div>'
         +'<div class="hubname">Photos du jour</div><div class="hubsub">'+esc(phSub)+'</div><div class="hubgo">Entrer →</div></button>'
       +'<button class="hubcard" onclick="spView(\'familles\')"><div class="hubico">👨‍👩‍👧</div>'
@@ -236,6 +243,250 @@ function proceduresHTML(){
     }).join('')+'</div></section>';
 }
 window.spProtoToggle=function(i){ const b=document.getElementById('pbody'+i), c=document.getElementById('pchev'+i); if(!b)return; const open=b.style.display==='none'; b.style.display=open?'block':'none'; if(c)c.textContent=open?'▴':'▾'; };
+
+// ===== Bloc « Mon ACM » (planning des accueils de mineurs — patron MIROIR) =====
+// LECTURE : le reflet publié par le bureau (table acm_reflet, jamais le coffre db.acmVac) — 3 volets : planning / démarches / projet éducatif.
+// ÉCRITURE : la bannette (table acm_propositions, statut 'en_attente' → le bureau fusionne côté app.html à l'étape 3). Types proposables : activité / placement / démarche / projet péda / budget prévu.
+// ⚠️ AUCUN salaire ici : le budget prévu côté salarié ne concerne QUE les dépenses matérielles / prestations. La masse salariale (encadrement) reste chiffrée par le bureau. (cf. mémoire bob-acm-planning-salarie-miroir)
+const ACM_PROP_TYPES=[
+  {k:'activite',    l:'🎪 Une activité à ajouter'},
+  {k:'placement',   l:'📅 Placer une activité sur un jour'},
+  {k:'demarche',    l:'📋 Une démarche à suivre'},
+  {k:'projet_peda', l:'📖 Un texte pour le projet pédagogique'},
+  {k:'budget_prev', l:'💶 Une ligne de budget prévu'}
+];
+const ACM_PEDA_SECTIONS=['🎯 Objectifs éducatifs','🎲 Nature des activités',"⏰ Rythme (activité / repos)",'🙋 Participation des enfants','🏠 Locaux & espaces',"🧑‍🏫 Équipe : composition & rôles",'♿ Enfants en situation de handicap',"📊 Modalités d'évaluation"];
+const ACM_PHASE_LAB={avant:'⬅️ Avant',pendant:'⏳ Pendant',apres:'➡️ Après'};
+
+async function loadAcm(){
+  try{
+    const [rr,rp]=await Promise.all([
+      sb.from('acm_reflet').select('edition_ref,edition_nom,volet,contenu,updated_at').in('volet',['planning','demarches','projet_educatif']).order('updated_at',{ascending:false}),
+      sb.from('acm_propositions').select('*').order('created_at',{ascending:false})
+    ]);
+    ME.acmReflet=rr.data||[]; ME.acmProps=rp.data||[];
+  }catch(e){ ME.acmReflet=[]; ME.acmProps=[]; }
+}
+function acmDT(iso){ try{ return new Date(iso).toLocaleDateString('fr-FR',{day:'2-digit',month:'2-digit',year:'numeric'}); }catch(e){ return ''; } }
+// Éditions présentes dans le reflet (pour cibler une proposition)
+function acmEditions(){
+  const seen={}, out=[];
+  (ME.acmReflet||[]).forEach(function(r){ if(r.edition_ref && !seen[r.edition_ref]){ seen[r.edition_ref]=1; out.push({ref:r.edition_ref, nom:r.edition_nom||r.edition_ref}); } });
+  return out;
+}
+
+function acmBlockHTML(){
+  return '<section class="block">'
+    +'<p class="sub">Ici tu montes l\'ACM : tu <b>consultes</b> le planning, les démarches et le projet éducatif tels que le bureau les a publiés, et tu <b>proposes</b> tes idées. Le bureau garde la validation, l\'argent réel et la publication.</p>'
+    + acmRefletHTML()
+    +'</section>'
+    + acmBanetteHTML();
+}
+
+// ---- LECTURE : le tableau publié par le bureau (reflet, lecture seule) ----
+function acmRefletHTML(){
+  const rows=ME.acmReflet||[];
+  const pe=rows.filter(function(r){return r.volet==='projet_educatif';})[0]; // volet global : le plus récent (rows déjà triés updated_at desc)
+  const byEd={};
+  rows.forEach(function(r){
+    if(r.volet==='planning'||r.volet==='demarches'){
+      if(!byEd[r.edition_ref]) byEd[r.edition_ref]={ref:r.edition_ref, nom:r.edition_nom||r.edition_ref, upd:r.updated_at};
+      byEd[r.edition_ref][r.volet]=r.contenu||{};
+    }
+  });
+  const eds=Object.keys(byEd);
+  if(!eds.length && !pe){
+    return '<div class="card"><p class="empty">🌴 Le bureau n\'a pas encore publié de planning ACM. Dès qu\'il le publie, tu le verras ici — en attendant, tu peux déjà déposer tes idées dans la bannette ci-dessous 👇</p></div>';
+  }
+  let h='';
+  if(pe){
+    const c=pe.contenu||{};
+    h+='<div class="card" style="margin-bottom:14px"><h3 style="margin:0 0 6px">📖 Projet éducatif</h3>'
+      +(c.texte?('<p class="pre">'+esc(c.texte)+'</p>'):'<p class="empty">—</p>')
+      +(c.maj?'<p class="sub" style="margin:6px 0 0">maj '+fdate(c.maj)+'</p>':'')
+    +'</div>';
+  }
+  eds.forEach(function(ref){
+    const ed=byEd[ref];
+    h+='<div class="card" style="margin-bottom:14px">'
+      +'<div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:baseline"><h3 style="margin:0">🌴 '+esc(ed.nom)+'</h3>'+(ed.upd?'<span class="sub">publié le '+acmDT(ed.upd)+'</span>':'')+'</div>'
+      + (ed.planning?acmPlanningHTML(ed.planning):'')
+      + (ed.demarches?acmDemarchesHTML(ed.demarches):'')
+    +'</div>';
+  });
+  return h;
+}
+function acmPlanningHTML(pl){
+  const jours=(Array.isArray(pl.jours)?pl.jours:[]).filter(function(j){return j&&typeof j==='object';});
+  const reserve=(Array.isArray(pl.reserve)?pl.reserve:[]).filter(function(a){return a&&typeof a==='object';});
+  if(!jours.length && !reserve.length) return '<p class="sub" style="margin:8px 0 0">🗓️ Planning pas encore rempli.</p>';
+  const chip=function(a){ return '<div style="background:#fff;border:1px solid var(--line);border-radius:8px;padding:4px 8px;margin:4px 0;font-size:13px">'+esc((a.emoji?a.emoji+' ':'')+(a.nom||''))+(a.pole?' <span class="sub">· '+esc(a.pole)+'</span>':'')+'</div>'; };
+  let h='<div style="margin-top:8px"><b style="font-size:14px">🗓️ Planning</b><div style="display:flex;gap:8px;overflow-x:auto;padding:6px 0">';
+  jours.forEach(function(j){
+    const acts=(Array.isArray(j.activites)?j.activites:[]).filter(function(a){return a&&typeof a==='object';});
+    h+='<div style="min-width:150px;flex:0 0 auto;background:#f4f8f5;border:1px solid var(--line);border-radius:10px;padding:8px">'
+      +'<div style="font-weight:700;font-size:12.5px;margin-bottom:2px">'+esc(j.jour||'')+' <span class="sub">'+acts.length+'</span></div>'
+      +(acts.length?acts.map(chip).join(''):'<div class="sub" style="text-align:center;padding:6px 0">—</div>')
+    +'</div>';
+  });
+  h+='</div>';
+  if(reserve.length) h+='<div style="margin-top:2px"><span class="sub">📦 En réserve :</span> '+reserve.map(function(a){return esc((a.emoji?a.emoji+' ':'')+(a.nom||''));}).join(', ')+'</div>';
+  h+='</div>';
+  return h;
+}
+function acmDemarchesHTML(dm){
+  const items=(Array.isArray(dm.items)?dm.items:[]).filter(function(x){return x&&typeof x==='object';});
+  if(!items.length) return '';
+  let h='<div style="margin-top:12px"><b style="font-size:14px">📋 Démarches</b>';
+  ['avant','pendant','apres'].forEach(function(ph){
+    const its=items.filter(function(x){return (x.phase||'avant')===ph;});
+    if(!its.length) return;
+    h+='<div style="margin:6px 0 2px"><span class="badge" style="background:#eef4ff;color:#23448a">'+(ACM_PHASE_LAB[ph]||ph)+'</span></div>';
+    h+=its.map(function(d){
+      const done=d.statut==='fait', na=d.statut==='na';
+      const box=na?'▪︎':(done?'☑':'☐');
+      const txt=done?'<s>'+esc(d.label||'')+'</s>':(na?'<span style="opacity:.5">'+esc(d.label||'')+'</span>':esc(d.label||''));
+      const ech=d.echeance?(' <span class="badge" style="'+(d.retard?'background:#fbe9e7;color:#c0392b;':'background:#eef0f3;color:#555;')+'font-size:11px">⏰ '+esc(d.echeance)+(d.ferme?' · ferme':'')+(d.retard?' · en retard':'')+'</span>'):'';
+      const info=d.info?'<div class="sub" style="margin-left:21px;font-size:11.5px">'+esc(d.info)+'</div>':'';
+      return '<div style="margin:3px 0;font-size:14px"><span style="font-size:15px;margin-right:6px">'+box+'</span>'+txt+ech+info+'</div>';
+    }).join('');
+  });
+  h+='<p class="sub" style="margin:6px 0 0;font-size:12px">Lecture seule — c\'est le bureau / la direction qui coche l\'avancement. Une démarche à ajouter ? Passe par la bannette 👇</p>';
+  h+='</div>';
+  return h;
+}
+
+// ---- ÉCRITURE : la bannette de propositions (inbound one-way vers le bureau) ----
+function acmBanetteHTML(){
+  const eds=acmEditions();
+  const edOpts='<option value="">— Général (aucune édition précise)</option>'+eds.map(function(e){return '<option value="'+esc(e.ref)+'">'+esc(e.nom)+'</option>';}).join('');
+  const typeOpts=ACM_PROP_TYPES.map(function(t){return '<option value="'+t.k+'">'+t.l+'</option>';}).join('');
+  const pedaOpts='<option value="">— (section libre)</option>'+ACM_PEDA_SECTIONS.map(function(s){return '<option value="'+esc(s)+'">'+esc(s)+'</option>';}).join('');
+  return '<section class="block">'
+    +'<div class="card" style="margin-bottom:14px"><h3 style="margin:0 0 4px">📥 Proposer au bureau</h3>'
+      +'<p class="sub" style="margin:0 0 10px">Dépose tes idées : le bureau les reçoit dans sa bannette « à valider », puis les intègre au planning. Rien n\'est publié tant qu\'il n\'a pas validé.</p>'
+      +'<div class="row" style="margin-bottom:8px">'
+        +'<div><label>Type de proposition</label><select id="acm_type" style="width:100%" onchange="acmPropType()">'+typeOpts+'</select></div>'
+        +'<div><label>Édition concernée</label><select id="acm_ed" style="width:100%">'+edOpts+'</select></div>'
+      +'</div>'
+      +'<div id="acmf_activite" class="acm-fields">'
+        +'<div class="row" style="margin-bottom:8px"><div style="flex:2"><label>Nom de l\'activité</label><input id="acm_a_nom" style="width:100%" placeholder="ex. Sortie plage, Atelier cuisine…"></div>'
+          +'<div><label>Emoji</label><input id="acm_a_emoji" style="width:100%" placeholder="🏖️" maxlength="4"></div></div>'
+        +'<div class="row" style="margin-bottom:8px"><div style="flex:1"><label>Descriptif (facultatif)</label><input id="acm_a_desc" style="width:100%" placeholder="ce qu\'on y fait, matériel, lieu…"></div></div>'
+      +'</div>'
+      +'<div id="acmf_placement" class="acm-fields" style="display:none">'
+        +'<div class="row" style="margin-bottom:8px"><div style="flex:2"><label>Activité à placer</label><input id="acm_p_act" style="width:100%" placeholder="ex. Sortie plage"></div>'
+          +'<div><label>Jour / créneau</label><input id="acm_p_jour" style="width:100%" placeholder="ex. Mardi 22/07 matin"></div></div>'
+      +'</div>'
+      +'<div id="acmf_demarche" class="acm-fields" style="display:none">'
+        +'<div class="row" style="margin-bottom:8px"><div style="flex:2"><label>Démarche à suivre</label><input id="acm_d_label" style="width:100%" placeholder="ex. Vérifier l\'assurance du car"></div>'
+          +'<div><label>Quand</label><select id="acm_d_phase" style="width:100%"><option value="avant">⬅️ Avant</option><option value="pendant">⏳ Pendant</option><option value="apres">➡️ Après</option></select></div></div>'
+      +'</div>'
+      +'<div id="acmf_projet_peda" class="acm-fields" style="display:none">'
+        +'<div class="row" style="margin-bottom:8px"><div style="flex:1"><label>Section</label><select id="acm_pp_section" style="width:100%">'+pedaOpts+'</select></div></div>'
+        +'<div class="row" style="margin-bottom:8px"><div style="flex:1"><label>Ton texte</label><textarea id="acm_pp_texte" rows="3" style="width:100%;resize:vertical;font:inherit" placeholder="ce que tu proposes d\'écrire dans le projet pédagogique…"></textarea></div></div>'
+      +'</div>'
+      +'<div id="acmf_budget_prev" class="acm-fields" style="display:none">'
+        +'<div style="background:#fff8ec;border:1px solid #f3e3bd;border-radius:12px;padding:9px 12px;margin-bottom:8px;font-size:13.5px;color:#8a6400"><b>⚠️ Jamais de salaire ici.</b> Cette ligne sert aux <b>dépenses matérielles</b> (transport, matériel, sorties, entrées, intervenant extérieur facturé…). Le coût de l\'encadrement (heures, paie) est chiffré par le bureau — ne l\'indique pas.</div>'
+        +'<div class="row" style="margin-bottom:8px"><div style="flex:2"><label>Poste de dépense</label><input id="acm_b_poste" style="width:100%" placeholder="ex. Location car, entrées piscine, matériel créatif…"></div></div>'
+        +'<div class="row" style="margin-bottom:8px">'
+          +'<div><label>Quantité</label><input id="acm_b_qte" type="number" min="0" step="1" style="width:100%" placeholder="ex. 20" oninput="acmBudCalc()"></div>'
+          +'<div><label>Prix unitaire (€)</label><input id="acm_b_pu" type="number" min="0" step="0.01" style="width:100%" placeholder="ex. 5" oninput="acmBudCalc()"></div>'
+          +'<div><label>Total estimé (€)</label><input id="acm_b_montant" type="number" min="0" step="0.01" style="width:100%" placeholder="auto" oninput="this.dataset.auto=\'0\'"></div>'
+        +'</div>'
+        +'<div class="row" style="margin-bottom:8px"><div style="flex:1"><label>Commentaire (facultatif)</label><input id="acm_b_com" style="width:100%" placeholder="précisions"></div></div>'
+      +'</div>'
+      +'<div class="row" style="margin-bottom:10px"><div style="flex:1"><label>Note au bureau (facultatif)</label><input id="acm_note" style="width:100%" placeholder="un mot pour expliquer ta proposition"></div></div>'
+      +'<button class="btn win" onclick="acmPropSend()">📨 Envoyer au bureau</button>'
+    +'</div>'
+    +'<h3 style="margin:6px 0 8px">📤 Mes propositions</h3><div id="acmPropList"></div>'
+  +'</section>';
+}
+function acmMountForm(){ acmPropType(); renderAcmProps(); }
+window.acmPropType=function(){
+  const t=(($('#acm_type')||{}).value)||'activite';
+  ['activite','placement','demarche','projet_peda','budget_prev'].forEach(function(k){ const el=document.getElementById('acmf_'+k); if(el) el.style.display=(k===t?'':'none'); });
+};
+window.acmBudCalc=function(){
+  const q=parseFloat(($('#acm_b_qte')||{}).value)||0, pu=parseFloat(($('#acm_b_pu')||{}).value)||0;
+  const m=$('#acm_b_montant'); if(!m) return;
+  if(m.dataset.auto!=='0'){ m.value=(q&&pu)?(Math.round(q*pu*100)/100):''; }
+};
+window.acmPropSend=async function(){
+  if(!ME.asso){ try{ const pr=await sb.from('profiles').select('asso_id').eq('id',ME.session.user.id).maybeSingle(); ME.asso=pr.data?pr.data.asso_id:null; }catch(e){} }
+  if(!ME.asso){ toast('Association introuvable — reconnecte-toi'); return; }
+  const type=(($('#acm_type')||{}).value)||'activite';
+  const edRef=(($('#acm_ed')||{}).value)||null;
+  const note=($('#acm_note')?$('#acm_note').value.trim():'');
+  let contenu={};
+  if(type==='activite'){
+    const nom=($('#acm_a_nom').value||'').trim(); if(!nom){ toast('Indique le nom de l\'activité'); return; }
+    contenu={nom:nom, emoji:($('#acm_a_emoji').value||'').trim(), description:($('#acm_a_desc').value||'').trim()};
+  } else if(type==='placement'){
+    const act=($('#acm_p_act').value||'').trim(), jour=($('#acm_p_jour').value||'').trim();
+    if(!act||!jour){ toast('Indique l\'activité et le jour'); return; }
+    contenu={activite:act, jour:jour};
+  } else if(type==='demarche'){
+    const label=($('#acm_d_label').value||'').trim(); if(!label){ toast('Indique la démarche'); return; }
+    contenu={label:label, phase:(($('#acm_d_phase').value)||'avant')};
+  } else if(type==='projet_peda'){
+    const texte=($('#acm_pp_texte').value||'').trim(); if(!texte){ toast('Écris ton texte'); return; }
+    contenu={section:($('#acm_pp_section').value||''), texte:texte};
+  } else if(type==='budget_prev'){
+    const poste=($('#acm_b_poste').value||'').trim(); if(!poste){ toast('Indique le poste de dépense'); return; }
+    const qte=parseFloat(($('#acm_b_qte')||{}).value); const pu=parseFloat(($('#acm_b_pu')||{}).value);
+    let montant=parseFloat(($('#acm_b_montant')||{}).value);
+    if(isNaN(montant)) montant=(!isNaN(qte)&&!isNaN(pu))?Math.round(qte*pu*100)/100:null;
+    contenu={poste:poste, quantite:(isNaN(qte)?null:qte), prix_unitaire:(isNaN(pu)?null:pu), montant:(isNaN(montant)?null:montant), commentaire:($('#acm_b_com').value||'').trim()};
+  }
+  const auteur_nom=((ME.fiche&&ME.fiche.prenom)?((ME.fiche.prenom+' '+(ME.fiche.nom||'')).trim()):((ME.prof&&(ME.prof.full_name||ME.prof.email))||''));
+  const payload={ asso_id:ME.asso, auteur_id:ME.session.user.id, auteur_nom:auteur_nom, edition_ref:edRef, type:type, contenu:contenu, note:(note||null) };
+  const {error}=await sb.from('acm_propositions').insert(payload);
+  if(error){ toast('Erreur : '+error.message); return; }
+  ['acm_a_nom','acm_a_emoji','acm_a_desc','acm_p_act','acm_p_jour','acm_d_label','acm_pp_texte','acm_b_poste','acm_b_qte','acm_b_pu','acm_b_montant','acm_b_com','acm_note'].forEach(function(id){ const el=document.getElementById(id); if(el){ el.value=''; if(el.dataset) el.dataset.auto=''; } });
+  await loadAcm(); renderAcmProps(); toast('✅ Proposition envoyée au bureau');
+};
+function acmPropSummary(p){
+  const c=p.contenu||{};
+  if(p.type==='activite') return esc((c.emoji?c.emoji+' ':'')+(c.nom||'(activité)'))+(c.description?' <span class="sub">— '+esc(c.description)+'</span>':'');
+  if(p.type==='placement') return '📅 '+esc(c.activite||'?')+' → <b>'+esc(c.jour||'?')+'</b>';
+  if(p.type==='demarche') return '📋 '+esc(c.label||'?')+(c.phase?' <span class="sub">('+esc(ACM_PHASE_LAB[c.phase]||c.phase)+')</span>':'');
+  if(p.type==='projet_peda') return '📖 '+(c.section?'<b>'+esc(c.section)+'</b> — ':'')+esc(c.texte||'');
+  if(p.type==='budget_prev'){
+    const m=(c.montant!=null&&c.montant!=='')?(' · <b>'+euroDays(c.montant)+' €</b>'):'';
+    const q=(c.quantite&&c.prix_unitaire)?(' <span class="sub">('+esc(String(c.quantite))+' × '+euroDays(c.prix_unitaire)+' €)</span>'):'';
+    return '💶 '+esc(c.poste||'?')+m+q+(c.commentaire?' <span class="sub">— '+esc(c.commentaire)+'</span>':'');
+  }
+  return esc(JSON.stringify(c));
+}
+function renderAcmProps(){
+  const box=$('#acmPropList'); if(!box) return;
+  const ps=ME.acmProps||[];
+  if(!ps.length){ box.innerHTML='<p class="empty">Aucune proposition pour l\'instant. Lance-toi 👆</p>'; return; }
+  const TL={activite:'🎪 Activité',placement:'📅 Placement',demarche:'📋 Démarche',projet_peda:'📖 Projet péda',budget_prev:'💶 Budget'};
+  const STB={en_attente:['🕓 En attente','b-demande'],acceptee:['✅ Acceptée','b-valide'],refusee:['✖️ Refusée','b-refuse']};
+  box.innerHTML=ps.map(function(p){
+    const st=STB[p.statut]||[esc(p.statut||''),'b-demande'];
+    const ed=(acmEditions().find(function(e){return e.ref===p.edition_ref;})||{}).nom;
+    return '<div class="card" style="margin-bottom:10px;border-left:4px solid '+(p.statut==='acceptee'?'#1f9d6b':(p.statut==='refusee'?'#c0392b':'#dc8f38'))+'">'
+      +'<div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:baseline">'
+        +'<b style="font-size:15px">'+(TL[p.type]||esc(p.type))+' <span class="sub" style="font-weight:400">· '+acmDT(p.created_at)+(ed?' · '+esc(ed):'')+'</span></b>'
+        +'<span class="badge '+st[1]+'">'+st[0]+'</span>'
+      +'</div>'
+      +'<div style="margin-top:4px;font-size:14px">'+acmPropSummary(p)+'</div>'
+      +(p.note?'<div class="sub" style="margin-top:2px">📝 '+esc(p.note)+'</div>':'')
+      +(p.statut==='refusee'&&p.motif_refus?'<div style="margin-top:4px;background:#fbe9e7;border:1px solid #f3c4ba;color:#b23a23;border-radius:10px;padding:6px 10px;font-size:13px">Bureau : '+esc(p.motif_refus)+'</div>':'')
+      +(p.statut==='en_attente'?'<div style="margin-top:6px"><button class="btn ghost" style="padding:4px 10px;font-size:12px" onclick="acmPropDel(\''+p.id+'\')">Retirer</button></div>':'')
+    +'</div>';
+  }).join('');
+}
+window.acmPropDel=async function(id){
+  if(!confirm('Retirer cette proposition ?')) return;
+  const {data,error}=await sb.from('acm_propositions').delete().eq('id',id).select('id');
+  if(error){ toast('Erreur : '+error.message); return; }
+  await loadAcm(); renderAcmProps();
+  toast((!data||!data.length)?'Déjà traitée par le bureau — impossible de la retirer':'Proposition retirée');
+};
 
 // ===== Bloc Activités (gestion + inscriptions) =====
 function activitesHTML(){
