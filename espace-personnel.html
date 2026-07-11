@@ -249,12 +249,11 @@ window.spProtoToggle=function(i){ const b=document.getElementById('pbody'+i), c=
 // ÉCRITURE : la bannette (table acm_propositions, statut 'en_attente' → le bureau fusionne côté app.html à l'étape 3). Types proposables : activité / placement / démarche / projet péda / budget prévu.
 // ⚠️ AUCUN salaire ici : le budget prévu côté salarié ne concerne QUE les dépenses matérielles / prestations. La masse salariale (encadrement) reste chiffrée par le bureau. (cf. mémoire bob-acm-planning-salarie-miroir)
 const ACM_PROP_TYPES=[
-  {k:'activite',    l:'🎪 Une activité à ajouter'},
-  {k:'placement',   l:'📅 Placer une activité sur un jour'},
+  {k:'activite',    l:'🎪 Une nouvelle activité (idée pour le catalogue)'},
   {k:'demarche',    l:'📋 Une démarche à suivre'},
   {k:'projet_peda', l:'📖 Un texte pour le projet pédagogique'},
   {k:'budget_prev', l:'💶 Une ligne de budget prévu'}
-];
+]; // NB : « placer une activité » se fait maintenant au tableau glisser-déposer (étape 4), plus en texte.
 const ACM_PEDA_SECTIONS=['🎯 Objectifs éducatifs','🎲 Nature des activités',"⏰ Rythme (activité / repos)",'🙋 Participation des enfants','🏠 Locaux & espaces',"🧑‍🏫 Équipe : composition & rôles",'♿ Enfants en situation de handicap',"📊 Modalités d'évaluation"];
 const ACM_PHASE_LAB={avant:'⬅️ Avant',pendant:'⏳ Pendant',apres:'➡️ Après'};
 
@@ -310,7 +309,7 @@ function acmRefletHTML(){
     const ed=byEd[ref];
     h+='<div class="card" style="margin-bottom:14px">'
       +'<div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:baseline"><h3 style="margin:0">🌴 '+esc(ed.nom)+'</h3>'+(ed.upd?'<span class="sub">publié le '+acmDT(ed.upd)+'</span>':'')+'</div>'
-      + (ed.planning?acmPlanningHTML(ed.planning):'')
+      + (ed.planning?('<div id="acmbwrap_'+esc(ref)+'">'+acmSalBoardHTML(ref)+'</div>'):'')
       + (ed.demarches?acmDemarchesHTML(ed.demarches):'')
     +'</div>';
   });
@@ -356,6 +355,67 @@ function acmDemarchesHTML(dm){
   return h;
 }
 
+// ---- Tableau glisser-déposer (étape 4) : la salariée range le VRAI catalogue publié → chaque changement devient une proposition de placement ; le bureau valide et ça se place vraiment. ----
+function acmPlanningFor(edRef){ const r=(ME.acmReflet||[]).find(function(x){return x.volet==='planning' && x.edition_ref===edRef;}); return r?(r.contenu||{}):{}; }
+function acmSalPublishedPlan(edRef){ const pl=acmPlanningFor(edRef); return (pl.plan&&typeof pl.plan==='object')?pl.plan:{}; }
+function acmSalDraft(edRef){ if(!ME.acmDraft) ME.acmDraft={}; if(!ME.acmDraft[edRef]) ME.acmDraft[edRef]=Object.assign({}, acmSalPublishedPlan(edRef)); return ME.acmDraft[edRef]; }
+function acmSalColLabel(col){ if(!col||col==='—') return 'À placer'; if(col==='reserve') return 'En réserve'; return col; }
+function acmSalBoardHTML(edRef){
+  const pl=acmPlanningFor(edRef);
+  const cat=(Array.isArray(pl.catalogue)?pl.catalogue:[]).filter(function(x){return x&&x.id;});
+  if(!cat.length) return acmPlanningHTML(pl); // reflet publié AVANT l'étape 4 (pas de catalogue) → vue lecture seule de secours ; le tableau réapparaît quand le bureau republie
+  const pub=(pl.plan&&typeof pl.plan==='object')?pl.plan:{};
+  const draft=acmSalDraft(edRef);
+  const jours=(Array.isArray(pl.jours)?pl.jours:[]).map(function(j){return j&&j.jour;}).filter(Boolean);
+  const cols=[{key:'—',label:'🗂️ À placer'},{key:'reserve',label:'📦 Réserve'}].concat(jours.map(function(j){return {key:j,label:j};}));
+  const colOpts=function(cur){ return cols.map(function(c){return '<option value="'+esc(c.key)+'"'+(c.key===cur?' selected':'')+'>'+esc(c.label)+'</option>';}).join(''); };
+  const chip=function(f){ const cur=draft[f.id]||'—';
+    return '<div draggable="true" ondragstart="acmSalDragStart(event,\''+esc(f.id)+'\',\''+esc(edRef)+'\')" style="background:#fff;border:1px solid var(--line);border-left:4px solid var(--vert);border-radius:8px;padding:5px 7px;margin:5px 0;font-size:13px;cursor:grab">'
+      +'<div>'+esc((f.emoji?f.emoji+' ':'')+(f.nom||''))+'</div>'
+      +'<select onchange="acmSalSetCol(\''+esc(edRef)+'\',\''+esc(f.id)+'\',this.value)" onclick="event.stopPropagation()" style="margin-top:3px;width:100%;font-size:11px;padding:2px 4px">'+colOpts(cur)+'</select>'
+    +'</div>'; };
+  let h='<div style="margin-top:8px"><b style="font-size:14px">🗓️ Planning</b> <span class="sub">— glisse une activité sur un jour (ou choisis-le dans le petit menu), puis « Proposer »</span>'
+    +'<div style="display:flex;gap:8px;overflow-x:auto;padding:6px 0">'
+    + cols.map(function(c){
+        const fs=cat.filter(function(f){return (draft[f.id]||'—')===c.key;});
+        return '<div ondragover="acmSalDragOver(event)" ondrop="acmSalDrop(event,\''+esc(c.key)+'\',\''+esc(edRef)+'\')" style="min-width:150px;flex:0 0 auto;background:#f4f8f5;border:1px solid var(--line);border-radius:10px;padding:8px;min-height:80px">'
+          +'<div style="font-weight:700;font-size:12.5px;margin-bottom:2px">'+esc(c.label)+' <span class="sub">'+fs.length+'</span></div>'
+          +(fs.length?fs.map(chip).join(''):'<div class="sub" style="text-align:center;padding:8px 0;opacity:.6">déposer ici</div>')
+        +'</div>';
+      }).join('')
+    +'</div>';
+  const nChg=cat.filter(function(f){return (draft[f.id]||'—')!==(pub[f.id]||'—');}).length;
+  h+='<div style="margin-top:4px;display:flex;gap:8px;align-items:center;flex-wrap:wrap">'
+    +'<button class="btn win" '+(nChg?'':'disabled')+' onclick="acmSalSend(\''+esc(edRef)+'\')">📨 Proposer'+(nChg?(' ('+nChg+' changement'+(nChg>1?'s':'')+')'):' ces placements')+'</button>'
+    +(nChg?('<button class="btn ghost" onclick="acmSalReset(\''+esc(edRef)+'\')">Annuler</button>'):'')
+    +'<span class="sub" style="font-size:12px">Tes changements deviennent des propositions ; le bureau valide et ça se place vraiment.</span>'
+  +'</div>';
+  return h;
+}
+function acmSalRenderBoard(edRef){ const el=document.getElementById('acmbwrap_'+edRef); if(el) el.innerHTML=acmSalBoardHTML(edRef); }
+window.acmSalDragStart=function(ev,fid,edRef){ try{ ev.dataTransfer.setData('text/plain', edRef+'|'+fid); ev.dataTransfer.effectAllowed='move'; }catch(e){} };
+window.acmSalDragOver=function(ev){ ev.preventDefault(); try{ ev.dataTransfer.dropEffect='move'; }catch(e){} };
+window.acmSalDrop=function(ev,col,edRef){ ev.preventDefault(); let d=''; try{ d=ev.dataTransfer.getData('text/plain'); }catch(e){} const parts=d.split('|'); if(parts[0]!==edRef) return; const fid=parts.slice(1).join('|'); if(!fid) return; acmSalSetCol(edRef, fid, col); };
+window.acmSalSetCol=function(edRef, fid, col){ if(!ME.acmDraft) ME.acmDraft={}; if(!ME.acmDraft[edRef]) ME.acmDraft[edRef]=Object.assign({}, acmSalPublishedPlan(edRef)); ME.acmDraft[edRef][fid]=col; acmSalRenderBoard(edRef); };
+window.acmSalReset=function(edRef){ if(!ME.acmDraft) ME.acmDraft={}; ME.acmDraft[edRef]=Object.assign({}, acmSalPublishedPlan(edRef)); acmSalRenderBoard(edRef); };
+window.acmSalSend=async function(edRef){
+  if(!ME.asso){ try{ const pr=await sb.from('profiles').select('asso_id').eq('id',ME.session.user.id).maybeSingle(); ME.asso=pr.data?pr.data.asso_id:null; }catch(e){} }
+  if(!ME.asso){ toast('Association introuvable — reconnecte-toi'); return; }
+  const pl=acmPlanningFor(edRef);
+  const cat=(Array.isArray(pl.catalogue)?pl.catalogue:[]).filter(function(x){return x&&x.id;});
+  const pub=acmSalPublishedPlan(edRef), draft=acmSalDraft(edRef);
+  const edNom=(acmEditions().find(function(e){return e.ref===edRef;})||{}).nom||'';
+  const changes=cat.filter(function(f){return (draft[f.id]||'—')!==(pub[f.id]||'—');});
+  if(!changes.length){ toast('Aucun changement à proposer'); return; }
+  const auteur_nom=((ME.fiche&&ME.fiche.prenom)?((ME.fiche.prenom+' '+(ME.fiche.nom||'')).trim()):((ME.prof&&(ME.prof.full_name||ME.prof.email))||''));
+  const rows=changes.map(function(f){ const col=draft[f.id]||'—'; return { asso_id:ME.asso, auteur_id:ME.session.user.id, auteur_nom:auteur_nom, edition_ref:edRef, type:'placement', contenu:{fiche_id:f.id, fiche_nom:f.nom||'', col:col, col_label:acmSalColLabel(col), edition_nom:edNom} }; });
+  const {error}=await sb.from('acm_propositions').insert(rows);
+  if(error){ toast('Erreur : '+error.message); return; }
+  ME.acmDraft[edRef]=Object.assign({}, pub); // le tableau revient à l'état publié ; les propositions partent dans « Mes propositions »
+  await loadAcm(); renderView();
+  toast('✅ '+rows.length+' placement'+(rows.length>1?'s':'')+' proposé'+(rows.length>1?'s':'')+' au bureau');
+};
+
 // ---- ÉCRITURE : la bannette de propositions (inbound one-way vers le bureau) ----
 function acmBanetteHTML(){
   const eds=acmEditions();
@@ -374,10 +434,7 @@ function acmBanetteHTML(){
           +'<div><label>Emoji</label><input id="acm_a_emoji" style="width:100%" placeholder="🏖️" maxlength="4"></div></div>'
         +'<div class="row" style="margin-bottom:8px"><div style="flex:1"><label>Descriptif (facultatif)</label><input id="acm_a_desc" style="width:100%" placeholder="ce qu\'on y fait, matériel, lieu…"></div></div>'
       +'</div>'
-      +'<div id="acmf_placement" class="acm-fields" style="display:none">'
-        +'<div class="row" style="margin-bottom:8px"><div style="flex:2"><label>Activité à placer</label><input id="acm_p_act" style="width:100%" placeholder="ex. Sortie plage"></div>'
-          +'<div><label>Jour / créneau</label><input id="acm_p_jour" style="width:100%" placeholder="ex. Mardi 22/07 matin"></div></div>'
-      +'</div>'
+      // (« placer une activité » se fait au tableau glisser-déposer plus haut — étape 4)
       +'<div id="acmf_demarche" class="acm-fields" style="display:none">'
         +'<div class="row" style="margin-bottom:8px"><div style="flex:2"><label>Démarche à suivre</label><input id="acm_d_label" style="width:100%" placeholder="ex. Vérifier l\'assurance du car"></div>'
           +'<div><label>Quand</label><select id="acm_d_phase" style="width:100%"><option value="avant">⬅️ Avant</option><option value="pendant">⏳ Pendant</option><option value="apres">➡️ Après</option></select></div></div>'
@@ -405,7 +462,7 @@ function acmBanetteHTML(){
 function acmMountForm(){ acmPropType(); renderAcmProps(); }
 window.acmPropType=function(){
   const t=(($('#acm_type')||{}).value)||'activite';
-  ['activite','placement','demarche','projet_peda','budget_prev'].forEach(function(k){ const el=document.getElementById('acmf_'+k); if(el) el.style.display=(k===t?'':'none'); });
+  ['activite','demarche','projet_peda','budget_prev'].forEach(function(k){ const el=document.getElementById('acmf_'+k); if(el) el.style.display=(k===t?'':'none'); });
 };
 window.acmBudCalc=function(){
   const q=parseFloat(($('#acm_b_qte')||{}).value)||0, pu=parseFloat(($('#acm_b_pu')||{}).value)||0;
@@ -422,10 +479,6 @@ window.acmPropSend=async function(){
   if(type==='activite'){
     const nom=($('#acm_a_nom').value||'').trim(); if(!nom){ toast('Indique le nom de l\'activité'); return; }
     contenu={nom:nom, emoji:($('#acm_a_emoji').value||'').trim(), description:($('#acm_a_desc').value||'').trim()};
-  } else if(type==='placement'){
-    const act=($('#acm_p_act').value||'').trim(), jour=($('#acm_p_jour').value||'').trim();
-    if(!act||!jour){ toast('Indique l\'activité et le jour'); return; }
-    contenu={activite:act, jour:jour};
   } else if(type==='demarche'){
     const label=($('#acm_d_label').value||'').trim(); if(!label){ toast('Indique la démarche'); return; }
     contenu={label:label, phase:(($('#acm_d_phase').value)||'avant')};
@@ -443,13 +496,13 @@ window.acmPropSend=async function(){
   const payload={ asso_id:ME.asso, auteur_id:ME.session.user.id, auteur_nom:auteur_nom, edition_ref:edRef, type:type, contenu:contenu, note:(note||null) };
   const {error}=await sb.from('acm_propositions').insert(payload);
   if(error){ toast('Erreur : '+error.message); return; }
-  ['acm_a_nom','acm_a_emoji','acm_a_desc','acm_p_act','acm_p_jour','acm_d_label','acm_pp_texte','acm_b_poste','acm_b_qte','acm_b_pu','acm_b_montant','acm_b_com','acm_note'].forEach(function(id){ const el=document.getElementById(id); if(el){ el.value=''; if(el.dataset) el.dataset.auto=''; } });
+  ['acm_a_nom','acm_a_emoji','acm_a_desc','acm_d_label','acm_pp_texte','acm_b_poste','acm_b_qte','acm_b_pu','acm_b_montant','acm_b_com','acm_note'].forEach(function(id){ const el=document.getElementById(id); if(el){ el.value=''; if(el.dataset) el.dataset.auto=''; } });
   await loadAcm(); renderAcmProps(); toast('✅ Proposition envoyée au bureau');
 };
 function acmPropSummary(p){
   const c=p.contenu||{};
   if(p.type==='activite') return esc((c.emoji?c.emoji+' ':'')+(c.nom||'(activité)'))+(c.description?' <span class="sub">— '+esc(c.description)+'</span>':'');
-  if(p.type==='placement') return '📅 '+esc(c.activite||'?')+' → <b>'+esc(c.jour||'?')+'</b>';
+  if(p.type==='placement') return '📅 '+esc(c.fiche_nom||c.activite||'?')+' → <b>'+esc(c.col_label||c.jour||'?')+'</b>';
   if(p.type==='demarche') return '📋 '+esc(c.label||'?')+(c.phase?' <span class="sub">('+esc(ACM_PHASE_LAB[c.phase]||c.phase)+')</span>':'');
   if(p.type==='projet_peda') return '📖 '+(c.section?'<b>'+esc(c.section)+'</b> — ':'')+esc(c.texte||'');
   if(p.type==='budget_prev'){
