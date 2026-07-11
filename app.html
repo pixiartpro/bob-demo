@@ -5757,7 +5757,7 @@ function renderPeriGrilleLock(){
   const unlocked=!!window.__periGrilleUnlocked;
   ['peri_suppMatin','peri_remise','peri_jours'].forEach(id=>{ const el=$(id); if(el) el.disabled=!unlocked; });
   const sb=$('periSaveGrilleBtn'); if(sb) sb.disabled=!unlocked;
-  const isBureau=(typeof canWrite!=='undefined')&&canWrite;
+  const isBureau=!!(window.bobMe&&window.bobMe.canWrite); // canWrite hors de portée dans ce bloc → lire le global window.bobMe (cf. 9912)
   if(unlocked){
     bar.style.background='#fff5da'; bar.style.borderColor='#e9c766';
     bar.innerHTML='<span style="font-weight:600;color:#8a6400">🔓 Sécurité désactivée — tu peux modifier la grille, puis clique 💾 Enregistrer.</span>'
@@ -5770,7 +5770,7 @@ function renderPeriGrilleLock(){
 }
 function periToggleGrilleLock(){
   if(!window.__periGrilleUnlocked){
-    if(!((typeof canWrite!=='undefined')&&canWrite)){ alert('Seul le bureau peut déverrouiller la grille périscolaire.'); return; }
+    if(!(window.bobMe&&window.bobMe.canWrite)){ alert('Seul le bureau peut déverrouiller la grille périscolaire.'); return; }
     if(!confirm('Désactiver la sécurité et autoriser la modification de la grille périscolaire ?\n\nPense à enregistrer (ou reverrouiller) après tes changements.')) return;
     window.__periGrilleUnlocked=true;
   } else {
