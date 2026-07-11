@@ -6776,7 +6776,7 @@ function renderAcmVac(){
   const pe=$('acmProjEduc'); if(pe && document.activeElement!==pe){ const pj=acmDb().projetEducatif||{}; pe.value=pj.texte||''; const pem=$('acmProjEducMaj'); if(pem) pem.textContent=pj.maj?('maj '+fmtDate(pj.maj)):''; }
   if(window.renderAcmCaf) renderAcmCaf();
   if(window.renderAcmEditions) window.renderAcmEditions();
-  const pp=$('acmPartagePanel'); if(pp) pp.style.display=canWrite?'':'none'; // 🔄 miroir salariées : réservé au bureau
+  const pp=$('acmPartagePanel'); if(pp) pp.style.display=(window.bobMe&&window.bobMe.canWrite)?'':'none'; // 🔄 miroir salariées : réservé au bureau (canWrite n'est pas dans la portée de ce bloc → lire le global window.bobMe, cf. 9912)
   if(window.renderAcmInbox) window.renderAcmInbox(); // rend depuis le cache window.__acmInbox (chargé à l'ouverture de l'onglet)
 }
 function acmFicheHtml(f,cs,plan){
