@@ -5782,6 +5782,7 @@ function periToggleGrilleLock(){
 // Seuils QF officiels (stables) mappés par index sur les 9 tranches ; la 10e ligne = hors commune.
 const PERI_THRESHOLDS=[350.99,450.99,600.99,800.99,1000.99,1250.99,1500.99,2000.99,null];
 async function publishTarifs(){
+  const myAsso=(window.bobMe&&window.bobMe.asso)||null, canWrite=!!(window.bobMe&&window.bobMe.canWrite), sbc=window.bobSbc; // ⚠️ bloc moteur : lire les globals (sbc/myAsso/canWrite sont des `let` de l'IIFE, hors de portée ici → sinon ReferenceError avalée)
   try{
     if(!myAsso||!canWrite||!sbc) return;
     const g=periDB().grille;
@@ -5795,6 +5796,7 @@ async function publishTarifs(){
 }
 // Synchro du canal étroit « protocoles_publies » : publie les protocoles VALIDÉS (lus par les salariés), retire le reste. Calqué sur publishTarifs.
 async function syncProtocolesPublies(){
+  const myAsso=(window.bobMe&&window.bobMe.asso)||null, canWrite=!!(window.bobMe&&window.bobMe.canWrite), sbc=window.bobSbc; // ⚠️ bloc moteur : lire les globals (cf. publishTarifs)
   try{
     if(!myAsso||!canWrite||!sbc) return;
     const valides=(db.protocoles||[]).filter(p=>p.statut==='valide');
@@ -5808,43 +5810,7 @@ async function syncProtocolesPublies(){
     for(const r of (existing||[])){ if(!keep.has(r.id)) await sbc.from('protocoles_publies').delete().eq('id',r.id); }
   }catch(e){ console.warn('syncProtocolesPublies', e); }
 }
-// Miroir ACM (étape 3, 11/07/2026) — publie le REFLET lecture des salariées (table acm_reflet) : par édition OUVERTE le planning + les démarches, + le projet éducatif (global). Jumeau de publishTarifs : lit le coffre db.acmVac, N'Y TOUCHE JAMAIS. Le salarié le consulte dans « Mon ACM » (espace-personnel.html). Contrat JSON figé côté lecteur — voir la mémoire bob-acm-planning-salarie-miroir.
-async function syncAcmReflet(){
-  try{
-    if(!myAsso||!canWrite||!sbc) return;
-    const a=acmDb();
-    const now=new Date(); now.setHours(0,0,0,0);
-    const stamp=new Date().toISOString();
-    const rows=[]; const keep=new Set();
-    a.sessions.filter(function(s){return s.statut==='ouverte' && s.type!=='vepi';}).forEach(function(s){ // ⚠️ VEPI = même moteur mais cloisonné (cf. mémoire) : le reflet « Mon ACM » ne reflète QUE les accueils ACM
-      acmEnsureParcours(s); // healer AVANT snapshot : re-date les démarches (offset) — jamais de forme brute (cf. mémoire)
-      const plan=s.plan||{};
-      const jours=(s.jours||[]).map(function(j){
-        const fs=a.fiches.filter(function(f){return plan[f.id]===j;});
-        return {jour:j, activites:fs.map(function(f){return {nom:f.nom||'', emoji:f.emoji||'', pole:f.pole||''};})};
-      });
-      const reserve=a.fiches.filter(function(f){return plan[f.id]==='reserve';}).map(function(f){return {nom:f.nom||'', emoji:f.emoji||''};});
-      rows.push({asso_id:myAsso, edition_ref:s.id, edition_nom:s.nom||'', volet:'planning', contenu:{jours:jours, reserve:reserve}, updated_at:stamp});
-      keep.add(s.id+'|planning');
-      const items=((s.bilan&&s.bilan.demarches)||[]).map(function(d){
-        const due=acmDueDate(s,d.offset), done=d.statut==='fait', na=d.statut==='na';
-        return {label:d.label||'', phase:d.phase||'avant', statut:d.statut||'a_faire', echeance:(due?acmFmtD(due):''), ferme:!!d.ferme, retard:!!(due&&!done&&!na&&due<now), info:d.info||''};
-      });
-      rows.push({asso_id:myAsso, edition_ref:s.id, edition_nom:s.nom||'', volet:'demarches', contenu:{items:items}, updated_at:stamp});
-      keep.add(s.id+'|demarches');
-    });
-    const pj=a.projetEducatif||{texte:'',maj:''};
-    if((pj.texte||'').trim()){ // projet éducatif global — sentinelle edition_ref '_global' (colonne NOT NULL) ; le lecteur prend le plus récent
-      rows.push({asso_id:myAsso, edition_ref:'_global', edition_nom:null, volet:'projet_educatif', contenu:{texte:pj.texte, maj:pj.maj||''}, updated_at:stamp});
-      keep.add('_global|projet_educatif');
-    }
-    if(rows.length){ const up=await sbc.from('acm_reflet').upsert(rows,{onConflict:'asso_id,edition_ref,volet'}); if(up.error) throw up.error; }
-    // réconciliation : retirer du reflet les éditions clôturées/supprimées (ou le PE effacé) depuis la dernière publication
-    const {data:existing}=await sbc.from('acm_reflet').select('id,edition_ref,volet').eq('asso_id',myAsso);
-    for(const r of (existing||[])){ if(!keep.has(r.edition_ref+'|'+r.volet)) await sbc.from('acm_reflet').delete().eq('id',r.id); }
-    return true;
-  }catch(e){ console.warn('syncAcmReflet', e); return false; }
-}
+// (syncAcmReflet a été DÉPLACÉE dans l'IIFE connexion, juste avant window.acmDoPublishReflet : elle a besoin de sbc/myAsso/canWrite, hors de portée dans ce bloc moteur — sinon ReferenceError avalée → publiait dans le vide. Voir le git : incident page blanche du 11/07 sur le même motif, commit b6f0b01.)
 function savePeriGrille(){
   if(!window.__periGrilleUnlocked){ alert('Déverrouille d\'abord la grille (bouton 🔓 Déverrouiller).'); return; }
   const g=periDB().grille;
@@ -8346,6 +8312,43 @@ renderAll();
   window.acmSetProjEduc=function(v){ const a=acmDb(); a.projetEducatif=a.projetEducatif||{texte:'',maj:''}; a.projetEducatif.texte=v; a.projetEducatif.maj=today(); save(); const m=document.getElementById('acmProjEducMaj'); if(m) m.textContent=a.projetEducatif.maj?('✔ enregistré · maj '+fmtDate(a.projetEducatif.maj)):''; };
 
   /* ===== 🔄 Miroir salariées (étape 3) — publier le reflet + traiter la bannette de propositions (acm_propositions). Additif, réservé au bureau (canWrite). ===== */
+  // Miroir ACM (étape 3) — DÉPLACÉE ICI (dans l'IIFE connexion) car elle a besoin de sbc/myAsso/canWrite/myProfile, hors de portée dans le bloc moteur (sinon ReferenceError avalée → publie dans le vide). Publie le reflet lecture (acm_reflet) : planning + démarches par édition OUVERTE + projet éducatif. Lit le coffre db.acmVac, n'y touche jamais.
+  async function syncAcmReflet(){
+    try{
+      if(!myAsso||!canWrite||!sbc) return;
+      const a=acmDb();
+      const now=new Date(); now.setHours(0,0,0,0);
+      const stamp=new Date().toISOString();
+      const rows=[]; const keep=new Set();
+      a.sessions.filter(function(s){return s.statut==='ouverte' && s.type!=='vepi';}).forEach(function(s){ // ⚠️ VEPI = même moteur mais cloisonné : le reflet « Mon ACM » ne reflète QUE les accueils ACM
+        acmEnsureParcours(s); // healer AVANT snapshot : re-date les démarches (offset) — jamais de forme brute
+        const plan=s.plan||{};
+        const jours=(s.jours||[]).map(function(j){
+          const fs=a.fiches.filter(function(f){return plan[f.id]===j;});
+          return {jour:j, activites:fs.map(function(f){return {nom:f.nom||'', emoji:f.emoji||'', pole:f.pole||''};})};
+        });
+        const reserve=a.fiches.filter(function(f){return plan[f.id]==='reserve';}).map(function(f){return {nom:f.nom||'', emoji:f.emoji||''};});
+        rows.push({asso_id:myAsso, edition_ref:s.id, edition_nom:s.nom||'', volet:'planning', contenu:{jours:jours, reserve:reserve}, updated_at:stamp});
+        keep.add(s.id+'|planning');
+        const items=((s.bilan&&s.bilan.demarches)||[]).map(function(d){
+          const due=acmDueDate(s,d.offset), done=d.statut==='fait', na=d.statut==='na';
+          return {label:d.label||'', phase:d.phase||'avant', statut:d.statut||'a_faire', echeance:(due?acmFmtD(due):''), ferme:!!d.ferme, retard:!!(due&&!done&&!na&&due<now), info:d.info||''};
+        });
+        rows.push({asso_id:myAsso, edition_ref:s.id, edition_nom:s.nom||'', volet:'demarches', contenu:{items:items}, updated_at:stamp});
+        keep.add(s.id+'|demarches');
+      });
+      const pj=a.projetEducatif||{texte:'',maj:''};
+      if((pj.texte||'').trim()){ // projet éducatif global — sentinelle edition_ref '_global' (colonne NOT NULL) ; le lecteur prend le plus récent
+        rows.push({asso_id:myAsso, edition_ref:'_global', edition_nom:null, volet:'projet_educatif', contenu:{texte:pj.texte, maj:pj.maj||''}, updated_at:stamp});
+        keep.add('_global|projet_educatif');
+      }
+      if(rows.length){ const up=await sbc.from('acm_reflet').upsert(rows,{onConflict:'asso_id,edition_ref,volet'}); if(up.error) throw up.error; }
+      // réconciliation : retirer du reflet les éditions clôturées/supprimées (ou le PE effacé) depuis la dernière publication
+      const {data:existing}=await sbc.from('acm_reflet').select('id,edition_ref,volet').eq('asso_id',myAsso);
+      for(const r of (existing||[])){ if(!keep.has(r.edition_ref+'|'+r.volet)) await sbc.from('acm_reflet').delete().eq('id',r.id); }
+      return true;
+    }catch(e){ console.warn('syncAcmReflet', e); return false; }
+  }
   window.acmDoPublishReflet=async function(){
     if(!canWrite){ alert('Réservé au bureau.'); return; }
     const el=document.getElementById('acmRefletMaj'); if(el) el.textContent='Publication en cours…';
@@ -9909,7 +9912,8 @@ renderAll();
     try{ applyOrgContent(); }catch(e){}
     canWrite=['president','tresorier','bureau'].includes(prof.role);
     window._bobUser=(prof.full_name||prof.email||'').split('@')[0];
-    window.bobMe={id:prof.id,role:prof.role,email:prof.email||'',nom:(prof.full_name||prof.email||''),canWrite:canWrite};
+    window.bobMe={id:prof.id,role:prof.role,email:prof.email||'',nom:(prof.full_name||prof.email||''),canWrite:canWrite,asso:myAsso};
+    window.bobSbc=sbc; // 🔗 exposés pour les fonctions du BLOC MOTEUR (publishTarifs, syncProtocolesPublies) qui ne voient pas les `let` de cette IIFE (cf. incident portée 11/07)
     // 🔒 Vérifie le mot de passe de connexion de la personne AVANT une action sensible (ex. remise à zéro).
     //    Utilise un client Supabase JETABLE (sans persistance) pour NE PAS toucher à la session en cours.
     window.bobReauth=async function(pw){
