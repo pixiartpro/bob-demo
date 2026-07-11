@@ -8903,7 +8903,7 @@ renderAll();
     };
     // Regroupement en 3 blocs de lecture (catégorie = champ libre → classement par mots-clés)
     const _AB=[{k:'peri',l:'🎒 Périscolaire & extrascolaire'},{k:'socio',l:'🎨 Socioculturel'},{k:'ponctuel',l:'🎉 Temps forts'}];
-    const _bkey=(a)=>{ if(a.type==='evenement'||/temps *fort/i.test(a.categorie||'')) return 'ponctuel'; const c=norm(a.categorie||''); if(c.indexOf('peri')>=0||c.indexOf('extrascol')>=0) return 'peri'; return 'socio'; };
+    const _bkey=(a)=>{ if(a.type==='evenement'||/temps *fort/i.test(a.categorie||'')) return 'ponctuel'; const c=(a.categorie||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,''); if(c.indexOf('peri')>=0||c.indexOf('extrascol')>=0) return 'peri'; /* norm() est local à d'autres fonctions → inliné ici pour rester dans la portée */ return 'socio'; };
     const _grp={peri:[],socio:[],ponctuel:[]}; acts.forEach(a=>{ (_grp[_bkey(a)]||_grp.socio).push(a); });
     const _verserBar=(canWrite&&aVerserAct.length)?('<div class="row" style="margin:6px 0 4px"><button class="btn" onclick="actiVerserCompta()">💶 Verser les encaissements activité en compta ('+aVerserAct.length+')</button></div>'):'';
     box.innerHTML=_verserBar+_AB.filter(b=>_grp[b.k].length).map(b=>'<h3 style="margin:16px 0 4px;font-size:16px">'+b.l+' <span class="hint" style="font-weight:400">· '+_grp[b.k].length+'</span></h3>'+_grp[b.k].map(_actCard).join('')).join('');
