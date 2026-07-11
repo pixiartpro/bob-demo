@@ -520,6 +520,11 @@
   <!-- ACCOUNTING -->
   <section id="accounting" class="page">
     <div class="cards" id="accKpis"></div>
+    <div class="row" style="margin:0 0 8px;gap:8px;flex-wrap:wrap;align-items:center">
+      <span class="hint" style="margin:0;font-weight:700">Accès rapide :</span>
+      <button class="ghost btn" type="button" onclick="document.getElementById('ventilation').scrollIntoView({behavior:'smooth',block:'start'})">📊 Ventilation</button>
+      <button class="ghost btn" type="button" onclick="document.getElementById('rapprochement').scrollIntoView({behavior:'smooth',block:'start'})">🏦 Rapprochement bancaire</button>
+    </div>
     <div class="panel" style="border:2px solid var(--brand)">
       <h2>⚡ Saisie rapide — rentrer beaucoup de factures vite</h2>
       <p class="hint">Pour le stock de factures : remplis une ligne, appuie sur <strong>Entrée</strong> (ou « Ajouter ») et enchaîne la suivante. La date, le type, le site, l'action et le compte sont conservés d'une ligne à l'autre. Tu pourras toujours ajouter une photo ou répartir le montant ensuite, en cliquant sur l'opération.</p>
@@ -612,10 +617,12 @@
     <div class="panel">
       <div class="toolbar">
         <h2 style="margin:0">Journal des opérations</h2>
-        <div class="row" style="margin:0">
-          <input id="a_search" placeholder="🔎 Libellé, site, action..." oninput="renderOps()" style="max-width:230px">
+        <div class="row" style="margin:0;flex-wrap:wrap;align-items:center">
+          <input id="a_search" placeholder="🔎 Libellé, site, action, montant…" oninput="renderOps()" style="max-width:240px" title="Cherche aussi par montant : tape par ex. 45,20">
           <select id="a_year" onchange="renderOps()" style="max-width:160px" title="Exercice comptable"><option value="">Tous les exercices</option></select>
           <select id="a_filter" onchange="renderOps()" style="max-width:170px"><option value="">Tous les types</option><option value="in">Recettes</option><option value="out">Dépenses</option></select>
+          <span style="display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--muted)">du&nbsp;<input id="a_from" type="date" onchange="renderOps()" title="À partir de cette date" style="max-width:155px"> au&nbsp;<input id="a_to" type="date" onchange="renderOps()" title="Jusqu'à cette date" style="max-width:155px"></span>
+          <button class="ghost btn" type="button" onclick="resetOpsFilters()" title="Effacer la recherche et les filtres" style="font-size:12px">✖ Effacer</button>
         </div>
       </div>
       <p class="hint" style="margin:0 0 6px">Clique sur un en-tête de colonne pour trier (re-clique pour inverser l'ordre).</p>
@@ -629,9 +636,9 @@
         <th></th></tr></thead>
         <tbody id="opRows"></tbody></table></div>
     </div>
-    <div class="panel">
+    <div class="panel" id="ventilation">
       <h2>Ventilation des dépenses</h2>
-      <p class="hint">Le total des dépenses réparti par site et par action — pratique pour justifier les budgets et les financements. <strong>Suit l'exercice choisi ci-dessus.</strong></p>
+      <p class="hint">Le total des dépenses réparti par site et par action — pratique pour justifier les budgets et les financements. <strong>Suit la recherche et les filtres du journal ci-dessus</strong> (exercice, type, dates, montant).</p>
       <div class="cards" style="grid-template-columns:repeat(auto-fit,minmax(280px,1fr))">
         <div>
           <h2 style="font-size:14px;margin:0 0 8px">🏢 Dépenses par site</h2>
@@ -645,7 +652,7 @@
     </div>
     <div class="panel">
       <h2>Ventilation des recettes</h2>
-      <p class="hint">Le total des recettes réparti par site et par action. <strong>Suit l'exercice choisi ci-dessus.</strong></p>
+      <p class="hint">Le total des recettes réparti par site et par action. <strong>Suit la recherche et les filtres du journal ci-dessus</strong> (exercice, type, dates, montant).</p>
       <div class="cards" style="grid-template-columns:repeat(auto-fit,minmax(280px,1fr))">
         <div>
           <h2 style="font-size:14px;margin:0 0 8px">🏢 Recettes par site</h2>
@@ -1434,6 +1441,32 @@
       </div>
       <span id="pg_status" class="muted" style="display:block;margin-top:8px;font-size:13px"></span>
       <div id="pg_result" style="display:none;margin-top:12px"></div>
+    </div>
+
+    <!-- 🎨 Génère un VISUEL d'illustration pour un post (tâche post.visual de run-expert, moteur image fal) -->
+    <div class="panel" id="fmvisual" style="border-left:4px solid var(--brand)">
+      <h2 style="margin:0 0 4px">🎨 Créer un visuel de post</h2>
+      <p class="hint">L'expert fabrique une <strong>image à ta charte</strong> (tes couleurs, l'ambiance péi) pour illustrer un post — une <strong>illustration / affiche</strong>, <strong>sans vraie personne</strong> (l'IA habille le décor, jamais un vrai visage). Tu poses ton texte par-dessus, ou tu réutilises le carrousel.</p>
+      <div class="field"><label>Thème du visuel</label><input id="pv_theme" placeholder="Ex. ACM ados été 2026 — journée surf et bivouac"></div>
+      <div class="row" style="gap:18px;flex-wrap:wrap">
+        <div class="field" style="flex:1;min-width:180px"><label>Format</label>
+          <select id="pv_format">
+            <option value="carre" selected>Carré (Insta / post)</option>
+            <option value="story">Story (vertical)</option>
+            <option value="paysage">Paysage (Facebook)</option>
+          </select></div>
+        <div class="field" style="flex:1;min-width:180px"><label>Style</label>
+          <select id="pv_style">
+            <option value="illustration" selected>Illustration vibrante</option>
+            <option value="affiche">Affiche graphique</option>
+          </select></div>
+      </div>
+      <div class="toolbar" style="margin-top:8px">
+        <button class="btn" id="pv_go" onclick="fmGenVisual()">🎨 Générer le visuel · ≈ 3 crédits</button>
+        <span class="muted" style="font-size:12.5px">≈ 0,04 $, plafonné par ton quota. Sans vraie personne (droit à l'image).</span>
+      </div>
+      <span id="pv_status" class="muted" style="display:block;margin-top:8px;font-size:13px"></span>
+      <div id="pv_result" style="display:none;margin-top:12px"></div>
     </div>
 
     <div class="panel">
@@ -2455,6 +2488,7 @@ const FAQ=[
   {cat:'📣 Communication',q:"À quoi sert l'onglet Communication ?",kw:"communication com post reseaux sociaux marque voix charte fiche de marque publication facebook instagram identite ton couleurs redaction ecrire posts curseurs bannir creole",a:"L'onglet <b>📣 Communication</b> garde la <b>fiche de marque</b> du CASE : qui on est, à qui on parle, <b>notre voix</b> (avec de vrais exemples de posts et des curseurs proche/pro, rigolo/sérieux…), nos couleurs et nos règles. C'est la <b>mémoire</b> qui permettra de préparer des posts <b>qui nous ressemblent</b>, sans partir de la page blanche. Remplis-la une fois, affine-la quand tu veux. Réservé au bureau et aux salariés."},
   {cat:'📣 Communication',q:"Comment générer un post carrousel dans notre voix ?",kw:"carrousel carousel generer creer redaction ecrire post publication vignettes slides texte legende sujet objectif reseau swap test expert idee page blanche instagram facebook",a:"Dans l'onglet <b>📣 Communication</b>, sous la fiche de marque, le bloc <b>« ✨ Créer un carrousel dans ta voix »</b> : écris le <b>sujet</b> du post, choisis ton <b>objectif</b> (faire venir, informer, donner envie, valoriser), le <b>réseau</b> et le nombre de vignettes, puis clique <b>« ✨ Générer »</b>. L'expert écrit le texte du carrousel <b>dans notre voix</b> (celle de la fiche), se relit pour l'<b>ancrer chez nous</b> (le « swap test » : éviter un post passe-partout), et te propose les <b>vignettes</b> + une <b>légende</b> à copier. Tu peux <b>régénérer</b> ou ajuster. <b>Rien n'est publié tout seul</b> : tu copies le texte où tu veux. Ça coûte une fraction de centime, plafonné. Réservé au bureau et aux salariés."},
   {cat:'📣 Communication',q:"Comment détourer mon logo et récupérer mes couleurs ?",kw:"logo detourer detourage detoure fond enlever transparent png charte identite visuelle image palette couleurs automatiques principale secondaire pastille",a:"Dans l'onglet <b>📣 Communication</b>, section <b>« 5 · Ton logo »</b> : choisis ton fichier logo puis clique <b>« ✂️ Détourer le logo »</b>. L'expert <b>enlève le fond</b> (ton logo devient utilisable proprement sur tes visuels) et <b>en tire tes couleurs</b> — clique une pastille pour la couleur <b>principale</b>, une 2ᵉ pour la <b>secondaire</b>. Le détourage coûte <b>≈ 1 crédit</b> (une fraction de centime, plafonné) ; les couleurs sont <b>gratuites</b>. Pense à <b>« 💾 Enregistrer »</b> : le fond enlevé et les couleurs restent avec ta fiche. Réservé au bureau et aux salariés."},
+  {cat:'📣 Communication',q:"Comment créer une image pour un post ?",kw:"image visuel illustration affiche creer generer post publication carre story paysage acm evenement decor couleurs telecharger reseaux instagram facebook",a:"Dans l'onglet <b>📣 Communication</b>, le bloc <b>« 🎨 Créer un visuel de post »</b> (sous le carrousel) : écris le <b>thème</b> (ex. « ACM ados été — journée surf »), choisis le <b>format</b> (carré, story, paysage) et le <b>style</b> (illustration ou affiche), puis clique <b>« 🎨 Générer »</b>. L'expert fabrique une <b>image à tes couleurs</b>, ambiance péi — une <b>illustration</b>, <b>sans vraie personne</b> (donc aucun souci de droit à l'image). Tu peux <b>régénérer</b> jusqu'à ce que ça te plaise, puis <b>télécharger</b> ; tu poses ton texte par-dessus (ou tu réutilises le carrousel). Ça coûte <b>≈ 3 crédits</b> (une fraction de centime, plafonné). Réservé au bureau et aux salariés."},
   {cat:'🗂️ Répertoire',q:"Où déposer les conventions CAF, les PV signés, les documents officiels ?",kw:"convention conventions caf mairie pv statuts reglement document officiel officiels coffre gouvernance deposer televerser telecharger visualiser pdf scan",a:"Onglet <b>🗂️ Répertoire</b> → panneau <b>« 📁 Documents officiels &amp; conventions »</b>. Clique <b>« Déposer un document »</b> et choisis un ou plusieurs PDF/scans : ils vont dans le <b>coffre privé</b> (visibles seulement une fois connecté, <b>jamais sur le site public</b>). Ensuite <b>👁️ Visualiser</b> ou <b>⬇️ Télécharger</b>. Tu peux <b>rattacher</b> chaque document à un financeur (Mairie, CAF…) : il apparaît alors aussi dans sa fiche, onglet <b>🏛️ Structures &amp; financeurs</b>. Réservé au bureau."},
   {cat:'📊 Tableau de bord',q:"Comment retrouver une rubrique ou un onglet dans Bob ?",kw:"navigation naviguer circuler onglet onglets rubrique rubriques famille familles barre menu trouver chercher retrouver ranger perdu",a:"Les onglets sont rangés par <b>familles</b> dans la barre du haut (👥 Adhérents, 🎨 Animation, 🏠 Lieux &amp; Salles, 💬 Communication, 💶 Finances, 🧑‍💼 Équipe / RH, 🏛️ Vie associative, 🧰 Réglages). Clique une famille : sa rangée d'onglets <b>reste affichée en permanence</b> juste en dessous, et tu vois toujours où tu es (la famille et l'onglet actifs sont surlignés). Le plus rapide pour sauter n'importe où : tape 2-3 lettres dans <b>« 🔎 Aller à un onglet… »</b> en haut à gauche, Bob t'y emmène directement."},
   {cat:'👶 Enfants',q:"Comment déplacer un enfant d'un accueil (ou d'une semaine d'ACM) à un autre sans perdre l'historique ?",kw:"deplacer deplace bouger changer semaine acm accueil vepi activite transferer muter passer autre effacer supprimer annuler historique mouvement bascule retirer",a:"Onglet <b>👶 Enfants</b> (dans 👥 Adhérents). Sur la puce de l'accueil concerné (🌴 ACM, 📌 VEPI, 🎟️ activité), clique <b>⇄</b> : choisis la <b>destination</b> puis valide. Bob <b>crée la nouvelle inscription</b> et met l'ancienne en <b>« déplacée »</b> — <b>rien n'est effacé</b>, tout reste dans l'historique (le petit <b>🕘</b> sous l'enfant). Le <b>✕</b> à côté ne supprime pas non plus : il passe l'inscription en <b>« annulée »</b> (conservée). Les <b>places restantes</b> et l'<b>effectif des éditions d'ACM</b> ne comptent que les inscriptions actives — les déplacées/annulées sont ignorées. Réservé au <b>bureau et à l'accueil</b>. 💡 C'est aussi l'outil pour basculer, en septembre, les inscrits du parapluie « ACM Ados — Été 2026 » vers les semaines."},
@@ -2596,8 +2630,8 @@ const FAQ=[
    a:"C'est un mode pour <b>entrer beaucoup d'écritures rapidement</b> les unes après les autres (idéal pour un paquet de factures). Tu remplis l'essentiel et tu valides ; la ligne suivante s'enchaîne."},
   {cat:'💶 Comptabilité',q:"Comment j'indique comment une opération a été payée (espèces, chèque, virement…) ?",kw:"mode moyen reglement payee operation ecriture cheque virement carte prelevement banque caisse choisir",
    a:"Dans <b>« Nouvelle opération »</b> comme dans la <b>« Saisie rapide »</b>, choisis le <b>Mode de paiement</b> : 💵 Espèces, 🧾 Chèque, 🏦 Virement, 💳 Carte bancaire ou 🔁 Prélèvement. Si tu choisis <b>Espèces</b>, Bob range tout seul l'opération dans la <b>💵 caisse</b> ; tous les autres modes vont sur la <b>🏦 banque</b>. Un seul menu suffit, plus besoin de choisir « banque ou caisse » à part."},
-  {cat:'💶 Comptabilité',q:"Comment je trie ou filtre le journal des opérations ?",kw:"trier filtrer classer journal operations colonnes date montant rechercher chercher tri",
-   a:"Dans le <b>Journal des opérations</b>, clique sur l'<b>en-tête d'une colonne</b> (Date, Libellé, Montant…) pour trier. La barre de recherche permet de filtrer par libellé, site, action… Tu peux aussi choisir l'<b>exercice comptable</b> (l'année)."},
+  {cat:'💶 Comptabilité',q:"Comment je trie, cherche ou filtre le journal des opérations ?",kw:"trier filtrer classer journal operations colonnes date montant rechercher chercher tri plage dates du au entre deux dates type recette depense ventilation selection affichee",
+   a:"Dans le <b>Journal des opérations</b>, clique sur l'<b>en-tête d'une colonne</b> (Date, Libellé, Montant…) pour trier. La <b>barre de recherche</b> filtre par libellé, site, action <b>et aussi par montant</b> (tape par ex. <code>45,20</code> pour retrouver toutes les écritures à ce montant). À côté, tu peux choisir l'<b>exercice</b> (l'année), le <b>type</b> (recettes / dépenses) et une <b>plage de dates « du… au… »</b> pour n'afficher que les écritures entre deux dates. Le bouton <b>✖ Effacer</b> remet tout à zéro. 💡 Les tableaux de <b>Ventilation</b> (dépenses et recettes par site / action) <b>suivent exactement ce que tu affiches</b> : après une recherche ou un filtre, la ventilation ne compte que les écritures visibles."},
   {cat:'💶 Comptabilité',q:"Comment j'exporte la compta pour le comptable ?",kw:"export exporter comptable journal csv excel envoyer transmettre exercice annee",
    a:"Choisis d'abord l'<b>exercice comptable</b> (l'année des écritures), puis clique sur <b>« Export pour le comptable (Journal) »</b>. Le fichier obtenu contient exactement les écritures de l'exercice sélectionné."},
   {cat:'⚙️ Données',q:"Comment je sauvegarde mes données ?",kw:"sauvegarde sauvegarder backup exporter enregistrer copie securite proteger",
@@ -2622,8 +2656,8 @@ const FAQ=[
    a:"Onglet <b>📈 Bilan</b> : tu obtiens le compte de résultat (recettes et dépenses) <b>par catégorie</b> et aussi <b>par code comptable</b> (pratique pour l'expert-comptable et le compte rendu financier des subventions)."},
   {cat:'📈 Bilan',q:"Comment comparer avec l'année dernière (N-1) ?",kw:"bilan annee derniere precedente n-1 comparer comparaison evolution variation exercice precedent",
    a:"Onglet <b>📈 Bilan</b> : dès qu'un exercice précédent contient des écritures, une colonne <b>N−1</b> et une colonne <b>Évol. %</b> apparaissent automatiquement à côté de chaque ligne, et le résultat de l'an dernier s'affiche sous le résultat de l'année. Astuce : importe la compta de l'année passée (⚙️ Données) pour activer la comparaison."},
-  {cat:'💶 Comptabilité',q:"Comment faire le rapprochement bancaire ?",kw:"rapprochement bancaire pointage pointer releve banque solde ecart verifier compte coche comptabilite",
-   a:"Onglet <b>💶 Comptabilité</b>, panneau <b>🏦 Rapprochement bancaire</b> : relevé en main, <b>coche</b> chaque opération que tu retrouves sur le relevé et saisis le <b>solde indiqué en bas du relevé</b>. Quand l'écart affiche 0,00 € en vert, c'est rapproché ✅. S'il reste un écart : opération oubliée dans Bob, chèque pas encore passé, ou erreur de montant."},
+  {cat:'💶 Comptabilité',q:"Comment faire le rapprochement bancaire ?",kw:"rapprochement bancaire pointage pointer releve banque solde ecart verifier compte coche comptabilite exporter incoherences excel csv liste caisse",
+   a:"Le <b>🏦 Rapprochement bancaire</b> est dans l'onglet <b>💶 Comptabilité</b> (tu peux y sauter d'un clic avec le bouton <b>« 🏦 Rapprochement bancaire »</b> en haut de la page). Relevé en main, <b>coche</b> chaque opération que tu retrouves sur le relevé et saisis le <b>solde indiqué en bas du relevé</b> ; quand l'écart affiche 0,00 € en vert, c'est rapproché ✅. Après un import de relevé, le bouton <b>« 📤 Exporter les incohérences (Excel) »</b> te télécharge les trois listes (à valider · sur le relevé mais pas dans Bob · dans Bob mais pas sur le relevé) en fichier <code>.csv</code> ouvrable dans Excel. S'il reste un écart : opération oubliée dans Bob, chèque pas encore passé, ou erreur de montant."},
   {cat:'📊 Tableau de bord',q:"C'est quoi les alertes importantes en rouge ?",kw:"alerte rouge importante urgent solde negatif dette retard echeance aide pec fin surveiller",
    a:"Le bloc <b>🚨 Alertes importantes</b> du tableau de bord surveille tout seul : <b>solde négatif</b> (global, banque ou caisse), <b>échéances de dettes</b> à moins de 14 jours ou en retard (ex. URSSAF), et <b>fins d'aides au poste</b> (PEC) à moins de 90 jours pour anticiper le surcoût. Il n'apparaît que s'il y a quelque chose à traiter — pas de bloc = tout va bien."},
   {cat:'🔮 Prévisionnel',q:"À quoi sert le prévisionnel ?",kw:"previsionnel budget projection prevision fin annee estimer decembre recurrent futur anticiper",
@@ -2738,6 +2772,8 @@ function pageHelpGotoAide(){ pageHelpClose(); const b=document.querySelector('na
 
 /* ---- ✨ Quoi de neuf (nouveautés + notice chronologique) ---- */
 const NEWS=[
+  {id:'2026-07-11-journal-recherche',date:'2026-07-11',tab:'💶 Comptabilité',titre:"🔎 Chercher dans la compta par montant et par dates",desc:"Le <b>Journal des opérations</b> gagne de vrais filtres : la barre de recherche trouve maintenant aussi une écriture <b>par son montant</b> (tape par ex. <code>45,20</code>), et deux nouveaux champs <b>« du… au… »</b> n'affichent que les écritures <b>entre deux dates</b> (en plus de l'exercice et du type recettes/dépenses déjà là). Nouveauté clé : les tableaux de <b>Ventilation</b> (dépenses et recettes par site / action) <b>suivent désormais ce que tu affiches</b> — après une recherche ou un filtre, ils ne comptent que les écritures visibles, plus toute l'année. En haut de la page 💶 Comptabilité, deux <b>boutons d'accès rapide</b> (<b>📊 Ventilation</b>, <b>🏦 Rapprochement bancaire</b>) t'y amènent d'un clic. Et le rapprochement a un bouton <b>« 📤 Exporter les incohérences (Excel) »</b>."},
+  {id:'2026-07-11-visuel-post',date:'2026-07-11',tab:'📣 Communication',titre:"🎨 Créer une image pour un post",desc:"Nouveau bloc <b>« 🎨 Créer un visuel de post »</b> dans l'onglet <b>📣 Communication</b> (sous le carrousel) : tu donnes un <b>thème</b> (ex. « ACM ados été — journée surf »), un <b>format</b> (carré, story, paysage) et un <b>style</b>, et l'expert fabrique une <b>image à tes couleurs</b>, ambiance péi — une <b>illustration sans vraie personne</b> (aucun souci de droit à l'image). Tu <b>régénères</b> jusqu'à ce que ça te plaise, puis tu <b>télécharges</b> ; ton texte se pose par-dessus. Ça coûte <b>≈ 3 crédits</b>, plafonné. Réservé au bureau et aux salariés."},
   {id:'2026-07-11-board-acm-salarie',date:'2026-07-11',tab:'🌴 Vacances',titre:"🗓️ Les salariées placent les activités en glissant",desc:"Dans « 🌴 Mon ACM » (espace salarié), la salariée a maintenant <b>le même tableau que toi</b> : elle voit <b>ton vrai catalogue d'activités</b> et les <b>glisse sur les jours</b> (ou choisit le jour dans un petit menu, pratique sur téléphone). Chaque déplacement devient une <b>proposition de placement</b> qui arrive dans <b>📥 À valider</b> ; quand tu l'<b>Acceptes</b>, l'activité se <b>pose toute seule</b> sur ton planning — plus besoin de tout retaper. Réservé au bureau pour la validation."},
   {id:'2026-07-11-partage-acm-salariees',date:'2026-07-11',tab:'🌴 Vacances',titre:"🔄 Monter l'ACM avec les salariées",desc:"Nouveau panneau <b>🔄 Partage avec les salariées</b> en haut de l'onglet 🌴 Vacances. D'un clic sur <b>📢 Publier aux salariées</b>, tu leur envoies un <b>reflet en lecture</b> du planning, des démarches et du projet éducatif — elles le voient dans leur espace, écran <b>« 🌴 Mon ACM »</b>. Et elles peuvent te faire des <b>propositions</b> (une activité, un placement sur un jour, une démarche, un texte pédago, une ligne de budget matériel) qui arrivent dans <b>📥 À valider</b> : tu <b>Acceptes</b> ou <b>Refuses</b> avec un motif. Elles préparent, tu gardes la validation, l'argent et la publication. Réservé au bureau."},
   {id:'2026-07-10-charte-logo',date:'2026-07-10',tab:'📣 Communication',titre:"🎨 Ton logo détouré + tes couleurs auto",desc:"Dans l'onglet <b>📣 Communication</b>, la nouvelle section <b>« 5 · Ton logo »</b> : dépose ton logo et l'expert <b>enlève le fond</b> (pour l'utiliser proprement sur tes visuels) puis <b>en tire tes couleurs</b> — un clic pour la principale, un clic pour la secondaire. Le détourage coûte <b>≈ 1 crédit</b> (une fraction de centime, plafonné) ; les couleurs sont <b>gratuites</b>. Rien n'est publié : tu enregistres, c'est tout. Réservé au bureau et aux salariés."},
@@ -3203,13 +3239,34 @@ function refreshYearFilter(){
   sel.innerHTML='<option value="">Tous les exercices</option>'+opYears().map(y=>`<option value="${y}">Exercice ${y}</option>`).join('');
   if([...sel.options].some(o=>o.value===cur)) sel.value=cur;
 }
+function filteredOps(){
+  const f  = $('a_filter') ? $('a_filter').value : '';
+  const yr = $('a_year')   ? $('a_year').value   : '';
+  const from = $('a_from') ? $('a_from').value   : '';
+  const to   = $('a_to')   ? $('a_to').value     : '';
+  const q  = (($('a_search') && $('a_search').value) || '').toLowerCase().replace(/,/g,'.').trim();
+  const match=o=>{
+    if(!q) return true;
+    const hay = (o.label+' '+(o.cat||'')+' '+(o.compte||'')+' '+getSplits(o).map(s=>s.site+' '+s.action).join(' ')).toLowerCase()
+      + ' ' + String(o.amount) + ' ' + (Number(o.amount)||0).toFixed(2);
+    return hay.includes(q);
+  };
+  return db.ops.filter(o=>o.type!=='transfer'
+    && (!f  || o.type===f)
+    && (!yr || (o.date||'').slice(0,4)===yr)
+    && (!from|| (o.date||'')>=from)
+    && (!to  || (o.date||'')<=to)
+    && match(o));
+}
+function resetOpsFilters(){
+  ['a_search','a_from','a_to'].forEach(id=>{const el=$(id); if(el) el.value='';});
+  const yr=$('a_year'); if(yr) yr.value='';
+  const ft=$('a_filter'); if(ft) ft.value='';
+  renderOps();
+}
 function renderOps(){
   refreshYearFilter();
-  const f = $('a_filter').value;
-  const yr = $('a_year').value;
-  const q = ($('a_search').value||'').toLowerCase();
-  const match=o=>!q || (o.label+' '+(o.cat||'')+' '+(o.compte||'')+' '+getSplits(o).map(s=>s.site+' '+s.action).join(' ')).toLowerCase().includes(q);
-  const list = db.ops.filter(o=>o.type!=='transfer' && (!f||o.type===f) && (!yr||(o.date||'').slice(0,4)===yr) && match(o)).slice().sort((a,b)=>{const va=opSortVal(a),vb=opSortVal(b);return (va<vb?-1:va>vb?1:0)*opSort.dir;});
+  const list = filteredOps().slice().sort((a,b)=>{const va=opSortVal(a),vb=opSortVal(b);return (va<vb?-1:va>vb?1:0)*opSort.dir;});
   const tb = $('opRows');
   if(!list.length){ tb.innerHTML='<tr><td colspan="7" class="empty">Aucune opération enregistrée.</td></tr>'; }
   else tb.innerHTML = list.map(o=>{
@@ -3266,9 +3323,8 @@ function closeModal(){ $('opModal').classList.remove('open'); }
 function curExercice(){ const s=$('a_year'); return s?s.value:''; }
 function ventTable(field, type){
   type=type||'out';
-  const yr=curExercice();
   const tot={};
-  db.ops.filter(o=>o.type===type && (!yr||(o.date||'').slice(0,4)===yr)).forEach(o=>{
+  filteredOps().filter(o=>o.type===type).forEach(o=>{
     getSplits(o).forEach(s=>{ const k=(s[field]||'').trim()||'(non précisé)'; tot[k]=(tot[k]||0)+s.amount; });
   });
   const rows=Object.entries(tot).sort((a,b)=>b[1]-a[1]);
@@ -3755,6 +3811,7 @@ function renderRapAuto(){
   const tbl=(rows,cols)=>`<div style="overflow-x:auto;-webkit-overflow-scrolling:touch"><table style="min-width:520px"><thead><tr>${cols.map(c=>`<th${/€|montant/i.test(c)?' class="num"':''}>${c}</th>`).join('')}</tr></thead><tbody>${rows}</tbody></table></div>`;
   let h=`<div style="border-top:1px solid var(--line);margin-top:14px;padding-top:10px">
     <div class="toolbar" style="flex-wrap:wrap;gap:8px"><h3 style="margin:0">📥 Relevé importé${dmin?' ('+fmtDate(dmin)+' → '+fmtDate(dmax)+')':''}</h3>
+      <button class="ghost btn" onclick="exportRapIncoherences()" title="Télécharge les 3 listes d'incohérences en fichier Excel (.csv)">📤 Exporter les incohérences (Excel)</button>
       <button class="ghost btn" onclick="rapReset()">🗑️ Réinitialiser le relevé</button></div>
     <div style="margin:10px 0">`
     + badge(auto.length,'✅ cochés auto','#e2efda')
@@ -6871,6 +6928,23 @@ function exportComptaCSV(){
   });
   download(new Blob(['﻿'+rows.join('\n')],{type:'text/csv'}),'journal-comptable-CASE'+(yr?'-'+yr:'')+'.csv');
 }
+function exportRapIncoherences(){
+  const L=db.releveLignes||[];
+  if(!L.length){ alert('Aucun relevé importé — importe d\'abord un relevé pour voir les incohérences.'); return; }
+  const dates=L.map(l=>l.date).filter(Boolean).sort(); const dmin=dates[0]||'', dmax=dates[dates.length-1]||'';
+  const by=s=>L.filter(l=>l.statut===s);
+  const valider=by('valider'), saisir=by('saisir');
+  const orph=bankMoves().filter(m=>!m.o.rap && m.o.type!=='transfer' && m.o.date>=dmin && m.o.date<=dmax);
+  const sensLbl=s=>s==='out'?'dépense':'recette';
+  const opById=id=>db.ops.find(o=>o.id===id);
+  if(!valider.length && !saisir.length && !orph.length){ alert('Aucune incohérence à exporter : tout concorde ✅'); return; }
+  const rows=[csvRow(['Catégorie','Date','Libellé','Sens','Montant','Détail / candidats dans Bob'])];
+  valider.forEach(l=>rows.push(csvRow(['À valider (plusieurs écritures au même montant)', l.date, l.libelle, '', l.montant,
+    (l.cand||[]).map(id=>{const o=opById(id);return o?o.label+' ('+o.date+')':'';}).filter(Boolean).join(' OU ')])));
+  saisir.forEach(l=>rows.push(csvRow(['Sur le relevé, pas dans Bob', l.date, (l.compte?l.compte+' · ':'')+l.libelle, sensLbl(l.sens), l.montant, ''])));
+  orph.forEach(m=>rows.push(csvRow(['Dans Bob, pas sur le relevé', m.o.date, m.o.label, sensLbl(m.o.type==='in'?'in':'out'), m.o.amount, ''])));
+  download(new Blob(['﻿'+rows.join('\n')],{type:'text/csv;charset=utf-8'}),'incoherences-rapprochement-CASE-'+today()+'.csv');
+}
 function download(blob,name){
   const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=name; a.click(); URL.revokeObjectURL(a.href);
 }
@@ -7568,6 +7642,42 @@ renderAll();
   }
   window.pgCopy=function(){ const t=document.getElementById('pg_legende'); if(!t) return; t.select(); try{ document.execCommand('copy'); }catch(e){}
     const st=document.getElementById('pg_status'); if(st){ st.style.color='#127a51'; st.textContent='📋 Légende copiée.'; } };
+
+  // 🎨 Génère un VISUEL de post (illustration à la charte, SANS vraie personne) — run-expert tâche post.visual.
+  // Même portée que le carrousel/détour (bloc IIFE) : sbc est en direct. Pas de canWrite ici (perms gérées par applyPerms).
+  window.fmGenVisual=async function(){
+    const gv=id=>{ const el=document.getElementById(id); return el?el.value:''; };
+    const theme=(gv('pv_theme')||'').trim();
+    const st=document.getElementById('pv_status'), btn=document.getElementById('pv_go');
+    if(!theme){ if(st){ st.style.color='#c0392b'; st.textContent='Dis d\'abord le thème du visuel.'; } return; }
+    if(typeof sbc==='undefined'||!sbc){ alert('Connecte-toi d\'abord.'); return; }
+    if(btn) btn.disabled=true;
+    if(st){ st.style.color=''; st.textContent='🎨 Fabrication du visuel… (10-20 secondes)'; }
+    try{
+      const { data, error } = await sbc.functions.invoke('run-expert', { body:{ task:'post.visual', theme, format:gv('pv_format'), style:gv('pv_style') } });
+      if(btn) btn.disabled=false;
+      if(error){ if(st){ st.style.color='#c0392b'; st.textContent='Erreur : '+(error.message||error); } return; }
+      if(!data||!data.ok){ if(st){ st.style.color='#c0392b'; st.textContent=(data&&data.error)||'Génération impossible pour le moment.'; } return; }
+      if(st){ st.style.color='#127a51'; st.textContent='✅ Visuel prêt — vérifie, régénère si besoin, télécharge.'; }
+      pvRender(data);
+    }catch(e){ if(btn) btn.disabled=false; if(st){ st.style.color='#c0392b'; st.textContent='Erreur : '+e; } }
+  };
+  function pvRender(data){
+    const res=document.getElementById('pv_result'); if(!res) return;
+    const url=data.image_url||''; const usd=data.cost&&data.cost.usd;
+    let h='<img src="'+url+'" alt="visuel de post" style="max-width:100%;max-height:440px;border-radius:12px;border:1px solid #e6e6ee;display:block">';
+    h+='<div class="toolbar" style="margin-top:10px"><div>'
+      +'<button class="ghost btn" onclick="fmGenVisual()">🔄 Régénérer</button> '
+      +'<button class="ghost btn" onclick="pvDownload()">⬇️ Télécharger</button></div>'
+      +'<span class="muted" style="font-size:12px">'+(data.cost?('a coûté '+(data.cost.credits||3)+' crédits'+(usd?(' · ~'+usd+' $'):'')):'')+'</span></div>';
+    res.innerHTML=h; res.style.display=''; res.setAttribute('data-url',url);
+  }
+  window.pvDownload=async function(){
+    const res=document.getElementById('pv_result'); const url=res&&res.getAttribute('data-url'); if(!url) return;
+    try{ const r=await fetch(url); const b=await r.blob(); const u=URL.createObjectURL(b);
+      const a=document.createElement('a'); a.href=u; a.download='visuel-'+Date.now()+'.jpg'; document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(u),4000);
+    }catch(e){ window.open(url,'_blank'); }
+  };
 
   // Dossiers d'inscription périscolaire déposés par les familles (table inscriptions_periscolaire + coffre dossiers-periscolaire)
   const PERI_PIECES=[['caf','Attestation CAF'],['impots',"Avis d'imposition"],['domicile','Justif. domicile'],['assurance','Assurance'],['vaccin','Vaccins'],['livret','Livret de famille']];
