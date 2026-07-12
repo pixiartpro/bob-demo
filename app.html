@@ -316,6 +316,7 @@
     <div class="tabgroup" data-group="lieux">
       <button data-tab="lieux">🏠 Lieux</button>
       <button data-tab="salles">🗓️ Salles</button>
+      <button data-tab="intervenants">🎭 Intervenants</button>
       <button data-tab="reserver">🛎️ Réservations</button>
     </div>
     <div class="tabgroup" data-group="comm">
@@ -514,6 +515,21 @@
         <button class="ghost btn" onclick="if(window.loadCreneaux)loadCreneaux()">↻ Rafraîchir</button>
       </div>
       <div id="planningSalles"></div>
+    </div>
+  </section>
+
+  <!-- INTERVENANTS — fiche prestataire (Coup 1, 12/07/2026) : structure + convention + 3 verrous bloquants + historique prestations (compta). Bureau uniquement (gating applyPerms). Additif, tout dans le coffre db.intervenants. -->
+  <section id="intervenants" class="page">
+    <div class="panel">
+      <h2>🎭 Intervenants — prestataires &amp; conventions</h2>
+      <p class="hint">Les intervenant·e·s qui animent nos activités via une <b>structure prestataire</b> (l'asso facture, le CASE paie une <b>facture</b> — <b>pas de paie ici</b>, les salariés se gèrent en 💶 Finances / 🧑‍💼 Équipe). Pour chacun·e : sa <b>convention</b>, ses <b>3 justificatifs obligatoires</b> et le lien vers ses créneaux. <b style="color:#e24b4a">⛔ Règle d'or : tant qu'un voyant est rouge, on ne fait pas intervenir.</b></p>
+      <div class="row" style="align-items:flex-end;gap:8px;background:#f7f9fb;padding:10px;border-radius:12px;margin:0 0 14px">
+        <div class="field" style="flex:2"><label>Structure prestataire</label><input id="in_struct" placeholder="Ex. Association Culture Prod"></div>
+        <div class="field" style="flex:2"><label>Intervenant·e (personne)</label><input id="in_pers" placeholder="Ex. Stéphanie Ramin"></div>
+        <div class="field" style="flex:0;min-width:150px"><label>Domaine</label><input id="in_dom" list="inDomaines" placeholder="Danse…"><datalist id="inDomaines"><option>Danse</option><option>Musique</option><option>Théâtre</option><option>Arts plastiques</option><option>Sport</option></datalist></div>
+        <div class="field" style="flex:0"><label>&nbsp;</label><button class="btn" onclick="intAdd()">＋ Ajouter</button></div>
+      </div>
+      <div id="intervenantsBody"><p class="hint">Chargement…</p></div>
     </div>
   </section>
 
@@ -2480,6 +2496,7 @@ document.querySelectorAll('nav.tabs button').forEach(b=>{
 
 /* ---- Aide : « Demande à Zanana » (FAQ + assistant par mots-clés, sans IA) ---- */
 const FAQ=[
+  {cat:'🎭 Intervenants',q:"Comment gérer un intervenant qui anime via son association (prestataire) ?",kw:"intervenant intervenants prestataire prestation structure association convention facture danse professeur prof honorabilite casier b2 fijaisv diplome de assurance rc justificatif justificatifs verrou voyant rouge vert culture prod stephanie ramin creneaux salle contrat",a:"Onglet <b>🎭 Intervenants</b> (réservé au bureau). Un intervenant qui anime un cours <b>via une structure</b> (son association) est un <b>prestataire</b> : l'asso <b>facture</b>, le CASE <b>paie une facture</b> — <b>pas de paie</b> ici (les salariés, c'est 💶 Finances / 🧑‍💼 Équipe). Pour chaque prestataire, sa fiche réunit : la <b>structure</b> + la <b>personne envoyée</b>, la <b>convention</b> (à déposer dans 🗂️ Répertoire → 📁 Documents officiels), les <b>3 justificatifs obligatoires</b> en voyants 🔴/🟢 — <b>Honorabilité</b> (casier B2/FIJAISV, avant tout contact mineurs), <b>Diplôme (DE danse ou dispense)</b>, <b>Assurance RC</b> —, et l'<b>historique des prestations déjà réglées</b> (repris de la compta). <b>⛔ Règle d'or : tant qu'un voyant est rouge, on ne fait pas intervenir.</b> Clique un voyant pour le passer au vert quand tu as la pièce. « 🗓️ Voir ses créneaux » ouvre le planning des salles."},
   {cat:'🎟️ Activités',q:"Comment chiffrer et encaisser une inscription ACM (participation famille) ?",kw:"acm activite encaisser encaissement chiffrer participation famille cheque especes grille quotient familial semaine verser compta reste payer inscription ados vacances",a:"Onglet <b>🎟️ Activités</b> : sous chaque inscription à une activité (ACM…), le <b>bureau</b> chiffre la <b>participation</b> avec la <b>grille ACM</b> (tranche de quotient familial × prix de la semaine × nombre de semaines) → <b>Calculer &amp; enregistrer</b>. Le dossier affiche alors <b>Dû / Payé / Reste</b>, et le <b>bureau OU l'accueil</b> clique <b>« 💵 Encaisser »</b> (espèces, chèque…). Enfin, le bouton <b>« 💶 Verser les encaissements activité en compta »</b> (en haut de l'onglet, réservé au bureau) crée les <b>recettes</b>, taguées sur le <b>nom de l'activité</b> (ex. « ACM Ados — semaine 1 »), espèces en caisse, sans doublon. 💡 La <b>CAF</b> et la <b>Mairie</b> restent des <b>subventions</b> (module Subventions), à part de la participation des familles."},
   {cat:'🎒 Périscolaire',q:"Comment envoyer les encaissements du périscolaire dans la comptabilité ?",kw:"verser versement compta comptabilite recette encaissement periscolaire cheque especes caisse banque budget action double saisie op bureau participation famille solde",a:"Une fois un règlement encaissé (bouton « 💵 Encaisser »), le <b>bureau</b> le fait entrer en comptabilité en un clic : en haut du panneau <b>📨 Dossiers d'inscription</b>, le bouton <b>« 💶 Verser en compta (N) »</b> crée les <b>recettes</b> correspondantes — taguées <b>« Périscolaire »</b>, les <b>espèces</b> dans la <b>caisse</b> et le reste en <b>banque</b>. Un <b>verrou</b> garantit qu'un encaissement <b>n'entre qu'une seule fois</b> (pas de double compte). Ces recettes remontent ensuite toutes seules dans le <b>🎯 Budget par action</b> et le rapprochement bancaire. ⚖️ Réservé au bureau (l'accueil encaisse, le bureau verse). 💡 Ne saisis pas ces recettes « Périscolaire » à la main dans la Comptabilité : elles arriveraient en double (Bob te préviendra)."},
   {cat:'🎒 Périscolaire',q:"Comment noter qu'une famille a payé le périscolaire en chèque ou en espèces ?",kw:"periscolaire paiement paye payer encaisser encaissement cheque especes liquide virement regle reglement famille reste a payer impaye impayes qui a paye du solde recu comptoir accueil bureau dossier",a:"Onglet <b>🎒 Périscolaire</b>, panneau <b>📨 Dossiers d'inscription</b>. Sur le dossier d'une famille (une fois le <b>forfait du mois chiffré</b>), le <b>bureau ET l'accueil</b> voient un bouton <b>« 💵 Encaisser (chèque / espèces…) »</b> : choisis le <b>montant</b> (pré-rempli au reste dû), le <b>mode</b> (💵 Espèces, 🧾 Chèque, 🏦 Virement…), la <b>date</b> et le <b>n° de chèque</b>, puis <b>Enregistrer</b>. Le dossier affiche alors <b>Dû / Payé / Reste</b>, et la liste des dossiers indique en haut combien sont <b>« à encaisser »</b>. Un <b>🧾 reçu</b> imprimable est dispo sur chaque règlement. En cas d'erreur ou de chèque rejeté, le <b>bureau</b> clique <b>✕</b> pour l'annuler — ça n'efface rien, ça crée une <b>ligne négative</b> tracée. Le bureau clique ensuite <b>« 💶 Verser en compta »</b> pour créer les recettes correspondantes (voir la question dédiée)."},
@@ -2772,6 +2789,7 @@ function pageHelpGotoAide(){ pageHelpClose(); const b=document.querySelector('na
 
 /* ---- ✨ Quoi de neuf (nouveautés + notice chronologique) ---- */
 const NEWS=[
+  {id:'2026-07-12-intervenants',date:'2026-07-12',tab:'🎭 Intervenants',titre:"🎭 Nouveau : suivre les intervenants prestataires",desc:"Un nouvel onglet <b>🎭 Intervenants</b> (dans 🏠 Lieux &amp; Salles, réservé au bureau) pour suivre les intervenant·e·s qui animent nos activités <b>via leur association</b> (prestataires) : la <b>structure</b>, la <b>personne</b>, la <b>convention</b>, et surtout les <b>3 justificatifs obligatoires</b> en voyants 🔴/🟢 — <b>honorabilité</b> (casier B2/FIJAISV avant tout contact avec des mineurs), <b>diplôme (DE danse ou dispense)</b> et <b>assurance RC</b>. <b>Tant qu'un voyant est rouge, on ne fait pas intervenir</b> — de quoi protéger l'association et les enfants. L'onglet reprend aussi tout seul les <b>prestations déjà réglées</b> depuis la compta. Première fiche pré-remplie : <b>Association Culture Prod</b> (Stéphanie Ramin — danse)."},
   {id:'2026-07-11-journal-recherche',date:'2026-07-11',tab:'💶 Comptabilité',titre:"🔎 Chercher dans la compta par montant et par dates",desc:"Le <b>Journal des opérations</b> gagne de vrais filtres : la barre de recherche trouve maintenant aussi une écriture <b>par son montant</b> (tape par ex. <code>45,20</code>), et deux nouveaux champs <b>« du… au… »</b> n'affichent que les écritures <b>entre deux dates</b> (en plus de l'exercice et du type recettes/dépenses déjà là). Nouveauté clé : les tableaux de <b>Ventilation</b> (dépenses et recettes par site / action) <b>suivent désormais ce que tu affiches</b> — après une recherche ou un filtre, ils ne comptent que les écritures visibles, plus toute l'année. En haut de la page 💶 Comptabilité, deux <b>boutons d'accès rapide</b> (<b>📊 Ventilation</b>, <b>🏦 Rapprochement bancaire</b>) t'y amènent d'un clic. Et le rapprochement a un bouton <b>« 📤 Exporter les incohérences (Excel) »</b>."},
   {id:'2026-07-11-visuel-post',date:'2026-07-11',tab:'📣 Communication',titre:"🎨 Créer une image pour un post",desc:"Nouveau bloc <b>« 🎨 Créer un visuel de post »</b> dans l'onglet <b>📣 Communication</b> (sous le carrousel) : tu donnes un <b>thème</b> (ex. « ACM ados été — journée surf »), un <b>format</b> (carré, story, paysage) et un <b>style</b>, et l'expert fabrique une <b>image à tes couleurs</b>, ambiance péi — une <b>illustration sans vraie personne</b> (aucun souci de droit à l'image). Tu <b>régénères</b> jusqu'à ce que ça te plaise, puis tu <b>télécharges</b> ; ton texte se pose par-dessus. Ça coûte <b>≈ 3 crédits</b>, plafonné. Réservé au bureau et aux salariés."},
   {id:'2026-07-11-board-acm-salarie',date:'2026-07-11',tab:'🌴 Vacances',titre:"🗓️ Les salariées placent les activités en glissant",desc:"Dans « 🌴 Mon ACM » (espace salarié), la salariée a maintenant <b>le même tableau que toi</b> : elle voit <b>ton vrai catalogue d'activités</b> et les <b>glisse sur les jours</b> (ou choisit le jour dans un petit menu, pratique sur téléphone). Chaque déplacement devient une <b>proposition de placement</b> qui arrive dans <b>📥 À valider</b> ; quand tu l'<b>Acceptes</b>, l'activité se <b>pose toute seule</b> sur ton planning — plus besoin de tout retaper. Réservé au bureau pour la validation."},
@@ -4697,6 +4715,79 @@ function renderStructures(){
       +'<div style="margin-top:8px"><button class="danger" onclick="delStructure(\''+s.id+'\')">🗑️ Supprimer la structure</button></div>'
       +'</div></details>';
   }).join('') : '<p class="empty">Aucune structure. Ajoute la DRAJES, la CAF, la Mairie…</p>';
+}
+
+/* ===== 🎭 Intervenants — fiche prestataire (Coup 1, 12/07/2026) : structure + convention + 3 verrous bloquants + historique prestations (lu dans db.ops). Tout dans le coffre db.intervenants. Bureau uniquement (gating applyPerms). ===== */
+const INT_VERROUS=[
+  {k:'honor',   lbl:'Honorabilité',        hint:'Casier B2 / FIJAISV — obligatoire AVANT tout contact avec des mineurs.'},
+  {k:'diplome', lbl:'Diplôme (DE danse)',  hint:'DE, dispense ou VAE. Sans diplôme : repli légal (éveil, barre au sol, ateliers choré).'},
+  {k:'assur',   lbl:'Assurance RC',        hint:'Responsabilité civile de la structure + attestation à jour.'}
+];
+const INT_ETATS={rouge:{e:'🔴',lbl:'à obtenir',c:'#e24b4a'},vert:{e:'🟢',lbl:'OK',c:'#1d9e75'},na:{e:'⚪',lbl:'non requis',c:'#8a978f'}};
+const INT_CONV={a_etablir:'⏳ à établir',envoyee:'📤 envoyée',signee:'✅ signée',expiree:'⚠️ expirée'};
+function intSeed(){
+  return {id:uid(),structure:'Association Culture Prod',domaine:'Danse',referent:'',pers:'Stéphanie Ramin',
+    email:'stephanieramin@yahoo.fr',tel:'',siret:'',matchLabel:'culture prod',
+    conv:{statut:'a_etablir',debut:'',fin:'',montant:''},
+    verrous:{honor:'rouge',diplome:'rouge',assur:'rouge'},
+    note:'Référencée « intervenants artistiques » du Rectorat (danse), à titre individuel. ⚠️ Lien familial possible avec Fabrice Ramin (salarié) → convention + justificatifs irréprochables (transparence).'};
+}
+function intList(){ if(db.intervenants===undefined) db.intervenants=[intSeed()]; db.intervenants=db.intervenants||[]; return db.intervenants; }
+function intAdd(){
+  const st=$('in_struct').value.trim(); if(!st){ alert('Indique la structure prestataire.'); return; }
+  intList().push({id:uid(),structure:st,domaine:$('in_dom').value.trim(),referent:'',pers:$('in_pers').value.trim(),
+    email:'',tel:'',siret:'',matchLabel:st.toLowerCase(),
+    conv:{statut:'a_etablir',debut:'',fin:'',montant:''},
+    verrous:{honor:'rouge',diplome:'rouge',assur:'rouge'},note:''});
+  ['in_struct','in_pers','in_dom'].forEach(i=>{ const el=$(i); if(el) el.value=''; }); save();
+}
+function intDel(id){ if(!confirm('Supprimer cette fiche intervenant ?')) return; db.intervenants=intList().filter(x=>x.id!==id); save(); }
+function intVerrou(id,k){ const f=intList().find(x=>x.id===id); if(!f)return; f.verrous=f.verrous||{}; const cur=f.verrous[k]||'rouge'; f.verrous[k]=(cur==='rouge')?'vert':(cur==='vert')?'na':'rouge'; save(); }
+function intField(id,path,v){ const f=intList().find(x=>x.id===id); if(!f)return; if(path.indexOf('.')>0){ const p=path.split('.'); f[p[0]]=f[p[0]]||{}; f[p[0]][p[1]]=v; } else { f[path]=v; } save(); }
+function intGotoCreneaux(){ const b=document.querySelector('nav.tabs button[data-tab="salles"]'); if(b){ b.click(); const sel=$('salleSelect'); if(sel){ sel.value='danse'; if(window.loadCreneaux) loadCreneaux(); } } }
+function intPrestations(f){
+  const m=(f.matchLabel||f.structure||'').toLowerCase(); if(!m) return [];
+  return (db.ops||[]).filter(function(o){ return o.type==='out' && (o.label||'').toLowerCase().indexOf(m)>=0; })
+    .sort(function(a,b){ return (b.date||'').localeCompare(a.date||''); });
+}
+function renderIntervenants(){
+  const box=$('intervenantsBody'); if(!box) return;
+  const list=intList();
+  box.innerHTML = list.length ? list.map(function(f){
+    f.verrous=f.verrous||{}; f.conv=f.conv||{};
+    const rouge=INT_VERROUS.some(function(v){ return (f.verrous[v.k]||'rouge')==='rouge'; });
+    const bandeau = rouge
+      ? '<div class="card" style="background:#fdecec;border-top:3px solid #e24b4a;margin:0 0 8px"><strong>⛔ Ne pas faire intervenir</strong> — au moins un justificatif n\'est pas fourni.</div>'
+      : '<div class="card" style="background:#eafaf2;border-top:3px solid #1d9e75;margin:0 0 8px"><strong>✅ Prêt à intervenir</strong> — les 3 justificatifs sont couverts.</div>';
+    const verrousUI='<div class="row" style="gap:8px;flex-wrap:wrap;margin:6px 0">'+INT_VERROUS.map(function(v){
+      const et=INT_ETATS[f.verrous[v.k]||'rouge'];
+      return '<button class="ghost btn" title="'+esc(v.hint)+'" onclick="intVerrou(\''+f.id+'\',\''+v.k+'\')" style="flex:1;min-width:160px;text-align:left;border:1.5px solid '+et.c+';border-radius:12px;padding:8px 10px">'
+        +'<span style="font-size:16px">'+et.e+'</span> <b>'+esc(v.lbl)+'</b><br><span class="muted" style="font-size:12px">'+et.lbl+' · clique pour changer</span></button>';
+    }).join('')+'</div>';
+    const convUI='<div class="row" style="gap:8px;align-items:flex-end;background:#fafbfc;padding:8px;border-radius:10px;margin:6px 0">'
+      +'<div class="field" style="flex:0;min-width:150px"><label style="font-size:12px">Convention</label><select onchange="intField(\''+f.id+'\',\'conv.statut\',this.value)">'+Object.keys(INT_CONV).map(function(k){ return '<option value="'+k+'"'+(((f.conv.statut||'a_etablir')===k)?' selected':'')+'>'+INT_CONV[k]+'</option>'; }).join('')+'</select></div>'
+      +'<div class="field" style="flex:0;min-width:130px"><label style="font-size:12px">Début</label><input type="date" value="'+esc(f.conv.debut||'')+'" onchange="intField(\''+f.id+'\',\'conv.debut\',this.value)"></div>'
+      +'<div class="field" style="flex:0;min-width:130px"><label style="font-size:12px">Fin</label><input type="date" value="'+esc(f.conv.fin||'')+'" onchange="intField(\''+f.id+'\',\'conv.fin\',this.value)"></div>'
+      +'<div class="field" style="flex:2"><label style="font-size:12px">Document</label><span class="hint" style="margin:0">Dépose la convention dans <b>🗂️ Répertoire → 📁 Documents officiels</b> (coffre privé).</span></div>'
+      +'</div>';
+    const presta=intPrestations(f);
+    const prestaUI = presta.length ? '<div style="margin:6px 0"><div style="font-weight:600;font-size:13px;margin-bottom:4px">💶 Prestations déjà réglées <span class="muted" style="font-weight:400">(depuis la compta)</span></div>'
+      +presta.slice(0,6).map(function(o){ return '<div class="kv" style="font-size:13px"><span>'+(o.date?fmtDate(o.date):'')+' · '+esc(o.label||'')+'</span><span>'+euro(parseFloat(o.amount)||0)+'</span></div>'; }).join('')+'</div>' : '';
+    return '<details class="card" style="margin-bottom:10px" open><summary style="cursor:pointer;font-weight:700;font-size:15px">'+esc(f.structure)+(f.domaine?' <span class="pill" style="background:#eef2fb;color:#3a51e8">'+esc(f.domaine)+'</span>':'')+' '+(rouge?'<span class="pill no">⛔ incomplet</span>':'<span class="pill ok">✅ prêt</span>')+'</summary>'
+      +'<div style="margin-top:8px">'
+      +bandeau
+      +'<p style="margin:0 0 6px">👤 <b>'+esc(f.pers||'—')+'</b>'+(f.email?' · <a href="mailto:'+esc(f.email)+'">'+esc(f.email)+'</a>':'')+(f.tel?' · '+esc(f.tel):'')+'</p>'
+      +(f.note?'<p class="hint" style="margin:0 0 6px">'+esc(f.note)+'</p>':'')
+      +'<div style="font-weight:600;font-size:13px;margin:8px 0 2px">🔐 Les 3 justificatifs obligatoires <span class="muted" style="font-weight:400">(mener par le juridique)</span></div>'
+      +verrousUI
+      +convUI
+      +prestaUI
+      +'<div class="row" style="gap:6px;margin-top:8px">'
+      +'<button class="ghost btn" onclick="intGotoCreneaux()">🗓️ Voir ses créneaux</button>'
+      +'<button class="danger" onclick="intDel(\''+f.id+'\')">🗑️ Supprimer</button>'
+      +'</div>'
+      +'</div></details>';
+  }).join('') : '<p class="empty">Aucun intervenant. Ajoute une structure prestataire ci-dessus.</p>';
 }
 
 /* ---- Secrétariat : mémo, échéancier général, courriers ---- */
@@ -6871,7 +6962,7 @@ function acmNewSession(type){
   const nb=Math.max(1,Math.min(40,parseInt(prompt('Combien de jours d\'accueil ? (ex : 10)','10'),10)||10));
   const jours=acmGenJours(start,nb);
   const _dd=acmParseDate(start); const _ddISO=_dd?(_dd.getFullYear()+'-'+String(_dd.getMonth()+1).padStart(2,'0')+'-'+String(_dd.getDate()).padStart(2,'0')):'';
-  // Pour VEPI : demSeeded=true → on n'injecte PAS le parcours-type ACM (fiche TAM J-8/J-60…), les échéances VEPI se définiront à part (Coup 2).
+  // VEPI : demSeeded=true → on n'injecte PAS le parcours-type ACM (fiche TAM J-8/J-60…). Coup 2 (héritage ACM auto) EN ATTENTE — à ré-appliquer seulement après feu vert DLA/SDJES (design en mémoire : bob-vepi-coup2-held).
   const s={id:uid(),nom:nom.trim(),type:type,jours,plan:{},statut:'ouverte',activiteIds:[],dateDebut:_ddISO,bilan:{cr:'',demarches:[],effectif:null,closedAt:null,demSeeded:isV,photoIds:[]}};
   const a=acmDb(); a.sessions.push(s); a.cur=s.id; save();
   if(window.acmLoadEditionsData) acmLoadEditionsData();
@@ -6879,7 +6970,7 @@ function acmNewSession(type){
 /* acmDelSession retiré (Coup 3) : la suppression d'une édition passe désormais par acmDelEdition (statut-aware). */
 function b64ToUtf8(s){ try{ return new TextDecoder().decode(Uint8Array.from(atob(s),c=>c.charCodeAt(0))); }catch(e){ return ''; } }
 function renderCoffre(){ try{ document.querySelectorAll('[data-coffre]').forEach(function(el){ var k=el.getAttribute('data-coffre'); var v=(window.db&&db.coffreHtml&&db.coffreHtml[k])||''; el.innerHTML = v ? b64ToUtf8(v) : ''; }); }catch(e){} }
-function renderAll(){ renderCoffre(); renderDashboard(); renderZoneCards(); renderMembers(); renderRelances(); renderOps(); renderCaisse(); renderRapprochement(); renderProjects(); renderSubventions(); renderEcheancier(); renderBilan(); renderPrevisionnel(); renderPilotage(); renderEquipe(); renderRepertoire(); renderSecretariat(); renderDemarches(); renderAssurance(); renderCaMembres(); renderReunions(); renderCaprep(); renderIncidents(); renderDettes(); renderOfficialLinks(); refreshComptes(); renderListParams(); renderJournal(); renderPeriscolaire(); renderFaqList(); renderNews(); renderAccompagnement(); renderRH(); renderProjet(); renderProjetAdos(); renderActions(); renderConges(); renderFermetures(); renderHoraires(); renderAcmVac(); if(window.renderVepi)window.renderVepi(); if(window.renderDocsPeri)window.renderDocsPeri(); if(window.renderDocsOff)window.renderDocsOff(); }
+function renderAll(){ renderCoffre(); renderDashboard(); renderZoneCards(); renderMembers(); renderRelances(); renderOps(); renderCaisse(); renderRapprochement(); renderProjects(); renderSubventions(); renderEcheancier(); renderBilan(); renderPrevisionnel(); renderPilotage(); renderEquipe(); renderRepertoire(); renderSecretariat(); renderDemarches(); renderAssurance(); renderCaMembres(); renderReunions(); renderCaprep(); renderIncidents(); renderDettes(); renderOfficialLinks(); refreshComptes(); renderListParams(); renderJournal(); renderPeriscolaire(); renderFaqList(); renderNews(); renderAccompagnement(); renderRH(); renderProjet(); renderProjetAdos(); renderActions(); renderConges(); renderFermetures(); renderHoraires(); renderAcmVac(); renderIntervenants(); if(window.renderVepi)window.renderVepi(); if(window.renderDocsPeri)window.renderDocsPeri(); if(window.renderDocsOff)window.renderDocsOff(); }
 
 /* ---- Data import/export ---- */
 function exportJSON(motif){
@@ -7037,6 +7128,7 @@ renderAll();
     if(!canWrite && myProfile && myProfile.role!=='personnel') perms.vepi='cache'; // 📌 VEPI : masqué aux rôles hors bureau/personnel (adhérent, intervenant). Pour le PERSONNEL, l'accès SUIT l'encoche par salarié (🔧 Rubriques) : « gestion » = peut créer une fiche, « lecture » = voit seulement (sans bouton), « caché » = masqué. Défaut personnel non réglé = lecture (visible). Le bureau garde « gestion ».
     if(!canWrite) perms.rdv='cache'; // 📅 Rendez-vous : gestion des plages/créneaux → bureau uniquement
     if(!canWrite) perms.salles='cache'; // 🗓️ Salles : planning interne des créneaux → bureau uniquement
+    if(!canWrite) perms.intervenants='cache'; // 🎭 Intervenants : convention, justificatifs & factures = données sensibles → bureau uniquement
     // 📋 Docs inscription : panneau fusionné dans 🎒 Périscolaire (#docsPeriPanel) → masqué aux non-bureau via le css plus bas (étape2 23/06/2026)
     if(!canWrite) perms.caprep='cache'; // 📝 Préparer le CA : préparation du conseil → bureau uniquement
     if(!canWrite){ perms.accounting='cache'; perms.caisse='cache'; perms.dettes='cache'; perms.bilan='cache'; perms.previsionnel='cache'; } // 💶 Finances : trésorerie → bureau uniquement (verrou de DROIT, plus seulement « de fait » — étape2 22/06/2026)
