@@ -516,6 +516,12 @@
       </div>
       <div id="planningSalles"></div>
     </div>
+    <div class="panel">
+      <details ontoggle="if(this.open&&window.loadCalcDanse)loadCalcDanse()">
+        <summary style="cursor:pointer;font-weight:800;font-size:15px">💶 Modèle éco des cours de danse — calculateur</summary>
+        <div id="calcDanse" style="margin-top:10px"><p class="hint">Ouvre pour calculer le coût des forfaits (ce que le CASE paie aux intervenants) face aux inscriptions des familles — sur les vrais créneaux de la salle de danse.</p></div>
+      </details>
+    </div>
   </section>
 
   <!-- INTERVENANTS — fiche prestataire (Coup 1, 12/07/2026) : structure + convention + 3 verrous bloquants + historique prestations (compta). Bureau uniquement (gating applyPerms). Additif, tout dans le coffre db.intervenants. -->
@@ -2519,6 +2525,7 @@ const FAQ=[
   {cat:'🎯 Budget par action', q:"À quoi sert l'onglet Budget par action et comment créer une action ?", kw:"action actions budget par action pilotage fiche creer dossier mgdis mairie periscolaire acm vepi evenement financeur subvention depense pivot secteur activite responsable beneficiaires cloturee suivi budget", a:"L'onglet <b>🎯 Budget par action</b> (famille 💶 Finances, réservé au bureau) réunit chaque <b>action</b> du CASE — périscolaire, ACM, VEPI, événement… — en une <b>fiche unique</b>. Les actions <b>déjà utilisées dans Bob</b> (compta, subventions) apparaissent en haut de la liste, à créer en <b>un clic</b> — pas besoin de retaper leur nom. Tu crées une action (nom + type), puis tu précises sa période, son site, son ou sa responsable, son <b>n° de dossier Mairie (MGDIS)</b>, ses bénéficiaires et si elle est financée par la Mairie. Cette fiche devient le <b>point d'accroche unique</b> de son budget : les dépenses et les subventions déjà saisies dans Bob se relient à elle <b>par son nom</b>, sans double saisie. Ouvre le <b>budget détaillé</b> d'une action : le <b>coût du personnel</b> se calcule tout seul (coût horaire chargé × heures affectées), les <b>dépenses</b> réelles et les <b>recettes</b> (subventions versées) remontent automatiquement de la comptabilité, et un <b>aperçu « plan financier »</b> se copie en un clic pour le dossier Mairie. Deux vues complètent : <b>📊 Consolidé annuel</b> (toutes les actions) et <b>👤 Charge salariés</b> (Σ des heures par salarié vs sa capacité — le garde-fou anti-double-comptage). Supprimer une fiche ne touche <b>pas</b> les écritures comptables reliées."},
   {cat:'📨 Messages',q:"Comment répondre aux messages des adhérents ?",kw:"messages adherent adherents repondre parler case fil conversation famille accueil bureau boite reception canal deux sens en attente courrier ecrire",a:"Onglet <b>📨 Messages</b> (famille 👥 Adhérents) : chaque adhérent qui écrit depuis son espace « 💬 Parler au CASE » a un <b>fil privé</b>. Les fils <b>« 🔴 à répondre »</b> (dernier message venu de l'adhérent) remontent en haut. Clique un fil pour lire la conversation et <b>répondre au nom du CASE</b> — accueil et bureau y ont accès. Une <b>pastille rouge</b> sur la famille 👥 Adhérents et une ligne « ⏰ À traiter » te préviennent des messages sans réponse."},
   {cat:'🗓️ Salles',q:"À quoi sert l'onglet Salles ?",kw:'salle salles planning creneau créneau danse grille horaire cours intervenant orphelin qui anime',a:"L'onglet 🗓️ Salles montre le planning hebdomadaire de la salle de danse : chaque créneau (jour, heure, cours) et qui l'anime. Les créneaux en rouge sont « orphelins » — l'intervenant est parti et le créneau est à reprendre. Pour l'instant c'est en lecture seule ; l'édition directe des créneaux arrivera bientôt."},
+  {cat:'🗓️ Salles',q:"Comment calculer si les cours de danse sont rentables ?",kw:"calculateur calcul modele economique eco rentable rentabilite cout forfait facture globale prestation prix cours nombre eleves inscriptions point mort marge remplir danse argent budget",a:"Dans l'onglet <b>🗓️ Salles</b>, sous le planning, déplie <b>« 💶 Modèle éco des cours de danse »</b>. Il lit les vrais créneaux de danse et compare <b>ce que le CASE paie</b> (une <b>facture globale</b> par intervenant, façon prestation) à ce que <b>rapportent les inscriptions</b> des familles (prix plein — il n'y a <b>pas de quotient familial</b> sur ces cours ouverts, contrairement à l'ACM/périscolaire). Tape le prix et le nombre d'élèves de chaque cours : tu vois la <b>marge</b> et le <b>point mort</b> (le nombre moyen d'élèves/cours qu'il faut pour couvrir les forfaits). Rappel : en prestation, le risque de remplissage est porté par le CASE — <b>c'est à nous de remplir</b>."},
   {cat:'📊 Tableau de bord',q:"C'est quoi « Ton équipe » avec les ananas en haut de l'accueil ?",kw:"equipe ananas bob bobs sabine tresi nono roro secretaire tresoriere animateur rh personnage mascotte accueil qui veux voir carte cartes outils porte entree cliquer membre direction zanana",a:"En haut du tableau de bord, ton équipe Bob te sert de <b>porte d'entrée</b> : chaque personnage regroupe un métier — <b>Sabine</b> (le bureau : adhérents, agenda, répertoire, CA), <b>Trési</b> (la trésorerie : compta, subventions, bilan), <b>Nono</b> (l'animation : périscolaire, activités, vacances, ateliers) et <b>Roro</b> (les salariés : dossiers, congés, horaires). Clique un personnage pour voir tous ses outils et y aller directement ; « La Direction » juste au-dessus regroupe le pilotage (tableau de bord, projet, suivi). Tu ne vois que les personnages et outils auxquels <b>ton rôle a accès</b>. Tous les onglets restent aussi dans le menu en couleurs comme avant."},
   {cat:'🧰 Secrétariat',q:"Comment compter les voix d'une délibération et générer le procès-verbal (PV) ?",kw:"pv proces verbal procès délibération deliberation resolution voix compter compteur pour contre abstention sens adoptee rejetee reportee deport voter scrutin generer imprimer reunion seance conseil administration boutons plus moins",a:"Onglet <b>🧰 Secrétariat</b> → <b>« Réunions &amp; délibérations »</b>. Sur chaque délibération, les boutons <b>+ / −</b> comptent les voix <b>Pour / Contre / Abstention</b> ; le <b>sens</b> (adoptée / rejetée / reportée) se met à jour tout seul. Le bouton <b>⚖️ Déport</b> note qu'un membre se retire d'une résolution (conflit d'intérêts) — c'est repris au PV. Une fois les votes saisis, <b>🖨️ PV</b> génère le <b>procès-verbal officiel</b> (présents, quorum, déports, résolutions avec le détail des voix, signatures Président/Secrétaire). Le <b>🖨️ Relevé</b> reste, lui, un document de préparation. Le PV est <b>à valider et signer en séance</b> ; en cas de doute sur le formalisme : Hexopée."},
   {cat:'🗂️ Répertoire',q:"Comment protéger un identifiant ou un mot de passe dans les liens ?",kw:"lien liens mot de passe motdepasse code coffre chiffrer chiffré cadenas secret acces identifiant proteger confidentiel reveler reveler tam mairie orange portail securiser cacher",a:"Dans <b>🗂️ Répertoire</b>, section <b>Liens</b> : mets l'identifiant et le mot de passe dans la <b>note</b> du lien, puis clique <b>🔒</b> sur la ligne (ou <b>« Protéger les accès »</b> en haut de la liste) et choisis un <b>code du coffre</b> connu du bureau. La note devient <b>illisible</b> (chiffrée) — même en ligne, personne ne peut la lire sans le code. Pour la relire : bouton <b>« Révéler »</b> + le code ; pour la modifier : <b>🔓 Déprotéger</b>. Le code <b>n'est jamais enregistré</b> : on le tape à chaque fois. Si tu oublies le code, re-saisis l'accès (il existe aussi sur le vrai portail)."},
@@ -2796,6 +2803,7 @@ function pageHelpGotoAide(){ pageHelpClose(); const b=document.querySelector('na
 
 /* ---- ✨ Quoi de neuf (nouveautés + notice chronologique) ---- */
 const NEWS=[
+  {id:'2026-07-12-calc-danse',date:'2026-07-12',tab:'salles',titre:"💶 Calculateur : les cours de danse sont-ils rentables ?",desc:"Dans l'onglet <b>🗓️ Salles</b>, sous le planning, un nouveau panneau <b>« 💶 Modèle éco des cours de danse »</b>. Il lit les <b>vrais créneaux</b> de la salle de danse et compare <b>ce que le CASE paie</b> (une <b>facture globale</b> par intervenant) à ce que <b>rapportent les inscriptions</b> — en <b>prix plein</b> (ces cours ouverts n'ont pas de quotient familial, contrairement à l'ACM/périscolaire). Tu tapes le prix et le nombre d'élèves de chaque cours, et tu vois la <b>marge</b> et le <b>point mort</b> (combien d'élèves/cours il faut pour couvrir les forfaits). En prestation, c'est le CASE qui porte le remplissage : <b>à nous de remplir</b>."},
   {id:'2026-07-12-intervenants',date:'2026-07-12',tab:'🎭 Intervenants',titre:"🎭 Nouveau : suivre les intervenants prestataires",desc:"Un nouvel onglet <b>🎭 Intervenants</b> (dans 🏠 Lieux &amp; Salles, réservé au bureau) pour suivre les intervenant·e·s qui animent nos activités <b>via leur association</b> (prestataires) : la <b>structure</b>, la <b>personne</b>, la <b>convention</b>, et surtout les <b>3 justificatifs obligatoires</b> en voyants 🔴/🟢 — <b>honorabilité</b> (casier B2/FIJAISV avant tout contact avec des mineurs), <b>diplôme (DE danse ou dispense)</b> et <b>assurance RC</b>. <b>Tant qu'un voyant est rouge, on ne fait pas intervenir</b> — de quoi protéger l'association et les enfants. L'onglet reprend aussi tout seul les <b>prestations déjà réglées</b> depuis la compta. Première fiche pré-remplie : <b>Association Culture Prod</b> (Stéphanie Ramin — danse)."},
   {id:'2026-07-11-journal-recherche',date:'2026-07-11',tab:'💶 Comptabilité',titre:"🔎 Chercher dans la compta par montant et par dates",desc:"Le <b>Journal des opérations</b> gagne de vrais filtres : la barre de recherche trouve maintenant aussi une écriture <b>par son montant</b> (tape par ex. <code>45,20</code>), et deux nouveaux champs <b>« du… au… »</b> n'affichent que les écritures <b>entre deux dates</b> (en plus de l'exercice et du type recettes/dépenses déjà là). Nouveauté clé : les tableaux de <b>Ventilation</b> (dépenses et recettes par site / action) <b>suivent désormais ce que tu affiches</b> — après une recherche ou un filtre, ils ne comptent que les écritures visibles, plus toute l'année. En haut de la page 💶 Comptabilité, deux <b>boutons d'accès rapide</b> (<b>📊 Ventilation</b>, <b>🏦 Rapprochement bancaire</b>) t'y amènent d'un clic. Et le rapprochement a un bouton <b>« 📤 Exporter les incohérences (Excel) »</b>."},
   {id:'2026-07-11-visuel-post',date:'2026-07-11',tab:'📣 Communication',titre:"🎨 Créer une image pour un post",desc:"Nouveau bloc <b>« 🎨 Créer un visuel de post »</b> dans l'onglet <b>📣 Communication</b> (sous le carrousel) : tu donnes un <b>thème</b> (ex. « ACM ados été — journée surf »), un <b>format</b> (carré, story, paysage) et un <b>style</b>, et l'expert fabrique une <b>image à tes couleurs</b>, ambiance péi — une <b>illustration sans vraie personne</b> (aucun souci de droit à l'image). Tu <b>régénères</b> jusqu'à ce que ça te plaise, puis tu <b>télécharges</b> ; ton texte se pose par-dessus. Ça coûte <b>≈ 3 crédits</b>, plafonné. Réservé au bureau et aux salariés."},
@@ -9592,6 +9600,88 @@ renderAll();
     }
     html+='</div></div>';
     box.innerHTML=html;
+  };
+  /* ===== 💶 Modèle éco des cours de danse (calculateur, lu sur les créneaux réels) ===== */
+  window.loadCalcDanse=async function(){
+    const box=document.getElementById('calcDanse'); if(!box) return;
+    box.innerHTML='<p class="hint">Chargement des créneaux…</p>';
+    const {data,error}=await sbc.from('creneaux').select('*').eq('salle','danse').eq('actif',true).order('jour',{ascending:true}).order('debut',{ascending:true});
+    if(error){ box.innerHTML='<p class="hint" style="color:#c0392b">Impossible de charger les créneaux.</p>'; return; }
+    const rows=data||[];
+    if(!rows.length){ box.innerHTML='<p class="hint">Aucun créneau de danse actif à calculer.</p>'; return; }
+    const JOURS=['','Lun','Mar','Mer','Jeu','Ven','Sam'];
+    const esc=s=>String(s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+    const eur=n=>Math.round(n).toLocaleString('fr-FR')+' €';
+    const toMin=t=>{const p=String(t||'0:0').split(':');return (+p[0])*60+(+p[1]);};
+    const durH=c=>Math.max(0,(toMin(c.fin)-toMin(c.debut))/60);
+    const isEntr=c=>/entra|r[ée]p[ée]t/i.test(c.titre||'');
+    const dureeFactor=d=>d<=1?1:(d<=1.5?1.10:1.20);
+    const defPrix=c=>{ let base=/adulte/i.test(c.public_vise||'')?480:420; if(/enfant/i.test(c.public_vise||'')&&durH(c)<1)base=380; return Math.round(base*dureeFactor(durH(c))/5)*5; };
+    const profs=[...new Set(rows.filter(c=>c.intervenant).map(c=>c.intervenant))];
+    const hoursOf=p=>rows.filter(c=>c.intervenant===p).reduce((s,c)=>s+durH(c),0);
+    let tarif=50, sem=34;
+    const anchor=p=>Math.round(hoursOf(p)*tarif*sem);
+    let fh=profs.map(p=>'<div style="margin:0 0 8px"><div style="display:flex;justify-content:space-between;gap:8px;font-size:12.5px"><span>Facture globale — <b>'+esc(p)+'</b></span><span class="muted" data-anchor="'+esc(p)+'" style="font-size:11px"></span></div>'
+      +'<input type="number" step="100" value="'+anchor(p)+'" data-forfait="'+esc(p)+'" style="width:150px;font:inherit;text-align:right;padding:6px 8px;border:1px solid var(--line,#e7efe9);border-radius:8px"> €/an</div>').join('')
+      || '<p class="hint">Aucun intervenant nommé sur les créneaux.</p>';
+    let trs='';
+    rows.forEach((c,i)=>{
+      const entr=isEntr(c), d=durH(c);
+      trs+='<tr'+(entr?' style="opacity:.55"':'')+'>'
+        +'<td style="padding:5px 6px">'+JOURS[c.jour]+'</td>'
+        +'<td style="padding:5px 6px;text-align:left">'+esc(c.titre)+(entr?' <span class="pill" style="background:#fdf1dd;color:#8a6400;font-size:10px">répét.</span>':'')+'</td>'
+        +'<td style="padding:5px 6px;text-align:right">'+d.toFixed(2).replace('.',',')+' h</td>'
+        +'<td style="padding:5px 6px;text-align:left">'+esc(c.intervenant||'—')+'</td>'
+        +(entr
+          ? '<td style="text-align:right;padding:5px 6px">—</td><td style="text-align:right;padding:5px 6px">—</td><td style="text-align:right;padding:5px 6px">—</td>'
+          : '<td style="text-align:right;padding:5px 6px"><input type="number" step="5" value="'+defPrix(c)+'" data-px="'+i+'" style="width:74px;font:inherit;text-align:right;padding:3px 5px;border:1px solid var(--line,#e7efe9);border-radius:6px"></td>'
+            +'<td style="text-align:right;padding:5px 6px"><input type="number" step="1" value="8" data-el="'+i+'" style="width:52px;font:inherit;text-align:right;padding:3px 5px;border:1px solid var(--line,#e7efe9);border-radius:6px"></td>'
+            +'<td data-rev="'+i+'" style="text-align:right;padding:5px 6px">—</td>')
+        +'</tr>';
+    });
+    box.innerHTML=
+      '<p class="hint" style="margin-top:6px">Prix <b>plein</b> (pas de quotient familial : cours ouverts, pas de l\'ACM/périscolaire). Le prof facture une <b>facture globale</b> à son asso pour l\'ensemble de ses cours — le CASE la paie, et <b>c\'est à nous de remplir</b>. Lu en direct sur les créneaux de la salle de danse.</p>'
+      +'<div style="display:flex;gap:16px;flex-wrap:wrap;align-items:flex-end;margin:12px 0">'
+        +'<label style="font-size:12.5px">Coût horaire repère<br><input id="cdTarif" type="number" step="1" value="50" style="width:82px;font:inherit;text-align:right;padding:6px 8px;border:1px solid var(--line,#e7efe9);border-radius:8px"> €/h</label>'
+        +'<label style="font-size:12.5px">Semaines / an<br><input id="cdSem" type="number" step="1" value="34" style="width:70px;font:inherit;text-align:right;padding:6px 8px;border:1px solid var(--line,#e7efe9);border-radius:8px"></label>'
+        +'<label style="font-size:12.5px">Frais généraux / an<br><input id="cdFrais" type="number" step="250" value="0" style="width:104px;font:inherit;text-align:right;padding:6px 8px;border:1px solid var(--line,#e7efe9);border-radius:8px"> €</label>'
+        +'<button class="ghost btn" id="cdReset" type="button">↺ Caler les forfaits sur le repère</button>'
+      +'</div>'
+      +'<div style="background:#f7faf8;border:1px solid var(--line,#e7efe9);border-radius:12px;padding:12px;margin:0 0 12px"><div style="font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:#62756b;margin-bottom:8px">Ce que le CASE paie (forfaits)</div>'+fh+'</div>'
+      +'<div id="cdKpis" style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin:0 0 12px"></div>'
+      +'<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:12.5px">'
+        +'<thead><tr style="color:#62756b;font-size:11px;text-transform:uppercase"><th style="text-align:left;padding:5px 6px">Jour</th><th style="text-align:left;padding:5px 6px">Cours</th><th style="text-align:right;padding:5px 6px">Durée</th><th style="text-align:left;padding:5px 6px">Prof</th><th style="text-align:right;padding:5px 6px">Prix élève/an</th><th style="text-align:right;padding:5px 6px">Élèves</th><th style="text-align:right;padding:5px 6px">Revenu/an</th></tr></thead>'
+        +'<tbody>'+trs+'</tbody>'
+        +'<tfoot><tr style="font-weight:800;border-top:2px solid var(--line,#e7efe9)"><td colspan="5" style="padding:6px">Total inscriptions &amp; revenu</td><td id="cdTotEl" style="text-align:right;padding:6px">—</td><td id="cdTotRev" style="text-align:right;padding:6px">—</td></tr></tfoot>'
+      +'</table></div>'
+      +'<p class="hint" id="cdVerdict" style="margin-top:10px"></p>';
+    function compute(){
+      tarif=+box.querySelector('#cdTarif').value||0; sem=+box.querySelector('#cdSem').value||0;
+      const frais=+box.querySelector('#cdFrais').value||0;
+      let coutForfait=0;
+      box.querySelectorAll('[data-forfait]').forEach(inp=>{ coutForfait+=(+inp.value||0); });
+      box.querySelectorAll('[data-anchor]').forEach(sp=>{ const p=sp.dataset.anchor; sp.textContent='repère : '+hoursOf(p).toFixed(2).replace('.',',')+' h × '+tarif+' € × '+sem+' sem = '+eur(anchor(p)); });
+      let rev=0, el=0, sommePrix=0, nb=0;
+      box.querySelectorAll('[data-px]').forEach(inp=>{
+        const i=inp.dataset.px, prix=+inp.value||0, e=+box.querySelector('[data-el="'+i+'"]').value||0;
+        const r=prix*e; box.querySelector('[data-rev="'+i+'"]').textContent=eur(r);
+        rev+=r; el+=e; sommePrix+=prix; nb++;
+      });
+      const cout=coutForfait+frais, marge=rev-cout, pm=sommePrix>0?cout/sommePrix:0;
+      const kpi=(k,v,extra)=>'<div style="background:#f7faf8;border-radius:10px;padding:10px"><div style="font-size:10.5px;text-transform:uppercase;letter-spacing:.4px;color:#62756b">'+k+'</div><div style="font-size:19px;font-weight:800'+(extra||'')+'">'+v+'</div></div>';
+      box.querySelector('#cdKpis').innerHTML=
+        kpi('Ce qu\'on paie',eur(cout))
+        +kpi('Revenu familles',eur(rev))
+        +kpi('Marge nette',(marge>=0?'+':'')+eur(marge),';color:'+(marge>=0?'#127a51':'#c0392b'))
+        +kpi('Point mort',pm.toFixed(1)+' <span style="font-size:11px;color:#62756b;font-weight:600">él./cours</span>');
+      box.querySelector('#cdTotEl').textContent=el; box.querySelector('#cdTotRev').textContent=eur(rev);
+      box.querySelector('#cdVerdict').innerHTML= (marge>=0
+        ? '✅ Au rythme choisi ('+el+' inscriptions sur '+nb+' cours), les inscriptions <b>couvrent</b> les forfaits (+'+eur(marge)+'). Point mort : <b>'+pm.toFixed(1)+' élèves/cours</b>.'
+        : '🔻 Il manque <b>'+eur(-marge)+'</b> pour couvrir les forfaits — plus d\'élèves, prix plus haut, ou forfait négocié plus bas. Point mort : <b>'+pm.toFixed(1)+' élèves/cours</b> (tu es à '+(nb?(el/nb).toFixed(1):0)+').');
+    }
+    box.querySelector('#cdReset').addEventListener('click',()=>{ box.querySelectorAll('[data-forfait]').forEach(inp=>{ inp.value=anchor(inp.dataset.forfait); }); compute(); });
+    box.addEventListener('input',compute);
+    compute();
   };
   window.loadReservations=async function(){
     const box=document.getElementById('resaList'); if(!box) return;
