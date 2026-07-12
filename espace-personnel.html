@@ -118,7 +118,7 @@ const SB_URL='https://dkidtwypclpwznleiqnq.supabase.co';
 const SB_KEY='sb_publishable_HDfV-O2ION1Vw9v03aV_Qg_PkiAjLNo';
 const sb=window.supabase.createClient(SB_URL,SB_KEY);
 const $=s=>document.querySelector(s);
-const ME={session:null,prof:null,fiche:null,conges:[],docs:[],acts:[],ins:[],asso:null,protos:[],albums:[],photos:[],kids:[],famKids:[],famDoss:[],famOnlyMiss:false,famEdit:null,acmReflet:[],acmProps:[]};
+const ME={session:null,prof:null,fiche:null,conges:[],docs:[],acts:[],ins:[],asso:null,protos:[],albums:[],photos:[],kids:[],famKids:[],famDoss:[],famOnlyMiss:false,famEdit:null,acmReflet:[],acmProps:[],sections:[]};
 function esc(s){return (s==null?'':String(s)).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2600);}
 function euroDays(n){return (n==null?'0':(Math.round(n*100)/100).toString().replace('.',','));}
@@ -144,7 +144,7 @@ async function boot(){
   // rôle personnel : fiche RH facultative (la partie gestion ne dépend pas d'elle)
   const {data:fiche}=await sb.from('personnel').select('*').eq('user_id',session.user.id).maybeSingle();
   ME.fiche=fiche||null;
-  const jobs=[loadActs(), loadProtocoles(), loadPhotos(), loadFamilles(), loadAcm()];
+  const jobs=[loadActs(), loadProtocoles(), loadPhotos(), loadFamilles(), loadAcm(), loadSections()];
   if(fiche){ jobs.push(loadConges(), loadDocs()); }
   await Promise.all(jobs);
   renderAll();
@@ -160,6 +160,10 @@ async function loadDocs(){
 async function loadProtocoles(){
   // Canal étroit : seulement les protocoles VALIDÉS publiés par le bureau (RLS filtre par asso)
   try{ const {data}=await sb.from('protocoles_publies').select('*').order('categorie',{ascending:true}); ME.protos=data||[]; }catch(e){ ME.protos=[]; }
+}
+async function loadSections(){
+  // Sections accordées à ce salarié (table sections_membres, via la fonction my_sections) — pilote l'affichage des cartes cloisonnées.
+  try{ const {data}=await sb.rpc('my_sections'); ME.sections=Array.isArray(data)?data:[]; }catch(e){ ME.sections=[]; }
 }
 
 function renderAll(){
@@ -210,8 +214,8 @@ function hubHTML(){
     +'<div class="hubgrid">'
       +'<button class="hubcard" onclick="spView(\'activites\')"><div class="hubico">🎒</div>'
         +'<div class="hubname">Mes activités</div><div class="hubsub">'+esc(actSub)+'</div><div class="hubgo">Entrer →</div></button>'
-      +'<button class="hubcard" onclick="spView(\'acm\')"><div class="hubico">🌴</div>'
-        +'<div class="hubname">Mon ACM'+acmBadge+'</div><div class="hubsub">'+esc(acmSub)+'</div><div class="hubgo">Entrer →</div></button>'
+      +((ME.sections||[]).includes('acm')?('<button class="hubcard" onclick="spView(\'acm\')"><div class="hubico">🌴</div>'
+        +'<div class="hubname">Mon ACM'+acmBadge+'</div><div class="hubsub">'+esc(acmSub)+'</div><div class="hubgo">Entrer →</div></button>'):'')
       +'<button class="hubcard" onclick="spView(\'photos\')"><div class="hubico">📸</div>'
         +'<div class="hubname">Photos du jour</div><div class="hubsub">'+esc(phSub)+'</div><div class="hubgo">Entrer →</div></button>'
       +'<button class="hubcard" onclick="spView(\'familles\')"><div class="hubico">👨‍👩‍👧</div>'

@@ -460,8 +460,9 @@ async function fillAdmin(){
       </span></div>`).join('');
 }
 
-/* ---- Droits par rubrique (module) pour un utilisateur ---- */
-function openPerms(id){
+/* ---- Droits par rubrique (module) + sections cloisonnées pour un utilisateur ---- */
+const SECTIONS=[['acm','🌴 ACM'],['periscolaire','🎒 Périscolaire'],['vepi','📌 VEPI']];
+async function openPerms(id){
   const u=adminProfiles.find(x=>x.id===id); if(!u){toast('Utilisateur introuvable');return}
   const cur=(u.perms&&typeof u.perms==='object')?u.perms:{};
   const rows=MODULES.map(([k,l])=>{
@@ -473,12 +474,23 @@ function openPerms(id){
         <option value="cache"${v==='cache'?' selected':''}>🚫 Cachée</option>
       </select></div>`;
   }).join('');
+  // Sections cloisonnées (accès strict) : réservé au président/trésorier, et seulement pour un salarié.
+  let secBlock='';
+  if(u.role==='personnel' && ['president','tresorier'].includes(myProfile.role)){
+    let secSet={};
+    try{ const {data}=await sb.from('sections_membres').select('section').eq('membre_id',id).eq('actif',true); (data||[]).forEach(r=>{secSet[r.section]=true;}); }catch(e){}
+    const secRows=SECTIONS.map(([code,lab])=>`<label class="kv" style="cursor:pointer"><span>${lab}</span><input type="checkbox" id="sec_${code}"${secSet[code]?' checked':''} style="width:20px;height:20px"></label>`).join('');
+    secBlock=`<h2 style="margin:18px 0 2px;font-size:17px">🗂️ Sections (accès cloisonné)</h2>
+      <p class="h">Coche les espaces auxquels ce salarié a accès. <b>Aucune case = aucun accès</b> à ces sections (fiches enfants, plannings, fichiers).</p>
+      ${secRows}`;
+  }
   const ov=document.createElement('div'); ov.id='permsOverlay';
   ov.style.cssText='position:fixed;inset:0;background:rgba(20,40,30,.45);display:flex;align-items:flex-start;justify-content:center;padding:28px 14px;overflow:auto;z-index:200';
   ov.innerHTML=`<div style="background:#fff;max-width:520px;width:100%;border-radius:16px;padding:22px;box-shadow:var(--shadow-lg)">
     <h2 style="margin:0 0 4px">🔧 Rubriques — ${esc(u.full_name||u.email||'')}</h2>
     <p class="h">Pour chaque rubrique, choisis ce que cette personne peut faire. ⚠️ Une personne dont le rôle est « lecture seule » (Personnel, Intervenant, Adhérent) ne pourra de toute façon pas modifier, même en « Gestion ».</p>
     ${rows}
+    ${secBlock}
     <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:16px">
       <button class="btn g" onclick="closePerms()">Annuler</button>
       <button class="btn p" onclick="savePerms('${id}')">💾 Enregistrer</button>
@@ -489,7 +501,16 @@ function closePerms(){ const o=document.getElementById('permsOverlay'); if(o)o.r
 async function savePerms(id){
   const perms={}; MODULES.forEach(([k])=>{ const el=document.getElementById('pm_'+k); if(el)perms[k]=el.value; });
   const {error}=await sb.from('profiles').update({perms}).eq('id',id);
-  toast(error?error.message:'Droits par rubrique enregistrés ✓'); closePerms(); await refresh();
+  // Sections cloisonnées : upsert des 3 cases (actif true/false → on garde l'historique) si l'écran les a affichées.
+  let secErr=null;
+  const u=adminProfiles.find(x=>x.id===id);
+  if(u && u.role==='personnel' && document.getElementById('sec_acm')){
+    const rows=SECTIONS.map(([code])=>{ const el=document.getElementById('sec_'+code); return { asso_id:u.asso_id, membre_id:id, section:code, actif:!!(el&&el.checked), accorde_par:myProfile.id, accorde_le:new Date().toISOString() }; });
+    const r=await sb.from('sections_membres').upsert(rows,{onConflict:'asso_id,membre_id,section'});
+    secErr=r.error;
+  }
+  const e=error||secErr;
+  toast(e?e.message:'Droits enregistrés ✓'); closePerms(); await refresh();
 }
 
 /* re-render automatique quand l'état de connexion change */
