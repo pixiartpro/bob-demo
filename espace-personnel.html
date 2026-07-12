@@ -1048,13 +1048,14 @@ function famFicheBlock(k){
     +'<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><b style="font-size:14px">🩺 Fiche sanitaire'+(f.annee?' '+esc(f.annee):'')+'</b>'+badge
     +' <button class="btn ghost" style="padding:3px 10px;font-size:12px" onclick="famFicheToggle(\''+k.id+'\')">👁️ Voir</button></div>'
     +'<div id="famfiche_'+k.id+'" style="margin-top:6px"></div>'
-    +'<p class="sub" style="margin:4px 0 0;font-size:11.5px">🔒 Médical réservé au bureau, à l\'assistant sanitaire et au référent de l\'activité de l\'enfant. L\'animateur ne voit que les infos terrain ci-dessus.</p>'
+    +'<p class="sub" style="margin:4px 0 0;font-size:11.5px">🔒 Médical réservé au bureau, à l\'assistant sanitaire et au référent de l\'activité de l\'enfant. L\'animateur ne voit que les infos terrain ci-dessus. 📓 Chaque consultation est tracée au journal.</p>'
   +'</div>';
 }
 window.famFicheToggle=function(kid){
   const box=$('#famfiche_'+kid); if(!box) return;
   if(box.dataset.open==='1'){ box.innerHTML=''; box.dataset.open=''; return; }
   const f=ME.famFiches&&ME.famFiches[kid]; if(!f){ box.innerHTML='<p class="empty">Fiche indisponible.</p>'; box.dataset.open='1'; return; }
+  try{ sb.rpc('log_consult_sante',{p_enfant:kid}); }catch(e){} // RGPD art.9 : trace la consultation de la fiche médicale (PAI) au journal
   box.innerHTML=famFicheRenderHtml(f); box.dataset.open='1';
 };
 function famFicheRenderHtml(f){
