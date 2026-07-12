@@ -118,7 +118,7 @@ const SB_URL='https://dkidtwypclpwznleiqnq.supabase.co';
 const SB_KEY='sb_publishable_HDfV-O2ION1Vw9v03aV_Qg_PkiAjLNo';
 const sb=window.supabase.createClient(SB_URL,SB_KEY);
 const $=s=>document.querySelector(s);
-const ME={session:null,prof:null,fiche:null,conges:[],docs:[],acts:[],ins:[],asso:null,protos:[],albums:[],photos:[],kids:[],famKids:[],famDoss:[],famOnlyMiss:false,famEdit:null,acmReflet:[],acmProps:[],sections:[]};
+const ME={session:null,prof:null,fiche:null,conges:[],docs:[],acts:[],ins:[],asso:null,protos:[],albums:[],photos:[],kids:[],famKids:[],famDoss:[],famOnlyMiss:false,famEdit:null,acmReflet:[],acmProps:[],sections:[],msgs:[]};
 function esc(s){return (s==null?'':String(s)).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2600);}
 function euroDays(n){return (n==null?'0':(Math.round(n*100)/100).toString().replace('.',','));}
@@ -144,7 +144,7 @@ async function boot(){
   // rôle personnel : fiche RH facultative (la partie gestion ne dépend pas d'elle)
   const {data:fiche}=await sb.from('personnel').select('*').eq('user_id',session.user.id).maybeSingle();
   ME.fiche=fiche||null;
-  const jobs=[loadActs(), loadProtocoles(), loadPhotos(), loadFamilles(), loadAcm(), loadSections()];
+  const jobs=[loadActs(), loadProtocoles(), loadPhotos(), loadFamilles(), loadAcm(), loadSections(), loadMessages()];
   if(fiche){ jobs.push(loadConges(), loadDocs()); }
   await Promise.all(jobs);
   renderAll();
@@ -187,6 +187,7 @@ function renderView(){
   else if(ME.view==='photos'){ vp.innerHTML=backBar('📸 Photos du jour')+photosHTML(); renderAlbums(); }
   else if(ME.view==='rh'){ vp.innerHTML=backBar('🧑‍💼 Mon RH')+rhHTML(); if(ME.fiche){ renderConges(); renderDocs(); } }
   else if(ME.view==='procedures'){ vp.innerHTML=backBar('📋 Procédures du CASE')+proceduresHTML(); }
+  else if(ME.view==='messages'){ vp.innerHTML=backBar('💬 Messages des familles')+messagesHTML(); renderMessages(); }
   else if(ME.view==='acm'){ vp.innerHTML=backBar('🌴 Mon ACM')+acmBlockHTML(); acmMountForm(); }
   else { vp.innerHTML=hubHTML(); }
 }
@@ -222,6 +223,8 @@ function hubHTML(){
         +'<div class="hubname">Dossiers familles'+famHubBadge()+'</div><div class="hubsub">'+esc(famHubSub())+'</div><div class="hubgo">Entrer →</div></button>'
       +'<button class="hubcard" onclick="spView(\'rh\')"><div class="hubico">🧑‍💼</div>'
         +'<div class="hubname">Mon RH'+rhBadge+'</div><div class="hubsub">'+esc(rhSub)+'</div><div class="hubgo">Entrer →</div></button>'
+      +'<button class="hubcard" onclick="spView(\'messages\')"><div class="hubico">💬</div>'
+        +'<div class="hubname">Messages des familles'+(msgHubCount()?' <span class="badge b-demande">'+msgHubCount()+'</span>':'')+'</div><div class="hubsub">'+esc(msgHubCount()?(msgHubCount()+' famille'+(msgHubCount()>1?'s':'')+' en attente de réponse'):'Les familles qui écrivent à ta/tes section(s)')+'</div><div class="hubgo">Entrer →</div></button>'
       +(ME.protos.length?('<button class="hubcard" onclick="spView(\'procedures\')"><div class="hubico">📋</div>'
         +'<div class="hubname">Procédures du CASE</div><div class="hubsub">'+ME.protos.length+' procédure'+(ME.protos.length>1?'s':'')+' à connaître (caisse, sécurité…)</div><div class="hubgo">Entrer →</div></button>'):'')
       +'<a class="hubcard" href="https://mail.hostinger.com" target="_blank" rel="noopener" style="text-decoration:none"><div class="hubico">📧</div>'
@@ -247,6 +250,53 @@ function proceduresHTML(){
     }).join('')+'</div></section>';
 }
 window.spProtoToggle=function(i){ const b=document.getElementById('pbody'+i), c=document.getElementById('pchev'+i); if(!b)return; const open=b.style.display==='none'; b.style.display=open?'block':'none'; if(c)c.textContent=open?'▴':'▾'; };
+
+// ===== Bloc « Messages des familles » — routés vers la/les section(s) du salarié (RLS) =====
+async function loadMessages(){
+  try{ const {data}=await sb.from('messages_adherents').select('*').order('created_at',{ascending:true}).limit(2000); ME.msgs=data||[]; }catch(e){ ME.msgs=[]; }
+}
+const MSG_SECLBL={acm:'🌴 ACM',periscolaire:'🎒 Périscolaire',vepi:'📌 VEPI',bureau:'🏛️ Bureau'};
+function msgFmt(t){ try{ return new Date(t).toLocaleString('fr-FR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}); }catch(e){ return ''; } }
+function msgGroups(){
+  const g={};
+  (ME.msgs||[]).forEach(function(m){
+    const k=m.adherent_id+'|'+(m.section||'bureau');
+    if(!g[k]) g[k]={key:k, adherent_id:m.adherent_id, section:(m.section||'bureau'), msgs:[], famille:''};
+    g[k].msgs.push(m);
+    if(m.sender==='adherent'&&m.author_name) g[k].famille=m.author_name;
+  });
+  const arr=Object.keys(g).map(function(k){ const x=g[k]; const last=x.msgs[x.msgs.length-1]; x.attente=!!(last&&last.sender==='adherent'); x.dom=k.replace(/[^a-zA-Z0-9]/g,''); return x; });
+  arr.sort(function(a,b){ return ((b.attente?1:0)-(a.attente?1:0)) || (new Date(b.msgs[b.msgs.length-1].created_at)-new Date(a.msgs[a.msgs.length-1].created_at)); });
+  return arr;
+}
+function msgHubCount(){ return msgGroups().filter(function(x){ return x.attente; }).length; }
+function messagesHTML(){
+  if(!msgGroups().length) return '<section class="block"><div class="card"><p class="empty">Aucun message pour l\'instant. Quand une famille écrit à <b>ta section</b>, sa question apparaît ici.</p></div></section>';
+  return '<section class="block"><p class="sub">Les familles qui écrivent à <b>ta/tes section(s)</b>. Réponds directement — le bureau voit aussi ces échanges.</p><div id="msgList"></div></section>';
+}
+function renderMessages(){
+  const box=$('#msgList'); if(!box) return;
+  box.innerHTML=msgGroups().map(function(x){
+    const thread=x.msgs.map(function(m){
+      const me=(m.sender==='case');
+      const who=me?('🍍 '+esc(m.author_name||'CASE')):('👪 '+esc(x.famille||'Famille'));
+      return '<div style="margin:6px 0;padding:8px 11px;border-radius:12px;background:'+(me?'#e2f4ec':'#f4f8f5')+';border:1px solid var(--line)"><div style="font-size:12px;font-weight:700;color:var(--muted)">'+who+' · '+msgFmt(m.created_at)+'</div><div style="white-space:pre-wrap;margin-top:2px">'+esc(m.body)+'</div></div>';
+    }).join('');
+    return '<div class="card" style="margin-bottom:12px'+(x.attente?';border-left:4px solid #dc8f38':'')+'">'
+      +'<div style="display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;align-items:center"><b style="font-size:16px">👪 '+esc(x.famille||'Famille')+'</b><span class="badge b-valide">'+(MSG_SECLBL[x.section]||esc(x.section))+'</span></div>'
+      +thread
+      +(x.attente?'':'<p class="sub" style="margin:6px 0 0">✅ Tu as répondu — en attente de la famille.</p>')
+      +'<div class="row" style="margin-top:8px;gap:6px"><div style="flex:2"><textarea id="msgr_'+x.dom+'" placeholder="Répondre à '+esc(x.famille||'la famille')+'…" style="width:100%;resize:vertical;font:inherit;min-height:52px"></textarea></div><button class="btn win" style="white-space:nowrap" onclick="spMsgSend(\''+x.adherent_id+'\',\''+x.section+'\',\''+x.dom+'\')">Envoyer</button></div>'
+    +'</div>';
+  }).join('');
+}
+window.spMsgSend=async function(adherentId, section, dom){
+  const ta=document.getElementById('msgr_'+dom); const body=ta?ta.value.trim():''; if(!body){ toast('Écris ta réponse'); return; }
+  const {error}=await sb.from('messages_adherents').insert({ asso_id:ME.asso, adherent_id:adherentId, sender:'case', author_id:ME.session.user.id, author_name:((ME.prof&&ME.prof.full_name)||'CASE'), body, section:section });
+  if(error){ toast('Erreur : '+error.message); return; }
+  if(ta) ta.value='';
+  await loadMessages(); renderMessages(); toast('✅ Réponse envoyée');
+};
 
 // ===== Bloc « Mon ACM » (planning des accueils de mineurs — patron MIROIR) =====
 // LECTURE : le reflet publié par le bureau (table acm_reflet, jamais le coffre db.acmVac) — 3 volets : planning / démarches / projet éducatif.

@@ -300,8 +300,17 @@
     <div class="ma-wrap">
       <h2 class="title">💬 Parler avec le CASE</h2>
       <p class="sub" style="margin:2px 0 12px">Une question, une demande, un mot pour l'équipe&nbsp;? Écris ici&nbsp;: le CASE te répond directement, et vous gardez tout le fil de la conversation. 🍍</p>
-      <div class="ma-intro" id="maIntro">👋 Ce fil est <b>privé</b> entre toi et l'équipe du CASE (accueil + bureau). Personne d'autre ne le voit.</div>
+      <div class="ma-intro" id="maIntro">👋 Choisis <b>à qui</b> tu écris ci-dessous : ta question arrive directement à la bonne équipe (ou au bureau). Ce fil reste <b>privé</b> — seuls le bureau et l'équipe concernée le voient.</div>
       <div class="ma-thread" id="maThread"><p class="ma-empty">Chargement…</p></div>
+      <div style="display:flex;align-items:center;gap:8px;margin:0 0 8px;flex-wrap:wrap">
+        <span style="font-weight:700;font-size:13.5px">📬 À qui&nbsp;?</span>
+        <select id="maTo" style="padding:8px 10px;border-radius:10px;border:1px solid #cfe0d4;font:inherit;background:#fff">
+          <option value="bureau">🏛️ Le bureau (question générale)</option>
+          <option value="acm">🌴 L'équipe ACM</option>
+          <option value="periscolaire">🎒 L'équipe périscolaire</option>
+          <option value="vepi">📌 L'équipe VEPI</option>
+        </select>
+      </div>
       <div class="ma-bar">
         <textarea id="maInput" placeholder="Écris ton message au CASE…" onkeydown="if(event.key==='Enter'&&(event.metaKey||event.ctrlKey)){event.preventDefault();maSend();}"></textarea>
         <button class="btn win" onclick="maSend()">Envoyer</button>
@@ -1658,10 +1667,12 @@ async function maLoad(){
   if(error){ box.innerHTML='<p class="ma-empty">Impossible de charger la conversation pour le moment. Réessaie dans un instant.</p>'; return; }
   if(!data||!data.length){ box.innerHTML='<div class="ma-empty">✍️ Écris ton premier message au CASE.<br>On te répond ici, tranquillement. 🍍</div>'; return; }
   const fmt=t=>{try{return new Date(t).toLocaleString('fr-FR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});}catch(e){return'';}};
+  const SECLBL={bureau:'🏛️ Bureau',acm:'🌴 ACM',periscolaire:'🎒 Périscolaire',vepi:'📌 VEPI'};
   box.innerHTML=data.map(m=>{
     const me=(m.sender==='adherent');
     const who=me?'Moi':('🍍 CASE'+(m.author_name?' · '+aqEsc(m.author_name):''));
-    return '<div class="ma-b '+(me?'me':'case')+'"><div class="ma-who">'+who+'</div>'+aqEsc(m.body)+'<div class="ma-time">'+fmt(m.created_at)+'</div></div>';
+    const sec=(m.section&&SECLBL[m.section])?' <span style="opacity:.65;font-weight:600">· '+SECLBL[m.section]+'</span>':'';
+    return '<div class="ma-b '+(me?'me':'case')+'"><div class="ma-who">'+who+sec+'</div>'+aqEsc(m.body)+'<div class="ma-time">'+fmt(m.created_at)+'</div></div>';
   }).join('');
   box.scrollTop=box.scrollHeight;
 }
@@ -1672,7 +1683,8 @@ window.maSend=async function(){
   if(!FBME.id){ toast('Connecte-toi pour écrire au CASE'); return; }
   if(FBME.statut && FBME.statut!=='actif'){ toast('Ton compte doit être validé par le bureau'); return; }
   inp.value='';
-  const {error}=await _sbAt.from('messages_adherents').insert({ asso_id:FBME.asso, adherent_id:FBME.id, sender:'adherent', author_id:FBME.id, author_name:FBME.name, body });
+  const _to=(document.getElementById('maTo')||{}).value||'bureau';
+  const {error}=await _sbAt.from('messages_adherents').insert({ asso_id:FBME.asso, adherent_id:FBME.id, sender:'adherent', author_id:FBME.id, author_name:FBME.name, body, section:_to });
   if(error){ toast('Erreur : '+(error.message||error)); inp.value=body; return; }
   await maLoad();
 };
