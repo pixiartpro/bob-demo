@@ -397,7 +397,7 @@ async function renderLoggedIn(user){
       <span class="role-pill pill ${r.pill}">${r.label}</span>
       <span class="role-pill pill ${st.pill}">${st.label}</span></div>
     <div style="margin-left:auto;display:flex;gap:8px;flex-wrap:wrap">
-      ${(()=>{ if(p.role==='adherent') return p.statut!=='suspendu'?`<a class="btn p" style="text-decoration:none" href="espace-adherent.html">Mon espace →</a>`:''; if(p.role==='personnel') return p.statut==='actif'?`<a class="btn p" style="text-decoration:none" href="espace-personnel.html">Mon espace salarié →</a>`:''; if(['president','tresorier','bureau'].includes(p.role)) return p.statut==='actif'?`<a class="btn p" style="text-decoration:none" href="app.html">Entrer dans la gestion →</a>`:''; return ''; })()}
+      ${(()=>{ if(p.role==='adherent') return p.statut!=='suspendu'?`<a class="btn p" style="text-decoration:none" href="espace-adherent.html">Mon espace →</a>`:''; if(p.role==='personnel') return p.statut==='actif'?`<a class="btn p" style="text-decoration:none" href="espace-personnel.html">Mon espace salarié →</a>`:''; if(p.role==='intervenant') return p.statut==='actif'?`<a class="btn p" style="text-decoration:none" href="espace-intervenant.html">Mon espace intervenant →</a>`:''; if(['president','tresorier','bureau'].includes(p.role)) return p.statut==='actif'?`<a class="btn p" style="text-decoration:none" href="app.html">Entrer dans la gestion →</a>`:''; return ''; })()}
       <button class="btn g" onclick="changePwd()">Mot de passe</button>
       <button class="btn g" onclick="signOut()">Déconnexion</button>
     </div></div>`;

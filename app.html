@@ -529,6 +529,12 @@
         <div class="field" style="flex:0;min-width:150px"><label>Domaine</label><input id="in_dom" list="inDomaines" placeholder="Danse…"><datalist id="inDomaines"><option>Danse</option><option>Musique</option><option>Théâtre</option><option>Arts plastiques</option><option>Sport</option></datalist></div>
         <div class="field" style="flex:0"><label>&nbsp;</label><button class="btn" onclick="intAdd()">＋ Ajouter</button></div>
       </div>
+      <div class="row" style="align-items:flex-end;gap:8px;background:#eef4fb;padding:10px;border-radius:12px;margin:0 0 14px">
+        <div class="field" style="flex:2"><label>📨 Inviter un intervenant (email)</label><input id="in_invite_mail" type="email" placeholder="prestataire@exemple.re"></div>
+        <div class="field" style="flex:2"><label>Nom (structure ou personne)</label><input id="in_invite_nom" placeholder="Ex. Association Culture Prod"></div>
+        <div class="field" style="flex:0"><label>&nbsp;</label><button class="btn" onclick="ivInvite()">📨 Envoyer le lien</button></div>
+      </div>
+      <div id="ivInbox"></div>
       <div id="intervenantsBody"><p class="hint">Chargement…</p></div>
     </div>
   </section>
@@ -2411,6 +2417,7 @@ document.querySelectorAll('nav.tabs button').forEach(b=>{
     if(b.dataset.tab==='aide'){ const i=$('faqAsk'); if(i)i.focus(); if(window.loadQuestionsAide) loadQuestionsAide(); }
     if(b.dataset.tab==='messages' && window.loadMessagesAdh){ loadMessagesAdh(); }
     if(b.dataset.tab==='acmvac' && window.acmLoadInbox){ acmLoadInbox(); }
+    if(b.dataset.tab==='intervenants' && window.ivLoadDossiers){ ivLoadDossiers(); }
   };
 });
 
@@ -4778,6 +4785,14 @@ function renderIntervenants(){
       +bandeau
       +'<p style="margin:0 0 6px">👤 <b>'+esc(f.pers||'—')+'</b>'+(f.email?' · <a href="mailto:'+esc(f.email)+'">'+esc(f.email)+'</a>':'')+(f.tel?' · '+esc(f.tel):'')+'</p>'
       +(f.note?'<p class="hint" style="margin:0 0 6px">'+esc(f.note)+'</p>':'')
+      +'<div style="font-weight:600;font-size:13px;margin:8px 0 2px">🏢 Identité de la structure <span class="muted" style="font-weight:400">(pour la convention — le prestataire pourra la compléter depuis son espace)</span></div>'
+      +'<div class="row" style="gap:8px;align-items:flex-end;background:#fafbfc;padding:8px;border-radius:10px;margin:2px 0 6px">'
+      +'<div class="field" style="flex:0;min-width:150px"><label style="font-size:12px">SIRET</label><input value="'+esc(f.siret||'')+'" placeholder="___" onchange="intField(\''+f.id+'\',\'siret\',this.value)"></div>'
+      +'<div class="field" style="flex:2"><label style="font-size:12px">Adresse</label><input value="'+esc(f.adresse||'')+'" placeholder="siège de la structure" onchange="intField(\''+f.id+'\',\'adresse\',this.value)"></div>'
+      +'<div class="field" style="flex:0;min-width:150px"><label style="font-size:12px">Référent</label><input value="'+esc(f.referent||'')+'" placeholder="nom du référent" onchange="intField(\''+f.id+'\',\'referent\',this.value)"></div>'
+      +'<div class="field" style="flex:0;min-width:150px"><label style="font-size:12px">Email</label><input value="'+esc(f.email||'')+'" onchange="intField(\''+f.id+'\',\'email\',this.value)"></div>'
+      +'<div class="field" style="flex:0;min-width:130px"><label style="font-size:12px">Téléphone</label><input value="'+esc(f.tel||'')+'" onchange="intField(\''+f.id+'\',\'tel\',this.value)"></div>'
+      +'</div>'
       +'<div style="font-weight:600;font-size:13px;margin:8px 0 2px">🔐 Les 3 justificatifs obligatoires <span class="muted" style="font-weight:400">(mener par le juridique)</span></div>'
       +verrousUI
       +convUI
@@ -4788,6 +4803,75 @@ function renderIntervenants(){
       +'</div>'
       +'</div></details>';
   }).join('') : '<p class="empty">Aucun intervenant. Ajoute une structure prestataire ci-dessus.</p>';
+}
+
+/* ===== 🎭 Intervenants — côté bureau : dépôts self-service des prestataires (table intervenant_dossiers) + invitation par lien ===== */
+const IV_SBURL='https://dkidtwypclpwznleiqnq.supabase.co';
+const IV_SBKEY='sb_publishable_HDfV-O2ION1Vw9v03aV_Qg_PkiAjLNo';
+function ivToast(m){ if(window.toast){ try{ window.toast(m); return; }catch(e){} } alert(m); }
+async function ivLoadDossiers(){
+  const box=$('ivInbox'); if(!box) return;
+  const sbc=window.bobSbc; if(!sbc){ box.innerHTML=''; return; }
+  try{
+    const {data,error}=await sbc.from('intervenant_dossiers').select('*').order('updated_at',{ascending:false});
+    if(error) throw error; window.__ivDossiers=data||[];
+  }catch(e){ console.warn('ivLoadDossiers',e); window.__ivDossiers=[]; }
+  renderIvInbox();
+}
+function renderIvInbox(){
+  const box=$('ivInbox'); if(!box) return;
+  const list=window.__ivDossiers||[];
+  if(!list.length){ box.innerHTML=''; return; }
+  box.innerHTML='<div class="card" style="background:#f4f8fd;border-top:3px solid #3a51e8;margin-bottom:14px"><strong>📥 Déposés par les prestataires ('+list.length+')</strong> <button class="ghost btn" style="padding:2px 8px;font-size:12px" onclick="if(window.ivLoadDossiers)ivLoadDossiers()">↻</button>'
+    +list.map(function(d){
+      const badge=d.statut==='soumis'?'<span class="pill ok">soumis</span>':'<span class="pill" style="background:#fff4e0;color:#b9770e">brouillon</span>';
+      const pieceDe=d.de_path?'<button class="ghost btn" style="font-size:12px" onclick="ivViewDoc(\''+d.id+'\',\'de\')">👁️ DE</button>':'<span class="pill" style="background:#fff4e0;color:#b9770e;font-size:11px">DE manquant</span>';
+      const pieceAs=d.assur_path?'<button class="ghost btn" style="font-size:12px" onclick="ivViewDoc(\''+d.id+'\',\'assur\')">👁️ Assurance'+(d.assur_echeance?' (exp. '+esc(d.assur_echeance)+')':'')+'</button>':'<span class="pill" style="background:#fff4e0;color:#b9770e;font-size:11px">assurance manquante</span>';
+      return '<div style="border:1px solid var(--line,#e7efe9);border-radius:12px;padding:10px;margin-top:8px;background:#fff">'
+        +'<div style="font-weight:700">'+esc(d.structure||'(structure à préciser)')+' '+badge+' <span class="muted" style="font-weight:400">· '+esc(d.pers||'')+(d.domaine?' · '+esc(d.domaine):'')+'</span></div>'
+        +'<div class="muted" style="font-size:13px;margin:2px 0">'+(d.siret?'SIRET '+esc(d.siret)+' · ':'')+(d.email?esc(d.email)+' · ':'')+esc(d.tel||'')+'</div>'
+        +'<div class="row" style="gap:6px;margin-top:6px;align-items:center">'+pieceDe+' '+pieceAs+' <button class="btn" style="font-size:12px" onclick="ivValider(\''+d.id+'\')">✅ Valider → fiche</button></div>'
+        +'</div>';
+    }).join('')+'</div>';
+}
+async function ivViewDoc(dossierId, kind){
+  const d=(window.__ivDossiers||[]).find(x=>x.id===dossierId); if(!d) return;
+  const path=d[kind+'_path']; if(!path){ ivToast('Pièce absente.'); return; }
+  const sbc=window.bobSbc; if(!sbc) return;
+  try{ const {data,error}=await sbc.storage.from('dossiers-periscolaire').createSignedUrl(path,3600); if(error) throw error; window.open(data.signedUrl,'_blank'); }
+  catch(e){ console.warn(e); ivToast('Impossible d\'ouvrir la pièce.'); }
+}
+function ivValider(dossierId){
+  const d=(window.__ivDossiers||[]).find(x=>x.id===dossierId); if(!d) return;
+  const list=intList();
+  const key=(d.structure||'').toLowerCase().trim();
+  let f=list.find(function(x){ const xk=(x.matchLabel||x.structure||'').toLowerCase().trim(); return xk && key && (xk===key || xk.indexOf(key)>=0 || key.indexOf(xk)>=0); });
+  if(!f){ f={id:uid(),verrous:{honor:'rouge',diplome:'rouge',assur:'rouge'},conv:{statut:'a_etablir',debut:'',fin:'',montant:''}}; list.push(f); }
+  f.structure=d.structure||f.structure||''; f.pers=d.pers||f.pers||''; f.domaine=d.domaine||f.domaine||'';
+  f.siret=d.siret||f.siret||''; f.adresse=d.adresse||f.adresse||''; f.referent=d.referent||f.referent||'';
+  f.email=d.email||f.email||''; f.tel=d.tel||f.tel||''; f.matchLabel=key||f.matchLabel; f.dossierId=d.id;
+  f.verrous=f.verrous||{};
+  if(d.de_path) f.verrous.diplome='vert';
+  if(d.assur_path) f.verrous.assur='vert';
+  save();
+  ivToast('Fiche mise à jour ✅ — reste l\'honorabilité à vérifier.');
+}
+function ivInvite(){
+  const mail=($('in_invite_mail')&&$('in_invite_mail').value.trim())||'';
+  const nom=($('in_invite_nom')&&$('in_invite_nom').value.trim())||'';
+  if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(mail)){ ivToast('Indique un email valide.'); return; }
+  if(!window.supabase||!window.supabase.createClient){ ivToast('Supabase non chargé.'); return; }
+  try{
+    const ic=window.supabase.createClient(IV_SBURL, IV_SBKEY, {auth:{persistSession:false,autoRefreshToken:false,storageKey:'bob-invite-intervenant'}});
+    const redir=new URL('connexion.html', location.href).href;
+    ic.auth.signInWithOtp({ email:mail, options:{ shouldCreateUser:true, emailRedirectTo:redir, data:{ full_name:nom, asso_slug:'case-bdn' } } })
+      .then(function(r){
+        if(r.error){ ivToast('Erreur : '+r.error.message); return; }
+        if($('in_invite_mail')) $('in_invite_mail').value=''; if($('in_invite_nom')) $('in_invite_nom').value='';
+        ivToast('Lien envoyé à '+mail+' ✅ — quand la personne s\'est connectée, valide son accès en rôle « intervenant » dans l\'espace bureau.');
+      })
+      .catch(function(e){ ivToast('Erreur : '+(e.message||'envoi')); });
+  }catch(e){ ivToast('Erreur : '+(e.message||'')); }
 }
 
 /* ---- Secrétariat : mémo, échéancier général, courriers ---- */
