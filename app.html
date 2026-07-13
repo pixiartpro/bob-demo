@@ -308,6 +308,7 @@
       <button data-tab="activites">🎟️ Activités</button>
       <button data-tab="periscolaire">🎒 Périscolaire</button>
       <button data-tab="acmvac">🌴 Vacances</button>
+      <button data-tab="acmenc">🧑‍🏫 Encadrement ACM</button>
       <button data-tab="vepi">📌 VEPI</button>
       <button data-tab="ateliers">💡 Ateliers</button>
       <button data-tab="projetados">🚀 Ados / Jeunesse</button>
@@ -1039,6 +1040,93 @@
   </section>
 
   <!-- LIEUX (gestion) -->
+<!-- 🧑‍🏫 ENCADREMENT ACM — calculateur d'aide (front pur, aucune donnée sensible ; ratios mémento ACM 2020 / DJEPVA 2024). Généralise l'indicateur par édition acmEncadrementHtml. -->
+<section id="acmenc" class="page">
+    <h2>🧑‍🏫 Encadrement ACM — aide au calcul</h2>
+    <p class="hint">Le nombre minimum d'animateurs par type d'accueil, la composition d'équipe (diplômés / stagiaires / non-qualifiés) et les règles ACM, en un écran. <b>⚠️ Indicateur d'aide, non opposable</b> — le directeur reste seul responsable de la conformité réelle (taux, âges, diplômes, dérogations). Réservé au bureau.</p>
+
+    <div class="panel">
+      <div class="toolbar"><div>
+        <h2 style="margin:0">🧮 Combien d'animateurs&nbsp;?</h2>
+        <p class="hint" style="margin:2px 0 0">Choisis le type d'accueil et l'effectif d'enfants. Le calcul additionne le besoin par tranche d'âge, puis applique le plancher de 2 encadrants.</p>
+      </div></div>
+      <div class="row" style="gap:14px;align-items:flex-end">
+        <label style="font-size:13px;font-weight:600">Type d'accueil<br>
+          <select id="acmencType" onchange="acmEncCompute()" style="padding:6px 8px;min-width:250px;margin-top:3px">
+            <option value="extra">Loisirs extrascolaire / Centre de loisirs</option>
+            <option value="sejour">Séjour de vacances (avec hébergement)</option>
+            <option value="peri">Accueil périscolaire</option>
+            <option value="jeunes">Accueil de jeunes (14 ans et +)</option>
+          </select></label>
+        <label id="acmencPedtWrap" style="font-size:13px;font-weight:600;display:none">PEDT signé&nbsp;?<br>
+          <select id="acmencPedt" onchange="acmEncCompute()" style="padding:6px 8px;margin-top:3px"><option value="non">Non</option><option value="oui">Oui</option></select></label>
+        <label id="acmencDureeWrap" style="font-size:13px;font-weight:600;display:none">Durée / jour<br>
+          <select id="acmencDuree" onchange="acmEncCompute()" style="padding:6px 8px;margin-top:3px"><option value="court">≤ 5 h</option><option value="long">&gt; 5 h (mercredi)</option></select></label>
+        <label style="font-size:13px;font-weight:600">Enfants − 6 ans<br>
+          <input type="number" id="acmencN6" min="0" value="0" oninput="acmEncCompute()" style="width:84px;padding:6px 8px;margin-top:3px"></label>
+        <label style="font-size:13px;font-weight:600">Enfants + 6 ans<br>
+          <input type="number" id="acmencNp6" min="0" value="24" oninput="acmEncCompute()" style="width:84px;padding:6px 8px;margin-top:3px"></label>
+      </div>
+      <div id="acmencResult" style="margin-top:16px"></div>
+    </div>
+
+    <div class="panel">
+      <div class="toolbar"><div>
+        <h2 style="margin:0">👥 L'équipe est-elle bien composée&nbsp;?</h2>
+        <p class="hint" style="margin:2px 0 0">Trois plafonds à respecter en permanence. L'effectif requis se reprend tout seul du calculateur (modifiable).</p>
+      </div></div>
+      <div class="row" style="gap:14px;align-items:flex-end">
+        <label style="font-size:13px;font-weight:600">Diplômés<br><input type="number" id="acmencTD" min="0" value="2" oninput="acmEncTeam()" style="width:84px;padding:6px 8px;margin-top:3px"></label>
+        <label style="font-size:13px;font-weight:600">Stagiaires<br><input type="number" id="acmencTS" min="0" value="1" oninput="acmEncTeam()" style="width:84px;padding:6px 8px;margin-top:3px"></label>
+        <label style="font-size:13px;font-weight:600">Sans qualification<br><input type="number" id="acmencTN" min="0" value="1" oninput="acmEncTeam()" style="width:84px;padding:6px 8px;margin-top:3px"></label>
+        <label style="font-size:13px;font-weight:600">Effectif requis<br><input type="number" id="acmencTReq" min="0" value="2" oninput="acmEncTeam()" style="width:84px;padding:6px 8px;margin-top:3px"></label>
+      </div>
+      <div id="acmencTeamResult" style="margin-top:16px"></div>
+    </div>
+
+    <details class="panel"><summary style="cursor:pointer;font-weight:700;font-size:16px">📋 Les règles ACM <span class="hint" style="font-weight:400">— taux, composition, catégories, périodes TAM</span></summary>
+      <h3 style="margin:14px 0 6px;font-size:14px">Taux d'encadrement minimum <span class="hint" style="font-weight:400">(1 animateur pour X enfants — plancher : 2 encadrants)</span></h3>
+      <table style="border-collapse:collapse;width:100%;font-size:13px">
+        <thead><tr><th style="text-align:left;padding:7px 9px;border-bottom:2px solid var(--line)">Type d'accueil</th><th style="padding:7px 9px;border-bottom:2px solid var(--line)">− 6 ans</th><th style="padding:7px 9px;border-bottom:2px solid var(--line)">+ 6 ans</th></tr></thead>
+        <tbody>
+          <tr><td style="padding:7px 9px;border-bottom:1px solid var(--line)">Loisirs extrascolaire / CL · Séjour de vacances</td><td style="text-align:center;padding:7px 9px;border-bottom:1px solid var(--line);font-weight:700">1 / 8</td><td style="text-align:center;padding:7px 9px;border-bottom:1px solid var(--line);font-weight:700">1 / 12</td></tr>
+          <tr><td style="padding:7px 9px;border-bottom:1px solid var(--line)">Périscolaire — sans PEDT (≤ 5h)</td><td style="text-align:center;padding:7px 9px;border-bottom:1px solid var(--line);font-weight:700">1 / 10</td><td style="text-align:center;padding:7px 9px;border-bottom:1px solid var(--line);font-weight:700">1 / 14</td></tr>
+          <tr><td style="padding:7px 9px;border-bottom:1px solid var(--line)">Périscolaire — avec PEDT (≤ 5h)</td><td style="text-align:center;padding:7px 9px;border-bottom:1px solid var(--line);font-weight:700">1 / 14</td><td style="text-align:center;padding:7px 9px;border-bottom:1px solid var(--line);font-weight:700">1 / 18</td></tr>
+          <tr><td style="padding:7px 9px;border-bottom:1px solid var(--line)">Périscolaire — accueil &gt; 5h (mercredi)</td><td style="text-align:center;padding:7px 9px;border-bottom:1px solid var(--line);font-weight:700">1/8 · 1/10*</td><td style="text-align:center;padding:7px 9px;border-bottom:1px solid var(--line);font-weight:700">1/12 · 1/14*</td></tr>
+        </tbody>
+      </table>
+      <p class="hint" style="margin:6px 0 0;font-size:11.5px">* sans PEDT · avec PEDT. Le directeur sort du taux au-delà de 50 enfants. <b>Accueil de jeunes (14 ans +)</b> : pas de ratio chiffré → encadrement par convention SDJES.</p>
+      <h3 style="margin:16px 0 6px;font-size:14px">Composition de l'équipe d'animation</h3>
+      <div class="row" style="gap:8px">
+        <span class="pill" style="background:#e3f5ec;color:var(--green)">Diplômés ≥ 50 %</span>
+        <span class="pill" style="background:#fde9e5;color:var(--red)">Sans qualif. ≤ 20 %</span>
+        <span class="pill" style="background:#fcf2de;color:#a9742a">Stagiaires ≤ 50 % du requis</span>
+        <span class="pill" style="background:#eef4ff;color:#23448a">Encadrants ≥ 2</span>
+      </div>
+      <h3 style="margin:16px 0 6px;font-size:14px">Catégories d'ACM</h3>
+      <table style="border-collapse:collapse;width:100%;font-size:13px">
+        <tbody>
+          <tr><td style="padding:6px 9px;border-bottom:1px solid var(--line)">Séjour de vacances</td><td style="padding:6px 9px;border-bottom:1px solid var(--line)">≥ 7 mineurs · ≥ 4 nuits consécutives</td></tr>
+          <tr><td style="padding:6px 9px;border-bottom:1px solid var(--line)">Séjour court</td><td style="padding:6px 9px;border-bottom:1px solid var(--line)">≥ 7 · 1 à 3 nuits</td></tr>
+          <tr><td style="padding:6px 9px;border-bottom:1px solid var(--line)">Activité accessoire (mini-camp)</td><td style="padding:6px 9px;border-bottom:1px solid var(--line)">≥ 7 · 1 à 4 nuits</td></tr>
+          <tr><td style="padding:6px 9px;border-bottom:1px solid var(--line)">Séjour spécifique</td><td style="padding:6px 9px;border-bottom:1px solid var(--line)">≥ 7, ≥ 6 ans · ≥ 1 nuit</td></tr>
+          <tr><td style="padding:6px 9px;border-bottom:1px solid var(--line)">Accueil de loisirs extrascolaire</td><td style="padding:6px 9px;border-bottom:1px solid var(--line)">7 à 300 · ≥ 14 j, ≥ 2h/j</td></tr>
+          <tr><td style="padding:6px 9px;border-bottom:1px solid var(--line)">Accueil de loisirs périscolaire</td><td style="padding:6px 9px;border-bottom:1px solid var(--line)">7 → effectif de l'école · ≥ 14 j (≥ 1h/j si PEDT)</td></tr>
+          <tr><td style="padding:6px 9px;border-bottom:1px solid var(--line)">Accueil de jeunes</td><td style="padding:6px 9px;border-bottom:1px solid var(--line)">7 à 40, 14 ans et + · ≥ 14 j</td></tr>
+        </tbody>
+      </table>
+      <h3 style="margin:16px 0 6px;font-size:14px">Périodes sur la plateforme TAM</h3>
+      <p class="hint" style="margin:0">Octobre = <b>Toussaint</b> · Fin déc.–Janvier = <b>Noël</b> · Mars = <b>Hiver</b> · Mai = <b>Printemps</b> · Juillet = <b>Juillet</b> · Août = <b>Août</b>.</p>
+    </details>
+
+    <details class="panel"><summary style="cursor:pointer;font-weight:700;font-size:16px">🎓 Diplômes qui autorisent l'encadrement <span class="hint" style="font-weight:400">— les plus courants pour un CASE</span></summary>
+      <p class="hint" style="margin:10px 0 8px">Liste officielle complète : <b>65 titres DIRECTION + 52 ANIMATION</b> dans le PDF DJEPVA 2024. Ici, une sélection.</p>
+      <input type="text" id="acmencDipSearch" placeholder="Rechercher (BAFA, périscolaire, STAPS…)" oninput="acmEncDip()" style="width:100%;max-width:440px;padding:8px 12px;margin-bottom:10px">
+      <div id="acmencDipBody"></div>
+      <p class="hint" style="margin:8px 0 0;font-size:11.5px">Légende : <span class="pill" style="background:#eef4ff;color:#23448a">Direction</span> <span class="pill" style="background:#fcf2de;color:#a9742a">Animation</span> <span class="pill" style="background:#e3f5ec;color:var(--green)">Direction + animation</span>. « Sous condition » et le seuil « +80 mineurs / +80 jours » sont détaillés dans le PDF officiel.</p>
+    </details>
+</section>
+
 <section id="acmvac" class="page">
     <h2>🌴 Vacances — préparation des programmes</h2>
     <p class="hint">Le catalogue d'activités, réutilisable d'une session à l'autre : leur origine (🏠 maison / 🤝 partenaire / 💶 payant), le contact de l'intervenant, et où en est la démarche. Pioche dedans, place-les sur les jours d'une session. Objectif : au moins 5 activités par session, dont une majorité « maison ».</p>
@@ -2619,6 +2707,10 @@ const FAQ=[
    a:"Onglet <b>🌴 Vacances</b> → panneau <b>🗄️ Éditions &amp; archives</b> tout en haut. Une <b>édition</b> = une période d'ACM (Été 2026, Toussaint…). Sur sa carte, coche les <b>activités publiques</b> qui la composent (« ACM Ados — Été 2026 », semaine 1…) : c'est de là que viennent l'<b>effectif</b> et les <b>photos</b>. Clique <b>📖 Dossier-bilan</b> pour voir au même endroit : l'<b>effectif</b> (qui / combien), les <b>photos</b> que tu <b>choisis une à une</b> (★) pour le dossier, un <b>compte-rendu</b>, et un <b>parcours de démarches en 3 temps</b> (⬅️ avant · ⏳ pendant · ➡️ après) dont les <b>échéances se calculent</b> depuis la <b>date de début</b> que tu saisis (J-8 fiche complémentaire — délai ferme, ~J-60 fiche initiale…). Chaque démarche se clique <b>à faire → fait → sans objet</b>, et la carte de l'édition affiche la <b>prochaine échéance</b>. Quand l'ACM est fini, clique <b>📦 Clôturer &amp; archiver</b> : l'effectif du jour est <b>figé</b>, l'édition sort de la vue active et rejoint <b>🗄️ Archives</b>. Depuis une archive, tu peux <b>🖨️ exporter le bilan en PDF</b> (preuve pour les financeurs) — il reprend un <b>en-tête d'identité de l'accueil</b> (organisateur, <b>lieu</b>, période, capacité, activités déclarées), l'effectif, l'encadrement, les projets, les démarches <b>et les photos que tu as retenues (★)</b> en annexe — ou <b>↩︎ Rouvrir</b> l'édition. Réservé au bureau."},
   {cat:'🌴 Vacances',q:"Comment savoir combien d'animateurs il faut pour l'ACM (et l'honorabilité) ?",kw:"encadrement animateurs taux combien nombre 1 pour 12 huit ados moins 6 ans honorabilite bafa bafd diplome qualification non opposable directeur responsable ratio equipe conformite",
    a:"Dans le <b>📖 Dossier-bilan</b> d'une édition, section <b>🧑‍🏫 Encadrement</b>. Choisis le public : <b>ados / ≥ 6 ans → 1 pour 12</b>, ou <b>inclut des − 6 ans → 1 pour 8</b>. D'après l'effectif inscrit, Bob affiche le <b>nombre minimum d'animateurs</b> ; saisis les animateurs prévus → <b>✅ taux atteint</b> ou <b>⚠️ manque X</b>. Coche <b>Honorabilité vérifiée</b> pour te rappeler que chaque encadrant doit être <b>majeur et passé au contrôle du fichier des cadres interdits</b> (ça n'entre PAS dans le calcul du taux, mais c'est le vrai point de vigilance). ⚠️ <b>Indicateur d'aide, non opposable</b> : le directeur reste seul responsable de la conformité réelle (âges, diplômes, dérogations). Repris dans le bilan PDF."},
+  {cat:'🧑‍🏫 Encadrement ACM',q:"Combien d'animateurs faut-il ? (calculateur d'encadrement)",kw:"encadrement animateurs taux combien nombre calculateur calcul 1 pour 8 12 10 14 18 ratio periscolaire pedt extrascolaire sejour vacances ados moins 6 ans mercredi plancher 2 minimum directeur quota effectif enfants outil aide non opposable",
+   a:"Onglet <b>🧑‍🏫 Encadrement ACM</b> (menu 🎨 Animation, réservé au bureau), panneau <b>🧮 Combien d'animateurs ?</b>. Choisis le <b>type d'accueil</b> (loisirs extrascolaire · séjour de vacances · <b>périscolaire</b> · accueil de jeunes), et pour le périscolaire précise <b>PEDT oui/non</b> et la <b>durée</b> (≤ 5h ou &gt; 5h comme le mercredi). Saisis le nombre d'enfants <b>− 6 ans</b> et <b>+ 6 ans</b> : Bob applique le bon ratio (extrascolaire/séjour 1/8 &amp; 1/12 ; périscolaire sans PEDT 1/10 &amp; 1/14 ; avec PEDT 1/14 &amp; 1/18 ; &gt; 5h : ratios resserrés), additionne le besoin par tranche d'âge et applique le <b>plancher de 2 encadrants</b>. Il rappelle que <b>l'accueil de jeunes (14 ans +)</b> n'a pas de ratio chiffré (encadrement par convention SDJES) et qu'au-delà de <b>50 enfants</b> le directeur s'ajoute hors quota. <b>⚠️ Indicateur d'aide, non opposable</b> : le directeur reste seul responsable de la conformité réelle (âges, diplômes, dérogations)."},
+  {cat:'🧑‍🏫 Encadrement ACM',q:"Comment vérifier la composition de l'équipe (diplômés, stagiaires) et quels diplômes comptent ?",kw:"composition equipe diplomes diplome stagiaires sans qualification 50 20 pourcentage bafa bafd bpjeps cpjeps cqp deug staps direction animation referentiel titre honorabilite regle plafond verifier conforme",
+   a:"Toujours dans l'onglet <b>🧑‍🏫 Encadrement ACM</b>. Le panneau <b>👥 L'équipe est-elle bien composée ?</b> vérifie les <b>trois plafonds</b> à respecter en permanence : <b>≥ 50 % de diplômés</b>, <b>≤ 20 % de non-qualifiés</b>, et <b>stagiaires ≤ 50 % de l'effectif requis</b> (l'effectif requis se reprend tout seul du calculateur). Saisis le nombre de <b>diplômés / stagiaires / sans qualification</b> : chaque règle passe au <b>✓ vert</b> ou <b>✕ rouge</b>. Le mémo <b>📋 Les règles ACM</b> détaille les taux et les catégories, et le <b>🎓 référentiel des diplômes</b> liste les titres les plus courants (BAFA, BPJEPS, CPJEPS, CQP… pour l'animation ; BAFD, DEJEPS, DESJEPS… pour la direction) — la liste officielle complète (65 direction + 52 animation) est dans le PDF DJEPVA 2024. <b>⚠️ Le suivi automatique des diplômes de chaque salarié n'est pas encore branché</b> : pour l'instant tu saisis les nombres à la main."},
   {cat:'🌴 Vacances',q:"Où j'écris le projet éducatif et le projet pédagogique de l'ACM ?",kw:"projet educatif pedagogique loi sections objectifs activites rythme participation locaux equipe handicap evaluation prevu realise ecrire rediger document commun pluriannuel racine drajes sdjes r22725",
    a:"Deux choses distinctes. Le <b>📜 Projet éducatif</b> (le cadre de l'asso) s'écrit <b>une seule fois</b>, dans le panneau <b>📜 Projet éducatif</b> en haut de l'onglet 🌴 Vacances — il ne se réécrit pas à chaque vacances (à revérifier seulement en cas de changement : direction, locaux…). Le <b>📋 Projet pédagogique</b>, lui, se fait <b>par édition</b> : ouvre le <b>Dossier-bilan</b> d'une édition et déplie <b>📋 Projet pédagogique</b> : tu remplis les <b>8 sections cadrées par la loi</b> (objectifs, activités, rythme activité/repos, participation des jeunes, locaux, équipe, handicap, évaluation), chacune en <b>« prévu »</b> (avant) puis <b>« réalisé »</b> (après). On recopie le plan officiel, on n'invente rien. Les deux ressortent dans le <b>bilan PDF</b>. Réservé au bureau."},
   {cat:'🌴 Vacances',q:"Comment Bob estime la prestation de service (PS) de la CAF ? C'est quoi les heures-enfants ?",kw:"caf prestation service ps alsh afas heures enfants amplitude bareme argent subvention financement montant annee civile estimation declaration previsionnel actualisation urssaf 70623 combien touche cef",
@@ -2805,6 +2897,7 @@ function pageHelpGotoAide(){ pageHelpClose(); const b=document.querySelector('na
 
 /* ---- ✨ Quoi de neuf (nouveautés + notice chronologique) ---- */
 const NEWS=[
+  {id:'2026-07-13-outil-encadrement-acm',date:'2026-07-13',tab:'🧑‍🏫 Encadrement ACM',titre:"🧑‍🏫 Nouvel onglet : calculer l'encadrement d'un ACM",desc:"Un nouvel onglet <b>🧑‍🏫 Encadrement ACM</b> (menu 🎨 Animation, réservé au bureau) rassemble en un écran : un <b>calculateur du nombre minimum d'animateurs</b> pour <b>tous</b> les types d'accueil — loisirs extrascolaire, séjour de vacances, <b>périscolaire</b> (avec ou sans <b>PEDT</b>, et le cas des mercredis &gt; 5h), accueil de jeunes — d'après l'effectif d'enfants par tranche d'âge ; un <b>vérificateur de composition d'équipe</b> (les plafonds <b>≥ 50 % diplômés · ≤ 20 % sans qualification · stagiaires ≤ 50 % de l'effectif requis</b>, avec le plancher de 2 encadrants) ; le <b>mémo des règles</b> (taux, catégories d'ACM, périodes TAM) ; et un <b>référentiel des diplômes</b> qui autorisent la direction ou l'animation. Il <b>complète</b> l'indicateur d'encadrement déjà présent dans le dossier-bilan de chaque édition. <b>⚠️ Outil d'aide, non opposable</b> : le directeur reste seul responsable de la conformité réelle (âges, diplômes, dérogations)."},
   {id:'2026-07-12-journal-consult-sante',date:'2026-07-12',tab:'🕘 Historique',titre:"🩺 Les consultations de fiche sanitaire sont tracées",desc:"Jusqu'ici le <b>📓 Journal des actions</b> notait qui <b>créait / modifiait / supprimait</b> une donnée, mais pas qui la <b>consultait</b>. Désormais, chaque fois qu'un salarié <b>ouvre la fiche sanitaire (le médical : PAI, allergies, conduite d'urgence)</b> d'un enfant depuis son espace, une ligne <b>« Consultation fiche sanitaire »</b> s'ajoute au journal — avec la <b>personne</b>, l'<b>enfant</b> et la <b>date</b>. C'est une exigence du <b>RGPD sur les données de santé (art. 9)</b> : la traçabilité des accès. Les infos terrain (allergies, personnes autorisées) restent visibles pour la sécurité ; c'est l'ouverture du <b>médical complet</b> qui est tracée. Rien ne change pour la famille."},
   {id:'2026-07-12-sections-acces',date:'2026-07-12',tab:'👥 Dossiers salariés',titre:"🗂️ Nouveau : donner à chaque salarié l'accès à ses sections",desc:"Tu peux maintenant décider, <b>salarié par salarié</b>, à quelles sections il a accès : <b>🌴 ACM</b>, <b>🎒 Périscolaire</b>, <b>📌 VEPI</b>. Sur la page de connexion (bureau), fiche d'un salarié → <b>🔧 Rubriques</b> → bloc <b>« 🗂️ Sections »</b>, des cases à cocher. Le salarié ne voit alors que <b>ses</b> sections — fiches enfants, inscriptions, plannings, dossiers et photos compris ; <b>aucune case = aucun accès</b>. Les <b>événements / temps forts</b> restent partagés par <b>toute l'équipe</b>. Le cloisonnement est appliqué <b>par la base</b>, pas seulement à l'écran. À réserver au président / trésorier."},
   {id:'2026-07-12-calc-danse',date:'2026-07-12',tab:'salles',titre:"💶 Calculateur : les cours de danse sont-ils rentables ?",desc:"Dans l'onglet <b>🗓️ Salles</b>, sous le planning, un nouveau panneau <b>« 💶 Modèle éco des cours de danse »</b>. Il lit les <b>vrais créneaux</b> de la salle de danse et compare <b>ce que le CASE paie</b> (une <b>facture globale</b> par intervenant) à ce que <b>rapportent les inscriptions</b> — en <b>prix plein</b> (ces cours ouverts n'ont pas de quotient familial, contrairement à l'ACM/périscolaire). Tu tapes le prix et le nombre d'élèves de chaque cours, et tu vois la <b>marge</b> et le <b>point mort</b> (combien d'élèves/cours il faut pour couvrir les forfaits). En prestation, c'est le CASE qui porte le remplissage : <b>à nous de remplir</b>."},
@@ -7210,7 +7303,7 @@ renderAll();
     ateliers:'f_ateliers_partenaires', partenaires:'f_ateliers_partenaires',
     equipe:'f_rh_equipe', accompagnement:'f_rh_equipe', rh:'f_rh_equipe', personnel:'f_rh_equipe',
     suivi:'f_rh_equipe', conges:'f_rh_equipe', horaires:'f_rh_equipe', incidents:'f_rh_equipe',
-    periscolaire:'f_metier_acm', activites:'f_metier_acm', rdv:'f_metier_acm', acmvac:'f_metier_acm', lieux:'f_metier_acm', salles:'f_metier_acm'
+    periscolaire:'f_metier_acm', activites:'f_metier_acm', rdv:'f_metier_acm', acmvac:'f_metier_acm', lieux:'f_metier_acm', salles:'f_metier_acm', acmenc:'f_metier_acm'
   };
   function applyPerms(){
     const perms=Object.assign({}, (myProfile.perms&&typeof myProfile.perms==='object')?myProfile.perms:{});
@@ -7221,6 +7314,7 @@ renderAll();
     if(!canWrite) perms.rh='cache'; // RH & Organisation : contenu sensible → bureau uniquement par défaut
     if(!canWrite){ perms.suivi='cache'; perms.conges='cache'; perms.horaires='cache'; } // Suivi, Congés & Horaires : bureau uniquement par défaut
     if(!canWrite) perms.acmvac='cache'; // 🌴 Vacances : outil interne de programmation → bureau uniquement
+    if(!canWrite) perms.acmenc='cache'; // 🧑‍🏫 Encadrement ACM : calculateur d'aide interne → bureau uniquement
     if(!canWrite && myProfile && myProfile.role!=='personnel') perms.vepi='cache'; // 📌 VEPI : masqué aux rôles hors bureau/personnel (adhérent, intervenant). Pour le PERSONNEL, l'accès SUIT l'encoche par salarié (🔧 Rubriques) : « gestion » = peut créer une fiche, « lecture » = voit seulement (sans bouton), « caché » = masqué. Défaut personnel non réglé = lecture (visible). Le bureau garde « gestion ».
     if(!canWrite) perms.rdv='cache'; // 📅 Rendez-vous : gestion des plages/créneaux → bureau uniquement
     if(!canWrite) perms.salles='cache'; // 🗓️ Salles : planning interne des créneaux → bureau uniquement
@@ -10381,6 +10475,94 @@ renderAll();
     document.addEventListener('visibilitychange',()=>{ if(!document.hidden) checkRemote(); });
   }
   boot();
+})();
+</script>
+<script>
+/* 🧑‍🏫 Encadrement ACM — calculateur d'aide (front pur, aucune donnée). Ratios : mémento ACM 2020 / DJEPVA 2024. */
+(function(){
+  function $id(x){ return document.getElementById(x); }
+  function acmEncRatios(){
+    var t=$id('acmencType').value;
+    if(t==='extra'||t==='sejour') return {r6:8,r12:12,label:'1 pour 8 (−6 ans) · 1 pour 12 (+6 ans)'};
+    if(t==='peri'){
+      var pedt=$id('acmencPedt').value==='oui', lng=$id('acmencDuree').value==='long';
+      if(lng) return pedt?{r6:10,r12:14,label:'accueil > 5h, avec PEDT — 1/10 · 1/14'}:{r6:8,r12:12,label:'accueil > 5h, sans PEDT — 1/8 · 1/12'};
+      return pedt?{r6:14,r12:18,label:'≤ 5h, avec PEDT — 1/14 · 1/18'}:{r6:10,r12:14,label:'≤ 5h, sans PEDT — 1/10 · 1/14'};
+    }
+    return null;
+  }
+  window.acmEncCompute=function(){
+    if(!$id('acmencType')) return;
+    var t=$id('acmencType').value, peri=(t==='peri'), out=$id('acmencResult');
+    $id('acmencPedtWrap').style.display=peri?'':'none';
+    $id('acmencDureeWrap').style.display=peri?'':'none';
+    if(t==='jeunes'){ out.innerHTML='<div class="card" style="background:#eef4ff"><b>Accueil de jeunes (14 ans et +).</b> Pas de taux numérique standard : l’encadrement se fixe <b>par convention avec le SDJES</b>, selon le projet éducatif. Le plancher de 2 encadrants reste.</div>'; if(window.acmEncTeam) acmEncTeam(); return; }
+    var rr=acmEncRatios();
+    var n6=Math.max(0,parseInt($id('acmencN6').value,10)||0), np6=Math.max(0,parseInt($id('acmencNp6').value,10)||0), total=n6+np6;
+    if(total===0){ out.innerHTML='<p class="hint">Renseigne un effectif d’enfants pour lancer le calcul.</p>'; return; }
+    var a6=Math.ceil(n6/rr.r6), a12=Math.ceil(np6/rr.r12), req=a6+a12, floored=Math.max(2,req);
+    $id('acmencTReq').value=floored; if(window.acmEncTeam) acmEncTeam();
+    var h='<div class="row" style="gap:10px;flex-wrap:wrap;align-items:center">'
+      +'<span class="pill" style="background:#eef4ff;color:#23448a;font-weight:700;font-size:15px;padding:5px 12px">👥 '+total+' enfant'+(total>1?'s':'')+' → au moins <b>'+floored+'</b> animateur'+(floored>1?'s':'')+'</span></div>';
+    h+='<p class="hint" style="margin:8px 0 0">Ratio : '+rr.label+' · −6 ans ('+n6+') → '+a6+' · +6 ans ('+np6+') → '+a12+(floored>req?' · plancher relevé à 2':'')+'.</p>';
+    h+='<p class="hint" style="margin:4px 0 0">'+(total>50?'➕ Plus de 50 enfants : le <b>directeur</b> s’ajoute, hors quota d’encadrement.':'≤ 50 enfants : le directeur peut être compté dans ce quota.')+'</p>';
+    out.innerHTML=h;
+  };
+  window.acmEncTeam=function(){
+    if(!$id('acmencTD')) return;
+    var D=Math.max(0,parseInt($id('acmencTD').value,10)||0), S=Math.max(0,parseInt($id('acmencTS').value,10)||0),
+        N=Math.max(0,parseInt($id('acmencTN').value,10)||0), req=Math.max(0,parseInt($id('acmencTReq').value,10)||0), tot=D+S+N, out=$id('acmencTeamResult');
+    if(tot===0){ out.innerHTML='<p class="hint">Saisis la composition de l’équipe.</p>'; return; }
+    var pDip=Math.round(D/tot*1000)/10, pN=Math.round(N/tot*1000)/10;
+    var okDip=D*2>=tot, okN=N*5<=tot, okStag=(req===0)||(S*2<=req), okEff=tot>=Math.max(2,req);
+    function line(ok,t,d){ return '<div style="display:flex;gap:8px;align-items:flex-start;margin:6px 0"><span class="pill '+(ok?'ok':'no')+'" style="min-width:22px;text-align:center">'+(ok?'✓':'✕')+'</span><span style="font-size:13px"><b>'+t+'</b> — '+d+'</span></div>'; }
+    var all=okDip&&okN&&okStag&&okEff;
+    var h='<div class="card" style="background:'+(all?'#e3f5ec':'#fde9e5')+';padding:12px 14px;margin-bottom:8px"><b>'+(all?'✅ Équipe conforme':'⚠️ À corriger')+'</b> — '+(all?'les quatre règles passent.':'une règle ou plus ne passe pas (voir ci-dessous).')+'</div>';
+    h+=line(okDip,'Diplômés ≥ 50 %',pDip+' % ('+D+'/'+tot+')'+(okDip?'':' — ajoute un diplômé ou retire un non-qualifié'));
+    h+=line(okN,'Sans qualification ≤ 20 %',pN+' % ('+N+'/'+tot+')'+(okN?'':' — trop de non-qualifiés'));
+    h+=line(okStag,'Stagiaires ≤ 50 % de l’effectif requis',S+' stagiaire'+(S>1?'s':'')+' pour '+req+' requis');
+    h+=line(okEff,'Effectif présent suffisant',tot+' présent'+(tot>1?'s':'')+' pour '+Math.max(2,req)+' requis (plancher 2)');
+    out.innerHTML=h;
+  };
+  var ACMENC_DIP=[
+    ["BAFD","Brevet d’aptitude aux fonctions de directeur","both"],
+    ["DEJEPS","Diplôme d’État de la jeunesse, de l’éducation populaire et du sport","both"],
+    ["DESJEPS","Diplôme d’État supérieur de la jeunesse, de l’éducation populaire et du sport","both"],
+    ["DEFA","Diplôme d’État relatif aux fonctions d’animation","both"],
+    ["DEDPAD","Diplôme d’État de directeur de projet d’animation et de développement","both"],
+    ["BPJEPS (dir. ACM)","BPJEPS avec l’UC complémentaire « direction d’un ACM »","both"],
+    ["BPJEPS LTP","BPJEPS spécialité « loisirs tous publics »","both"],
+    ["Licence anim.","Licence animation sociale, éducative, culturelle et des loisirs","both"],
+    ["DUT CS","DUT carrières sociales, option animation sociale et socioculturelle","both"],
+    ["BAFA","Brevet d’aptitude aux fonctions d’animateur","anim"],
+    ["CPJEPS","Certificat professionnel de la jeunesse, de l’éducation populaire et du sport","anim"],
+    ["BPJEPS","Brevet professionnel de la jeunesse, de l’éducation populaire et du sport","anim"],
+    ["BAPAAT","Brevet d’aptitude professionnelle d’assistant animateur technicien","anim"],
+    ["CQP périsco.","CQP animateur périscolaire","anim"],
+    ["CQP 1er degré","CQP animateur premier degré","anim"],
+    ["CAP AEPE","CAP accompagnant éducatif petite enfance (ex « petite enfance »)","anim"],
+    ["Licence STAPS","Licence STAPS","anim"],
+    ["Licence Sc. Éduc.","Licence sciences de l’éducation","anim"],
+    ["LP animation","Licence professionnelle animation sociale et socioculturelle","anim"],
+    ["Bac Pro anim.","Bac professionnel « animation-enfance et personnes âgées »","anim"],
+    ["ATSEM","Agent territorial spécialisé des écoles maternelles","anim"],
+    ["Moniteur-éduc.","Moniteur-éducateur territorial","anim"],
+    ["Moniteur CV","Diplôme de moniteur de colonies de vacances","anim"],
+    ["AJSP","Animateur de jeunes sapeurs-pompiers","anim"]
+  ];
+  var ACMENC_PILL={dir:'background:#eef4ff;color:#23448a',anim:'background:#fcf2de;color:#a9742a',both:'background:#e3f5ec;color:#127a51'};
+  var ACMENC_LBL={dir:'Direction',anim:'Animation',both:'Direction + animation'};
+  window.acmEncDip=function(){
+    if(!$id('acmencDipBody')) return;
+    var f=($id('acmencDipSearch').value||'').toLowerCase();
+    var rows=ACMENC_DIP.filter(function(d){ return !f || (d[0]+' '+d[1]).toLowerCase().indexOf(f)!==-1; }).map(function(d){
+      return '<tr><td style="padding:6px 9px;border-bottom:1px solid var(--line);font-weight:700;white-space:nowrap">'+d[0]+'</td>'
+        +'<td style="padding:6px 9px;border-bottom:1px solid var(--line)">'+d[1]+'</td>'
+        +'<td style="padding:6px 9px;border-bottom:1px solid var(--line)"><span class="pill" style="'+ACMENC_PILL[d[2]]+'">'+ACMENC_LBL[d[2]]+'</span></td></tr>';
+    }).join('');
+    $id('acmencDipBody').innerHTML=rows?('<table style="border-collapse:collapse;width:100%;font-size:13px"><tbody>'+rows+'</tbody></table>'):'<p class="hint">Aucun résultat. La liste complète (117 titres) est dans le PDF officiel DJEPVA 2024.</p>';
+  };
+  try{ acmEncCompute(); acmEncDip(); }catch(e){}
 })();
 </script>
 </body>
