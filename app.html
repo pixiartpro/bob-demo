@@ -534,7 +534,7 @@
       <p class="hint">Les intervenant·e·s qui animent nos activités via une <b>structure prestataire</b> (l'asso facture, le CASE paie une <b>facture</b> — <b>pas de paie ici</b>, les salariés se gèrent en 💶 Finances / 🧑‍💼 Équipe). Pour chacun·e : sa <b>convention</b>, ses <b>3 justificatifs obligatoires</b> et le lien vers ses créneaux. <b style="color:#e24b4a">⛔ Règle d'or : tant qu'un voyant est rouge, on ne fait pas intervenir.</b></p>
       <div class="row" style="align-items:flex-end;gap:8px;background:#f7f9fb;padding:10px;border-radius:12px;margin:0 0 14px">
         <div class="field" style="flex:2"><label>Structure prestataire</label><input id="in_struct" placeholder="Ex. Association Culture Prod"></div>
-        <div class="field" style="flex:2"><label>Intervenant·e (personne)</label><input id="in_pers" placeholder="Ex. Stéphanie Ramin"></div>
+        <div class="field" style="flex:2"><label>Intervenant·e (personne)</label><input id="in_pers" placeholder="Ex. Marie Payet"></div>
         <div class="field" style="flex:0;min-width:150px"><label>Domaine</label><input id="in_dom" list="inDomaines" placeholder="Danse…"><datalist id="inDomaines"><option>Danse</option><option>Musique</option><option>Théâtre</option><option>Arts plastiques</option><option>Sport</option></datalist></div>
         <div class="field" style="flex:0"><label>&nbsp;</label><button class="btn" onclick="intAdd()">＋ Ajouter</button></div>
       </div>
@@ -848,21 +848,21 @@
   </section>
 
   <section id="fiches" class="page"><div class="panel"><div class="toolbar" style="justify-content:space-between;align-items:flex-start;gap:8px"><h2 style="margin:0">📋 Fiches de poste — poste · tâches · horaires</h2><button class="btn" onclick="window.print()">🖨️ Imprimer</button></div>
-      <p class="hint" style="margin:2px 0 0">La version claire et concrète, pour chaque personne : ce qu'elle est, ce qu'elle fait au quotidien, quand. <b>PROJET</b> — on prépare, le CA valide. Réservé au bureau.</p>
+      <p class="hint" style="margin:2px 0 0">La version claire et concrète, pour chaque <b>poste</b> : ses missions, son quotidien, ses horaires. <b>PROJET</b> — on prépare, le CA valide. Réservé au bureau. <span class="hint">Le titulaire de chaque poste figure dans 📒 Équipe (chargé depuis la base après connexion).</span></p>
       <div class="card" style="border-left:4px solid var(--brand);margin-top:10px"><b>Règle commune :</b> « J'anime, je suis en <b>première ligne</b>. Je ne tiens pas le registre, je n'encaisse pas, je ne diffuse pas. » <span class="hint">Données → secrétariat/bureau · Argent → trésorier (Guy) · Image → bureau/Président · Doute → le bureau tranche.</span></div>
       <h3 style="margin:16px 0 6px">Qui fait quoi, quand</h3>
-      <div style="overflow-x:auto"><table style="min-width:720px"><thead><tr><th>Personne</th><th>Poste</th><th>Volume · jours</th><th>Cœur des tâches</th><th>Statut</th></tr></thead>
+      <div style="overflow-x:auto"><table style="min-width:640px"><thead><tr><th>Poste / rôle</th><th>Volume · jours</th><th>Cœur des tâches</th><th>Statut</th></tr></thead>
       <tbody>
-        <tr><td><b>Kathy Maillot</b></td><td>Coordination périscolaire</td><td>35 h · lun→ven</td><td>Anime (matin/soir) · coordonne · tutore Sandrine + 2 SC · supervise mercredi &amp; ACM</td><td>CDI, en poste</td></tr>
-        <tr><td><b>Sandrine Michel</b></td><td>Animation périscolaire</td><td>21 h · lun→ven</td><td>Anime périscolaire, mercredi, ACM · accueil enfants/familles</td><td>PEC</td></tr>
-        <tr><td><b>Poste Culture</b></td><td>Culture &amp; quartier</td><td>mar→sam</td><td>Culture · quartier · samedi tout public</td><td style="color:var(--red)">Gelé (Fabrice — litige 418) · samedi suspendu</td></tr>
-        <tr><td><b>2 Services civiques</b></td><td>Appui périscolaire/jeunesse</td><td>mer→sam</td><td>Binôme d'appui · toujours supervisés</td><td>Unis-Cité · jamais seuls avec des mineurs</td></tr>
-        <tr><td><b>Kysy Victoire</b></td><td>Renfort VEPI</td><td>période VEPI</td><td>Renfort animation pendant le VEPI (vacances)</td><td style="color:var(--amber)">CDD · VEPI seulement</td></tr>
-        <tr><td><b>Betty Ah-Koï</b></td><td>Stagiaire BAFD (direction)</td><td>ACM/vacances</td><td>Stage pratique, sous directeur qualifié</td><td style="color:var(--amber)">Stagiaire · défrayée · non salariée</td></tr>
-        <tr><td><b>Alyssa Maillard</b></td><td>Stagiaire BAFA (animation)</td><td>ACM/vacances</td><td>Stage pratique d'animation</td><td style="color:var(--amber)">Stagiaire · défrayée · non salariée</td></tr>
+        <tr><td><b>Coordination périscolaire</b></td><td>35 h · lun→ven</td><td>Anime (matin/soir) · coordonne · tutore l'animation + 2 SC · supervise mercredi &amp; ACM</td><td>CDI, pourvu</td></tr>
+        <tr><td><b>Animation périscolaire</b></td><td>21 h · lun→ven</td><td>Anime périscolaire, mercredi, ACM · accueil enfants/familles</td><td>PEC</td></tr>
+        <tr><td><b>Culture &amp; quartier</b></td><td>mar→sam</td><td>Culture · quartier · samedi tout public</td><td style="color:var(--red)">Poste gelé · samedi suspendu</td></tr>
+        <tr><td><b>Appui périscolaire / jeunesse</b></td><td>mer→sam</td><td>Binôme d'appui · toujours supervisés</td><td>2 volontaires Unis-Cité · jamais seuls avec des mineurs</td></tr>
+        <tr><td><b>Renfort VEPI</b></td><td>période VEPI</td><td>Renfort animation pendant le VEPI (vacances)</td><td style="color:var(--amber)">CDD · VEPI seulement</td></tr>
+        <tr><td><b>Stagiaire BAFD (direction)</b></td><td>ACM/vacances</td><td>Stage pratique, sous directeur qualifié</td><td style="color:var(--amber)">Stagiaire · défrayé(e) · non salarié(e)</td></tr>
+        <tr><td><b>Stagiaire BAFA (animation)</b></td><td>ACM/vacances</td><td>Stage pratique d'animation</td><td style="color:var(--amber)">Stagiaire · défrayé(e) · non salarié(e)</td></tr>
       </tbody></table></div>
       <h3 style="margin:18px 0 6px">La semaine, d'un coup d'œil</h3>
-      <div style="overflow-x:auto"><table style="min-width:640px"><thead><tr><th>Jour</th><th>Kathy</th><th>Sandrine</th><th>Poste Culture</th><th>2 SC</th></tr></thead>
+      <div style="overflow-x:auto"><table style="min-width:640px"><thead><tr><th>Jour</th><th>Coordination</th><th>Animation</th><th>Culture</th><th>2 SC</th></tr></thead>
       <tbody>
         <tr><td><b>Lun</b></td><td>matin + soir + coord</td><td>matin + soir</td><td>—</td><td>—</td></tr>
         <tr><td><b>Mar</b></td><td>matin + soir + coord</td><td>matin + soir + prépa</td><td>culture / quartier</td><td>—</td></tr>
@@ -873,39 +873,39 @@
       </tbody></table></div>
       <h3 style="margin:18px 0 6px">Les fiches, une par une</h3>
       <div class="card" style="margin-top:10px">
-        <div><b>Kathy Maillot</b> — <span style="color:var(--brand);font-weight:600">Coordination périscolaire</span> · 35 h · lun→ven · CDI</div>
-        <div style="margin-top:8px"><b>Mon poste</b> — Je coordonne le périscolaire (je mets en musique, j'anime l'équipe, je fais le lien avec le bureau). Responsable du pôle, mais <b>pas l'employeur</b> (sanction = bureau ; j'alerte, le bureau tranche). Je <b>coordonne, je ne dirige pas</b> : je n'engage pas l'asso.</div>
-        <div style="margin-top:6px"><b>Mes tâches</b> — Chaque jour : accueil matin / garderie soir · je fais tourner la journée · je dépanne l'équipe. Chaque semaine : réunion de pôle · tutorat (Sandrine + 2 SC) · remontée terrain. Un souci : je sécurise, je note dans Bob, j'alerte.</div>
-        <div style="margin-top:6px"><b>Mes horaires</b> — Lun→ven, matin + soir + coordination. Pas de samedi.</div>
-        <div class="hint" style="margin-top:6px"><b>Règles :</b> je ne tiens pas le registre · je ne décaisse pas · je ne publie pas · santé enfant = lecture pour la sécurité, jamais de photo/fichier perso · doute → bureau. <b>Direction ACM</b> = BAFD ou dérogation DRAJES (pas encore obtenue) → je supervise, je ne suis pas la directrice déclarée.</div>
+        <div><span style="color:var(--brand);font-weight:600"><b>Coordination périscolaire</b></span> · 35 h · lun→ven · CDI</div>
+        <div style="margin-top:8px"><b>Le poste</b> — Coordonne le périscolaire (met en musique, anime l'équipe, fait le lien avec le bureau). Responsable du pôle, mais <b>pas l'employeur</b> (sanction = bureau ; alerte, le bureau tranche). <b>Coordonne, ne dirige pas</b> : n'engage pas l'asso.</div>
+        <div style="margin-top:6px"><b>Les tâches</b> — Chaque jour : accueil matin / garderie soir · fait tourner la journée · dépanne l'équipe. Chaque semaine : réunion de pôle · tutorat (animation + 2 SC) · remontée terrain. Un souci : sécurise, note dans Bob, alerte.</div>
+        <div style="margin-top:6px"><b>Les horaires</b> — Lun→ven, matin + soir + coordination. Pas de samedi.</div>
+        <div class="hint" style="margin-top:6px"><b>Règles :</b> ne tient pas le registre · ne décaisse pas · ne publie pas · santé enfant = lecture pour la sécurité, jamais de photo/fichier perso · doute → bureau. <b>Direction ACM</b> = BAFD ou dérogation DRAJES (pas encore obtenue) → supervise, n'est pas la direction déclarée.</div>
       </div>
       <div class="card" style="margin-top:10px">
-        <div><b>Sandrine Michel</b> — <span style="color:var(--brand);font-weight:600">Animation périscolaire</span> · 21 h · lun→ven · PEC</div>
-        <div style="margin-top:8px"><b>Mon poste</b> — J'anime le périscolaire et les ACM, au contact des enfants et des familles. Sous la responsabilité de Kathy (parcours PEC). Source de première ligne : je fais remonter, je ne tiens pas le registre.</div>
-        <div style="margin-top:6px"><b>Mes tâches</b> — Chaque jour : accueil matin · goûter + garderie soir · je pointe les présences. Chaque semaine : je propose le programme · point avec Kathy · mercredi jeunesse. Aide au comptoir : identité/inscription seulement, jamais les données de santé.</div>
-        <div style="margin-top:6px"><b>Mes horaires</b> — Lun→ven (matin + soir) + 6 h prépa/point. Pas de samedi.</div>
+        <div><span style="color:var(--brand);font-weight:600"><b>Animation périscolaire</b></span> · 21 h · lun→ven · PEC</div>
+        <div style="margin-top:8px"><b>Le poste</b> — Anime le périscolaire et les ACM, au contact des enfants et des familles. Sous la responsabilité de la coordination (parcours PEC). Première ligne : fait remonter, ne tient pas le registre.</div>
+        <div style="margin-top:6px"><b>Les tâches</b> — Chaque jour : accueil matin · goûter + garderie soir · pointe les présences. Chaque semaine : propose le programme · point avec la coordination · mercredi jeunesse. Aide au comptoir : identité/inscription seulement, jamais les données de santé.</div>
+        <div style="margin-top:6px"><b>Les horaires</b> — Lun→ven (matin + soir) + 6 h prépa/point. Pas de samedi.</div>
         <div class="hint" style="margin-top:6px"><b>Règles :</b> santé enfant = lecture pour la sécurité, jamais de photo/fichier perso · pas de tableur ni WhatsApp parents perso · argent → trésorier · com → bureau. Recentrage = évolution d'organisation, pas sanction (rému/classif inchangées).</div>
       </div>
       <div class="card" style="margin-top:10px">
         <div><b>Poste Culture &amp; quartier</b> — <span style="color:var(--red);font-weight:600">occupant-neutre · titulaire gelé</span> · mar→sam</div>
-        <div class="hint" style="margin-top:6px">Décrit <b>le poste</b>, pas une personne. Titulaire (Fabrice Ramin) gelé (litige 418) : aucune fonction ne lui est attribuée. Base pour une continuité (CDD), sans toucher à sa situation (→ conseil).</div>
+        <div class="hint" style="margin-top:6px">Décrit <b>le poste</b>, pas une personne. Poste actuellement gelé : aucune fonction n'y est attribuée. Base pour une continuité (CDD), sans préjuger d'aucune situation individuelle (→ conseil).</div>
         <div style="margin-top:6px"><b>Les tâches</b> — programmation &amp; animation culturelle · animation de quartier (hors les murs) · samedi permanence tout public (binôme avec les 2 SC) · remonter le vécu au bureau.</div>
         <div style="margin-top:6px"><b>Horaires</b> — mar→sam. Aujourd'hui <b>samedi suspendu</b> : ne rouvre qu'avec un adulte responsable — <b>et qualifié (BAFA/BAFD) si régime ACM</b> (à trancher SDJES).</div>
         <div class="hint" style="margin-top:6px"><b>Règles :</b> les 2 SC jamais seuls avec des mineurs, non comptés dans l'encadrement · pas de carnet/photo perso · convention partenaire = signée par le bureau · « Ôté Kartié » gelé.</div>
       </div>
       <div class="card" style="margin-top:10px">
         <div><b>Les 2 Services civiques</b> — <span style="color:var(--brand);font-weight:600">Appui périscolaire &amp; jeunesse</span> · mer→sam · Unis-Cité</div>
-        <div style="margin-top:8px"><b>Notre rôle</b> — appui à l'équipe (volontariat, pas un emploi). Tutrice : Kathy. Cadre : Unis-Cité.</div>
-        <div style="margin-top:6px"><b>Nos tâches</b> — appui mercredi jeunesse · binôme du samedi · aide à l'animation/installation/accueil.</div>
-        <div style="margin-top:6px"><b>Nos horaires</b> — mer→sam en appui. Samedi seulement si un adulte responsable (qualifié si accueil de mineurs) ouvre.</div>
-        <div class="hint" style="margin-top:6px"><b>La règle qui nous protège :</b> jamais seuls responsables de mineurs · on ne remplace pas un salarié · en cas de souci, on alerte.</div>
+        <div style="margin-top:8px"><b>Le rôle</b> — appui à l'équipe (volontariat, pas un emploi). Tutrice : la coordination. Cadre : Unis-Cité.</div>
+        <div style="margin-top:6px"><b>Les tâches</b> — appui mercredi jeunesse · binôme du samedi · aide à l'animation/installation/accueil.</div>
+        <div style="margin-top:6px"><b>Les horaires</b> — mer→sam en appui. Samedi seulement si un adulte responsable (qualifié si accueil de mineurs) ouvre.</div>
+        <div class="hint" style="margin-top:6px"><b>La règle qui protège :</b> jamais seuls responsables de mineurs · ne remplace pas un salarié · en cas de souci, alerte.</div>
       </div>
       <div class="card" style="margin-top:10px;border-left:4px solid var(--amber)">
-        <b>Renfort vacances (à cadrer)</b> — <b>Kysy Victoire</b> : CDD limité au VEPI (⚠️ VEPI = programme Mairie → vérifier l'organisateur déclarant). <b>Betty Ah-Koï (BAFD)</b> &amp; <b>Alyssa Maillard (BAFA)</b> : stagiaires en stage pratique, ACM/vacances, <b>défrayées</b> (≈ 300 € pour la période — à confirmer) → <b>non salariées</b>, à passer en statut « stagiaire » dans 🎓 Qualification ACM. Jamais « Directrice » pour un BAFD en formation.
+        <b>Renfort vacances (à cadrer)</b> — <b>Renfort VEPI</b> : CDD limité au VEPI (⚠️ VEPI = programme Mairie → vérifier l'organisateur déclarant). <b>Stagiaire BAFD</b> &amp; <b>stagiaire BAFA</b> : stage pratique, ACM/vacances, <b>défrayés</b> (≈ 300 € pour la période — à confirmer) → <b>non salariés</b>, à passer en statut « stagiaire » dans 🎓 Qualification ACM. Jamais « Directrice » pour un BAFD en formation.
       </div>
       <p class="hint" style="margin-top:12px">PROJET non signé · à valider par le CA · poste Culture occupant-neutre (gel). Jumeau imprimable : <code>Documents/CASE/BDN/CASE-Fiches-claires-poste-taches-horaires-2026-07.html</code></p></div></section>
   <!-- PRÉVISIONNEL -->
-  <section id="previsionnel" class="page">
+    <section id="previsionnel" class="page">
     <div class="panel">
       <div class="toolbar">
         <div>
@@ -2414,7 +2414,7 @@ Deux locaux complémentaires — le Bois de Nèfles (« le haut » : jeunesse, a
       <h3 style="margin:0 0 4px">🎓 Stagiaires, services civiques &amp; bénévoles encadrants</h3>
       <p class="hint" style="margin:0 0 8px">Les personnes qui interviennent <strong>sans être salariées</strong> — et qui engagent quand même l'association. Pour chacune : la <strong>convention signée</strong> (obligatoire, à trois : la personne, son organisme et nous), le <strong>tuteur</strong> désigné, l'<strong>honorabilité</strong> vérifiée (indispensable dès qu'il y a des mineurs) et l'<strong>assurance</strong>. Bob prévient quand un stage dépasse <strong>2 mois</strong> : au-delà, une <strong>gratification</strong> devient obligatoire.</p>
       <div class="toolbar" style="flex-wrap:wrap;gap:10px;align-items:flex-end">
-        <div class="field" style="min-width:150px"><label>Nom</label><input id="ob_st_nom" placeholder="Ex. Alyssa Maillard"></div>
+        <div class="field" style="min-width:150px"><label>Nom</label><input id="ob_st_nom" placeholder="Ex. Jean Técher"></div>
         <div class="field" style="min-width:160px"><label>Statut</label><select id="ob_st_type"></select></div>
         <div class="field" style="min-width:150px"><label>Organisme / école</label><input id="ob_st_org" placeholder="Ex. CEMEA, FEDEP, Unis-Cité"></div>
         <div class="field" style="min-width:130px"><label>Du</label><input type="date" id="ob_st_debut"></div>
@@ -3086,7 +3086,7 @@ const NEWS=[
   {id:'2026-07-14-consult-sante-correctif',date:'2026-07-14',tab:'🕘 Historique',titre:"🩺 RGPD art. 9 : tracer les consultations du médical — chantier à finaliser",desc:"Point de transparence (vérifié le 14/07) : le <b>📓 Journal des actions</b> trace bien les <b>créations / modifications / suppressions</b>, mais <b>pas encore les consultations</b> (qui <b>ouvre</b> le médical d'un enfant — PAI, allergies). Une annonce précédente laissait croire que ces consultations étaient tracées : ce n'est pas le cas aujourd'hui. Le <b>RGPD sur les données de santé (art. 9)</b> demande cette traçabilité des <b>accès</b> → c'est un <b>chantier identifié à finaliser</b>. D'ici là, on ne s'en prévaut pas. Les infos terrain (allergies, personnes autorisées) restent visibles pour la sécurité de l'enfant."},
   {id:'2026-07-12-sections-acces',date:'2026-07-12',tab:'👥 Dossiers salariés',titre:"🗂️ Nouveau : donner à chaque salarié l'accès à ses sections",desc:"Tu peux maintenant décider, <b>salarié par salarié</b>, à quelles sections il a accès : <b>🌴 ACM</b>, <b>🎒 Périscolaire</b>, <b>📌 VEPI</b>. Sur la page de connexion (bureau), fiche d'un salarié → <b>🔧 Rubriques</b> → bloc <b>« 🗂️ Sections »</b>, des cases à cocher. Le salarié ne voit alors que <b>ses</b> sections — fiches enfants, inscriptions, plannings, dossiers et photos compris ; <b>aucune case = aucun accès</b>. Les <b>événements / temps forts</b> restent partagés par <b>toute l'équipe</b>. Le cloisonnement est appliqué <b>par la base</b>, pas seulement à l'écran. À réserver au président / trésorier."},
   {id:'2026-07-12-calc-danse',date:'2026-07-12',tab:'salles',titre:"💶 Calculateur : les cours de danse sont-ils rentables ?",desc:"Dans l'onglet <b>🗓️ Salles</b>, sous le planning, un nouveau panneau <b>« 💶 Modèle éco des cours de danse »</b>. Il lit les <b>vrais créneaux</b> de la salle de danse et compare <b>ce que le CASE paie</b> (une <b>facture globale</b> par intervenant) à ce que <b>rapportent les inscriptions</b> — en <b>prix plein</b> (ces cours ouverts n'ont pas de quotient familial, contrairement à l'ACM/périscolaire). Tu tapes le prix et le nombre d'élèves de chaque cours, et tu vois la <b>marge</b> et le <b>point mort</b> (combien d'élèves/cours il faut pour couvrir les forfaits). En prestation, c'est le CASE qui porte le remplissage : <b>à nous de remplir</b>."},
-  {id:'2026-07-12-intervenants',date:'2026-07-12',tab:'🎭 Intervenants',titre:"🎭 Nouveau : suivre les intervenants prestataires",desc:"Un nouvel onglet <b>🎭 Intervenants</b> (dans 🏠 Lieux &amp; Salles, réservé au bureau) pour suivre les intervenant·e·s qui animent nos activités <b>via leur association</b> (prestataires) : la <b>structure</b>, la <b>personne</b>, la <b>convention</b>, et surtout les <b>3 justificatifs obligatoires</b> en voyants 🔴/🟢 — <b>honorabilité</b> (casier B2/FIJAISV avant tout contact avec des mineurs), <b>diplôme (DE danse ou dispense)</b> et <b>assurance RC</b>. <b>Tant qu'un voyant est rouge, on ne fait pas intervenir</b> — de quoi protéger l'association et les enfants. L'onglet reprend aussi tout seul les <b>prestations déjà réglées</b> depuis la compta. Première fiche pré-remplie : <b>Association Culture Prod</b> (Stéphanie Ramin — danse)."},
+  {id:'2026-07-12-intervenants',date:'2026-07-12',tab:'🎭 Intervenants',titre:"🎭 Nouveau : suivre les intervenants prestataires",desc:"Un nouvel onglet <b>🎭 Intervenants</b> (dans 🏠 Lieux &amp; Salles, réservé au bureau) pour suivre les intervenant·e·s qui animent nos activités <b>via leur association</b> (prestataires) : la <b>structure</b>, la <b>personne</b>, la <b>convention</b>, et surtout les <b>3 justificatifs obligatoires</b> en voyants 🔴/🟢 — <b>honorabilité</b> (casier B2/FIJAISV avant tout contact avec des mineurs), <b>diplôme (DE danse ou dispense)</b> et <b>assurance RC</b>. <b>Tant qu'un voyant est rouge, on ne fait pas intervenir</b> — de quoi protéger l'association et les enfants. L'onglet reprend aussi tout seul les <b>prestations déjà réglées</b> depuis la compta. Première fiche pré-remplie : un exemple générique à compléter (structure · personne · convention)."},
   {id:'2026-07-11-journal-recherche',date:'2026-07-11',tab:'💶 Comptabilité',titre:"🔎 Chercher dans la compta par montant et par dates",desc:"Le <b>Journal des opérations</b> gagne de vrais filtres : la barre de recherche trouve maintenant aussi une écriture <b>par son montant</b> (tape par ex. <code>45,20</code>), et deux nouveaux champs <b>« du… au… »</b> n'affichent que les écritures <b>entre deux dates</b> (en plus de l'exercice et du type recettes/dépenses déjà là). Nouveauté clé : les tableaux de <b>Ventilation</b> (dépenses et recettes par site / action) <b>suivent désormais ce que tu affiches</b> — après une recherche ou un filtre, ils ne comptent que les écritures visibles, plus toute l'année. En haut de la page 💶 Comptabilité, deux <b>boutons d'accès rapide</b> (<b>📊 Ventilation</b>, <b>🏦 Rapprochement bancaire</b>) t'y amènent d'un clic. Et le rapprochement a un bouton <b>« 📤 Exporter les incohérences (Excel) »</b>."},
   {id:'2026-07-11-visuel-post',date:'2026-07-11',tab:'📣 Communication',titre:"🎨 Créer une image pour un post",desc:"Nouveau bloc <b>« 🎨 Créer un visuel de post »</b> dans l'onglet <b>📣 Communication</b> (sous le carrousel) : tu donnes un <b>thème</b> (ex. « ACM ados été — journée surf »), un <b>format</b> (carré, story, paysage) et un <b>style</b>, et l'expert fabrique une <b>image à tes couleurs</b>, ambiance péi — une <b>illustration sans vraie personne</b> (aucun souci de droit à l'image). Tu <b>régénères</b> jusqu'à ce que ça te plaise, puis tu <b>télécharges</b> ; ton texte se pose par-dessus. Ça coûte <b>≈ 3 crédits</b>, plafonné. Réservé au bureau et aux salariés."},
   {id:'2026-07-11-board-acm-salarie',date:'2026-07-11',tab:'🌴 Vacances',titre:"🗓️ Les salariées placent les activités en glissant",desc:"Dans « 🌴 Mon ACM » (espace salarié), la salariée a maintenant <b>le même tableau que toi</b> : elle voit <b>ton vrai catalogue d'activités</b> et les <b>glisse sur les jours</b> (ou choisit le jour dans un petit menu, pratique sur téléphone). Chaque déplacement devient une <b>proposition de placement</b> qui arrive dans <b>📥 À valider</b> ; quand tu l'<b>Acceptes</b>, l'activité se <b>pose toute seule</b> sur ton planning — plus besoin de tout retaper. Réservé au bureau pour la validation."},
@@ -5023,11 +5023,11 @@ const INT_VERROUS=[
 const INT_ETATS={rouge:{e:'🔴',lbl:'à obtenir',c:'#e24b4a'},vert:{e:'🟢',lbl:'OK',c:'#1d9e75'},na:{e:'⚪',lbl:'non requis',c:'#8a978f'}};
 const INT_CONV={a_etablir:'⏳ à établir',envoyee:'📤 envoyée',signee:'✅ signée',expiree:'⚠️ expirée'};
 function intSeed(){
-  return {id:uid(),structure:'Association Culture Prod',domaine:'Danse',referent:'',pers:'Stéphanie Ramin',
-    email:'stephanieramin@yahoo.fr',tel:'',siret:'',matchLabel:'culture prod',
+  return {id:uid(),structure:'',domaine:'',referent:'',pers:'',
+    email:'',tel:'',siret:'',matchLabel:'',
     conv:{statut:'a_etablir',debut:'',fin:'',montant:''},
     verrous:{honor:'rouge',diplome:'rouge',assur:'rouge'},
-    note:'Référencée « intervenants artistiques » du Rectorat (danse), à titre individuel. ⚠️ Lien familial possible avec Fabrice Ramin (salarié) → convention + justificatifs irréprochables (transparence).'};
+    note:''};
 }
 function intList(){ if(db.intervenants===undefined) db.intervenants=[intSeed()]; db.intervenants=db.intervenants||[]; return db.intervenants; }
 function intAdd(){
@@ -6780,67 +6780,7 @@ function renderPeopleList(){ const dl=$('peopleList'); if(dl) dl.innerHTML=actPe
 /* Le plan de marche 2026 : la substance des documents de travail du 14-15/07/2026
    (décodage du DLA · plan de trésorerie · refléchage Ville · plan d'actions rentrée)
    versée là où elle sert vraiment — avec un porteur et une échéance. */
-const ACT_PLAN=[
-  // — Avant le bilan DLA du 23/07 : les preuves d'exécution —
-  {s:"Tenir la 1re réunion d'équipe du jeudi 11h (30 min : rentrée, avenants, bilan DLA)",q:'Guillaume',d:'2026-07-17',p:'🔴 Haute',o:'DLA'},
-  {s:"Envoyer le courrier CAF : annonce de l'indu (33 541 €) + demande d'étalement — depuis case.bdn@gmail.com, jamais direction@",q:'Guillaume',d:'2026-07-22',p:'🔴 Haute',o:'Trésorerie'},
-  {s:"Payer la mensualité URSSAF (424 €) puis demander l'attestation de vigilance → débloque la subvention CAF 2026",q:'Guy',d:'2026-07-20',p:'🔴 Haute',o:'Trésorerie'},
-  {s:"Caler 3 dates fermes d'entretiens individuels avec Néopale (jamais tenus — demandés 5 fois par le DLA)",q:'Guillaume',d:'2026-07-23',p:'🔴 Haute',o:'DLA'},
-  {s:"Lancer la relance n°2 des impayés familles (10 299 € / 36 familles) + règle « réinscription conditionnée à un plan d'apurement »",q:'Guy',d:'2026-07-23',p:'🔴 Haute',o:'Trésorerie'},
-  {s:"Poster l'état d'avancement sur le WhatsApp DLA + déposer les pièces sur le Drive (« donner à voir »)",q:'Guillaume',d:'2026-07-22',p:'🟠 Moyenne',o:'DLA'},
-  {s:"Bilan DLA du 23/07 : RÉCLAMER tous les livrables de Charlotte (projet associatif mis en page, check-list RH, procédures, objectifs/indicateurs par pôle) — après, la mission est close",q:'Guillaume',d:'2026-07-23',p:'🔴 Haute',o:'DLA'},
-  {s:"Remplir l'ACM ados été (6 inscrits sur 30) : page Facebook du quartier, familles VEPI et périscolaire, affiches aux 2 locaux",q:'Kathy',d:'2026-07-24',p:'🔴 Haute',o:'Activités'},
-  // — Le mur légal de la rentrée (18-19/08) —
-  {s:"Appeler Intermetra : visites de REPRISE de Kathy et Fabrice (obligatoires avant tout retour au poste) + périodiques jamais faites",q:'Guillaume',d:'2026-07-24',p:'🔴 Haute',o:'Obligations'},
-  {s:"Vérifier auprès de la CGSS que les indemnités journalières des arrêts en cours rentrent bien (subrogation en place ?)",q:'Guy',d:'2026-07-31',p:'🔴 Haute',o:'Obligations'},
-  {s:"Arrêter les compteurs d'heures/récup (~150 h signalées depuis mars), faire signer chaque salarié, note de service du président",q:'Guillaume',d:'2026-08-14',p:'🔴 Haute',o:'Obligations'},
-  {s:"Écrire le plan de staffing nominal : qui ouvre et qui encadre l'ACM du 27/07 et la semaine du 18/08 (taux d'encadrement vérifiés)",q:'Kathy',d:'2026-07-25',p:'🔴 Haute',o:'Activités'},
-  {s:"Régulariser les stagiaires AVANT l'ACM du 27/07 : conventions signées à trois (Betty BAFD, Alyssa BAFA, stagiaire VEPI/FEDEP), tuteur désigné, honorabilité SDJES vérifiée, assurance — sans ça, aucun contact avec les mineurs",q:'Kathy',d:'2026-07-24',p:'🔴 Haute',o:'Obligations'},
-  {s:"Conventions et tutorat des 2 services civiques Unis-Cité (contrat d'engagement, tuteur, formation civique) — ils ne comptent jamais dans les quotas d'encadrement",q:'Guillaume',d:'2026-08-14',p:'🟠 Moyenne',o:'Obligations'},
-  {s:"CA en séance avec PV signé : ratifier les 3 pôles + l'Option A + la lettre de mission de Kathy + les grilles tarifaires (rien n'a d'existence formelle à ce jour)",q:'Guillaume',d:'2026-08-14',p:'🔴 Haute',o:'Gouvernance'},
-  {s:"Voter les grilles tarifaires (périscolaire + mercredi + supplément matin) AVANT les réinscriptions — sinon un an de plus au tarif déficitaire",q:'Guy',d:'2026-08-14',p:'🔴 Haute',o:'Trésorerie'},
-  {s:"Ouvrir le self-service familles dans Bob pour les réinscriptions du 18/08",q:'Guillaume',d:'2026-08-10',p:'🟠 Moyenne',o:'Activités'},
-  {s:"Lancer le Mercredi Jeunesse (format demi-journée + goûter) — déjà financé par le refléchage 2025 (8 670 €)",q:'Sandrine',d:'2026-08-19',p:'🔴 Haute',o:'Activités'},
-  // — Mairie & refléchage —
-  {s:"Pointer ligne à ligne les subventions Ville 2025 réellement versées et trancher les points d'interrogation (VEPI, Sport dan kartié, Espace Jeunesse, ACM janvier/mars-mai)",q:'Guy',d:'2026-07-31',p:'🔴 Haute',o:'Mairie'},
-  {s:"Déposer officiellement la proposition de refléchage à la Ville (3 paquets : requalifier / reflécher / livrer) + demander le budget exceptionnel",q:'Guillaume',d:'2026-08-07',p:'🔴 Haute',o:'Mairie'},
-  {s:"Relancer les 10 dossiers Mairie en instruction (~59 à 71 k€) avec le dossier de redressement en pièce jointe",q:'Guillaume',d:'2026-08-21',p:'🟠 Moyenne',o:'Mairie'},
-  {s:"Déposer les dossiers Mairie 2027 : refléchage + périscolaire du matin + mercredi + samedis + secteur ados (bilans 2024/2025 à jour, budgets au centime)",q:'Guillaume',d:'2026-09-30',p:'🔴 Haute',o:'Mairie'},
-  // — Comptes, AG, gouvernance —
-  {s:"Relancer le cabinet comptable avec une date butoir écrite (comptes 2025, ~4 mois de retard) + signer la lettre de mission",q:'Guy',d:'2026-07-21',p:'🔴 Haute',o:'Gouvernance'},
-  // — RÉTROPLANNING DE L'AG (cible : samedi 26/09/2026, 9h — à confirmer en bureau) : chaque jalon commande le suivant —
-  {s:"AG · Obtenir du cabinet la date ferme de clôture des comptes 2025 — c'est ce qui verrouille toute la chaîne (sans comptes, pas d'AG ; sans AG, pas de secrétaire, pas de CA élargi, pas d'agrément JEP)",q:'Guy',d:'2026-07-21',p:'🔴 Haute',o:'AG'},
-  {s:"AG · Décider la date en bureau : cible samedi 26/09/2026 à 9h (accueil 8h30) — après la rentrée, avant la campagne de subventions 2027",q:'Guillaume',d:'2026-07-24',p:'🔴 Haute',o:'AG'},
-  {s:"AG · Récupérer de Kathy la liste des adhérents à jour de cotisation → c'est le DÉNOMINATEUR du quorum (1/3, sans seconde convocation possible : si le quorum manque, l'AG tombe)",q:'Guillaume',d:'2026-09-01',p:'🔴 Haute',o:'AG'},
-  {s:"AG · Réceptionner les comptes annuels 2025 du cabinet + inviter le commissaire aux comptes (obligation légale de l'inviter à l'AG)",q:'Guy',d:'2026-09-04',p:'🔴 Haute',o:'AG'},
-  {s:"AG · Lancer l'appel à candidatures au conseil d'administration (objectif 6-7 membres) — AVANT la convocation, pour que les noms y figurent",q:'Guillaume',d:'2026-09-05',p:'🔴 Haute',o:'AG'},
-  {s:"AG · Réunir le CA en séance : arrêter les comptes, fixer l'ordre du jour, décider la convocation (les statuts imposent la décision EN SÉANCE)",q:'Guillaume',d:'2026-09-08',p:'🔴 Haute',o:'AG'},
-  {s:"AG · ENVOYER LA CONVOCATION par email — au plus tard le 10/09 (15 jours francs avant le 26/09). Y joindre : ordre du jour, comptes, rapport, formulaire de POUVOIR",q:'Guillaume',d:'2026-09-10',p:'🔴 Haute',o:'AG'},
-  {s:"AG · Campagne d'appels aux familles pour sécuriser le quorum et collecter les pouvoirs (1 parent = la voix de sa famille) — c'est CE geste qui décide si l'AG se tient",q:'Guy',d:'2026-09-24',p:'🔴 Haute',o:'AG'},
-  {s:"AG · Tenir l'assemblée générale (samedi 26/09, 9h) : approbation des comptes 2025, quitus, élection du conseil d'administration élargi",q:'Guillaume',d:'2026-09-26',p:'🔴 Haute',o:'AG'},
-  {s:"AG · Dans la foulée, réunir le nouveau CA : élire le bureau (dont LE SECRÉTAIRE — pivot de l'Option A) et ratifier les 3 pôles + les fiches de poste",q:'Guillaume',d:'2026-09-26',p:'🔴 Haute',o:'AG'},
-  {s:"AG · Déclarer les changements de dirigeants en sous-préfecture (obligatoire, 3 mois max) et mettre à jour le RNA",q:'Guillaume',d:'2026-10-09',p:'🟠 Moyenne',o:'AG'},
-  // — SERVICE CIVIQUE (2 volontaires Unis-Cité, arrivée visée à la rentrée) —
-  {s:"Service civique · Appeler Unis-Cité pour caler la rentrée des 2 volontaires : qui porte l'agrément (intermédiation), quand ils arrivent, ce qu'ils attendent de nous",q:'Guillaume',d:'2026-08-07',p:'🔴 Haute',o:'Service civique'},
-  {s:"Service civique · Écrire les 2 fiches de mission (appui périscolaire · appui jeunesse/ados) — une mission d'intérêt général, JAMAIS un poste de travail déguisé ni un remplacement de salarié",q:'Kathy',d:'2026-08-14',p:'🔴 Haute',o:'Service civique'},
-  {s:"Service civique · Signer la convention avec Unis-Cité et désigner officiellement le tuteur (Kathy) — le tutorat est une obligation, pas une formalité",q:'Guillaume',d:'2026-08-21',p:'🔴 Haute',o:'Service civique'},
-  {s:"Service civique · Vérifier l'honorabilité des 2 volontaires avant tout contact avec des mineurs + confirmer avec Unis-Cité qui prend en charge la formation civique et citoyenne et le PSC1",q:'Guillaume',d:'2026-08-28',p:'🔴 Haute',o:'Service civique'},
-  {s:"Service civique · Préparer leur accueil : poste de travail, clés, présentation à l'équipe, planning — et rappeler à tous qu'ils ne comptent JAMAIS dans les taux d'encadrement ACM",q:'Kathy',d:'2026-09-01',p:'🟠 Moyenne',o:'Service civique'},
-  {s:"Axe RASSEMBLER : proposer à Chandra Padavatan (page Facebook du quartier) de relayer l'ACM et le Mercredi Jeunesse — partenariat com d'abord, gouvernance ensuite",q:'Guillaume',d:'2026-07-24',p:'🟠 Moyenne',o:'Gouvernance'},
-  {s:"Relancer les 3 candidatures au poste de secrétaire (pivot de l'Option A) — élection au CA qui suit l'AG",q:'Guillaume',d:'2026-08-21',p:'🟠 Moyenne',o:'Gouvernance'},
-  // — La fenêtre du 1er septembre —
-  {s:"Retour Hexopée (21/08) → signature groupée : avenants ÉCLAT + fiches de poste + nouveaux plannings (le samedi et le mardi-samedi passent par l'avenant : c'est LA fenêtre)",q:'Guillaume',d:'2026-09-01',p:'🔴 Haute',o:'RH'},
-  {s:"Courrier factuel et apaisé à Fabrice : le litige du coefficient 418 est clos (l'avenant 2021 est respecté au centime) → dégel du pôle Culture",q:'Guillaume',d:'2026-08-28',p:'🔴 Haute',o:'RH'},
-  {s:"Lettre de mission probatoire de Kathy : 3-4 objectifs MESURABLES sur 3 mois (dont une part d'animation effective) + date de revue",q:'Guillaume',d:'2026-09-01',p:'🔴 Haute',o:'RH'},
-  {s:"Activer la prévoyance de branche ÉCLAT (obligatoire avec la bascule) et trancher : la paie reste chez SNP ou bascule au cabinet ?",q:'Guy',d:'2026-09-01',p:'🟠 Moyenne',o:'RH'},
-  {s:"Instruire le renouvellement du contrat aidé de Sandrine avec France Travail (fin le 30/10) — elle porte le périscolaire et le mercredi",q:'Guillaume',d:'2026-09-15',p:'🔴 Haute',o:'RH'},
-  // — Les angles morts du DLA —
-  {s:"Produire le DUERP (document unique d'évaluation des risques) et le registre du personnel — obligatoires, jamais faits",q:'Guillaume',d:'2026-09-30',p:'🟠 Moyenne',o:'Obligations'},
-  {s:"Rétribution des intervenants qui utilisent nos locaux : acter un montant + une convention type avant leur rentrée",q:'Guy',d:'2026-09-15',p:'🟠 Moyenne',o:'Trésorerie'},
-  {s:"Réaménager les locaux avec les 2 services civiques + 2 mails de sollicitation matériel (Ressourcerie de La Mare, SFR/Orange) — coût ~0, effet visible",q:'Kathy',d:'2026-08-17',p:'🟢 Basse',o:'Activités'},
-  {s:"Lancer l'enquête habitants / boîte à idées (le projet associatif s'est écrit sans la voix du quartier)",q:'Kathy',d:'2026-10-15',p:'🟢 Basse',o:'Activités'},
-  {s:"Fermer l'un des 2 comptes bancaires et basculer les prélèvements",q:'Guy',d:'2026-09-30',p:'🟢 Basse',o:'Trésorerie'},
-];
+const ACT_PLAN=[]; // plan de marche retiré du fichier public (données réelles -> base + Notion)
 function actImportPlan(){
   const a=actionsDB(); let n=0;
   ACT_PLAN.forEach(x=>{
