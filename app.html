@@ -344,6 +344,8 @@
       <button data-tab="suivi">✅ Suivi</button>
       <button data-tab="conges">🏖️ Congés</button>
       <button data-tab="horaires">🗓️ Horaires</button>
+      <button data-tab="fiches">📋 Fiches de poste</button>
+      <button data-tab="obligations">🛡️ Obligations</button>
     </div>
     <div class="tabgroup" data-group="bureau">
       <button data-tab="projet">🧭 Projet &amp; orientations</button>
@@ -845,6 +847,63 @@
     </div>
   </section>
 
+  <section id="fiches" class="page"><div class="panel"><div class="toolbar" style="justify-content:space-between;align-items:flex-start;gap:8px"><h2 style="margin:0">📋 Fiches de poste — poste · tâches · horaires</h2><button class="btn" onclick="window.print()">🖨️ Imprimer</button></div>
+      <p class="hint" style="margin:2px 0 0">La version claire et concrète, pour chaque personne : ce qu'elle est, ce qu'elle fait au quotidien, quand. <b>PROJET</b> — on prépare, le CA valide. Réservé au bureau.</p>
+      <div class="card" style="border-left:4px solid var(--brand);margin-top:10px"><b>Règle commune :</b> « J'anime, je suis en <b>première ligne</b>. Je ne tiens pas le registre, je n'encaisse pas, je ne diffuse pas. » <span class="hint">Données → secrétariat/bureau · Argent → trésorier (Guy) · Image → bureau/Président · Doute → le bureau tranche.</span></div>
+      <h3 style="margin:16px 0 6px">Qui fait quoi, quand</h3>
+      <div style="overflow-x:auto"><table style="min-width:720px"><thead><tr><th>Personne</th><th>Poste</th><th>Volume · jours</th><th>Cœur des tâches</th><th>Statut</th></tr></thead>
+      <tbody>
+        <tr><td><b>Kathy Maillot</b></td><td>Coordination périscolaire</td><td>35 h · lun→ven</td><td>Anime (matin/soir) · coordonne · tutore Sandrine + 2 SC · supervise mercredi &amp; ACM</td><td>CDI, en poste</td></tr>
+        <tr><td><b>Sandrine Michel</b></td><td>Animation périscolaire</td><td>21 h · lun→ven</td><td>Anime périscolaire, mercredi, ACM · accueil enfants/familles</td><td>PEC</td></tr>
+        <tr><td><b>Poste Culture</b></td><td>Culture &amp; quartier</td><td>mar→sam</td><td>Culture · quartier · samedi tout public</td><td style="color:var(--red)">Gelé (Fabrice — litige 418) · samedi suspendu</td></tr>
+        <tr><td><b>2 Services civiques</b></td><td>Appui périscolaire/jeunesse</td><td>mer→sam</td><td>Binôme d'appui · toujours supervisés</td><td>Unis-Cité · jamais seuls avec des mineurs</td></tr>
+        <tr><td><b>Kysy Victoire</b></td><td>Renfort VEPI</td><td>période VEPI</td><td>Renfort animation pendant le VEPI (vacances)</td><td style="color:var(--amber)">CDD · VEPI seulement</td></tr>
+        <tr><td><b>Betty Ah-Koï</b></td><td>Stagiaire BAFD (direction)</td><td>ACM/vacances</td><td>Stage pratique, sous directeur qualifié</td><td style="color:var(--amber)">Stagiaire · défrayée · non salariée</td></tr>
+        <tr><td><b>Alyssa Maillard</b></td><td>Stagiaire BAFA (animation)</td><td>ACM/vacances</td><td>Stage pratique d'animation</td><td style="color:var(--amber)">Stagiaire · défrayée · non salariée</td></tr>
+      </tbody></table></div>
+      <h3 style="margin:18px 0 6px">La semaine, d'un coup d'œil</h3>
+      <div style="overflow-x:auto"><table style="min-width:640px"><thead><tr><th>Jour</th><th>Kathy</th><th>Sandrine</th><th>Poste Culture</th><th>2 SC</th></tr></thead>
+      <tbody>
+        <tr><td><b>Lun</b></td><td>matin + soir + coord</td><td>matin + soir</td><td>—</td><td>—</td></tr>
+        <tr><td><b>Mar</b></td><td>matin + soir + coord</td><td>matin + soir + prépa</td><td>culture / quartier</td><td>—</td></tr>
+        <tr><td><b>Mer</b></td><td>mercredi jeunesse (superv.) + coord</td><td>prépa/réunion + mercredi</td><td>culture / quartier</td><td>appui jeunesse</td></tr>
+        <tr><td><b>Jeu</b></td><td>matin + soir + coord</td><td>matin + soir</td><td>culture / quartier</td><td>appui</td></tr>
+        <tr><td><b>Ven</b></td><td>matin + soir + coord</td><td>matin + soir</td><td>culture / quartier</td><td>appui</td></tr>
+        <tr><td><b>Sam</b></td><td>🌴 repos</td><td>🌴 repos</td><td style="color:var(--red)">🔒 gelé — suspendu</td><td>appui (si adulte qualifié ouvre)</td></tr>
+      </tbody></table></div>
+      <h3 style="margin:18px 0 6px">Les fiches, une par une</h3>
+      <div class="card" style="margin-top:10px">
+        <div><b>Kathy Maillot</b> — <span style="color:var(--brand);font-weight:600">Coordination périscolaire</span> · 35 h · lun→ven · CDI</div>
+        <div style="margin-top:8px"><b>Mon poste</b> — Je coordonne le périscolaire (je mets en musique, j'anime l'équipe, je fais le lien avec le bureau). Responsable du pôle, mais <b>pas l'employeur</b> (sanction = bureau ; j'alerte, le bureau tranche). Je <b>coordonne, je ne dirige pas</b> : je n'engage pas l'asso.</div>
+        <div style="margin-top:6px"><b>Mes tâches</b> — Chaque jour : accueil matin / garderie soir · je fais tourner la journée · je dépanne l'équipe. Chaque semaine : réunion de pôle · tutorat (Sandrine + 2 SC) · remontée terrain. Un souci : je sécurise, je note dans Bob, j'alerte.</div>
+        <div style="margin-top:6px"><b>Mes horaires</b> — Lun→ven, matin + soir + coordination. Pas de samedi.</div>
+        <div class="hint" style="margin-top:6px"><b>Règles :</b> je ne tiens pas le registre · je ne décaisse pas · je ne publie pas · santé enfant = lecture pour la sécurité, jamais de photo/fichier perso · doute → bureau. <b>Direction ACM</b> = BAFD ou dérogation DRAJES (pas encore obtenue) → je supervise, je ne suis pas la directrice déclarée.</div>
+      </div>
+      <div class="card" style="margin-top:10px">
+        <div><b>Sandrine Michel</b> — <span style="color:var(--brand);font-weight:600">Animation périscolaire</span> · 21 h · lun→ven · PEC</div>
+        <div style="margin-top:8px"><b>Mon poste</b> — J'anime le périscolaire et les ACM, au contact des enfants et des familles. Sous la responsabilité de Kathy (parcours PEC). Source de première ligne : je fais remonter, je ne tiens pas le registre.</div>
+        <div style="margin-top:6px"><b>Mes tâches</b> — Chaque jour : accueil matin · goûter + garderie soir · je pointe les présences. Chaque semaine : je propose le programme · point avec Kathy · mercredi jeunesse. Aide au comptoir : identité/inscription seulement, jamais les données de santé.</div>
+        <div style="margin-top:6px"><b>Mes horaires</b> — Lun→ven (matin + soir) + 6 h prépa/point. Pas de samedi.</div>
+        <div class="hint" style="margin-top:6px"><b>Règles :</b> santé enfant = lecture pour la sécurité, jamais de photo/fichier perso · pas de tableur ni WhatsApp parents perso · argent → trésorier · com → bureau. Recentrage = évolution d'organisation, pas sanction (rému/classif inchangées).</div>
+      </div>
+      <div class="card" style="margin-top:10px">
+        <div><b>Poste Culture &amp; quartier</b> — <span style="color:var(--red);font-weight:600">occupant-neutre · titulaire gelé</span> · mar→sam</div>
+        <div class="hint" style="margin-top:6px">Décrit <b>le poste</b>, pas une personne. Titulaire (Fabrice Ramin) gelé (litige 418) : aucune fonction ne lui est attribuée. Base pour une continuité (CDD), sans toucher à sa situation (→ conseil).</div>
+        <div style="margin-top:6px"><b>Les tâches</b> — programmation &amp; animation culturelle · animation de quartier (hors les murs) · samedi permanence tout public (binôme avec les 2 SC) · remonter le vécu au bureau.</div>
+        <div style="margin-top:6px"><b>Horaires</b> — mar→sam. Aujourd'hui <b>samedi suspendu</b> : ne rouvre qu'avec un adulte responsable — <b>et qualifié (BAFA/BAFD) si régime ACM</b> (à trancher SDJES).</div>
+        <div class="hint" style="margin-top:6px"><b>Règles :</b> les 2 SC jamais seuls avec des mineurs, non comptés dans l'encadrement · pas de carnet/photo perso · convention partenaire = signée par le bureau · « Ôté Kartié » gelé.</div>
+      </div>
+      <div class="card" style="margin-top:10px">
+        <div><b>Les 2 Services civiques</b> — <span style="color:var(--brand);font-weight:600">Appui périscolaire &amp; jeunesse</span> · mer→sam · Unis-Cité</div>
+        <div style="margin-top:8px"><b>Notre rôle</b> — appui à l'équipe (volontariat, pas un emploi). Tutrice : Kathy. Cadre : Unis-Cité.</div>
+        <div style="margin-top:6px"><b>Nos tâches</b> — appui mercredi jeunesse · binôme du samedi · aide à l'animation/installation/accueil.</div>
+        <div style="margin-top:6px"><b>Nos horaires</b> — mer→sam en appui. Samedi seulement si un adulte responsable (qualifié si accueil de mineurs) ouvre.</div>
+        <div class="hint" style="margin-top:6px"><b>La règle qui nous protège :</b> jamais seuls responsables de mineurs · on ne remplace pas un salarié · en cas de souci, on alerte.</div>
+      </div>
+      <div class="card" style="margin-top:10px;border-left:4px solid var(--amber)">
+        <b>Renfort vacances (à cadrer)</b> — <b>Kysy Victoire</b> : CDD limité au VEPI (⚠️ VEPI = programme Mairie → vérifier l'organisateur déclarant). <b>Betty Ah-Koï (BAFD)</b> &amp; <b>Alyssa Maillard (BAFA)</b> : stagiaires en stage pratique, ACM/vacances, <b>défrayées</b> (≈ 300 € pour la période — à confirmer) → <b>non salariées</b>, à passer en statut « stagiaire » dans 🎓 Qualification ACM. Jamais « Directrice » pour un BAFD en formation.
+      </div>
+      <p class="hint" style="margin-top:12px">PROJET non signé · à valider par le CA · poste Culture occupant-neutre (gel). Jumeau imprimable : <code>Documents/CASE/BDN/CASE-Fiches-claires-poste-taches-horaires-2026-07.html</code></p></div></section>
   <!-- PRÉVISIONNEL -->
   <section id="previsionnel" class="page">
     <div class="panel">
@@ -2193,15 +2252,38 @@ Deux locaux complémentaires — le Bois de Nèfles (« le haut » : jeunesse, a
   <section id="suivi" class="page">
     <div class="panel" style="background:linear-gradient(135deg,#eef7f0,#f5fbf7);border:1px solid #cfe9da">
       <h2 style="margin:0 0 4px">✅ Suivi des actions</h2>
-      <p class="hint" style="margin:0">Le suivi vivant des actions — la checklist du DLA (09/06) est pré-remplie. Change le statut, ajoute une note, ou crée une nouvelle action. Réservé au bureau.</p>
+      <p class="hint" style="margin:0">Le <strong>tableau de marche</strong> de l'association : chaque action a un <strong>porteur</strong> et une <strong>échéance</strong>, et Bob te dit ce qui est <strong>en retard</strong> et ce qui tombe <strong>cette semaine</strong>. C'est ici qu'on prépare la <strong>revue du jeudi 11h</strong> — 10 minutes, on passe les actions de la semaine, on avance. Réservé au bureau.</p>
     </div>
+    <div id="actAlertes"></div>
     <div class="cards" id="actionsKpis"></div>
-    <div class="panel">
-      <div class="row" style="gap:8px;flex-wrap:nowrap;margin-bottom:12px">
-        <input id="act_new" placeholder="Nouvelle action à suivre…" style="flex:1" onkeydown="if(event.key==='Enter')addAction()">
-        <button class="btn" onclick="addAction()" style="flex:0 0 auto">+ Ajouter</button>
+
+    <div class="panel" style="border-left:4px solid var(--brand)">
+      <div class="toolbar" style="justify-content:space-between;align-items:flex-start;gap:8px;flex-wrap:wrap">
+        <div>
+          <h3 style="margin:0 0 4px">🎯 La revue du jeudi</h3>
+          <p class="hint" style="margin:0">Ce qui est <strong>en retard</strong> ou <strong>dû dans les 7 jours</strong> — l'ordre du jour tout prêt.</p>
+        </div>
+        <button class="ghost btn" onclick="actImportPlan()" style="flex:0 0 auto">📥 Charger le plan de marche 2026</button>
       </div>
-      <div style="overflow-x:auto;-webkit-overflow-scrolling:touch"><table style="min-width:480px"><thead><tr><th>Action</th><th style="width:140px">Statut</th><th>Note</th><th style="width:44px"></th></tr></thead>
+      <div id="actSemaine" style="margin-top:10px"></div>
+    </div>
+
+    <div class="panel">
+      <div class="toolbar" style="flex-wrap:wrap;gap:10px;align-items:flex-end">
+        <div class="field" style="flex:1;min-width:220px"><label>Nouvelle action</label><input id="act_new" placeholder="Ex. Appeler Intermetra pour les visites de reprise" onkeydown="if(event.key==='Enter')addAction()"></div>
+        <div class="field" style="min-width:120px"><label>Qui s'en occupe</label><input id="act_new_qui" placeholder="Ex. Guy"></div>
+        <div class="field" style="min-width:140px"><label>Pour quand</label><input type="date" id="act_new_quand"></div>
+        <div class="field" style="min-width:120px"><label>Priorité</label><select id="act_new_prio"><option>🔴 Haute</option><option selected>🟠 Moyenne</option><option>🟢 Basse</option></select></div>
+        <div><button class="btn" onclick="addAction()">+ Ajouter</button></div>
+      </div>
+      <div class="toolbar" style="flex-wrap:wrap;gap:8px;margin-top:10px;align-items:center">
+        <span class="muted" style="font-size:13px">Filtrer :</span>
+        <select id="act_f_statut" onchange="renderActions()" style="min-width:130px"><option value="">Tous les statuts</option><option>À faire</option><option>En cours</option><option>En attente</option><option>Fait</option></select>
+        <select id="act_f_qui" onchange="renderActions()" style="min-width:130px"><option value="">Tout le monde</option></select>
+        <select id="act_f_origine" onchange="renderActions()" style="min-width:150px"><option value="">Toutes les origines</option></select>
+        <label style="display:flex;align-items:center;gap:6px;font-size:13px"><input type="checkbox" id="act_f_masquer" onchange="renderActions()" checked> masquer les actions faites</label>
+      </div>
+      <div style="overflow-x:auto;-webkit-overflow-scrolling:touch"><table style="margin-top:8px;min-width:900px"><thead><tr><th>Action</th><th style="width:120px">Qui</th><th style="width:130px">Pour quand</th><th style="width:130px">Statut</th><th style="width:100px">Priorité</th><th>Note</th><th style="width:44px"></th></tr></thead>
         <tbody id="actionsRows"></tbody></table></div>
     </div>
   </section>
@@ -2269,6 +2351,91 @@ Deux locaux complémentaires — le Bois de Nèfles (« le haut » : jeunesse, a
     </div>
     <div class="panel">
       <div id="horGridWrap"></div>
+    </div>
+  </section>
+
+  <!-- OBLIGATIONS EMPLOYEUR (visites médicales · compteurs récup · CGSS/IJ) — 15/07/2026 -->
+  <section id="obligations" class="page">
+    <div class="panel" style="background:linear-gradient(135deg,#fdeff0,#fdf7f7);border:1px solid #f0cfd2">
+      <h2 style="margin:0 0 4px">🛡️ Obligations employeur</h2>
+      <p class="hint" style="margin:0">Les trois choses qui coûtent cher quand on les oublie : les <strong>visites médicales</strong>, les <strong>compteurs d'heures et de récup</strong>, et l'<strong>argent des arrêts maladie</strong> (indemnités CGSS). Bob te dit ce qui est en retard, qui s'en occupe et où en sont les démarches. Réservé au bureau.</p>
+    </div>
+    <div id="oblAlertes"></div>
+    <div class="cards" id="oblKpis"></div>
+
+    <div class="panel" style="border-left:4px solid #c0392b">
+      <div class="toolbar" style="justify-content:space-between;align-items:flex-start;gap:8px;flex-wrap:wrap">
+        <div>
+          <h3 style="margin:0 0 4px">🩺 Visites médicales</h3>
+          <p class="hint" style="margin:0">Obligatoires. La visite d'<strong>embauche</strong> dans les 3 mois, la <strong>périodique</strong> tous les 5 ans, et surtout la visite de <strong>REPRISE</strong> : après un arrêt de 30 jours ou plus (ou tout arrêt pour maladie professionnelle), elle est <strong>obligatoire avant le retour au poste</strong> — dans les 8 jours. Sans elle, le salarié ne doit pas reprendre.</p>
+        </div>
+        <button class="btn" onclick="oblSeed()" style="flex:0 0 auto">🔄 Créer les lignes manquantes</button>
+      </div>
+      <div class="toolbar" style="flex-wrap:wrap;gap:10px;align-items:flex-end;margin-top:10px">
+        <div class="field" style="min-width:170px"><label>Salarié·e</label><select id="ob_vm_sal"></select></div>
+        <div class="field" style="min-width:170px"><label>Type de visite</label><select id="ob_vm_type"></select></div>
+        <div class="field" style="min-width:150px"><label>À faire avant le</label><input type="date" id="ob_vm_avant"></div>
+        <div><button class="btn" onclick="oblAddVisite()">+ Ajouter</button></div>
+      </div>
+      <div style="overflow-x:auto;-webkit-overflow-scrolling:touch"><table style="margin-top:10px;min-width:760px"><thead><tr><th>Salarié·e</th><th>Visite</th><th>À faire avant</th><th>Rendez-vous</th><th>Faite le</th><th>État</th><th style="width:44px"></th></tr></thead>
+        <tbody id="oblVisitesRows"></tbody></table></div>
+    </div>
+
+    <div class="panel" style="border-left:4px solid #c8881f">
+      <h3 style="margin:0 0 4px">⏱️ Compteurs d'heures et de récupération</h3>
+      <p class="hint" style="margin:0 0 8px">Le stock d'heures dû à chaque salarié·e. Tant qu'il n'est pas <strong>arrêté et signé</strong> par la personne, il grandit dans le noir — c'est un passif caché (et un risque aux prud'hommes). La bonne pratique : on arrête le compteur à une date, chacun signe, et on écrit comment on l'apure (récup prise, jours posés…).</p>
+      <div class="toolbar" style="flex-wrap:wrap;gap:10px;align-items:flex-end">
+        <div class="field" style="min-width:170px"><label>Salarié·e</label><select id="ob_cp_sal"></select></div>
+        <div class="field" style="min-width:130px"><label>Heures dues</label><input type="number" step="0.5" id="ob_cp_h" placeholder="Ex. 42"></div>
+        <div class="field" style="min-width:150px"><label>Arrêté à la date du</label><input type="date" id="ob_cp_date"></div>
+        <div><button class="btn" onclick="oblAddCompteur()">+ Enregistrer le compteur</button></div>
+      </div>
+      <div style="overflow-x:auto;-webkit-overflow-scrolling:touch"><table style="margin-top:10px;min-width:720px"><thead><tr><th>Salarié·e</th><th style="text-align:right">Heures dues</th><th>Arrêté au</th><th>Signé par la personne</th><th>Comment on l'apure</th><th style="width:44px"></th></tr></thead>
+        <tbody id="oblCompteursRows"></tbody></table></div>
+    </div>
+
+    <div class="panel" style="border-left:4px solid #0e6b6b">
+      <h3 style="margin:0 0 4px">🏥 Arrêts maladie &amp; indemnités CGSS</h3>
+      <p class="hint" style="margin:0 0 8px">Quand un salarié est en arrêt et qu'on maintient son salaire, la CGSS rembourse des <strong>indemnités journalières</strong>. Avec la <strong>subrogation</strong>, elles arrivent directement sur le compte de l'asso — sans elle, elles vont au salarié et l'asso paie deux fois. Suis ici, arrêt par arrêt : la déclaration, la subrogation, et <strong>l'argent réellement reçu</strong>.</p>
+      <div class="toolbar" style="flex-wrap:wrap;gap:10px;align-items:flex-end">
+        <div class="field" style="min-width:170px"><label>Salarié·e</label><select id="ob_ij_sal"></select></div>
+        <div class="field" style="min-width:140px"><label>Arrêt du</label><input type="date" id="ob_ij_debut"></div>
+        <div class="field" style="min-width:140px"><label>au</label><input type="date" id="ob_ij_fin"></div>
+        <div><button class="btn" onclick="oblAddArret()">+ Enregistrer l'arrêt</button></div>
+      </div>
+      <div style="overflow-x:auto;-webkit-overflow-scrolling:touch"><table style="margin-top:10px;min-width:900px"><thead><tr><th>Salarié·e</th><th>Période</th><th>Déclaré (DSN)</th><th>Subrogation</th><th style="text-align:right">IJ attendue</th><th style="text-align:right">IJ reçue</th><th>Visite de reprise</th><th style="width:44px"></th></tr></thead>
+        <tbody id="oblArretsRows"></tbody></table></div>
+      <p class="hint" style="margin:8px 0 0">💡 Un arrêt de <strong>30 jours ou plus</strong> déclenche automatiquement une ligne « visite de reprise » ci-dessus — c'est le garde-fou : impossible de l'oublier.</p>
+    </div>
+
+    <div class="panel" style="border-left:4px solid #6b5bb5">
+      <h3 style="margin:0 0 4px">🎓 Stagiaires, services civiques &amp; bénévoles encadrants</h3>
+      <p class="hint" style="margin:0 0 8px">Les personnes qui interviennent <strong>sans être salariées</strong> — et qui engagent quand même l'association. Pour chacune : la <strong>convention signée</strong> (obligatoire, à trois : la personne, son organisme et nous), le <strong>tuteur</strong> désigné, l'<strong>honorabilité</strong> vérifiée (indispensable dès qu'il y a des mineurs) et l'<strong>assurance</strong>. Bob prévient quand un stage dépasse <strong>2 mois</strong> : au-delà, une <strong>gratification</strong> devient obligatoire.</p>
+      <div class="toolbar" style="flex-wrap:wrap;gap:10px;align-items:flex-end">
+        <div class="field" style="min-width:150px"><label>Nom</label><input id="ob_st_nom" placeholder="Ex. Alyssa Maillard"></div>
+        <div class="field" style="min-width:160px"><label>Statut</label><select id="ob_st_type"></select></div>
+        <div class="field" style="min-width:150px"><label>Organisme / école</label><input id="ob_st_org" placeholder="Ex. CEMEA, FEDEP, Unis-Cité"></div>
+        <div class="field" style="min-width:130px"><label>Du</label><input type="date" id="ob_st_debut"></div>
+        <div class="field" style="min-width:130px"><label>Au</label><input type="date" id="ob_st_fin"></div>
+        <div><button class="btn" onclick="oblAddStage()">+ Ajouter</button></div>
+      </div>
+      <div style="overflow-x:auto;-webkit-overflow-scrolling:touch"><table style="margin-top:10px;min-width:980px"><thead><tr><th>Personne</th><th>Statut</th><th>Période</th><th>Convention</th><th>Tuteur</th><th>Honorabilité</th><th>Assurance</th><th>Gratification</th><th style="width:44px"></th></tr></thead>
+        <tbody id="oblStagesRows"></tbody></table></div>
+      <p class="hint" style="margin:8px 0 0">💡 Rappels : un <strong>service civique</strong> n'est ni salarié ni stagiaire (contrat d'engagement + tuteur + formation civique) et il ne compte <strong>jamais</strong> dans les taux d'encadrement d'un ACM. Un <strong>stagiaire BAFA/BAFD</strong>, lui, y compte — dans la limite de 50 % de l'équipe.</p>
+    </div>
+
+    <div class="panel" style="border-left:4px solid #7a3b5e">
+      <h3 style="margin:0 0 4px">📞 Qui fait quoi — les interlocuteurs</h3>
+      <p class="hint" style="margin:0 0 8px">Le carnet d'adresses de ces démarches, pour que personne n'ait à chercher : qui appelle, qui suit, quel numéro de dossier.</p>
+      <div class="toolbar" style="flex-wrap:wrap;gap:10px;align-items:flex-end">
+        <div class="field" style="min-width:150px"><label>Organisme</label><input id="ob_ct_org" placeholder="Ex. CGSS"></div>
+        <div class="field" style="min-width:150px"><label>Contact</label><input id="ob_ct_nom" placeholder="Nom / service"></div>
+        <div class="field" style="min-width:170px"><label>Téléphone / mail</label><input id="ob_ct_coord" placeholder=""></div>
+        <div class="field" style="min-width:150px"><label>Chez nous, qui suit ?</label><input id="ob_ct_ref" placeholder="Ex. Guy"></div>
+        <div><button class="btn" onclick="oblAddContact()">+ Ajouter</button></div>
+      </div>
+      <div style="overflow-x:auto;-webkit-overflow-scrolling:touch"><table style="margin-top:10px;min-width:720px"><thead><tr><th>Organisme</th><th>Contact</th><th>Coordonnées</th><th>N° dossier</th><th>Qui suit chez nous</th><th style="width:44px"></th></tr></thead>
+        <tbody id="oblContactsRows"></tbody></table></div>
     </div>
   </section>
 
@@ -2597,6 +2764,13 @@ document.querySelectorAll('nav.tabs button').forEach(b=>{
 
 /* ---- Aide : « Demande à Zanana » (FAQ + assistant par mots-clés, sans IA) ---- */
 const FAQ=[
+  {cat:'✅ Suivi', q:"Comment je sais qui fait quoi et ce qui est en retard ?", kw:"suivi action actions qui fait quoi porteur echeance retard priorite plan de marche revue jeudi reunion hebdo ordre du jour filtre charger importer", a:"L'onglet <b>✅ Suivi</b> est le <b>tableau de marche</b> de l'association. Chaque action porte : <b>qui s'en occupe</b>, <b>pour quand</b>, sa <b>priorité</b> et son <b>origine</b> (DLA, Trésorerie, Mairie, RH, Obligations, Activités, Gouvernance). Bob <b>surligne en rouge</b> ce qui est en retard et le remonte en haut — impossible de passer à côté. Le bloc <b>« 🎯 La revue du jeudi »</b> te donne l'ordre du jour tout prêt : ce qui est en retard + ce qui tombe dans les 7 jours. C'est fait pour la <b>réunion d'équipe hebdomadaire</b> : 10 minutes chaque jeudi, on passe la liste, on avance. Le bouton <b>« 📥 Charger le plan de marche 2026 »</b> installe d'un coup toutes les actions décidées en bureau (rentrée, mercredi jeunesse, obligations employeur, refléchage, dossiers Mairie, bascule ÉCLAT, AG) — avec leurs porteurs et leurs dates. Tu peux filtrer par personne, par statut ou par origine."},
+  {cat:'🛡️ Obligations', q:"À quoi sert l'onglet Obligations employeur ?", kw:"obligation obligations employeur securiser risque risques oubli sanction prudhommes conformite legal loi rh suivi carnet interlocuteur bloquant retard", a:"L'onglet <b>🛡️ Obligations</b> (famille 🧑‍💼 Équipe / RH, réservé au bureau) réunit les <b>trois choses qui coûtent cher quand on les oublie</b> : les <b>visites médicales</b>, les <b>compteurs d'heures et de récupération</b>, et l'<b>argent des arrêts maladie</b> (les indemnités de la CGSS). En haut, Bob affiche les <b>alertes</b> — ce qui est en retard, ce qui est bloquant — puis quatre compteurs : visites en retard, reprises obligatoires, heures dues, indemnités à encaisser. Le bouton <b>« 🔄 Créer les lignes manquantes »</b> fabrique les lignes tout seul à partir de tes salariés : tu n'as plus qu'à compléter les dates. Chaque démarche a aussi son <b>interlocuteur</b> (qui on appelle, quel numéro de dossier, qui suit chez nous) — pour que ça ne repose jamais sur la mémoire d'une seule personne."},
+  {cat:'🛡️ Obligations', q:"C'est quoi la visite de reprise et quand est-elle obligatoire ?", kw:"visite visites medicale medecine travail reprise embauche periodique intermetra sante au travail arret retour poste 30 jours obligatoire rendez-vous", a:"La <b>visite de reprise</b> est un examen chez le médecin du travail <b>obligatoire avant qu'un salarié revienne à son poste</b> après un arrêt de <b>30 jours ou plus</b> (ou après un accident du travail, une maladie professionnelle, un congé maternité). Elle doit avoir lieu dans les <b>8 jours</b> du retour. Sans elle, la reprise n'est pas régulière : c'est l'employeur — donc le président — qui est en tort si quelque chose arrive. Dans Bob, tu n'as rien à surveiller : dès que tu enregistres un arrêt de 30 jours ou plus dans <b>🏥 Arrêts &amp; indemnités CGSS</b>, Bob <b>crée tout seul</b> la ligne « visite de reprise » avec sa date limite, et l'affiche en rouge tant qu'elle n'est pas faite. Les autres visites suivies ici : l'<b>embauche</b> (dans les 3 mois), la <b>périodique</b> (tous les 5 ans), la <b>pré-reprise</b> (à la demande du salarié, pendant l'arrêt)."},
+  {cat:'🛡️ Obligations', q:"Pourquoi arrêter et faire signer les compteurs d'heures et de récup ?", kw:"heures supplementaires supp recup recuperation compteur compteurs solde du passif signer signature arrete apurement dette heures 150 note de service", a:"Les heures supplémentaires et les récupérations non prises sont une <b>dette de l'association envers le salarié</b>. Tant qu'on ne les a pas <b>arrêtées à une date</b> et <b>fait signer</b> par la personne, le compteur grandit sans que personne ne le regarde : c'est un <b>passif caché</b> (et, en cas de conflit, c'est la version du salarié qui l'emporte, faute d'écrit de l'employeur). La bonne pratique tient en trois gestes : ① on <b>arrête</b> le compteur à une date (croiser le tableau des heures, les bulletins et ce que dit la personne), ② chacun <b>signe</b> son solde, ③ on écrit <b>comment on l'apure</b> (récup posée en août, jours ajoutés aux congés…). Bob te montre en ambre tout compteur non signé, et le total des heures dues."},
+  {cat:'🛡️ Obligations', q:"Que faut-il pour accueillir un stagiaire ou un service civique ?", kw:"stagiaire stagiaires stage convention tripartite tuteur gratification bafa bafd cemea fedep service civique unis-cite benevole encadrant honorabilite assurance quota mineurs", a:"Une personne qui n'est pas salariée engage quand même l'association. Il faut, <b>avant qu'elle commence</b> : ① une <b>convention signée à trois</b> — la personne, son organisme (école, CEMEA, FEDEP, Unis-Cité…) et nous ; ② un <b>tuteur</b> désigné chez nous ; ③ l'<b>honorabilité vérifiée</b> — <b>obligatoire dès qu'il y a des mineurs</b>, et tant qu'elle ne l'est pas, aucun contact avec les enfants ; ④ l'<b>assurance</b>. Bob affiche en rouge tout ce qui manque. Deux règles à connaître : un <b>stage de plus de 2 mois</b> ouvre droit à une <b>gratification obligatoire</b> (à budgéter — Bob te prévient) ; et pour les taux d'encadrement d'un ACM, un <b>stagiaire BAFA/BAFD compte</b> (dans la limite de 50 % de l'équipe) alors qu'un <b>service civique ne compte jamais</b> — il est en plus de l'équipe, jamais à la place."},
+  {cat:'🛡️ Obligations', q:"C'est quoi la subrogation CGSS et pourquoi c'est important ?", kw:"cgss subrogation ij indemnite indemnites journalieres arret maladie remboursement securite sociale argent dsn maintien salaire attestation", a:"Quand un salarié est en arrêt maladie, la <b>CGSS</b> (la sécu à La Réunion) verse des <b>indemnités journalières</b>. Deux cas : <b>sans subrogation</b>, elles sont versées <b>au salarié</b> — or si l'association maintient son salaire, elle paie deux fois ; <b>avec subrogation</b>, elles sont versées <b>directement à l'association</b>, qui se rembourse de ce qu'elle a avancé. La subrogation se demande dans l'<b>attestation de salaire</b> (transmise via la DSN par le gestionnaire de paie) — c'est une case à cocher, mais il faut y penser à <b>chaque arrêt</b>. Dans Bob, chaque arrêt indique : s'il est <b>déclaré</b>, si la <b>subrogation</b> est en place, le montant <b>attendu</b> et le montant <b>réellement reçu</b> — Bob calcule ce qui manque encore à encaisser. C'est de l'argent qui rentre : sur une trésorerie tendue, ça compte."},
+  {cat:'📋 Fiches de poste', q:"À quoi sert l'onglet Fiches de poste ?", kw:"fiche fiches poste postes tache taches horaire horaires equipe salarie salaries kathy sandrine culture stagiaire stagiaires service civique vepi role missions imprimer claire coordination animation qui fait quoi planning semaine", a:"Onglet <b>📋 Fiches de poste</b> (dans 🧑‍💼 Équipe / RH, réservé au bureau). Pour <b>chaque personne</b> de l'équipe, la version <b>claire et concrète</b> de son poste : sa <b>mission</b>, ses <b>tâches</b> au quotidien (chaque jour / chaque semaine / en cas de souci), ses <b>horaires</b> et ses <b>règles claires</b> (ce qu'elle ne fait pas — registre, argent, image, données de santé). En haut, une <b>vue d'ensemble</b> « qui fait quoi, quand » et la <b>semaine d'un coup d'œil</b> ; le bouton <b>🖨️ Imprimer</b> sort une version papier. ⚠️ Ce sont des <b>PROJETS</b> non signés (à valider en CA) ; le <b>poste Culture</b> reste « occupant-neutre » tant que la situation du titulaire est gelée."},
   {cat:'🎭 Intervenants',q:"Comment gérer un intervenant qui anime via son association (prestataire) ?",kw:"intervenant intervenants prestataire prestation structure association convention facture danse professeur prof honorabilite casier b2 fijaisv diplome de assurance rc justificatif justificatifs verrou voyant rouge vert culture prod stephanie ramin creneaux salle contrat",a:"Onglet <b>🎭 Intervenants</b> (réservé au bureau). Un intervenant qui anime un cours <b>via une structure</b> (son association) est un <b>prestataire</b> : l'asso <b>facture</b>, le CASE <b>paie une facture</b> — <b>pas de paie</b> ici (les salariés, c'est 💶 Finances / 🧑‍💼 Équipe). Pour chaque prestataire, sa fiche réunit : la <b>structure</b> + la <b>personne envoyée</b>, la <b>convention</b> (à déposer dans 🗂️ Répertoire → 📁 Documents officiels), les <b>3 justificatifs obligatoires</b> en voyants 🔴/🟢 — <b>Honorabilité</b> (casier B2/FIJAISV, avant tout contact mineurs), <b>Diplôme (DE danse ou dispense)</b>, <b>Assurance RC</b> —, et l'<b>historique des prestations déjà réglées</b> (repris de la compta). <b>⛔ Règle d'or : tant qu'un voyant est rouge, on ne fait pas intervenir.</b> Clique un voyant pour le passer au vert quand tu as la pièce. « 🗓️ Voir ses créneaux » ouvre le planning des salles."},
   {cat:'🎟️ Activités',q:"Comment chiffrer et encaisser une inscription ACM (participation famille) ?",kw:"acm activite encaisser encaissement chiffrer participation famille cheque especes grille quotient familial semaine verser compta reste payer inscription ados vacances",a:"Onglet <b>🎟️ Activités</b> : sous chaque inscription à une activité (ACM…), le <b>bureau</b> chiffre la <b>participation</b> avec la <b>grille ACM</b> (tranche de quotient familial × prix de la semaine × nombre de semaines) → <b>Calculer &amp; enregistrer</b>. Le dossier affiche alors <b>Dû / Payé / Reste</b>, et le <b>bureau OU l'accueil</b> clique <b>« 💵 Encaisser »</b> (espèces, chèque…). Enfin, le bouton <b>« 💶 Verser les encaissements activité en compta »</b> (en haut de l'onglet, réservé au bureau) crée les <b>recettes</b>, taguées sur le <b>nom de l'activité</b> (ex. « ACM Ados — semaine 1 »), espèces en caisse, sans doublon. 💡 La <b>CAF</b> et la <b>Mairie</b> restent des <b>subventions</b> (module Subventions), à part de la participation des familles."},
   {cat:'🎒 Périscolaire',q:"Comment envoyer les encaissements du périscolaire dans la comptabilité ?",kw:"verser versement compta comptabilite recette encaissement periscolaire cheque especes caisse banque budget action double saisie op bureau participation famille solde",a:"Une fois un règlement encaissé (bouton « 💵 Encaisser »), le <b>bureau</b> le fait entrer en comptabilité en un clic : en haut du panneau <b>📨 Dossiers d'inscription</b>, le bouton <b>« 💶 Verser en compta (N) »</b> crée les <b>recettes</b> correspondantes — taguées <b>« Périscolaire »</b>, les <b>espèces</b> dans la <b>caisse</b> et le reste en <b>banque</b>. Un <b>verrou</b> garantit qu'un encaissement <b>n'entre qu'une seule fois</b> (pas de double compte). Ces recettes remontent ensuite toutes seules dans le <b>🎯 Budget par action</b> et le rapprochement bancaire. ⚖️ Réservé au bureau (l'accueil encaisse, le bureau verse). 💡 Ne saisis pas ces recettes « Périscolaire » à la main dans la Comptabilité : elles arriveraient en double (Bob te préviendra)."},
@@ -2901,6 +3075,9 @@ function pageHelpGotoAide(){ pageHelpClose(); const b=document.querySelector('na
 
 /* ---- ✨ Quoi de neuf (nouveautés + notice chronologique) ---- */
 const NEWS=[
+  {id:'2026-07-15-plan-marche',date:'2026-07-15',tab:'✅ Suivi',titre:"✅ Le suivi devient le tableau de marche : qui fait quoi, pour quand",desc:"L'onglet <b>✅ Suivi</b> répond enfin à la vraie question : <b>qui s'en occupe et pour quand ?</b> Chaque action a maintenant un <b>porteur</b>, une <b>échéance</b>, une <b>priorité</b> et une <b>origine</b> — et Bob surligne en rouge ce qui est <b>en retard</b>, en le remontant en haut du tableau. Nouveau bloc <b>« 🎯 La revue du jeudi »</b> : ce qui est en retard et ce qui tombe <b>dans les 7 jours</b>, l'ordre du jour tout prêt pour la réunion d'équipe hebdomadaire (10 minutes, on passe les actions, on avance). Le bouton <b>« 📥 Charger le plan de marche 2026 »</b> verse d'un coup les <b>~35 actions</b> décidées en bureau : la rentrée du 18-19 août, le mercredi jeunesse, les obligations employeur, le refléchage et les dossiers Mairie, la bascule ÉCLAT du 1er septembre, l'AG et le renouvellement du contrat aidé. Filtres par personne, par statut et par origine. Réservé au bureau."},
+  {id:'2026-07-15-obligations',date:'2026-07-15',tab:'🛡️ Obligations',titre:"🛡️ Nouvel onglet : les obligations employeur (visites médicales · heures dues · indemnités CGSS)",desc:"Trois choses coûtent cher quand on les oublie : elles ont maintenant leur place dans Bob (onglet <b>🛡️ Obligations</b>, famille 🧑‍💼 Équipe / RH, réservé au bureau). <b>🩺 Visites médicales</b> — Bob affiche en rouge celles qui sont en retard, et surtout la <b>visite de reprise</b> : après un arrêt de <b>30 jours ou plus</b>, elle est <b>obligatoire avant le retour au poste</b> ; enregistre l'arrêt et Bob crée la ligne tout seul, impossible de l'oublier. <b>⏱️ Compteurs d'heures et de récup</b> — le stock d'heures dû à chacun, la date où on l'a <b>arrêté</b>, la signature de la personne et comment on l'apure : tant que ce n'est pas signé, c'est un passif caché. <b>🏥 Arrêts &amp; indemnités CGSS</b> — arrêt par arrêt : déclaré ou non, <b>subrogation</b> en place (sans elle, les indemnités vont au salarié et l'asso paie deux fois), montant attendu et <b>montant réellement reçu</b>. <b>🎓 Stagiaires, services civiques &amp; bénévoles encadrants</b> — les personnes qui interviennent <b>sans être salariées</b> et qui engagent quand même l'association : <b>convention signée à trois</b>, <b>tuteur</b> désigné, <b>honorabilité vérifiée</b> (sans elle, aucun contact avec les mineurs), assurance — et Bob prévient quand un stage dépasse <b>2 mois</b> (gratification alors obligatoire). Plus un carnet des <b>interlocuteurs</b> (qui appelle, quel dossier, qui suit chez nous). Le bouton <b>« 🔄 Créer les lignes manquantes »</b> remplit tout à partir des salariés : zéro saisie pour démarrer."},
+  {id:'2026-07-14-fiches-poste',date:'2026-07-14',tab:'📋 Fiches de poste',titre:"📋 Nouvel onglet : les fiches de poste claires (poste · tâches · horaires)",desc:"Un nouvel onglet <b>📋 Fiches de poste</b> (dans 🧑‍💼 Équipe / RH, réservé au bureau) réunit, pour <b>chaque personne</b>, la version simple et concrète de son poste : sa <b>mission</b>, ses <b>tâches</b> du quotidien, ses <b>horaires</b> et ses <b>règles claires</b> — plus une <b>vue d'ensemble</b> « qui fait quoi, quand » et la semaine d'un coup d'œil. <b>Imprimable</b>. C'est la couche <b>opérationnelle</b> qui complète les fiches de poste détaillées du dossier DLA. <b>⚠️ PROJET</b> à valider en CA ; le poste Culture reste « occupant-neutre » (situation du titulaire gelée)."},
   {id:'2026-07-13-compo-auto-acm',date:'2026-07-13',tab:'🌴 Vacances',titre:"👥 La composition d'équipe se calcule toute seule sur une édition d'ACM",desc:"Dans le <b>📖 Dossier-bilan</b> d'une édition (🌴 Vacances), sous 🧑‍🏫 Encadrement, une nouvelle section <b>👥 Équipe affectée</b> : coche les salarié·es sur l'accueil, et Bob calcule <b>automatiquement</b> la composition depuis les <b>diplômes renseignés</b> sur leurs fiches — badges <b>Diplômés ≥ 50 %</b>, <b>Sans qualif. ≤ 20 %</b>, <b>Honorabilité</b>, et le compte de stagiaires. Prérequis : remplir le bloc 🎓 Qualification ACM sur chaque fiche (👥 Dossiers salariés). ⚠️ Indicateur d'aide, non opposable. Réservé au bureau."},
   {id:'2026-07-13-qualif-salarie-acm',date:'2026-07-13',tab:'👥 Dossiers salariés',titre:"🎓 Renseigner la qualification ACM de chaque salarié",desc:"Sur la fiche d'un salarié (onglet <b>👥 Dossiers salariés</b>), un nouveau bloc <b>🎓 Qualification ACM</b> : son <b>statut</b> (diplômé / stagiaire / sans qualification), son <b>diplôme principal</b> (BAFA, BPJEPS, BAFD… — qui pré-remplit la <b>fonction</b> animation/direction), et l'<b>honorabilité vérifiée + date</b>. Ces diplômes <b>alimentent le calcul automatique</b> de la composition d'équipe (≥ 50 % diplômés / ≤ 20 % sans qualif) dans le dossier-bilan de chaque édition d'ACM (section 👥 Équipe affectée). Réservé au bureau."},
   {id:'2026-07-13-outil-encadrement-acm',date:'2026-07-13',tab:'🧑‍🏫 Encadrement ACM',titre:"🧑‍🏫 Nouvel onglet : calculer l'encadrement d'un ACM",desc:"Un nouvel onglet <b>🧑‍🏫 Encadrement ACM</b> (menu 🎨 Animation, réservé au bureau) rassemble en un écran : un <b>calculateur du nombre minimum d'animateurs</b> pour <b>tous</b> les types d'accueil — loisirs extrascolaire, séjour de vacances, <b>périscolaire</b> (avec ou sans <b>PEDT</b>, et le cas des mercredis &gt; 5h), accueil de jeunes — d'après l'effectif d'enfants par tranche d'âge ; un <b>vérificateur de composition d'équipe</b> (les plafonds <b>≥ 50 % diplômés · ≤ 20 % sans qualification · stagiaires ≤ 50 % de l'effectif requis</b>, avec le plancher de 2 encadrants) ; le <b>mémo des règles</b> (taux, catégories d'ACM, périodes TAM) ; et un <b>référentiel des diplômes</b> qui autorisent la direction ou l'animation. Il <b>complète</b> l'indicateur d'encadrement déjà présent dans le dossier-bilan de chaque édition. <b>⚠️ Outil d'aide, non opposable</b> : le directeur reste seul responsable de la conformité réelle (âges, diplômes, dérogations)."},
@@ -6589,18 +6766,136 @@ const ACT_DEFAUT=[
 ];
 const ACT_STATUTS=['À faire','En cours','En attente','Fait'];
 function actionsDB(){ if(!Array.isArray(db.actionsSuivi)) db.actionsSuivi=JSON.parse(JSON.stringify(ACT_DEFAUT)); return db.actionsSuivi; }
+const ACT_PRIOS=['🔴 Haute','🟠 Moyenne','🟢 Basse'];
+/* Le plan de marche 2026 : la substance des documents de travail du 14-15/07/2026
+   (décodage du DLA · plan de trésorerie · refléchage Ville · plan d'actions rentrée)
+   versée là où elle sert vraiment — avec un porteur et une échéance. */
+const ACT_PLAN=[
+  // — Avant le bilan DLA du 23/07 : les preuves d'exécution —
+  {s:"Tenir la 1re réunion d'équipe du jeudi 11h (30 min : rentrée, avenants, bilan DLA)",q:'Guillaume',d:'2026-07-17',p:'🔴 Haute',o:'DLA'},
+  {s:"Envoyer le courrier CAF : annonce de l'indu (33 541 €) + demande d'étalement — depuis case.bdn@gmail.com, jamais direction@",q:'Guillaume',d:'2026-07-22',p:'🔴 Haute',o:'Trésorerie'},
+  {s:"Payer la mensualité URSSAF (424 €) puis demander l'attestation de vigilance → débloque la subvention CAF 2026",q:'Guy',d:'2026-07-20',p:'🔴 Haute',o:'Trésorerie'},
+  {s:"Caler 3 dates fermes d'entretiens individuels avec Néopale (jamais tenus — demandés 5 fois par le DLA)",q:'Guillaume',d:'2026-07-23',p:'🔴 Haute',o:'DLA'},
+  {s:"Lancer la relance n°2 des impayés familles (10 299 € / 36 familles) + règle « réinscription conditionnée à un plan d'apurement »",q:'Guy',d:'2026-07-23',p:'🔴 Haute',o:'Trésorerie'},
+  {s:"Poster l'état d'avancement sur le WhatsApp DLA + déposer les pièces sur le Drive (« donner à voir »)",q:'Guillaume',d:'2026-07-22',p:'🟠 Moyenne',o:'DLA'},
+  {s:"Bilan DLA du 23/07 : RÉCLAMER tous les livrables de Charlotte (projet associatif mis en page, check-list RH, procédures, objectifs/indicateurs par pôle) — après, la mission est close",q:'Guillaume',d:'2026-07-23',p:'🔴 Haute',o:'DLA'},
+  {s:"Remplir l'ACM ados été (6 inscrits sur 30) : page Facebook du quartier, familles VEPI et périscolaire, affiches aux 2 locaux",q:'Kathy',d:'2026-07-24',p:'🔴 Haute',o:'Activités'},
+  // — Le mur légal de la rentrée (18-19/08) —
+  {s:"Appeler Intermetra : visites de REPRISE de Kathy et Fabrice (obligatoires avant tout retour au poste) + périodiques jamais faites",q:'Guillaume',d:'2026-07-24',p:'🔴 Haute',o:'Obligations'},
+  {s:"Vérifier auprès de la CGSS que les indemnités journalières des arrêts en cours rentrent bien (subrogation en place ?)",q:'Guy',d:'2026-07-31',p:'🔴 Haute',o:'Obligations'},
+  {s:"Arrêter les compteurs d'heures/récup (~150 h signalées depuis mars), faire signer chaque salarié, note de service du président",q:'Guillaume',d:'2026-08-14',p:'🔴 Haute',o:'Obligations'},
+  {s:"Écrire le plan de staffing nominal : qui ouvre et qui encadre l'ACM du 27/07 et la semaine du 18/08 (taux d'encadrement vérifiés)",q:'Kathy',d:'2026-07-25',p:'🔴 Haute',o:'Activités'},
+  {s:"Régulariser les stagiaires AVANT l'ACM du 27/07 : conventions signées à trois (Betty BAFD, Alyssa BAFA, stagiaire VEPI/FEDEP), tuteur désigné, honorabilité SDJES vérifiée, assurance — sans ça, aucun contact avec les mineurs",q:'Kathy',d:'2026-07-24',p:'🔴 Haute',o:'Obligations'},
+  {s:"Conventions et tutorat des 2 services civiques Unis-Cité (contrat d'engagement, tuteur, formation civique) — ils ne comptent jamais dans les quotas d'encadrement",q:'Guillaume',d:'2026-08-14',p:'🟠 Moyenne',o:'Obligations'},
+  {s:"CA en séance avec PV signé : ratifier les 3 pôles + l'Option A + la lettre de mission de Kathy + les grilles tarifaires (rien n'a d'existence formelle à ce jour)",q:'Guillaume',d:'2026-08-14',p:'🔴 Haute',o:'Gouvernance'},
+  {s:"Voter les grilles tarifaires (périscolaire + mercredi + supplément matin) AVANT les réinscriptions — sinon un an de plus au tarif déficitaire",q:'Guy',d:'2026-08-14',p:'🔴 Haute',o:'Trésorerie'},
+  {s:"Ouvrir le self-service familles dans Bob pour les réinscriptions du 18/08",q:'Guillaume',d:'2026-08-10',p:'🟠 Moyenne',o:'Activités'},
+  {s:"Lancer le Mercredi Jeunesse (format demi-journée + goûter) — déjà financé par le refléchage 2025 (8 670 €)",q:'Sandrine',d:'2026-08-19',p:'🔴 Haute',o:'Activités'},
+  // — Mairie & refléchage —
+  {s:"Pointer ligne à ligne les subventions Ville 2025 réellement versées et trancher les points d'interrogation (VEPI, Sport dan kartié, Espace Jeunesse, ACM janvier/mars-mai)",q:'Guy',d:'2026-07-31',p:'🔴 Haute',o:'Mairie'},
+  {s:"Déposer officiellement la proposition de refléchage à la Ville (3 paquets : requalifier / reflécher / livrer) + demander le budget exceptionnel",q:'Guillaume',d:'2026-08-07',p:'🔴 Haute',o:'Mairie'},
+  {s:"Relancer les 10 dossiers Mairie en instruction (~59 à 71 k€) avec le dossier de redressement en pièce jointe",q:'Guillaume',d:'2026-08-21',p:'🟠 Moyenne',o:'Mairie'},
+  {s:"Déposer les dossiers Mairie 2027 : refléchage + périscolaire du matin + mercredi + samedis + secteur ados (bilans 2024/2025 à jour, budgets au centime)",q:'Guillaume',d:'2026-09-30',p:'🔴 Haute',o:'Mairie'},
+  // — Comptes, AG, gouvernance —
+  {s:"Relancer le cabinet comptable avec une date butoir écrite (comptes 2025, ~4 mois de retard) + signer la lettre de mission",q:'Guy',d:'2026-07-21',p:'🔴 Haute',o:'Gouvernance'},
+  // — RÉTROPLANNING DE L'AG (cible : samedi 26/09/2026, 9h — à confirmer en bureau) : chaque jalon commande le suivant —
+  {s:"AG · Obtenir du cabinet la date ferme de clôture des comptes 2025 — c'est ce qui verrouille toute la chaîne (sans comptes, pas d'AG ; sans AG, pas de secrétaire, pas de CA élargi, pas d'agrément JEP)",q:'Guy',d:'2026-07-21',p:'🔴 Haute',o:'AG'},
+  {s:"AG · Décider la date en bureau : cible samedi 26/09/2026 à 9h (accueil 8h30) — après la rentrée, avant la campagne de subventions 2027",q:'Guillaume',d:'2026-07-24',p:'🔴 Haute',o:'AG'},
+  {s:"AG · Récupérer de Kathy la liste des adhérents à jour de cotisation → c'est le DÉNOMINATEUR du quorum (1/3, sans seconde convocation possible : si le quorum manque, l'AG tombe)",q:'Guillaume',d:'2026-09-01',p:'🔴 Haute',o:'AG'},
+  {s:"AG · Réceptionner les comptes annuels 2025 du cabinet + inviter le commissaire aux comptes (obligation légale de l'inviter à l'AG)",q:'Guy',d:'2026-09-04',p:'🔴 Haute',o:'AG'},
+  {s:"AG · Lancer l'appel à candidatures au conseil d'administration (objectif 6-7 membres) — AVANT la convocation, pour que les noms y figurent",q:'Guillaume',d:'2026-09-05',p:'🔴 Haute',o:'AG'},
+  {s:"AG · Réunir le CA en séance : arrêter les comptes, fixer l'ordre du jour, décider la convocation (les statuts imposent la décision EN SÉANCE)",q:'Guillaume',d:'2026-09-08',p:'🔴 Haute',o:'AG'},
+  {s:"AG · ENVOYER LA CONVOCATION par email — au plus tard le 10/09 (15 jours francs avant le 26/09). Y joindre : ordre du jour, comptes, rapport, formulaire de POUVOIR",q:'Guillaume',d:'2026-09-10',p:'🔴 Haute',o:'AG'},
+  {s:"AG · Campagne d'appels aux familles pour sécuriser le quorum et collecter les pouvoirs (1 parent = la voix de sa famille) — c'est CE geste qui décide si l'AG se tient",q:'Guy',d:'2026-09-24',p:'🔴 Haute',o:'AG'},
+  {s:"AG · Tenir l'assemblée générale (samedi 26/09, 9h) : approbation des comptes 2025, quitus, élection du conseil d'administration élargi",q:'Guillaume',d:'2026-09-26',p:'🔴 Haute',o:'AG'},
+  {s:"AG · Dans la foulée, réunir le nouveau CA : élire le bureau (dont LE SECRÉTAIRE — pivot de l'Option A) et ratifier les 3 pôles + les fiches de poste",q:'Guillaume',d:'2026-09-26',p:'🔴 Haute',o:'AG'},
+  {s:"AG · Déclarer les changements de dirigeants en sous-préfecture (obligatoire, 3 mois max) et mettre à jour le RNA",q:'Guillaume',d:'2026-10-09',p:'🟠 Moyenne',o:'AG'},
+  // — SERVICE CIVIQUE (2 volontaires Unis-Cité, arrivée visée à la rentrée) —
+  {s:"Service civique · Appeler Unis-Cité pour caler la rentrée des 2 volontaires : qui porte l'agrément (intermédiation), quand ils arrivent, ce qu'ils attendent de nous",q:'Guillaume',d:'2026-08-07',p:'🔴 Haute',o:'Service civique'},
+  {s:"Service civique · Écrire les 2 fiches de mission (appui périscolaire · appui jeunesse/ados) — une mission d'intérêt général, JAMAIS un poste de travail déguisé ni un remplacement de salarié",q:'Kathy',d:'2026-08-14',p:'🔴 Haute',o:'Service civique'},
+  {s:"Service civique · Signer la convention avec Unis-Cité et désigner officiellement le tuteur (Kathy) — le tutorat est une obligation, pas une formalité",q:'Guillaume',d:'2026-08-21',p:'🔴 Haute',o:'Service civique'},
+  {s:"Service civique · Vérifier l'honorabilité des 2 volontaires avant tout contact avec des mineurs + confirmer avec Unis-Cité qui prend en charge la formation civique et citoyenne et le PSC1",q:'Guillaume',d:'2026-08-28',p:'🔴 Haute',o:'Service civique'},
+  {s:"Service civique · Préparer leur accueil : poste de travail, clés, présentation à l'équipe, planning — et rappeler à tous qu'ils ne comptent JAMAIS dans les taux d'encadrement ACM",q:'Kathy',d:'2026-09-01',p:'🟠 Moyenne',o:'Service civique'},
+  {s:"Axe RASSEMBLER : proposer à Chandra Padavatan (page Facebook du quartier) de relayer l'ACM et le Mercredi Jeunesse — partenariat com d'abord, gouvernance ensuite",q:'Guillaume',d:'2026-07-24',p:'🟠 Moyenne',o:'Gouvernance'},
+  {s:"Relancer les 3 candidatures au poste de secrétaire (pivot de l'Option A) — élection au CA qui suit l'AG",q:'Guillaume',d:'2026-08-21',p:'🟠 Moyenne',o:'Gouvernance'},
+  // — La fenêtre du 1er septembre —
+  {s:"Retour Hexopée (21/08) → signature groupée : avenants ÉCLAT + fiches de poste + nouveaux plannings (le samedi et le mardi-samedi passent par l'avenant : c'est LA fenêtre)",q:'Guillaume',d:'2026-09-01',p:'🔴 Haute',o:'RH'},
+  {s:"Courrier factuel et apaisé à Fabrice : le litige du coefficient 418 est clos (l'avenant 2021 est respecté au centime) → dégel du pôle Culture",q:'Guillaume',d:'2026-08-28',p:'🔴 Haute',o:'RH'},
+  {s:"Lettre de mission probatoire de Kathy : 3-4 objectifs MESURABLES sur 3 mois (dont une part d'animation effective) + date de revue",q:'Guillaume',d:'2026-09-01',p:'🔴 Haute',o:'RH'},
+  {s:"Activer la prévoyance de branche ÉCLAT (obligatoire avec la bascule) et trancher : la paie reste chez SNP ou bascule au cabinet ?",q:'Guy',d:'2026-09-01',p:'🟠 Moyenne',o:'RH'},
+  {s:"Instruire le renouvellement du contrat aidé de Sandrine avec France Travail (fin le 30/10) — elle porte le périscolaire et le mercredi",q:'Guillaume',d:'2026-09-15',p:'🔴 Haute',o:'RH'},
+  // — Les angles morts du DLA —
+  {s:"Produire le DUERP (document unique d'évaluation des risques) et le registre du personnel — obligatoires, jamais faits",q:'Guillaume',d:'2026-09-30',p:'🟠 Moyenne',o:'Obligations'},
+  {s:"Rétribution des intervenants qui utilisent nos locaux : acter un montant + une convention type avant leur rentrée",q:'Guy',d:'2026-09-15',p:'🟠 Moyenne',o:'Trésorerie'},
+  {s:"Réaménager les locaux avec les 2 services civiques + 2 mails de sollicitation matériel (Ressourcerie de La Mare, SFR/Orange) — coût ~0, effet visible",q:'Kathy',d:'2026-08-17',p:'🟢 Basse',o:'Activités'},
+  {s:"Lancer l'enquête habitants / boîte à idées (le projet associatif s'est écrit sans la voix du quartier)",q:'Kathy',d:'2026-10-15',p:'🟢 Basse',o:'Activités'},
+  {s:"Fermer l'un des 2 comptes bancaires et basculer les prélèvements",q:'Guy',d:'2026-09-30',p:'🟢 Basse',o:'Trésorerie'},
+];
+function actImportPlan(){
+  const a=actionsDB(); let n=0;
+  ACT_PLAN.forEach(x=>{
+    if(a.some(it=>it.sujet===x.s)) return;
+    a.push({id:uid(),sujet:x.s,statut:'À faire',note:'',qui:x.q,echeance:x.d,priorite:x.p,origine:x.o});
+    n++;
+  });
+  if(!n){ alert('Le plan de marche est déjà chargé — rien à ajouter.'); return; }
+  save(); alert(n+' action(s) ajoutée(s) au suivi, avec leur porteur et leur échéance.');
+}
+function actEnRetard(it){ return it.statut!=='Fait' && it.echeance && it.echeance<today(); }
+function actCetteSemaine(it){ if(it.statut==='Fait'||!it.echeance) return false; const t=today(); const lim=oblAddDays(t,7); return it.echeance>=t && it.echeance<=lim; }
 function renderActions(){
   const box=$('actionsRows'); if(!box) return;
-  const a=actionsDB();
-  box.innerHTML=a.map(it=>'<tr><td>'+esc(it.sujet)+'</td>'
+  const all=actionsDB();
+  /* filtres (remplis dynamiquement, sans doublon) */
+  const qui=[...new Set(all.map(x=>x.qui).filter(Boolean))].sort();
+  const org=[...new Set(all.map(x=>x.origine).filter(Boolean))].sort();
+  const fq=$('act_f_qui'), fo=$('act_f_origine');
+  if(fq){ const v=fq.value; fq.innerHTML='<option value="">Tout le monde</option>'+qui.map(x=>'<option '+(x===v?'selected':'')+'>'+esc(x)+'</option>').join(''); }
+  if(fo){ const v=fo.value; fo.innerHTML='<option value="">Toutes les origines</option>'+org.map(x=>'<option '+(x===v?'selected':'')+'>'+esc(x)+'</option>').join(''); }
+  const fs=($('act_f_statut')||{}).value||'', fqv=($('act_f_qui')||{}).value||'', fov=($('act_f_origine')||{}).value||'', masq=($('act_f_masquer')||{}).checked;
+  let a=all.filter(it=>(!fs||it.statut===fs)&&(!fqv||it.qui===fqv)&&(!fov||it.origine===fov)&&(!masq||it.statut!=='Fait'||fs==='Fait'));
+  /* tri : en retard d'abord, puis par échéance, puis par priorité */
+  const rangP=p=>ACT_PRIOS.indexOf(p||'🟠 Moyenne');
+  a=a.slice().sort((x,y)=>{
+    const rx=actEnRetard(x)?0:1, ry=actEnRetard(y)?0:1; if(rx!==ry) return rx-ry;
+    const ex=x.echeance||'9999-99-99', ey=y.echeance||'9999-99-99'; if(ex!==ey) return ex.localeCompare(ey);
+    return rangP(x.priorite)-rangP(y.priorite);
+  });
+  box.innerHTML=a.length?a.map(it=>{
+    const retard=actEnRetard(it);
+    return '<tr'+(retard?' style="background:#fdeceb"':'')+'><td>'+(retard?'<strong style="color:#c0392b">⏰ </strong>':'')+esc(it.sujet)+(it.origine?'<br><span class="muted" style="font-size:11.5px">'+esc(it.origine)+'</span>':'')+'</td>'
+    +'<td><input value="'+esc(it.qui||'')+'" placeholder="qui ?" onchange="actSet(\''+it.id+'\',\'qui\',this.value)" style="width:100%"></td>'
+    +'<td><input type="date" value="'+esc(it.echeance||'')+'" onchange="actSet(\''+it.id+'\',\'echeance\',this.value)"></td>'
     +'<td><select onchange="actSet(\''+it.id+'\',\'statut\',this.value)">'+ACT_STATUTS.map(s=>'<option '+(s===it.statut?'selected':'')+'>'+s+'</option>').join('')+'</select></td>'
+    +'<td><select onchange="actSet(\''+it.id+'\',\'priorite\',this.value)">'+ACT_PRIOS.map(s=>'<option '+(s===(it.priorite||'🟠 Moyenne')?'selected':'')+'>'+s+'</option>').join('')+'</select></td>'
     +'<td><input value="'+esc(it.note||'')+'" placeholder="note…" onchange="actSet(\''+it.id+'\',\'note\',this.value)" style="width:100%"></td>'
-    +'<td><button class="danger" onclick="delAction(\''+it.id+'\')">🗑</button></td></tr>').join('');
-  const k=$('actionsKpis'); if(k){ const f=a.filter(x=>x.statut==='Fait').length, c=a.filter(x=>x.statut==='En cours').length, e=a.filter(x=>x.statut==='En attente').length;
-    k.innerHTML=kpi('Actions suivies',a.length,'','')+kpi('Faites',f,'green','')+kpi('En cours',c,'amber','')+kpi('En attente',e,'amber',''); }
+    +'<td><button class="danger" onclick="delAction(\''+it.id+'\')">🗑</button></td></tr>'; }).join('')
+    :'<tr><td colspan="7" class="empty">Aucune action ne correspond à ce filtre.</td></tr>';
+
+  /* — la revue du jeudi : en retard + les 7 prochains jours — */
+  const retard=all.filter(actEnRetard), semaine=all.filter(actCetteSemaine);
+  const sem=$('actSemaine');
+  if(sem){
+    const ligne=it=>'<li style="margin:4px 0"><strong>'+esc(it.sujet)+'</strong>'+(it.qui?' <span class="pill">'+esc(it.qui)+'</span>':'')+(it.echeance?' <span class="muted" style="font-size:12px">— '+fmtDate(it.echeance)+'</span>':'')+'</li>';
+    let h='';
+    if(retard.length) h+='<div style="margin-bottom:10px"><div style="font-weight:700;color:#c0392b;margin-bottom:2px">⏰ En retard ('+retard.length+')</div><ul style="margin:0;padding-left:18px">'+retard.slice().sort((x,y)=>(x.echeance||'').localeCompare(y.echeance||'')).map(ligne).join('')+'</ul></div>';
+    if(semaine.length) h+='<div><div style="font-weight:700;color:#c8881f;margin-bottom:2px">📆 Dans les 7 jours ('+semaine.length+')</div><ul style="margin:0;padding-left:18px">'+semaine.slice().sort((x,y)=>(x.echeance||'').localeCompare(y.echeance||'')).map(ligne).join('')+'</ul></div>';
+    if(!h) h='<p class="muted" style="margin:0">Rien en retard ni dû dans les 7 jours. 🎉 Si le tableau est vide, clique « 📥 Charger le plan de marche 2026 ».</p>';
+    sem.innerHTML=h;
+  }
+  const al=$('actAlertes');
+  if(al) al.innerHTML=retard.length?'<div class="panel" style="background:#fdeceb;border:1px solid #f2b8b5;border-left:4px solid #c0392b;margin-bottom:0"><strong>⏰ '+retard.length+' action(s) en retard</strong> — elles sont surlignées et remontées en haut du tableau.</div>':'';
+  const k=$('actionsKpis');
+  if(k){ const f=all.filter(x=>x.statut==='Fait').length, c=all.filter(x=>x.statut==='En cours').length;
+    k.innerHTML=kpi('Actions suivies',all.length,'','')+kpi('En retard',retard.length,retard.length?'red':'green','')+kpi('Cette semaine',semaine.length,semaine.length?'amber':'','')+kpi('Faites',f,'green','')+kpi('En cours',c,'amber',''); }
 }
 function actSet(id,champ,val){ const it=actionsDB().find(x=>x.id===id); if(it){ it[champ]=val; save(); } }
-function addAction(){ const v=($('act_new').value||'').trim(); if(!v) return; actionsDB().push({id:uid(),sujet:v,statut:'À faire',note:''}); $('act_new').value=''; save(); }
+function addAction(){
+  const v=($('act_new').value||'').trim(); if(!v) return;
+  actionsDB().push({id:uid(),sujet:v,statut:'À faire',note:'',qui:($('act_new_qui')?($('act_new_qui').value||'').trim():''),echeance:($('act_new_quand')?$('act_new_quand').value:''),priorite:($('act_new_prio')?$('act_new_prio').value:'🟠 Moyenne'),origine:'Bureau'});
+  $('act_new').value=''; if($('act_new_qui')) $('act_new_qui').value=''; if($('act_new_quand')) $('act_new_quand').value='';
+  save();
+}
 function delAction(id){ if(confirm('Supprimer cette action ?')){ db.actionsSuivi=actionsDB().filter(x=>x.id!==id); save(); } }
 
 /* ---- Congés (demandes + validation par le bureau) ---- */
@@ -6626,6 +6921,225 @@ function renderConges(){
     +'<td><span class="pill '+(CG_PILL[x.statut]||'wait')+'">'+esc(x.statut)+'</span></td>'
     +'<td style="white-space:nowrap">'+(x.statut!=='Validé'?'<button class="ghost btn" onclick="setConge(\''+x.id+'\',\'Validé\')">✅</button> ':'')+(x.statut!=='Refusé'?'<button class="ghost btn" onclick="setConge(\''+x.id+'\',\'Refusé\')">✋</button> ':'')+'<button class="danger" onclick="delConge(\''+x.id+'\')">🗑</button></td></tr>').join(''):'<tr><td colspan="5" class="empty">Aucune demande pour le moment.</td></tr>';
   const k=$('congesKpis'); if(k){ const d=c.filter(x=>x.statut==='Demandé').length; k.innerHTML=kpi('Demandes',c.length,'','')+kpi('À valider',d,d>0?'amber':'green',''); }
+}
+
+/* ============================================================================
+   🛡️ OBLIGATIONS EMPLOYEUR (15/07/2026) — visites médicales · compteurs récup · CGSS/IJ
+   Né du décodage du DLA : ces 3 sujets ont été demandés 4 à 5 fois par la consultante
+   sans jamais être suivis nulle part. Ici, ils ont un endroit, un état et un responsable.
+   Données dans le coffre : db.obligations = {visites:[], compteurs:[], arrets:[], contacts:[]}
+   ⚠️ LIT db.salaries en lecture seule ; n'y écrit jamais.
+   ========================================================================== */
+function oblDB(){
+  if(!db.obligations||typeof db.obligations!=='object') db.obligations={};
+  const o=db.obligations;
+  if(!Array.isArray(o.visites)) o.visites=[];
+  if(!Array.isArray(o.compteurs)) o.compteurs=[];
+  if(!Array.isArray(o.arrets)) o.arrets=[];
+  if(!Array.isArray(o.contacts)) o.contacts=[];
+  if(!Array.isArray(o.stages)) o.stages=[];
+  return o;
+}
+const OBL_VM_TYPES=['Reprise (après arrêt ≥ 30 j)','Embauche','Périodique','Pré-reprise','Suivi renforcé'];
+function oblSalaries(){ return (db.salaries||[]).map(s=>s.name).filter(Boolean); }
+/* dates en UTC pur : La Réunion est à UTC+4 — passer par l'heure locale ferait perdre un jour à la conversion */
+function oblAddDays(iso,n){ if(!iso) return ''; const d=new Date(iso+'T00:00:00Z'); if(isNaN(d)) return ''; d.setUTCDate(d.getUTCDate()+n); return d.toISOString().slice(0,10); }
+function oblDaysBetween(a,b){ if(!a||!b) return 0; const d1=new Date(a+'T00:00:00Z'), d2=new Date(b+'T00:00:00Z'); if(isNaN(d1)||isNaN(d2)) return 0; return Math.round((d2-d1)/86400000)+1; }
+/* état d'une visite : 🟢 faite · 🔴 en retard · 🟠 à faire · ⚪ à planifier */
+function oblVisiteEtat(v){
+  if(v.faitLe) return {p:'ok',t:'✅ Faite'};
+  const t=today();
+  if(v.avant && v.avant<t) return {p:'no',t:'🔴 EN RETARD'};
+  if(v.rdv) return {p:'wait',t:'📅 RDV pris'};
+  return {p:'wait',t:'🟠 À planifier'};
+}
+function oblAddVisite(){
+  const sal=$('ob_vm_sal').value, type=$('ob_vm_type').value, avant=$('ob_vm_avant').value;
+  if(!sal){ alert('Choisis une personne.'); return; }
+  oblDB().visites.push({id:uid(),salarie:sal,type:type,avant:avant,rdv:'',faitLe:'',note:'',creeLe:today()});
+  $('ob_vm_avant').value=''; save();
+}
+function oblSetVisite(id,champ,val){ const v=oblDB().visites.find(x=>x.id===id); if(v){ v[champ]=val; save(); } }
+function oblDelVisite(id){ if(confirm('Supprimer cette ligne ?')){ oblDB().visites=oblDB().visites.filter(x=>x.id!==id); save(); } }
+function oblAddCompteur(){
+  const sal=$('ob_cp_sal').value, h=parseFloat($('ob_cp_h').value||'0'), d=$('ob_cp_date').value;
+  if(!sal){ alert('Choisis une personne.'); return; }
+  oblDB().compteurs.push({id:uid(),salarie:sal,heures:h,arreteLe:d||today(),signe:false,apurement:''});
+  $('ob_cp_h').value=''; $('ob_cp_date').value=''; save();
+}
+function oblSetCompteur(id,champ,val){ const c=oblDB().compteurs.find(x=>x.id===id); if(c){ c[champ]=(champ==='heures')?parseFloat(val||'0'):val; save(); } }
+function oblDelCompteur(id){ if(confirm('Supprimer ce compteur ?')){ oblDB().compteurs=oblDB().compteurs.filter(x=>x.id!==id); save(); } }
+function oblAddArret(){
+  const sal=$('ob_ij_sal').value, debut=$('ob_ij_debut').value, fin=$('ob_ij_fin').value;
+  if(!sal){ alert('Choisis une personne.'); return; }
+  if(!debut){ alert('Indique au moins la date de début de l\'arrêt.'); return; }
+  const a={id:uid(),salarie:sal,debut:debut,fin:fin,dsn:false,subrogation:'',ijAttendue:0,ijRecue:0,note:'',creeLe:today()};
+  oblDB().arrets.push(a);
+  oblSyncReprise(a);
+  $('ob_ij_debut').value=''; $('ob_ij_fin').value=''; save();
+}
+function oblSetArret(id,champ,val){
+  const a=oblDB().arrets.find(x=>x.id===id); if(!a) return;
+  if(champ==='ijAttendue'||champ==='ijRecue') a[champ]=parseFloat(val||'0');
+  else if(champ==='dsn') a[champ]=!!val;
+  else a[champ]=val;
+  if(champ==='debut'||champ==='fin') oblSyncReprise(a);
+  save();
+}
+function oblDelArret(id){
+  if(!confirm('Supprimer cet arrêt ? (la visite de reprise liée sera aussi retirée)')) return;
+  oblDB().arrets=oblDB().arrets.filter(x=>x.id!==id);
+  oblDB().visites=oblDB().visites.filter(v=>v.arretId!==id);
+  save();
+}
+/* GARDE-FOU : un arrêt de 30 jours ou plus crée (ou met à jour) sa visite de reprise — impossible de l'oublier */
+function oblSyncReprise(a){
+  const jours=oblDaysBetween(a.debut,a.fin);
+  const ex=oblDB().visites.find(v=>v.arretId===a.id);
+  if(jours>=30 && a.fin){
+    const avant=oblAddDays(a.fin,8); // reprise à organiser dans les 8 jours du retour
+    if(ex){ ex.avant=avant; ex.salarie=a.salarie; }
+    else oblDB().visites.push({id:uid(),arretId:a.id,salarie:a.salarie,type:'Reprise (après arrêt ≥ 30 j)',avant:avant,rdv:'',faitLe:'',note:'Créée automatiquement : arrêt de '+jours+' jours',creeLe:today()});
+  } else if(ex && !ex.faitLe){
+    oblDB().visites=oblDB().visites.filter(v=>v.id!==ex.id);
+  }
+}
+/* --- 🎓 Stagiaires, services civiques & bénévoles encadrants --- */
+const OBL_ST_TYPES=['Stagiaire BAFA','Stagiaire BAFD','Stagiaire école / formation','Service civique','Bénévole encadrant'];
+function oblAddStage(){
+  const nom=($('ob_st_nom').value||'').trim();
+  if(!nom){ alert('Indique le nom de la personne.'); return; }
+  oblDB().stages.push({id:uid(),nom:nom,type:$('ob_st_type').value,organisme:($('ob_st_org').value||'').trim(),debut:$('ob_st_debut').value,fin:$('ob_st_fin').value,convention:false,tuteur:'',honorabilite:false,assurance:false,gratification:'',creeLe:today()});
+  ['ob_st_nom','ob_st_org','ob_st_debut','ob_st_fin'].forEach(i=>{ if($(i)) $(i).value=''; });
+  save();
+}
+function oblSetStage(id,champ,val){ const s=oblDB().stages.find(x=>x.id===id); if(s){ s[champ]=val; save(); } }
+function oblDelStage(id){ if(confirm('Supprimer cette personne du suivi ?')){ oblDB().stages=oblDB().stages.filter(x=>x.id!==id); save(); } }
+/* un stage de plus de 2 mois (≈ 61 jours calendaires) ouvre droit à gratification obligatoire */
+function oblStageLong(s){ const j=oblDaysBetween(s.debut,s.fin); return (s.type||'').indexOf('Stagiaire')===0 && j>61; }
+function oblAddContact(){
+  const org=($('ob_ct_org').value||'').trim();
+  if(!org){ alert('Indique l\'organisme.'); return; }
+  oblDB().contacts.push({id:uid(),organisme:org,contact:($('ob_ct_nom').value||'').trim(),coord:($('ob_ct_coord').value||'').trim(),dossier:'',referent:($('ob_ct_ref').value||'').trim()});
+  ['ob_ct_org','ob_ct_nom','ob_ct_coord','ob_ct_ref'].forEach(i=>{ if($(i)) $(i).value=''; });
+  save();
+}
+function oblSetContact(id,champ,val){ const c=oblDB().contacts.find(x=>x.id===id); if(c){ c[champ]=val; save(); } }
+function oblDelContact(id){ if(confirm('Supprimer ce contact ?')){ oblDB().contacts=oblDB().contacts.filter(x=>x.id!==id); save(); } }
+/* Zéro saisie : crée les lignes manquantes à partir des salariés + les 3 interlocuteurs types */
+function oblSeed(){
+  const o=oblDB(); let n=0;
+  oblSalaries().forEach(s=>{
+    if(!o.compteurs.some(c=>c.salarie===s)){ o.compteurs.push({id:uid(),salarie:s,heures:0,arreteLe:'',signe:false,apurement:''}); n++; }
+    if(!o.visites.some(v=>v.salarie===s)){ o.visites.push({id:uid(),salarie:s,type:'Périodique',avant:'',rdv:'',faitLe:'',note:'',creeLe:today()}); n++; }
+  });
+  ['Santé au travail (Intermetra)','CGSS Réunion','SNP Paie (bulletins)','SDJES (honorabilité)','Unis-Cité (services civiques)'].forEach(org=>{
+    if(!o.contacts.some(x=>x.organisme===org)){ o.contacts.push({id:uid(),organisme:org,contact:'',coord:'',dossier:'',referent:''}); n++; }
+  });
+  if(!n){ alert('Tout est déjà en place — rien à créer.'); return; }
+  save(); alert(n+' ligne(s) créée(s). Il ne reste plus qu\'à compléter les dates.');
+}
+function renderObligations(){
+  const box=$('oblVisitesRows'); if(!box) return;
+  const o=oblDB(), sals=oblSalaries(), t=today();
+  ['ob_vm_sal','ob_cp_sal','ob_ij_sal'].forEach(id=>{ const s=$(id); if(s && !s.options.length) s.innerHTML=sals.map(x=>'<option>'+esc(x)+'</option>').join(''); });
+  const tv=$('ob_vm_type'); if(tv && !tv.options.length) tv.innerHTML=OBL_VM_TYPES.map(x=>'<option>'+esc(x)+'</option>').join('');
+
+  /* --- visites --- */
+  const vs=o.visites.slice().sort((a,b)=>(a.avant||'9999').localeCompare(b.avant||'9999'));
+  box.innerHTML=vs.length?vs.map(v=>{ const e=oblVisiteEtat(v);
+    return '<tr><td><strong>'+esc(v.salarie)+'</strong>'+(v.arretId?'<br><span class="muted" style="font-size:11.5px">↳ liée à un arrêt</span>':'')+'</td>'
+    +'<td>'+esc(v.type)+'</td>'
+    +'<td><input type="date" value="'+esc(v.avant||'')+'" onchange="oblSetVisite(\''+v.id+'\',\'avant\',this.value)"></td>'
+    +'<td><input type="date" value="'+esc(v.rdv||'')+'" onchange="oblSetVisite(\''+v.id+'\',\'rdv\',this.value)"></td>'
+    +'<td><input type="date" value="'+esc(v.faitLe||'')+'" onchange="oblSetVisite(\''+v.id+'\',\'faitLe\',this.value)"></td>'
+    +'<td><span class="pill '+e.p+'">'+e.t+'</span></td>'
+    +'<td><button class="danger" onclick="oblDelVisite(\''+v.id+'\')">🗑</button></td></tr>'; }).join('')
+    :'<tr><td colspan="7" class="empty">Aucune visite suivie. Clique « 🔄 Créer les lignes manquantes ».</td></tr>';
+
+  /* --- compteurs --- */
+  const cb=$('oblCompteursRows');
+  if(cb) cb.innerHTML=o.compteurs.length?o.compteurs.map(c=>'<tr><td><strong>'+esc(c.salarie)+'</strong></td>'
+    +'<td style="text-align:right"><input type="number" step="0.5" value="'+(c.heures||0)+'" onchange="oblSetCompteur(\''+c.id+'\',\'heures\',this.value)" style="width:90px;text-align:right"></td>'
+    +'<td><input type="date" value="'+esc(c.arreteLe||'')+'" onchange="oblSetCompteur(\''+c.id+'\',\'arreteLe\',this.value)"></td>'
+    +'<td><label style="display:flex;align-items:center;gap:6px;font-size:13px"><input type="checkbox" '+(c.signe?'checked':'')+' onchange="oblSetCompteur(\''+c.id+'\',\'signe\',this.checked)"> '+(c.signe?'✅ signé':'<span style="color:#c0392b">non signé</span>')+'</label></td>'
+    +'<td><input value="'+esc(c.apurement||'')+'" placeholder="Ex. récup posée en août…" onchange="oblSetCompteur(\''+c.id+'\',\'apurement\',this.value)" style="width:100%"></td>'
+    +'<td><button class="danger" onclick="oblDelCompteur(\''+c.id+'\')">🗑</button></td></tr>').join('')
+    :'<tr><td colspan="6" class="empty">Aucun compteur. Clique « 🔄 Créer les lignes manquantes ».</td></tr>';
+
+  /* --- arrêts / IJ --- */
+  const ab=$('oblArretsRows');
+  if(ab) ab.innerHTML=o.arrets.length?o.arrets.slice().sort((a,b)=>(b.debut||'').localeCompare(a.debut||'')).map(a=>{
+    const j=oblDaysBetween(a.debut,a.fin), ecart=(a.ijAttendue||0)-(a.ijRecue||0);
+    const rep=o.visites.find(v=>v.arretId===a.id);
+    const repTxt=(j>=30&&a.fin)?(rep&&rep.faitLe?'<span class="pill ok">✅ faite</span>':'<span class="pill no">⚠️ OBLIGATOIRE</span>'):'<span class="muted" style="font-size:12px">non requise</span>';
+    return '<tr><td><strong>'+esc(a.salarie)+'</strong></td>'
+    +'<td>'+fmtDate(a.debut)+(a.fin?' → '+fmtDate(a.fin):' → <em>en cours</em>')+(j?'<br><span class="muted" style="font-size:11.5px">'+j+' jours</span>':'')+'</td>'
+    +'<td><label style="display:flex;align-items:center;gap:6px;font-size:13px"><input type="checkbox" '+(a.dsn?'checked':'')+' onchange="oblSetArret(\''+a.id+'\',\'dsn\',this.checked)"> '+(a.dsn?'✅':'à faire')+'</label></td>'
+    +'<td><select onchange="oblSetArret(\''+a.id+'\',\'subrogation\',this.value)"><option value="">— ?</option>'
+      +['Oui — IJ versées à l\'asso','Non — IJ versées au salarié','En cours de demande'].map(s=>'<option '+(a.subrogation===s?'selected':'')+'>'+esc(s)+'</option>').join('')+'</select></td>'
+    +'<td style="text-align:right"><input type="number" step="1" value="'+(a.ijAttendue||0)+'" onchange="oblSetArret(\''+a.id+'\',\'ijAttendue\',this.value)" style="width:90px;text-align:right"></td>'
+    +'<td style="text-align:right"><input type="number" step="1" value="'+(a.ijRecue||0)+'" onchange="oblSetArret(\''+a.id+'\',\'ijRecue\',this.value)" style="width:90px;text-align:right">'
+      +(ecart>0?'<br><span class="muted" style="font-size:11.5px;color:#c0392b">reste '+ecart.toFixed(0)+' €</span>':'')+'</td>'
+    +'<td>'+repTxt+'</td>'
+    +'<td><button class="danger" onclick="oblDelArret(\''+a.id+'\')">🗑</button></td></tr>'; }).join('')
+    :'<tr><td colspan="8" class="empty">Aucun arrêt enregistré.</td></tr>';
+
+  /* --- stagiaires & services civiques --- */
+  const tsel=$('ob_st_type'); if(tsel && !tsel.options.length) tsel.innerHTML=OBL_ST_TYPES.map(x=>'<option>'+esc(x)+'</option>').join('');
+  const sb=$('oblStagesRows');
+  if(sb) sb.innerHTML=o.stages.length?o.stages.slice().sort((a,b)=>(b.debut||'').localeCompare(a.debut||'')).map(s=>{
+    const j=oblDaysBetween(s.debut,s.fin), long=oblStageLong(s), civ=(s.type==='Service civique');
+    const chk=(champ,val)=>'<input type="checkbox" '+(val?'checked':'')+' onchange="oblSetStage(\''+s.id+'\',\''+champ+'\',this.checked)">';
+    return '<tr'+((!s.convention||!s.honorabilite)?' style="background:#fdf6ec"':'')+'><td><strong>'+esc(s.nom)+'</strong>'+(s.organisme?'<br><span class="muted" style="font-size:11.5px">'+esc(s.organisme)+'</span>':'')+'</td>'
+    +'<td>'+esc(s.type||'')+(civ?'<br><span class="muted" style="font-size:11px">hors quotas ACM</span>':'')+'</td>'
+    +'<td>'+(s.debut?fmtDate(s.debut):'—')+(s.fin?' → '+fmtDate(s.fin):'')+(j?'<br><span class="muted" style="font-size:11.5px">'+j+' j</span>':'')+'</td>'
+    +'<td><label style="display:flex;align-items:center;gap:5px;font-size:13px">'+chk('convention',s.convention)+(s.convention?'✅ signée':'<span style="color:#c0392b">manquante</span>')+'</label></td>'
+    +'<td><input value="'+esc(s.tuteur||'')+'" placeholder="qui l\'encadre ?" onchange="oblSetStage(\''+s.id+'\',\'tuteur\',this.value)" style="width:110px"></td>'
+    +'<td><label style="display:flex;align-items:center;gap:5px;font-size:13px">'+chk('honorabilite',s.honorabilite)+(s.honorabilite?'✅':'<span style="color:#c0392b">à vérifier</span>')+'</label></td>'
+    +'<td><label style="display:flex;align-items:center;gap:5px;font-size:13px">'+chk('assurance',s.assurance)+(s.assurance?'✅':'—')+'</label></td>'
+    +'<td>'+(long?'<span class="pill no">⚠️ obligatoire (&gt; 2 mois)</span>':(civ?'<span class="muted" style="font-size:12px">indemnité État</span>':'<span class="muted" style="font-size:12px">non due</span>'))+'</td>'
+    +'<td><button class="danger" onclick="oblDelStage(\''+s.id+'\')">🗑</button></td></tr>'; }).join('')
+    :'<tr><td colspan="9" class="empty">Personne pour l\'instant. Ajoute les stagiaires BAFA/BAFD, les services civiques et les bénévoles encadrants.</td></tr>';
+
+  /* --- contacts --- */
+  const ctb=$('oblContactsRows');
+  if(ctb) ctb.innerHTML=o.contacts.length?o.contacts.map(c=>'<tr><td><strong>'+esc(c.organisme)+'</strong></td>'
+    +'<td><input value="'+esc(c.contact||'')+'" placeholder="nom / service" onchange="oblSetContact(\''+c.id+'\',\'contact\',this.value)" style="width:100%"></td>'
+    +'<td><input value="'+esc(c.coord||'')+'" placeholder="tél. / mail" onchange="oblSetContact(\''+c.id+'\',\'coord\',this.value)" style="width:100%"></td>'
+    +'<td><input value="'+esc(c.dossier||'')+'" placeholder="n° dossier" onchange="oblSetContact(\''+c.id+'\',\'dossier\',this.value)" style="width:110px"></td>'
+    +'<td><input value="'+esc(c.referent||'')+'" placeholder="Ex. Guy" onchange="oblSetContact(\''+c.id+'\',\'referent\',this.value)" style="width:110px"></td>'
+    +'<td><button class="danger" onclick="oblDelContact(\''+c.id+'\')">🗑</button></td></tr>').join('')
+    :'<tr><td colspan="6" class="empty">Aucun interlocuteur enregistré.</td></tr>';
+
+  /* --- alertes + KPI --- */
+  const retard=o.visites.filter(v=>!v.faitLe && v.avant && v.avant<t);
+  const reprises=o.arrets.filter(a=>{ const j=oblDaysBetween(a.debut,a.fin); if(!(j>=30&&a.fin)) return false; const r=o.visites.find(v=>v.arretId===a.id); return !r||!r.faitLe; });
+  const nonSignes=o.compteurs.filter(c=>(c.heures||0)>0 && !c.signe);
+  const hTot=o.compteurs.reduce((s,c)=>s+(c.heures||0),0);
+  const ijDues=o.arrets.reduce((s,a)=>s+Math.max(0,(a.ijAttendue||0)-(a.ijRecue||0)),0);
+  const stActifs=o.stages.filter(s=>!s.fin||s.fin>=t);
+  const stSansHono=stActifs.filter(s=>!s.honorabilite);
+  const stSansConv=stActifs.filter(s=>!s.convention);
+  const stLongs=o.stages.filter(oblStageLong);
+  const al=$('oblAlertes');
+  if(al){
+    let h='';
+    if(reprises.length) h+='<div class="panel" style="background:#fdeceb;border:1px solid #f2b8b5;border-left:4px solid #c0392b"><strong>🔴 Visite de reprise obligatoire</strong> — '+reprises.map(a=>esc(a.salarie)).join(', ')+'. La loi l\'impose <strong>avant le retour au poste</strong> (arrêt de 30 jours ou plus). Sans elle, la reprise n\'est pas régulière : appelle le service de santé au travail.</div>';
+    if(retard.length) h+='<div class="panel" style="background:#fdf1e0;border:1px solid #f0d7ac;border-left:4px solid #c8881f"><strong>🟠 '+retard.length+' visite(s) médicale(s) en retard</strong> — '+retard.map(v=>esc(v.salarie)+' ('+esc(v.type)+')').join(', ')+'.</div>';
+    if(nonSignes.length) h+='<div class="panel" style="background:#fdf1e0;border:1px solid #f0d7ac;border-left:4px solid #c8881f"><strong>🟠 Compteurs d\'heures non signés</strong> — '+nonSignes.map(c=>esc(c.salarie)+' ('+(c.heures||0)+' h)').join(', ')+'. Un compteur non arrêté et non signé reste un passif caché.</div>';
+    if(stSansHono.length) h+='<div class="panel" style="background:#fdeceb;border:1px solid #f2b8b5;border-left:4px solid #c0392b"><strong>🔴 Honorabilité non vérifiée</strong> — '+stSansHono.map(s=>esc(s.nom)).join(', ')+'. <strong>Aucun contact avec des mineurs</strong> tant que ce n\'est pas fait : c\'est la règle qui protège les enfants… et l\'association.</div>';
+    if(stSansConv.length) h+='<div class="panel" style="background:#fdf1e0;border:1px solid #f0d7ac;border-left:4px solid #c8881f"><strong>🟠 Convention manquante</strong> — '+stSansConv.map(s=>esc(s.nom)).join(', ')+'. Sans convention signée (la personne, son organisme et nous), l\'accueil n\'a aucun cadre : c\'est nous qui portons le risque.</div>';
+    if(stLongs.length) h+='<div class="panel" style="background:#fdf1e0;border:1px solid #f0d7ac;border-left:4px solid #c8881f"><strong>🟠 Stage de plus de 2 mois</strong> — '+stLongs.map(s=>esc(s.nom)).join(', ')+' : une <strong>gratification est obligatoire</strong> (elle se calcule sur les heures réellement présentes — vérifie le taux en vigueur avec le gestionnaire de paie) et doit être budgétée.</div>';
+    if(ijDues>0) h+='<div class="panel" style="background:#e8f1f7;border:1px solid #c4dced;border-left:4px solid #0e6b6b"><strong>🏥 '+ijDues.toFixed(0)+' € d\'indemnités CGSS attendues</strong> et pas encore encaissées. Vérifie que la subrogation est bien en place — sinon l\'argent part au salarié, pas à l\'asso.</div>';
+    al.innerHTML=h;
+  }
+  const k=$('oblKpis');
+  if(k) k.innerHTML=kpi('Visites en retard',retard.length,retard.length?'red':'green','')
+    +kpi('Reprises obligatoires',reprises.length,reprises.length?'red':'green','')
+    +kpi('Heures dues (total)',hTot.toFixed(1)+' h',nonSignes.length?'amber':'','')
+    +kpi('IJ CGSS à encaisser',ijDues.toFixed(0)+' €',ijDues>0?'amber':'green','')
+    +kpi('Stagiaires à régulariser',stSansConv.length+stSansHono.length,(stSansConv.length+stSansHono.length)?'red':'green','');
 }
 
 /* ---- Fermetures de la structure (congés imposés à toute l'équipe) ---- */
@@ -7165,7 +7679,7 @@ function acmNewSession(type){
 /* acmDelSession retiré (Coup 3) : la suppression d'une édition passe désormais par acmDelEdition (statut-aware). */
 function b64ToUtf8(s){ try{ return new TextDecoder().decode(Uint8Array.from(atob(s),c=>c.charCodeAt(0))); }catch(e){ return ''; } }
 function renderCoffre(){ try{ document.querySelectorAll('[data-coffre]').forEach(function(el){ var k=el.getAttribute('data-coffre'); var v=(window.db&&db.coffreHtml&&db.coffreHtml[k])||''; el.innerHTML = v ? b64ToUtf8(v) : ''; }); }catch(e){} }
-function renderAll(){ renderCoffre(); renderDashboard(); renderZoneCards(); renderMembers(); renderRelances(); renderOps(); renderCaisse(); renderRapprochement(); renderProjects(); renderSubventions(); renderEcheancier(); renderBilan(); renderPrevisionnel(); renderPilotage(); renderEquipe(); renderRepertoire(); renderSecretariat(); renderDemarches(); renderAssurance(); renderCaMembres(); renderReunions(); renderCaprep(); renderIncidents(); renderDettes(); renderOfficialLinks(); refreshComptes(); renderListParams(); renderJournal(); renderPeriscolaire(); renderFaqList(); renderNews(); renderAccompagnement(); renderRH(); renderProjet(); renderProjetAdos(); renderActions(); renderConges(); renderFermetures(); renderHoraires(); renderAcmVac(); renderIntervenants(); if(window.renderVepi)window.renderVepi(); if(window.renderDocsPeri)window.renderDocsPeri(); if(window.renderDocsOff)window.renderDocsOff(); }
+function renderAll(){ renderCoffre(); renderDashboard(); renderZoneCards(); renderMembers(); renderRelances(); renderOps(); renderCaisse(); renderRapprochement(); renderProjects(); renderSubventions(); renderEcheancier(); renderBilan(); renderPrevisionnel(); renderPilotage(); renderEquipe(); renderRepertoire(); renderSecretariat(); renderDemarches(); renderAssurance(); renderCaMembres(); renderReunions(); renderCaprep(); renderIncidents(); renderDettes(); renderOfficialLinks(); refreshComptes(); renderListParams(); renderJournal(); renderPeriscolaire(); renderFaqList(); renderNews(); renderAccompagnement(); renderRH(); renderProjet(); renderProjetAdos(); renderActions(); renderConges(); renderFermetures(); renderHoraires(); renderObligations(); renderAcmVac(); renderIntervenants(); if(window.renderVepi)window.renderVepi(); if(window.renderDocsPeri)window.renderDocsPeri(); if(window.renderDocsOff)window.renderDocsOff(); }
 
 /* ---- Data import/export ---- */
 function exportJSON(motif){
@@ -7307,7 +7821,7 @@ renderAll();
     subventions:'f_subventions',
     projects:'f_projets',
     ateliers:'f_ateliers_partenaires', partenaires:'f_ateliers_partenaires',
-    equipe:'f_rh_equipe', accompagnement:'f_rh_equipe', rh:'f_rh_equipe', personnel:'f_rh_equipe',
+    equipe:'f_rh_equipe', accompagnement:'f_rh_equipe', rh:'f_rh_equipe', personnel:'f_rh_equipe', fiches:'f_rh_equipe',
     suivi:'f_rh_equipe', conges:'f_rh_equipe', horaires:'f_rh_equipe', incidents:'f_rh_equipe',
     periscolaire:'f_metier_acm', activites:'f_metier_acm', rdv:'f_metier_acm', acmvac:'f_metier_acm', lieux:'f_metier_acm', salles:'f_metier_acm', acmenc:'f_metier_acm'
   };
@@ -7328,7 +7842,8 @@ renderAll();
     // 📋 Docs inscription : panneau fusionné dans 🎒 Périscolaire (#docsPeriPanel) → masqué aux non-bureau via le css plus bas (étape2 23/06/2026)
     if(!canWrite) perms.caprep='cache'; // 📝 Préparer le CA : préparation du conseil → bureau uniquement
     if(!canWrite){ perms.accounting='cache'; perms.caisse='cache'; perms.dettes='cache'; perms.bilan='cache'; perms.previsionnel='cache'; } // 💶 Finances : trésorerie → bureau uniquement (verrou de DROIT, plus seulement « de fait » — étape2 22/06/2026)
-    if(!canWrite){ perms.equipe='cache'; perms.personnel='cache'; perms.incidents='cache'; } // 🧑‍💼 Équipe : masse salariale, dossiers salariés & événements = données nominatives/RGPD → bureau uniquement (étape2 22/06/2026)
+    if(!canWrite) perms.obligations='cache'; // 🛡️ Obligations employeur : santé au travail, compteurs d'heures, arrêts maladie & IJ = données nominatives sensibles → bureau uniquement (15/07/2026)
+    if(!canWrite){ perms.equipe='cache'; perms.personnel='cache'; perms.incidents='cache'; perms.fiches='cache'; } // 🧑‍💼 Équipe : masse salariale, dossiers salariés, fiches de poste & événements = données nominatives/RGPD → bureau uniquement (étape2 22/06/2026 ; fiches ajouté 14/07/2026)
     perms.messages = (canWrite || (myProfile && myProfile.role==='personnel')) ? 'gestion' : 'cache'; // 📨 Messages adhérents : bureau + salariés (personnel) lisent ET répondent ; caché aux autres rôles
     perms.communication = (canWrite || (myProfile && myProfile.role==='personnel')) ? 'gestion' : 'cache'; // 📣 Communication : fiche de marque = métier → bureau + salariés (is_staff), aligné sur la RLS de fiches_marque
     // === Abonnement (OPT-OUT) : un onglet est caché si SA fonction vaut explicitement false. Absent ou true = visible.
