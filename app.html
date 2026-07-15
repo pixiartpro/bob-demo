@@ -2271,7 +2271,7 @@ Deux locaux complémentaires — le Bois de Nèfles (« le haut » : jeunesse, a
     <div class="panel">
       <div class="toolbar" style="flex-wrap:wrap;gap:10px;align-items:flex-end">
         <div class="field" style="flex:1;min-width:220px"><label>Nouvelle action</label><input id="act_new" placeholder="Ex. Appeler Intermetra pour les visites de reprise" onkeydown="if(event.key==='Enter')addAction()"></div>
-        <div class="field" style="min-width:120px"><label>Qui s'en occupe</label><input id="act_new_qui" placeholder="Ex. Guy"></div>
+        <div class="field" style="min-width:120px"><label>Qui s'en occupe</label><input id="act_new_qui" list="peopleList" placeholder="Choisir…"></div>
         <div class="field" style="min-width:140px"><label>Pour quand</label><input type="date" id="act_new_quand"></div>
         <div class="field" style="min-width:120px"><label>Priorité</label><select id="act_new_prio"><option>🔴 Haute</option><option selected>🟠 Moyenne</option><option>🟢 Basse</option></select></div>
         <div><button class="btn" onclick="addAction()">+ Ajouter</button></div>
@@ -2286,6 +2286,7 @@ Deux locaux complémentaires — le Bois de Nèfles (« le haut » : jeunesse, a
       <div style="overflow-x:auto;-webkit-overflow-scrolling:touch"><table style="margin-top:8px;min-width:900px"><thead><tr><th>Action</th><th style="width:120px">Qui</th><th style="width:130px">Pour quand</th><th style="width:130px">Statut</th><th style="width:100px">Priorité</th><th>Note</th><th style="width:44px"></th></tr></thead>
         <tbody id="actionsRows"></tbody></table></div>
     </div>
+    <datalist id="peopleList"></datalist>
   </section>
 
   <!-- CONGÉS -->
@@ -6767,6 +6768,14 @@ const ACT_DEFAUT=[
 const ACT_STATUTS=['À faire','En cours','En attente','Fait'];
 function actionsDB(){ if(!Array.isArray(db.actionsSuivi)) db.actionsSuivi=JSON.parse(JSON.stringify(ACT_DEFAUT)); return db.actionsSuivi; }
 const ACT_PRIOS=['🔴 Haute','🟠 Moyenne','🟢 Basse'];
+/* Liste des personnes pour les menus « qui » (bureau + salariés + noms déjà utilisés) — plus besoin de retaper */
+function actPeople(){
+  const sal=(db.salaries||[]).map(s=>(s.name||'').trim().split(' ')[0]).filter(Boolean);
+  const cur=[]; (db.actionsSuivi||[]).forEach(a=>{ if(a.qui) cur.push(a.qui.trim()); });
+  (db.obligations&&db.obligations.contacts||[]).forEach(c=>{ if(c.referent) cur.push(c.referent.trim()); });
+  return [...new Set(['Guillaume','Guy',...sal,...cur].filter(Boolean))].sort((a,b)=>a.localeCompare(b,'fr'));
+}
+function renderPeopleList(){ const dl=$('peopleList'); if(dl) dl.innerHTML=actPeople().map(p=>'<option value="'+esc(p)+'">').join(''); }
 /* Le plan de marche 2026 : la substance des documents de travail du 14-15/07/2026
    (décodage du DLA · plan de trésorerie · refléchage Ville · plan d'actions rentrée)
    versée là où elle sert vraiment — avec un porteur et une échéance. */
@@ -6845,6 +6854,7 @@ function actEnRetard(it){ return it.statut!=='Fait' && it.echeance && it.echeanc
 function actCetteSemaine(it){ if(it.statut==='Fait'||!it.echeance) return false; const t=today(); const lim=oblAddDays(t,7); return it.echeance>=t && it.echeance<=lim; }
 function renderActions(){
   const box=$('actionsRows'); if(!box) return;
+  renderPeopleList();
   const all=actionsDB();
   /* filtres (remplis dynamiquement, sans doublon) */
   const qui=[...new Set(all.map(x=>x.qui).filter(Boolean))].sort();
@@ -6864,7 +6874,7 @@ function renderActions(){
   box.innerHTML=a.length?a.map(it=>{
     const retard=actEnRetard(it);
     return '<tr'+(retard?' style="background:#fdeceb"':'')+'><td>'+(retard?'<strong style="color:#c0392b">⏰ </strong>':'')+esc(it.sujet)+(it.origine?'<br><span class="muted" style="font-size:11.5px">'+esc(it.origine)+'</span>':'')+'</td>'
-    +'<td><input value="'+esc(it.qui||'')+'" placeholder="qui ?" onchange="actSet(\''+it.id+'\',\'qui\',this.value)" style="width:100%"></td>'
+    +'<td><input value="'+esc(it.qui||'')+'" list="peopleList" placeholder="qui ?" onchange="actSet(\''+it.id+'\',\'qui\',this.value)" style="width:100%"></td>'
     +'<td><input type="date" value="'+esc(it.echeance||'')+'" onchange="actSet(\''+it.id+'\',\'echeance\',this.value)"></td>'
     +'<td><select onchange="actSet(\''+it.id+'\',\'statut\',this.value)">'+ACT_STATUTS.map(s=>'<option '+(s===it.statut?'selected':'')+'>'+s+'</option>').join('')+'</select></td>'
     +'<td><select onchange="actSet(\''+it.id+'\',\'priorite\',this.value)">'+ACT_PRIOS.map(s=>'<option '+(s===(it.priorite||'🟠 Moyenne')?'selected':'')+'>'+s+'</option>').join('')+'</select></td>'
@@ -7095,7 +7105,7 @@ function renderObligations(){
     +'<td>'+esc(s.type||'')+(civ?'<br><span class="muted" style="font-size:11px">hors quotas ACM</span>':'')+'</td>'
     +'<td>'+(s.debut?fmtDate(s.debut):'—')+(s.fin?' → '+fmtDate(s.fin):'')+(j?'<br><span class="muted" style="font-size:11.5px">'+j+' j</span>':'')+'</td>'
     +'<td><label style="display:flex;align-items:center;gap:5px;font-size:13px">'+chk('convention',s.convention)+(s.convention?'✅ signée':'<span style="color:#c0392b">manquante</span>')+'</label></td>'
-    +'<td><input value="'+esc(s.tuteur||'')+'" placeholder="qui l\'encadre ?" onchange="oblSetStage(\''+s.id+'\',\'tuteur\',this.value)" style="width:110px"></td>'
+    +'<td><input value="'+esc(s.tuteur||'')+'" list="peopleList" placeholder="qui l\'encadre ?" onchange="oblSetStage(\''+s.id+'\',\'tuteur\',this.value)" style="width:110px"></td>'
     +'<td><label style="display:flex;align-items:center;gap:5px;font-size:13px">'+chk('honorabilite',s.honorabilite)+(s.honorabilite?'✅':'<span style="color:#c0392b">à vérifier</span>')+'</label></td>'
     +'<td><label style="display:flex;align-items:center;gap:5px;font-size:13px">'+chk('assurance',s.assurance)+(s.assurance?'✅':'—')+'</label></td>'
     +'<td>'+(long?'<span class="pill no">⚠️ obligatoire (&gt; 2 mois)</span>':(civ?'<span class="muted" style="font-size:12px">indemnité État</span>':'<span class="muted" style="font-size:12px">non due</span>'))+'</td>'
@@ -7108,7 +7118,7 @@ function renderObligations(){
     +'<td><input value="'+esc(c.contact||'')+'" placeholder="nom / service" onchange="oblSetContact(\''+c.id+'\',\'contact\',this.value)" style="width:100%"></td>'
     +'<td><input value="'+esc(c.coord||'')+'" placeholder="tél. / mail" onchange="oblSetContact(\''+c.id+'\',\'coord\',this.value)" style="width:100%"></td>'
     +'<td><input value="'+esc(c.dossier||'')+'" placeholder="n° dossier" onchange="oblSetContact(\''+c.id+'\',\'dossier\',this.value)" style="width:110px"></td>'
-    +'<td><input value="'+esc(c.referent||'')+'" placeholder="Ex. Guy" onchange="oblSetContact(\''+c.id+'\',\'referent\',this.value)" style="width:110px"></td>'
+    +'<td><input value="'+esc(c.referent||'')+'" list="peopleList" placeholder="Ex. Guy" onchange="oblSetContact(\''+c.id+'\',\'referent\',this.value)" style="width:110px"></td>'
     +'<td><button class="danger" onclick="oblDelContact(\''+c.id+'\')">🗑</button></td></tr>').join('')
     :'<tr><td colspan="6" class="empty">Aucun interlocuteur enregistré.</td></tr>';
 
