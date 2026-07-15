@@ -10,7 +10,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
-  :root{--vert:#1f9d6b;--vert-fonce:#0f6b46;--jaune:#f4b740;--ananas:#dc8f38;--ink:#1d3a2e;--muted:#5c7468;
+  :root{--vert:#1f9d6b;--vert-fonce:#0f6b46;--jaune:#f4b740;--ananas:#dc8f38; --accent-txt:#9c5410;--ink:#1d3a2e;--muted:#5c7468;
         --bg:#f4f7f5;--card:#fff;--line:#e2ebe6;--red:#e0533d;--shadow:0 6px 22px rgba(20,60,40,.10);--shadow-lg:0 16px 44px rgba(20,60,40,.16)}
   *{box-sizing:border-box}
   body{margin:0;font-family:'Inter',-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;color:var(--ink);background:var(--bg);line-height:1.55}
@@ -45,7 +45,7 @@
   .btn.d{background:#fde9e5;color:var(--red)}
   .btn:disabled{opacity:.5;cursor:default}
   .pill{display:inline-block;padding:3px 10px;border-radius:999px;font-size:12px;font-weight:800}
-  .pill.ok{background:#e3f5ec;color:var(--vert-fonce)} .pill.wait{background:#fcf2de;color:#a9742a} .pill.boss{background:#e8eefc;color:#1f4fc4} .pill.off{background:#f1eef0;color:#8a7d86}
+  .pill.ok{background:#e3f5ec;color:var(--vert-fonce)} .pill.wait{background:#fcf2de;color:var(--accent-txt)} .pill.boss{background:#e8eefc;color:#1f4fc4} .pill.off{background:#f1eef0;color:#8a7d86}
   .kv{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:11px 0;border-bottom:1px dashed var(--line)}
   .kv:last-child{border-bottom:none}
   .role-pill{font-size:11.5px}
@@ -73,7 +73,7 @@
   <p class="sub">Connectez-vous à votre espace, ou créez votre compte en 2 minutes.</p>
   <div id="welcomeMascot" style="text-align:center;margin:4px 0 16px">
     <img src="zanana-wave.png" onerror="this.style.display='none'" alt="Zanana" style="width:92px;height:auto;filter:drop-shadow(0 8px 14px rgba(16,60,40,.18))">
-    <p style="margin:6px auto 0;font-weight:700;color:#3a5246;font-size:14.5px;max-width:420px">Salut, c'est <b style="color:#e8a32c">Zanana</b> ! Connecte-toi à ton espace, ou crée ton compte 🍍</p>
+    <p style="margin:6px auto 0;font-weight:700;color:#3a5246;font-size:14.5px;max-width:420px">Salut, c'est <b style="color:var(--accent-txt)">Zanana</b> ! Connecte-toi à ton espace, ou crée ton compte 🍍</p>
   </div>
   <div id="app"><p class="muted">Chargement…</p></div>
 </div>
@@ -144,7 +144,7 @@ const DOOR = assoSlug();
     const h=document.querySelector('h1.t'); if(h) h.textContent='👨‍👩‍👧 Créer mon compte famille';
     try{ document.title='Créer mon compte famille — CASE du Bois de Nèfles'; }catch(e){}
     const s=document.querySelector('p.sub'); if(s) s.innerHTML='Créez votre compte en 2 minutes pour inscrire vos enfants au <b>périscolaire</b> et à l\'<b>ACM</b>, et réserver vos activités. <b>Un parent adhérent</b> (10 €/an) suffit pour tous les enfants. Déjà un compte ? Connectez-vous ci-dessous.';
-    const m=document.querySelector('#welcomeMascot p'); if(m) m.innerHTML="Salut, c'est <b style=\"color:#dc8f38\">Zanana</b> ! Crée ton <b>compte famille</b> pour inscrire tes enfants 👨‍👩‍👧";
+    const m=document.querySelector('#welcomeMascot p'); if(m) m.innerHTML="Salut, c'est <b style=\"color:var(--accent-txt)\">Zanana</b> ! Crée ton <b>compte famille</b> pour inscrire tes enfants 👨‍👩‍👧";
     const sf=document.querySelector('.secure-flag'); if(sf) sf.textContent='🔒 Espace sécurisé — vos données sont chiffrées et hébergées en France (RGPD).';
   }catch(e){}
 })();
