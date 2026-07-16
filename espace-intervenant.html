@@ -50,6 +50,9 @@
   #toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
   footer{background:var(--vert-fonce);color:#dff3e9;padding:22px;text-align:center;margin-top:18px;font-size:14px}
   .note{background:#f4f8f6;border:1px solid #d9ece2;border-radius:12px;padding:11px 13px;font-size:13.5px;color:#2c5a45;margin:0 0 12px}
+  .chip{display:inline-block;padding:8px 14px;border-radius:999px;border:1px solid var(--line);background:#fff;font-size:13.5px;font-weight:600;cursor:pointer;margin:0 6px 6px 0;font-family:inherit;color:var(--ink);transition:.12s}
+  .chip:hover{border-color:var(--vert)}
+  .chip.on{background:var(--vert);border-color:var(--vert);color:#fff}
 </style>
 </head>
 <body>
@@ -115,8 +118,8 @@ async function boot(){
 async function loadDossier(){
   try{
     const {data}=await sb.from('intervenant_dossiers').select('*').eq('user_id',ME.session.user.id).maybeSingle();
-    ME.dossier=data||{ structure:'',pers:(ME.prof.full_name||''),domaine:'',siret:'',adresse:'',referent:'',email:(ME.prof.email||''),tel:'',de_path:'',de_nom:'',assur_path:'',assur_nom:'',assur_echeance:'',statut:'brouillon' };
-  }catch(e){ ME.dossier={ structure:'',pers:'',domaine:'',siret:'',adresse:'',referent:'',email:'',tel:'',de_path:'',de_nom:'',assur_path:'',assur_nom:'',assur_echeance:'',statut:'brouillon' }; }
+    ME.dossier=data||{ structure:'',pers:(ME.prof.full_name||''),domaine:'',siret:'',adresse:'',referent:'',email:(ME.prof.email||''),tel:'',de_path:'',de_nom:'',assur_path:'',assur_nom:'',assur_echeance:'',statut:'brouillon',activites:{} };
+  }catch(e){ ME.dossier={ structure:'',pers:'',domaine:'',siret:'',adresse:'',referent:'',email:'',tel:'',de_path:'',de_nom:'',assur_path:'',assur_nom:'',assur_echeance:'',statut:'brouillon',activites:{} }; }
 }
 
 /* Ses cours : le planning vit dans `creneaux`, que la RLS laisse lire à toute l'asso mais
@@ -196,6 +199,54 @@ function render(){
   });
 }
 
+/* Un même intitulé peut avoir plusieurs créneaux (Afro dance le jeudi ET le samedi) :
+   la fiche se rédige par ACTIVITÉ, pas par créneau. */
+function coursGroupes(){
+  const m=new Map();
+  ME.cours.forEach(function(c){
+    const cle=normNom(c.titre||'')||'(sans titre)';
+    if(!m.has(cle)) m.set(cle,{cle:cle,titre:(c.titre||'(sans titre)'),creneaux:[]});
+    m.get(cle).creneaux.push(c);
+  });
+  return Array.from(m.values());
+}
+
+/* Tout est cliquable : sur un téléphone, 9 activités × 4 pavés de texte ne seraient jamais remplies. */
+const CH_QUI=['Enfants','Ados','Adultes','Tous'];
+const CH_NIVEAU=['Débutant','Tous niveaux','Confirmé'];
+const CH_DEROULE=['Échauffement','Technique','Chorégraphie','Cardio','Étirements','Improvisation','Passage en groupes','Renforcement'];
+const CH_TENUE=['Baskets','Pieds nus','Chaussons','Talons','Tenue souple','Bouteille d\'eau'];
+
+/* Bob connaît déjà le public de la plupart des créneaux : on le pré-coche au lieu de le redemander. */
+function devinePublic(g){
+  const t=normNom(g.creneaux.map(function(c){ return c.public_vise||''; }).join(' '));
+  const out=[];
+  if(/enfant|eveil|3-5|6-10/.test(t)) out.push('Enfants');
+  if(/ado|11-17/.test(t)) out.push('Ados');
+  if(/adulte/.test(t)) out.push('Adultes');
+  return out;
+}
+function resumeFiche(f){
+  const p=[];
+  if(f.qui && f.qui.length) p.push(f.qui.join(', '));
+  if(f.niveau) p.push(f.niveau);
+  if(f.deroule && f.deroule.length) p.push(f.deroule.join(', '));
+  if(f.tenue && f.tenue.length) p.push('à prévoir : '+f.tenue.join(', '));
+  return p.join(' · ');
+}
+function ficheRemplie(f){
+  return !!(f && ((f.qui&&f.qui.length) || (f.deroule&&f.deroule.length) || (f.mot&&f.mot.trim())));
+}
+/* On passe l'INDEX dans le onclick, jamais le libellé : « Bouteille d'eau » casserait l'attribut. */
+const CH_TABLES={qui:CH_QUI, niveau:CH_NIVEAU, deroule:CH_DEROULE, tenue:CH_TENUE};
+function chipsUI(champ, choix, actifs, multi){
+  return choix.map(function(v,k){
+    const on = multi ? (actifs||[]).indexOf(v)>=0 : actifs===v;
+    return '<button type="button" class="chip'+(on?' on':'')+'" onclick="actChip(\''+champ+'\','+k+')">'+esc(v)+'</button>';
+  }).join('');
+}
+
+let actOuverte=-1, actDraft=null;
 function coursUI(){
   const nom=((ME.dossier&&ME.dossier.pers)||'').trim();
   if(!nom) return '';
@@ -204,17 +255,82 @@ function coursUI(){
       +'<p class="empty">Aucun cours n\'est inscrit au nom de « '+esc(nom)+' » dans le planning.<br>'
       +'<span class="hint">Si vous animez des cours au CASE, signalez-le au bureau.</span></p></div>';
   }
-  const lignes=ME.cours.map(function(c){
-    return '<div class="doc"><div><span class="lab">'+esc(c.titre||'(sans titre)')+'</span>'
-      +(c.public_vise?' <span class="pill ok">'+esc(c.public_vise)+'</span>':'')
-      +'<div class="hint">'+esc(JOURS[c.jour]||'—')+' · '+esc(c.debut||'')+'–'+esc(c.fin||'')+(c.salle?' · salle '+esc(c.salle):'')+'</div>'
-      +'</div></div>';
+  const fiches=(ME.dossier&&ME.dossier.activites)||{};
+  const groupes=coursGroupes();
+  const faites=groupes.filter(function(g){ return ficheRemplie(fiches[g.cle]); }).length;
+  /* L'index (un nombre) va dans le onclick, JAMAIS la clé : une clé vient d'un titre saisi
+     à la main et casserait l'attribut si elle contenait une apostrophe. */
+  const blocs=groupes.map(function(g,i){
+    const f=fiches[g.cle]||{};
+    const decrit=ficheRemplie(f);
+    const ouvert=(actOuverte===i);
+    const horaires=g.creneaux.map(function(c){
+      return esc(JOURS[c.jour]||'—')+' '+esc(c.debut||'')+'–'+esc(c.fin||'')+(c.public_vise?' <span class="muted">('+esc(c.public_vise)+')</span>':'');
+    }).join(' · ');
+    let h='<div class="doc" style="display:block">'
+      +'<div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:flex-start">'
+      +'<div><span class="lab">'+esc(g.titre)+'</span> '
+      +(decrit?'<span class="pill ok">✅ décrit</span>':'<span class="pill no">à décrire</span>')
+      +'<div class="hint">'+horaires+'</div></div>'
+      +'<button class="btn ghost" onclick="actEdit('+i+')">'+(ouvert?'Fermer':(decrit?'✏️ Modifier':'✏️ Décrire'))+'</button>'
+      +'</div>';
+    if(decrit && !ouvert){
+      const r=resumeFiche(f);
+      if(r) h+='<p class="hint" style="margin:8px 0 0">'+esc(r)+'</p>';
+      if(f.mot && f.mot.trim()) h+='<p class="hint" style="margin:4px 0 0;font-style:italic">« '+esc(f.mot)+' »</p>';
+    }
+    if(ouvert && actDraft){
+      h+='<div style="margin-top:10px;border-top:1px solid var(--line);padding-top:12px">'
+        +'<label>C\'est pour qui ?</label><div>'+chipsUI('qui',CH_QUI,actDraft.qui,true)+'</div>'
+        +'<label style="margin-top:10px">Quel niveau ?</label><div>'+chipsUI('niveau',CH_NIVEAU,actDraft.niveau,false)+'</div>'
+        +'<label style="margin-top:10px">On y fait quoi ?</label><div>'+chipsUI('deroule',CH_DEROULE,actDraft.deroule,true)+'</div>'
+        +'<label style="margin-top:10px">À prévoir</label><div>'+chipsUI('tenue',CH_TENUE,actDraft.tenue,true)+'</div>'
+        +'<label style="margin-top:10px">Un mot à ajouter ? <span class="muted" style="font-weight:400">(facultatif)</span></label>'
+        +'<textarea id="a_mot" rows="2" oninput="if(actDraft)actDraft.mot=this.value" placeholder="Seulement si vous voulez préciser quelque chose.">'+esc(actDraft.mot||'')+'</textarea>'
+        +'<div style="margin-top:12px"><button class="btn win" onclick="actSave('+i+')">💾 Enregistrer cette fiche</button> '
+        +'<button class="btn ghost" onclick="actEdit('+i+')">Annuler</button></div>'
+        +'</div>';
+    }
+    return h+'</div>';
   }).join('');
   return '<div class="card"><h2 class="title">🗓️ Mes cours</h2>'
-    +'<div class="note">Les '+ME.cours.length+' cours que le bureau a inscrits à votre nom au planning. '
+    +'<div class="note">Vos <b>'+ME.cours.length+' cours</b> tels que le bureau les a inscrits au planning, regroupés en <b>'+groupes.length+' activités</b>. '
     +'<b>Un horaire faux, un cours en trop ou qui manque ?</b> Signalez-le au bureau : c\'est lui qui tient le planning des salles.</div>'
-    +lignes+'</div>';
+    +'<div class="note" style="background:#fff9e8;border-color:#f0e0a8;color:#7a5c00"><b>✏️ Décrivez chaque activité</b> — <b>'+faites+'/'+groupes.length+'</b> faites. '
+    +'<b>Tout se fait en cliquant</b>, il n\'y a rien à écrire : pour qui, quel niveau, ce qu\'on y fait, ce qu\'il faut prévoir. '
+    +'Ça servira à présenter vos cours aux familles.<br>'
+    +'<b>L\'âge minimum, le diplôme, le certificat médical et l\'assurance ne vous sont pas demandés ici</b> : c\'est au bureau de les établir, ils engagent l\'association.</div>'
+    +blocs+'</div>';
 }
+
+window.actEdit=function(i){
+  if(actOuverte===i){ actOuverte=-1; actDraft=null; render(); return; }
+  const g=coursGroupes()[i]; if(!g) return;
+  const f=((ME.dossier&&ME.dossier.activites)||{})[g.cle];
+  actDraft = f
+    ? { qui:(f.qui||[]).slice(), niveau:f.niveau||'', deroule:(f.deroule||[]).slice(), tenue:(f.tenue||[]).slice(), mot:f.mot||'' }
+    : { qui:devinePublic(g), niveau:'', deroule:[], tenue:[], mot:'' };  // pré-coché depuis le planning
+  actOuverte=i; render();
+};
+window.actChip=function(champ,k){
+  if(!actDraft) return;
+  const v=(CH_TABLES[champ]||[])[k]; if(v===undefined) return;
+  if(champ==='niveau'){ actDraft.niveau=(actDraft.niveau===v?'':v); }
+  else {
+    const arr=actDraft[champ]||[]; const j=arr.indexOf(v);
+    if(j>=0) arr.splice(j,1); else arr.push(v);
+    actDraft[champ]=arr;
+  }
+  render();
+};
+window.actSave=async function(i){
+  const g=coursGroupes()[i]; if(!g || !actDraft) return;
+  if(!ficheRemplie(actDraft)){ toast('Choisissez au moins pour qui, ou ce qu\'on y fait.'); return; }
+  const fiches=Object.assign({}, (ME.dossier&&ME.dossier.activites)||{});
+  fiches[g.cle]=Object.assign({ titre:g.titre, maj:new Date().toISOString() }, actDraft);
+  try{ await persist({activites:fiches}); actOuverte=-1; actDraft=null; toast('Fiche enregistrée ✅'); render(); }
+  catch(e){ console.error(e); toast('Erreur : '+(e.message||'enregistrement')); }
+};
 
 function collect(){
   const g=id=>{ const el=$('#'+id); return el?el.value.trim():''; };
