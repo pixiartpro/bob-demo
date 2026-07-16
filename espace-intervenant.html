@@ -74,8 +74,19 @@ const SB_KEY='sb_publishable_HDfV-O2ION1Vw9v03aV_Qg_PkiAjLNo';
 const BUCKET='dossiers-periscolaire';
 const sb=window.supabase.createClient(SB_URL,SB_KEY);
 const $=s=>document.querySelector(s);
-const ME={session:null,prof:null,asso:null,dossier:null};
+const ME={session:null,prof:null,asso:null,dossier:null,cours:[]};
+const JOURS=['','Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi','Dimanche'];
 function esc(s){return (s==null?'':String(s)).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+/* Compare deux noms écrits à la main : accents, majuscules et espaces multiples aplatis.
+   Le rapprochement se fait sur le nom COMPLET — jamais sur le seul nom de famille (deux Ramin au CASE). */
+function normNom(s){ return (s==null?'':String(s)).normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/\s+/g,' ').trim(); }
+function manques(){
+  const d=ME.dossier||{}; const m=[];
+  if(!d.de_path) m.push('votre diplôme (DE danse, dispense ou équivalence)');
+  if(!d.assur_path) m.push('votre attestation d\'assurance responsabilité civile');
+  else if(!d.assur_echeance) m.push('la date d\'échéance de votre assurance');
+  return m;
+}
 function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2600);}
 function gate(html){ $('#content').innerHTML='<div class="gate">'+html+'</div>'; }
 window.ivLogout=async function(){ try{ await sb.auth.signOut(); }catch(e){} location.href='connexion.html'; };
@@ -97,6 +108,7 @@ async function boot(){
     gate('<h2>Accès réservé aux intervenants</h2><p class="sub">Pour toute question, contacte le bureau.</p>'); return;
   }
   await loadDossier();
+  await loadCours();
   render();
 }
 
@@ -105,6 +117,21 @@ async function loadDossier(){
     const {data}=await sb.from('intervenant_dossiers').select('*').eq('user_id',ME.session.user.id).maybeSingle();
     ME.dossier=data||{ structure:'',pers:(ME.prof.full_name||''),domaine:'',siret:'',adresse:'',referent:'',email:(ME.prof.email||''),tel:'',de_path:'',de_nom:'',assur_path:'',assur_nom:'',assur_echeance:'',statut:'brouillon' };
   }catch(e){ ME.dossier={ structure:'',pers:'',domaine:'',siret:'',adresse:'',referent:'',email:'',tel:'',de_path:'',de_nom:'',assur_path:'',assur_nom:'',assur_echeance:'',statut:'brouillon' }; }
+}
+
+/* Ses cours : le planning vit dans `creneaux`, que la RLS laisse lire à toute l'asso mais
+   n'autorise à écrire qu'au bureau. On rapproche par le nom de la personne (dossier.pers),
+   pas par profiles.full_name qui porte la STRUCTURE (« Culture prod »), pas la personne. */
+async function loadCours(){
+  ME.cours=[];
+  const moi=normNom(ME.dossier && ME.dossier.pers);
+  if(!moi) return;
+  try{
+    const {data,error}=await sb.from('creneaux').select('jour,debut,fin,titre,public_vise,salle,intervenant').eq('actif',true);
+    if(error) throw error;
+    ME.cours=(data||[]).filter(c=>normNom(c.intervenant)===moi)
+      .sort((a,b)=>(a.jour-b.jour)||String(a.debut||'').localeCompare(String(b.debut||'')));
+  }catch(e){ console.warn('loadCours',e); ME.cours=[]; }
 }
 
 function docLine(kind, lab, hint){
@@ -120,9 +147,19 @@ function docLine(kind, lab, hint){
 function render(){
   const d=ME.dossier;
   const soumis = d.statut==='soumis';
+  const m=manques(), complet=!m.length;
+  const etat = soumis
+    ? (complet ? '<b>Dossier soumis au bureau ✅</b> — il est complet. Vous pouvez encore le mettre à jour.'
+               : '<b>⚠️ Dossier envoyé au bureau, mais incomplet.</b> Il a bien été reçu — mais il manque encore '+m.length+' pièce'+(m.length>1?'s':'')+'.')
+    : (complet ? 'Votre dossier est complet — cliquez « Envoyer au bureau ».'
+               : 'Complétez votre dossier de prestation pour le CASE du Bois de Nèfles.');
+  const manqueUI = m.length
+    ? '<div class="note" style="background:#fff4e0;border-color:#f0d9a8;color:#8a5a00"><b>⚠️ Il manque encore :</b>'
+      +'<ul style="margin:6px 0 0;padding-left:20px">'+m.map(x=>'<li>'+esc(x)+'</li>').join('')+'</ul></div>'
+    : '';
   $('#content').innerHTML =
    '<div class="hero"><div class="wrap"><p class="hello">Bonjour '+esc(ME.prof.full_name||'')+' 👋</p>'
-   +'<p class="sub">Complétez votre dossier de prestation pour le CASE du Bois de Nèfles. '+(soumis?'<b>Dossier soumis au bureau ✅</b> — vous pouvez encore le mettre à jour.':'Une fois prêt, cliquez « Envoyer au bureau ».')+'</p></div></div>'
+   +'<p class="sub">'+etat+'</p></div></div>'
    +'<div class="wrap"><section class="block">'
    +'<div class="card"><h2 class="title">🏢 Mon identité</h2>'
    +'<div class="note">Ces informations servent à établir la convention de prestation. Le CASE ne verse pas de salaire : votre structure facture la prestation.</div>'
@@ -143,12 +180,40 @@ function render(){
    +docLine('assur','Assurance responsabilité civile','Attestation en cours de validité')
    +'<div class="row" style="margin-top:10px"><div style="max-width:220px"><label>Échéance de l\'assurance</label><input id="f_assur_echeance" type="date" value="'+esc(d.assur_echeance||'')+'" onchange="ivSave(true)"></div></div>'
    +'</div>'
+   +coursUI()
    +'<div class="card" style="text-align:center">'
-   +'<p class="sub" style="margin:0 0 10px">Quand votre dossier est complet, envoyez-le au bureau pour validation.</p>'
+   +manqueUI
+   +'<p class="sub" style="margin:0 0 10px">'+(complet
+       ? 'Votre dossier est complet : envoyez-le au bureau pour validation.'
+       : 'Vous pouvez l\'envoyer même incomplet — le bureau saura ce qui manque, et vous déposerez le reste plus tard.')+'</p>'
    +'<button class="btn win" style="font-size:15px;padding:12px 22px" onclick="ivSubmit()">📨 '+(soumis?'Mettre à jour ma soumission':'Envoyer au bureau')+'</button>'
    +'</div>'
    +'</section></div>'
    +'<footer>CASE du Bois de Nèfles · Vos données sont privées et réservées au bureau.</footer>';
+  /* Filet : on enregistre dès qu'un champ est quitté — le formulaire est long et se remplit au téléphone. */
+  ['f_structure','f_pers','f_siret','f_domaine','f_adresse','f_referent','f_email','f_tel'].forEach(function(id){
+    const el=$('#'+id); if(el) el.addEventListener('change', ivAuto);
+  });
+}
+
+function coursUI(){
+  const nom=((ME.dossier&&ME.dossier.pers)||'').trim();
+  if(!nom) return '';
+  if(!ME.cours.length){
+    return '<div class="card"><h2 class="title">🗓️ Mes cours</h2>'
+      +'<p class="empty">Aucun cours n\'est inscrit au nom de « '+esc(nom)+' » dans le planning.<br>'
+      +'<span class="hint">Si vous animez des cours au CASE, signalez-le au bureau.</span></p></div>';
+  }
+  const lignes=ME.cours.map(function(c){
+    return '<div class="doc"><div><span class="lab">'+esc(c.titre||'(sans titre)')+'</span>'
+      +(c.public_vise?' <span class="pill ok">'+esc(c.public_vise)+'</span>':'')
+      +'<div class="hint">'+esc(JOURS[c.jour]||'—')+' · '+esc(c.debut||'')+'–'+esc(c.fin||'')+(c.salle?' · salle '+esc(c.salle):'')+'</div>'
+      +'</div></div>';
+  }).join('');
+  return '<div class="card"><h2 class="title">🗓️ Mes cours</h2>'
+    +'<div class="note">Les '+ME.cours.length+' cours que le bureau a inscrits à votre nom au planning. '
+    +'<b>Un horaire faux, un cours en trop ou qui manque ?</b> Signalez-le au bureau : c\'est lui qui tient le planning des salles.</div>'
+    +lignes+'</div>';
 }
 
 function collect(){
@@ -174,8 +239,27 @@ window.ivSave=async function(silent){
   catch(e){ console.error(e); toast('Erreur : '+(e.message||'enregistrement')); }
 };
 
+/* Enregistrement automatique dès qu'un champ est quitté. Les appels sont sérialisés : deux champs
+   remplis coup sur coup avant que la fiche n'existe créeraient sinon DEUX dossiers au lieu d'un. */
+let _chaineSave=Promise.resolve();
+window.ivAuto=function(){
+  _chaineSave=_chaineSave
+    .then(function(){ return persist(); })
+    .then(function(){ toast('Enregistré ✅'); })
+    .catch(function(e){ console.warn('ivAuto',e); toast('Enregistrement impossible — vérifiez votre connexion.'); });
+  return _chaineSave;
+};
+
 window.ivSubmit=async function(){
-  try{ await persist({ statut:'soumis', soumis_at:new Date().toISOString() }); toast('Envoyé au bureau ✅'); render(); }
+  const m=manques();
+  if(m.length && !confirm('Il manque encore :\n\n• '+m.join('\n• ')
+      +'\n\nVous pouvez l\'envoyer quand même : le bureau verra ce qui manque et vous déposerez les pièces plus tard.\n\nEnvoyer maintenant ?')) return;
+  try{
+    await persist({ statut:'soumis', soumis_at:new Date().toISOString() });
+    await loadCours();
+    toast(m.length ? 'Envoyé — il manque encore '+m.length+' pièce'+(m.length>1?'s':'') : 'Envoyé au bureau ✅ — dossier complet');
+    render();
+  }
   catch(e){ console.error(e); toast('Erreur : '+(e.message||'envoi')); }
 };
 
