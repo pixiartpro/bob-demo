@@ -1246,6 +1246,13 @@ function kidCard(k){
     +'<span style="flex:1;min-width:140px;color:var(--muted);font-size:13.5px">🏫 '+kidEsc(k.ecole||PERI.ECOLE)+'</span>'
     +'</div>'
     +kidTagsBlock(id,'allerg','🌰 Allergies',KID_ALLERG,k.allergies)
+    // Renvoi vers la fiche sanitaire : sans lui, les familles saisissent leur régime
+    // (« sans porc »…) DANS les allergies — seul champ qu'elles voient. Or le régime peut
+    // révéler une conviction religieuse (RGPD art. 9) : il est volontairement rangé dans la
+    // fiche sanitaire, à accès restreint, pas ici où tout le staff lit. Constaté 17/07/2026.
+    +'<p class="sub" style="margin:-2px 0 0;font-size:12.5px;background:#f6fbf8;border:1px solid #cfe6da;border-radius:10px;padding:7px 10px">'
+      +'🍽️ <b>Régime alimentaire</b> (sans porc, végétarien…) ? Il se renseigne dans la <b>🩺 Fiche sanitaire</b>, plus bas — pas ici. '
+      +'<span style="color:var(--muted)">Les allergies servent aux animateurs sur le terrain ; le régime, lui, reste réservé à l\'équipe de direction.</span></p>'
     +kidTagsBlock(id,'sante','🩺 Santé / PAI',KID_SANTE,k.sante)
     +'<div style="font-size:13.5px;font-weight:700;margin-top:2px">🔐 Personnes autorisées à venir le chercher</div>'
     +'<div id="k_aut_'+id+'">'+kidAutRows(k)+'</div>'
