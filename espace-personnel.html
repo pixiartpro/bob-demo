@@ -906,12 +906,12 @@ function famNorm(s){ return String(s||'').toLowerCase().normalize('NFD').replace
 async function loadFamilles(){
   try{
     const [rk,rd,rf]=await Promise.all([
-      sb.from('enfants').select('id,nom,prenom,naissance,classe,ecole,allergies,sante,autorises,droit_image').order('nom',{ascending:true}),
+      sb.from('enfants').select('id,nom,prenom,naissance,classe,ecole,allergies,regime,sante,autorises,droit_image').order('nom',{ascending:true}),
       sb.from('inscriptions_periscolaire').select('id,asso_id,user_id,annee,foyer,email,tel,enfants,pieces,statut,besoin_aide,note_bureau,updated_at').order('updated_at',{ascending:false}),
       sb.from('fiches_sanitaires').select('id,enfant_id,annee,version,statut,signe_le,signe_mode,donnees').order('version',{ascending:false})
     ]);
     ME.famKids=(rk.data||[]).map(function(k){ return { id:k.id, nom:k.nom||'', prenom:k.prenom||'', naissance:k.naissance||'', classe:k.classe||'', ecole:k.ecole||'',
-      allergies:String(k.allergies||'').trim(), sante:String(k.sante||'').trim(), autorises:String(k.autorises||'').trim(), droit_image:k.droit_image }; });
+      allergies:String(k.allergies||'').trim(), regime:String(k.regime||'').trim(), sante:String(k.sante||'').trim(), autorises:String(k.autorises||'').trim(), droit_image:k.droit_image }; });
     ME.famDoss=rd.data||[];
     // Fiches sanitaires filtrées par la RLS : le salarié ne reçoit QUE celles qu'il a le droit de lire
     // (bureau, assistant sanitaire, ou référent de l'activité de l'enfant). Latest par enfant (version desc).
@@ -998,6 +998,7 @@ function famCardHtml(k,b){
   }).join('');
   const iv=[];
   if(k.allergies) iv.push('🤧 <b>Allergies :</b> '+esc(k.allergies));
+  if(k.regime) iv.push('🍽️ <b>Régime alimentaire :</b> '+esc(k.regime));
   if(k.sante) iv.push('🩺 <b>Infos santé :</b> '+esc(k.sante));
   if(k.autorises) iv.push('👥 <b>Autorisés à récupérer l\'enfant :</b> '+esc(k.autorises));
   const infos=iv.length?'<div style="margin-top:10px;font-size:14px;background:#f4f8f5;border:1px solid var(--line);border-radius:12px;padding:10px 12px;line-height:1.7">'+iv.join('<br>')+'</div>':'';
@@ -1244,6 +1245,7 @@ function famEditFormHtml(k){
       +'<div style="flex:2"><label>École</label><input id="fe_ecole" value="'+esc(k.ecole||'')+'" style="width:100%"></div>'
     +'</div>'
     +'<div class="row" style="margin-bottom:8px"><div style="flex:1"><label>🤧 Allergies (écrire « aucune » s\'il n\'y en a pas)</label><input id="fe_allergies" value="'+esc(k.allergies||'')+'" style="width:100%"></div></div>'
+    +'<div class="row" style="margin-bottom:8px"><div style="flex:1"><label>🍽️ Régime alimentaire (sans porc, végétarien… — laisser vide si aucun)</label><input id="fe_regime" value="'+esc(k.regime||'')+'" style="width:100%"></div></div>'
     +'<div class="row" style="margin-bottom:8px"><div style="flex:1"><label>🩺 Infos santé (PAI, traitement, asthme…)</label><input id="fe_sante" value="'+esc(k.sante||'')+'" style="width:100%"></div></div>'
     +'<div class="row" style="margin-bottom:10px"><div style="flex:1"><label>👥 Personnes autorisées à récupérer l\'enfant</label><input id="fe_autorises" value="'+esc(k.autorises||'')+'" style="width:100%"></div></div>'
     +'<div class="row" style="gap:8px"><button class="btn win" onclick="famSaveKid(\''+k.id+'\')">💾 Enregistrer</button><button class="btn ghost" onclick="famEditKid(null)">Annuler</button></div>'
@@ -1251,7 +1253,7 @@ function famEditFormHtml(k){
 }
 window.famEditKid=function(id){ ME.famEdit=id; renderFamilles(); };
 window.famSaveKid=async function(id){
-  const payload={ naissance:($('#fe_naissance').value||null), classe:$('#fe_classe').value, ecole:$('#fe_ecole').value.trim(), allergies:$('#fe_allergies').value.trim(), sante:$('#fe_sante').value.trim(), autorises:$('#fe_autorises').value.trim() };
+  const payload={ naissance:($('#fe_naissance').value||null), classe:$('#fe_classe').value, ecole:$('#fe_ecole').value.trim(), allergies:$('#fe_allergies').value.trim(), regime:$('#fe_regime').value.trim(), sante:$('#fe_sante').value.trim(), autorises:$('#fe_autorises').value.trim() };
   const {error}=await sb.from('enfants').update(payload).eq('id',id);
   if(error){ toast('Erreur : '+error.message); return; }
   ME.famEdit=null;

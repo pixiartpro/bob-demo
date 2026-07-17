@@ -1246,13 +1246,13 @@ function kidCard(k){
     +'<span style="flex:1;min-width:140px;color:var(--muted);font-size:13.5px">🏫 '+kidEsc(k.ecole||PERI.ECOLE)+'</span>'
     +'</div>'
     +kidTagsBlock(id,'allerg','🌰 Allergies',KID_ALLERG,k.allergies)
-    // Renvoi vers la fiche sanitaire : sans lui, les familles saisissent leur régime
-    // (« sans porc »…) DANS les allergies — seul champ qu'elles voient. Or le régime peut
-    // révéler une conviction religieuse (RGPD art. 9) : il est volontairement rangé dans la
-    // fiche sanitaire, à accès restreint, pas ici où tout le staff lit. Constaté 17/07/2026.
-    +'<p class="sub" style="margin:-2px 0 0;font-size:12.5px;background:#f6fbf8;border:1px solid #cfe6da;border-radius:10px;padding:7px 10px">'
-      +'🍽️ <b>Régime alimentaire</b> (sans porc, végétarien…) ? Il se renseigne dans la <b>🩺 Fiche sanitaire</b>, plus bas — pas ici. '
-      +'<span style="color:var(--muted)">Les allergies servent aux animateurs sur le terrain ; le régime, lui, reste réservé à l\'équipe de direction.</span></p>'
+    // Régime alimentaire sur la carte enfant, à côté des allergies : l'équipe qui encadre les
+    // repas en a besoin à chaque service (décision GB 17/07/2026, prolonge le médical vu du
+    // terrain acté le 03/07). Reste dans Bob (staff, jamais public). Libellé neutre demandé
+    // pour éviter la mention religieuse (le régime peut toucher à l'art. 9).
+    +'<div style="font-size:13.5px;font-weight:700;margin-top:2px">🍽️ Régime alimentaire</div>'
+    +'<input id="k_regime_'+id+'" value="'+kidEsc(k.regime||'')+'" placeholder="ex. sans porc, végétarien… (laisser vide si aucun)" style="width:100%;padding:9px 11px;border:1px solid var(--line);border-radius:10px;font:inherit">'
+    +'<p class="sub" style="margin:2px 0 0;font-size:12px">Libellé neutre (sans porc, végétarien…), sans mention religieuse. Vu par l\'équipe qui encadre les repas.</p>'
     +kidTagsBlock(id,'sante','🩺 Santé / PAI',KID_SANTE,k.sante)
     +'<div style="font-size:13.5px;font-weight:700;margin-top:2px">🔐 Personnes autorisées à venir le chercher</div>'
     +'<div id="k_aut_'+id+'">'+kidAutRows(k)+'</div>'
@@ -1285,6 +1285,7 @@ function kidsCaptureEdits(){
     if(y!==undefined||m!==undefined||d!==undefined) k.naissance=(y&&m&&d)?(y+'-'+m+'-'+d):'';
     if(v('classe')!==undefined) k.classe=v('classe');
     k.allergies=kidReadTags(id,'allerg');
+    if(v('regime')!==undefined) k.regime=v('regime');
     k.sante=kidReadTags(id,'sante');
     k.autorises_json=kidReadAut(id);
     const seul=document.getElementById('k_seul_'+id); if(seul) k.depart_seul=seul.checked;
@@ -1306,7 +1307,7 @@ window.kidSave=async function(id){
   const badPhone=autList.find(p=>p.tel && !phoneValid(p.tel));
   if(badPhone){ if(msg){msg.style.color='#c0392b'; msg.textContent='📞 Numéro invalide : « '+badPhone.tel+' ». Format attendu : 0692… ou +262…';} return; }
   const autText=autList.map(p=>[((p.nom||'')+' '+(p.prenom||'')).trim(),p.lien?('('+p.lien+')'):'',p.tel].filter(Boolean).join(' ')).join(' ; ');
-  const payload={ nom:(k.nom||'').trim(), prenom:(k.prenom||'').trim(), naissance:(k.naissance||null), classe:k.classe||'', ecole:PERI.ECOLE, allergies:k.allergies||'', sante:k.sante||'', autorises:autText, autorises_json:autList, depart_seul:!!k.depart_seul };
+  const payload={ nom:(k.nom||'').trim(), prenom:(k.prenom||'').trim(), naissance:(k.naissance||null), classe:k.classe||'', ecole:PERI.ECOLE, allergies:k.allergies||'', regime:(k.regime||'').trim(), sante:k.sante||'', autorises:autText, autorises_json:autList, depart_seul:!!k.depart_seul };
   const {data,error}=await _sbAt.from('enfants').update(payload).eq('id',id).select().single();
   if(error){ if(msg){msg.style.color='#c0392b'; msg.textContent='Échec : '+(error.message||error);} return; }
   const i=KIDS.list.findIndex(x=>x.id===id); if(i>=0) KIDS.list[i]=data;
