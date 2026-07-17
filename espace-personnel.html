@@ -936,6 +936,14 @@ function famBilan(k){
     {lab:'Personnes autorisées', ok:famFilled(k.autorises)},
     {lab:'Droit à l\'image', ok:k.droit_image!=null, val:(k.droit_image==null?'':(k.droit_image?'autorisé':'refusé'))}
   ];
+  // Fiche sanitaire : obligatoire pour l'accueil en ACM, elle manquait au bilan — un enfant
+  // sans aucune fiche s'affichait donc « ✅ complet » (constaté 17/07/2026 : 16 enfants /19).
+  // Réservé à l'assistant sanitaire : lui seul reçoit les fiches de TOUS les enfants, donc
+  // lui seul peut conclure d'une absence. Pour les autres, la RLS masque → on ne juge pas.
+  if(ME.prof&&ME.prof.assistant_sanitaire){
+    const fs=ME.famFiches&&ME.famFiches[k.id];
+    checks.push({lab:'Fiche sanitaire', ok:!!fs, val:(fs?(fs.statut==='signee'?'signée':'brouillon'):'')});
+  }
   const dj=famDossierFor(k);
   let missPieces=[];
   if(dj){ const pieces=(dj.d.pieces&&typeof dj.d.pieces==='object')?dj.d.pieces:{}; missPieces=FAM_PIECES.filter(function(p){ return !(pieces[p.k]&&pieces[p.k].path); }); }
@@ -1039,9 +1047,35 @@ function famCardHtml(k,b){
 // ===== Cercle DIRECTION : fiche sanitaire complète (médical) — n'apparaît que si la RLS
 // a renvoyé une fiche lisible pour ce salarié (bureau / assistant sanitaire / référent). =====
 function famFicheDate(iso){ try{ return new Date(iso).toLocaleDateString('fr-FR',{day:'2-digit',month:'2-digit',year:'numeric'}); }catch(e){ return String(iso||''); } }
-function famFicheReadRow(label,val){ return val? '<div style="font-size:13px;margin:2px 0"><b>'+esc(label)+' :</b> '+esc(val)+'</div>':''; }
+// Un champ vide s'AFFICHE en « non renseigné » : le masquer laissait croire que la rubrique
+// n'existait pas dans Bob (retour Kathy, 17/07/2026) — on ne peut pas relancer une famille
+// sur un manque qu'on ne voit pas.
+function famFicheReadRow(label,val){
+  const v=String(val==null?'':val).trim();
+  return '<div style="font-size:13px;margin:2px 0"><b>'+esc(label)+' :</b> '
+    +(v? esc(v) : '<span style="color:var(--muted);font-style:italic">non renseigné</span>')+'</div>';
+}
 function famFicheBlock(k){
-  const f=ME.famFiches&&ME.famFiches[k.id]; if(!f) return '';
+  const f=ME.famFiches&&ME.famFiches[k.id];
+  // Pas de fiche en main = deux causes indiscernables côté navigateur : elle n'existe pas,
+  // OU la RLS ne me l'a pas renvoyée. On n'affirme « pas remplie » que si ce salarié a le
+  // droit de lire TOUTES les fiches de l'asso (assistant sanitaire) ; un référent, lui, n'a
+  // accès qu'aux enfants de son activité → on lui explique au lieu de lui mentir.
+  if(!f){
+    const global=!!(ME.prof&&ME.prof.assistant_sanitaire);
+    return '<div style="margin-top:10px;padding-top:10px;border-top:1px dashed var(--line)">'
+      +'<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><b style="font-size:14px">🩺 Fiche sanitaire</b>'
+      +(global
+        ? '<span class="badge b-refuse">⚠️ pas encore remplie</span>'
+        : '<span class="badge b-demande">🔒 non accessible</span>')
+      +'</div>'
+      +'<p class="sub" style="margin:4px 0 0;font-size:11.5px">'
+      +(global
+        ? 'La famille n\'a pas encore rempli la fiche sanitaire de l\'année (allergies, régime alimentaire, PAI, traitements). ⚠️ Elle est <b>obligatoire pour l\'accueil en ACM</b> — à relancer.'
+        : 'Réservée au bureau, à l\'assistant sanitaire et au référent de l\'activité de l\'enfant. Si tu en as besoin pour encadrer cet enfant, demande au bureau.')
+      +'</p>'
+    +'</div>';
+  }
   const sig=f.statut==='signee';
   const badge=sig?('<span class="badge b-valide">✅ signée'+(f.signe_le?(' le '+famFicheDate(f.signe_le)):'')+'</span>'):'<span class="badge b-demande">📝 brouillon</span>';
   return '<div style="margin-top:10px;padding-top:10px;border-top:1px dashed var(--line)">'
