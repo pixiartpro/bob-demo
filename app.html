@@ -2871,6 +2871,8 @@ const FAQ=[
    a:"Le site public affiche un <b>bandeau « 📣 Inscriptions »</b> tout en haut, sous le menu. Tu n'as <b>rien de spécial à faire</b> : toute activité de catégorie <b>Péri &amp; extrascolaire</b> qui est <b>publiée sur le site</b> y monte automatiquement (3 au maximum, triées par le champ « Ordre »). Son <b>statut</b> fait le libellé que voient les familles : <b>Ouvert</b> (pastille verte) · <b>Arrive bientôt</b> (bleue) · <b>Complet</b> (quand la capacité est atteinte). Pour retirer une activité du bandeau : <b>🔒 Dépublier</b> ou passer son statut sur <b>Archivé</b>. S'il n'y a rien à annoncer, le bandeau disparaît complètement du site. Le panneau <b>« 📣 Le bandeau du site, en ce moment »</b> en haut de l'onglet 🎟️ Activités te montre en permanence ce que les familles voient."},
   {cat:'📅 Rendez-vous',q:"Comment proposer des rendez-vous (créneaux) aux familles ?",kw:"rendez vous rdv creneau creneaux plage plages horaire recurrent recurrente agenda coiffeur accompagnement vepi reserver disponibilite dispo heure",
    a:"En bas de l'onglet <b>🎟️ Activités</b>, panneau <b>« 📅 Rendez-vous »</b>. Tu définis tes <b>plages récurrentes</b> : un <b>jour</b> (ex : mardi), <b>de … à …</b> (ex : 14h-17h), la <b>durée d'un créneau</b> (30 min par défaut) et un <b>libellé</b>. Les familles voient alors uniquement les <b>créneaux LIBRES</b> dans l'espace famille (📅 Prendre rendez-vous) et en réservent un elles-mêmes — <b>tu n'as plus à rappeler</b>. Tu retrouves ici la liste des <b>rendez-vous pris</b> (date, heure, motif). Pour supprimer une plage : 🗑. Deux plages sont déjà posées par défaut, ajuste-les à ta convenance."},
+  {cat:'👶 Enfants',q:"Comment lire la fiche sanitaire (médical) d'un enfant depuis Bob ?",kw:"fiche sanitaire medical medicale sante ouvrir consulter lire voir detail pai pathologie asthme diabete antecedents traitements ordonnance vaccins dtp medecin traitant urgence conduite tenir crise allergie bureau direction ecran bouton",
+   a:"Onglet <b>👶 Enfants</b> : sous chaque enfant qui a une fiche, un bouton <b>🩺 Fiche sanitaire</b> déplie le médical complet — vaccins DTP, allergies et <b>conduite à tenir</b>, régime alimentaire, <b>PAI + pathologie</b> et conduite en cas de crise, antécédents, traitements, médecin traitant, contacts d'urgence. Un badge indique si la fiche est <b>✅ signée</b> par la famille ou encore <b>📝 brouillon</b>. Pas de bouton = <b>aucune fiche</b> n'a encore été remplie pour cet enfant (la fiche est <b>obligatoire pour l'accueil en ACM</b> → à relancer). Un champ laissé vide s'affiche « <b>non renseigné</b> » : c'est voulu, sinon on ne peut pas savoir ce qu'il faut réclamer. 🔒 <b>RGPD art. 9</b> : l'accès est verrouillé <b>en base</b> (bureau, assistant sanitaire, référent de l'activité de l'enfant) — pas seulement masqué à l'écran — et chaque ouverture est enregistrée. Ces informations ne sortent jamais de Bob."},
   {cat:'👶 Enfants',q:"Un enfant affiche « manque » une pièce pour l'ACM mais pas pour le périscolaire — pourquoi ?",kw:"complet manque piece pieces dossier accueil periscolaire acm fiche sanitaire exigence requis different manquant vert rouge completude documents",
    a:"C'est normal : <b>chaque accueil a sa propre liste de pièces requises</b>. Périscolaire et ACM demandent les 6 mêmes pièces (CAF, impôts, domicile, assurance, vaccins, livret), mais <b>l'ACM exige EN PLUS la fiche sanitaire signée</b> — d'où un « ⚠️ manque Fiche sanitaire » possible côté ACM alors que le périscolaire est ✅. Les pièces sont <b>mutualisées</b> (une CAF déposée une fois compte pour tous les accueils de l'enfant/famille). La liste des pièces requises par accueil se règle dans le code — dis-le moi pour l'ajuster (retirer une pièce pour l'ACM, etc.)."},
   {cat:'🎟️ Activités',q:"Quand j'inscris un enfant au comptoir, sa fiche se crée-t-elle ?",kw:"comptoir inscrire fiche enfant automatique acm vepi periscolaire accueil mineurs a ficher cree lien evenement adulte inscription",
@@ -3085,6 +3087,8 @@ function pageHelpGotoAide(){ pageHelpClose(); const b=document.querySelector('na
 
 /* ---- ✨ Quoi de neuf (nouveautés + notice chronologique) ---- */
 const NEWS=[
+  {id:'2026-07-18-medical-bureau',date:'2026-07-18',tab:'👶 Enfants',titre:"🩺 Le bureau peut enfin lire la fiche sanitaire d'un enfant",desc:"Dans l'onglet <b>👶 Enfants</b>, chaque enfant ayant une fiche sanitaire affiche un bouton <b>🩺 Fiche sanitaire</b> : il déplie le <b>médical complet</b> — vaccins DTP, allergies et <b>conduite à tenir</b>, <b>régime alimentaire</b>, <b>PAI + pathologie</b> (asthme, diabète…) et conduite en cas de crise, antécédents, traitements, médecin traitant, contacts d'urgence. <b>Pourquoi c'était nécessaire :</b> le formulaire promet aux familles que leur fiche est « vue par la direction, le référent et l'assistant sanitaire » — la direction était nommée en premier et n'avait pourtant <b>aucun écran</b> pour la lire. Un champ non rempli s'affiche désormais « <b>non renseigné</b> » au lieu de disparaître : on peut enfin relancer une famille sur ce qui manque vraiment. 🔒 Ce sont des <b>données de santé (RGPD art. 9)</b> : l'accès reste verrouillé <b>en base</b> au bureau, à l'assistant sanitaire et au référent de l'activité de l'enfant, et chaque ouverture est enregistrée."},
+  {id:'2026-07-18-fiche-fantome',date:'2026-07-18',tab:'👶 Enfants',titre:"👶 Fini les fiches enfants vides créées par mégarde",desc:"Côté famille, le bouton « ajouter un enfant » <b>créait une fiche en base dès le clic</b> : un clic de trop — ou un double-clic — laissait une <b>coquille vide sans nom</b>, impossible à distinguer d'un dossier oublié. Deux cas avaient été retrouvés en base. Désormais la fiche reste un <b>brouillon à l'écran</b> et n'est créée qu'au clic sur « 💾 Créer la fiche » ; « Annuler » n'écrit rien. Le ménage a été fait : <b>15 enfants réels</b> en base, plus aucune fiche vide ni fiche de démonstration."},
   {id:'2026-07-17-fiche-sanitaire-visible',date:'2026-07-17',tab:'👥 Dossiers salariés',titre:"🩺 La fiche sanitaire manquante se voit enfin (16 enfants sur 19)",desc:"Correctif venu du terrain : dans l'espace salarié, un enfant <b>sans aucune fiche sanitaire</b> s'affichait quand même <b>✅ complet</b> — la fiche ne faisait pas partie du bilan. Et sur une fiche existante, un champ vide (<b>régime alimentaire</b>, <b>PAI</b>, asthme…) <b>disparaissait</b> au lieu de s'afficher, ce qui laissait croire que la rubrique n'existait pas dans Bob. Désormais : la <b>fiche sanitaire compte dans le bilan</b> de l'enfant, une fiche absente affiche <b>⚠️ pas encore remplie</b>, et un champ vide affiche <b>« non renseigné »</b>. <b>Ce que ça révèle : sur 19 enfants, 3 seulement ont une fiche, et aucune n'a de régime alimentaire ni de PAI renseigné.</b> La fiche sanitaire est <b>obligatoire pour l'accueil en ACM</b> → familles à relancer avant août. Visible par l'<b>assistant sanitaire</b> (qui reçoit les fiches de tous les enfants) ; pour les autres salariés, rien ne change — le médical reste réservé au bureau, à l'assistant sanitaire et au référent de l'activité."},
   {id:'2026-07-16-fiches-activite',date:'2026-07-16',tab:'🎭 Intervenants',titre:"📝 Les intervenants décrivent eux-mêmes leurs activités",desc:"Dans son espace, chaque prestataire voit désormais <b>les cours que le bureau lui a inscrits au planning</b>, regroupés par activité — et il peut <b>décrire chacune</b> — <b>en cliquant, sans rien avoir à écrire</b> : pour qui, quel niveau, ce qu'on y fait, ce qu'il faut prévoir (un champ libre reste dispo, facultatif). Bob <b>pré-coche même le public</b> à partir du planning : souvent, il n'y a qu'à valider. Le bureau retrouve tout sous sa fiche (<b>📝 fiches d'activité rédigées</b>), prêt à servir pour présenter les cours aux familles. <b>C'est une demande d'une intervenante elle-même.</b> ⚖️ <b>Le partage est volontaire</b> : l'intervenant décrit <b>son métier</b> ; l'<b>âge minimum</b>, le <b>diplôme exigible</b>, le <b>certificat médical</b> et l'<b>assurance</b> ne lui sont jamais demandés — <b>c'est au bureau de les établir, ils engagent l'association</b>, pas le prestataire."},
   {id:'2026-07-16-espace-intervenant-verite',date:'2026-07-16',tab:'🎭 Intervenants',titre:"🎭 L'espace du prestataire dit ce qui manque — et lui montre ses cours",desc:"Première vraie utilisation de l'<b>espace intervenant</b> par une prestataire : trois choses en sont ressorties, et elles sont corrigées. <b>1) L'envoi ne ment plus.</b> Avant, « Envoyer au bureau » affichait une coche verte <b>même sans aucune pièce jointe</b> — le prestataire repartait en croyant avoir fini, et le bureau aussi. Maintenant, son espace <b>liste noir sur blanc ce qui manque</b> (diplôme, assurance, date d'échéance), le prévient avant d'envoyer, et il peut quand même envoyer son dossier incomplet — c'est légitime, une attestation d'assurance met parfois des jours à arriver. Côté bureau, la pastille distingue enfin <b>« soumis · complet »</b> (vert) de <b>« soumis · incomplet »</b> (orange). <b>2) Plus de saisie perdue</b> : le dossier s'enregistre <b>tout seul</b> à chaque champ rempli — le formulaire se remplit au téléphone, une mise en veille effaçait tout. <b>3) Nouveau bloc « 🗓️ Mes cours »</b> : le prestataire voit enfin <b>les cours que le bureau a inscrits à son nom</b> au planning (jour, horaire, public). En lecture seule : le planning des salles reste tenu par le bureau, une erreur se signale."},
@@ -9445,7 +9449,7 @@ renderAll();
       sbc.from('inscriptions_activite').select('id,enfant_id,activite_id,pieces,statut,note_bureau'),
       sbc.from('activites').select('id,nom,categorie'),
       sbc.from('profiles').select('id,full_name,email'),
-      sbc.from('fiches_sanitaires').select('enfant_id,statut,signe_le')
+      sbc.from('fiches_sanitaires').select('enfant_id,statut,signe_le,annee,version,donnees').order('version',{ascending:false})
     ]);
     if(rf.error){ box.innerHTML='<p class="hint" style="color:#c0392b">Erreur : '+esc(rf.error.message)+'</p>'; return; }
     const actById={}; (ra.data||[]).forEach(a=>{ if(a) actById[a.id]=a; });
@@ -9469,6 +9473,12 @@ renderAll();
     const piecesByParent={}; (rp.data||[]).forEach(ins=>{ if(ins.user_id){ piecesByParent[ins.user_id]=piecesByParent[ins.user_id]||{}; Object.assign(piecesByParent[ins.user_id], keysOf(ins.pieces)); } });
     const actPiecesByEnfant={}; (ria.data||[]).forEach(i=>{ if(i.enfant_id && i.statut!=='annule'){ actPiecesByEnfant[i.enfant_id]=actPiecesByEnfant[i.enfant_id]||{}; Object.assign(actPiecesByEnfant[i.enfant_id], keysOf(i.pieces)); } });
     const ficheSet={}; ((rfs&&rfs.data)||[]).forEach(fx=>{ if(fx.enfant_id&&(fx.statut==='signee'||fx.signe_le)) ficheSet[fx.enfant_id]=true; });
+    // 🩺 Médical complet, côté bureau. Le formulaire promet aux familles « vu seulement par
+    // la direction, le référent et l'assistant sanitaire » — la direction était nommée en
+    // premier et n'avait pourtant AUCUN écran pour le lire (constat 17/07/2026).
+    // Fiches triées par version décroissante : on garde la plus récente par enfant.
+    // La RLS (can_read_fiche_sante) ne renvoie que les fiches réellement autorisées.
+    window.__enfHubFiches={}; ((rfs&&rfs.data)||[]).forEach(fx=>{ if(fx.enfant_id && !window.__enfHubFiches[fx.enfant_id]) window.__enfHubFiches[fx.enfant_id]=fx; });
     // ⚙️ Exigences par accueil — CONFIG éditable (mêmes 6 pièces périscolaire & ACM d'après la base ; l'ACM exige EN PLUS la fiche sanitaire signée ; VEPI = sur RDV, pas de pièce en ligne).
     const PLAB={caf:'CAF',impots:'Impôts',domicile:'Domicile',assurance:'Assurance',vaccin:'Vaccins',livret:'Livret'};
     const EXIG={peri:{req:['caf','impots','domicile','assurance','vaccin','livret'],sanit:false}, acm:{req:['caf','impots','domicile','assurance','vaccin','livret'],sanit:true}};
@@ -9526,17 +9536,61 @@ renderAll();
         +'</span>'
         +'<button class="btn" style="padding:4px 12px" onclick="enfHubAdd(\''+eid+'\')">Ajouter</button>'
         +'</div>'):'';
+      var fx=(window.__enfHubFiches||{})[eid];
+      var sanitBlk=fx?('<div style="margin-top:6px">'
+        +'<button class="ghost btn" style="font-size:11px;padding:2px 9px" onclick="enfHubFicheToggle(\''+eid+'\')">🩺 Fiche sanitaire</button> '
+        +(fx.statut==='signee'
+          ? '<span style="font-size:11px;color:#127a51;font-weight:600">✅ signée</span>'
+          : '<span style="font-size:11px;color:#8a6400;font-weight:600">📝 brouillon — pas encore signée</span>')
+        +'<div id="enffiche_'+eid+'" style="margin-top:6px"></div></div>'):'';
       var histBlk=(m.hist&&m.hist.length)?('<div style="margin-top:4px"><span onclick="var n=this.nextElementSibling;n.style.display=n.style.display===\'none\'?\'\':\'none\'" style="cursor:pointer;font-size:11px;color:#8a8f98">🕘 '+m.hist.length+' mouvement'+(m.hist.length>1?'s':'')+' — historique</span><div style="display:none;margin-top:3px">'+m.hist.map(function(h){return '<div style="font-size:11px;color:#8a8f98">'+(h.statut==='deplace'?'↪ déplacé':'✕ annulé')+' · '+esc(h.name||'')+(h.note?' <span style="color:#a7abb2">— '+esc(h.note)+'</span>':'')+'</div>';}).join('')+'</div></div>'):'';
       return '<div class="panel" style="margin:8px 0;padding:10px 12px">'
         +'<div><strong>'+esc(((m.k.prenom||'')+' '+(m.k.nom||'')).trim()||'?')+'</strong>'+(m.k.classe?' <span class="muted" style="font-size:12px">· '+esc(m.k.classe)+'</span>':'')+(m.resp?' <span class="muted" style="font-size:12px">· '+esc(m.resp)+'</span>':'')+'</div>'
         +'<div style="margin-top:6px;display:flex;flex-wrap:wrap">'+(chips||'<span class="hint">— aucun accueil</span>')+'</div>'
         +(moveBoxes||'')
         +(complBlk?('<div style="margin-top:5px">'+complBlk+'</div>'):'')
+        +sanitBlk
         +histBlk
         +addCtrl+'</div>';
     }).join('');
   }
   window.enfHubSetFilter=function(f){ window.__enfHubFilter=f; renderEnfHub(); };
+  // 🩺 Détail médical d'un enfant (RGPD art. 9). Le bouton n'existe que si la RLS a renvoyé
+  // la fiche → inutile de re-filtrer à l'écran, la base a déjà tranché.
+  // Un champ vide s'AFFICHE en « non renseigné » : le masquer laisse croire que la rubrique
+  // n'existe pas, et on ne relance pas une famille sur un manque qu'on ne voit pas.
+  window.enfHubFicheToggle=function(eid){
+    const box=document.getElementById('enffiche_'+eid); if(!box) return;
+    if(box.dataset.open==='1'){ box.innerHTML=''; box.dataset.open=''; return; }
+    const fx=(window.__enfHubFiches||{})[eid];
+    if(!fx){ box.innerHTML='<p class="hint">Fiche indisponible.</p>'; box.dataset.open='1'; return; }
+    try{ sbc.rpc('log_consult_sante',{p_enfant:eid}); }catch(e){} // trace la consultation du médical
+    box.innerHTML=enfHubFicheHtml(fx); box.dataset.open='1';
+  };
+  function enfHubFicheRow(lab,val){
+    const v=String(val==null?'':val).trim();
+    return '<div style="font-size:12.5px;margin:2px 0"><b>'+esc(lab)+' :</b> '
+      +(v? esc(v) : '<span class="muted" style="font-style:italic">non renseigné</span>')+'</div>';
+  }
+  function enfHubFicheHtml(fx){
+    const d=(fx&&fx.donnees)||{}; const vc=d.vaccins||{}, pai=d.pai||{}, med=d.medecin||{};
+    const trai=d.traitements?(d.traitements+(d.ordonnance_jointe?' · ordonnance jointe':'')):(d.ordonnance_jointe?'ordonnance jointe':'');
+    const medv=(med.nom||'')+(med.tel?((med.nom?' · ':'')+med.tel):'');
+    return '<div style="background:#fff;border:1px solid var(--line);border-radius:8px;padding:8px 10px;line-height:1.5">'
+      +((fx&&fx.annee)?('<div class="muted" style="font-size:11px;margin-bottom:4px">Fiche '+esc(fx.annee)+'</div>'):'')
+      +enfHubFicheRow('Vaccins DTP', vc.dtp?(vc.dtp+(vc.rappel?(' · rappel '+vc.rappel):'')):'')
+      +enfHubFicheRow('Allergies', d.allergies)
+      +enfHubFicheRow('Conduite en cas d\'allergie', d.allergies_conduite)
+      +enfHubFicheRow('Régime alimentaire', d.regime)
+      +enfHubFicheRow('PAI', pai.enPlace?('oui'+(pai.pathologie?(' · '+pai.pathologie):'')):'non')
+      +enfHubFicheRow('Conduite en cas de crise', pai.conduite)
+      +enfHubFicheRow('Antécédents médicaux/chirurgicaux', d.antecedents)
+      +enfHubFicheRow('Traitements en cours', trai)
+      +enfHubFicheRow('Médecin traitant', medv)
+      +enfHubFicheRow('Contacts d\'urgence', d.urgences)
+      +'<p class="hint" style="margin:6px 0 0;font-size:11px">🔒 Données de santé (RGPD art. 9) — réservées au bureau, à l\'assistant sanitaire et au référent de l\'activité. Ne sortent jamais de Bob.</p>'
+      +'</div>';
+  }
   window.enfHubDestChange=function(eid){ const d=document.getElementById('enf_dest_'+eid), ms=document.getElementById('enf_ms_'+eid); if(ms) ms.style.display=(d&&d.value==='PERI')?'':'none'; };
   window.enfHubAdd=async function(eid){
     const d=document.getElementById('enf_dest_'+eid); const dest=d?d.value:'PERI';
