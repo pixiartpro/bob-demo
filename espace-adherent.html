@@ -1229,7 +1229,9 @@ function kidSummary(k){
 window.kidEdit=function(id){ kidsCaptureEdits(); const k=KIDS.list.find(x=>x.id===id); if(k) k._edit=true; kidsRender(); };
 function kidCard(k){
   const id=k.id; const dp=kidDateParts(k.naissance);
-  if(!k._edit && (k.prenom||'').trim()) return kidSummary(k) + (k._fiche? ficheFormHtml(k):'');
+  // Un brouillon reste TOUJOURS déplié : replié, il afficherait « 🩺 Fiche sanitaire »,
+  // qui a besoin d'un enfant réellement enregistré en base.
+  if(!k._edit && !k._nouveau && (k.prenom||'').trim()) return kidSummary(k) + (k._fiche? ficheFormHtml(k):'');
   return '<div class="card" style="box-shadow:none;border:1px solid var(--line);gap:8px" data-kid="'+id+'" oninput="kidDirty(\''+id+'\')" onchange="kidDirty(\''+id+'\')">'
     +'<div style="display:flex;gap:8px;flex-wrap:wrap">'
     +'<input id="k_nom_'+id+'" value="'+kidEsc(k.nom||'')+'" placeholder="Nom de l\'enfant" style="flex:1;min-width:130px;padding:9px 11px;border:1px solid var(--line);border-radius:10px;font:inherit">'
@@ -1259,8 +1261,8 @@ function kidCard(k){
     +'<button class="reset" style="align-self:flex-start" onclick="kidAutAdd(\''+id+'\')">+ ajouter une personne</button>'
     +'<label style="font-weight:600;font-size:14px;margin-top:2px"><input type="checkbox" id="k_seul_'+id+'" '+(k.depart_seul?'checked':'')+'> 🚶 Autorise l\'enfant à partir seul (selon l\'âge / le règlement)</label>'
     +'<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">'
-    +'<button class="btn win" onclick="kidSave(\''+id+'\')">💾 Enregistrer la fiche</button>'
-    +'<button class="reset" style="margin-left:auto" onclick="kidDelete(\''+id+'\')">🗑 Supprimer</button>'
+    +'<button class="btn win" onclick="kidSave(\''+id+'\')">'+(k._nouveau?'💾 Créer la fiche':'💾 Enregistrer la fiche')+'</button>'
+    +'<button class="reset" style="margin-left:auto" onclick="kidDelete(\''+id+'\')">'+(k._nouveau?'✕ Annuler':'🗑 Supprimer')+'</button>'
     +'<span id="k_msg_'+id+'" style="font-size:13px;font-weight:700"></span>'
     +'</div></div>';
 }
@@ -1294,9 +1296,14 @@ function kidsCaptureEdits(){
 window.kidAdd=async function(){
   if(!ACM.uid) return;
   kidsCaptureEdits();
-  const {data,error}=await _sbAt.from('enfants').insert({prenom:'', nom:'', ecole:PERI.ECOLE}).select().single();
-  if(error){ toast('Erreur : '+(error.message||error)); return; }
-  KIDS.list.push(data); kidsRender();
+  // Brouillon LOCAL : la fiche n'existe en base qu'au moment de l'enregistrement.
+  // Avant, chaque clic insérait aussitôt une ligne vide → fiches fantômes sans nom
+  // (2 cas constatés le 17/07/2026, dont un double-clic à 1 seconde d'intervalle).
+  KIDS.newSeq=(KIDS.newSeq||0)+1;
+  KIDS.list.push({ id:'new_'+KIDS.newSeq, _nouveau:true, nom:'', prenom:'', naissance:'',
+    classe:'', ecole:PERI.ECOLE, allergies:'', regime:'', sante:'', autorises:'',
+    autorises_json:[], depart_seul:false, droit_image:null });
+  kidsRender();
 };
 window.kidSave=async function(id){
   kidsCaptureEdits();
@@ -1308,13 +1315,21 @@ window.kidSave=async function(id){
   if(badPhone){ if(msg){msg.style.color='#c0392b'; msg.textContent='📞 Numéro invalide : « '+badPhone.tel+' ». Format attendu : 0692… ou +262…';} return; }
   const autText=autList.map(p=>[((p.nom||'')+' '+(p.prenom||'')).trim(),p.lien?('('+p.lien+')'):'',p.tel].filter(Boolean).join(' ')).join(' ; ');
   const payload={ nom:(k.nom||'').trim(), prenom:(k.prenom||'').trim(), naissance:(k.naissance||null), classe:k.classe||'', ecole:PERI.ECOLE, allergies:k.allergies||'', regime:(k.regime||'').trim(), sante:k.sante||'', autorises:autText, autorises_json:autList, depart_seul:!!k.depart_seul };
-  const {data,error}=await _sbAt.from('enfants').update(payload).eq('id',id).select().single();
+  // Brouillon (jamais écrit en base) → INSERT ; fiche déjà existante → UPDATE.
+  // parent_id / asso_id sont posés par le trigger set_enfant() côté base.
+  const nouveau=!!k._nouveau;
+  const {data,error}=await (nouveau
+    ? _sbAt.from('enfants').insert(payload).select().single()
+    : _sbAt.from('enfants').update(payload).eq('id',id).select().single());
   if(error){ if(msg){msg.style.color='#c0392b'; msg.textContent='Échec : '+(error.message||error);} return; }
-  const i=KIDS.list.findIndex(x=>x.id===id); if(i>=0) KIDS.list[i]=data;
-  toast('✅ Fiche enregistrée');
+  const i=KIDS.list.findIndex(x=>x.id===id); if(i>=0) KIDS.list[i]=data; // le brouillon cède la place à la vraie ligne (vrai id)
+  toast(nouveau?'✅ Fiche créée':'✅ Fiche enregistrée');
   kidsRender();
 };
 window.kidDelete=async function(id){
+  // Brouillon jamais enregistré : on l'abandonne sans rien demander ni toucher à la base.
+  const kk=KIDS.list.find(x=>x.id===id);
+  if(kk && kk._nouveau){ KIDS.list=KIDS.list.filter(x=>x.id!==id); kidsRender(); return; }
   if(!confirm('Supprimer cette fiche enfant ?')) return;
   const {error}=await _sbAt.from('enfants').delete().eq('id',id);
   if(error){ toast('Erreur : '+(error.message||error)); return; }
