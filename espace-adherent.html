@@ -1256,6 +1256,14 @@ function kidCard(k){
     +'<input id="k_regime_'+id+'" value="'+kidEsc(k.regime||'')+'" placeholder="ex. sans porc, végétarien… (laisser vide si aucun)" style="width:100%;padding:9px 11px;border:1px solid var(--line);border-radius:10px;font:inherit">'
     +'<p class="sub" style="margin:2px 0 0;font-size:12px">Libellé neutre (sans porc, végétarien…), sans mention religieuse. Vu par l\'équipe qui encadre les repas.</p>'
     +kidTagsBlock(id,'sante','🩺 Santé / PAI',KID_SANTE,k.sante)
+    // Conduite à tenir sur la carte enfant : l'animateur voyait « Arachides » sans savoir
+    // quoi faire — le détail vivait dans la fiche sanitaire, à accès restreint. Une urgence
+    // se gère en secondes, par la personne présente (décision GB 18/07/2026).
+    +'<div style="font-size:13.5px;font-weight:700;margin-top:2px">🚨 En cas d\'urgence, que faire ?</div>'
+    +'<textarea id="k_urgence_'+id+'" placeholder="Ex. : donner l\'auto-injecteur dans son sac puis appeler le 15 · Ventoline, 2 bouffées" style="width:100%;min-height:44px;padding:9px 11px;border:1px solid var(--line);border-radius:10px;font:inherit">'+kidEsc(k.conduite_urgence||'')+'</textarea>'
+    +'<p class="sub" style="margin:2px 0 0;font-size:12px">'+((k.allergies||k.sante)&&!(k.conduite_urgence||'').trim()
+        ? '⚠️ <b>Vous avez signalé une allergie ou un souci de santé</b> : merci d\'indiquer ici le geste à faire en urgence. C\'est ce que lira l\'animateur présent.'
+        : 'Lu par l\'équipe qui encadre votre enfant. Le détail médical complet reste dans la 🩺 Fiche sanitaire.')+'</p>'
     +'<div style="font-size:13.5px;font-weight:700;margin-top:2px">🔐 Personnes autorisées à venir le chercher</div>'
     +'<div id="k_aut_'+id+'">'+kidAutRows(k)+'</div>'
     +'<button class="reset" style="align-self:flex-start" onclick="kidAutAdd(\''+id+'\')">+ ajouter une personne</button>'
@@ -1288,6 +1296,7 @@ function kidsCaptureEdits(){
     if(v('classe')!==undefined) k.classe=v('classe');
     k.allergies=kidReadTags(id,'allerg');
     if(v('regime')!==undefined) k.regime=v('regime');
+    if(v('urgence')!==undefined) k.conduite_urgence=v('urgence');
     k.sante=kidReadTags(id,'sante');
     k.autorises_json=kidReadAut(id);
     const seul=document.getElementById('k_seul_'+id); if(seul) k.depart_seul=seul.checked;
@@ -1314,7 +1323,7 @@ window.kidSave=async function(id){
   const badPhone=autList.find(p=>p.tel && !phoneValid(p.tel));
   if(badPhone){ if(msg){msg.style.color='#c0392b'; msg.textContent='📞 Numéro invalide : « '+badPhone.tel+' ». Format attendu : 0692… ou +262…';} return; }
   const autText=autList.map(p=>[((p.nom||'')+' '+(p.prenom||'')).trim(),p.lien?('('+p.lien+')'):'',p.tel].filter(Boolean).join(' ')).join(' ; ');
-  const payload={ nom:(k.nom||'').trim(), prenom:(k.prenom||'').trim(), naissance:(k.naissance||null), classe:k.classe||'', ecole:PERI.ECOLE, allergies:k.allergies||'', regime:(k.regime||'').trim(), sante:k.sante||'', autorises:autText, autorises_json:autList, depart_seul:!!k.depart_seul };
+  const payload={ nom:(k.nom||'').trim(), prenom:(k.prenom||'').trim(), naissance:(k.naissance||null), classe:k.classe||'', ecole:PERI.ECOLE, allergies:k.allergies||'', regime:(k.regime||'').trim(), conduite_urgence:(k.conduite_urgence||'').trim(), sante:k.sante||'', autorises:autText, autorises_json:autList, depart_seul:!!k.depart_seul };
   // Brouillon (jamais écrit en base) → INSERT ; fiche déjà existante → UPDATE.
   // parent_id / asso_id sont posés par le trigger set_enfant() côté base.
   const nouveau=!!k._nouveau;
