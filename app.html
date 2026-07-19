@@ -9457,7 +9457,10 @@ renderAll();
       sbc.from('inscriptions_activite').select('id,enfant_id,activite_id,pieces,statut,note_bureau'),
       sbc.from('activites').select('id,nom,categorie'),
       sbc.from('profiles').select('id,full_name,email'),
-      sbc.from('fiches_sanitaires').select('enfant_id,statut,signe_le,annee,version,donnees').order('version',{ascending:false})
+      // ⚠️ PAS de `donnees` ici : le médical ne doit PAS descendre en bloc pour tous les
+      // enfants au chargement de l'onglet (RGPD art. 9, minimisation). On ne prend que de
+      // quoi afficher le badge ; le contenu part à la demande, dans enfHubFicheToggle.
+      sbc.from('fiches_sanitaires').select('id,enfant_id,statut,signe_le,annee,version').order('version',{ascending:false})
     ]);
     if(rf.error){ box.innerHTML='<p class="hint" style="color:#c0392b">Erreur : '+esc(rf.error.message)+'</p>'; return; }
     const actById={}; (ra.data||[]).forEach(a=>{ if(a) actById[a.id]=a; });
@@ -9567,13 +9570,25 @@ renderAll();
   // la fiche → inutile de re-filtrer à l'écran, la base a déjà tranché.
   // Un champ vide s'AFFICHE en « non renseigné » : le masquer laisse croire que la rubrique
   // n'existe pas, et on ne relance pas une famille sur un manque qu'on ne voit pas.
-  window.enfHubFicheToggle=function(eid){
+  window.enfHubFicheToggle=async function(eid){
     const box=document.getElementById('enffiche_'+eid); if(!box) return;
     if(box.dataset.open==='1'){ box.innerHTML=''; box.dataset.open=''; return; }
     const fx=(window.__enfHubFiches||{})[eid];
     if(!fx){ box.innerHTML='<p class="hint">Fiche indisponible.</p>'; box.dataset.open='1'; return; }
+    box.dataset.open='1';
+    // Chargement À LA DEMANDE : le médical ne quitte la base que pour l'enfant réellement
+    // ouvert. C'est ce qui rend la trace ci-dessous SINCÈRE — sinon on enregistrerait un
+    // « a consulté X » alors que les fiches de tous les enfants seraient déjà descendues.
+    if(fx.donnees===undefined){
+      box.innerHTML='<p class="hint">Chargement…</p>';
+      try{
+        const r=await sbc.from('fiches_sanitaires').select('donnees').eq('id',fx.id).maybeSingle();
+        if(r.error||!r.data){ box.innerHTML='<p class="hint">Fiche indisponible.</p>'; return; }
+        fx.donnees=r.data.donnees||{}; // gardé en mémoire : pas de re-téléchargement au prochain clic
+      }catch(e){ box.innerHTML='<p class="hint">Fiche indisponible.</p>'; return; }
+    }
     try{ sbc.rpc('log_consult_sante',{p_enfant:eid}); }catch(e){} // trace la consultation du médical
-    box.innerHTML=enfHubFicheHtml(fx); box.dataset.open='1';
+    box.innerHTML=enfHubFicheHtml(fx);
   };
   function enfHubFicheRow(lab,val){
     const v=String(val==null?'':val).trim();
