@@ -57,6 +57,14 @@
   .ck.off{background:#fff4e0;color:#9a6a0a;border-color:#f3e3bd}
   .ck .val{font-weight:600}
   .empty{color:var(--muted);text-align:center;padding:14px}
+  /* Bandeau « état de tes accès » + carte éteinte — dire la vérité plutôt que faire disparaître (incident 20/07/2026) */
+  .secnote{display:flex;gap:14px;align-items:flex-start;border-left:5px solid var(--ananas);background:#fff8ec;border-radius:0 18px 18px 0;margin:0 0 16px}
+  .secnote.ko{border-left-color:#c0392b;background:#fdecea}
+  .secnote .ico{font-size:32px;line-height:1;flex:0 0 auto}
+  .secnote .txt{flex:1;min-width:0}
+  .secnote .ttl{font-family:'Poppins',sans-serif;font-weight:800;font-size:17px;margin:0}
+  .hubcard.off{opacity:.6;cursor:default;background:#fbfcfb;box-shadow:none}
+  .hubcard.off:hover{transform:none;box-shadow:none;border-color:var(--line)}
   .gate{max-width:520px;margin:60px auto;text-align:center;background:#fff;border:1px solid var(--line);border-radius:18px;padding:30px 26px;box-shadow:var(--shadow)}
   #toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(40px);background:var(--ink);color:#fff;padding:12px 20px;border-radius:999px;font-weight:700;box-shadow:var(--shadow-lg);opacity:0;transition:.25s;z-index:99}
   #toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
@@ -118,7 +126,7 @@ const SB_URL='https://dkidtwypclpwznleiqnq.supabase.co';
 const SB_KEY='sb_publishable_HDfV-O2ION1Vw9v03aV_Qg_PkiAjLNo';
 const sb=window.supabase.createClient(SB_URL,SB_KEY);
 const $=s=>document.querySelector(s);
-const ME={session:null,prof:null,fiche:null,conges:[],docs:[],acts:[],ins:[],asso:null,protos:[],albums:[],photos:[],kids:[],famKids:[],famDoss:[],famOnlyMiss:false,famEdit:null,acmReflet:[],acmProps:[],sections:[],msgs:[]};
+const ME={session:null,prof:null,fiche:null,conges:[],docs:[],acts:[],ins:[],asso:null,protos:[],albums:[],photos:[],kids:[],famKids:[],famDoss:[],famOnlyMiss:false,famEdit:null,acmReflet:[],acmProps:[],sections:[],secOK:null,msgs:[]};
 function esc(s){return (s==null?'':String(s)).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2600);}
 function euroDays(n){return (n==null?'0':(Math.round(n*100)/100).toString().replace('.',','));}
@@ -163,7 +171,19 @@ async function loadProtocoles(){
 }
 async function loadSections(){
   // Sections accordées à ce salarié (table sections_membres, via la fonction my_sections) — pilote l'affichage des cartes cloisonnées.
-  try{ const {data}=await sb.rpc('my_sections'); ME.sections=Array.isArray(data)?data:[]; }catch(e){ ME.sections=[]; }
+  // ⚠️ TROIS états à ne jamais reconfondre (incident du 20/07/2026 : 4 jours d'écran vide, sans un mot) :
+  //    secOK===true  + sections non vides → accès vérifiés, équipe(s) accordée(s)   → (a) rien ne change
+  //    secOK===true  + sections vides     → accès vérifiés, AUCUNE équipe          → (b) ce n'est PAS une panne
+  //    secOK===false                      → accès NON vérifiables (RPC/réseau KO)   → (c) on ne sait rien
+  // supabase-js ne LÈVE PAS sur erreur PostgREST : il résout {data:null,error}. Sans lire `error`, une
+  // fonction absente, un GRANT manquant ou un JWT expiré passaient pour « aucune section ». D'où le bug.
+  ME.secOK=false;
+  try{
+    const {data,error}=await sb.rpc('my_sections');
+    if(error){ console.warn('my_sections',error); return; }   // ← l'erreur arrive ICI, pas au catch
+    ME.sections=Array.isArray(data)?data:[];
+    ME.secOK=true;
+  }catch(e){ console.warn('my_sections (réseau)',e); }
 }
 
 function renderAll(){
@@ -193,11 +213,45 @@ function renderView(){
 }
 function backBar(t){ return '<div class="backbar"><button class="btn ghost" onclick="spView(\'hub\')">← Retour</button><span class="backttl">'+esc(t)+'</span></div>'; }
 
+// ===== Bandeau « état de tes accès » =====
+// Écrit UNE fois, réutilisé partout où un écran risquerait d'affirmer une absence qu'il ne peut pas constater.
+// Rend '' dans le cas (a) : pour une salariée correctement rattachée, RIEN ne change à l'écran.
+function accesNoteHTML(){
+  if(ME.secOK===true && (ME.sections||[]).length) return '';                     // (a)
+  if(ME.secOK===true){                                                           // (b) vérifié, aucune équipe
+    return '<div class="card secnote"><div class="ico">🍍</div><div class="txt">'
+      +'<p class="ttl">Il te manque un rattachement à une équipe</p>'
+      +'<p class="sub" style="margin:5px 0 0">Ton compte est bien actif, mais tu n\'es rattaché·e à <b>aucune équipe</b> pour l\'instant — 🌴 ACM, 🎒 Périscolaire ou 📌 VEPI. C\'est pour ça que plusieurs écrans s\'affichent vides : <b>ce n\'est pas une panne, et ce n\'est pas de ta faute.</b></p>'
+      +'<p class="sub" style="margin:7px 0 0">👉 Écris au bureau (<a href="mailto:direction@casebdn.re">direction@casebdn.re</a>) : « Bonjour, je travaille au périscolaire et mon espace est vide — pouvez-vous m\'ouvrir l\'accès ? ». Dès que c\'est fait, les enfants de ton groupe, tes activités et tes messages apparaîtront ici.</p>'
+    +'</div></div>';
+  }
+  return '<div class="card secnote ko"><div class="ico">📡</div><div class="txt">'  // (c) non vérifiable
+    +'<p class="ttl">On n\'a pas pu vérifier tes accès</p>'
+    +'<p class="sub" style="margin:5px 0 0">La connexion n\'a pas répondu : Bob ne sait pas à quelle équipe tu es rattaché·e. Des écrans peuvent donc s\'afficher vides <b>alors qu\'ils ne le sont pas</b> — ce n\'est pas la même chose que « tu n\'as pas d\'accès ».</p>'
+    +'<p style="margin:10px 0 0"><button class="btn win" onclick="location.reload()">↻ Recharger la page</button></p>'
+    +'<p class="sub" style="margin:6px 0 0">Si ça recommence, préviens le bureau.</p>'
+  +'</div></div>';
+}
+// Une carte ne disparaît JAMAIS en silence : sans accès, on l'affiche éteinte AVEC son motif.
+function hubAcmCardHTML(acmBadge, acmSub){
+  if(ME.secOK===true && (ME.sections||[]).includes('acm')){
+    return '<button class="hubcard" onclick="spView(\'acm\')"><div class="hubico">🌴</div>'
+      +'<div class="hubname">Mon ACM'+acmBadge+'</div><div class="hubsub">'+esc(acmSub)+'</div><div class="hubgo">Entrer →</div></button>';
+  }
+  const motif=(ME.secOK===true)
+    ? 'Réservé à l\'équipe ACM. Le bureau ne t\'y a pas encore rattaché·e — demande-lui, c\'est réglé en deux minutes.'
+    : 'On n\'a pas pu vérifier tes accès. Recharge la page : si tu es à l\'ACM, cette carte s\'ouvrira.';
+  return '<div class="hubcard off"><div class="hubico">🌴</div>'
+    +'<div class="hubname">Mon ACM 🔒</div><div class="hubsub">'+esc(motif)+'</div>'
+    +'<div class="hubgo" style="color:var(--muted)">Fermé pour l\'instant</div></div>';
+}
+
 // ===== Accueil : choisir un bloc =====
 function hubHTML(){
   const f=ME.fiche, hasFiche=!!f;
   const nbAct=ME.acts.length, nbIns=ME.ins.length;
-  const actSub=nbAct?(nbAct+' activité'+(nbAct>1?'s':'')+' · '+nbIns+' inscrit'+(nbIns>1?'s':'')):'Crée ta première activité';
+  const actSub=nbAct?(nbAct+' activité'+(nbAct>1?'s':'')+' · '+nbIns+' inscrit'+(nbIns>1?'s':''))
+    :(ME.secOK!==true?'Accès non vérifiés — recharge la page':((ME.sections||[]).length?'Crée ta première activité':'En attente de ton rattachement à une équipe'));
   let rhSub, rhBadge='';
   if(hasFiche){
     const att=ME.conges.filter(c=>c.statut==='demande').length;
@@ -212,11 +266,11 @@ function hubHTML(){
   const acmBadge=acmAtt?' <span class="badge b-demande">'+acmAtt+' en attente</span>':'';
   return '<section class="block"><h2 class="title">Que veux-tu faire ?</h2>'
     +'<p class="sub" style="margin:-4px 0 14px">Choisis un espace — tu pourras toujours revenir ici.</p>'
+    +accesNoteHTML()
     +'<div class="hubgrid">'
       +'<button class="hubcard" onclick="spView(\'activites\')"><div class="hubico">🎒</div>'
         +'<div class="hubname">Mes activités</div><div class="hubsub">'+esc(actSub)+'</div><div class="hubgo">Entrer →</div></button>'
-      +((ME.sections||[]).includes('acm')?('<button class="hubcard" onclick="spView(\'acm\')"><div class="hubico">🌴</div>'
-        +'<div class="hubname">Mon ACM'+acmBadge+'</div><div class="hubsub">'+esc(acmSub)+'</div><div class="hubgo">Entrer →</div></button>'):'')
+      +hubAcmCardHTML(acmBadge, acmSub)
       +'<button class="hubcard" onclick="spView(\'photos\')"><div class="hubico">📸</div>'
         +'<div class="hubname">Photos du jour</div><div class="hubsub">'+esc(phSub)+'</div><div class="hubgo">Entrer →</div></button>'
       +'<button class="hubcard" onclick="spView(\'familles\')"><div class="hubico">👨‍👩‍👧</div>'
@@ -224,7 +278,7 @@ function hubHTML(){
       +'<button class="hubcard" onclick="spView(\'rh\')"><div class="hubico">🧑‍💼</div>'
         +'<div class="hubname">Mon RH'+rhBadge+'</div><div class="hubsub">'+esc(rhSub)+'</div><div class="hubgo">Entrer →</div></button>'
       +'<button class="hubcard" onclick="spView(\'messages\')"><div class="hubico">💬</div>'
-        +'<div class="hubname">Messages des familles'+(msgHubCount()?' <span class="badge b-demande">'+msgHubCount()+'</span>':'')+'</div><div class="hubsub">'+esc(msgHubCount()?(msgHubCount()+' famille'+(msgHubCount()>1?'s':'')+' en attente de réponse'):'Les familles qui écrivent à ta/tes section(s)')+'</div><div class="hubgo">Entrer →</div></button>'
+        +'<div class="hubname">Messages des familles'+(msgHubCount()?' <span class="badge b-demande">'+msgHubCount()+'</span>':'')+'</div><div class="hubsub">'+esc(msgHubCount()?(msgHubCount()+' famille'+(msgHubCount()>1?'s':'')+' en attente de réponse'):(ME.secOK===true&&!(ME.sections||[]).length?'En attente de ton rattachement à une équipe':'Les familles qui écrivent à ton équipe'))+'</div><div class="hubgo">Entrer →</div></button>'
       +(ME.protos.length?('<button class="hubcard" onclick="spView(\'procedures\')"><div class="hubico">📋</div>'
         +'<div class="hubname">Procédures du CASE</div><div class="hubsub">'+ME.protos.length+' procédure'+(ME.protos.length>1?'s':'')+' à connaître (caisse, sécurité…)</div><div class="hubgo">Entrer →</div></button>'):'')
       +'<a class="hubcard" href="https://mail.hostinger.com" target="_blank" rel="noopener" style="text-decoration:none"><div class="hubico">📧</div>'
@@ -271,7 +325,7 @@ function msgGroups(){
 }
 function msgHubCount(){ return msgGroups().filter(function(x){ return x.attente; }).length; }
 function messagesHTML(){
-  if(!msgGroups().length) return '<section class="block"><div class="card"><p class="empty">Aucun message pour l\'instant. Quand une famille écrit à <b>ta section</b>, sa question apparaît ici.</p></div></section>';
+  if(!msgGroups().length) return '<section class="block">'+(accesNoteHTML()||'<div class="card"><p class="empty">Aucun message pour l\'instant. Quand une famille écrit à <b>ton équipe</b>, sa question apparaît ici.</p></div>')+'</section>';
   return '<section class="block"><p class="sub">Les familles qui écrivent à <b>ta/tes section(s)</b>. Réponds directement — le bureau voit aussi ces échanges.</p><div id="msgList"></div></section>';
 }
 function renderMessages(){
@@ -680,7 +734,7 @@ function actBlockKey(a){
 function actBlockLabelShort(a){ const b=ACT_BLOCKS.find(function(x){return x.key===actBlockKey(a);}); return b?b.label.replace(/^\S+\s/,''):''; }
 function renderActs(){
   const box=$('#actList'); if(!box) return;
-  if(!ME.acts.length){ box.innerHTML='<p class="empty">Aucune activité pour l\'instant. Crée la première ci-dessus 👆</p>'; return; }
+  if(!ME.acts.length){ box.innerHTML=accesNoteHTML()||'<p class="empty">Aucune activité pour l\'instant. Crée la première ci-dessus 👆</p>'; return; }
   const byA={}; ME.ins.forEach(i=>{ (byA[i.activite_id]=byA[i.activite_id]||[]).push(i); });
   const groups={peri:[],socio:[],ponctuel:[]};
   ME.acts.forEach(function(a){ (groups[actBlockKey(a)]||groups.socio).push(a); });
@@ -771,7 +825,17 @@ function phAlerteHtml(sel){
   const nm=l=>l.map(k=>esc(((k.prenom||'')+' '+(k.nom||'')).trim())).join(', ');
   const non=ME.kids.filter(k=>k.droit_image===false);                 // refus signé = jamais, partout → global (et court)
   const inc=ME.kids.filter(k=>k.droit_image==null&&ids[k.id]);          // non renseigné → seulement l'accueil choisi (évite la liste-fleuve)
-  if(!non.length&&!inc.length) return '';
+  // ⚠️ Ne JAMAIS rendre '' sur une liste d'enfants vide : le silence se lit « personne n'est interdit de photo »
+  // et fait publier de bonne foi un enfant dont les parents ont signé un refus. Si Bob ne connaît aucun enfant,
+  // il ne peut RIEN affirmer — il le dit. (incident du 20/07/2026)
+  if(!ME.kids.length){
+    return '<div class="card" style="border-left:4px solid #c0392b;background:#fdecea;margin-bottom:14px;border-radius:0 18px 18px 0">'
+      +'<b>📵 Avant de photographier — Bob ne peut pas vérifier</b>'
+      +'<p class="sub" style="margin:4px 0 0">Bob ne connaît <b>aucun enfant</b> ici : il ne peut donc pas te dire qui a le droit d\'être pris en photo. <b>Dans le doute, ne publie pas.</b>'
+      +(ME.secOK===true?' C\'est sans doute que le bureau ne t\'a pas encore rattaché·e à une équipe.':' On n\'a pas pu vérifier tes accès — recharge la page.')
+      +' Si ça recommence, préviens le bureau.</p></div>';
+  }
+  if(!non.length&&!inc.length) return '';   // ici seulement, le silence est une vraie info : tout le monde est autorisé
   let h='<div class="card" style="border-left:4px solid #dc8f38;background:#fff8ec;margin-bottom:14px;border-radius:0 18px 18px 0"><b>📵 Avant de photographier</b>';
   if(non.length) h+='<div style="font-size:14px;margin-top:4px">🚫 <b>Jamais sur les photos</b> (refus signé) : '+nm(non)+'</div>';
   if(inc.length) h+='<div style="font-size:14px;margin-top:4px;color:#8a6400">❔ Autorisation pas encore renseignée ('+inc.length+' à cet accueil) : '+nm(inc.slice(0,25))+(inc.length>25?'…':'')+' — dans le doute, ne pas les cadrer.</div>';
@@ -978,7 +1042,8 @@ window.famToggleMiss=function(){ ME.famOnlyMiss=!ME.famOnlyMiss; const b=$('#fam
 function renderFamilles(){
   const box=$('#famList'); if(!box) return;
   const st=$('#famStats');
-  if(!ME.famKids.length){ if(st) st.textContent=''; box.innerHTML='<div class="card"><p class="empty">Aucune fiche enfant pour l\'instant. Elles apparaissent quand les familles créent leur compte (ou quand le bureau les saisit).</p></div>'; return; }
+  // N'affirme QUE si l'on a le droit de tout voir : sinon on expliquait l'absence par un fait faux.
+  if(!ME.famKids.length){ if(st) st.textContent=''; box.innerHTML=accesNoteHTML()||'<div class="card"><p class="empty">Aucune fiche enfant pour l\'instant. Elles apparaissent quand les familles créent leur compte (ou quand le bureau les saisit).</p></div>'; return; }
   const q=famNorm((($('#fam_q')||{}).value)||'');
   const rows=ME.famKids.map(function(k){ return {k:k,b:famBilan(k)}; });
   const nMiss=rows.filter(function(r){ return r.b.manque>0; }).length;
