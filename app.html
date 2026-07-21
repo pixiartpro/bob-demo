@@ -929,8 +929,8 @@
 
     <div class="panel">
       <h2 style="margin:0 0 4px">🏛️ Détail des subventions retenues</h2>
-      <p class="hint">Refusée = 0 · Versée = déjà reçu (déjà en compta) · Accordée non versée = reste à percevoir · En commission = 50 % du demandé. Le « à recevoir » est étalé : 80 % un mois après le vote, 20 % l'année suivante.</p>
-      <div style="overflow-x:auto;-webkit-overflow-scrolling:touch"><table style="min-width:760px"><thead><tr><th>Subvention</th><th>Statut</th><th class="num">Base retenue</th><th class="num">Déjà reçu</th><th class="num">À recevoir cette année</th><th class="num">Reporté an prochain</th></tr></thead>
+      <p class="hint">Refusée = 0 · Versée = déjà reçu (déjà en compta) · Accordée non versée = reste à percevoir · En commission = 50 % du demandé. Le « à recevoir » est étalé : 80 % un mois après le vote, 20 % l'année suivante. La colonne <strong>à replanifier</strong> isole ce qui n'est rattaché à aucun mois et <strong>n'est pas compté</strong> dans les totaux, en distinguant deux situations : <strong style="color:#a3271e">🔴 accordé non versé</strong> = le financeur a voté mais l'argent n'est pas arrivé → <em>c'est à relancer</em> ; <strong style="color:#8a6100">⏳ en attente de vote</strong> = pas de date de vote renseignée → rien à relancer, juste incertain.</p>
+      <div style="overflow-x:auto;-webkit-overflow-scrolling:touch"><table style="min-width:760px"><thead><tr><th>Subvention</th><th>Statut</th><th class="num">Base retenue</th><th class="num">Déjà reçu</th><th class="num">À recevoir cette année</th><th class="num">⏳ À replanifier</th><th class="num">Reporté an prochain</th></tr></thead>
         <tbody id="prevSubRows"></tbody></table></div>
     </div>
 
@@ -2983,6 +2983,8 @@ const FAQ=[
    a:"Le bloc <b>🚨 Alertes importantes</b> du tableau de bord surveille tout seul : <b>solde négatif</b> (global, banque ou caisse), <b>échéances de dettes</b> à moins de 14 jours ou en retard (ex. URSSAF), et <b>fins d'aides au poste</b> (PEC) à moins de 90 jours pour anticiper le surcoût. Il n'apparaît que s'il y a quelque chose à traiter — pas de bloc = tout va bien."},
   {cat:'🔮 Prévisionnel',q:"À quoi sert le prévisionnel ?",kw:"previsionnel budget projection prevision fin annee estimer decembre recurrent futur anticiper",
    a:"Onglet <b>🔮 Prévisionnel</b> : Bob projette le budget jusqu'au 31 décembre. Coche <b>« récurrent »</b> pour les lignes qui reviennent chaque mois (loyer, charges…) : elles sont prolongées automatiquement. Les subventions à venir sont estimées selon leur statut."},
+  {cat:'🔮 Prévisionnel',q:"Un mois affiche une grosse rentrée d'argent qui n'arrivera jamais — c'est quoi cette ligne « à replanifier » ?",kw:"replanifier retard en retard date vote datevote subvention gonfle gonflee grosse rentree argent enorme faux fausse aout mois suivant empile empilement decale reporte non compte pas compte incoherent bizarre irrealiste trop beau 33792",
+   a:"C'est la sécurité qui remplace un ancien défaut. Bob place l'encaissement d'une subvention <b>un mois après sa date de vote</b> (80 %). Si cette date est <b>déjà passée</b> — ou si la <b>date de vote n'est pas renseignée</b> dans la fiche — l'argent n'est manifestement pas arrivé. Avant, Bob rebasculait tout sur le <b>premier mois à venir</b>, ce qui fabriquait un mois artificiellement riche. Maintenant ces montants sortent des colonnes de mois et se rangent dans <b>deux lignes distinctes</b>, <b>non comptées</b> dans les totaux (ni à l'écran, ni dans l'export Excel, ni dans le PDF signé) : <b>🔴 « accordé non versé — à relancer »</b> (le financeur a voté, l'argent n'est jamais arrivé : il y a un geste à faire) et <b>⏳ « en attente de vote »</b> (pas encore voté, donc aucun mois crédible). <b>Le geste pour corriger</b> : ouvre l'onglet 🏛️ Subventions, et renseigne la <b>« 🗳️ Date de vote (réelle ou prévue) »</b> de chaque dossier concerné — le montant reprend aussitôt sa place dans le bon mois. La liste des dossiers concernés s'affiche sous le tableau « 📅 Budget mensuel détaillé »."},
   {cat:'🔮 Prévisionnel',q:"Où je vois le budget mois par mois, détaillé par code comptable ?",kw:"tableau mensuel mois colonnes code comptable detail grand livre recettes depenses solde variation cumule treso ligne par ligne mensuel matrice janvier decembre",
    a:"Onglet <b>🔮 Prévisionnel</b>, tableau <b>📅 Budget mensuel détaillé — par code comptable</b> : les <b>mois sont en colonnes</b> (janv.→déc.) et chaque <b>code du plan comptable</b> est une ligne. Tu y lis les recettes par code puis le <b>total recettes du mois</b>, les dépenses par code puis le <b>total dépenses</b>, la ligne <b>Recettes − Dépenses</b> (solde du mois) et la ligne <b>Variation</b> (le solde cumulé qui progresse mois après mois). Les mois déjà saisis sont réels, les suivants (marqués <em>*</em>, en italique) sont projetés. Une colonne <b>Total an</b> récapitule à droite."},
   {cat:'🔮 Prévisionnel',q:"Comment exporter le budget en Excel ou l'imprimer en PDF pour les partenaires ?",kw:"export exporter excel csv tableur imprimer pdf transmettre partenaire financeur subvention coordonnees signature president tresorier document officiel budget mensuel telecharger",
@@ -3093,6 +3095,8 @@ function pageHelpGotoAide(){ pageHelpClose(); const b=document.querySelector('na
 
 /* ---- ✨ Quoi de neuf (nouveautés + notice chronologique) ---- */
 const NEWS=[
+  {id:'2026-07-21-previsionnel-replanifier',date:'2026-07-21',tab:'🔮 Prévisionnel',titre:"⏳ Fin des mois « trop beaux » : les subventions en retard ne gonflent plus un mois au hasard",
+   desc:"Avant, une subvention dont la date d'encaissement théorique était <b>déjà passée</b> était entièrement rebasculée sur le <b>premier mois à venir</b> : ce mois affichait une rentrée énorme qui n'arrivait jamais (au CASE, <b>33 792,80 €</b> apparaissaient ainsi en août). Désormais ces montants sortent des mois et se rangent dans deux lignes bien visibles, <b>non comptées</b> dans les totaux (écran, export Excel et PDF signé) : <b>🔴 accordé non versé — à relancer</b> et <b>⏳ en attente de vote</b>. Pour qu'une subvention retrouve sa place dans le calendrier, il suffit de renseigner sa <b>date de vote</b> (réelle ou prévue) dans sa fiche. Deuxième correction : les subventions à venir ne s'inscrivent plus sur un code comptable <b>« N-1 »</b> (celui des régularisations de l'année précédente) mais sur le code de l'année en cours. Troisième correction : les tranches de subvention étaient datées <b>d'un mois trop tôt</b> (un décalage d'heure entre La Réunion et le calendrier interne) — elles tombent désormais dans le bon mois."},
   {id:'2026-07-21-connexion-plus-claire',date:'2026-07-21',tab:'🛟 Le reste',titre:"🔑 La page de connexion explique enfin ce qui se passe",desc:"Deux salariées n'arrivaient plus à se connecter depuis un ordinateur. Trois choses ont changé.<br><br><b>1.</b> Les messages ne sont plus en anglais. Quand quelqu'un demande un nouveau mot de passe, un encart <b>reste affiché</b> à l'écran : il dit que l'email est parti, qu'il faut <b>regarder dans les indésirables</b>, et affiche un compte à rebours avant de pouvoir redemander. Avant, le message disparaissait en 3 secondes et l'on croyait à une panne — d'où dix clics d'affilée qui bloquaient tout.<br><br><b>2.</b> Après un échec, la page rappelle qu'on peut entrer <b>sans mot de passe</b> (bouton « ✨ Recevoir un lien de connexion par email », code à 6 chiffres).<br><br><b>3.</b> ⚠️ <b>« Déconnexion » ne coupe plus que l'appareil en cours.</b> Avant, se déconnecter de l'ordinateur fermait aussi la session du téléphone — sans prévenir.<br><br>💡 <b>À retenir pour les prochains comptes :</b> quand on crée un compte salarié à la main, la personne ne choisit jamais son mot de passe et ne le retape jamais tant qu'elle reste sur le même appareil. Le jour où elle change de téléphone ou passe sur un ordinateur, elle est bloquée. <b>Faites-lui faire « Mot de passe oublié ? » dès le premier jour</b>, pour qu'elle choisisse le sien."},
   {id:'2026-07-20-espace-salarie-dit-la-verite',date:'2026-07-20',tab:'👥 Dossiers salariés',titre:"🍍 L'espace salarié dit enfin pourquoi il est vide",desc:"Correctif venu du terrain, et le plus coûteux qu'on ait eu : une animatrice a travaillé <b>quatre jours devant un écran vide</b>, sans un mot d'explication. Cause réelle : aucune <b>équipe</b> (ACM / Périscolaire / VEPI) ne lui avait été attribuée — le cloisonnement faisait donc son travail, mais <b>en silence</b>. Pire, une simple <b>coupure réseau</b> produisait exactement le même écran : rien ne permettait de distinguer « on ne t'a pas encore ouvert l'accès » de « Bob n'a pas réussi à vérifier ». Trois choses changent. <b>1) Un bandeau en haut de l'accueil</b> nomme la situation : en 🍍 orange « il te manque un rattachement à une équipe — ce n'est pas une panne, et ce n'est pas de ta faute », avec le message tout prêt à envoyer au bureau ; en 📡 rouge « on n'a pas pu vérifier tes accès », avec un bouton <b>Recharger</b>. Deux messages franchement différents, parce que ce sont deux problèmes opposés. <b>2) Les cartes ne s'évanouissent plus.</b> « Mon ACM » disparaissait purement et simplement du menu — on ne s'étonne pas d'une absence qu'on n'a jamais vue. Elle reste désormais affichée, <b>éteinte, avec son motif</b>. <b>3) Les écrans cessent d'affirmer des choses fausses.</b> « Aucune fiche enfant — les familles n'ont pas encore créé leur compte » s'affichait alors que les enfants étaient bien en base ; « Crée ta première activité » poussait à ressaisir en double un catalogue déjà rempli. Et surtout l'alerte <b>📵 droit à l'image</b> : quand Bob ne connaît aucun enfant, il ne peut pas dire qui a le droit d'être photographié — il l'écrit maintenant en rouge (« dans le doute, ne publie pas ») au lieu de se taire, ce qui revenait à laisser croire que <b>personne n'était interdit de photo</b>."},
   {id:'2026-07-18-conduite-urgence',date:'2026-07-18',tab:'👶 Enfants',titre:"🚨 « En cas d'urgence, que faire ? » — le geste est enfin à côté de l'allergie",desc:"L'animateur voyait bien « <b>Arachides</b> » sur la fiche de l'enfant… mais <b>pas quoi faire</b> en cas de crise : la conduite à tenir était rangée dans la fiche sanitaire, réservée au bureau. Or une crise se gère <b>en secondes, par la personne présente</b>. Nouveau champ <b>🚨 En cas d'urgence</b> sur la fiche de l'enfant (rempli par la famille, ou par l'accueil avec elle), affiché à <b>toute l'équipe</b> juste sous l'allergie. <b>Et surtout :</b> si une allergie ou un souci de santé est déclaré <b>sans</b> conduite à tenir, Bob l'écrit <b>en rouge</b> — « conduite à tenir non renseignée, à demander à la famille ». <b>Aujourd'hui 2 enfants sont dans ce cas</b> (une allergie et un asthme sans consigne) : c'est visible dès maintenant dans 👶 Enfants et dans l'espace des salariés."},
@@ -4727,6 +4731,8 @@ function exportPrevisionnelCSV(){
   const line=(code,a)=>csvRow([code].concat([...Array(12)].map((_,i)=>r2(a[i+1]))).concat([r2(yTot(a))]));
   const rows=[csvRow(['Budget prévisionnel '+E.Y+' — CASE du Bois de Nèfles']), csvRow(['']), csvRow(head), csvRow(['RECETTES'])];
   E.recSeries.forEach(r=>rows.push(line(r.code,r.a)));
+  if(E.fluxRelance>0.005) rows.push(csvRow(['Accordé non versé — à relancer (NON COMPTÉ dans les totaux)'].concat([...Array(12)].map(()=>'')).concat([r2(E.fluxRelance)])));
+  if(E.fluxAttente>0.005) rows.push(csvRow(['En attente de vote (NON COMPTÉ dans les totaux)'].concat([...Array(12)].map(()=>'')).concat([r2(E.fluxAttente)])));
   rows.push(line('Total recettes',E.recTotM), csvRow(['DÉPENSES']));
   E.depSeries.forEach(r=>rows.push(line(r.code,r.a)));
   rows.push(line('Total dépenses',E.depTotM), line('Recettes - Dépenses (solde du mois)',E.netM), line('Variation (solde cumulé)',E.cumM));
@@ -4745,6 +4751,9 @@ function printPrevisionnel(){
   let t='<table class="prevtbl"><thead><tr><th>Code comptable</th>'+[...Array(12)].map((_,i)=>colH(i+1)).join('')+'<th class="num">Total an</th></tr></thead><tbody>';
   t+=secRow('RECETTES');
   t+= E.recSeries.length ? E.recSeries.map(codeRow).join('') : '<tr><td colspan="14">Aucune recette saisie.</td></tr>';
+  const pLigneHorsTotal=(lib,montant)=>'<tr style="background:#f2f2f2"><td>'+lib+'</td>'+[...Array(12)].map(()=>'<td class="num">·</td>').join('')+'<td class="num"><b>'+f(montant)+'</b></td></tr>';
+  if(E.fluxRelance>0.005) t+=pLigneHorsTotal('Accordé non versé — à relancer (non compté)',E.fluxRelance);
+  if(E.fluxAttente>0.005) t+=pLigneHorsTotal('En attente de vote (non compté)',E.fluxAttente);
   t+=totRow('Total recettes',E.recTotM)+secRow('DÉPENSES');
   t+= E.depSeries.length ? E.depSeries.map(codeRow).join('') : '<tr><td colspan="14">Aucune dépense saisie.</td></tr>';
   t+=totRow('Total dépenses',E.depTotM)+totRow('Recettes − Dépenses (solde du mois)',E.netM)+totRow('Variation (solde cumulé)',E.cumM)+'</tbody></table>';
@@ -4753,7 +4762,10 @@ function printPrevisionnel(){
     +'<h2 style="text-align:center;margin:10px 0 2px">Budget prévisionnel '+E.Y+'</h2>'
     +'<div style="text-align:center;font-size:12px;color:#555;margin-bottom:10px">Budget mensuel détaillé par code comptable — document établi le '+fmtDate(today())+'</div>'
     +t
-    +'<p style="font-size:11px;color:#555;margin-top:6px">Les colonnes marquées d\'un astérisque (*) sont des montants <b>projetés</b> (estimation jusqu\'au 31 décembre) ; les mois précédents sont réels. Aucune écriture comptable n\'est créée : il s\'agit d\'une projection établie à partir de la comptabilité de l\'association.</p>'
+    +'<p style="font-size:11px;color:#555;margin-top:6px">Les colonnes marquées d\'un astérisque (*) sont des montants <b>projetés</b> (estimation jusqu\'au 31 décembre) ; les mois précédents sont réels. Aucune écriture comptable n\'est créée : il s\'agit d\'une projection établie à partir de la comptabilité de l\'association.'
+    +(E.fluxRelance>0.005?' La ligne « accordé non versé » regroupe '+f(E.fluxRelance)+' € ('+E.relanceNb+' dossier'+(E.relanceNb>1?'s':'')+') attribués par le financeur mais non encaissés à ce jour.':'')
+    +(E.fluxAttente>0.005?' La ligne « en attente de vote » regroupe '+f(E.fluxAttente)+' € ('+E.attenteNb+' dossier'+(E.attenteNb>1?'s':'')+') sollicités et non encore votés.':'')
+    +((E.fluxRelance>0.005||E.fluxAttente>0.005)?' Ces montants ne sont rattachés à aucun mois et <b>ne sont pas comptés</b> dans les totaux.':'')+'</p>'
     +'<div style="margin-top:34px;display:flex;justify-content:space-between;gap:40px"><div>Le Président<br><br>__________________</div><div>Le Trésorier<br><br>__________________</div></div>'
     +'</div>';
   const st=document.createElement('style'); st.id='prevPrintStyle';
@@ -6068,7 +6080,12 @@ function kpi(label,value,cls='',sub=''){
 function esc(s){ return (s==null?'':String(s)).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 
 /* ---- Budget prévisionnel ---- */
-function prevAddMonths(iso,n){ const d=new Date(iso+'T00:00:00'); d.setDate(1); d.setMonth(d.getMonth()+n); return isoDate(d); }
+// ⚠️ Calcul en TEXTE, jamais via Date/toISOString : à La Réunion (UTC+4) « le 1er du mois » à minuit local
+// devient le dernier jour du mois PRÉCÉDENT une fois converti en UTC — toutes les tranches de subvention
+// étaient donc datées d'un mois trop tôt (corrigé le 21/07/2026).
+function prevAddMonths(iso,n){ const p=String(iso||'').split('-'); const y=parseInt(p[0],10), m=parseInt(p[1],10);
+  if(!y||!m) return iso; const t=(m-1)+n; const yy=y+Math.floor(t/12), mm=((t%12)+12)%12+1;
+  return yy+'-'+String(mm).padStart(2,'0')+'-01'; }
 function subVoteDate(s,Y){
   if(s.dateVote) return s.dateVote;
   // hypothèse quand la date de vote n'est pas renseignée :
@@ -6113,16 +6130,30 @@ function renderPrevisionnel(){
     else if(o.type==='in'){ if(cat==='Subvention'){ realSub[m]+=o.amount; realSubTot+=o.amount; } else { realNonSub[m]+=o.amount; catIn[cat]=(catIn[cat]||0)+o.amount; } } });
 
   // flux subventions à recevoir, ventilés par mois et reportés
-  const fluxByMonth=Array(13).fill(0), subRows=[]; let subFutureY=0;
+  // Un flux dont la date théorique est DÉJÀ PASSÉE (mois <= refM) n'a pas été encaissé : on ne l'empile plus
+  // dans le premier mois projeté — ça fabriquait un mois artificiellement riche (correction 21/07/2026).
+  // Il part dans « à replanifier » : montant réel, mais aucune date crédible tant que la date de vote n'est pas saisie.
+  // Deux situations très différentes, qu'on ne mélange PAS :
+  //  · date de vote SAISIE et déjà passée, argent pas arrivé   -> 🔴 EN RETARD, à relancer (geste concret : relancer le financeur)
+  //  · pas de date de vote (Bob la devinait)                   -> ⏳ EN ATTENTE DE VOTE (rien à relancer, juste incertain)
+  // Dans les deux cas : rattaché à AUCUN mois et EXCLU des totaux.
+  const fluxByMonth=Array(13).fill(0), subRows=[]; let subFutureY=0, fluxRelance=0, fluxAttente=0;
+  const relanceNoms=[], attenteNoms=[];
   (db.subventions||[]).forEach(s=>{
-    const exp=subExpected(s), verse=s.verse||0;
-    let aRecevoirY=0, aReporter=0;
+    const exp=subExpected(s), verse=s.verse||0, dateVoteSaisie=!!s.dateVote;
+    let aRecevoirY=0, aReporter=0, aReplanifier=0;
     subFlux(s,Y).forEach(f=>{ const fy=(f.date||'').slice(0,4);
-      if(fy===Y){ let m=parseInt(f.date.slice(5,7),10); if(m>=1&&m<=12){ if(m<=refM && refM<12) m=refM+1; fluxByMonth[m]+=f.montant; aRecevoirY+=f.montant; } }
+      if(fy===Y){ const m=parseInt(f.date.slice(5,7),10); if(m>=1&&m<=12){
+          if(m<=refM){ aReplanifier+=f.montant; }
+          else { fluxByMonth[m]+=f.montant; aRecevoirY+=f.montant; } } }
       else if(fy>Y){ aReporter+=f.montant; } });
     subFutureY+=aRecevoirY;
-    if(exp>0 || s.refusee || verse>0) subRows.push({s,exp,verse,aRecevoirY,aReporter});
+    if(aReplanifier>0.005){
+      if(dateVoteSaisie){ fluxRelance+=aReplanifier; relanceNoms.push(s.name); }
+      else { fluxAttente+=aReplanifier; attenteNoms.push(s.name); } }
+    if(exp>0 || s.refusee || verse>0) subRows.push({s,exp,verse,aRecevoirY,aReporter,aReplanifier,enRetard:dateVoteSaisie&&aReplanifier>0.005});
   });
+  const fluxRetard=fluxRelance+fluxAttente;
 
   // moyennes mensuelles : RÉCURRENT uniquement
   let recurOut=0, recurIn=0;
@@ -6143,6 +6174,10 @@ function renderPrevisionnel(){
   Object.keys(catIn).sort((a,b)=>catIn[b]-catIn[a]).forEach(c=>{ const p=projCat(catIn[c],c,'in'); totRec+=p; recHtml+=catRow(c,catIn[c],p,'in',false); });
   const projSub=realSubTot+subFutureY; totRec+=projSub;
   recHtml+=catRow('Subventions',realSubTot,projSub,'in',true);
+  // Volontairement HORS total : un montant qu'on ne sait pas dater ne doit pas gonfler la projection.
+  const ligneHorsTotal=(sty,lib,montant)=>'<tr style="'+sty+'"><td>'+lib+'</td><td class="num">—</td><td style="text-align:center"><span style="font-size:11px;opacity:.75">non compté</span></td><td class="num"><strong>'+euro(montant)+'</strong></td></tr>';
+  if(fluxRelance>0.005) recHtml+=ligneHorsTotal('background:#fdecea;color:#a3271e','🔴 Accordées mais <strong>non versées</strong> — à relancer <span style="font-size:11px;opacity:.8">(date de vote déjà passée)</span>',fluxRelance);
+  if(fluxAttente>0.005) recHtml+=ligneHorsTotal('background:#fdf6e6;color:#8a6100','⏳ En attente de vote <span style="font-size:11px;opacity:.8">(date de vote à renseigner)</span>',fluxAttente);
   Object.keys(catOut).sort((a,b)=>catOut[b]-catOut[a]).forEach(c=>{ const p=projCat(catOut[c],c,'out'); totDep+=p; depHtml+=catRow(c,catOut[c],p,'out',false); });
   if(!recHtml) recHtml='<tr><td colspan="4" class="empty">Aucune recette.</td></tr>';
   if(!depHtml) depHtml='<tr><td colspan="4" class="empty">Aucune dépense.</td></tr>';
@@ -6166,8 +6201,11 @@ function renderPrevisionnel(){
     if(o.type==='out'){ if(prevIsRecurrent(cat,'out')) depCodeRec[code]=(depCodeRec[code]||0)+o.amount; }
     else if(o.type==='in'){ if(cat!=='Subvention' && prevIsRecurrent(cat,'in')) recCodeRec[code]=(recCodeRec[code]||0)+o.amount; } });
 
-  // code comptable qui porte les subventions (le plus utilisé, sinon 740)
-  const subCnt={}; opsY.forEach(o=>{ if(o.type==='in' && (o.cat||'').trim()==='Subvention'){ const c=(o.compte||'').trim()||"740 - Subventions d'exploitation"; subCnt[c]=(subCnt[c]||0)+1; } });
+  // code comptable qui porte les subventions À VENIR (le plus utilisé, sinon 740).
+  // ⚠️ On EXCLUT les codes « N-1 » : ils portent les régularisations de l'exercice précédent (au CASE, 32 écritures
+  // de rattrapage 2025 en faisaient le code le plus fréquent) — une subvention future n'atterrit jamais là.
+  const estCodeNm1=c=>/\bN\s*[-‐–—]\s*1\b/i.test(c);
+  const subCnt={}; opsY.forEach(o=>{ if(o.type==='in' && (o.cat||'').trim()==='Subvention'){ const c=(o.compte||'').trim()||"740 - Subventions d'exploitation"; if(estCodeNm1(c)) return; subCnt[c]=(subCnt[c]||0)+1; } });
   const subCode=Object.keys(subCnt).sort((a,b)=>subCnt[b]-subCnt[a])[0] || "740 - Subventions d'exploitation";
   if(subFutureY>0.005) ens(recCodeReal,subCode); // garantir la ligne subvention si flux à venir
 
@@ -6200,6 +6238,11 @@ function renderPrevisionnel(){
   let mh='<thead><tr><th style="text-align:left">Code comptable</th>'+[...Array(12)].map((_,i)=>colH(i+1)).join('')+'<th class="num">Total an</th></tr></thead><tbody>';
   mh+=secRow('➕ RECETTES','#127a51');
   mh+= recSeries.length ? recSeries.map(r=>codeRow(r,'green')).join('') : '<tr><td colspan="14" class="empty">Aucune recette saisie.</td></tr>';
+  const mLigneHorsTotal=(sty,lib,montant)=>'<tr style="'+sty+'"><td style="white-space:nowrap">'+lib+'</td>'
+    +[...Array(12)].map(()=>'<td class="num"><span style="opacity:.5">·</span></td>').join('')
+    +'<td class="num"><strong>'+m2(montant)+'</strong></td></tr>';
+  if(fluxRelance>0.005) mh+=mLigneHorsTotal('background:#fdecea;color:#a3271e','🔴 Accordé non versé — à relancer <span style="font-size:11px">(non compté)</span>',fluxRelance);
+  if(fluxAttente>0.005) mh+=mLigneHorsTotal('background:#fdf6e6;color:#8a6100','⏳ En attente de vote <span style="font-size:11px">(non compté)</span>',fluxAttente);
   mh+=totRow('= Total recettes',recTotM,'green');
   mh+=secRow('➖ DÉPENSES','#c0392b');
   mh+= depSeries.length ? depSeries.map(r=>codeRow(r,'red')).join('') : '<tr><td colspan="14" class="empty">Aucune dépense saisie.</td></tr>';
@@ -6209,9 +6252,11 @@ function renderPrevisionnel(){
   mh+='</tbody>';
   $('prevMatrix').innerHTML=mh;
   // Mémorise les données du tableau pour l'export Excel et le PDF (mêmes chiffres, aucun recalcul) — réflexion bureau 23/06
-  window._prevExport={Y:Y, refM:refM, MOIS:MOIS, recSeries:recSeries, depSeries:depSeries, recTotM:recTotM, depTotM:depTotM, netM:netM, cumM:cumM};
+  window._prevExport={Y:Y, refM:refM, MOIS:MOIS, recSeries:recSeries, depSeries:depSeries, recTotM:recTotM, depTotM:depTotM, netM:netM, cumM:cumM, fluxRetard:fluxRetard, fluxRelance:fluxRelance, fluxAttente:fluxAttente, relanceNb:relanceNoms.length, attenteNb:attenteNoms.length};
   $('prevMatrixHint').innerHTML = refM>0
     ? `Mois en colonnes, codes du plan comptable en lignes. Les colonnes <strong>janv.→${MOIS[refM-1]}</strong> sont réelles&nbsp;; les suivantes (marquées <em>*</em>, en italique) sont <strong>projetées</strong> — codes récurrents à leur moyenne mensuelle, subventions placées selon leur calendrier. La ligne <strong>Variation</strong> = solde cumulé qui progresse mois après mois.`
+      + (fluxRelance>0.005 ? `<br><span style="color:#a3271e">🔴 <strong>${euro(fluxRelance)}</strong> ont été <strong>accordés mais jamais versés</strong>, alors que la date de vote est dépassée (${relanceNoms.length} dossier${relanceNoms.length>1?'s':''}) : ce n'est pas une incertitude, c'est de l'argent <strong>à relancer</strong> auprès du financeur. Non placé dans un mois, non compté. Concerné${relanceNoms.length>1?'s':''}&nbsp;: ${relanceNoms.map(n=>esc(n)).join(' · ')}.</span>` : '')
+      + (fluxAttente>0.005 ? `<br><span style="color:#8a6100">⏳ <strong>${euro(fluxAttente)}</strong> attendent un <strong>vote</strong> (${attenteNoms.length} dossier${attenteNoms.length>1?'s':''}) : aucune date de vote n'est renseignée, donc aucun mois crédible. Non compté dans les totaux — renseigne la « date de vote » dans la fiche dès qu'elle est connue. Concerné${attenteNoms.length>1?'s':''}&nbsp;: ${attenteNoms.map(n=>esc(n)).join(' · ')}.</span>` : '')
     : `Aucune opération saisie pour ${Y}. Saisis des écritures dans la Comptabilité (avec leur code comptable) pour remplir ce tableau.`;
 
   const resultat=totRec-totDep;
@@ -6222,15 +6267,16 @@ function renderPrevisionnel(){
     + kpi('Trésorerie au 31/12',euro(run),run>=0?'green':'red','estimation');
 
   const sr=$('prevSubRows');
-  if(!subRows.length){ sr.innerHTML='<tr><td colspan="6" class="empty">Aucune subvention enregistrée.</td></tr>'; }
+  if(!subRows.length){ sr.innerHTML='<tr><td colspan="7" class="empty">Aucune subvention enregistrée.</td></tr>'; }
   else sr.innerHTML=subRows.sort((a,b)=>b.exp-a.exp).map(r=>`<tr${r.s.refusee?' style="opacity:.55"':''}>
       <td><strong>${esc(r.s.name)}</strong> <span class="muted" style="font-size:12px">${esc(r.s.structure||'')}</span></td>
       <td>${subStatut(r.s)}</td><td class="num">${euro(r.exp)}</td><td class="num">${euro(r.verse)}</td>
       <td class="num ${r.aRecevoirY>0?'green':''}">${euro(r.aRecevoirY)}</td>
+      <td class="num" style="${r.aReplanifier>0.005?(r.enRetard?'background:#fdecea;color:#a3271e;font-weight:700':'background:#fdf6e6;color:#8a6100;font-weight:700'):''}" title="${r.aReplanifier>0.005?(r.enRetard?'Accordée mais non versée alors que la date de vote est passée : à relancer auprès du financeur.':'Pas de date de vote renseignée : en attente de vote, aucun mois crédible.'):''}">${r.aReplanifier>0.005?(r.enRetard?'🔴 ':'⏳ ')+euro(r.aReplanifier):'—'}</td>
       <td class="num muted">${r.aReporter>0?euro(r.aReporter):'—'}</td></tr>`).join('');
 
   $('prevHypo').innerHTML = refM>0
-    ? `Base de calcul : <strong>${refM} mois saisis</strong> (janv.→${MOIS[refM-1]}). Seules les catégories cochées « récurrent » sont projetées sur les mois à venir (≈ ${euro(avgOutRec)}/mois de dépenses, ${euro(avgInRec)}/mois de recettes courantes) ; les ponctuelles (cotisations, dons…) ne comptent qu'une fois. Subventions : 80 % un mois après le vote, 20 % l'année suivante (renseigne la « date de vote » pour affiner). Trésorerie de départ = solde actuel ${euro(balance())}.`
+    ? `Base de calcul : <strong>${refM} mois saisis</strong> (janv.→${MOIS[refM-1]}). Seules les catégories cochées « récurrent » sont projetées sur les mois à venir (≈ ${euro(avgOutRec)}/mois de dépenses, ${euro(avgInRec)}/mois de recettes courantes) ; les ponctuelles (cotisations, dons…) ne comptent qu'une fois. Subventions : 80 % un mois après le vote, 20 % l'année suivante. <strong>La « date de vote » de chaque fiche pilote tout</strong> : sans elle, le montant part en ⏳ « à replanifier » et n'est compté nulle part (Bob ne devine plus un mois à ta place). Trésorerie de départ = solde actuel ${euro(balance())}.`
     : `Aucune opération saisie pour ${Y} : ajoute des dépenses dans la Comptabilité pour lancer la projection.`;
   renderSimuGarderie();
 }
