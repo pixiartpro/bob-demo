@@ -213,28 +213,107 @@ async function signUp(){
     <p class="h" style="margin:0">Un email de confirmation t'a été envoyé à <b>${esc(email)}</b>. Clique sur le lien pour confirmer ton adresse, puis reviens te connecter. Ta demande d'accès sera validée par un administrateur.</p>
     <p style="margin-top:14px"><button class="btn g" onclick="refresh()">← Retour à la connexion</button></p></div>`; }
 }
+/* ====== Messages d'aide qui RESTENT à l'écran ======
+   Incident du 21/07/2026 : une salariée a cliqué 11 fois en 2 minutes sur « mot de passe oublié »
+   en croyant à une panne. En réalité l'email était déjà parti — mais le toast (3,2 s) avait disparu
+   avant qu'elle ne le lise, et le refus suivant s'affichait EN ANGLAIS et brut
+   (« For security purposes, you can only request this after 18 seconds »).
+   D'où : un encart persistant sous le bouton + un compte à rebours vivant, jamais un toast fugace. */
+let __noteTimer=null;
+function noteHide(){ const n=$('#l_note'); if(n){ n.style.display='none'; n.innerHTML=''; } if(__noteTimer){ clearInterval(__noteTimer); __noteTimer=null; } }
+function note(html,type){
+  const n=$('#l_note'); if(!n) return;
+  const bd = type==='ok' ? 'var(--vert)' : type==='ko' ? '#c0392b' : 'var(--ananas)';
+  const bg = type==='ok' ? '#eaf7f0'     : type==='ko' ? '#fdecea' : '#fff8ec';
+  n.style.cssText='margin-top:12px;padding:12px 14px;border-left:5px solid '+bd+';background:'+bg+';border-radius:0 12px 12px 0;font-size:14px;line-height:1.55;text-align:left';
+  n.innerHTML=html; n.style.display='block';
+}
+/* Supabase plafonne les envois d'email et les essais ; son refus arrive en anglais. */
+function isRateLimit(error){
+  if(!error) return false;
+  const c=String(error.code||''), m=String(error.message||'');
+  return c.indexOf('rate_limit')>=0 || error.status===429 || /for security purposes|rate limit/i.test(m);
+}
+function waitSecs(error){ const m=/after\s+(\d+)\s+second/i.exec(String((error&&error.message)||'')); return m?parseInt(m[1],10):0; }
+/* Le bouton se réactive TOUT SEUL : plus besoin de marteler pour savoir si c'est reparti. */
+function noteCountdown(secs,btn,label,finHtml){
+  let s=secs;
+  if(btn){ btn.disabled=true; }
+  if(__noteTimer){ clearInterval(__noteTimer); __noteTimer=null; }
+  const tick=()=>{
+    const el=document.getElementById('l_cd'); if(el) el.textContent=s+(s>1?' secondes':' seconde');
+    if(s<=0){
+      clearInterval(__noteTimer); __noteTimer=null;
+      if(btn){ btn.disabled=false; if(label) btn.textContent=label; }
+      note(finHtml||'✅ C\'est bon, tu peux réessayer maintenant.','ok');
+      return;
+    }
+    s--;
+  };
+  tick(); __noteTimer=setInterval(tick,1000);
+}
+/* Plus jamais un message brut anglais sous les yeux d'une salariée. */
+function authErrFr(error){
+  const m=String((error&&error.message)||'');
+  if(/confirm/i.test(m))                      return "Ton adresse n'est pas encore confirmée : ouvre le mail de confirmation reçu à l'inscription.";
+  if(/invalid login credentials/i.test(m))    return "Email ou mot de passe incorrect.";
+  if(/password should be at least/i.test(m))  return "Mot de passe trop court : 6 caractères minimum.";
+  if(/invalid email|email address/i.test(m))  return "Cette adresse email n'a pas l'air valide.";
+  if(/expired|invalid.*token/i.test(m))       return "Ce lien a expiré. Redemande un email de connexion.";
+  if(/network|fetch|failed to fetch/i.test(m))return "La connexion internet s'est interrompue. Réessaie dans un instant.";
+  return "Quelque chose n'a pas fonctionné. Réessaie, ou demande un lien de connexion par email.";
+}
+
 /* ---- Connexion ---- */
 async function signIn(){
   const email=$('#l_email').value.trim();
   const pw=$('#l_pw').value;
   if(!email||!pw){toast('Entre ton email et ton mot de passe.');return}
+  noteHide();
   const btn=$('#l_btn'); btn.disabled=true; btn.textContent='Connexion…';
   const {error}=await sb.auth.signInWithPassword({email,password:pw});
   btn.disabled=false; btn.textContent='Se connecter';
-  if(error){toast(error.message.includes('confirm')?"Confirme d'abord ton email (lien reçu par mail).":'Email ou mot de passe incorrect.');return}
+  if(error){
+    if(isRateLimit(error)){
+      const s=waitSecs(error)||30;
+      note('⏳ <b>Trop d\'essais à la suite.</b><br>Patiente encore <b id="l_cd">'+s+'</b> — le bouton se réactive tout seul.','warn');
+      noteCountdown(s,btn,'Se connecter','✅ Tu peux réessayer maintenant.');
+      return;
+    }
+    if(/confirm/i.test(String(error.message||''))){ note('📧 '+esc(authErrFr(error)),'warn'); return; }
+    /* Volontairement muet sur CE qui a échoué (ne jamais révéler si l'adresse existe),
+       mais on dit quoi faire ensuite — c'est ce qui manquait. */
+    note('😕 <b>Email ou mot de passe incorrect.</b>'
+        +'<br>Deux choses à vérifier : l\'<b>adresse écrite au-dessus</b> est-elle bien celle de ton compte ? Et le mot de passe — clique sur le 👁️ pour le voir en clair.'
+        +'<br><br>Si tu ne t\'en souviens plus, pas de panique : le bouton <b>« ✨ Recevoir un lien de connexion par email »</b> juste en dessous te fait entrer <b>sans mot de passe</b>.','ko');
+    return;
+  }
+  noteHide();
   await refresh();
 }
-async function signOut(){ await sb.auth.signOut(); myProfile=null; await refresh(); }
+/* scope:'local' → on ne déconnecte QUE cet appareil. Sans lui, se déconnecter de l'ordinateur
+   coupait aussi la session du téléphone (piège vécu le 21/07/2026). */
+async function signOut(){ try{ await sb.auth.signOut({scope:'local'}); }catch(e){ await sb.auth.signOut(); } myProfile=null; noteHide(); await refresh(); }
 
 /* ---- Lien magique + code OTP : connexion (ou inscription) sans mot de passe ---- */
 async function magicLink(){
   const email=$('#l_email').value.trim();
   if(!email){toast('Entre ton email ci-dessus, puis clique ici.');return}
+  noteHide();
   const btn=$('#magic_btn'); const old=btn.textContent; btn.disabled=true; btn.textContent='Envoi…';
   const {error}=await sb.auth.signInWithOtp({email,options:{emailRedirectTo:location.origin+location.pathname}});
   btn.disabled=false; btn.textContent=old;
-  if(error){ toast(error.message); return; }
-  toast('✓ Email envoyé ! Clique le lien OU tape le code à 6 chiffres reçu.');
+  if(error){
+    if(isRateLimit(error)){
+      const s=waitSecs(error)||60;
+      note(mailPartiHtml(email,s),'ok');
+      noteCountdown(s,btn,old,'✅ Tu peux redemander un email maintenant, si tu n\'as toujours rien reçu.');
+      const bx=$('#otpBox'); if(bx) bx.style.display='block';
+      return;
+    }
+    note('😕 '+esc(authErrFr(error)),'ko'); return;
+  }
+  note(mailEnvoyeHtml(email,'ton lien de connexion'),'ok');
   const box=$('#otpBox'); if(box){ box.style.display='block'; const f=$('#otp_code'); if(f){ f.value=''; f.focus(); } }
 }
 /* ---- Valider le code à 6 chiffres reçu par mail (repli si le lien est coupé par la messagerie) ---- */
@@ -246,16 +325,47 @@ async function verifyCode(){
   const btn=$('#otp_btn'); const old=btn.textContent; btn.disabled=true; btn.textContent='Vérification…';
   const {error}=await sb.auth.verifyOtp({email,token,type:'email'});
   btn.disabled=false; btn.textContent=old;
-  if(error){ toast('Code incorrect ou expiré. Redemande un email.'); return; }
+  if(error){
+    if(isRateLimit(error)){
+      const s=waitSecs(error)||30;
+      note('⏳ <b>Trop d\'essais à la suite.</b><br>Patiente encore <b id="l_cd">'+s+'</b>, puis retape le code.','warn');
+      noteCountdown(s,btn,old,'✅ Tu peux retaper le code maintenant.');
+      return;
+    }
+    note('😕 <b>Ce code ne fonctionne pas.</b><br>Vérifie que tu as bien pris le code du <b>dernier</b> email reçu — un nouvel envoi annule le précédent. Le code expire aussi au bout d\'une heure.','ko');
+    return;
+  }
+  noteHide();
   await refresh();
 }
 
 /* ---- Mot de passe oublié / changement ---- */
+/* Ce que la personne doit VRAIMENT savoir quand un email part : où le chercher.
+   L'expéditeur n'est pas signé « CASE » → il finit souvent dans les indésirables. */
+function mailEnvoyeHtml(email,quoi){
+  return '📩 <b>Email envoyé à '+esc(email)+'</b>'
+    +'<br>Ouvre ta boîte et clique le lien pour recevoir '+esc(quoi)+'.'
+    +'<br><br>⚠️ <b>Rien dans la boîte de réception ? Regarde dans les courriers indésirables.</b> Le message vient de <i>noreply@mail.app.supabase.io</i> — il n\'est pas signé « CASE », c\'est normal.';
+}
+function mailPartiHtml(email,s){
+  return '✅ <b>Ton email est déjà parti à '+esc(email)+' — inutile de recliquer.</b>'
+    +'<br>Va le chercher dans ta boîte, <b>et surtout dans les courriers indésirables</b> (expéditeur : <i>noreply@mail.app.supabase.io</i>).'
+    +'<br><br>⚠️ Si tu en as reçu plusieurs, <b>ouvre le plus récent</b> : chaque nouvel envoi annule le précédent.'
+    +'<br><br>Si vraiment tu n\'as rien reçu, tu pourras redemander dans <b id="l_cd">'+s+'</b>.';
+}
 async function resetPwd(){
   const email=$('#l_email').value.trim();
   if(!email){toast('Entre ton email ci-dessus d\'abord.');return}
+  noteHide();
   const {error}=await sb.auth.resetPasswordForEmail(email,{redirectTo:location.origin+location.pathname});
-  toast(error?error.message:'Email de réinitialisation envoyé ✓ — ouvre le mail et clique le lien.');
+  if(!error){ note(mailEnvoyeHtml(email,'un nouveau mot de passe à choisir'),'ok'); return; }
+  if(isRateLimit(error)){
+    const s=waitSecs(error)||60;
+    note(mailPartiHtml(email,s),'ok');
+    noteCountdown(s,null,null,'✅ Tu peux redemander un email maintenant, si tu n\'as toujours rien reçu.');
+    return;
+  }
+  note('😕 '+esc(authErrFr(error)),'ko');
 }
 async function changePwd(){
   const pw=prompt('Nouveau mot de passe (au moins 6 caractères) :'); if(pw===null)return;
@@ -341,6 +451,7 @@ function renderLoggedOut(){
         <div class="pw-wrap"><input id="l_pw" type="password" placeholder="••••••••" onkeydown="if(event.key==='Enter')signIn()">
           <button type="button" class="pw-eye" onclick="togglePw('l_pw',this)" aria-label="Afficher le mot de passe">👁️</button></div></div>
       <button id="l_btn" class="btn p" style="width:100%" onclick="signIn()">Se connecter</button>
+      <div id="l_note" role="status" aria-live="polite" style="display:none"></div>
       <p class="small muted" style="margin-top:10px;text-align:center"><a href="#" onclick="resetPwd();return false" style="color:var(--vert-fonce)">Mot de passe oublié ?</a></p>
       <div style="display:flex;align-items:center;gap:10px;margin:14px 0 10px"><div style="flex:1;height:1px;background:var(--line)"></div><span class="small muted">ou, sans mot de passe</span><div style="flex:1;height:1px;background:var(--line)"></div></div>
       <button id="magic_btn" class="btn g" style="width:100%" onclick="magicLink()">✨ Recevoir un lien de connexion par email</button>

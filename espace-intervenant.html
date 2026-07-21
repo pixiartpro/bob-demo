@@ -92,7 +92,8 @@ function manques(){
 }
 function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2600);}
 function gate(html){ $('#content').innerHTML='<div class="gate">'+html+'</div>'; }
-window.ivLogout=async function(){ try{ await sb.auth.signOut(); }catch(e){} location.href='connexion.html'; };
+/* scope:'local' → ne déconnecte QUE cet appareil (sinon on coupe aussi son téléphone — vécu 21/07/2026). */
+window.ivLogout=async function(){ try{ await sb.auth.signOut({scope:'local'}); }catch(e){ try{ await sb.auth.signOut(); }catch(e2){} } location.href='connexion.html'; };
 
 async function boot(){
   let session=null; try{ session=(await sb.auth.getSession()).data.session; }catch(e){}
