@@ -1057,6 +1057,41 @@ function renderFamilles(){
   if(!list.length){ box.innerHTML='<div class="card"><p class="empty">'+(ME.famOnlyMiss&&!q?'🎉 Rien à compléter — toutes les fiches sont au complet.':'Aucun enfant ne correspond à la recherche.')+'</p></div>'; return; }
   box.innerHTML=list.map(function(r){ return famCardHtml(r.k,r.b); }).join('');
 }
+// ===== Contacter la famille : agrège les coordonnées DÉJÀ chargées et autorisées pour ce
+// salarié (dossier périscolaire + contact de l'inscription activité). But : joindre vite un
+// parent (absence, urgence terrain) sans lire une table de plus ni élargir ses droits. On met
+// en avant le RESPONSABLE ; les personnes autorisées (grands-parents…) restent à part au-dessus.
+function famPhones(s){
+  const out=[]; const re=/(?:\+?262|0)[\s.\-]?[1-9](?:[\s.\-]?\d){8}/g; let m;
+  while((m=re.exec(String(s||'')))){ const raw=m[0]; if(raw.replace(/\D/g,'').length>=9) out.push(raw.trim()); }
+  return out;
+}
+function famEmails(s){
+  const out=[]; const re=/[A-Za-z0-9._%+\-]+@[A-Za-z0-9.\-]+\.[A-Za-z]{2,}/g; let m;
+  while((m=re.exec(String(s||'')))){ out.push(m[0]); }
+  return out;
+}
+function famContactHtml(k){
+  const dj=famDossierFor(k); const d=dj?dj.d:null;
+  const ins=famChildInscriptions(k).map(function(x){ return x.ins; });
+  let resp=(d&&d.foyer)?d.foyer:'';
+  if(!resp){ for(let i=0;i<ins.length;i++){ if(ins[i].responsable){ resp=ins[i].responsable; break; } } }
+  let mails=[], tels=[];
+  if(d){ if(d.tel) tels=tels.concat(famPhones(d.tel)); if(d.email&&d.email.indexOf('@')>=0) mails.push(d.email); }
+  ins.forEach(function(i){ if(i.contact){ mails=mails.concat(famEmails(i.contact)); tels=tels.concat(famPhones(i.contact)); } });
+  const uniq=function(a){ const seen={},o=[]; a.forEach(function(x){ const key=String(x).toLowerCase().replace(/\s/g,''); if(x&&!seen[key]){ seen[key]=1; o.push(x); } }); return o; };
+  mails=uniq(mails); tels=uniq(tels);
+  const bits=[];
+  if(resp) bits.push('<b>👤 '+esc(resp)+'</b>');
+  tels.forEach(function(t){ bits.push('📞 <a href="tel:'+esc(t.replace(/[^\d+]/g,''))+'" style="color:#3a51e8;font-weight:600">'+esc(t)+'</a>'); });
+  mails.forEach(function(e){ bits.push('📧 <a href="mailto:'+esc(e)+'" style="color:#3a51e8;font-weight:600">'+esc(e)+'</a>'); });
+  let inner;
+  if(bits.length){ inner=bits.join(' &nbsp;·&nbsp; '); }
+  else if(k.autorises&&famPhones(k.autorises).length){ inner='<span class="sub">Pas de contact « responsable » saisi — vois « 👥 Autorisés à récupérer » ci-dessus.</span>'; }
+  else { inner='<span style="color:#c0392b;font-weight:600">Aucune coordonnée parent enregistrée</span> <span class="sub">— à demander à la famille / au bureau.</span>'; }
+  return '<div style="margin-top:10px;font-size:14px;background:#eef3ff;border:1px solid #d4e0f7;border-radius:12px;padding:10px 12px;line-height:1.8">'
+    +'<b>📇 Contacter la famille</b><br>'+inner+'</div>';
+}
 function famCardHtml(k,b){
   const name=esc(((k.prenom||'')+' '+(k.nom||'')).trim()||'(sans nom)');
   const chips=b.checks.map(function(c){
@@ -1114,6 +1149,7 @@ function famCardHtml(k,b){
       +(editing?'':' <button class="btn ghost" style="padding:4px 10px;font-size:12px" onclick="famEditKid(\''+k.id+'\')">✏️ Compléter</button>')+'</span>'
     +'</div>'
     +(editing?famEditFormHtml(k):('<div class="ckgrid">'+chips+'</div>'+infos))
+    +famContactHtml(k)
     +doss
     +famFicheBlock(k)
     +famActsHtml(k)
