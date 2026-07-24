@@ -361,7 +361,8 @@ const ACM_PROP_TYPES=[
   {k:'activite',    l:'🎪 Une nouvelle activité (idée pour le catalogue)'},
   {k:'demarche',    l:'📋 Une démarche à suivre'},
   {k:'projet_peda', l:'📖 Un texte pour le projet pédagogique'},
-  {k:'budget_prev', l:'💶 Une ligne de budget prévu'}
+  {k:'budget_prev', l:'💶 Une ligne de budget prévu'},
+  {k:'document',    l:'📎 Un document (émargement, scan…)'}
 ]; // NB : « placer une activité » se fait maintenant au tableau glisser-déposer (étape 4), plus en texte.
 const ACM_PEDA_SECTIONS=['🎯 Objectifs éducatifs','🎲 Nature des activités',"⏰ Rythme (activité / repos)",'🙋 Participation des enfants','🏠 Locaux & espaces',"🧑‍🏫 Équipe : composition & rôles",'♿ Enfants en situation de handicap',"📊 Modalités d'évaluation"];
 const ACM_PHASE_LAB={avant:'⬅️ Avant',pendant:'⏳ Pendant',apres:'➡️ Après'};
@@ -584,6 +585,11 @@ function acmBanetteHTML(){
         +'</div>'
         +'<div class="row" style="margin-bottom:8px"><div style="flex:1"><label>Commentaire (facultatif)</label><input id="acm_b_com" style="width:100%" placeholder="précisions"></div></div>'
       +'</div>'
+      +'<div id="acmf_document" class="acm-fields" style="display:none">'
+        +'<div class="row" style="margin-bottom:8px"><div style="flex:2"><label>Nom du document</label><input id="acm_doc_label" style="width:100%" placeholder="ex. Feuille d\'émargement de lundi"></div></div>'
+        +'<div class="row" style="margin-bottom:8px"><div style="flex:1"><label>Fichier (PDF, photo, scan…)</label><input id="acm_doc_file" type="file" accept=".pdf,image/*,.doc,.docx" style="width:100%"></div></div>'
+        +'<p class="sub" style="margin:0">📎 Choisis d\'abord l\'<b>édition concernée</b> ci-dessus. Le fichier part dans le coffre ACM ; il n\'apparaît pour l\'équipe qu\'<b>après validation du bureau</b>.</p>'
+      +'</div>'
       +'<div class="row" style="margin-bottom:10px"><div style="flex:1"><label>Note au bureau (facultatif)</label><input id="acm_note" style="width:100%" placeholder="un mot pour expliquer ta proposition"></div></div>'
       +'<button class="btn win" onclick="acmPropSend()">📨 Envoyer au bureau</button>'
     +'</div>'
@@ -593,7 +599,7 @@ function acmBanetteHTML(){
 function acmMountForm(){ acmPropType(); renderAcmProps(); }
 window.acmPropType=function(){
   const t=(($('#acm_type')||{}).value)||'activite';
-  ['activite','demarche','projet_peda','budget_prev'].forEach(function(k){ const el=document.getElementById('acmf_'+k); if(el) el.style.display=(k===t?'':'none'); });
+  ['activite','demarche','projet_peda','budget_prev','document'].forEach(function(k){ const el=document.getElementById('acmf_'+k); if(el) el.style.display=(k===t?'':'none'); });
 };
 window.acmBudCalc=function(){
   const q=parseFloat(($('#acm_b_qte')||{}).value)||0, pu=parseFloat(($('#acm_b_pu')||{}).value)||0;
@@ -622,12 +628,22 @@ window.acmPropSend=async function(){
     let montant=parseFloat(($('#acm_b_montant')||{}).value);
     if(isNaN(montant)) montant=(!isNaN(qte)&&!isNaN(pu))?Math.round(qte*pu*100)/100:null;
     contenu={poste:poste, quantite:(isNaN(qte)?null:qte), prix_unitaire:(isNaN(pu)?null:pu), montant:(isNaN(montant)?null:montant), commentaire:($('#acm_b_com').value||'').trim()};
+  } else if(type==='document'){
+    if(!edRef){ toast('Choisis l\'édition concernée'); return; }
+    const fi=$('#acm_doc_file'); const f=(fi&&fi.files&&fi.files[0])||null;
+    if(!f){ toast('Choisis un fichier'); return; }
+    const label=(($('#acm_doc_label')||{}).value||'').trim() || (f.name||'').replace(/\.[^.]+$/,'') || 'Document';
+    const safe=(f.name||'document').replace(/[^A-Za-z0-9._-]/g,'_');
+    const path=ME.asso+'/'+edRef+'/_propositions/'+ME.session.user.id+'-'+Date.now()+'-'+safe;
+    const upr=await sb.storage.from('acm-docs').upload(path,f,{upsert:true,contentType:f.type||'application/octet-stream'});
+    if(upr.error){ toast('Échec de l\'envoi du fichier : '+upr.error.message); return; }
+    contenu={label:label, file:f.name, path:path};
   }
   const auteur_nom=((ME.fiche&&ME.fiche.prenom)?((ME.fiche.prenom+' '+(ME.fiche.nom||'')).trim()):((ME.prof&&(ME.prof.full_name||ME.prof.email))||''));
   const payload={ asso_id:ME.asso, auteur_id:ME.session.user.id, auteur_nom:auteur_nom, edition_ref:edRef, type:type, contenu:contenu, note:(note||null) };
   const {error}=await sb.from('acm_propositions').insert(payload);
   if(error){ toast('Erreur : '+error.message); return; }
-  ['acm_a_nom','acm_a_emoji','acm_a_desc','acm_d_label','acm_pp_texte','acm_b_poste','acm_b_qte','acm_b_pu','acm_b_montant','acm_b_com','acm_note'].forEach(function(id){ const el=document.getElementById(id); if(el){ el.value=''; if(el.dataset) el.dataset.auto=''; } });
+  ['acm_a_nom','acm_a_emoji','acm_a_desc','acm_d_label','acm_pp_texte','acm_b_poste','acm_b_qte','acm_b_pu','acm_b_montant','acm_b_com','acm_doc_label','acm_doc_file','acm_note'].forEach(function(id){ const el=document.getElementById(id); if(el){ el.value=''; if(el.dataset) el.dataset.auto=''; } });
   await loadAcm(); renderAcmProps(); toast('✅ Proposition envoyée au bureau');
 };
 function acmPropSummary(p){
@@ -636,6 +652,7 @@ function acmPropSummary(p){
   if(p.type==='placement') return '📅 '+esc(c.fiche_nom||c.activite||'?')+' → <b>'+esc(c.col_label||c.jour||'?')+'</b>';
   if(p.type==='demarche') return '📋 '+esc(c.label||'?')+(c.phase?' <span class="sub">('+esc(ACM_PHASE_LAB[c.phase]||c.phase)+')</span>':'');
   if(p.type==='projet_peda') return '📖 '+(c.section?'<b>'+esc(c.section)+'</b> — ':'')+esc(c.texte||'');
+  if(p.type==='document') return '📎 '+esc(c.label||c.file||'Document');
   if(p.type==='budget_prev'){
     const m=(c.montant!=null&&c.montant!=='')?(' · <b>'+euroDays(c.montant)+' €</b>'):'';
     const q=(c.quantite&&c.prix_unitaire)?(' <span class="sub">('+esc(String(c.quantite))+' × '+euroDays(c.prix_unitaire)+' €)</span>'):'';
@@ -647,7 +664,7 @@ function renderAcmProps(){
   const box=$('#acmPropList'); if(!box) return;
   const ps=ME.acmProps||[];
   if(!ps.length){ box.innerHTML='<p class="empty">Aucune proposition pour l\'instant. Lance-toi 👆</p>'; return; }
-  const TL={activite:'🎪 Activité',placement:'📅 Placement',demarche:'📋 Démarche',projet_peda:'📖 Projet péda',budget_prev:'💶 Budget'};
+  const TL={activite:'🎪 Activité',placement:'📅 Placement',demarche:'📋 Démarche',projet_peda:'📖 Projet péda',budget_prev:'💶 Budget',document:'📎 Document'};
   const STB={en_attente:['🕓 En attente','b-demande'],acceptee:['✅ Acceptée','b-valide'],refusee:['✖️ Refusée','b-refuse']};
   box.innerHTML=ps.map(function(p){
     const st=STB[p.statut]||[esc(p.statut||''),'b-demande'];
