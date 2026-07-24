@@ -2942,6 +2942,8 @@ const FAQ=[
    a:"Va dans <b>📁 Projets</b> ou <b>🏛️ Subventions</b>, remplis les champs en haut (nom, budget/montant, etc.) et clique sur <b>« Ajouter »</b>."},
   {cat:'📁 Projets & 🏛️ Subventions',q:"Comment j'enregistre un versement de subvention reçu ?",kw:"versement subvention recu recette compta encaisser solde verser argent recu",
    a:"Sur la subvention, clique sur <b>« Enregistrer un versement »</b> : indique le montant reçu et la date. Bob crée tout seul la <b>recette en comptabilité</b> et met à jour le <b>solde restant à verser</b>. Pas besoin de la ressaisir en compta."},
+  {cat:'📁 Projets & 🏛️ Subventions',q:"Comment je répartis une subvention sur plusieurs actions ?",kw:"repartir repartition subvention plusieurs actions montant affecte affectation ventiler part acm ados budget par action partager decouper entre",
+   a:"Sur la ligne de la subvention (onglet <b>🏛️ Subventions</b>), clique sur <b>🎯</b>. Ajoute une ligne par action (ex. <b>ACM Ados 2026 - 1</b>, <b>- 2</b>, <b>- 3</b>) avec le <b>montant affecté</b> à chacune ; Bob t'indique si la somme correspond bien au <b>montant accordé</b>. Chaque part se range alors toute seule dans le <b>🎯 Budget par action</b> de l'action, et les <b>versements</b> que tu enregistres se répartissent dans la même proportion. Sans répartition, la subvention reste rattachée à sa seule action comme avant."},
   {cat:'💶 Comptabilité',q:"Comment je saisis une dépense ou une recette ?",kw:"saisir depense recette ecriture operation compta facture ajouter argent paiement",
    a:"Onglet <b>💶 Comptabilité</b> : utilise <b>« Nouvelle opération »</b> pour une écriture détaillée, ou <b>« Saisie rapide »</b> pour enchaîner beaucoup de factures vite. Choisis Recette ou Dépense, le montant, la date, la catégorie…"},
   {cat:'💶 Comptabilité',q:"C'est quoi la « saisie rapide » ?",kw:"saisie rapide beaucoup factures vite enchainer compta rapide plusieurs",
@@ -3096,6 +3098,7 @@ function pageHelpGotoAide(){ pageHelpClose(); const b=document.querySelector('na
 
 /* ---- ✨ Quoi de neuf (nouveautés + notice chronologique) ---- */
 const NEWS=[
+  {id:'2026-07-24-subvention-repartition',date:'2026-07-24',tab:'🏛️ Subventions',titre:"🎯 Répartir une subvention sur plusieurs actions",desc:"Une même subvention peut maintenant financer <b>plusieurs actions</b>, avec un <b>montant affecté à chacune</b>. Sur la ligne d'une subvention (<b>🏛️ Subventions</b>), le nouveau bouton <b>🎯</b> ouvre sa <b>répartition</b> : une ligne par action — par ex. la <b>Subvention ACM Ados</b> de la Mairie répartie entre <b>ACM Ados 2026 - 1</b>, <b>- 2</b> et <b>- 3</b> — et Bob vérifie que la somme colle au <b>montant accordé</b>. Chaque part se range <b>toute seule</b> dans le <b>🎯 Budget par action</b> concerné, et les <b>versements</b> enregistrés ensuite se répartissent dans la même proportion : fini de créer une subvention séparée par action. Sans répartition, rien ne change — la subvention reste sur son unique action."},
   {id:'2026-07-23-pieces-subvention',date:'2026-07-23',tab:'🗂️ Répertoire',titre:"📋 Nouveau : les 8 pièces de subvention, cochées toutes seules",desc:"Dans <b>🗂️ Répertoire</b> → <b>📁 Documents officiels</b>, une carte <b>« 📋 Les 8 pièces de subvention »</b> en tête du panneau. Ce sont les documents que la Ville redemande à <b>chaque</b> campagne : <b>RIB, avis SIREN, parution au Journal officiel, attestation d'assurance, contrat d'engagement républicain, bilan financier, budget prévisionnel, dernier PV d'assemblée</b>. Dépose-les une fois dans le coffre : chaque pièce se <b>coche toute seule</b> (✅) et un compteur <b>x/8</b> te dit d'un coup d'œil ce qui est prêt avant un dépôt — fini d'aller chercher chaque pièce à droite à gauche. Le repérage se fait d'après le nom du fichier, à vérifier d'un œil. Réservé au bureau."},
   {id:'2026-07-21-previsionnel-replanifier',date:'2026-07-21',tab:'🔮 Prévisionnel',titre:"⏳ Fin des mois « trop beaux » : les subventions en retard ne gonflent plus un mois au hasard",
    desc:"Avant, une subvention dont la date d'encaissement théorique était <b>déjà passée</b> était entièrement rebasculée sur le <b>premier mois à venir</b> : ce mois affichait une rentrée énorme qui n'arrivait jamais (au CASE, <b>33 792,80 €</b> apparaissaient ainsi en août). Désormais ces montants sortent des mois et se rangent dans deux lignes bien visibles, <b>non comptées</b> dans les totaux (écran, export Excel et PDF signé) : <b>🔴 accordé non versé — à relancer</b> et <b>⏳ en attente de vote</b>. Pour qu'une subvention retrouve sa place dans le calendrier, il suffit de renseigner sa <b>date de vote</b> (réelle ou prévue) dans sa fiche. Deuxième correction : les subventions à venir ne s'inscrivent plus sur un code comptable <b>« N-1 »</b> (celui des régularisations de l'année précédente) mais sur le code de l'année en cours. Troisième correction : les tranches de subvention étaient datées <b>d'un mois trop tôt</b> (un décalage d'heure entre La Réunion et le calendrier interne) — elles tombent désormais dans le bon mois."},
@@ -3974,14 +3977,63 @@ function recordVersement(id){
   if(!(montant>0)){ alert('Montant invalide.'); return; }
   const dStr=prompt('Date du versement (AAAA-MM-JJ) :', today()); if(dStr===null)return;
   const date=/^\d{4}-\d{2}-\d{2}$/.test((dStr||'').trim())?dStr.trim():today();
+  // Si la subvention est répartie sur plusieurs actions, on ventile le versement dans la même proportion.
+  const rep=(s.repartition||[]).filter(r=>(r.action||'').trim() && (r.montant||0)>0);
+  const sumRep=rep.reduce((t,r)=>t+(r.montant||0),0);
+  let splits;
+  if(rep.length && sumRep>0){
+    splits=rep.map(r=>({site:s.site||'',action:(r.action||'').trim(),amount:Math.round(montant*(r.montant||0)/sumRep*100)/100}));
+    const diff=Math.round((montant-splits.reduce((t,x)=>t+x.amount,0))*100)/100; // le résidu d'arrondi retombe sur la dernière ligne
+    if(diff && splits.length) splits[splits.length-1].amount=Math.round((splits[splits.length-1].amount+diff)*100)/100;
+  }else{
+    splits=[{site:s.site||'',action:s.action||'',amount:montant}];
+  }
   const op={id:uid(),type:'in',label:'Subvention — '+s.name,cat:'Subvention',compte:"740 - Subventions d'exploitation",
-    amount:montant,date,project:'',account:'banque',photo:'',splits:[{site:s.site||'',action:s.action||'',amount:montant}]};
+    amount:montant,date,project:'',account:'banque',photo:'',splits};
   db.ops.push(op);
   s.verse=(s.verse||0)+montant;
   s.versements=s.versements||[]; s.versements.push({opId:op.id,montant,date});
   save();
-  alert('✅ Versement de '+euro(montant)+' enregistré.\nUne recette a été créée en comptabilité (compte 740 — Subventions) et le solde de la subvention mis à jour.');
+  alert('✅ Versement de '+euro(montant)+' enregistré.'+(rep.length&&sumRep>0?'\nIl a été réparti sur '+rep.length+' action(s) selon la répartition de la subvention.':'')+'\nUne recette a été créée en comptabilité (compte 740 — Subventions) et le solde de la subvention mis à jour.');
 }
+
+/* ---- Subventions : répartition d'une subvention sur plusieurs actions ----
+   Chaque part (action + montant affecté) alimente le 🎯 Budget par action correspondant ;
+   les versements enregistrés ensuite se ventilent dans la même proportion. Sans répartition,
+   la subvention reste rattachée à son unique champ « Action » comme avant. */
+let repCtx=null;
+function subRepRef(s){ return (s.accorde||0)>0?(s.accorde||0):(s.demande||0); }
+function openRepartition(id){ const s=db.subventions.find(x=>x.id===id); if(!s)return; repCtx={id}; renderRepartitionModal(); $('opModal').classList.add('open'); }
+function renderRepartitionModal(){
+  if(!repCtx)return;
+  const s=db.subventions.find(x=>x.id===repCtx.id); if(!s){ closeModal(); return; }
+  s.repartition=s.repartition||[];
+  const ref=subRepRef(s);
+  const somme=s.repartition.reduce((t,r)=>t+(r.montant||0),0);
+  const ecart=Math.round((ref-somme)*100)/100;
+  const rows = s.repartition.length ? s.repartition.map((r,i)=>{
+    const known=(db.actionsFiches||[]).some(f=>(f.nom||'').trim().toLowerCase()===(r.action||'').trim().toLowerCase());
+    const tag=(r.action||'').trim()?(known?'<span class="pill ok" style="font-size:10px">fiche budget ✓</span>':'<span class="pill wait" style="font-size:10px">nouvelle action</span>'):'';
+    return `<div class="row" style="gap:8px;align-items:flex-end;margin-bottom:6px">
+      <div class="field" style="flex:2"><label>Action ${tag}</label><input list="actions" value="${esc(r.action||'')}" placeholder="Ex. ACM Ados 2026 - 1" onchange="repSet(${i},'action',this.value)"></div>
+      <div class="field" style="flex:0;min-width:150px"><label>Montant affecté (€)</label><input type="number" min="0" step="0.01" value="${r.montant||0}" onchange="repSet(${i},'montant',this.value)"></div>
+      <div class="field" style="flex:0"><label>&nbsp;</label><button class="danger" onclick="repDel(${i})">Retirer</button></div>
+    </div>`;
+  }).join('') : '<p class="hint" style="margin:0">Aucune action pour le moment. Ajoute une ligne par action à financer.</p>';
+  const bilan = Math.abs(ecart)<0.01
+    ? `<span class="pill ok">✅ Réparti en totalité (${euro(somme)})</span>`
+    : (ecart>0 ? `<span class="pill wait">⚠️ Reste à répartir : ${euro(ecart)}</span>` : `<span class="pill no">⚠️ Dépassement de ${euro(-ecart)}</span>`);
+  $('md_title').textContent='🎯 Répartition par action — '+(s.name||'');
+  $('md_body').innerHTML=`<p class="hint" style="margin:0 0 10px">Répartis le montant <b>accordé</b> de cette subvention entre plusieurs actions. Chaque part se range toute seule dans le <b>🎯 Budget par action</b> de l'action concernée, et les <b>versements</b> enregistrés ensuite suivront la même répartition. Choisis de préférence une action déjà présente dans ton Budget par action.</p>
+    <div class="kv" style="margin-bottom:12px"><span>Montant à répartir (${(s.accorde||0)>0?'accordé':'demandé, à défaut'})</span><span><b>${euro(ref)}</b></span></div>
+    <div id="repRows">${rows}</div>
+    <div class="row" style="margin-top:6px"><button class="btn" onclick="repAdd()">+ Ajouter une action</button></div>
+    <div class="kv" style="margin-top:14px;border-top:1px solid var(--line);padding-top:10px"><span>Total réparti</span><span>${bilan}</span></div>
+    <div class="row" style="margin-top:16px;justify-content:flex-end"><button class="ghost btn" onclick="closeModal()">Fermer</button></div>`;
+}
+function repAdd(){ if(!repCtx)return; const s=db.subventions.find(x=>x.id===repCtx.id); if(!s)return; s.repartition=s.repartition||[]; s.repartition.push({action:'',montant:0}); save(); renderRepartitionModal(); }
+function repSet(i,champ,val){ if(!repCtx)return; const s=db.subventions.find(x=>x.id===repCtx.id); if(!s||!s.repartition||!s.repartition[i])return; s.repartition[i][champ]=(champ==='montant')?(parseFloat((''+val).replace(',','.'))||0):(''+val).trim(); save(); renderRepartitionModal(); }
+function repDel(i){ if(!repCtx)return; const s=db.subventions.find(x=>x.id===repCtx.id); if(!s||!s.repartition)return; s.repartition.splice(i,1); save(); renderRepartitionModal(); }
 
 /* ---- Plan comptable (liste de comptes modifiable) ---- */
 const BASE_COMPTES=["706 - Prestations de services","707 - Ventes (buvette, marchandises)","740 - Subventions d'exploitation",
@@ -4240,7 +4292,12 @@ function pilotEur(n){ return (Math.round(n||0)).toLocaleString('fr-FR')+' €'; 
 function pilotYear(){ return window._pilotYear || String(new Date().getFullYear()); }
 function pilotYears(){ const ys=new Set([String(new Date().getFullYear())]); (db.ops||[]).forEach(o=>{ const y=(o.date||'').slice(0,4); if(/^\d{4}$/.test(y)) ys.add(y); }); return [...ys].sort().reverse(); }
 function pilotReel(nom,type){ const y=pilotYear(); let tot=0; (db.ops||[]).forEach(o=>{ if(o.type!==type) return; if(y && (o.date||'').slice(0,4)!==y) return; getSplits(o).forEach(s=>{ if((s.action||'').trim()===(nom||'').trim()) tot+=(s.amount||0); }); }); return tot; }
-function pilotSubs(nom){ return (db.subventions||[]).filter(sub=>(sub.action||'').trim()===(nom||'').trim() && !sub.refusee); }
+function pilotSubRep(sub){ return (sub.repartition||[]).filter(r=>(r.action||'').trim() && (r.montant||0)>0); }
+function pilotSubs(nom){ const n=(nom||'').trim(); return (db.subventions||[]).filter(sub=>{ if(sub.refusee) return false; const rep=pilotSubRep(sub); if(rep.length) return rep.some(r=>(r.action||'').trim()===n); return (sub.action||'').trim()===n; }); }
+// Part PRÉVUE d'une subvention attribuable à l'action « nom » : montant réparti si répartie, sinon le demandé de son action unique.
+function pilotSubPrev(sub,nom){ const n=(nom||'').trim(); const rep=pilotSubRep(sub); if(rep.length){ const e=rep.find(r=>(r.action||'').trim()===n); return e?(e.montant||0):0; } return (sub.action||'').trim()===n?(sub.demande||0):0; }
+// Part VERSÉE d'une subvention attribuable à l'action « nom » : au prorata de la répartition, sinon le versé de son action unique.
+function pilotSubVerse(sub,nom){ const n=(nom||'').trim(); const rep=pilotSubRep(sub); if(rep.length){ const sum=rep.reduce((t,r)=>t+(r.montant||0),0); const e=rep.find(r=>(r.action||'').trim()===n); return (sum>0&&e)?((sub.verse||0)*(e.montant||0)/sum):0; } return (sub.action||'').trim()===n?(sub.verse||0):0; }
 function pilotNat(n){ return n.type==='benevolat'?(n.q||0)*PILOT_TAUXBEN:(n.q||0)*(n.pu||0); }
 function pilotTotals(f){
   pilotFiche(f); const t={persPrev:0,persReel:0,autrePrev:0,recSubPrev:0,recAutrePrev:0,nat:0,mairiePrev:0};
@@ -4248,7 +4305,7 @@ function pilotTotals(f){
   (f.sessions||[]).forEach(se=>{ (se.personnel||[]).forEach(p=>{ const c=pilotCoutHTrav(pilotSal(p.sid)); t.persPrev+=c*(p.hPrev||0); t.persReel+=c*(p.hReel||0); }); (se.charges||[]).forEach(c=>{ t.autrePrev+=(c.prev||0); }); (se.recAutres||[]).forEach(r=>{ t.recAutrePrev+=(r.prev||0); }); (se.nature||[]).forEach(n=>{ t.nat+=pilotNat(n); }); });
   f.charges.forEach(c=>{ t.autrePrev+=(c.prev||0); });
   f.recAutres.forEach(r=>{ t.recAutrePrev+=(r.prev||0); });
-  pilotSubs(f.nom).forEach(s=>{ t.recSubPrev+=(s.demande||0); if(/mairie/i.test(s.structure||'')) t.mairiePrev+=(s.demande||0); });
+  pilotSubs(f.nom).forEach(s=>{ const part=pilotSubPrev(s,f.nom); t.recSubPrev+=part; if(/mairie/i.test(s.structure||'')) t.mairiePrev+=part; });
   f.nature.forEach(n=>{ t.nat+=pilotNat(n); });
   t.autreReel=pilotReel(f.nom,'out'); t.recReel=pilotReel(f.nom,'in');
   t.recPrev=t.recSubPrev+t.recAutrePrev;
@@ -4289,7 +4346,7 @@ function pilotApercuText(f){
   o.push(P('  60/61/62 Autres dépenses',42)+L(pilotEur(t.autrePrev),12)+L(pilotEur(t.autreReel),12));
   o.push(P('  TOTAL CHARGES',42)+L(pilotEur(t.depPrev),12)+L(pilotEur(t.depReel),12)); o.push('');
   o.push(P('PRODUITS',42)+L('Prévu',12)+L('Réel',12));
-  pilotSubs(f.nom).forEach(s=>o.push(P('  74 '+(s.structure||s.name||'Subvention'),42)+L(pilotEur(s.demande||0),12)+L(pilotEur(s.verse||0),12)));
+  pilotSubs(f.nom).forEach(s=>o.push(P('  74 '+(s.structure||s.name||'Subvention'),42)+L(pilotEur(pilotSubPrev(s,f.nom)),12)+L(pilotEur(pilotSubVerse(s,f.nom)),12)));
   f.recAutres.forEach(r=>o.push(P('  70 '+(r.lib||'Autre produit'),42)+L(pilotEur(r.prev||0),12)+L('',12)));
   o.push(P('  TOTAL PRODUITS',42)+L(pilotEur(t.recPrev),12)+L(pilotEur(t.recReel),12)); o.push('');
   o.push(P('CONTRIBUTIONS EN NATURE (86 = 87)',42)+L(pilotEur(t.nat),12)); o.push('');
@@ -4830,7 +4887,7 @@ function addSubvention(){
   const verse=parseFloat($('s_verse').value)||0;
   const sub={id:uid(), name, structure:$('s_struct').value.trim(), site:$('s_site').value.trim(), action:$('s_action').value.trim(),
     demande:parseFloat($('s_demande').value)||0, accorde:parseFloat($('s_accorde').value)||0, verse, date:$('s_date').value||'',
-    deadline:$('s_deadline').value||'', dateVote:$('s_datevote').value||'', refusee:false, recurrent:$('s_recurrent').value==='1', lien:$('s_lien').value.trim(), opId:''};
+    deadline:$('s_deadline').value||'', dateVote:$('s_datevote').value||'', refusee:false, recurrent:$('s_recurrent').value==='1', lien:$('s_lien').value.trim(), opId:'', repartition:[]};
   if(verse>0){ const op={id:uid(),type:'in',label:'Subvention — '+name,cat:'Subvention',compte:"740 - Subventions d'exploitation",
       amount:verse,date:sub.date||today(),project:'',account:'banque',photo:'',splits:[{site:sub.site,action:sub.action,amount:verse}]};
     db.ops.push(op); sub.opId=op.id; }
@@ -4883,13 +4940,14 @@ function renderSubventions(){
   const pill=st=> st==='Versée'?'<span class="pill ok">Versée</span>':st==='Accordée'?'<span class="pill wait">Accordée</span>':st==='Refusée'?'<span class="pill no">Refusée</span>':'<span class="pill" style="background:#eef0f5;color:#6b7488">Demandée</span>';
   tb.innerHTML=subs.slice().sort((a,b)=>(b.demande||0)-(a.demande||0)).map(s=>`<tr${s.refusee?' style="opacity:.55"':''}>
     <td><strong>${esc(s.name)}</strong></td><td>${esc(s.structure||'—')}</td>
-    <td style="font-size:13px" class="muted">${esc(s.site||'—')}${s.action?'<br>'+esc(s.action):''}</td>
+    <td style="font-size:13px" class="muted">${esc(s.site||'—')}${(s.repartition&&s.repartition.length)?'<br>🎯 '+s.repartition.map(r=>esc((r.action||'?')+' ('+euro(r.montant||0)+')')).join(', '):(s.action?'<br>'+esc(s.action):'')}</td>
     <td class="num">${euro(s.demande||0)}</td><td class="num">${euro(s.accorde||0)}</td>
     <td class="num ${s.verse>0?'green':''}">${euro(s.verse||0)}</td>
     <td>${pill(subStatut(s))}</td>
     <td style="white-space:nowrap"><button class="ghost btn" style="padding:4px 9px;font-size:12px" onclick="recordVersement('${s.id}')" title="Enregistrer un versement reçu (crée la recette en compta)">💶 Versement</button>
       <button class="ghost btn" style="padding:4px 9px;font-size:12px" onclick="openDocs('subventions','${s.id}')" title="Pièces jointes (dossier, tableau financier...)">📎${(s.files&&s.files.length)?' '+s.files.length:''}</button>
       <button class="ghost btn" style="padding:4px 9px;font-size:12px" onclick="toggleRefus('${s.id}')" title="${s.refusee?'Annuler le refus':'Marquer comme refusée (exclue du prévisionnel)'}">${s.refusee?'↩︎ Refus':'✖️ Refusée'}</button>
+      <button class="ghost btn" style="padding:4px 9px;font-size:12px" onclick="openRepartition('${s.id}')" title="Répartir cette subvention sur plusieurs actions (chaque part alimente le Budget par action)">🎯${(s.repartition&&s.repartition.length)?' '+s.repartition.length:''}</button>
       <button class="ghost btn" style="padding:4px 9px;font-size:12px" onclick="openEdit('subventions','${s.id}')" title="Modifier">✏️</button>
       <button class="danger" onclick="delSubvention('${s.id}')">Suppr.</button></td></tr>`).join('');
 }
