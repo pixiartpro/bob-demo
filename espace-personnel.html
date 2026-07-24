@@ -369,7 +369,7 @@ const ACM_PHASE_LAB={avant:'⬅️ Avant',pendant:'⏳ Pendant',apres:'➡️ Ap
 async function loadAcm(){
   try{
     const [rr,rp]=await Promise.all([
-      sb.from('acm_reflet').select('edition_ref,edition_nom,volet,contenu,updated_at').in('volet',['planning','demarches','projet_educatif']).order('updated_at',{ascending:false}),
+      sb.from('acm_reflet').select('edition_ref,edition_nom,volet,contenu,updated_at').in('volet',['planning','demarches','projet_educatif','documents']).order('updated_at',{ascending:false}),
       sb.from('acm_propositions').select('*').order('created_at',{ascending:false})
     ]);
     ME.acmReflet=rr.data||[]; ME.acmProps=rp.data||[];
@@ -397,7 +397,7 @@ function acmRefletHTML(){
   const pe=rows.filter(function(r){return r.volet==='projet_educatif';})[0]; // volet global : le plus récent (rows déjà triés updated_at desc)
   const byEd={};
   rows.forEach(function(r){
-    if(r.volet==='planning'||r.volet==='demarches'){
+    if(r.volet==='planning'||r.volet==='demarches'||r.volet==='documents'){
       if(!byEd[r.edition_ref]) byEd[r.edition_ref]={ref:r.edition_ref, nom:r.edition_nom||r.edition_ref, upd:r.updated_at};
       byEd[r.edition_ref][r.volet]=r.contenu||{};
     }
@@ -420,6 +420,7 @@ function acmRefletHTML(){
       +'<div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:baseline"><h3 style="margin:0">🌴 '+esc(ed.nom)+'</h3>'+(ed.upd?'<span class="sub">publié le '+acmDT(ed.upd)+'</span>':'')+'</div>'
       + (ed.planning?('<div id="acmbwrap_'+esc(ref)+'">'+acmSalBoardHTML(ref)+'</div>'):'')
       + (ed.demarches?acmDemarchesHTML(ed.demarches):'')
+      + (ed.documents?acmDocumentsHTML(ed.documents, ref):'')
     +'</div>';
   });
   return h;
@@ -464,6 +465,27 @@ function acmDemarchesHTML(dm){
   return h;
 }
 
+// ---- 📎 Documents de l'édition (déposés par le bureau, lecture seule) — coffre privé acm-docs, lien signé à la demande ----
+function acmDocumentsHTML(dm, edRef){
+  const items=(Array.isArray(dm&&dm.items)?dm.items:[]);
+  if(!items.some(function(x){return x&&x.path;})) return '';
+  let h='<div style="margin-top:12px"><b style="font-size:14px">📎 Documents</b>';
+  items.forEach(function(d,i){
+    if(!d||!d.path) return;
+    h+='<div style="margin:4px 0;font-size:14px;display:flex;align-items:center;gap:8px;flex-wrap:wrap">📄 <span>'+esc(d.label||d.file||'Document')+'</span>'
+      +'<button class="btn ghost" style="padding:2px 10px;font-size:12px" onclick="acmSalDocView(\''+esc(edRef)+'\','+i+')">👁️ Consulter</button></div>';
+  });
+  h+='<p class="sub" style="margin:6px 0 0;font-size:12px">Lecture seule — déposés par le bureau.</p></div>';
+  return h;
+}
+window.acmSalDocView=async function(edRef,idx){
+  const row=(ME.acmReflet||[]).find(function(r){return r.volet==='documents' && r.edition_ref===edRef;});
+  const items=(row&&row.contenu&&Array.isArray(row.contenu.items))?row.contenu.items:[];
+  const d=items[idx];
+  if(!d||!d.path){ toast('Document indisponible'); return; }
+  try{ const {data,error}=await sb.storage.from('acm-docs').createSignedUrl(d.path,3600); if(error||!data){ toast('Document indisponible'); return; } spShowDoc(data.signedUrl, d.file||d.label||'Document'); }
+  catch(e){ toast('Document indisponible'); }
+};
 // ---- Tableau glisser-déposer (étape 4) : la salariée range le VRAI catalogue publié → chaque changement devient une proposition de placement ; le bureau valide et ça se place vraiment. ----
 function acmPlanningFor(edRef){ const r=(ME.acmReflet||[]).find(function(x){return x.volet==='planning' && x.edition_ref===edRef;}); return r?(r.contenu||{}):{}; }
 function acmSalPublishedPlan(edRef){ const pl=acmPlanningFor(edRef); return (pl.plan&&typeof pl.plan==='object')?pl.plan:{}; }

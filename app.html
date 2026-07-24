@@ -2910,6 +2910,8 @@ const FAQ=[
    a:"Onglet 🌴 Vacances → panneau <b>💶 CAF — Prestation de service</b>. La CAF974 compte en <b>heures-enfants = jours × enfants × amplitude horaire</b>, par <b>année civile</b>. Renseigne l'<b>amplitude</b> (heures d'accueil par jour) de chaque édition : Bob additionne les heures-enfants de l'année et affiche une <b>estimation de la PS</b> (ados <b>0,94 €/heure-enfant</b> en 2026 ; le barème est modifiable car il est revalorisé chaque année). Il rappelle aussi les <b>4 échéances AFAS</b> (prévisionnel 31/03, actu T2 15/07, actu T3 15/10, bilan 31/03 N+1) et la pièce à joindre (attestation URSSAF de moins de 6 mois). ⚠️ C'est une <b>estimation pour t'aider à préparer</b> la déclaration : la CAF compte les heures <b>réalisées ou facturées</b> selon ta convention et <b>plafonne au prix de revient réel</b>. À déclarer au compte 70623. Réservé au bureau."},
   {cat:'🌴 Vacances',q:"Comment partager le planning ACM avec les salariées et traiter leurs propositions ?",kw:"partage salariee salarie salaries mon acm reflet publier planning demarches projet educatif propositions bannette a valider accepter refuser animatrice directrice betty alyssa proposer activite placement budget miroir espace personnel montent preparer",
    a:"En haut de l'onglet 🌴 Vacances, le panneau <b>🔄 Partage avec les salariées</b>. Le bouton <b>📢 Publier aux salariées</b> envoie un <b>reflet en lecture</b> (le planning, les démarches et le projet éducatif) que chaque salariée retrouve dans son espace, écran <b>« 🌴 Mon ACM »</b> — rien ne part tant que tu n'as pas cliqué « Publier ». En dessous, <b>📥 À valider</b> reçoit leurs <b>propositions</b> (une activité, un placement sur un jour, une démarche, un texte pour le projet pédagogique, une ligne de budget matériel) : tu <b>Acceptes</b> (l'activité rejoint le catalogue, la démarche l'accueil, le texte le projet éducatif ; le <b>placement se pose tout seul sur ton planning</b> quand tu Acceptes, le budget reste à reporter à la main) ou tu <b>Refuses</b> avec un motif. Les salariées <b>préparent et proposent</b> ; le bureau garde la <b>validation, l'argent et la publication</b>. Réservé au bureau."},
+  {cat:'🌴 Vacances',q:"Comment joindre des documents à une période d'ACM (et l'équipe les voit-elle) ?",kw:"document documents joindre attacher deposer piece pieces fichier fichiers acm vacances edition dossier bilan sdjes tam recepisse declaration assurance rc emargement pai courrier coffre televerser telecharger visualiser salariee salaries mon acm equipe voir consulter vepi",
+   a:"Dans le <b>dossier-bilan</b> d'une édition (🌴 Vacances → 🗄️ Éditions → ouvre l'édition), la section <b>📎 Documents de l'édition</b> te laisse <b>déposer</b> tes fichiers (déclaration/récépissé SDJES, attestation d'assurance, feuille d'émargement, PAI, courriers…), puis les <b>👁️ visualiser</b> ou <b>⬇️ télécharger</b>. Ils sont rangés dans un <b>coffre privé dédié à l'ACM</b>, distinct du coffre des familles. Pour que <b>l'équipe</b> les voie, clique <b>📢 Publier aux salariées</b> (panneau 🔄) : les documents apparaissent alors en <b>lecture seule</b> dans leur écran <b>« 🌴 Mon ACM »</b>, sous la période. Le <b>dépôt et la suppression restent réservés au bureau</b> ; les salariées ne font que consulter. Le VEPI marche pareil."},
   {cat:'🏠 Lieux',q:"À quoi sert l'onglet 🏠 Lieux et comment publier un local sur le site ?",kw:"lieux lieu local locaux salle batiment adresse horaires etat renovation photo publier site public implantation bringelliers ou se deroule activite carte",
    a:"Onglet <b>🏠 Lieux</b> : tu y gères tes <b>locaux</b> — nom, <b>état</b> (ouvert / en rénovation…), adresse, horaires, une photo (lien) — et tu choisis de les <b>publier sur le site</b> ou non. Sur le site public, chaque lieu affiche aussi les <b>activités qui s'y déroulent</b> (d'après le champ « Lieu » de chaque activité dans 🎟️ Activités). C'est aussi là que tu retrouves tes <b>lieux d'implantation</b> (utile pour les annexes CAF / DRAJES). Clique <b>+ Créer</b> pour ajouter un lieu, puis modifie-le dans la liste dessous. Réservé au bureau."},
   {cat:'💡 Ateliers',q:"À quoi sert l'onglet 💡 Ateliers et comment gérer les inscriptions ?",kw:"ateliers atelier creer inscription inscriptions inscrits participants seance groupe gerer liste rafraichir workshop",
@@ -3098,6 +3100,7 @@ function pageHelpGotoAide(){ pageHelpClose(); const b=document.querySelector('na
 
 /* ---- ✨ Quoi de neuf (nouveautés + notice chronologique) ---- */
 const NEWS=[
+  {id:'2026-07-24-documents-acm',date:'2026-07-24',tab:'🌴 Vacances',titre:"📎 Joindre des documents à une période d'ACM (et l'équipe les voit)",desc:"Dans le <b>dossier-bilan</b> d'une édition d'ACM (🌴 Vacances → ouvre l'édition), une nouvelle section <b>📎 Documents de l'édition</b> : dépose tes fichiers — <b>déclaration/récépissé SDJES, attestation d'assurance, feuille d'émargement, PAI, courriers…</b> — puis visualise-les ou télécharge-les. Ils sont rangés dans un <b>coffre privé dédié à l'ACM</b>, séparé du coffre des familles. Un clic sur <b>📢 Publier aux salariées</b> et l'<b>équipe ACM</b> les retrouve en <b>lecture seule</b> dans « 🌴 Mon ACM », sous la période. Dépôt et suppression réservés au bureau. Le <b>VEPI</b> en profite aussi."},
   {id:'2026-07-24-subvention-repartition',date:'2026-07-24',tab:'🏛️ Subventions',titre:"🎯 Répartir une subvention sur plusieurs actions",desc:"Une même subvention peut maintenant financer <b>plusieurs actions</b>, avec un <b>montant affecté à chacune</b>. Sur la ligne d'une subvention (<b>🏛️ Subventions</b>), le nouveau bouton <b>🎯</b> ouvre sa <b>répartition</b> : une ligne par action — par ex. la <b>Subvention ACM Ados</b> de la Mairie répartie entre <b>ACM Ados 2026 - 1</b>, <b>- 2</b> et <b>- 3</b> — et Bob vérifie que la somme colle au <b>montant accordé</b>. Chaque part se range <b>toute seule</b> dans le <b>🎯 Budget par action</b> concerné, et les <b>versements</b> enregistrés ensuite se répartissent dans la même proportion : fini de créer une subvention séparée par action. Sans répartition, rien ne change — la subvention reste sur son unique action."},
   {id:'2026-07-23-pieces-subvention',date:'2026-07-23',tab:'🗂️ Répertoire',titre:"📋 Nouveau : les 8 pièces de subvention, cochées toutes seules",desc:"Dans <b>🗂️ Répertoire</b> → <b>📁 Documents officiels</b>, une carte <b>« 📋 Les 8 pièces de subvention »</b> en tête du panneau. Ce sont les documents que la Ville redemande à <b>chaque</b> campagne : <b>RIB, avis SIREN, parution au Journal officiel, attestation d'assurance, contrat d'engagement républicain, bilan financier, budget prévisionnel, dernier PV d'assemblée</b>. Dépose-les une fois dans le coffre : chaque pièce se <b>coche toute seule</b> (✅) et un compteur <b>x/8</b> te dit d'un coup d'œil ce qui est prêt avant un dépôt — fini d'aller chercher chaque pièce à droite à gauche. Le repérage se fait d'après le nom du fichier, à vérifier d'un œil. Réservé au bureau."},
   {id:'2026-07-21-previsionnel-replanifier',date:'2026-07-21',tab:'🔮 Prévisionnel',titre:"⏳ Fin des mois « trop beaux » : les subventions en retard ne gonflent plus un mois au hasard",
@@ -9304,6 +9307,7 @@ renderAll();
     h+='<h3 style="margin:14px 0 4px">👥 Équipe affectée <span class="hint" style="font-weight:400;font-size:12px">— composition calculée depuis les diplômes salariés</span></h3><div id="acmBilanEquipe"><p class="hint">Chargement…</p></div>';
     h+='<h3 style="margin:14px 0 4px">📸 Photos</h3><div id="acmBilanPhotos"><p class="hint">Chargement…</p></div>';
     h+='<h3 style="margin:14px 0 4px">📝 Compte-rendu <span class="hint" style="font-weight:400;font-size:12px">— mot libre / synthèse</span></h3><textarea id="acmBilanCR" '+(archived?'readonly':'')+' onchange="acmBilanCR(\''+ed.id+'\',this.value)" placeholder="Ce qu\'on a fait : temps forts, sorties, ce qui a marché / à améliorer… (enregistré quand tu cliques ailleurs)" style="width:100%;min-height:90px'+(archived?';background:#f6f7f8':'')+'">'+esc(ed.bilan.cr||'')+'</textarea>';
+    h+='<h3 style="margin:14px 0 4px">📎 Documents de l\'édition <span class="hint" style="font-weight:400;font-size:12px">— déclaration/récépissé SDJES, assurance, émargement, PAI, courriers…</span></h3><div id="acmBilanDocs"></div>';
     h+='<details style="margin:12px 0 0"><summary style="cursor:pointer;font-weight:700;font-size:15px">📋 Projet pédagogique <span class="hint" style="font-weight:400;font-size:12px">— cadré par la loi (R.227-25) · prévu (avant) → réalisé (après)</span></summary><div style="margin-top:6px">'+acmPedaHtml(ed,archived)+'</div></details>';
     h+='<h3 style="margin:14px 0 4px">📋 Parcours de démarches <span class="hint" style="font-weight:400;font-size:12px">— avant · pendant · après (à faire → fait → sans objet)</span></h3><div id="acmBilanDem">'+acmDemHtml(ed,archived)+'</div>';
     h+='<div class="row" style="margin-top:14px;gap:6px;flex-wrap:wrap">';
@@ -9311,7 +9315,71 @@ renderAll();
     else h+='<button class="btn" style="background:#b06a00" onclick="acmCloreEdition(\''+ed.id+'\')">📦 Clôturer &amp; archiver</button> <button class="ghost btn" onclick="acmBilanPDF(\''+ed.id+'\')">🖨️ Aperçu PDF</button>';
     h+='</div></div>';
     view.innerHTML=h; view.scrollIntoView({block:'start',behavior:'smooth'});
-    acmFillEffectif(ed); acmFillEncadrement(ed); acmFillPhotos(ed); if(window.acmFillEquipe) acmFillEquipe(ed);
+    acmFillEffectif(ed); acmFillEncadrement(ed); acmFillPhotos(ed); if(window.acmFillEquipe) acmFillEquipe(ed); if(window.acmRenderDocs) acmRenderDocs(ed);
+  };
+  // === 📎 Documents de l'édition (coffre privé acm-docs ; métadonnées dans le coffre db.acmVac → ed.bilan.docs) ===
+  // Écriture réservée au bureau (canWrite). Lecture par le bureau ici ET par les salariées dans « Mon ACM » (via le miroir acm_reflet, volet 'documents'). Coffre distinct du coffre des familles.
+  window.acmRenderDocs=function(ed){
+    const box=document.getElementById('acmBilanDocs'); if(!box||!ed) return;
+    if(!ed.bilan) return;
+    if(!ed.bilan.docs) ed.bilan.docs=[];
+    const list=ed.bilan.docs, archived=ed.statut==='archivee';
+    const up=(canWrite&&!archived)?'<div style="margin:0 0 10px"><button class="btn" onclick="acmDocUpload(\''+ed.id+'\')">⬆️ Déposer un document</button> <span class="muted" style="font-size:12px">— PDF, scan ou photo ; plusieurs possibles</span></div>':'';
+    let rows;
+    if(list.length){
+      rows='<div style="overflow-x:auto;-webkit-overflow-scrolling:touch"><table style="width:100%;min-width:420px;border-collapse:collapse"><tbody>'+list.map(function(d){
+        const dt=d.ts?('<br><span class="muted" style="font-size:12px">déposé le '+new Date(d.ts).toLocaleDateString('fr-FR')+'</span>'):'';
+        const del=(canWrite&&!archived)?' <button class="danger" onclick="acmDocDel(\''+ed.id+'\',\''+d.id+'\')">Suppr.</button>':'';
+        return '<tr><td style="padding:8px;border-top:1px solid #eee"><b>'+esc(d.label||d.file||'')+'</b>'+dt+'</td><td style="padding:8px;border-top:1px solid #eee;text-align:right;white-space:nowrap"><button class="ghost btn" onclick="acmDocView(\''+ed.id+'\',\''+d.id+'\')">👁️ Visualiser</button> <button class="ghost btn" onclick="acmDocDownload(\''+ed.id+'\',\''+d.id+'\')">⬇️ Télécharger</button>'+del+'</td></tr>';
+      }).join('')+'</tbody></table></div>';
+    }else{
+      rows='<p class="hint" style="margin:2px 0">Aucun document pour cette édition.'+((canWrite&&!archived)?' Dépose la déclaration/récépissé SDJES, l\'attestation d\'assurance, une feuille d\'émargement…':'')+'</p>';
+    }
+    box.innerHTML=up+rows+((canWrite&&list.length&&!archived)?'<p class="hint" style="margin:6px 0 0;font-size:12px">👁️ Les salariées de l\'équipe ACM voient ces documents en lecture dans « Mon ACM » après un clic sur <b>📢 Publier aux salariées</b> (panneau 🔄).</p>':'');
+  };
+  window.acmDocUpload=function(edId){
+    if(!canWrite){ alert('Réservé au bureau.'); return; }
+    const ed=acmDb().sessions.find(function(s){return s.id===edId;}); if(!ed) return;
+    if(ed.statut==='archivee'){ alert('Édition archivée — rouvre-la pour modifier ses documents.'); return; }
+    const inp=document.createElement('input'); inp.type='file'; inp.multiple=true; inp.accept='.pdf,image/*,.doc,.docx';
+    inp.onchange=async function(){
+      const files=inp.files?Array.from(inp.files):[]; if(!files.length) return;
+      let userId; try{ userId=(myProfile&&myProfile.id)||((await sbc.auth.getUser()).data.user.id); }catch(e){ userId='x'; }
+      if(!ed.bilan.docs) ed.bilan.docs=[];
+      let ok=0; const skip=[];
+      for(const f of files){
+        try{
+          const safe=(f.name||'document').replace(/[^A-Za-z0-9._-]/g,'_');
+          const path=myAsso+'/'+ed.id+'/'+userId+'-'+Date.now()+'-'+safe;
+          const upr=await sbc.storage.from('acm-docs').upload(path,f,{upsert:true,contentType:f.type||'application/octet-stream'});
+          if(upr.error){ skip.push(f.name+' — '+upr.error.message); continue; }
+          ed.bilan.docs.push({id:uid(),label:(f.name||'').replace(/\.[^.]+$/,''),file:f.name,path:path,ts:new Date().toISOString()});
+          ok++;
+        }catch(e){ skip.push(f.name); }
+      }
+      save(); schedulePush(); if(window.acmRenderDocs) acmRenderDocs(ed);
+      alert('✅ '+ok+' document(s) déposé(s).'+(skip.length?'\n\nNon déposés :\n- '+skip.join('\n- '):''));
+    };
+    inp.click();
+  };
+  window.acmDocView=async function(edId,docId){
+    const ed=acmDb().sessions.find(function(s){return s.id===edId;}); if(!ed) return;
+    const d=((ed.bilan&&ed.bilan.docs)||[]).find(function(x){return x.id===docId;}); if(!d||!d.path){ alert('Document introuvable.'); return; }
+    try{ const r=await sbc.storage.from('acm-docs').createSignedUrl(d.path,3600); if(r.error||!r.data){ alert('Document indisponible.'); return; } docView(r.data.signedUrl,(d.file||d.label||'Document')); }catch(e){ alert('Document indisponible.'); }
+  };
+  window.acmDocDownload=async function(edId,docId){
+    const ed=acmDb().sessions.find(function(s){return s.id===edId;}); if(!ed) return;
+    const d=((ed.bilan&&ed.bilan.docs)||[]).find(function(x){return x.id===docId;}); if(!d||!d.path){ alert('Document introuvable.'); return; }
+    try{ const r=await sbc.storage.from('acm-docs').createSignedUrl(d.path,3600,{download:d.file||true}); if(r.error||!r.data){ alert('Document indisponible.'); return; } const a=document.createElement('a'); a.href=r.data.signedUrl; a.download=d.file||''; document.body.appendChild(a); a.click(); a.remove(); }catch(e){ alert('Document indisponible.'); }
+  };
+  window.acmDocDel=async function(edId,docId){
+    if(!canWrite){ alert('Réservé au bureau.'); return; }
+    const ed=acmDb().sessions.find(function(s){return s.id===edId;}); if(!ed) return;
+    const d=((ed.bilan&&ed.bilan.docs)||[]).find(function(x){return x.id===docId;}); if(!d) return;
+    if(!confirm('Supprimer « '+((d.label||d.file)||'')+' » ? (définitif)')) return;
+    try{ if(d.path) await sbc.storage.from('acm-docs').remove([d.path]); }catch(e){}
+    ed.bilan.docs=((ed.bilan&&ed.bilan.docs)||[]).filter(function(x){return x.id!==docId;});
+    save(); schedulePush(); if(window.acmRenderDocs) acmRenderDocs(ed);
   };
   window.acmCloseBilanView=function(){ window.__acmBilanCur=null; ['acmBilanView','vepiBilanView'].forEach(function(id){ const v=document.getElementById(id); if(v) v.innerHTML=''; }); };
   window.acmBilanCR=function(edId,val){ const ed=acmDb().sessions.find(function(s){return s.id===edId;}); if(!ed)return; ed.bilan.cr=val; save(); };
@@ -9397,6 +9465,9 @@ renderAll();
         });
         rows.push({asso_id:myAsso, edition_ref:s.id, edition_nom:s.nom||'', volet:'demarches', contenu:{items:items}, updated_at:stamp});
         keep.add(s.id+'|demarches');
+        // 📎 Documents de l'édition : on publie la LISTE (label + fichier + chemin) ; le fichier reste dans le coffre privé acm-docs, la salariée génère un lien signé à la consultation (RLS : lecture salariée autorisée). Rien si aucun document → réconciliation nettoie une ancienne ligne vide.
+        const docs=((s.bilan&&s.bilan.docs)||[]).map(function(d){ return {label:d.label||d.file||'', file:d.file||'', path:d.path||''}; }).filter(function(d){ return d.path; });
+        if(docs.length){ rows.push({asso_id:myAsso, edition_ref:s.id, edition_nom:s.nom||'', volet:'documents', contenu:{items:docs}, updated_at:stamp}); keep.add(s.id+'|documents'); }
       });
       const pj=a.projetEducatif||{texte:'',maj:''};
       if((pj.texte||'').trim()){ // projet éducatif global — sentinelle edition_ref '_global' (colonne NOT NULL) ; le lecteur prend le plus récent
