@@ -126,7 +126,7 @@ const SB_URL='https://dkidtwypclpwznleiqnq.supabase.co';
 const SB_KEY='sb_publishable_HDfV-O2ION1Vw9v03aV_Qg_PkiAjLNo';
 const sb=window.supabase.createClient(SB_URL,SB_KEY);
 const $=s=>document.querySelector(s);
-const ME={session:null,prof:null,fiche:null,conges:[],docs:[],acts:[],ins:[],asso:null,protos:[],albums:[],photos:[],kids:[],famKids:[],famDoss:[],famOnlyMiss:false,famEdit:null,acmReflet:[],acmProps:[],vepiDocs:[],sections:[],secOK:null,msgs:[]};
+const ME={session:null,prof:null,fiche:null,conges:[],docs:[],acts:[],ins:[],asso:null,protos:[],albums:[],photos:[],kids:[],famKids:[],famDoss:[],famOnlyMiss:false,famEdit:null,acmReflet:[],acmProps:[],vepiDocs:[],periDocs:[],sections:[],secOK:null,msgs:[]};
 function esc(s){return (s==null?'':String(s)).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2600);}
 function euroDays(n){return (n==null?'0':(Math.round(n*100)/100).toString().replace('.',','));}
@@ -153,7 +153,7 @@ async function boot(){
   // rôle personnel : fiche RH facultative (la partie gestion ne dépend pas d'elle)
   const {data:fiche}=await sb.from('personnel').select('*').eq('user_id',session.user.id).maybeSingle();
   ME.fiche=fiche||null;
-  const jobs=[loadActs(), loadProtocoles(), loadPhotos(), loadFamilles(), loadAcm(), loadSections(), loadMessages()];
+  const jobs=[loadActs(), loadProtocoles(), loadPhotos(), loadFamilles(), loadAcm(), loadPeriDocsSal(), loadSections(), loadMessages()];
   if(fiche){ jobs.push(loadConges(), loadDocs()); }
   await Promise.all(jobs);
   renderAll();
@@ -211,6 +211,7 @@ function renderView(){
   else if(ME.view==='messages'){ vp.innerHTML=backBar('💬 Messages des familles')+messagesHTML(); renderMessages(); }
   else if(ME.view==='acm'){ vp.innerHTML=backBar('🌴 Mon ACM')+acmBlockHTML(); acmMountForm(); }
   else if(ME.view==='vepi'){ vp.innerHTML=backBar('📌 Mon VEPI')+vepiBlockHTML(); }
+  else if(ME.view==='peridocs'){ vp.innerHTML=backBar('📎 Docs périscolaire')+periDocsBlockHTML(); }
   else { vp.innerHTML=hubHTML(); }
 }
 function backBar(t){ return '<div class="backbar"><button class="btn ghost" onclick="spView(\'hub\')">← Retour</button><span class="backttl">'+esc(t)+'</span></div>'; }
@@ -294,6 +295,75 @@ window.acmVepiDocView=async function(edRef,idx){
   catch(e){ toast('Document indisponible'); }
 };
 
+// ===== Bloc « Docs périscolaire » : documents de service (bureau→équipe) + proposition (équipe→bureau, validée) =====
+async function loadPeriDocsSal(){
+  try{ const {data,error}=await sb.from('peri_docs').select('*').order('created_at',{ascending:false}); if(error) throw error; ME.periDocs=data||[]; }
+  catch(e){ ME.periDocs=[]; }
+}
+function hubPeriDocsCardHTML(sub){
+  if(ME.secOK===true && (ME.sections||[]).includes('periscolaire')){
+    return '<button class="hubcard" onclick="spView(\'peridocs\')"><div class="hubico">📎</div>'
+      +'<div class="hubname">Docs périscolaire</div><div class="hubsub">'+esc(sub)+'</div><div class="hubgo">Entrer →</div></button>';
+  }
+  const motif=(ME.secOK===true)
+    ? 'Réservé à l\'équipe périscolaire. Le bureau ne t\'y a pas encore rattaché·e — demande-lui.'
+    : 'On n\'a pas pu vérifier tes accès. Recharge la page : si tu es au périscolaire, cette carte s\'ouvrira.';
+  return '<div class="hubcard off"><div class="hubico">📎</div>'
+    +'<div class="hubname">Docs périscolaire 🔒</div><div class="hubsub">'+esc(motif)+'</div>'
+    +'<div class="hubgo" style="color:var(--muted)">Fermé pour l\'instant</div></div>';
+}
+function periDocsBlockHTML(){
+  const list=ME.periDocs||[];
+  const val=list.filter(function(d){return d.statut==='valide';});
+  const myName=((ME.fiche&&ME.fiche.prenom)?((ME.fiche.prenom+' '+(ME.fiche.nom||'')).trim()):((ME.prof&&(ME.prof.full_name||ME.prof.email))||''));
+  const mine=list.filter(function(d){return d.statut!=='valide' && d.auteur_nom===myName;});
+  let h='<section class="block">'
+    +'<div class="card" style="margin-bottom:14px"><h3 style="margin:0 0 4px">📎 Documents de l\'accueil</h3>'
+      +'<p class="sub" style="margin:0 0 8px">Les documents de service déposés par le bureau (règlement, projet pédagogique, notes de service…). Lecture seule.</p>';
+  if(!val.length){ h+='<p class="empty">Aucun document pour l\'instant.</p>'; }
+  else { h+=val.map(function(d){
+    return '<div style="margin:6px 0;font-size:14px;display:flex;align-items:center;gap:8px;flex-wrap:wrap">📄 <span>'+esc(d.label||d.file||'Document')+'</span>'
+      +'<button class="btn ghost" style="padding:2px 10px;font-size:12px" onclick="periDocSalView(\''+esc(d.id)+'\')">👁️ Consulter</button></div>';
+  }).join(''); }
+  h+='</div>'
+    +'<div class="card" style="margin-bottom:14px"><h3 style="margin:0 0 4px">➕ Proposer un document au bureau</h3>'
+      +'<p class="sub" style="margin:0 0 8px">Un émargement scanné, une info utile pour l\'équipe… Le bureau le valide avant qu\'il apparaisse pour tout le monde.</p>'
+      +'<div class="row" style="margin-bottom:8px"><div style="flex:2"><label>Nom du document</label><input id="peri_doc_label" style="width:100%" placeholder="ex. Note affichage sortie"></div></div>'
+      +'<div class="row" style="margin-bottom:8px"><div style="flex:1"><label>Fichier (PDF, photo…)</label><input id="peri_doc_file" type="file" accept=".pdf,image/*,.doc,.docx" style="width:100%"></div></div>'
+      +'<button class="btn win" onclick="periDocSalPropose()">📨 Proposer au bureau</button>'
+    +'</div>';
+  if(mine.length){
+    h+='<h3 style="margin:6px 0 8px">📤 Mes propositions</h3>'+mine.map(function(d){
+      const st=(d.statut==='refuse')?['✖️ Refusée','#c0392b']:['🕓 En attente','#dc8f38'];
+      return '<div class="card" style="margin-bottom:8px;border-left:4px solid '+st[1]+'"><div style="display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;align-items:baseline"><b style="font-size:14px">📎 '+esc(d.label||d.file||'Document')+'</b><span class="badge">'+st[0]+'</span></div>'
+        +((d.statut==='refuse'&&d.motif_refus)?'<div style="margin-top:4px;background:#fbe9e7;border:1px solid #f3c4ba;color:#b23a23;border-radius:10px;padding:6px 10px;font-size:13px">Bureau : '+esc(d.motif_refus)+'</div>':'')
+      +'</div>';
+    }).join('');
+  }
+  return h+'</section>';
+}
+window.periDocSalView=async function(id){
+  const d=(ME.periDocs||[]).find(function(x){return x.id===id;});
+  if(!d||!d.path){ toast('Document indisponible'); return; }
+  try{ const {data,error}=await sb.storage.from('acm-docs').createSignedUrl(d.path,3600); if(error||!data){ toast('Document indisponible'); return; } spShowDoc(data.signedUrl, d.file||d.label||'Document'); }
+  catch(e){ toast('Document indisponible'); }
+};
+window.periDocSalPropose=async function(){
+  if(!ME.asso){ try{ const pr=await sb.from('profiles').select('asso_id').eq('id',ME.session.user.id).maybeSingle(); ME.asso=pr.data?pr.data.asso_id:null; }catch(e){} }
+  if(!ME.asso){ toast('Association introuvable — reconnecte-toi'); return; }
+  const fi=$('#peri_doc_file'); const f=(fi&&fi.files&&fi.files[0])||null;
+  if(!f){ toast('Choisis un fichier'); return; }
+  const label=(($('#peri_doc_label')||{}).value||'').trim() || (f.name||'').replace(/\.[^.]+$/,'') || 'Document';
+  const auteur_nom=((ME.fiche&&ME.fiche.prenom)?((ME.fiche.prenom+' '+(ME.fiche.nom||'')).trim()):((ME.prof&&(ME.prof.full_name||ME.prof.email))||''));
+  const safe=(f.name||'document').replace(/[^A-Za-z0-9._-]/g,'_');
+  const path=ME.asso+'/_peri/_propositions/'+ME.session.user.id+'-'+Date.now()+'-'+safe;
+  const upr=await sb.storage.from('acm-docs').upload(path,f,{upsert:true,contentType:f.type||'application/octet-stream'});
+  if(upr.error){ toast('Échec de l\'envoi : '+upr.error.message); return; }
+  const {error}=await sb.from('peri_docs').insert({asso_id:ME.asso, label:label, file:f.name, path:path, statut:'en_attente', auteur_nom:auteur_nom});
+  if(error){ toast('Erreur : '+error.message); return; }
+  ['peri_doc_label','peri_doc_file'].forEach(function(id){ const el=document.getElementById(id); if(el) el.value=''; });
+  await loadPeriDocsSal(); renderView(); toast('✅ Proposition envoyée au bureau');
+};
 // ===== Accueil : choisir un bloc =====
 function hubHTML(){
   const f=ME.fiche, hasFiche=!!f;
@@ -314,6 +384,8 @@ function hubHTML(){
   const acmBadge=acmAtt?' <span class="badge b-demande">'+acmAtt+' en attente</span>':'';
   const vepiN=new Set((ME.vepiDocs||[]).filter(function(r){return r.edition_ref;}).map(function(r){return r.edition_ref;})).size;
   const vepiSub=vepiN?(vepiN+' accueil'+(vepiN>1?'s':'')+' VEPI · documents publiés par le bureau'):'Consulte les documents VEPI déposés par le bureau';
+  const periN=(ME.periDocs||[]).filter(function(d){return d.statut==='valide';}).length;
+  const periSub=periN?(periN+' document'+(periN>1?'s':'')+' de service · propose au bureau'):'Documents de l\'accueil & propose un document au bureau';
   return '<section class="block"><h2 class="title">Que veux-tu faire ?</h2>'
     +'<p class="sub" style="margin:-4px 0 14px">Choisis un espace — tu pourras toujours revenir ici.</p>'
     +accesNoteHTML()
@@ -322,6 +394,7 @@ function hubHTML(){
         +'<div class="hubname">Mes activités</div><div class="hubsub">'+esc(actSub)+'</div><div class="hubgo">Entrer →</div></button>'
       +hubAcmCardHTML(acmBadge, acmSub)
       +hubVepiCardHTML(vepiSub)
+      +hubPeriDocsCardHTML(periSub)
       +'<button class="hubcard" onclick="spView(\'photos\')"><div class="hubico">📸</div>'
         +'<div class="hubname">Photos du jour</div><div class="hubsub">'+esc(phSub)+'</div><div class="hubgo">Entrer →</div></button>'
       +'<button class="hubcard" onclick="spView(\'familles\')"><div class="hubico">👨‍👩‍👧</div>'
