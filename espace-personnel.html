@@ -126,7 +126,7 @@ const SB_URL='https://dkidtwypclpwznleiqnq.supabase.co';
 const SB_KEY='sb_publishable_HDfV-O2ION1Vw9v03aV_Qg_PkiAjLNo';
 const sb=window.supabase.createClient(SB_URL,SB_KEY);
 const $=s=>document.querySelector(s);
-const ME={session:null,prof:null,fiche:null,conges:[],docs:[],acts:[],ins:[],asso:null,protos:[],albums:[],photos:[],kids:[],famKids:[],famDoss:[],famOnlyMiss:false,famEdit:null,acmReflet:[],acmProps:[],sections:[],secOK:null,msgs:[]};
+const ME={session:null,prof:null,fiche:null,conges:[],docs:[],acts:[],ins:[],asso:null,protos:[],albums:[],photos:[],kids:[],famKids:[],famDoss:[],famOnlyMiss:false,famEdit:null,acmReflet:[],acmProps:[],vepiDocs:[],sections:[],secOK:null,msgs:[]};
 function esc(s){return (s==null?'':String(s)).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2600);}
 function euroDays(n){return (n==null?'0':(Math.round(n*100)/100).toString().replace('.',','));}
@@ -210,6 +210,7 @@ function renderView(){
   else if(ME.view==='procedures'){ vp.innerHTML=backBar('📋 Procédures du CASE')+proceduresHTML(); }
   else if(ME.view==='messages'){ vp.innerHTML=backBar('💬 Messages des familles')+messagesHTML(); renderMessages(); }
   else if(ME.view==='acm'){ vp.innerHTML=backBar('🌴 Mon ACM')+acmBlockHTML(); acmMountForm(); }
+  else if(ME.view==='vepi'){ vp.innerHTML=backBar('📌 Mon VEPI')+vepiBlockHTML(); }
   else { vp.innerHTML=hubHTML(); }
 }
 function backBar(t){ return '<div class="backbar"><button class="btn ghost" onclick="spView(\'hub\')">← Retour</button><span class="backttl">'+esc(t)+'</span></div>'; }
@@ -246,6 +247,52 @@ function hubAcmCardHTML(acmBadge, acmSub){
     +'<div class="hubname">Mon ACM 🔒</div><div class="hubsub">'+esc(motif)+'</div>'
     +'<div class="hubgo" style="color:var(--muted)">Fermé pour l\'instant</div></div>';
 }
+function hubVepiCardHTML(vepiSub){
+  if(ME.secOK===true && (ME.sections||[]).includes('vepi')){
+    return '<button class="hubcard" onclick="spView(\'vepi\')"><div class="hubico">📌</div>'
+      +'<div class="hubname">Mon VEPI</div><div class="hubsub">'+esc(vepiSub)+'</div><div class="hubgo">Entrer →</div></button>';
+  }
+  const motif=(ME.secOK===true)
+    ? 'Réservé à l\'équipe VEPI. Le bureau ne t\'y a pas encore rattaché·e — demande-lui.'
+    : 'On n\'a pas pu vérifier tes accès. Recharge la page : si tu es au VEPI, cette carte s\'ouvrira.';
+  return '<div class="hubcard off"><div class="hubico">📌</div>'
+    +'<div class="hubname">Mon VEPI 🔒</div><div class="hubsub">'+esc(motif)+'</div>'
+    +'<div class="hubgo" style="color:var(--muted)">Fermé pour l\'instant</div></div>';
+}
+// ===== Bloc « Mon VEPI » (lecture seule) : les documents publiés par le bureau sur les accueils VEPI =====
+function vepiBlockHTML(){
+  const rows=(ME.vepiDocs||[]).filter(function(r){ return r.contenu && Array.isArray(r.contenu.items) && r.contenu.items.some(function(x){return x&&x.path;}); });
+  let h='<section class="block"><p class="sub">Ici tu retrouves les <b>documents</b> que le bureau a déposés sur les accueils VEPI (déclaration, assurance, émargement…). Lecture seule.</p>';
+  if(!rows.length){
+    h+='<div class="card"><p class="empty">📌 Aucun document VEPI pour l\'instant. Dès que le bureau en dépose un, tu le verras ici.</p></div>';
+  } else {
+    rows.forEach(function(r){
+      h+='<div class="card" style="margin-bottom:14px">'
+        +'<div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:baseline"><h3 style="margin:0">📌 '+esc(r.edition_nom||'VEPI')+'</h3>'+(r.updated_at?'<span class="sub">maj '+acmDT(r.updated_at)+'</span>':'')+'</div>'
+        + vepiDocsHTML(r.contenu, r.edition_ref)
+      +'</div>';
+    });
+  }
+  return h+'</section>';
+}
+function vepiDocsHTML(dm, edRef){
+  const items=(Array.isArray(dm&&dm.items)?dm.items:[]);
+  let h='<div style="margin-top:8px">';
+  items.forEach(function(d,i){
+    if(!d||!d.path) return;
+    h+='<div style="margin:4px 0;font-size:14px;display:flex;align-items:center;gap:8px;flex-wrap:wrap">📄 <span>'+esc(d.label||d.file||'Document')+'</span>'
+      +'<button class="btn ghost" style="padding:2px 10px;font-size:12px" onclick="acmVepiDocView(\''+esc(edRef)+'\','+i+')">👁️ Consulter</button></div>';
+  });
+  return h+'</div>';
+}
+window.acmVepiDocView=async function(edRef,idx){
+  const row=(ME.vepiDocs||[]).find(function(r){return r.edition_ref===edRef;});
+  const items=(row&&row.contenu&&Array.isArray(row.contenu.items))?row.contenu.items:[];
+  const d=items[idx];
+  if(!d||!d.path){ toast('Document indisponible'); return; }
+  try{ const {data,error}=await sb.storage.from('acm-docs').createSignedUrl(d.path,3600); if(error||!data){ toast('Document indisponible'); return; } spShowDoc(data.signedUrl, d.file||d.label||'Document'); }
+  catch(e){ toast('Document indisponible'); }
+};
 
 // ===== Accueil : choisir un bloc =====
 function hubHTML(){
@@ -265,6 +312,8 @@ function hubHTML(){
   const acmAtt=(ME.acmProps||[]).filter(function(p){return p.statut==='en_attente';}).length;
   const acmSub=acmEd?(acmEd+' accueil'+(acmEd>1?'s':'')+' · planning publié par le bureau'):'Consulte le planning ACM & propose tes idées au bureau';
   const acmBadge=acmAtt?' <span class="badge b-demande">'+acmAtt+' en attente</span>':'';
+  const vepiN=new Set((ME.vepiDocs||[]).filter(function(r){return r.edition_ref;}).map(function(r){return r.edition_ref;})).size;
+  const vepiSub=vepiN?(vepiN+' accueil'+(vepiN>1?'s':'')+' VEPI · documents publiés par le bureau'):'Consulte les documents VEPI déposés par le bureau';
   return '<section class="block"><h2 class="title">Que veux-tu faire ?</h2>'
     +'<p class="sub" style="margin:-4px 0 14px">Choisis un espace — tu pourras toujours revenir ici.</p>'
     +accesNoteHTML()
@@ -272,6 +321,7 @@ function hubHTML(){
       +'<button class="hubcard" onclick="spView(\'activites\')"><div class="hubico">🎒</div>'
         +'<div class="hubname">Mes activités</div><div class="hubsub">'+esc(actSub)+'</div><div class="hubgo">Entrer →</div></button>'
       +hubAcmCardHTML(acmBadge, acmSub)
+      +hubVepiCardHTML(vepiSub)
       +'<button class="hubcard" onclick="spView(\'photos\')"><div class="hubico">📸</div>'
         +'<div class="hubname">Photos du jour</div><div class="hubsub">'+esc(phSub)+'</div><div class="hubgo">Entrer →</div></button>'
       +'<button class="hubcard" onclick="spView(\'familles\')"><div class="hubico">👨‍👩‍👧</div>'
@@ -369,12 +419,13 @@ const ACM_PHASE_LAB={avant:'⬅️ Avant',pendant:'⏳ Pendant',apres:'➡️ Ap
 
 async function loadAcm(){
   try{
-    const [rr,rp]=await Promise.all([
+    const [rr,rp,rv]=await Promise.all([
       sb.from('acm_reflet').select('edition_ref,edition_nom,volet,contenu,updated_at').in('volet',['planning','demarches','projet_educatif','documents']).order('updated_at',{ascending:false}),
-      sb.from('acm_propositions').select('*').order('created_at',{ascending:false})
+      sb.from('acm_propositions').select('*').order('created_at',{ascending:false}),
+      sb.from('acm_reflet').select('edition_ref,edition_nom,contenu,updated_at').eq('volet','vepi_documents').order('updated_at',{ascending:false})
     ]);
-    ME.acmReflet=rr.data||[]; ME.acmProps=rp.data||[];
-  }catch(e){ ME.acmReflet=[]; ME.acmProps=[]; }
+    ME.acmReflet=rr.data||[]; ME.acmProps=rp.data||[]; ME.vepiDocs=rv.data||[];
+  }catch(e){ ME.acmReflet=[]; ME.acmProps=[]; ME.vepiDocs=[]; }
 }
 function acmDT(iso){ try{ return new Date(iso).toLocaleDateString('fr-FR',{day:'2-digit',month:'2-digit',year:'numeric'}); }catch(e){ return ''; } }
 // Éditions présentes dans le reflet (pour cibler une proposition)

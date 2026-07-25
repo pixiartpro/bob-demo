@@ -2884,6 +2884,8 @@ const FAQ=[
    a:"Oui, pour les <b>accueils de mineurs</b> (périscolaire, ACM, VEPI) : quand tu utilises <b>« ➕ inscrire (au comptoir) »</b>, Bob <b>crée la fiche enfant</b> (nom/prénom) et la <b>relie</b> à l'inscription — l'enfant n'est plus « à ficher ». Tu complètes ensuite sa fiche dans <b>👶 Enfants</b> (naissance, école, parent, pièces). Pour un <b>événement / temps fort</b> ou une activité socioculturelle, l'inscription reste au <b>nom seul</b> (pas de fiche — ça peut être un adulte). Réservé au bureau."},
   {cat:'📌 VEPI',q:"C'est quoi l'onglet VEPI et où voir les inscrits (même ceux sans fiche) ?",kw:"vepi accueil mineurs 6 11 ans edition editions roster inscrits sans fiche a ficher comptoir dossier sdjes caf suivi comme acm animation onglet nouveau",
    a:"Onglet <b>📌 VEPI</b> (menu 🎨 Animation) : un accueil de mineurs (6-11 ans) suivi <b>comme l'ACM</b>, avec <b>2 éditions par an</b>. En haut, <b>📋 Inscrits VEPI</b> liste <b>tous</b> les enfants inscrits — ceux saisis au comptoir <b>sans fiche</b> apparaissent par leur nom avec un badge <b>⚠️ à ficher</b> (à compléter dans 👶 Enfants / 🎒 Périscolaire pour les relier à une famille). En dessous, <b>🗄️ Éditions VEPI</b> : crée une édition, rattache-lui l'activité VEPI pour en tirer l'effectif, puis clôture-la en <b>dossier-bilan</b> comme l'ACM. Accessible au <b>bureau et à l'accueil</b> (personnel)."},
+  {cat:'📌 VEPI',q:"Comment joindre des documents à un accueil VEPI, et l'équipe les voit-elle ?",kw:"document documents joindre deposer piece fichier vepi edition dossier bilan sdjes assurance emargement coffre visualiser telecharger equipe salariee mon vepi voir consulter publier automatique",
+   a:"Comme l'ACM : ouvre l'édition VEPI (📌 VEPI → 🗄️ Éditions → 📖 Dossier-bilan), section <b>📎 Documents de l'édition</b>, et <b>dépose</b> tes fichiers (déclaration/récépissé SDJES, assurance, émargement…). Ils sont rangés dans le même coffre privé, distinct du coffre des familles. <b>Pas besoin de bouton « Publier » pour le VEPI</b> : dès que tu déposes (ou retires) un document, l'<b>équipe VEPI</b> le voit <b>automatiquement</b> en lecture seule dans son écran <b>« 📌 Mon VEPI »</b>. Dépôt et suppression réservés au bureau."},
   {cat:'👶 Enfants',q:"Où je vois tous les enfants et où va chacun (périscolaire, ACM, VEPI) ?",kw:"enfants tous liste ou va chaque enfant accueil accueils periscolaire acm vepi activites filtre voir vue ensemble unifiee ou vont onglet",
    a:"Onglet <b>👶 Enfants</b> (dans 👥 Adhérents). Tu vois la <b>liste de tous les enfants</b> et, pour chacun, <b>où il va</b> : 🎒 périscolaire (matin/soir), 🌴 sessions d'ACM, 📌 VEPI, 🎟️ autres activités — avec sa classe et son responsable. En haut, un <b>filtre par accueil</b> : clique <b>Tous / Périscolaire / ACM / VEPI</b> pour ne voir que les enfants de cet accueil. Un enfant présent sur plusieurs semaines ou accueils n'apparaît qu'<b>une fois</b>. Depuis la fiche d'un enfant, tu peux le <b>rattacher</b> à un accueil (menu « Rattacher vers » : périscolaire matin/soir · VEPI · une semaine d'ACM) et le <b>retirer / déplacer</b> avec le ✕ sur chaque puce (bureau + accueil). ⚠️ Le périscolaire ne peut être complété que si la famille a déjà ouvert son dossier (avec pièces / quotient) depuis son espace."},
   {cat:'🌴 Vacances',q:"Où je vois la liste des enfants inscrits en ACM ?",kw:"liste enfants acm inscrits inscrit vacances qui roster effectif combien session semaine ete toussaint voir consolidee tableau",
@@ -3100,6 +3102,7 @@ function pageHelpGotoAide(){ pageHelpClose(); const b=document.querySelector('na
 
 /* ---- ✨ Quoi de neuf (nouveautés + notice chronologique) ---- */
 const NEWS=[
+  {id:'2026-07-25-documents-vepi',date:'2026-07-25',tab:'📌 VEPI',titre:"📎 Documents VEPI visibles par l'équipe",desc:"Les documents que tu déposes sur une <b>édition VEPI</b> (📌 VEPI → 📖 Dossier-bilan → 📎 Documents de l'édition) sont désormais <b>visibles par l'équipe VEPI</b> : dès le dépôt, ils apparaissent en <b>lecture seule</b> dans leur écran <b>« 📌 Mon VEPI »</b> — <b>sans bouton « Publier »</b>, c'est automatique. Coffre privé dédié, distinct du coffre des familles. Dépôt et suppression réservés au bureau."},
   {id:'2026-07-24-documents-acm',date:'2026-07-24',tab:'🌴 Vacances',titre:"📎 Joindre des documents à une période d'ACM (et l'équipe les voit)",desc:"Dans le <b>dossier-bilan</b> d'une édition d'ACM (🌴 Vacances → ouvre l'édition), une nouvelle section <b>📎 Documents de l'édition</b> : dépose tes fichiers — <b>déclaration/récépissé SDJES, attestation d'assurance, feuille d'émargement, PAI, courriers…</b> — puis visualise-les ou télécharge-les. Ils sont rangés dans un <b>coffre privé dédié à l'ACM</b>, séparé du coffre des familles. Un clic sur <b>📢 Publier aux salariées</b> et l'<b>équipe ACM</b> les retrouve en <b>lecture seule</b> dans « 🌴 Mon ACM », sous la période. Dépôt et suppression réservés au bureau. <b>Et dans l'autre sens :</b> les salariées peuvent te <b>proposer</b> un document depuis « Mon ACM » (émargement, scan…) — il arrive dans <b>📥 À valider</b>, tu l'<b>acceptes</b> (il rejoint l'édition et part à l'équipe) ou tu le <b>refuses</b>. Le <b>VEPI</b> en profite aussi."},
   {id:'2026-07-24-subvention-repartition',date:'2026-07-24',tab:'🏛️ Subventions',titre:"🎯 Répartir une subvention sur plusieurs actions",desc:"Une même subvention peut maintenant financer <b>plusieurs actions</b>, avec un <b>montant affecté à chacune</b>. Sur la ligne d'une subvention (<b>🏛️ Subventions</b>), le nouveau bouton <b>🎯</b> ouvre sa <b>répartition</b> : une ligne par action — par ex. la <b>Subvention ACM Ados</b> de la Mairie répartie entre <b>ACM Ados 2026 - 1</b>, <b>- 2</b> et <b>- 3</b> — et Bob vérifie que la somme colle au <b>montant accordé</b>. Chaque part se range <b>toute seule</b> dans le <b>🎯 Budget par action</b> concerné, et les <b>versements</b> enregistrés ensuite se répartissent dans la même proportion : fini de créer une subvention séparée par action. Sans répartition, rien ne change — la subvention reste sur son unique action."},
   {id:'2026-07-23-pieces-subvention',date:'2026-07-23',tab:'🗂️ Répertoire',titre:"📋 Nouveau : les 8 pièces de subvention, cochées toutes seules",desc:"Dans <b>🗂️ Répertoire</b> → <b>📁 Documents officiels</b>, une carte <b>« 📋 Les 8 pièces de subvention »</b> en tête du panneau. Ce sont les documents que la Ville redemande à <b>chaque</b> campagne : <b>RIB, avis SIREN, parution au Journal officiel, attestation d'assurance, contrat d'engagement républicain, bilan financier, budget prévisionnel, dernier PV d'assemblée</b>. Dépose-les une fois dans le coffre : chaque pièce se <b>coche toute seule</b> (✅) et un compteur <b>x/8</b> te dit d'un coup d'œil ce qui est prêt avant un dépôt — fini d'aller chercher chaque pièce à droite à gauche. Le repérage se fait d'après le nom du fichier, à vérifier d'un œil. Réservé au bureau."},
@@ -9357,7 +9360,7 @@ renderAll();
           ok++;
         }catch(e){ skip.push(f.name); }
       }
-      save(); schedulePush(); if(window.acmRenderDocs) acmRenderDocs(ed);
+      save(); schedulePush(); if(window.acmRenderDocs) acmRenderDocs(ed); if(ed.type==='vepi'&&window.syncVepiDocs) syncVepiDocs(ed);
       alert('✅ '+ok+' document(s) déposé(s).'+(skip.length?'\n\nNon déposés :\n- '+skip.join('\n- '):''));
     };
     inp.click();
@@ -9379,7 +9382,7 @@ renderAll();
     if(!confirm('Supprimer « '+((d.label||d.file)||'')+' » ? (définitif)')) return;
     try{ if(d.path) await sbc.storage.from('acm-docs').remove([d.path]); }catch(e){}
     ed.bilan.docs=((ed.bilan&&ed.bilan.docs)||[]).filter(function(x){return x.id!==docId;});
-    save(); schedulePush(); if(window.acmRenderDocs) acmRenderDocs(ed);
+    save(); schedulePush(); if(window.acmRenderDocs) acmRenderDocs(ed); if(ed.type==='vepi'&&window.syncVepiDocs) syncVepiDocs(ed);
   };
   window.acmCloseBilanView=function(){ window.__acmBilanCur=null; ['acmBilanView','vepiBilanView'].forEach(function(id){ const v=document.getElementById(id); if(v) v.innerHTML=''; }); };
   window.acmBilanCR=function(edId,val){ const ed=acmDb().sessions.find(function(s){return s.id===edId;}); if(!ed)return; ed.bilan.cr=val; save(); };
@@ -9481,6 +9484,18 @@ renderAll();
       return true;
     }catch(e){ console.warn('syncAcmReflet', e); return false; }
   }
+  // 📌 Mon VEPI : publie (auto, au dépôt/suppression) les documents d'une édition VEPI vers l'équipe — volet DÉDIÉ 'vepi_documents' de acm_reflet (que « Mon ACM » n'affiche pas → cloisonnement préservé). Coffre acm-docs réutilisé. Pas de bouton « Publier » côté VEPI : c'est automatique.
+  window.syncVepiDocs=async function(ed){
+    try{
+      if(!myAsso||!canWrite||!sbc||!ed||ed.type!=='vepi') return;
+      const docs=((ed.bilan&&ed.bilan.docs)||[]).map(function(d){ return {label:d.label||d.file||'', file:d.file||'', path:d.path||''}; }).filter(function(d){ return d.path; });
+      if(docs.length){
+        const up=await sbc.from('acm_reflet').upsert([{asso_id:myAsso, edition_ref:ed.id, edition_nom:ed.nom||'', volet:'vepi_documents', contenu:{items:docs}, updated_at:new Date().toISOString()}],{onConflict:'asso_id,edition_ref,volet'}); if(up.error) throw up.error;
+      } else {
+        await sbc.from('acm_reflet').delete().eq('asso_id',myAsso).eq('edition_ref',ed.id).eq('volet','vepi_documents');
+      }
+    }catch(e){ console.warn('syncVepiDocs', e); }
+  };
   window.acmDoPublishReflet=async function(){
     if(!canWrite){ alert('Réservé au bureau.'); return; }
     const el=document.getElementById('acmRefletMaj'); if(el) el.textContent='Publication en cours…';
