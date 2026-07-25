@@ -2462,9 +2462,12 @@ Deux locaux complémentaires — le Bois de Nèfles (« le haut » : jeunesse, a
       <div class="toolbar" style="justify-content:space-between;align-items:flex-start;gap:8px;flex-wrap:wrap">
         <div>
           <h2 style="margin:0">📒 Paie — classeur social mensuel</h2>
-          <p class="hint" style="margin:4px 0 0;max-width:660px">Le classeur numérique de la paie, <b>un dossier par mois</b> : les fiches de paie (une par salarié), le détail des cotisations et la DSN. Rangé dans un <b>coffre privé</b> réservé au <b>président et au trésorier</b> — jamais sur le site, jamais visible du reste de l'équipe. <span class="muted">Copie de travail centralisée : elle ne remplace pas l'obligation légale de conservation.</span></p>
+          <p class="hint" style="margin:4px 0 0;max-width:680px">Le classeur numérique de la paie, <b>un dossier par mois</b> : les fiches de paie (une par salarié), le détail des cotisations et la DSN. Rangé dans un <b>coffre privé</b> réservé au <b>président et au trésorier</b> — jamais sur le site, jamais visible du reste de l'équipe. <span class="muted">Copie de travail centralisée : elle ne remplace pas l'obligation légale de conservation (bulletins ~5 ans). Toute suppression passe par une <b>corbeille récupérable</b> — rien ne se perd. Pense à faire une <b>« 📥 Sauvegarde complète »</b> régulière sur le Drive du CASE.</span></p>
         </div>
-        <button class="btn" id="paieAddBtn" onclick="window.paieAddMonth&amp;&amp;paieAddMonth()">➕ Nouveau mois</button>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn ghost" onclick="window.paieBackupAll&amp;&amp;paieBackupAll()">📥 Sauvegarde complète</button>
+          <button class="btn" id="paieAddBtn" onclick="window.paieAddMonth&amp;&amp;paieAddMonth()">➕ Nouveau mois</button>
+        </div>
       </div>
       <div id="paieBox"><p class="hint">Chargement…</p></div>
     </div>
@@ -8500,9 +8503,9 @@ renderAll();
     if(!paieCanAccess()){ box.innerHTML='<p class="hint">Réservé au président et au trésorier.</p>'; return; }
     if(!sbc){ box.innerHTML='<p class="hint">Connexion requise.</p>'; return; }
     box.innerHTML='<p class="hint">Chargement…</p>';
-    const rm=await sbc.from('paie_mois').select('*').order('annee',{ascending:false}).order('mois',{ascending:false});
+    const rm=await sbc.from('paie_mois').select('*').is('supprime_le',null).order('annee',{ascending:false}).order('mois',{ascending:false});
     if(rm.error){ box.innerHTML='<p class="hint" style="color:#b00">Erreur de chargement : '+esc(rm.error.message)+'</p>'; return; }
-    const rp=await sbc.from('paie_piece').select('*');
+    const rp=await sbc.from('paie_piece').select('*').is('supprime_le',null);
     if(rp.error){ box.innerHTML='<p class="hint" style="color:#b00">Erreur de chargement : '+esc(rp.error.message)+'</p>'; return; }
     const mois=rm.data||[], pieces=rp.data||[];
     const byMois={}; pieces.forEach(function(p){ (byMois[p.mois_id]=byMois[p.mois_id]||[]).push(p); });
@@ -8589,22 +8592,21 @@ renderAll();
   };
   window.paieDel=async function(id){
     if(!paieCanAccess()){ alert('Réservé au président et au trésorier.'); return; }
-    const r=await sbc.from('paie_piece').select('fichier_path,nom_original,salarie').eq('id',id).single();
+    const r=await sbc.from('paie_piece').select('nom_original,salarie').eq('id',id).single();
     if(r.error||!r.data){ alert('Pièce introuvable.'); return; }
-    if(!confirm('Supprimer « '+((r.data.salarie||r.data.nom_original)||'cette pièce')+' » ? (définitif)')) return;
-    try{ await sbc.storage.from('paie').remove([r.data.fichier_path]); }catch(e){}
-    const d=await sbc.from('paie_piece').delete().eq('id',id);
+    if(!confirm('Retirer « '+((r.data.salarie||r.data.nom_original)||'cette pièce')+' » ? Elle part à la corbeille (récupérable) — le fichier est conservé.')) return;
+    const d=await sbc.from('paie_piece').update({supprime_le:new Date().toISOString(),supprime_par:(myProfile&&myProfile.id)||null}).eq('id',id);
     if(d.error){ alert('Erreur : '+d.error.message); return; }
     window.paieLoad();
   };
   window.paieDelMonth=async function(moisId){
     if(!paieCanAccess()){ alert('Réservé au président et au trésorier.'); return; }
-    const rp=await sbc.from('paie_piece').select('fichier_path').eq('mois_id',moisId);
-    const paths=(rp.data||[]).map(function(x){return x.fichier_path;});
-    if(paths.length){ if(!confirm('Ce mois contient '+paths.length+' pièce(s). Tout supprimer ? (définitif)')) return; }
-    else { if(!confirm('Supprimer ce mois ?')) return; }
-    if(paths.length){ try{ await sbc.storage.from('paie').remove(paths); }catch(e){} }
-    const d=await sbc.from('paie_mois').delete().eq('id',moisId);
+    const rc=await sbc.from('paie_piece').select('id',{count:'exact',head:true}).eq('mois_id',moisId).is('supprime_le',null);
+    const n=rc.count||0;
+    if(!confirm(n?('Ce mois contient '+n+' pièce(s). Le mettre à la corbeille ? (récupérable — les fichiers sont conservés)'):'Mettre ce mois à la corbeille ?')) return;
+    const ts=new Date().toISOString(), by=(myProfile&&myProfile.id)||null;
+    await sbc.from('paie_piece').update({supprime_le:ts,supprime_par:by}).eq('mois_id',moisId).is('supprime_le',null);
+    const d=await sbc.from('paie_mois').update({supprime_le:ts,supprime_par:by}).eq('id',moisId);
     if(d.error){ alert('Erreur : '+d.error.message); return; }
     window.paieLoad();
   };
@@ -8616,6 +8618,28 @@ renderAll();
       const s=await sbc.storage.from('paie').createSignedUrl(p.fichier_path,3600,{download:p.nom_original||true});
       if(s.data){ const a=document.createElement('a'); a.href=s.data.signedUrl; a.download=p.nom_original||''; document.body.appendChild(a); a.click(); a.remove(); await new Promise(function(res){setTimeout(res,400);}); }
     }
+  };
+  window.paieBackupAll=async function(){
+    if(!paieCanAccess()){ alert('Réservé au président et au trésorier.'); return; }
+    const rm=await sbc.from('paie_mois').select('*').is('supprime_le',null);
+    const rp=await sbc.from('paie_piece').select('*').is('supprime_le',null);
+    if(rm.error||rp.error){ alert('Erreur : '+((rm.error||rp.error).message)); return; }
+    const mois=rm.data||[], pieces=rp.data||[];
+    if(!pieces.length){ alert('Rien à sauvegarder pour l\'instant.'); return; }
+    const moisById={}; mois.forEach(function(m){ moisById[m.id]=m; });
+    const q=function(s){ return '"'+String(s==null?'':s).replace(/"/g,'""')+'"'; };
+    const lignes=[['Mois','Type','Salarié','Fichier','Déposé le','Chemin'].map(q).join(';')];
+    pieces.forEach(function(p){ const m=moisById[p.mois_id]||{}; const tag=(m.annee||'')+'-'+String(m.mois||'').padStart(2,'0');
+      lignes.push([tag,p.type,p.salarie||'',p.nom_original||'',String(p.depose_le||'').slice(0,10),p.fichier_path].map(q).join(';')); });
+    const csv='﻿'+lignes.join('\r\n');
+    const blob=new Blob([csv],{type:'text/csv;charset=utf-8'});
+    const au=document.createElement('a'); au.href=URL.createObjectURL(blob); au.download='paie_index_sauvegarde.csv'; document.body.appendChild(au); au.click(); au.remove();
+    if(!confirm('Index téléchargé. Télécharger aussi les '+pieces.length+' fichier(s) ? (pour la copie hors Supabase, sur le Drive)')) return;
+    for(const p of pieces){
+      const s=await sbc.storage.from('paie').createSignedUrl(p.fichier_path,3600,{download:p.nom_original||true});
+      if(s.data){ const a=document.createElement('a'); a.href=s.data.signedUrl; a.download=p.nom_original||''; document.body.appendChild(a); a.click(); a.remove(); await new Promise(function(res){setTimeout(res,400);}); }
+    }
+    alert('✅ Sauvegarde terminée : index + '+pieces.length+' fichier(s). Range-les sur le Drive du CASE.');
   };
   window.loadPartenaires=async function(){
     const box=document.getElementById('partList'); if(!box) return;
