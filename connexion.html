@@ -458,7 +458,7 @@ function renderLoggedOut(){
       <p class="small muted" style="margin-top:8px;text-align:center">Tu reçois un email : tu cliques le lien, <b>ou</b> tu tapes le code. (Saisis ton email ci-dessus d'abord.)</p>
       <div id="otpBox" style="display:none;margin-top:12px;padding-top:12px;border-top:1px dashed var(--line)">
         <div class="field"><label>Code reçu par mail (6 chiffres)</label>
-          <input id="otp_code" inputmode="numeric" autocomplete="one-time-code" maxlength="8" placeholder="123456" onkeydown="if(event.key==='Enter')verifyCode()"></div>
+          <input id="otp_code" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="123456" onkeydown="if(event.key==='Enter')verifyCode()"></div>
         <button id="otp_btn" class="btn p" style="width:100%" onclick="verifyCode()">Valider le code</button>
         <p class="small muted" style="margin-top:6px;text-align:center">Si le lien du mail ne fonctionne pas (parfois coupé par la messagerie), tape simplement le code ici.</p>
       </div>
