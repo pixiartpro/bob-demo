@@ -252,9 +252,23 @@ function noteCountdown(secs,btn,label,finHtml){
   };
   tick(); __noteTimer=setInterval(tick,1000);
 }
+/* Compte banni côté serveur (mesure de sécurité) : à NE PAS confondre avec un mot de passe faux.
+   Vécu le 13/07/2026 (waeli@me.com, mot de passe fuité) → compte banni, et TOUT échouait :
+   la connexion ET les liens « mot de passe oublié » (le mail part, mais /verify répond
+   « 403 User is banned »). Sans message clair, ça passe pour une panne inexpliquée. */
+function isBanned(error){
+  if(!error) return false;
+  const c=String(error.code||error.error_code||''), m=String(error.message||'');
+  return c.indexOf('banned')>=0 || /is banned|user.?banned/i.test(m);
+}
+const BANNED_HTML='🔒 <b>Ton accès à cet espace a été bloqué</b> (mesure de sécurité).'
+  +'<br>Ce n\'est pas ton mot de passe : <b>aucun lien « mot de passe oublié » ne pourra le débloquer.</b>'
+  +'<br>Contacte le <b>Président</b> (case.bdn@gmail.com) pour le rétablir.';
+
 /* Plus jamais un message brut anglais sous les yeux d'une salariée. */
 function authErrFr(error){
   const m=String((error&&error.message)||'');
+  if(/is banned|banned/i.test(m))             return "Ton accès a été bloqué (mesure de sécurité). Contacte le Président pour le rétablir.";
   if(/confirm/i.test(m))                      return "Ton adresse n'est pas encore confirmée : ouvre le mail de confirmation reçu à l'inscription.";
   if(/invalid login credentials/i.test(m))    return "Email ou mot de passe incorrect.";
   if(/password should be at least/i.test(m))  return "Mot de passe trop court : 6 caractères minimum.";
@@ -280,6 +294,7 @@ async function signIn(){
       noteCountdown(s,btn,'Se connecter','✅ Tu peux réessayer maintenant.');
       return;
     }
+    if(isBanned(error)){ note(BANNED_HTML,'ko'); return; }
     if(/confirm/i.test(String(error.message||''))){ note('📧 '+esc(authErrFr(error)),'warn'); return; }
     /* Volontairement muet sur CE qui a échoué (ne jamais révéler si l'adresse existe),
        mais on dit quoi faire ensuite — c'est ce qui manquait. */
@@ -332,6 +347,7 @@ async function verifyCode(){
       noteCountdown(s,btn,old,'✅ Tu peux retaper le code maintenant.');
       return;
     }
+    if(isBanned(error)){ note(BANNED_HTML,'ko'); return; }
     note('😕 <b>Ce code ne fonctionne pas.</b><br>Vérifie que tu as bien pris le code du <b>dernier</b> email reçu — un nouvel envoi annule le précédent. Le code expire aussi au bout d\'une heure.','ko');
     return;
   }
