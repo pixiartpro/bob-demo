@@ -288,6 +288,7 @@
     <div class="tabgroup" data-group="adherents">
       <button data-tab="members">👥 Adhérents</button>
       <button data-tab="enfants">👶 Enfants</button>
+      <button data-tab="foyers">👨‍👩‍👧 Foyers</button>
     </div>
     <div class="tabgroup" data-group="animation">
       <span class="subgrp"><i class="subttl">Accueils</i>
@@ -996,6 +997,43 @@
         <p class="hint" style="margin:2px 0 0">Vue d'ensemble <strong>« où va chaque enfant »</strong> (lecture seule) : périscolaire, ACM, VEPI, autres activités. Filtre par accueil ci-dessous. Un enfant présent sur plusieurs semaines ou accueils n'apparaît qu'<strong>une fois</strong>.</p>
       </div><button class="ghost btn" onclick="if(window.loadEnfantsHub)loadEnfantsHub()">↻ Rafraîchir</button></div>
       <div id="enfantsHubList" style="margin-top:8px"><p class="hint">Chargement…</p></div>
+    </div>
+  </section>
+
+  <!-- 👨‍👩‍👧 FOYERS — l'arbre famille (coup 2 partiel, 27/07/2026) : LECTURE des tables neuves
+       (foyers/personnes/adhesions/inscriptions, session 0) + comptoir « Nouveau foyer » (bureau).
+       ⚠️ Les anciens écrans (Adhérents, Enfants, Périscolaire) restent la SOURCE DE VÉRITÉ jusqu'à
+       la bascule complète du coup 2 ; ici on n'écrit QUE dans les tables neuves. -->
+  <section id="foyers" class="page">
+    <div class="panel">
+      <div class="toolbar" style="flex-wrap:wrap;gap:10px"><div style="flex:1;min-width:260px">
+        <h2 style="margin:0">👨‍👩‍👧 Foyers</h2>
+        <p class="hint" style="margin:2px 0 0">Le <strong>registre des familles</strong> : chaque foyer réunit ses adultes, ses enfants, son adhésion et ses inscriptions — l'arbre complet en un coup d'œil. <strong>En construction</strong> : les onglets 👥 Adhérents · 👶 Enfants · 🎒 Périscolaire restent la référence jusqu'à la bascule complète.</p>
+      </div>
+      <div class="row" style="gap:8px;align-items:center;flex-wrap:wrap">
+        <input id="fy_search" placeholder="🔎 Chercher un foyer, un enfant…" oninput="renderFoyers()" style="max-width:230px">
+        <button class="btn" onclick="foyerNew()">➕ Nouveau foyer (comptoir)</button>
+        <button class="ghost btn" onclick="if(window.loadFoyers)loadFoyers()" title="Rafraîchir">↻</button>
+      </div></div>
+      <div class="cards" id="foyersKpis" style="margin-top:8px"></div>
+      <div id="foyersList" style="margin-top:4px"><p class="hint">Chargement…</p></div>
+    </div>
+    <div class="panel" id="foyerNewPanel" style="display:none;border-left:4px solid var(--brand)">
+      <h2 style="margin:0 0 4px">➕ Nouveau foyer (comptoir)</h2>
+      <p class="hint">Pour une famille qui se présente <strong>sans compte en ligne</strong> (et même sans email). Le dossier peut être <strong>incomplet</strong> : on l'accepte, on note ce qui manque, et on remet le <strong>code famille imprimé</strong> — il servira à relier son compte en ligne à ce dossier quand l'espace famille le proposera.</p>
+      <div class="row" style="flex-wrap:wrap;gap:10px">
+        <div class="field" style="min-width:200px"><label>Nom du foyer *</label><input id="fy_nom" placeholder="Famille Payet"></div>
+        <div class="field" style="min-width:140px;flex:0"><label>Téléphone</label><input id="fy_tel" placeholder="0692…"></div>
+        <div class="field" style="min-width:200px"><label>Adulte responsable</label><input id="fy_adulte" placeholder="Nom complet"></div>
+        <div class="field" style="min-width:130px;flex:0"><label>Saison</label><select id="fy_saison"></select></div>
+      </div>
+      <p class="hint" style="margin:12px 0 2px"><strong>Enfants</strong> — coche 🎒 matin/soir pour déposer une inscription périscolaire (statut « à compléter »). <strong style="color:#8a6400">⚠️ Tant que la bascule n'est pas faite, reporte AUSSI l'inscription dans 🎒 Périscolaire</strong> — c'est lui qui calcule le forfait et la facturation.</p>
+      <div id="fyKids"></div>
+      <button class="ghost btn" style="margin-top:6px" onclick="fyAddKidRow()">+ un enfant</button>
+      <div class="row" style="margin-top:14px;gap:10px">
+        <button class="btn" id="fyCreateBtn" onclick="foyerCreate()">✓ Créer le foyer &amp; imprimer le récépissé</button>
+        <button class="ghost btn" onclick="document.getElementById('foyerNewPanel').style.display='none'">Annuler</button>
+      </div>
     </div>
   </section>
 
@@ -2812,6 +2850,7 @@ document.querySelectorAll('nav.tabs button').forEach(b=>{
 
 /* ---- Aide : « Demande à Zanana » (FAQ + assistant par mots-clés, sans IA) ---- */
 const FAQ=[
+  {cat:'👨‍👩‍👧 Foyers', q:"C'est quoi l'onglet Foyers, et comment inscrire une famille au comptoir sans compte ?", kw:"foyer foyers famille familles registre arbre comptoir nouveau creer inscrire sans compte sans email papier code recepisse imprimer adulte enfants adhesion incomplet pieces manquantes", a:"L'onglet <b>👨‍👩‍👧 Foyers</b> (tiroir Familles) est le <b>registre des familles</b> : chaque foyer réunit ses adultes, ses enfants, son adhésion et ses inscriptions — l'arbre complet d'un coup d'œil. Le bouton <b>➕ Nouveau foyer (comptoir)</b> permet d'inscrire une famille qui se présente <b>sans compte en ligne</b> (et même sans email) : tu saisis le foyer, l'adulte, les enfants, tu coches 🎒 matin/soir si besoin — le dossier est accepté <b>même incomplet</b> (statut « à compléter »), et Bob imprime un <b>récépissé</b> avec le <b>code famille</b> à remettre (il servira à relier son compte en ligne <b>quand l'espace famille le proposera</b>). <b>Réservé au bureau.</b> ⚠️ <b>Pendant la construction de l'arbre</b>, les onglets 👥 Adhérents · 👶 Enfants · 🎒 Périscolaire restent la référence : une inscription cochée ici est <b>à reporter AUSSI dans 🎒 Périscolaire</b> (c'est lui qui calcule le forfait) — l'onglet Foyers les rejoindra pleinement à la bascule."},
   {cat:'👥 Adhérents', q:"Comment passer de la fiche d'une famille à son dossier périscolaire (et revenir) ?", kw:"famille fiche dossier periscolaire raccourci pont passer aller voir bouton retour adherent livre navigation relier", a:"Sur la ligne d'une famille (👨‍👩‍👧 Familles → 👥 Adhérents), le bouton <b>📨 Périscolaire</b> t'emmène droit sur <b>son dossier périscolaire</b> (onglet 🎒 Périscolaire), mis en évidence quelques secondes. Dans l'autre sens, chaque dossier porte un bouton <b>👥 Fiche famille</b> qui rouvre sa ligne dans le livre des adhérents. Bob relie les deux par l'<b>email</b>, sinon par le <b>nom</b> : si une famille a déposé son dossier avec une autre adresse que celle de sa fiche, Bob te le dit au lieu de deviner. 💵 L'<b>encaissement</b>, lui, ne bouge pas : il reste sur le dossier famille, et « Verser en compta » reste le pont vers les Finances."},
   {cat:'📒 Paie', q:"Où je range les fiches de paie, les cotisations et la DSN chaque mois ?", kw:"paie salaire salaires fiche fiches bulletin bulletins cotisation cotisations dsn declaration sociale nominative classeur social mensuel coffre depot deposer cabinet comptable expert president tresorier", a:"Onglet <b>🧑‍💼 Équipe &amp; Paie → 📒 Paie</b> (grappe « Obligations &amp; paie »). Tu crées <b>un dossier par mois</b> (« ➕ Nouveau mois »), puis tu déposes les <b>fiches de paie (une par salarié)</b>, le <b>détail des cotisations</b> et la <b>DSN</b>. Tout va dans un <b>coffre privé</b> <b>réservé au président et au trésorier</b> — invisible pour le reste de l'équipe et jamais publié sur le site. Le bouton <b>« 📦 Classeur du mois »</b> te ressort toutes les pièces d'un coup pour le cabinet comptable. ⚠️ C'est ta copie de travail centralisée : elle ne remplace pas l'obligation légale de conservation des bulletins."},
   {cat:'👥 Dossiers salariés', q:"Une salariée me dit que son espace est vide — que faire ?", kw:"espace vide salarie salariee rien ne s affiche vide ecran blanc section sections rattachement equipe acm periscolaire vepi acces droits animateur animatrice cloisonnement rubriques", a:"C'est presque toujours la même cause : <b>la personne n'est rattachée à aucune équipe</b> (ACM, Périscolaire ou VEPI). Bob cloisonne les données par équipe — sans rattachement, elle ne voit ni les enfants, ni les activités, ni les messages, <b>et c'est normal</b>. Depuis le 20/07/2026, son écran le lui <b>dit</b> : un bandeau 🍍 en haut de son accueil annonce « Il te manque un rattachement à une équipe ». Pour corriger : <b>connexion.html → 🔐 Accès → 🔧 Rubriques</b> sur son compte, coche son ou ses équipes, Enregistrer. Elle recharge sa page, tout apparaît. <b>⚠️ Avant de cocher, vérifie que c'est bien la bonne personne</b> : deux comptes peuvent porter le même prénom (un parent et une salariée). Regarde l'<b>email</b>, et vérifie qu'une <b>fiche salarié</b> lui est bien liée dans 👥 Dossiers salariés — un parent n'en a pas."},
@@ -2851,7 +2890,7 @@ const FAQ=[
   {cat:'🗂️ Répertoire',q:"Comment suivre une structure (DRAJES, CAF, Mairie) et ses dates à ne pas rater ?",kw:"structure structures financeur financeurs partenaire partenaires institutionnel drajes sdjes caf mairie collectivite echeance echeances depot versement dossier date rater declaration correspondant fiche a rendre a recevoir tombe bientot",a:"Dans <b>🗂️ Répertoire</b>, panneau <b>🏛️ Structures &amp; financeurs</b> : ajoute une structure (DRAJES/SDJES, CAF, Mairie…) avec son type, le lien vers son dossier et une note (correspondant, mail, téléphone). Sur sa fiche, ajoute ses <b>échéances</b> : un <b>📤 dépôt</b> (un document à rendre) ou un <b>📥 versement</b> (de l'argent à recevoir), avec sa date, un montant et un statut (à faire / bloqué / fait). Le bloc <b>« 📅 Ce qui tombe bientôt »</b> les classe par date (rouge = en retard ou imminent), et elles remontent <b>automatiquement</b> dans l'échéancier général et le tableau de bord. Réservé au bureau."},
   {cat:'🛎️ Réservations',q:"Comment réserver une salle, et comment valider une demande ?",kw:"reserver salle reservation demande creneau local kaz zados bringelliers occupation valider refuser bureau intervenant adherent guichet deport",a:"Onglet <b>🛎️ Réservations</b> (tiroir 🎨 Animation). Les adhérents et intervenants déposent leur demande depuis leur espace adhérent (salle, jour, créneau, motif). La demande tombe ici et dans <b>⏰ À traiter</b>. Le bureau valide ou refuse — et un membre <b>ne peut pas valider sa propre demande</b> (déport, un autre membre doit le faire). Les réservations validées forment l'occupation des locaux."},
   {cat:'📊 Tableau de bord', q:"Où sont passés les onglets ? Comment marche la nouvelle barre en couleur ?", kw:"onglet onglets barre famille familles tiroir tiroirs couleur couleurs ranger retrouver navigation menu reglages outils bureau finances adherents equipe paie direction animation vie associative perdu trouve trouver disparu deplace deplacer demenage demenagement organisation secretariat",
-   a:"Depuis le <b>27/07/2026</b>, la barre du haut compte <b>6 tiroirs colorés</b> + le bouton direct 📊 <b>Tableau de bord</b> et 🧰 <b>Réglages</b> : 👨‍👩‍👧 <b>Familles</b> (vert — adhérents, enfants), 🎨 <b>Animation</b> (rose — périscolaire, vacances, encadrement ACM, ados, VEPI, activités, ateliers, projets, lieux, salles, réservations, intervenants), 🏛️ <b>Vie associative</b> (bleu — messages, communication, rendez-vous, répertoire, partenaires, secrétariat, préparer le CA), 💶 <b>Finances</b> (ambre — caisse, compta, dettes, subventions, prévisionnel, budget par action, masse salariale, bilan), 🧑‍💼 <b>Équipe &amp; Paie</b> (prune — RH, dossiers salariés, fiches de poste, congés, horaires, obligations, paie) et 🧭 <b>Direction</b> (violet — projet &amp; orientations, suivi, incidents, accompagnement). Dans les gros tiroirs, des <b>petits titres</b> (Accueils, Où, Instances…) regroupent les onglets qui vont ensemble — une aide de lecture, jamais un clic de plus. Les onglets qui ont changé de tiroir portent une petite marque <b>↩</b> quelque temps. Quand une rubrique a quelque chose à traiter, une <b>petite pastille rouge</b> apparaît sur son tiroir. <b>Rien n'a été supprimé</b> : tout est juste mieux rangé — et le plus rapide reste « 🔎 Aller à un onglet… »."},
+   a:"Depuis le <b>27/07/2026</b>, la barre du haut compte <b>6 tiroirs colorés</b> + le bouton direct 📊 <b>Tableau de bord</b> et 🧰 <b>Réglages</b> : 👨‍👩‍👧 <b>Familles</b> (vert — adhérents, enfants, foyers), 🎨 <b>Animation</b> (rose — périscolaire, vacances, encadrement ACM, ados, VEPI, activités, ateliers, projets, lieux, salles, réservations, intervenants), 🏛️ <b>Vie associative</b> (bleu — messages, communication, rendez-vous, répertoire, partenaires, secrétariat, préparer le CA), 💶 <b>Finances</b> (ambre — caisse, compta, dettes, subventions, prévisionnel, budget par action, masse salariale, bilan), 🧑‍💼 <b>Équipe &amp; Paie</b> (prune — RH, dossiers salariés, fiches de poste, congés, horaires, obligations, paie) et 🧭 <b>Direction</b> (violet — projet &amp; orientations, suivi, incidents, accompagnement). Dans les gros tiroirs, des <b>petits titres</b> (Accueils, Où, Instances…) regroupent les onglets qui vont ensemble — une aide de lecture, jamais un clic de plus. Les onglets qui ont changé de tiroir portent une petite marque <b>↩</b> quelque temps. Quand une rubrique a quelque chose à traiter, une <b>petite pastille rouge</b> apparaît sur son tiroir. <b>Rien n'a été supprimé</b> : tout est juste mieux rangé — et le plus rapide reste « 🔎 Aller à un onglet… »."},
   {cat:'📊 Tableau de bord',q:"Comment partager le site du CASE avec une affiche ou un QR code ?",kw:"affiche qr code qrcode partager partage site public imprimer imprimer flyer scanner scan telephone lien copier diffuser faire connaitre communication familles",
    a:"Sur le <b>📊 Tableau de bord</b>, à côté de « 🌐 Voir le site public », clique <b>📣 Affiche à partager (QR code)</b> : Bob ouvre une petite affiche prête à l'emploi avec un <b>QR code au milieu</b> qui envoie directement sur le site du CASE. Tu peux l'<b>imprimer</b> (bouton 🖨️ en haut de l'aperçu — parfait pour l'accueil, la porte ou un événement), la <b>montrer à l'écran</b> pour qu'on la scanne, ou <b>copier le lien</b> du site pour l'envoyer par message. Le QR code marche avec l'appareil photo de n'importe quel téléphone, sans application à installer."},
   {cat:'📊 Tableau de bord',q:"Comment aller vite à un onglet sans le chercher dans le menu ?",kw:"aller chercher recherche rechercher loupe taper saute sauter raccourci rapide rapidement saisir champ allera nom rubrique direct directement",a:"Tout en haut du menu, une barre <b>🔎 Aller à un onglet…</b> : tape 2-3 lettres du nom (ex. « cong » → Congés, « subv » → Subventions, « rh » → RH) et clique le résultat, ou utilise les flèches ↑↓ puis Entrée. Bob ouvre directement l'onglet, peu importe la famille dans laquelle il est rangé. Pratique quand on ne se souvient plus de sa couleur."},
@@ -3152,7 +3191,8 @@ function pageHelpGotoAide(){ pageHelpClose(); const b=document.querySelector('na
 
 /* ---- ✨ Quoi de neuf (nouveautés + notice chronologique) ---- */
 const NEWS=[
-  {id:'2026-07-27-nav-6-tiroirs',date:'2026-07-27',tab:'📊 Tableau de bord',titre:"🗂️ Le menu passe à 6 tiroirs — plus clair, rien de perdu",desc:"Le menu du haut est réorganisé en <b>6 tiroirs</b> : 👨‍👩‍👧 <b>Familles</b> (adhérents, enfants), 🎨 <b>Animation</b> (qui accueille désormais les lieux, salles, réservations, intervenants et les projets), 🏛️ <b>Vie associative</b> (messages, communication, RDV, répertoire, partenaires, secrétariat, préparer le CA), 💶 <b>Finances</b>, 🧑‍💼 <b>Équipe &amp; Paie</b> (la 📒 Paie a déménagé ici) et 🧭 <b>Direction</b> (projet, suivi, incidents, accompagnement). Les tiroirs « Lieux &amp; Salles » et « Coffre / Docs » sont dissous, et les onglets déplacés portent une petite marque <b>↩</b> pendant deux semaines. Dans les gros tiroirs, des petits titres regroupent ce qui va ensemble. <b>Aucun onglet n'a été supprimé</b> — au moindre doute : « 🔎 Aller à un onglet… »."},
+  {id:'2026-07-27-nav-6-tiroirs',date:'2026-07-27',tab:'📊 Tableau de bord',titre:"🗂️ Le menu passe à 6 tiroirs — plus clair, rien de perdu",desc:"Le menu du haut est réorganisé en <b>6 tiroirs</b> : 👨‍👩‍👧 <b>Familles</b> (foyers, adhérents, enfants), 🎨 <b>Animation</b> (qui accueille désormais les lieux, salles, réservations, intervenants et les projets), 🏛️ <b>Vie associative</b> (messages, communication, RDV, répertoire, partenaires, secrétariat, préparer le CA), 💶 <b>Finances</b>, 🧑‍💼 <b>Équipe &amp; Paie</b> (la 📒 Paie a déménagé ici) et 🧭 <b>Direction</b> (projet, suivi, incidents, accompagnement). Les tiroirs « Lieux &amp; Salles » et « Coffre / Docs » sont dissous, et les onglets déplacés portent une petite marque <b>↩</b> pendant deux semaines. Dans les gros tiroirs, des petits titres regroupent ce qui va ensemble. <b>Aucun onglet n'a été supprimé</b> — au moindre doute : « 🔎 Aller à un onglet… »."},
+  {id:'2026-07-27-onglet-foyers',date:'2026-07-27',tab:'👨‍👩‍👧 Foyers',titre:"👨‍👩‍👧 Nouvel onglet Foyers : l'arbre des familles, et l'inscription au comptoir",desc:"Dans le tiroir Familles, un nouvel onglet <b>👨‍👩‍👧 Foyers</b> montre le <b>registre des familles</b> : chaque foyer avec ses adultes, ses enfants, son adhésion et ses inscriptions. Et surtout : le bouton <b>➕ Nouveau foyer (comptoir)</b> permet enfin d'inscrire une famille qui se présente <b>sans compte en ligne</b> — dossier accepté même incomplet, <b>récépissé imprimé</b> avec un <b>code famille</b> (il servira à relier son compte en ligne quand l'espace famille le proposera). Réservé au bureau. ⚠️ Pendant la construction, les onglets habituels (Adhérents, Enfants, Périscolaire) restent la référence : une inscription cochée dans Foyers est à reporter aussi dans 🎒 Périscolaire."},
   {id:'2026-07-27-pont-famille-periscolaire',date:'2026-07-27',tab:'👥 Adhérents',titre:"📨 Un pont direct fiche famille ↔ dossier périscolaire",desc:"Sur la ligne d'une famille (👨‍👩‍👧 Familles → 👥 Adhérents), un nouveau bouton <b>📨 Périscolaire</b> ouvre directement son dossier dans 🎒 Périscolaire, mis en évidence. Et sur chaque dossier, <b>👥 Fiche famille</b> fait le chemin inverse. Fini les allers-retours à la main entre les deux onglets — et l'encaissement, lui, ne bouge pas."},
   {id:'2026-07-27-consult-sante-actif',date:'2026-07-27',tab:'🕘 Historique',titre:"🩺 RGPD art. 9 : les consultations du médical sont maintenant tracées",desc:"Le chantier annoncé le 14/07 est <b>terminé</b> : le <b>📓 Journal des actions</b> enregistre désormais chaque <b>consultation</b> d'une fiche sanitaire (qui <b>ouvre</b> le médical d'un enfant — PAI, allergies), en plus des créations/modifications/suppressions — ligne <b>CONSULT_SANTE</b>, avec la date, l'heure et la personne. C'est la traçabilité des <b>accès</b> demandée par le RGPD sur les données de santé. <b>Transparence :</b> les ouvertures <b>antérieures au 27/07/2026</b> n'ont pas été tracées — le journal ne vaut qu'à partir de cette date."},
   {id:'2026-07-25-budget-focus-acm',date:'2026-07-25',tab:'🎯 Budget par action',titre:"🎯 Le budget d'un ACM, un seul à l'écran",desc:"Dans le <b>budget détaillé</b> d'une action à plusieurs ACM (janvier, juillet, octobre…), tu choisis désormais <b>un ACM à la fois</b> avec une rangée d'onglets — Bob n'affiche <b>que celui-là</b>, tout son budget <b>à plat</b> (qui encadre, frais, participations des familles) : fini de dérouler et de faire défiler pour retrouver une info. Un onglet <b>📄 Plan financier (année)</b> regroupe la vue consolidée à déposer à la Mairie, avec les <b>subventions</b> (CAF, Mairie) qui restent au niveau de l'année (comme la CAF les finance : sur l'ensemble de l'accueil, au réel). La barre du haut a aussi été <b>resserrée</b> pour laisser plus de place au contenu. Les calculs, eux, ne changent pas."},
@@ -8028,6 +8068,7 @@ renderAll();
     if(!canWrite && myProfile && myProfile.role==='personnel' && (perms.periscolaire==='gestion'||perms.activites==='gestion') && !perms.enfants) perms.enfants='gestion'; // l'écran 👶 Enfants (métier) est éditable par l'accueil qui gère déjà périscolaire/activités
     if(!canWrite) perms.aide='cache'; // l'Aide « Demande à Zanana » est réservée au bureau
     if(!canWrite) perms.pilotage='cache'; // 🎯 Budget par action : pilotage budgétaire interne → bureau uniquement
+    if(!canWrite) perms.foyers='cache'; // 👨‍👩‍👧 Foyers : registre familles + notes internes → bureau uniquement (coup 2 partiel, 27/07/2026)
     if(!canWrite) perms.accompagnement='cache'; // Accompagnement : contenu sensible (RH, gouvernance) → bureau uniquement par défaut
     if(!canWrite) perms.rh='cache'; // RH & Organisation : contenu sensible → bureau uniquement par défaut
     if(!canWrite){ perms.suivi='cache'; perms.conges='cache'; perms.horaires='cache'; } // Suivi, Congés & Horaires : bureau uniquement par défaut
@@ -9399,6 +9440,220 @@ renderAll();
     if(typeof bobGoTab==='function') bobGoTab('members');
     if(typeof renderMembers==='function') renderMembers();
     const row=document.getElementById('memberRows'); if(row&&row.firstElementChild){ row.firstElementChild.scrollIntoView({behavior:'smooth',block:'center'}); }
+  };
+
+  /* ===== 👨‍👩‍👧 FOYERS — l'arbre famille (coup 2 partiel, 27/07/2026). LECTURE des tables neuves
+     + comptoir « Nouveau foyer » (bureau UNIQUEMENT — écritures dans les tables neuves seulement).
+     Sécurité : jamais de nom/email dans un onclick (ids uuid seuls), tout affichage passe par esc().
+     Dates : calculs en TEXTE LOCAL (getFullYear/getMonth), jamais toISOString (piège 974). ===== */
+  function fyAge(naiss){
+    if(!naiss) return '';
+    const p=String(naiss).split('-'); if(p.length<3) return '';
+    const d=new Date(); let a=d.getFullYear()-parseInt(p[0],10);
+    const m=d.getMonth()+1, j=d.getDate();
+    if(m<parseInt(p[1],10)||(m===parseInt(p[1],10)&&j<parseInt(p[2],10))) a--;
+    return (a>=0&&a<30)?(a+' ans'):'';
+  }
+  function fySaisonDefaut(){ const d=new Date(), y=d.getFullYear(), m=d.getMonth()+1;
+    return (m>=6) ? (y+'-'+(y+1)) : ((y-1)+'-'+y); } // dès juin, le comptoir inscrit pour la rentrée qui vient
+  function fyGenCode(){ const A='ABCDEFGHJKMNPQRSTUVWXYZ23456789'; let s=''; for(let i=0;i<6;i++) s+=A[Math.floor(Math.random()*A.length)]; return 'BDN-'+s; }
+  window.loadFoyers=async function(){
+    const box=document.getElementById('foyersList'); if(!box) return;
+    if(typeof sbc==='undefined'||!sbc||!myAsso){ box.innerHTML='<p class="hint">Connecte-toi pour voir les foyers.</p>'; return; }
+    const [rf,rp,ra,ri]=await Promise.all([
+      sbc.from('foyers').select('*').order('nom',{ascending:true}),
+      sbc.from('personnes').select('*'),
+      sbc.from('adhesions').select('*'),
+      sbc.from('inscriptions').select('*')
+    ]);
+    const fyErr=rf.error||rp.error||ra.error||ri.error; // une SEULE lecture en erreur = on n'affiche RIEN de partiel (sinon « pas d'adhésion » mentirait)
+    if(fyErr){ box.innerHTML='<p class="hint" style="color:#c0392b">Erreur de lecture ('+esc(fyErr.message)+') — recharge (↻) avant de te fier aux cartes.</p>'; return; }
+    window.__fyData={foyers:rf.data||[], personnes:rp.data||[], adhesions:ra.data||[], inscriptions:ri.data||[]};
+    renderFoyers();
+  };
+  window.renderFoyers=function(){
+    const box=document.getElementById('foyersList'); if(!box||!window.__fyData) return;
+    const D=window.__fyData;
+    const q=dosNorm((document.getElementById('fy_search')||{}).value||'');
+    const persByFoyer={}; D.personnes.forEach(p=>{ if(p.foyer_id) (persByFoyer[p.foyer_id]=persByFoyer[p.foyer_id]||[]).push(p); });
+    const insByPers={}; D.inscriptions.forEach(i=>{ (insByPers[i.personne_id]=insByPers[i.personne_id]||[]).push(i); });
+    const adhByFoyer={}; D.adhesions.forEach(a=>{ (adhByFoyer[a.foyer_id]=adhByFoyer[a.foyer_id]||[]).push(a); });
+    const kpi=document.getElementById('foyersKpis');
+    if(kpi){
+      const nbKids=D.personnes.filter(p=>p.role_foyer==='enfant'&&p.foyer_id).length; // seuls les enfants RATTACHÉS (les cartes ne montrent qu'eux)
+      const nbPeri=D.inscriptions.filter(i=>i.type==='periscolaire'&&i.statut!=='annule'&&i.statut!=='deplace').length;
+      kpi.innerHTML='<div class="card"><div class="label">Foyers</div><div class="value">'+D.foyers.length+'</div></div>'
+        +'<div class="card"><div class="label">Enfants</div><div class="value">'+nbKids+'</div></div>'
+        +'<div class="card"><div class="label">Inscriptions périscolaire</div><div class="value">'+nbPeri+'</div><div class="sub">toutes saisons</div></div>';
+    }
+    const list=D.foyers.filter(f=>{
+      if(!q) return true;
+      if(dosNorm(f.nom).includes(q)||dosNorm(f.code_famille).includes(q)) return true; // le code du récépissé est cherchable
+      return (persByFoyer[f.id]||[]).some(p=>dosNorm(((p.prenom||'')+' '+(p.nom||''))).includes(q)||dosNorm(((p.nom||'')+' '+(p.prenom||''))).includes(q)); // « Prénom Nom » ET « Nom Prénom »
+    });
+    if(!list.length){ box.innerHTML='<p class="hint">'+(D.foyers.length?'Aucun foyer ne correspond à la recherche.':'Aucun foyer pour le moment — « ➕ Nouveau foyer » pour commencer.')+'</p>'; return; }
+    const insPill=i=>{
+      const st={incomplet:['#fff5da','#8a6400','à compléter'],depose:['#eef4ff','#23448a','déposé'],valide:['#dff5e9','#127a51','validé'],annule:['#eef0f3','#667','annulé'],deplace:['#eef0f3','#667','déplacé']}[i.statut]||['#eef0f3','#667',esc(i.statut)];
+      return '<span class="pill" style="background:'+st[0]+';color:'+st[1]+';font-size:10.5px">🎒 '+[i.matin?'matin':null,i.soir?'soir':null].filter(Boolean).join('+')+' · '+st[2]+'</span>';
+    };
+    box.innerHTML=list.map(f=>{
+      const pers=(persByFoyer[f.id]||[]);
+      const adults=pers.filter(p=>p.role_foyer!=='enfant');
+      const kids=pers.filter(p=>p.role_foyer==='enfant').slice().sort((a,b)=>String(a.naissance||'').localeCompare(String(b.naissance||'')));
+      const adhs=(adhByFoyer[f.id]||[]).slice().sort((a,b)=>String(b.saison).localeCompare(String(a.saison)));
+      const adhBadge=adhs.length
+        ? adhs.map(a=>'<span class="pill" style="background:'+(a.paye?'#dff5e9':'#fff5da')+';color:'+(a.paye?'#127a51':'#8a6400')+';font-size:11px">'+(a.paye?'✓ ':'')+'adhésion '+esc(a.saison)+'</span>').join(' ')
+        : '<span class="pill" style="background:#eef0f3;color:#667;font-size:11px">pas d\'adhésion</span>';
+      const adultHtml=adults.length?adults.map(a=>'<span style="font-size:13px">👤 <b>'+esc((((a.prenom||'')+' '+(a.nom||'')).trim())||'(à compléter)')+'</b>'
+        +(a.auth_user_id?' <span class="pill" style="background:#e7f5ee;color:#127a51;font-size:10px" title="Un compte en ligne est relié à cette personne">🔗 compte</span>':'')
+        +(canWrite?' <button class="ghost btn" style="padding:1px 7px;font-size:11px" onclick="fyEditPersonne(\''+a.id+'\')" title="Corriger le nom">✏️</button>':'')
+        +'</span>').join(' · '):'<span class="hint">aucun adulte saisi</span>';
+      const kidHtml=kids.length?kids.map(k=>{
+        const age=fyAge(k.naissance);
+        const ins=(insByPers[k.id]||[]).map(insPill).join(' ');
+        return '<div class="pill" style="background:#eef3ef;color:#444;font-size:12px;display:inline-block;padding:4px 9px;line-height:1.6;margin:2px 3px 0 0">'
+          +'👧 <b>'+esc((((k.prenom||'')+' '+(k.nom||'')).trim())||'?')+'</b>'
+          +[age?esc(age):null, k.classe?esc(k.classe):null].filter(Boolean).map(x=>' · '+x).join('')
+          +(canWrite?' <button class="ghost btn" style="padding:0 6px;font-size:11px;line-height:1.5" onclick="fyEditPersonne(\''+k.id+'\')" title="Corriger le nom">✏️</button>':'')
+          +(ins?'<br>'+ins:'')
+          +'</div>';
+      }).join(''):'';
+      return '<div class="panel" style="margin:10px 0;padding:14px 16px;border-left:4px solid #127a51">'
+        +'<div class="toolbar" style="align-items:flex-start"><div>'
+        +'<strong style="font-size:15px">'+esc(f.nom)+'</strong> '
+        +(f.code_famille?'<span class="pill" style="background:#e7f5ee;color:#127a51;font-weight:700;font-size:11px" title="Code famille — servira à relier le compte en ligne de la famille (fonction à venir)">🔑 '+esc(f.code_famille)+'</span> ':'')
+        +adhBadge
+        +((f.tel||f.adresse)?'<br><span class="muted" style="font-size:12.5px">'+esc(f.tel||'')+((f.tel&&(f.adresse||f.ville))?' · ':'')+esc(((f.adresse||'')+' '+(f.cp||'')+' '+(f.ville||'')).trim())+'</span>':'')
+        +(f.note?'<br><span style="color:#8a6400;font-size:12px">📝 '+esc(f.note)+'</span>':'')
+        +'</div><div style="white-space:nowrap">'
+        +(canWrite?'<button class="ghost btn" style="padding:4px 9px;font-size:12px" onclick="fyEditFoyer(\''+f.id+'\')" title="Téléphone / note">✏️</button> ':'')
+        +'<button class="ghost btn" style="padding:4px 9px;font-size:12px" onclick="foyerRecu(\''+f.id+'\')">🧾 Récépissé</button>'
+        +'</div></div>'
+        +'<div style="margin-top:6px">'+adultHtml+'</div>'
+        +(kidHtml?'<div style="margin-top:6px;display:flex;flex-wrap:wrap">'+kidHtml+'</div>':'')
+        +(canWrite?'<div style="margin-top:7px"><button class="ghost btn" style="padding:2px 8px;font-size:11px" onclick="fyAddPersonne(\''+f.id+'\',\'parent\')">+ adulte</button> <button class="ghost btn" style="padding:2px 8px;font-size:11px" onclick="fyAddPersonne(\''+f.id+'\',\'enfant\')">+ enfant</button></div>':'')
+        +'</div>';
+    }).join('');
+  };
+  window.foyerNew=function(){
+    if(!canWrite){ alert('La création d\'un foyer est réservée au bureau.'); return; }
+    const p=document.getElementById('foyerNewPanel'); if(!p) return;
+    const s=document.getElementById('fy_saison');
+    if(s&&!s.options.length){
+      const d=new Date(), y=d.getFullYear(), m=d.getMonth()+1;
+      const cur=(m>=8)?(y+'-'+(y+1)):((y-1)+'-'+y), nxt=(m>=8)?((y+1)+'-'+(y+2)):(y+'-'+(y+1));
+      [cur,nxt].forEach(v=>{ const o=document.createElement('option'); o.value=v; o.textContent=v; s.appendChild(o); });
+      s.value=fySaisonDefaut();
+    }
+    if(!document.querySelector('#fyKids .fy-kid')) fyAddKidRow();
+    p.style.display=''; p.scrollIntoView({behavior:'smooth',block:'start'});
+  };
+  window.fyAddKidRow=function(){
+    const box=document.getElementById('fyKids'); if(!box) return;
+    const d=document.createElement('div'); d.className='row fy-kid'; d.style.cssText='gap:8px;flex-wrap:wrap;align-items:flex-end;margin-top:6px';
+    d.innerHTML='<div class="field" style="min-width:130px"><label>Prénom</label><input class="fy-kp"></div>'
+      +'<div class="field" style="min-width:130px"><label>Nom</label><input class="fy-kn"></div>'
+      +'<div class="field" style="min-width:140px;flex:0"><label>Naissance</label><input type="date" class="fy-kd"></div>'
+      +'<div class="field" style="min-width:80px;flex:0"><label>Classe</label><input class="fy-kc" style="width:76px"></div>'
+      +'<label style="display:flex;align-items:center;gap:4px;font-size:13px;padding-bottom:10px"><input type="checkbox" class="fy-km"> 🎒 matin</label>'
+      +'<label style="display:flex;align-items:center;gap:4px;font-size:13px;padding-bottom:10px"><input type="checkbox" class="fy-ks"> soir</label>'
+      +'<button class="danger" style="margin-bottom:8px" title="Retirer cette ligne" onclick="this.closest(\'.fy-kid\').remove()">✕</button>';
+    box.appendChild(d);
+  };
+  window.foyerCreate=async function(){
+    if(!canWrite){ alert('Réservé au bureau.'); return; }
+    const nom=((document.getElementById('fy_nom')||{}).value||'').trim();
+    if(!nom){ alert('Donne un nom au foyer (ex. « Famille Payet »).'); return; }
+    const tel=((document.getElementById('fy_tel')||{}).value||'').trim();
+    const adulte=((document.getElementById('fy_adulte')||{}).value||'').trim();
+    const saison=((document.getElementById('fy_saison')||{}).value||fySaisonDefaut());
+    const btn=document.getElementById('fyCreateBtn'); if(btn) btn.disabled=true;
+    try{
+      let foyer=null, lastErr=null;
+      for(let t=0;t<3&&!foyer;t++){ // 3 essais si collision du code famille (unique par asso)
+        const r=await sbc.from('foyers').insert({asso_id:myAsso, nom:nom, tel:tel||null, code_famille:fyGenCode(), statut:'actif'}).select().single();
+        if(r.error){ lastErr=r.error; if(r.error.code!=='23505'&&String(r.error.message||'').indexOf('foyers_code_uq')<0) break; }
+        else foyer=r.data;
+      }
+      if(!foyer){ alert('Création du foyer impossible : '+(lastErr?lastErr.message:'?')+'\n\n⚠️ Avant de re-cliquer, recharge la liste (↻) : en cas de coupure réseau, le foyer a pu être créé quand même — re-cliquer ferait un doublon.'); return; }
+      if(adulte){
+        const ra=await sbc.from('personnes').insert({asso_id:myAsso, foyer_id:foyer.id, role_foyer:'parent', nom:adulte});
+        if(ra.error) alert('Le foyer est créé, mais l\'adulte n\'a pas pu être enregistré : '+ra.error.message+'\nAjoute-le ensuite avec le bouton « + adulte » sur la carte du foyer.');
+      }
+      const rows=[...document.querySelectorAll('#fyKids .fy-kid')];
+      for(const r of rows){
+        const kp=(r.querySelector('.fy-kp').value||'').trim(), kn=(r.querySelector('.fy-kn').value||'').trim();
+        if(!kp&&!kn) continue;
+        const kd=(r.querySelector('.fy-kd').value||'')||null, kc=(r.querySelector('.fy-kc').value||'').trim()||null;
+        const rk=await sbc.from('personnes').insert({asso_id:myAsso, foyer_id:foyer.id, role_foyer:'enfant', prenom:kp||null, nom:kn||null, naissance:kd, classe:kc}).select().single();
+        if(rk.error){ alert('Enfant « '+(kp||kn)+' » non enregistré : '+rk.error.message+'\nAjoute-le ensuite avec le bouton « + enfant » sur la carte du foyer.'); continue; }
+        const matin=r.querySelector('.fy-km').checked, soir=r.querySelector('.fy-ks').checked;
+        if(matin||soir){
+          const ri=await sbc.from('inscriptions').insert({asso_id:myAsso, personne_id:rk.data.id, type:'periscolaire', saison:saison, matin:matin, soir:soir, statut:'incomplet'});
+          if(ri.error) alert('Inscription périscolaire de « '+(kp||kn)+' » non enregistrée : '+ri.error.message);
+        }
+      }
+      document.getElementById('foyerNewPanel').style.display='none';
+      ['fy_nom','fy_tel','fy_adulte'].forEach(i=>{ const e=document.getElementById(i); if(e) e.value=''; });
+      const kb=document.getElementById('fyKids'); if(kb){ kb.innerHTML=''; fyAddKidRow(); }
+      await loadFoyers();
+      if(typeof setSync==='function') setSync('✓ foyer créé — code '+foyer.code_famille,'#dff5e9');
+      // si le rechargement a échoué, foyerRecu serait muet : on donne le code quand même
+      if(((window.__fyData||{}).foyers||[]).some(x=>x.id===foyer.id)) foyerRecu(foyer.id);
+      else alert('Foyer créé ✓ — code famille : '+foyer.code_famille+'\n\nLe récépissé ne peut pas s\'ouvrir (lecture en erreur) : recharge (↻) puis clique 🧾 sur la carte du foyer.');
+    } finally { if(btn) btn.disabled=false; }
+  };
+  window.foyerRecu=function(fid){
+    const D=window.__fyData||{}; const f=(D.foyers||[]).find(x=>x.id===fid); if(!f) return;
+    const pers=(D.personnes||[]).filter(p=>p.foyer_id===fid);
+    const adults=pers.filter(p=>p.role_foyer!=='enfant'), kids=pers.filter(p=>p.role_foyer==='enfant');
+    const insByPers={}; (D.inscriptions||[]).forEach(i=>{ (insByPers[i.personne_id]=insByPers[i.personne_id]||[]).push(i); });
+    const stLbl={incomplet:'dossier à compléter',depose:'déposé',valide:'validé'};
+    const kidLine=k=>{
+      // on n'imprime QUE les inscriptions vivantes (jamais annulé/déplacé sur un document remis à la famille)
+      const ins=(insByPers[k.id]||[]).filter(i=>i.statut!=='annule'&&i.statut!=='deplace').map(i=>(i.type==='periscolaire'?'périscolaire':esc(i.type))+' '+[i.matin?'matin':null,i.soir?'soir':null].filter(Boolean).join(' & ')+' — saison '+esc(i.saison||'')+' ('+(stLbl[i.statut]||esc(i.statut))+')').join(' · ');
+      return '<tr><td>'+esc((((k.prenom||'')+' '+(k.nom||'')).trim())||'?')+(k.naissance?' — né(e) le '+fmtDate(k.naissance):'')+'</td><td>'+(ins||'—')+'</td></tr>';
+    };
+    printHTML('<h1 style="margin:0">CASE du Bois de Nèfles</h1>'
+      +'<p style="margin:2px 0 0">Association loi 1901 — Saint-Denis (La Réunion)</p>'
+      +'<h2>Récépissé de dossier famille</h2>'
+      +'<p>Foyer : <strong>'+esc(f.nom)+'</strong></p>'
+      +(f.code_famille?'<p>Code famille : <strong style="font-size:18px">'+esc(f.code_famille)+'</strong><br><span style="font-size:12px">À conserver précieusement — il servira à relier votre compte en ligne à ce dossier dès que le CASE ouvrira cette possibilité.</span></p>':'')
+      +(adults.length?'<p>Adulte(s) : '+adults.map(a=>esc((((a.prenom||'')+' '+(a.nom||'')).trim())||'(à compléter)')).join(', ')+'</p>':'')
+      +(kids.length?'<table><tbody>'+kids.map(kidLine).join('')+'</tbody></table>':'')
+      +'<p style="margin-top:12px;font-size:13px">Un dossier peut être déposé <strong>incomplet</strong> : les pièces manquantes sont à apporter au plus vite — l\'inscription n\'est définitive qu\'une fois le dossier complet et validé par le bureau.</p>'
+      +'<p style="margin-top:30px">Fait à Saint-Denis, le '+new Date().toLocaleDateString('fr-FR')+'.</p>'); // date LOCALE (jamais toISOString — piège 974)
+  };
+  window.fyAddPersonne=async function(fid, role){
+    if(!canWrite) return;
+    const isKid=(role==='enfant');
+    const prenom=prompt(isKid?'Prénom de l\'enfant :':'Prénom de l\'adulte (vide si inconnu) :',''); if(prenom===null) return;
+    const nom=prompt('Nom :',''); if(nom===null) return;
+    if(!prenom.trim()&&!nom.trim()){ alert('Il faut au moins un prénom ou un nom.'); return; }
+    let naissance=null;
+    if(isKid){ const d=prompt('Date de naissance (AAAA-MM-JJ, vide si inconnue) :',''); if(d===null) return; naissance=(d||'').trim()||null; }
+    const r=await sbc.from('personnes').insert({asso_id:myAsso, foyer_id:fid, role_foyer:isKid?'enfant':'parent', prenom:prenom.trim()||null, nom:nom.trim()||null, naissance:naissance});
+    if(r.error){ alert('Erreur : '+r.error.message+(naissance?'\n(Si c\'est la date : format attendu AAAA-MM-JJ, ex. 2019-03-12.)':'')); return; }
+    loadFoyers();
+  };
+  window.fyEditPersonne=async function(pid){
+    if(!canWrite) return;
+    const D=window.__fyData||{}; const p=(D.personnes||[]).find(x=>x.id===pid); if(!p) return;
+    const prenom=prompt('Prénom :', p.prenom||''); if(prenom===null) return;
+    const nom=prompt('Nom :', p.nom||''); if(nom===null) return;
+    if(!prenom.trim()&&!nom.trim()){ alert('On ne vide pas complètement une fiche : garde au moins un prénom ou un nom.'); return; }
+    const r=await sbc.from('personnes').update({prenom:prenom.trim()||null, nom:nom.trim()||null}).eq('id',pid);
+    if(r.error){ alert('Erreur : '+r.error.message); return; }
+    loadFoyers();
+  };
+  window.fyEditFoyer=async function(fid){
+    if(!canWrite) return;
+    const D=window.__fyData||{}; const f=(D.foyers||[]).find(x=>x.id===fid); if(!f) return;
+    const tel=prompt('Téléphone du foyer :', f.tel||''); if(tel===null) return;
+    const note=prompt('Note — ⚠️ lisible aussi par les salariés ET par la famille elle-même (RLS par ligne) : jamais d\'appréciation sensible ici.', f.note||''); if(note===null) return;
+    const r=await sbc.from('foyers').update({tel:tel.trim()||null, note:note.trim()||null}).eq('id',fid);
+    if(r.error){ alert('Erreur : '+r.error.message); return; }
+    loadFoyers();
   };
 
   // 👶 Liste consolidée des enfants en ACM (brique 1 « enfant au centre », LECTURE SEULE).
@@ -11718,6 +11973,7 @@ renderAll();
     applyPerms();
     const hb=document.querySelector('nav.tabs button[data-tab="aide"]'); if(hb) hb.addEventListener('click',()=>{ newsMarkRead(); });
     const pb=document.querySelector('nav.tabs button[data-tab="partenaires"]'); if(pb) pb.addEventListener('click',()=>{ if(window.loadPartenaires) loadPartenaires(); });
+    const fyb=document.querySelector('nav.tabs button[data-tab="foyers"]'); if(fyb) fyb.addEventListener('click',()=>{ if(window.loadFoyers) loadFoyers(); });
     const fmb=document.querySelector('nav.tabs button[data-tab="communication"]'); if(fmb) fmb.addEventListener('click',()=>{ if(window.loadFicheMarque) loadFicheMarque(); });
     if(window.loadPartenaires) loadPartenaires();
     const ab=document.querySelector('nav.tabs button[data-tab="ateliers"]'); if(ab) ab.addEventListener('click',()=>{ if(window.loadAteliers) loadAteliers(); });
