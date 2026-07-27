@@ -1216,6 +1216,54 @@ async function photosBoot(){
 const KIDS = { list:[] };
 const KID_ALLERG=['Arachides','Fruits à coque','Lait','Œufs','Gluten','Poisson / fruits de mer'];
 const KID_SANTE=['Asthme','PAI en place','Traitement régulier'];
+// 🍽️ Régime alimentaire : vocabulaire FERMÉ qui décrit l'ASSIETTE, jamais la personne (RGPD art. 9 :
+// un texte libre invite « sans porc, nous sommes musulmans » → l'asso collecterait une conviction
+// religieuse sans le vouloir). Pas de champ « Autre » : c'est le tuyau qu'on ferme (27/07/2026).
+// Liste calée sur le réel réunionnais (sans bœuf / sans cabri présents dans les fiches du CASE).
+const KID_REGIME=['Sans porc','Sans bœuf','Sans cabri','Sans viande','Sans poisson / fruits de mer','Panier repas fourni par la famille (PAI)'];
+const KID_REGIME_RX={'Sans porc':/(?:sans|ni)\s+porc/i,'Sans bœuf':/(?:sans|ni)\s+b(?:œ|oe)uf/i,'Sans cabri':/(?:sans|ni)\s+cabris?/i,'Sans viande':/(?:sans|ni)\s+viande|v[ée]g[ée]talien|v[ée]g[ée]tarien/i,'Sans poisson / fruits de mer':/(?:sans|ni)\s+poissons?|fruits?\s+de\s+mer/i,'Panier repas fourni par la famille (PAI)':/panier/i};
+// Analyse un ancien libellé libre : coche ce qu'on reconnaît, CONSERVE le reste (jamais de perte muette).
+function regimeSplit(text){
+  let t=String(text||''); const on=[];
+  KID_REGIME.forEach(o=>{ if(KID_REGIME_RX[o].test(t)){ on.push(o); t=t.replace(KID_REGIME_RX[o],' '); } });
+  const reste=t.split(/[,;]+/).map(s=>s.trim()).filter(s=>s&&!/^(sans|ni|et|aucun|non|rien)$/i.test(s)).join(', ');
+  return {on:on, reste:reste};
+}
+// Garde-fous du champ « Autre » : on n'accepte que l'ALIMENT — jamais un motif (art. 9), et les
+// allergies ont leur propre rubrique. Barrière de bonne foi, côté formulaire.
+const REGIME_RX_MOTIF=/musulman|islam|halal|ramadan|casher|kasher|juif|juive|hindou|tamoul|chr[ée]tien|car[êe]me|religio|croyan|conviction|conf[ée]ssion|dieu/i;
+const REGIME_RX_ALLERG=/allerg/i;
+function regimeBlock(hid, stored, dis){
+  const sp=regimeSplit(stored);
+  const autreOn=!!sp.reste;
+  return '<div style="display:flex;flex-wrap:wrap;gap:6px 14px;margin:2px 0">'
+    +KID_REGIME.map(o=>'<label style="font-size:14px;font-weight:500"><input type="checkbox" data-regopt="'+hid+'" data-label="'+kidEsc(o)+'"'+(sp.on.indexOf(o)>=0?' checked':'')+(dis?' disabled':'')+' onchange="regimeSync(\''+hid+'\')"> '+kidEsc(o)+'</label>').join('')
+    +'<label style="font-size:14px;font-weight:500"><input type="checkbox" id="'+hid+'_autreon"'+(autreOn?' checked':'')+(dis?' disabled':'')+' onchange="regimeAutreToggle(\''+hid+'\')"> Autre</label>'
+    +'</div>'
+    +'<div id="'+hid+'_autrebox" style="display:'+(autreOn?'block':'none')+'">'
+    +'<input id="'+hid+'_autre" value="'+kidEsc(sp.reste)+'"'+(dis?' disabled':'')+' placeholder="Seulement l\'aliment à éviter (ex. sans œuf)" oninput="regimeSync(\''+hid+'\')" style="width:100%;margin-top:4px;padding:8px 11px;border:1px solid var(--line);border-radius:10px;font:inherit">'
+    +'<p id="'+hid+'_warn" style="display:none;margin:3px 0 0;font-size:12.5px;color:#b23a23;font-weight:700"></p>'
+    +'</div>'
+    +'<input type="hidden" id="'+hid+'" value="'+kidEsc(stored||'')+'">'
+    +'<p class="sub" style="margin:2px 0 0;font-size:12px">Cochez seulement ce qui ne doit pas être servi — <b>nous ne vous demandons jamais la raison</b>. Vu par l\'équipe qui encadre les repas.</p>';
+}
+window.regimeAutreToggle=function(hid){
+  const on=document.getElementById(hid+'_autreon'), box=document.getElementById(hid+'_autrebox');
+  if(box) box.style.display=(on&&on.checked)?'block':'none';
+  regimeSync(hid);
+};
+window.regimeSync=function(hid){
+  const el=document.getElementById(hid); if(!el) return;
+  const on=[].slice.call(document.querySelectorAll('[data-regopt="'+hid+'"]:checked')).map(c=>c.getAttribute('data-label'));
+  const aon=document.getElementById(hid+'_autreon'), ain=document.getElementById(hid+'_autre'), warn=document.getElementById(hid+'_warn');
+  let autre=(aon&&aon.checked&&ain)?ain.value.trim():'';
+  if(warn){
+    if(autre&&REGIME_RX_MOTIF.test(autre)){ warn.textContent='⚠️ Indiquez seulement l\'aliment à éviter — jamais la raison. Cette mention ne sera pas enregistrée.'; warn.style.display='block'; autre=''; }
+    else if(autre&&REGIME_RX_ALLERG.test(autre)){ warn.textContent='⚠️ Les allergies se déclarent dans la rubrique 🌰 Allergies, juste au-dessus.'; warn.style.display='block'; autre=''; }
+    else warn.style.display='none';
+  }
+  el.value=on.concat(autre?[autre]:[]).join(', ');
+};
 function kidEsc(s){return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 function phoneValid(t){ if(!t||!t.trim()) return true; const c=t.replace(/[\s.\-()\/]/g,''); return /^(0\d{9}|\+\d{8,14}|00\d{8,14})$/.test(c); }
 window.kidDirty=function(id){ const m=document.getElementById('k_msg_'+id); if(m){ m.textContent='● Modifications non enregistrées'; m.style.color='var(--ananas)'; } };
@@ -1318,9 +1366,8 @@ function kidCard(k){
     // repas en a besoin à chaque service (décision GB 17/07/2026, prolonge le médical vu du
     // terrain acté le 03/07). Reste dans Bob (staff, jamais public). Libellé neutre demandé
     // pour éviter la mention religieuse (le régime peut toucher à l'art. 9).
-    +'<div style="font-size:13.5px;font-weight:700;margin-top:2px">🍽️ Régime alimentaire</div>'
-    +'<input id="k_regime_'+id+'" value="'+kidEsc(k.regime||'')+'" placeholder="ex. sans porc, végétarien… (laisser vide si aucun)" style="width:100%;padding:9px 11px;border:1px solid var(--line);border-radius:10px;font:inherit">'
-    +'<p class="sub" style="margin:2px 0 0;font-size:12px">Libellé neutre (sans porc, végétarien…), sans mention religieuse. Vu par l\'équipe qui encadre les repas.</p>'
+    +'<div style="font-size:13.5px;font-weight:700;margin-top:2px">🍽️ Régime alimentaire <span style="font-weight:400;color:var(--muted)">— rien à cocher si aucun</span></div>'
+    +regimeBlock('k_regime_'+id, k.regime||'', false)
     +kidTagsBlock(id,'sante','🩺 Santé / PAI',KID_SANTE,k.sante)
     // Conduite à tenir sur la carte enfant : l'animateur voyait « Arachides » sans savoir
     // quoi faire — le détail vivait dans la fiche sanitaire, à accès restreint. Une urgence
@@ -1458,8 +1505,8 @@ function ficheFormHtml(k){
     + ficheSection('🌰 Allergies & régime alimentaire',
         '<div class="sub" style="font-size:13px">Allergies connues (depuis 👧 Mes enfants) : <b>'+(k.allergies?e(k.allergies):'aucune renseignée')+'</b></div>'
         +'<textarea id="f_allerg_'+id+'"'+ro+' placeholder="Conduite à tenir en cas d\'allergie (ce que doit faire l\'animateur)" style="width:100%;margin-top:6px;min-height:44px;padding:8px 10px;border:1px solid var(--line);border-radius:10px;font:inherit">'+e(d.allergies_conduite||'')+'</textarea>'
-        +'<input id="f_regime_'+id+'"'+ro+' value="'+e(d.regime||'')+'" placeholder="Régime alimentaire (ex. sans porc, végétarien…)" style="width:100%;margin-top:6px;padding:8px 10px;border:1px solid var(--line);border-radius:10px;font:inherit">'
-        +'<p class="sub" style="margin:4px 0 0;font-size:12px">Merci d\'un libellé neutre (sans porc, végétarien…), pas de mention religieuse.</p>')
+        +'<div style="font-size:13px;font-weight:700;margin-top:8px">🍽️ Régime alimentaire <span style="font-weight:400;color:var(--muted)">— rien à cocher si aucun</span></div>'
+        +regimeBlock('f_regime_'+id, d.regime||'', !!signed))
     + ficheSection('🩺 Santé & PAI',
         '<label style="font-weight:600;font-size:14px"><input type="checkbox" id="f_pai_'+id+'"'+ro+' '+(pai.enPlace?'checked':'')+'> Un PAI (projet d\'accueil individualisé) est en place</label>'
         +'<input id="f_patho_'+id+'"'+ro+' value="'+e(pai.pathologie||'')+'" placeholder="Pathologie chronique (asthme, diabète…)" style="width:100%;margin-top:6px;padding:8px 10px;border:1px solid var(--line);border-radius:10px;font:inherit">'

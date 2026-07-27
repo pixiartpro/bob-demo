@@ -1522,6 +1522,50 @@ window.famActDelDoc=async function(insId, key){
   if(r.error){ toast('Erreur : '+r.error.message); return; }
   ins.pieces=pieces; renderFamilles(); toast('Document retiré');
 };
+// 🍽️ Régime : vocabulaire FERMÉ (décrit l'assiette, jamais la personne — RGPD art. 9, 27/07/2026).
+// Même widget que l'espace famille ; le champ caché garde l'id fe_regime → la sauvegarde ne change pas.
+const KID_REGIME=['Sans porc','Sans bœuf','Sans cabri','Sans viande','Sans poisson / fruits de mer','Panier repas fourni par la famille (PAI)'];
+const KID_REGIME_RX={'Sans porc':/(?:sans|ni)\s+porc/i,'Sans bœuf':/(?:sans|ni)\s+b(?:œ|oe)uf/i,'Sans cabri':/(?:sans|ni)\s+cabris?/i,'Sans viande':/(?:sans|ni)\s+viande|v[ée]g[ée]talien|v[ée]g[ée]tarien/i,'Sans poisson / fruits de mer':/(?:sans|ni)\s+poissons?|fruits?\s+de\s+mer/i,'Panier repas fourni par la famille (PAI)':/panier/i};
+function regimeSplit(text){
+  let t=String(text||''); const on=[];
+  KID_REGIME.forEach(o=>{ if(KID_REGIME_RX[o].test(t)){ on.push(o); t=t.replace(KID_REGIME_RX[o],' '); } });
+  const reste=t.split(/[,;]+/).map(s=>s.trim()).filter(s=>s&&!/^(sans|ni|et|aucun|non|rien)$/i.test(s)).join(', ');
+  return {on:on, reste:reste};
+}
+// Garde-fous du champ « Autre » : l'ALIMENT seulement — jamais un motif (art. 9) ; allergies → leur rubrique.
+const REGIME_RX_MOTIF=/musulman|islam|halal|ramadan|casher|kasher|juif|juive|hindou|tamoul|chr[ée]tien|car[êe]me|religio|croyan|conviction|conf[ée]ssion|dieu/i;
+const REGIME_RX_ALLERG=/allerg/i;
+function regimeBlock(hid, stored, dis){
+  const sp=regimeSplit(stored);
+  const autreOn=!!sp.reste;
+  return '<div style="display:flex;flex-wrap:wrap;gap:6px 14px;margin:2px 0">'
+    +KID_REGIME.map(o=>'<label style="font-size:14px;font-weight:500"><input type="checkbox" data-regopt="'+hid+'" data-label="'+esc(o)+'"'+(sp.on.indexOf(o)>=0?' checked':'')+(dis?' disabled':'')+' onchange="regimeSync(\''+hid+'\')"> '+esc(o)+'</label>').join('')
+    +'<label style="font-size:14px;font-weight:500"><input type="checkbox" id="'+hid+'_autreon"'+(autreOn?' checked':'')+(dis?' disabled':'')+' onchange="regimeAutreToggle(\''+hid+'\')"> Autre</label>'
+    +'</div>'
+    +'<div id="'+hid+'_autrebox" style="display:'+(autreOn?'block':'none')+'">'
+    +'<input id="'+hid+'_autre" value="'+esc(sp.reste)+'"'+(dis?' disabled':'')+' placeholder="Seulement l\'aliment à éviter (ex. sans œuf)" oninput="regimeSync(\''+hid+'\')" style="width:100%;margin-top:4px">'
+    +'<p id="'+hid+'_warn" style="display:none;margin:3px 0 0;font-size:12.5px;color:#b23a23;font-weight:700"></p>'
+    +'</div>'
+    +'<input type="hidden" id="'+hid+'" value="'+esc(stored||'')+'">'
+    +'<p class="empty" style="margin:2px 0 0;font-size:12px">Cochez seulement ce qui ne doit pas être servi — la raison n\'est jamais demandée ni notée.</p>';
+}
+window.regimeAutreToggle=function(hid){
+  const on=document.getElementById(hid+'_autreon'), box=document.getElementById(hid+'_autrebox');
+  if(box) box.style.display=(on&&on.checked)?'block':'none';
+  regimeSync(hid);
+};
+window.regimeSync=function(hid){
+  const el=document.getElementById(hid); if(!el) return;
+  const on=[].slice.call(document.querySelectorAll('[data-regopt="'+hid+'"]:checked')).map(c=>c.getAttribute('data-label'));
+  const aon=document.getElementById(hid+'_autreon'), ain=document.getElementById(hid+'_autre'), warn=document.getElementById(hid+'_warn');
+  let autre=(aon&&aon.checked&&ain)?ain.value.trim():'';
+  if(warn){
+    if(autre&&REGIME_RX_MOTIF.test(autre)){ warn.textContent='⚠️ Seulement l\'aliment à éviter — jamais la raison. Cette mention ne sera pas enregistrée.'; warn.style.display='block'; autre=''; }
+    else if(autre&&REGIME_RX_ALLERG.test(autre)){ warn.textContent='⚠️ Les allergies se déclarent dans le champ 🤧 Allergies.'; warn.style.display='block'; autre=''; }
+    else warn.style.display='none';
+  }
+  el.value=on.concat(autre?[autre]:[]).join(', ');
+};
 function famEditFormHtml(k){
   const classes=['','TPS','PS','MS','GS','CP','CE1','CE2','CM1','CM2','Autre'];
   const opts=classes.map(function(c){ return '<option value="'+c+'"'+(k.classe===c?' selected':'')+'>'+(c||'—')+'</option>'; }).join('');
@@ -1533,7 +1577,7 @@ function famEditFormHtml(k){
       +'<div style="flex:2"><label>École</label><input id="fe_ecole" value="'+esc(k.ecole||'')+'" style="width:100%"></div>'
     +'</div>'
     +'<div class="row" style="margin-bottom:8px"><div style="flex:1"><label>🤧 Allergies (écrire « aucune » s\'il n\'y en a pas)</label><input id="fe_allergies" value="'+esc(k.allergies||'')+'" style="width:100%"></div></div>'
-    +'<div class="row" style="margin-bottom:8px"><div style="flex:1"><label>🍽️ Régime alimentaire (sans porc, végétarien… — laisser vide si aucun)</label><input id="fe_regime" value="'+esc(k.regime||'')+'" style="width:100%"></div></div>'
+    +'<div class="row" style="margin-bottom:8px"><div style="flex:1"><label>🍽️ Régime alimentaire — rien à cocher si aucun</label>'+regimeBlock('fe_regime', k.regime||'')+'</div></div>'
     +'<div class="row" style="margin-bottom:8px"><div style="flex:1"><label>🩺 Infos santé (PAI, traitement, asthme…)</label><input id="fe_sante" value="'+esc(k.sante||'')+'" style="width:100%"></div></div>'
     +'<div class="row" style="margin-bottom:8px"><div style="flex:1"><label>🚨 En cas d\'urgence, que faire ? (auto-injecteur, Ventoline, appeler le 15…)</label><input id="fe_urgence" value="'+esc(k.conduite_urgence||'')+'" style="width:100%"></div></div>'
     +'<div class="row" style="margin-bottom:10px"><div style="flex:1"><label>👥 Personnes autorisées à récupérer l\'enfant</label><input id="fe_autorises" value="'+esc(k.autorises||'')+'" style="width:100%"></div></div>'
