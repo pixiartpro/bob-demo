@@ -11666,6 +11666,21 @@ renderAll();
     }
     myAsso=prof.asso_id;
     try{ const {data:feat}=await sbc.rpc('my_asso_features'); window.__bobFeatures=feat||{}; }catch(e){ window.__bobFeatures={}; }
+    // === Version-check (Session 0 arbre famille, 27/07/2026) : kill-switch des caches. Bob lit la version
+    // minimale exigée en base (app_meta.app_min_build) et se recharge UNE fois si cette page est une vieille
+    // copie en cache ; au 2e échec il l'explique. FAIL-OPEN : si la lecture échoue (table pas encore créée,
+    // réseau), Bob tourne normalement — c'est un dispositif de fraîcheur, pas de sécurité. ===
+    const BOB_BUILD=1; // ⬆️ à incrémenter à chaque publication qui change le contrat de données
+    try{
+      const {data:vm}=await sbc.from('app_meta').select('value').eq('key','app_min_build').maybeSingle();
+      const vmin=vm?parseInt(vm.value,10):0;
+      if(Number.isFinite(vmin)&&vmin>BOB_BUILD){
+        if(!sessionStorage.getItem('bob_vreload')){ sessionStorage.setItem('bob_vreload','1'); location.reload(); return; }
+        gate('<h2>🔄 Bob a été mis à jour</h2><p>Ton navigateur affiche une ancienne version gardée en mémoire. Ferme complètement l\'onglet puis rouvre Bob — si le message revient, vide le cache du navigateur.</p>');
+        return;
+      }
+      try{ sessionStorage.removeItem('bob_vreload'); }catch(e){}
+    }catch(e){}
     try{ applyAssoIdentity(myAsso); }catch(e){}
     try{ applyOrgVocab(); }catch(e){}
     try{ applyOrgContent(); }catch(e){}
