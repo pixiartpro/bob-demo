@@ -1375,7 +1375,10 @@ window.famFicheToggle=async function(kid){
       f.donnees=r.data.donnees||{}; // mémorisé : pas de re-téléchargement au prochain clic
     }catch(e){ box.innerHTML='<p class="empty">Fiche indisponible.</p>'; return; }
   }
-  try{ sb.rpc('log_consult_sante',{p_enfant:kid}); }catch(e){} // RGPD art.9 : trace la consultation de la fiche médicale (PAI) au journal
+  // RGPD art. 9 : trace la consultation de la fiche médicale (PAI) au journal. ⚠️ Le .then(ok,ko)
+  // est OBLIGATOIRE et voulu : un appel supabase-js nu n'envoie JAMAIS la requête (builder paresseux —
+  // vérifié 27/07/2026), et on n'await PAS pour ne pas retarder l'affichage en situation d'urgence.
+  try{ sb.rpc('log_consult_sante',{p_enfant:kid}).then(()=>{},()=>{}); }catch(e){}
   box.innerHTML=famFicheRenderHtml(f);
 };
 function famFicheRenderHtml(f){
