@@ -225,6 +225,10 @@
         <h2 class="title" style="font-size:17px;cursor:pointer;user-select:none;margin:0" onclick="acmCalcToggle()">💶 Estimez votre tarif vacances (ACM) <small>— au quotient familial, par semaine</small> <span id="acmCalcChev" style="float:right">▾</span></h2>
         <div id="acmCalcBody" style="display:none;margin-top:8px"></div>
       </div>
+      <!-- 📎 Dépôt de pièces monté aussi ici (même dossier que le périscolaire) : une famille en ACM ne trouvait pas où déposer. -->
+      <div class="card" style="border-left:5px solid var(--vert);background:#fff;margin:0 0 12px">
+        <div id="famDocsAcm"><p class="sub">Chargement…</p></div>
+      </div>
       <div id="acmBody"><p class="sub">Chargement…</p></div>
     </div>
   </div>
@@ -528,13 +532,17 @@ const PERI = {
   ECOLE: 'École du Piton',
   uid:null, profile:null, asso:null,
   row:{foyer:'',email:'',tel:'',enfants:[],pieces:{},statut:'brouillon',annee:'2026'},
-  PIECES:[
+  // Pièces du FOYER : une seule par famille (communes à tous les enfants) → rangées sous la clé nue.
+  PIECES_FOYER:[
     {k:'caf', lab:'Attestation CAF', sub:'Quotient familial — moins de 3 mois', link:'https://www.caf.fr/allocataires/connexion', linkLab:'Obtenir mon attestation CAF →'},
     {k:'impots', lab:"Avis d'imposition", sub:'Le plus récent', link:'https://www.impots.gouv.fr/', linkLab:'impots.gouv.fr →'},
     {k:'domicile', lab:'Justificatif de domicile', sub:'Facture EDF / eau / téléphone récente', link:'', linkLab:''},
-    {k:'assurance', lab:"Attestation d'assurance", sub:'Extrascolaire / responsabilité civile — à demander à votre assureur', link:'', linkLab:''},
-    {k:'vaccin', lab:'Vaccins à jour', sub:'Photo des pages de vaccins du carnet de santé', link:'', linkLab:''},
     {k:'livret', lab:'Livret de famille', sub:'Photo des pages parents + enfants', link:'', linkLab:''}
+  ],
+  // Pièces PAR ENFANT : une par enfant → rangées sous la clé "<clé>__<id enfant>" (une fratrie n'écrase plus rien).
+  PIECES_ENFANT:[
+    {k:'assurance', lab:"Attestation d'assurance", sub:'Extrascolaire / responsabilité civile — à demander à votre assureur', link:'', linkLab:''},
+    {k:'vaccin', lab:'Vaccins à jour', sub:'Photo des pages de vaccins du carnet de santé', link:'', linkLab:''}
   ]
 };
 function periEsc(s){return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
@@ -548,13 +556,13 @@ async function periBoot(){
   const body=document.getElementById('periBody'); if(!body) return;
   let session=null;
   try{ session=(await _sbAt.auth.getSession()).data.session; }catch(e){ session=null; }
-  if(!session){ ACM.uid=null; ACM.profile=null; ACM.asso=null; acmBoot(); actiBoot(); rdvBoot(); salleBoot(); photosBoot(); KIDS.list=[]; kidsRender(); periRenderLocked('connexion'); return; }
+  if(!session){ ACM.uid=null; ACM.profile=null; ACM.asso=null; PERI.uid=null; PERI.asso=null; acmBoot(); actiBoot(); rdvBoot(); salleBoot(); photosBoot(); KIDS.list=[]; kidsRender(); periRenderLocked('connexion'); renderFamDocsAcm(); return; }
   PERI.uid=session.user.id;
   const {data:prof}=await _sbAt.from('profiles').select('full_name,email,statut,role,asso_id').eq('id',PERI.uid).maybeSingle();
   PERI.profile=prof||null;
   // Contexte partagé pour la réservation d'activités/ACM (même compte famille)
   ACM.uid=PERI.uid; ACM.profile=prof||null; ACM.asso=prof?prof.asso_id:null; acmBoot(); actiBoot(); rdvBoot(); salleBoot(); photosBoot();
-  if(!prof){ periRenderLocked('noprofile'); return; }
+  if(!prof){ periRenderLocked('noprofile'); renderFamDocsAcm(); return; }
   PERI.asso=prof.asso_id;
   PERI.statut=prof.statut;
   await kidsLoad(); kidsRender();
@@ -564,11 +572,12 @@ async function periBoot(){
   if(!PERI.row.pieces||typeof PERI.row.pieces!=='object') PERI.row.pieces={};
   PERI.editMode=false;
   periRenderForm();
+  renderFamDocsAcm();
 }
 
 function periRenderLocked(kind){
   const body=document.getElementById('periBody');
-  const piecesList=PERI.PIECES.map(p=>'<li><b>'+periEsc(p.lab)+'</b> <span style="color:var(--muted)">— '+periEsc(p.sub)+'</span>'+(p.link?' · <a href="'+p.link+'" target="_blank" rel="noopener" style="color:var(--vert-fonce);font-weight:700">'+periEsc(p.linkLab)+'</a>':'')+'</li>').join('');
+  const piecesList=PERI.PIECES_FOYER.concat(PERI.PIECES_ENFANT).map(p=>'<li><b>'+periEsc(p.lab)+'</b> <span style="color:var(--muted)">— '+periEsc(p.sub)+'</span>'+(p.link?' · <a href="'+p.link+'" target="_blank" rel="noopener" style="color:var(--vert-fonce);font-weight:700">'+periEsc(p.linkLab)+'</a>':'')+'</li>').join('');
   let head;
   if(kind==='pending') head='<div style="background:#fff5da;border:1px solid #f1e2ad;color:#8a6400;border-radius:12px;padding:12px 14px;font-weight:700;margin-bottom:10px">⏳ Votre compte est <b>en attente de validation</b> par le bureau du CASE. Dès qu\'il est validé, vous pourrez déposer votre dossier ici.</div>';
   else if(kind==='noprofile') head='<div style="background:#fdeeea;border:1px solid #f3c4ba;color:#b23a23;border-radius:12px;padding:12px 14px;font-weight:700;margin-bottom:10px">Votre compte existe mais n\'est pas encore rattaché. Contactez le bureau du CASE.</div>';
@@ -609,10 +618,11 @@ function periRefreshKids(){
   if(PERI.row) PERI.row.enfants=periReadChildren();
   box.innerHTML=periKidsPickHtml(PERI.row||{enfants:[]});
 }
-function periPieceRow(p){
-  const got=PERI.row.pieces&&PERI.row.pieces[p.k];
+function periPieceRow(p, fullKey){
+  const fk=fullKey||p.k;               // clé nue (foyer) ou "<clé>__<id enfant>" (par enfant)
+  const got=PERI.row.pieces&&PERI.row.pieces[fk];
   const status=(got&&got.path)
-    ? '<span style="color:var(--vert-fonce);font-weight:800">✅ Déposé</span> · <button class="reset" onclick="periViewMyPiece(\''+p.k+'\')">voir</button>'
+    ? '<span style="color:var(--vert-fonce);font-weight:800">✅ Déposé</span> · <button class="reset" onclick="periViewMyPiece(\''+fk+'\')">voir</button>'
     : '<span style="color:#b23a23;font-weight:700">À fournir</span>';
   return '<div class="card" style="box-shadow:none;border:1px solid var(--line);gap:6px">'
     +'<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px;flex-wrap:wrap">'
@@ -620,10 +630,50 @@ function periPieceRow(p){
     +(p.link?'<br><a href="'+p.link+'" target="_blank" rel="noopener" style="color:var(--vert-fonce);font-weight:700;font-size:13px">'+periEsc(p.linkLab)+'</a>':'')+'</div>'
     +'<div style="text-align:right;font-size:13px">'+status+'</div></div>'
     +'<label class="btn use" style="cursor:pointer;align-self:flex-start">📷 Scanner / choisir un fichier'
-    +'<input type="file" accept="image/*,application/pdf" style="display:none" onchange="periUpload(\''+p.k+'\',this)"></label>'
-    +'<div id="periup_'+p.k+'" class="when"></div>'
+    +'<input type="file" accept="image/*,application/pdf" style="display:none" onchange="periUpload(\''+fk+'\',this)"></label>'
+    +'<div id="periup_'+fk+'" class="when"></div>'
     +'</div>';
 }
+// Pièces attendues = foyer (une) + par enfant (une par enfant), avec libellé et clé complète.
+function famExpectedPieces(){
+  const out=PERI.PIECES_FOYER.map(p=>({fk:p.k, lab:p.lab}));
+  (KIDS.list||[]).forEach(k=>{
+    const who=(((k.prenom||'')+'').trim())||(((k.nom||'')+'').trim())||'enfant';
+    PERI.PIECES_ENFANT.forEach(p=>out.push({fk:p.k+'__'+k.id, lab:p.lab+' — '+who}));
+  });
+  return out;
+}
+// Bloc « 📎 Mes pièces » réutilisable — monté à l'identique dans le périscolaire ET dans l'ACM.
+function famDocsHtml(){
+  const foyer='<div class="grid">'+PERI.PIECES_FOYER.map(p=>periPieceRow(p)).join('')+'</div>';
+  let kids='';
+  if((KIDS.list||[]).length){
+    kids=KIDS.list.map(k=>{
+      const who=((periEsc(k.prenom||'')+' '+periEsc(k.nom||'')).trim())||'(enfant)';
+      const rows=PERI.PIECES_ENFANT.map(p=>periPieceRow(p, p.k+'__'+k.id)).join('');
+      return '<div style="margin-top:14px">'
+        +'<div style="font-weight:700;font-size:13px;margin:0 0 6px">👧 '+who+' <span style="color:var(--muted);font-weight:400">— ses pièces personnelles</span></div>'
+        +'<div class="grid">'+rows+'</div></div>';
+    }).join('');
+  } else {
+    kids='<div style="margin-top:12px;background:#eef7f2;border:1px solid #cfe6da;border-radius:10px;padding:8px 12px;font-size:13px">👧 Ajoutez vos enfants dans <b>Mes enfants</b> (plus bas) pour déposer leur <b>assurance</b> et leurs <b>vaccins</b> — <b>une pièce par enfant</b>.</div>';
+  }
+  return '<h3 style="margin:0 0 8px;font-size:16px">📎 Mes pièces</h3>'
+    +'<p class="sub" style="margin:0 0 10px">Déposées <b>une seule fois</b>, ces pièces servent pour le <b>périscolaire</b> comme pour les <b>vacances (ACM)</b>. L\'attestation CAF doit dater de <b>moins de 3 mois</b>. Touchez « Scanner » pour prendre la photo avec votre téléphone.</p>'
+    +'<div style="font-weight:700;font-size:13px;color:var(--muted);margin:0 0 6px">🏠 Pièces du foyer <span style="font-weight:400">— une seule pour toute la famille</span></div>'
+    +foyer+kids;
+}
+// Copie du bloc pièces dans la tuile ACM (déposer une fois, ça sert au péri comme aux vacances).
+function renderFamDocsAcm(){
+  const box=document.getElementById('famDocsAcm'); if(!box) return;
+  if(!PERI.uid||!PERI.asso){ box.innerHTML='<h3 style="margin:0 0 6px;font-size:16px">📎 Mes pièces</h3><p class="sub" style="margin:0">🔒 Connectez-vous (compte adhérent) pour déposer vos documents — ils servent pour le périscolaire comme pour les vacances (ACM).</p>'; return; }
+  box.innerHTML=famDocsHtml();
+}
+// Après un dépôt : rafraîchir la copie périscolaire (si affichée) ET la copie ACM.
+window.famDocsRefresh=function(){
+  if(document.getElementById('periBody')) periRenderForm();
+  renderFamDocsAcm();
+};
 function periRenderForm(){
   const body=document.getElementById('periBody'); const r=PERI.row;
   const _flash=PERI.flash; PERI.flash=null;
@@ -651,9 +701,7 @@ function periRenderForm(){
     +'<div id="periChildren" style="display:flex;flex-direction:column;gap:8px">'+periKidsPickHtml(r)+'</div>'
     +'<div style="margin:6px 0 18px"><button class="btn use" type="button" onclick="periGotoKids()">+ Ajouter / gérer mes enfants</button></div>'
     +'<div style="background:#eef7f2;border:1px solid #cfe6da;border-radius:10px;padding:8px 12px;margin:0 0 12px;font-size:13px">🙋 <b>Pas à l\'aise pour scanner / remplir en ligne ?</b> '+(r.besoin_aide?'<span style="color:var(--vert-fonce);font-weight:700">✅ Demande envoyée — le bureau vous recontacte pour un rendez-vous au CASE.</span>':'<button class="btn use" style="font-size:12px;padding:6px 10px" type="button" onclick="periBesoinAide()">Le faire au CASE avec de l\'aide</button>')+'</div>'
-    +'<h3 style="margin:0 0 8px;font-size:16px">📎 Mes pièces</h3>'
-    +'<p class="sub" style="margin:0 0 10px">L\'attestation CAF doit dater de <b>moins de 3 mois</b>. Touchez « Scanner » pour prendre la photo avec votre téléphone, ou choisir un fichier déjà enregistré.</p>'
-    +'<div class="grid">'+PERI.PIECES.map(p=>periPieceRow(p)).join('')+'</div>'
+    +famDocsHtml()
     +'<div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:18px">'
     +'<button class="btn win" onclick="periSave(false)">💾 Enregistrer (brouillon)</button>'
     +'<button class="btn use" onclick="periSave(true)">📨 Déposer mon dossier</button>'
@@ -673,10 +721,11 @@ function periRecapHtml(r){
       +(extra.length?'<br><span style="font-size:13px;color:#8a6400">'+extra.join(' · ')+'</span>':'')+'</div>';
   }).join(''):'<p class="sub" style="margin:6px 0">Aucun enfant au périscolaire.</p>';
   const pieces=(r.pieces&&typeof r.pieces==='object')?r.pieces:{};
-  const nbOk=PERI.PIECES.filter(p=>pieces[p.k]&&pieces[p.k].path).length;
-  const pieceHtml=PERI.PIECES.map(p=>{
-    const got=pieces[p.k]&&pieces[p.k].path;
-    return '<span style="display:inline-block;font-size:13px;font-weight:700;padding:3px 9px;border-radius:999px;margin:2px;background:'+(got?'#dff5e9':'#fbecea')+';color:'+(got?'#127a51':'#b23a23')+'">'+(got?'✅ ':'✖ ')+periEsc(p.lab)+'</span>';
+  const _exp=famExpectedPieces();
+  const nbOk=_exp.filter(e=>pieces[e.fk]&&pieces[e.fk].path).length;
+  const pieceHtml=_exp.map(e=>{
+    const got=pieces[e.fk]&&pieces[e.fk].path;
+    return '<span style="display:inline-block;font-size:13px;font-weight:700;padding:3px 9px;border-radius:999px;margin:2px;background:'+(got?'#dff5e9':'#fbecea')+';color:'+(got?'#127a51':'#b23a23')+'">'+(got?'✅ ':'✖ ')+periEsc(e.lab)+'</span>';
   }).join(' ');
   const noteHtml=(r.statut==='incomplet'&&r.note_bureau)?'<div style="background:#ffe9e3;border:1px solid #f3c4ba;color:#b23a23;border-radius:12px;padding:10px 14px;margin:0 0 12px">📝 Bureau : '+periEsc(r.note_bureau)+'</div>':'';
   return noteHtml
@@ -686,7 +735,7 @@ function periRecapHtml(r){
       +'<div style="font-weight:800">👤 '+(periEsc(r.foyer||'')||'Responsable')+'</div>'
       +'<div style="color:var(--muted);font-size:14px">'+periEsc(r.email||'')+(r.tel?' · '+periEsc(r.tel):'')+'</div>'
       +'<div style="margin-top:10px;font-weight:800">👧 Enfant(s)</div>'+enfHtml
-      +'<div style="margin-top:12px;font-weight:800">📎 Pièces ('+nbOk+'/'+PERI.PIECES.length+')</div><div style="margin-top:4px">'+pieceHtml+'</div>'
+      +'<div style="margin-top:12px;font-weight:800">📎 Pièces ('+nbOk+'/'+_exp.length+')</div><div style="margin-top:4px">'+pieceHtml+'</div>'
     +'</div>'
     +'<div style="margin-top:14px"><button class="btn use" onclick="periEdit()">✏️ Modifier mon dossier</button></div>';
 }
@@ -729,7 +778,7 @@ window.periUpload=async function(key, input){
     PERI.row.pieces=PERI.row.pieces||{}; PERI.row.pieces[key]={path, name:file.name||''};
     await _sbAt.from('inscriptions_periscolaire').update({pieces:PERI.row.pieces}).eq('id',PERI.row.id);
     if(info){ info.style.color='var(--vert-fonce)'; info.textContent='✅ '+(file.name||'pièce')+' déposé'; }
-    periRenderForm();
+    famDocsRefresh();
   }catch(e){ if(info){ info.style.color='#b23a23'; info.textContent='Échec de l\'envoi : '+(e.message||e); } }
 };
 window.periViewMyPiece=async function(key){
@@ -748,7 +797,7 @@ window.periSave=async function(depose){
     const sansNom=coches.filter(e=>!(e.prenom||'').trim());
     if(sansNom.length){ if(saved){saved.style.color='#b23a23'; saved.textContent='Complétez le prénom de l\'enfant dans « 👧 Mes enfants » avant de déposer.';} return; }
     // Pièces assouplies au lancement : on peut déposer même incomplet, le bureau réclamera le reste.
-    missLabels=PERI.PIECES.filter(p=>!(payload.pieces[p.k]&&payload.pieces[p.k].path)).map(p=>p.lab);
+    missLabels=famExpectedPieces().filter(e=>!(payload.pieces[e.fk]&&payload.pieces[e.fk].path)).map(e=>e.lab);
     payload.statut='depose';
   } else {
     payload.statut='brouillon';
@@ -1300,6 +1349,7 @@ function kidsRender(){
   html+='<div style="margin-top:12px"><button class="btn use" onclick="kidAdd()">+ Ajouter un enfant</button></div>';
   box.innerHTML=html;
   periRefreshKids();
+  if(typeof renderFamDocsAcm==='function') renderFamDocsAcm(); // les créneaux « pièces par enfant » suivent l'ajout/retrait d'un enfant
 }
 function kidsCaptureEdits(){
   document.querySelectorAll('#kidsBody [data-kid]').forEach(function(card){

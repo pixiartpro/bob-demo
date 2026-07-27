@@ -8931,7 +8931,7 @@ renderAll();
   };
 
   // Dossiers d'inscription périscolaire déposés par les familles (table inscriptions_periscolaire + coffre dossiers-periscolaire)
-  const PERI_PIECES=[['caf','Attestation CAF'],['impots',"Avis d'imposition"],['domicile','Justif. domicile'],['assurance','Assurance'],['vaccin','Vaccins'],['livret','Livret de famille']];
+  // Pièces : clés du FOYER (caf/impots/domicile/livret) + clés PAR ENFANT "<clé>__<id>" (assurance/vaccin) — voir le rendu ci-dessous.
   const PERI_DOS_ST={brouillon:['#eef0ee','#5c7468','✏️ Brouillon'],depose:['#fff5da','#8a6400','📨 Déposé'],valide:['#dff5e9','#127a51','✅ Validé'],incomplet:['#ffe9e3','#b23a23','⚠️ Incomplet']};
   window.periViewPiece=async function(path){
     if(!path) return;
@@ -9298,11 +9298,33 @@ renderAll();
         }
       }
       const pieces=(d.pieces&&typeof d.pieces==='object')?d.pieces:{};
-      const pieceHtml=PERI_PIECES.map(([k,lab])=>{
-        const p=pieces[k];
-        if(p&&p.path){ return '<button class="ghost btn" style="font-size:12px" onclick="periViewPiece(\''+esc(p.path)+'\')">✅ '+esc(lab)+' · voir</button>'; }
-        return '<span class="pill" style="background:#fbecea;color:#b23a23;font-size:12px">✖ '+esc(lab)+'</span>';
-      }).join(' ');
+      const pieceChip=(p,lab)=> (p&&p.path)
+        ? '<button class="ghost btn" style="font-size:12px" onclick="periViewPiece(\''+esc(p.path)+'\')">✅ '+esc(lab)+' · voir</button>'
+        : '<span class="pill" style="background:#fbecea;color:#b23a23;font-size:12px">✖ '+esc(lab)+'</span>';
+      const FOYER_PIECES=[['caf','Attestation CAF'],['impots',"Avis d'imposition"],['domicile','Justif. domicile'],['livret','Livret de famille']];
+      const KID_PIECES=[['assurance','Assurance'],['vaccin','Vaccins']];
+      const hasPerKid=Object.keys(pieces).some(key=>/^(?:assurance|vaccin)__/.test(key));
+      let pieceHtml=FOYER_PIECES.map(([k,lab])=>pieceChip(pieces[k],lab)).join(' ');
+      let perKidPiecesHtml='';
+      if(hasPerKid){
+        // Prénoms depuis le dossier + les fiches enfants de la famille
+        const nmById={}; (Array.isArray(d.enfants)?d.enfants:[]).forEach(e=>{ if(e&&e.enfant_id){ const nm=((e.prenom||'')+' '+(e.nom||'')).trim(); if(nm) nmById[e.enfant_id]=nm; } });
+        (famKids||[]).forEach(k=>{ if(k&&k.id){ const nm=((k.prenom||'')+' '+(k.nom||'')).trim(); if(nm) nmById[k.id]=nm; } });
+        // Enfants à afficher = ceux du dossier ∪ ceux référencés par une pièce par enfant
+        const kidIds=[], seen={};
+        (Array.isArray(d.enfants)?d.enfants:[]).forEach(e=>{ if(e&&e.enfant_id&&!seen[e.enfant_id]){ seen[e.enfant_id]=1; kidIds.push(e.enfant_id); } });
+        Object.keys(pieces).forEach(key=>{ const m=key.match(/^(?:assurance|vaccin)__(.+)$/); if(m&&!seen[m[1]]){ seen[m[1]]=1; kidIds.push(m[1]); } });
+        perKidPiecesHtml=kidIds.map(id=>{
+          const chips=KID_PIECES.map(([k,lab])=>pieceChip(pieces[k+'__'+id],lab)).join(' ');
+          return '<div style="margin-top:4px;font-size:12px"><span class="muted">👧 '+esc(nmById[id]||'Enfant')+' :</span> '+chips+'</div>';
+        }).join('');
+        // Anciens dépôts sans enfant précisé (avant la bascule par enfant) — on ne perd rien
+        const legacy=KID_PIECES.filter(([k])=>pieces[k]&&pieces[k].path).map(([k,lab])=>pieceChip(pieces[k],lab+' (ancien dépôt)'));
+        if(legacy.length) perKidPiecesHtml+='<div style="margin-top:4px;font-size:12px"><span class="muted">📎 Sans enfant précisé :</span> '+legacy.join(' ')+'</div>';
+      } else {
+        // Dossier antérieur (aucune pièce par enfant) : affichage à plat d'avant, inchangé
+        pieceHtml+=' '+KID_PIECES.map(([k,lab])=>pieceChip(pieces[k],lab)).join(' ');
+      }
       const ctrl=canWrite?('<div class="row" style="margin-top:10px;gap:6px;flex-wrap:wrap;align-items:center">'
         +'<button class="btn" onclick="setDossierPeri(\''+d.id+'\',\'valide\')">✅ Valider</button>'
         +'<button class="ghost btn" onclick="setDossierPeri(\''+d.id+'\',\'incomplet\')">⚠️ Incomplet</button>'
@@ -9317,7 +9339,7 @@ renderAll();
         +'<div style="margin-top:6px;display:flex;gap:5px;flex-wrap:wrap">'+enfHtml+'</div>'
         +actChipsBlock
         +addCtrl
-        +'<div style="margin-top:8px;display:flex;gap:5px;flex-wrap:wrap">'+pieceHtml+'</div>'
+        +'<div style="margin-top:8px;display:flex;gap:5px;flex-wrap:wrap">'+pieceHtml+'</div>'+perKidPiecesHtml
         +ctrl+periPayBlock(d)+'</div>';
     }).join('');
   };
@@ -10039,7 +10061,7 @@ renderAll();
     // ⚙️ Exigences par accueil — CONFIG éditable (mêmes 6 pièces périscolaire & ACM d'après la base ; l'ACM exige EN PLUS la fiche sanitaire signée ; VEPI = sur RDV, pas de pièce en ligne).
     const PLAB={caf:'CAF',impots:'Impôts',domicile:'Domicile',assurance:'Assurance',vaccin:'Vaccins',livret:'Livret'};
     const EXIG={peri:{req:['caf','impots','domicile','assurance','vaccin','livret'],sanit:false}, acm:{req:['caf','impots','domicile','assurance','vaccin','livret'],sanit:true}};
-    const complFor=(kind,k)=>{ const cfg=EXIG[kind]; if(!cfg) return null; const pot=Object.assign({}, piecesByParent[k.parent_id]||{}, actPiecesByEnfant[k.id]||{}); const manque=cfg.req.filter(x=>!pot[x]).map(x=>PLAB[x]||x); if(cfg.sanit&&!ficheSet[k.id]) manque.push('Fiche sanitaire'); return {complete:manque.length===0, manque:manque}; };
+    const complFor=(kind,k)=>{ const cfg=EXIG[kind]; if(!cfg) return null; const pot=Object.assign({}, piecesByParent[k.parent_id]||{}, actPiecesByEnfant[k.id]||{}); const manque=cfg.req.filter(x=>!(pot[x]||pot[x+'__'+k.id])).map(x=>PLAB[x]||x); if(cfg.sanit&&!ficheSet[k.id]) manque.push('Fiche sanitaire'); return {complete:manque.length===0, manque:manque}; };
     const inactif=i=>i.statut==='deplace'||i.statut==='annule';
     window.__enfHubModel=(rf.data||[]).map(k=>{
       const insList=(actByEnfant[k.id]||[]); const mem=[]; const hist=[];
