@@ -8825,7 +8825,7 @@ renderAll();
     data.sort(function(a,b){ return ((a.statut==='nouveau')?0:1)-((b.statut==='nouveau')?0:1); });
     const nbNouv=data.filter(function(p){ return p.statut==='nouveau'; }).length;
     box.innerHTML=(nbNouv?'<p class="hint" style="margin:0 0 6px"><span class="pill" style="background:#fbecea;color:#b3261e;font-weight:700">🔴 '+nbNouv+' demande'+(nbNouv>1?'s':'')+' à traiter</span> — elle'+(nbNouv>1?'s sont':' est')+' en tête de liste.</p>':'')
-      +data.map(p=>`<div class="panel" style="margin:10px 0;border-left:4px solid ${p.statut==='nouveau'?'#c0392b':'#1f9d6b'}">
+      +data.map(p=>`<div class="panel"${p.statut==='nouveau'?' data-todo="1"':''} style="margin:10px 0;border-left:4px solid ${p.statut==='nouveau'?'#c0392b':'#1f9d6b'}">
       <div class="toolbar"><div><strong>${esc(p.commerce||'(sans nom)')}</strong> <span class="pill" style="background:#eef2fb;color:#1f4fc4;font-size:11px">${PART_STATUTS[p.statut]||esc(p.statut||'')}</span><br>
         <span class="muted" style="font-size:13px">${esc(p.contact||'')}${p.type_activite?' · '+esc(p.type_activite):''}</span></div>
         <span class="muted" style="font-size:12px">${esc((p.created_at||'').slice(0,10))}</span></div>
@@ -9482,7 +9482,7 @@ renderAll();
         +'<button class="ghost btn" onclick="setDossierPeri(\''+d.id+'\',\'incomplet\')">⚠️ Incomplet</button>'
         +'<input id="dosnote_'+d.id+'" placeholder="Note bureau (ce qui manque…)" value="'+esc(d.note_bureau||'')+'" style="flex:1;min-width:160px;padding:7px 10px;border:1px solid var(--line);border-radius:8px;font:inherit">'
         +'<button class="ghost btn" onclick="noteDossierPeri(\''+d.id+'\')">💾 Note</button></div>'):'';
-      return '<div class="panel" id="peridos_'+d.id+'" style="margin:10px 0;border-left:4px solid '+st[1]+(isTodo(d)?';background:#fff8ef':';opacity:.85')+'">'
+      return '<div class="panel" id="peridos_'+d.id+'"'+(d.statut==='depose'?' data-todo="1"':'')+' style="margin:10px 0;border-left:4px solid '+st[1]+(isTodo(d)?';background:#fff8ef':';opacity:.85')+'">'
         +'<div class="toolbar"><div><strong>'+esc(d.foyer||'Famille')+'</strong> '
         +'<span class="pill" style="background:'+st[0]+';color:'+st[1]+';font-size:11px">'+st[2]+'</span>'
         +' <button class="ghost btn" style="font-size:11px;padding:1px 8px" onclick="bobGoFicheFamille(\''+d.id+'\')" title="Ouvrir la fiche de cette famille (👨‍👩‍👧 Familles → 👥 Adhérents)">👥 Fiche famille</button>'
@@ -10719,7 +10719,7 @@ renderAll();
         if(a.publie&&a.statut!=='archive') btns+='<button class="ghost btn" onclick="atCopyAnnonce(this.dataset.titre)" data-titre="'+esc(a.titre||'')+'">📣 Copier l\'annonce à partager</button>';
         if(myProfile.role==='president') btns+='<button class="ghost btn" style="color:#c0392b" onclick="delAtelier(\''+a.id+'\')">🗑️ Supprimer</button>';
       }
-      return '<div class="panel" style="margin:10px 0;border-left:4px solid '+(pret?'#e0533d':'#f4b740')+'">'
+      return '<div class="panel"'+(a.statut==='proposition'?' data-todo="1"':'')+' style="margin:10px 0;border-left:4px solid '+(a.statut==='proposition'?'#c0392b':(pret?'#e0533d':'#f4b740'))+'">'
         +'<div class="toolbar"><div><strong>'+esc(a.titre||'(sans titre)')+'</strong> '
         +'<span class="pill" style="background:#fff5da;color:#8a6400;font-size:11px">'+(AT_STATUTS[a.statut]||esc(a.statut||''))+'</span> '
         +'<span class="pill" style="background:'+(a.publie?'#dff5e9':'#f1f1f1')+';color:'+(a.publie?'#127a51':'#777')+';font-size:11px">'+(a.publie?'🌍 Visible sur le site':'🔒 Interne')+'</span>'
@@ -11756,9 +11756,14 @@ renderAll();
         if(el && (pret(el) || tries>=14)){
           const box=el.closest('.panel')||el;
           if(getComputedStyle(box).display==='none'){ return; } // panneau masqué (ex. aucune question) : on n'invente pas
-          box.scrollIntoView({behavior:'smooth',block:'center'});
+          // DERNIER MÈTRE : on vise les FICHES à traiter elles-mêmes (marquées data-todo au rendu),
+          // pas seulement le panneau — sinon on arrive « quelque part » sans voir l'événement.
+          const items=el.querySelectorAll('[data-todo]');
+          const cible=items.length?items[0]:box;
+          cible.scrollIntoView({behavior:'smooth',block:items.length?'center':'start'});
           box.style.transition='box-shadow .3s'; box.style.boxShadow='0 0 0 3px var(--red)';
-          window._focusT1=setTimeout(function(){ box.style.boxShadow=''; },2600);
+          items.forEach(function(it){ it.style.transition='box-shadow .3s'; it.style.boxShadow='0 0 0 3px var(--red)'; });
+          window._focusT1=setTimeout(function(){ box.style.boxShadow=''; items.forEach(function(it){ it.style.boxShadow=''; }); },3200);
           return;
         }
         if(tries++<14) window._focusT0=setTimeout(essai,140); // ~2 s d'attente max
@@ -11833,7 +11838,7 @@ renderAll();
   function renderPersonnel(){
     const box=$('persList'); if(!box) return;
     const pend=PERS.conges.filter(c=>c.statut==='demande'); const dbox=$('persDemandes');
-    if(dbox){ dbox.innerHTML = pend.length ? ('<div class="card" style="border:1px solid #f1e2ad;background:#fffaf0;margin-bottom:6px"><b>🏖️ '+pend.length+' demande(s) de congé à traiter</b>'+pend.map(c=>{ const f=PERS.list.find(x=>x.id===c.personnel_id)||{}; return '<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;justify-content:space-between;padding:8px 0;border-top:1px dashed #e7efe9"><span>'+esc(persName(f))+' — <b>'+esc(c.type||'CP')+'</b> du '+esc(c.date_debut||'?')+' au '+esc(c.date_fin||'?')+(c.nb_jours?' ('+c.nb_jours+' j)':'')+(c.motif?' · '+esc(c.motif):'')+(c.piece&&c.piece.path?' · <button class="ghost btn" style="padding:2px 8px;font-size:12px" onclick="congePiece(\''+c.id+'\')">📎 justificatif</button>':'')+'</span><span style="white-space:nowrap"><button class="btn" style="padding:5px 10px" onclick="congeSet(\''+c.id+'\',\'valide\')">✅ Valider</button> <button class="ghost btn" style="padding:5px 10px" onclick="congeSet(\''+c.id+'\',\'refuse\')">Refuser</button></span></div>'; }).join('')+'</div>') : ''; }
+    if(dbox){ dbox.innerHTML = pend.length ? ('<div class="card" data-todo="1" style="border:1px solid #f1e2ad;background:#fffaf0;margin-bottom:6px"><b>🏖️ '+pend.length+' demande(s) de congé à traiter</b>'+pend.map(c=>{ const f=PERS.list.find(x=>x.id===c.personnel_id)||{}; return '<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;justify-content:space-between;padding:8px 0;border-top:1px dashed #e7efe9"><span>'+esc(persName(f))+' — <b>'+esc(c.type||'CP')+'</b> du '+esc(c.date_debut||'?')+' au '+esc(c.date_fin||'?')+(c.nb_jours?' ('+c.nb_jours+' j)':'')+(c.motif?' · '+esc(c.motif):'')+(c.piece&&c.piece.path?' · <button class="ghost btn" style="padding:2px 8px;font-size:12px" onclick="congePiece(\''+c.id+'\')">📎 justificatif</button>':'')+'</span><span style="white-space:nowrap"><button class="btn" style="padding:5px 10px" onclick="congeSet(\''+c.id+'\',\'valide\')">✅ Valider</button> <button class="ghost btn" style="padding:5px 10px" onclick="congeSet(\''+c.id+'\',\'refuse\')">Refuser</button></span></div>'; }).join('')+'</div>') : ''; }
     if(!PERS.list.length){ box.innerHTML='<p class="empty">Aucune fiche salarié. Clique « + Nouvelle fiche salarié » ou « Importer depuis la masse salariale ».</p>'; return; }
     box.innerHTML='<div style="overflow-x:auto;-webkit-overflow-scrolling:touch"><table style="min-width:760px"><thead><tr><th>Salarié·e</th><th>Poste</th><th>Compte</th><th>Soldes</th><th>Docs</th><th></th></tr></thead><tbody>'
       +PERS.list.map(f=>{ const nd=PERS.docs.filter(d=>d.personnel_id===f.id).length;
