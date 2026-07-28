@@ -108,6 +108,10 @@
   nav.tabs .subttl{font-style:normal;font-size:10.5px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);white-space:nowrap;padding:0 2px}
   /* onglets déplacés : marque transitoire « a déménagé ici » (data-moved) — à retirer vers le 10/08/2026 */
   nav.tabs button[data-moved]::after{content:" ↩";font-size:10px;opacity:.55}
+  /* Compagnons (28/07/2026) : rappel visuel du personnage sur SON tiroir + recherche teintée */
+  nav.tabs .grpPerso{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;font-weight:700;color:var(--muted);background:#f2f7f4;border:1px solid var(--line);border-radius:999px;padding:2px 9px 2px 3px;white-space:nowrap}
+  nav.tabs .grpPerso img{width:22px;height:22px;border-radius:50%;object-fit:cover;object-position:top}
+  .tabjump-res button img.tj-perso{width:18px;height:18px;border-radius:50%;object-fit:cover;object-position:top;flex:0 0 auto}
   /* mobile : cibles tactiles confortables ≥44px */
   @media(max-width:560px){
     nav.famtabs{gap:7px}
@@ -2759,7 +2763,8 @@ document.querySelectorAll('nav.tabs button').forEach(b=>{
     document.querySelectorAll('nav.tabs button').forEach(x=>x.classList.remove('active'));
     document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
     b.classList.add('active'); $(b.dataset.tab).classList.add('active');
-    try{ localStorage.setItem('bob_last_tab', b.dataset.tab); }catch(e){}
+    /* 28/07/2026 : la clé PARTAGÉE bob_last_tab n'est plus écrite (fuite entre profils sur tablette
+       partagée) — la mémoire vit désormais PAR PROFIL (bob_last_tab_<uid>, écrite après connexion). */
     if(b.dataset.tab==='aide'){ const i=$('faqAsk'); if(i)i.focus(); if(window.loadQuestionsAide) loadQuestionsAide(); }
     if(b.dataset.tab==='messages' && window.loadMessagesAdh){ loadMessagesAdh(); }
     if(b.dataset.tab==='acmvac' && window.acmLoadInbox){ acmLoadInbox(); }
@@ -2831,7 +2836,7 @@ document.querySelectorAll('nav.tabs button').forEach(b=>{
     cur=items().filter(it=>norm(it.label).includes(q)).slice(0,8);
     sel=cur.length?0:-1;
     box.innerHTML = cur.length
-      ? cur.map((it,i)=>'<button type="button" data-go="'+it.tab+'" class="'+(i===sel?'sel':'')+'"><span>'+it.label+'</span><span class="fam">'+it.fam+'</span></button>').join('')
+      ? cur.map((it,i)=>'<button type="button" data-go="'+it.tab+'" class="'+(i===sel?'sel':'')+'">'+((window.__persoByTab&&window.__persoByTab[it.tab])?'<img class="tj-perso" src="'+window.__persoByTab[it.tab]+'" alt="" onerror="this.remove()">':'')+'<span>'+it.label+'</span><span class="fam">'+it.fam+'</span></button>').join('')
       : '<div class="empty">Aucun onglet ne correspond.</div>';
     box.classList.add('show'); input.setAttribute('aria-expanded','true');
   }
@@ -2884,7 +2889,7 @@ const FAQ=[
   {cat:'📨 Messages',q:"Comment répondre aux messages des adhérents ?",kw:"messages adherent adherents repondre parler case fil conversation famille accueil bureau boite reception canal deux sens en attente courrier ecrire",a:"Onglet <b>📨 Messages</b> (famille 🏛️ Vie associative) : chaque adhérent qui écrit depuis son espace « 💬 Parler au CASE » a un <b>fil privé</b>. Les fils <b>« 🔴 à répondre »</b> (dernier message venu de l'adhérent) remontent en haut. Clique un fil pour lire la conversation et <b>répondre au nom du CASE</b> — accueil et bureau y ont accès. Une <b>pastille rouge</b> sur la famille 🏛️ Vie associative et une ligne « ⏰ À traiter » te préviennent des messages sans réponse."},
   {cat:'🗓️ Salles',q:"À quoi sert l'onglet Salles ?",kw:'salle salles planning creneau créneau danse grille horaire cours intervenant orphelin qui anime',a:"L'onglet 🗓️ Salles montre le planning hebdomadaire de la salle de danse : chaque créneau (jour, heure, cours) et qui l'anime. Les créneaux en rouge sont « orphelins » — l'intervenant est parti et le créneau est à reprendre. Pour l'instant c'est en lecture seule ; l'édition directe des créneaux arrivera bientôt."},
   {cat:'🗓️ Salles',q:"Comment calculer si les cours de danse sont rentables ?",kw:"calculateur calcul modele economique eco rentable rentabilite cout forfait facture globale prestation prix cours nombre eleves inscriptions point mort marge remplir danse argent budget",a:"Dans l'onglet <b>🗓️ Salles</b>, sous le planning, déplie <b>« 💶 Modèle éco des cours de danse »</b>. Il lit les vrais créneaux de danse et compare <b>ce que le CASE paie</b> (une <b>facture globale</b> par intervenant, façon prestation) à ce que <b>rapportent les inscriptions</b> des familles (prix plein — il n'y a <b>pas de quotient familial</b> sur ces cours ouverts, contrairement à l'ACM/périscolaire). Tape le prix et le nombre d'élèves de chaque cours : tu vois la <b>marge</b> et le <b>point mort</b> (le nombre moyen d'élèves/cours qu'il faut pour couvrir les forfaits). Rappel : en prestation, le risque de remplissage est porté par le CASE — <b>c'est à nous de remplir</b>."},
-  {cat:'📊 Tableau de bord',q:"C'est quoi « Ton équipe » avec les ananas en haut de l'accueil ?",kw:"equipe ananas bob bobs sabine tresi nono roro secretaire tresoriere animateur rh personnage mascotte accueil qui veux voir carte cartes outils porte entree cliquer membre direction zanana",a:"En haut du tableau de bord, ton équipe Bob te sert de <b>porte d'entrée</b> : chaque personnage regroupe un métier — <b>Sabine</b> (le bureau : adhérents, agenda, répertoire, CA), <b>Trési</b> (la trésorerie : compta, subventions, bilan), <b>Nono</b> (l'animation : périscolaire, activités, vacances, ateliers) et <b>Roro</b> (les salariés : dossiers, fiches de poste, congés, horaires, obligations, paie). Clique un personnage pour voir tous ses outils et y aller directement ; « La Direction » juste au-dessus regroupe le pilotage (tableau de bord, projet, suivi). Tu ne vois que les personnages et outils auxquels <b>ton rôle a accès</b>. Tous les onglets restent aussi dans le menu en couleurs comme avant."},
+  {cat:'📊 Tableau de bord',q:"C'est quoi « Ton équipe » avec les ananas en haut de l'accueil ?",kw:"equipe ananas bob bobs sabine tresi nono roro lea guy ludo eva compagnon compagnons secretaire tresoriere animateur rh personnage mascotte accueil qui veux voir carte cartes outils porte entree cliquer membre direction zanana pastille reprendre visage tiroir",a:"En haut du tableau de bord, ton équipe Bob te sert de <b>porte d'entrée</b> : chaque personnage regroupe un métier — la <b>Secrétaire</b> (le bureau : adhérents, messages, agenda, répertoire, CA), la <b>Trésorière</b> (compta, subventions, bilan), l'<b>Animateur</b> (périscolaire, activités, vacances, ateliers) et le <b>RH</b> (dossiers, fiches de poste, congés, horaires, obligations, paie). Leurs <b>prénoms sont ceux de TON équipe</b> : au CASE ils s'appellent <b>Sabine, Trési, Nono et Roro</b> ; ailleurs, c'est l'équipe officielle de Bob (Léa, Guy, Ludo, Éva). Clique un personnage pour voir tous ses outils et y aller directement ; « La Direction » juste au-dessus regroupe le pilotage (tableau de bord, projet, suivi). Tu ne vois que les personnages et outils auxquels <b>ton rôle a accès</b>. Depuis le 28/07/2026, ton équipe est <b>vivante</b> : une <b>pastille rouge</b> sur un personnage = le nombre de choses <b>à traiter chez lui</b> (dossiers déposés chez Nono, congés chez Roro…) ; un bouton <b>« ↩ Reprendre »</b> sur le personnage chez qui tu t'es arrêté la dernière fois te ramène pile au bon onglet ; et dans le menu, un <b>petit visage</b> en tête de la rangée te rappelle chez qui tu es (il s'efface sur les écrans délicats comme la paie). Tous les onglets restent aussi dans le menu en couleurs comme avant."},
   {cat:'🧰 Secrétariat',q:"Comment compter les voix d'une délibération et générer le procès-verbal (PV) ?",kw:"pv proces verbal procès délibération deliberation resolution voix compter compteur pour contre abstention sens adoptee rejetee reportee deport voter scrutin generer imprimer reunion seance conseil administration boutons plus moins",a:"Onglet <b>🧰 Secrétariat</b> → <b>« Réunions &amp; délibérations »</b>. Sur chaque délibération, les boutons <b>+ / −</b> comptent les voix <b>Pour / Contre / Abstention</b> ; le <b>sens</b> (adoptée / rejetée / reportée) se met à jour tout seul. Le bouton <b>⚖️ Déport</b> note qu'un membre se retire d'une résolution (conflit d'intérêts) — c'est repris au PV. Une fois les votes saisis, <b>🖨️ PV</b> génère le <b>procès-verbal officiel</b> (présents, quorum, déports, résolutions avec le détail des voix, signatures Président/Secrétaire). Le <b>🖨️ Relevé</b> reste, lui, un document de préparation. Le PV est <b>à valider et signer en séance</b> ; en cas de doute sur le formalisme : Hexopée."},
   {cat:'🗂️ Répertoire',q:"Comment protéger un identifiant ou un mot de passe dans les liens ?",kw:"lien liens mot de passe motdepasse code coffre chiffrer chiffré cadenas secret acces identifiant proteger confidentiel reveler reveler tam mairie orange portail securiser cacher",a:"Dans <b>🗂️ Répertoire</b>, section <b>Liens</b> : mets l'identifiant et le mot de passe dans la <b>note</b> du lien, puis clique <b>🔒</b> sur la ligne (ou <b>« Protéger les accès »</b> en haut de la liste) et choisis un <b>code du coffre</b> connu du bureau. La note devient <b>illisible</b> (chiffrée) — même en ligne, personne ne peut la lire sans le code. Pour la relire : bouton <b>« Révéler »</b> + le code ; pour la modifier : <b>🔓 Déprotéger</b>. Le code <b>n'est jamais enregistré</b> : on le tape à chaque fois. Si tu oublies le code, re-saisis l'accès (il existe aussi sur le vrai portail)."},
   {cat:'🗂️ Répertoire',q:"Comment suivre une structure (DRAJES, CAF, Mairie) et ses dates à ne pas rater ?",kw:"structure structures financeur financeurs partenaire partenaires institutionnel drajes sdjes caf mairie collectivite echeance echeances depot versement dossier date rater declaration correspondant fiche a rendre a recevoir tombe bientot",a:"Dans <b>🗂️ Répertoire</b>, panneau <b>🏛️ Structures &amp; financeurs</b> : ajoute une structure (DRAJES/SDJES, CAF, Mairie…) avec son type, le lien vers son dossier et une note (correspondant, mail, téléphone). Sur sa fiche, ajoute ses <b>échéances</b> : un <b>📤 dépôt</b> (un document à rendre) ou un <b>📥 versement</b> (de l'argent à recevoir), avec sa date, un montant et un statut (à faire / bloqué / fait). Le bloc <b>« 📅 Ce qui tombe bientôt »</b> les classe par date (rouge = en retard ou imminent), et elles remontent <b>automatiquement</b> dans l'échéancier général et le tableau de bord. Réservé au bureau."},
@@ -3191,6 +3196,7 @@ function pageHelpGotoAide(){ pageHelpClose(); const b=document.querySelector('na
 
 /* ---- ✨ Quoi de neuf (nouveautés + notice chronologique) ---- */
 const NEWS=[
+  {id:'2026-07-28-compagnons-vivants',date:'2026-07-28',tab:'📊 Tableau de bord',titre:"🍍 Ton équipe s'active : elle compte ce qui t'attend et se souvient d'où tu étais",desc:"Trois nouveautés sur l'accueil et le menu. ① La <b>pastille rouge</b> sur un personnage n'affiche plus son nombre d'outils mais <b>ce qui t'attend chez lui</b> : un dossier périscolaire déposé fait monter « 1 » sur Nono, une demande de congé sur Roro. ② Un bouton <b>« ↩ Reprendre »</b> apparaît sur le personnage chez qui tu travaillais la dernière fois — un clic et tu reprends pile où tu t'étais arrêté (chacun sa mémoire, même sur une tablette partagée). ③ Dans le menu, un <b>petit visage</b> en tête de la rangée te rappelle chez qui tu es — Nono sur Animation, Trési sur Finances — et il s'efface poliment sur les écrans délicats (paie, dettes). Bonus : les portraits sont 5× plus légers — l'accueil s'ouvre bien plus vite au téléphone."},
   {id:'2026-07-27-nav-6-tiroirs',date:'2026-07-27',tab:'📊 Tableau de bord',titre:"🗂️ Le menu passe à 6 tiroirs — plus clair, rien de perdu",desc:"Le menu du haut est réorganisé en <b>6 tiroirs</b> : 👨‍👩‍👧 <b>Familles</b> (foyers, adhérents, enfants), 🎨 <b>Animation</b> (qui accueille désormais les lieux, salles, réservations, intervenants et les projets), 🏛️ <b>Vie associative</b> (messages, communication, RDV, répertoire, partenaires, secrétariat, préparer le CA), 💶 <b>Finances</b>, 🧑‍💼 <b>Équipe &amp; Paie</b> (la 📒 Paie a déménagé ici) et 🧭 <b>Direction</b> (projet, suivi, incidents, accompagnement). Les tiroirs « Lieux &amp; Salles » et « Coffre / Docs » sont dissous, et les onglets déplacés portent une petite marque <b>↩</b> pendant deux semaines. Dans les gros tiroirs, des petits titres regroupent ce qui va ensemble. <b>Aucun onglet n'a été supprimé</b> — au moindre doute : « 🔎 Aller à un onglet… »."},
   {id:'2026-07-27-onglet-foyers',date:'2026-07-27',tab:'👨‍👩‍👧 Foyers',titre:"👨‍👩‍👧 Nouvel onglet Foyers : l'arbre des familles, et l'inscription au comptoir",desc:"Dans le tiroir Familles, un nouvel onglet <b>👨‍👩‍👧 Foyers</b> montre le <b>registre des familles</b> : chaque foyer avec ses adultes, ses enfants, son adhésion et ses inscriptions. Et surtout : le bouton <b>➕ Nouveau foyer (comptoir)</b> permet enfin d'inscrire une famille qui se présente <b>sans compte en ligne</b> — dossier accepté même incomplet, <b>récépissé imprimé</b> avec un <b>code famille</b> (il servira à relier son compte en ligne quand l'espace famille le proposera). Réservé au bureau. ⚠️ Pendant la construction, les onglets habituels (Adhérents, Enfants, Périscolaire) restent la référence : une inscription cochée dans Foyers est à reporter aussi dans 🎒 Périscolaire."},
   {id:'2026-07-27-pont-famille-periscolaire',date:'2026-07-27',tab:'👥 Adhérents',titre:"📨 Un pont direct fiche famille ↔ dossier périscolaire",desc:"Sur la ligne d'une famille (👨‍👩‍👧 Familles → 👥 Adhérents), un nouveau bouton <b>📨 Périscolaire</b> ouvre directement son dossier dans 🎒 Périscolaire, mis en évidence. Et sur chaque dossier, <b>👥 Fiche famille</b> fait le chemin inverse. Fini les allers-retours à la main entre les deux onglets — et l'encaissement, lui, ne bouge pas."},
@@ -3395,7 +3401,7 @@ function renderNews(){
   const lus=newsLus();
   el.innerHTML=NEWS.map(n=>`<div class="kv" style="align-items:flex-start;padding:8px 0;border-bottom:1px solid #eef3ef">
     <span style="flex:1;min-width:0"><strong>${esc(n.titre)}</strong> <span class="pill ${lus.includes(n.id)?'ok':'no'}">${lus.includes(n.id)?'vu':'nouveau'}</span><br>
-      <span class="muted" style="font-size:13px;line-height:1.45">${esc(n.desc)}</span></span>
+      <span class="muted" style="font-size:13px;line-height:1.45">${n.desc}</span></span><!-- desc = contenu MAISON balisé (<b>…) : ne pas échapper, sinon les balises s'affichent en clair -->
     <span class="muted" style="white-space:nowrap;font-size:12px;text-align:right;margin-left:12px">${fmtDate(n.date)}<br>${esc(n.tab)}</span></div>`).join('');
   newsBadge();
 }
@@ -4809,7 +4815,7 @@ function projDelTeam(pid,i){ const p=_proj(pid); if(!p)return; p.team=p.team||[]
 function projAddTask(pid){ const p=_proj(pid); if(!p)return; const t=(($('pf_task_t_'+pid)||{}).value||'').trim(); if(!t){ alert('Donne un intitulé à la tâche.'); return; } p.tasks=p.tasks||[]; p.tasks.push({id:uid(),titre:t,assigne:(($('pf_task_a_'+pid)||{}).value||'').trim(),echeance:($('pf_task_d_'+pid)||{}).value||'',fait:false}); save(); }
 function projToggleTask(pid,tid){ const p=_proj(pid); if(!p)return; const t=(p.tasks||[]).find(x=>x.id===tid); if(t){ t.fait=!t.fait; save(); } }
 function projDelTask(pid,tid){ const p=_proj(pid); if(!p)return; p.tasks=(p.tasks||[]).filter(x=>x.id!==tid); save(); }
-function projPostMsg(pid){ const p=_proj(pid); if(!p)return; const inp=$('pf_msg_'+pid); const b=((inp||{}).value||'').trim(); if(!b)return; const author=(window.bobMe&&window.bobMe())||'Moi'; p.discussion=p.discussion||[]; p.discussion.push({id:uid(),author,body:b,date:new Date().toLocaleDateString('fr-FR')}); if(inp)inp.value=''; save(); }
+function projPostMsg(pid){ const p=_proj(pid); if(!p)return; const inp=$('pf_msg_'+pid); const b=((inp||{}).value||'').trim(); if(!b)return; const author=(typeof window.bobMe==='function'?window.bobMe():(window.bobMe&&String(window.bobMe.nom||'').split(' ')[0]))||'Moi'; /* 28/07/2026 : bobMe devient un OBJET après connexion — l'appel plantait et le message n'était jamais enregistré */ p.discussion=p.discussion||[]; p.discussion.push({id:uid(),author,body:b,date:new Date().toLocaleDateString('fr-FR')}); if(inp)inp.value=''; save(); }
 
 /* ---- Dashboard ---- */
 function renderDashboard(){
@@ -8130,8 +8136,13 @@ renderAll();
     const vis=[...document.querySelectorAll('nav.tabs button[data-tab]')].filter(b=>lvlOf(b.dataset.tab)!=='cache');
     const active=document.querySelector('nav.tabs button.active');
     let want=null;
-    if(!window._bobTabRestored){ window._bobTabRestored=true; try{ const lt=localStorage.getItem('bob_last_tab'); if(lt) want=vis.find(b=>b.dataset.tab===lt); }catch(e){} }
+    if(!window._bobTabRestored){ window._bobTabRestored=true; try{ const lt=(myProfile&&myProfile.id)?localStorage.getItem('bob_last_tab_'+myProfile.id):null; if(lt) want=vis.find(b=>b.dataset.tab===lt); }catch(e){} } // 28/07/2026 : mémoire STRICTEMENT par profil — aucun repli sur l'ancienne clé partagée (fuite tablette)
     if(vis.length){ if(want) want.click(); else if(!active || lvlOf(active.dataset.tab)==='cache') vis[0].click(); }
+    // compagnons (28/07/2026) : avatar du personnage sur son tiroir + mémoire du dernier onglet PAR PROFIL
+    if(window.decorPersoNav) window.decorPersoNav();
+    if(!window._persoTabW){ window._persoTabW=1;
+      document.querySelectorAll('nav.tabs button[data-tab]').forEach(b=>b.addEventListener('click',()=>{ try{ if(myProfile&&myProfile.id) localStorage.setItem('bob_last_tab_'+myProfile.id, b.dataset.tab); }catch(e){} }));
+    }
     if(window.renderMonEquipe) window.renderMonEquipe();
   }
 
@@ -8166,19 +8177,28 @@ renderAll();
         +'.eq-dh{display:flex;align-items:center;gap:14px;padding-right:28px}'
         +'.eq-dh img{height:76px}.eq-dh b{font-size:18px}.eq-dh p{margin:3px 0 0;color:var(--muted,#62756b);font-size:13px}'
         +'.eq-lab{margin:14px 0 8px;font-size:11.5px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:#127a51}'
-        +'.eq-chips{display:flex;gap:8px;flex-wrap:wrap}';
+        +'.eq-chips{display:flex;gap:8px;flex-wrap:wrap}'
+        /* compagnons vivants (28/07/2026) : pastille = travail en attente · halo « Reprendre » */
+        +'.eq-cnt-todo{background:var(--red,#c0392b);color:#fff;font-size:12px}'
+        +'.eq-card.eq-resume{border-color:#1f9d6b;box-shadow:0 0 0 2px rgba(31,157,107,.28)}'
+        +'.eq-resume-chip{display:inline-flex;align-items:center;gap:4px;margin-top:8px;background:#e7f5ee;color:#127a51;font-size:12px;font-weight:700;padding:4px 11px;border-radius:999px;cursor:pointer;transition:.15s}'
+        +'.eq-resume-chip:hover{background:#1f9d6b;color:#fff}';
       document.head.appendChild(st);
     }
     if(!document.getElementById('eqBack')){
       var bk=document.createElement('div'); bk.id='eqBack'; bk.className='eq-back'; bk.onclick=window.eqClose; document.body.appendChild(bk);
       var md=document.createElement('div'); md.id='eqModal'; md.className='eq-modal'; document.body.appendChild(md);
     }
+    // Casting à deux étages (28/07/2026) : nom/role/img viennent de castingOf() —
+    // défaut produit = catalogue (Léa·Guy·Ludo·Éva), surcharge par asso (CASE = Sabine·Trési·Nono·Roro).
     var EQUIPE=[
-      {id:'sabine',nom:'Sabine',role:'La Secrétaire',img:'bob-sabine.png',tag:"Adhérents, agenda, répertoire et la vie du bureau.",tabs:[['🏛️','Adhérents','members'],['📅','Rendez-vous','rdv'],['🗂️','Répertoire','repertoire'],['🤝','Partenaires','partenaires'],['🧰','Secrétariat','secretariat'],['📝','Préparer le CA','caprep']]},
-      {id:'tresi',nom:'Trési',role:'La Trésorière',img:'bob-tresi.png',tag:"Compta par site & action, subventions, bilan, prévisionnel.",tabs:[['💶','Comptabilité','accounting'],['💵','Caisse','caisse'],['💳','Dettes & créances','dettes'],['📈','Bilan','bilan'],['🔮','Prévisionnel','previsionnel'],['🎯','Budget par action','pilotage'],['🏛️','Subventions','subventions'],['📁','Projets','projects'],['💰','Masse salariale','massesalariale']]},
-      {id:'nono',nom:'Nono',role:"L'Animateur",img:'bob-nono.png',tag:"Périscolaire, activités, ACM & vacances, ateliers, salles.",tabs:[['🎒','Périscolaire','periscolaire'],['🎟️','Activités','activites'],['🌴','Vacances','acmvac'],['🚀','Ados / Jeunesse','projetados'],['💡','Ateliers','ateliers'],['🏠','Lieux','lieux'],['🛎️','Réservations','reserver'],['🗓️','Salles','salles']]},
-      {id:'roro',nom:'Roro',role:'Le RH',img:'bob-roro.png',tag:"Dossiers salariés, équipe, congés, horaires, paie.",tabs:[['🧑‍💼','RH','rh'],['👥','Dossiers salariés','personnel'],['📋','Fiches de poste','fiches'],['🏖️','Congés','conges'],['🗓️','Horaires','horaires'],['🛡️','Obligations','obligations'],['📒','Paie','paie']]}
-    ];
+      {id:'sabine',ckey:'secretaire',tag:"Adhérents, messages, agenda, répertoire et la vie du bureau.",tabs:[['🏛️','Adhérents','members'],['📨','Messages','messages'],['📅','Rendez-vous','rdv'],['🗂️','Répertoire','repertoire'],['🤝','Partenaires','partenaires'],['🧰','Secrétariat','secretariat'],['📝','Préparer le CA','caprep']]},
+      {id:'tresi',ckey:'tresorier',tag:"Compta par site & action, subventions, bilan, prévisionnel.",tabs:[['💶','Comptabilité','accounting'],['💵','Caisse','caisse'],['💳','Dettes & créances','dettes'],['📈','Bilan','bilan'],['🔮','Prévisionnel','previsionnel'],['🎯','Budget par action','pilotage'],['🏛️','Subventions','subventions'],['📁','Projets','projects'],['💰','Masse salariale','massesalariale']]},
+      {id:'nono',ckey:'animateur',tag:"Périscolaire, activités, ACM & vacances, ateliers, salles.",tabs:[['🎒','Périscolaire','periscolaire'],['🎟️','Activités','activites'],['🌴','Vacances','acmvac'],['🚀','Ados / Jeunesse','projetados'],['💡','Ateliers','ateliers'],['🏠','Lieux','lieux'],['🛎️','Réservations','reserver'],['🗓️','Salles','salles']]},
+      {id:'roro',ckey:'rh',tag:"Dossiers salariés, équipe, congés, horaires, paie.",tabs:[['🧑‍💼','RH','rh'],['👥','Dossiers salariés','personnel'],['📋','Fiches de poste','fiches'],['🏖️','Congés','conges'],['🗓️','Horaires','horaires'],['🛡️','Obligations','obligations'],['📒','Paie','paie']]}
+    ].map(function(b){ var c=(typeof castingOf==='function')?castingOf(b.ckey):null; if(c){ b.nom=c.nom||b.id; b.role=c.role||''; b.img=c.img||''; } return b; });
+    // recherche teintée : quel visage accompagne quel onglet (lu par « Aller à un onglet »)
+    window.__persoByTab={}; EQUIPE.forEach(function(b){ b.tabs.forEach(function(x){ window.__persoByTab[x[2]]=b.img; }); });
     var DIRECTION=[['📊','Tableau de bord','dashboard'],['🧭','Projet & orientations','projet'],['✅','Suivi','suivi'],['⚠️','Incidents','incidents'],['🧑‍🏫','Accompagnement','accompagnement']];
     function tb(t){return document.querySelector('nav.tabs button[data-tab="'+t+'"]');}
     function vis(t){var b=tb(t);return b&&getComputedStyle(b).display!=='none';}
@@ -8188,16 +8208,32 @@ renderAll();
     var dch=chips(DIRECTION);
     var html='<div class="eq-wrap"><h2 class="eq-hello">Bonjour'+nom+' 👋 Qui veux-tu voir ?</h2>'
       +'<p class="eq-sub">Clique sur un membre de l\'équipe pour retrouver tous ses outils.</p>';
-    if(dch) html+='<div class="eq-dir"><div class="eq-dico">🧭</div><div><b>La Direction — ta vue d\'ensemble</b><p>Le pilotage du CASE.</p></div><div class="eq-dchips">'+dch+'</div></div>';
+    if(dch) html+='<div class="eq-dir"><div class="eq-dico">🧭</div><div><b>La Direction — ta vue d\'ensemble</b><p>Le pilotage, d\'un coup d\'œil.</p></div><div class="eq-dchips">'+dch+'</div></div>';
     html+='<div class="eq-grid">';
     window._eqData={};
+    // « Reprendre avec X » (28/07/2026) : Bob se souvient du dernier onglet PAR PROFIL et le signale
+    // SUR PLACE (halo + petit bouton) — les 4 cartes ne se réordonnent JAMAIS (stabilité spatiale).
+    var lastT=null; try{ var _uid=(window.bobMe&&typeof window.bobMe==='object')?window.bobMe.id:null; if(_uid) lastT=localStorage.getItem('bob_last_tab_'+_uid); }catch(e){} // strictement PAR PROFIL — jamais la clé partagée
+    var resume=null;
+    if(lastT&&lastT!=='dashboard'&&vis(lastT)){
+      EQUIPE.forEach(function(b){ if(resume) return; var hit=null;
+        b.tabs.forEach(function(x){ if(!hit&&x[2]===lastT) hit=x; });
+        if(hit) resume={id:b.id, tab:lastT, lbl:hit[0]+' '+hit[1]}; });
+    }
+    var todoT=window.bobTodoByTab||{};
     EQUIPE.forEach(function(b){
       var av=b.tabs.filter(function(x){return vis(x[2]);});
       if(!av.length) return;
       window._eqData[b.id]=b;
-      html+='<div class="eq-card" onclick="_eqOpen(\''+b.id+'\')"><span class="eq-cnt">'+av.length+'</span>'
-        +'<img src="'+b.img+'" alt="'+b.nom+'" onerror="this.style.display=\'none\'">'
-        +'<p class="eq-nom">'+b.nom+'</p><span class="eq-role">'+b.role+'</span><p class="eq-tag">'+b.tag+'</p></div>';
+      // pastille = VRAI travail en attente chez ce personnage (28/07/2026) — plus jamais le nombre d'outils
+      var nT=av.reduce(function(s,x){ return s+(todoT[x[2]]||0); },0);
+      var isRes=(resume&&resume.id===b.id);
+      html+='<div class="eq-card'+(isRes?' eq-resume':'')+'" onclick="_eqOpen(\''+b.id+'\')">'
+        +(nT>0?'<span class="eq-cnt eq-cnt-todo" title="'+nT+' chose'+(nT>1?'s':'')+' à traiter chez '+esc(b.nom)+'">'+nT+'</span>':'')
+        +'<img src="'+b.img+'" alt="'+esc(b.nom)+'" onerror="this.style.display=\'none\'">'
+        +'<p class="eq-nom">'+esc(b.nom)+'</p><span class="eq-role">'+esc(b.role)+'</span><p class="eq-tag">'+b.tag+'</p>'
+        +(isRes?'<span class="eq-resume-chip" onclick="event.stopPropagation();_eqGo(\''+resume.tab+'\')">↩ Reprendre — '+esc(resume.lbl)+'</span>':'')
+        +'</div>';
     });
     html+='</div></div>';
     host.innerHTML=html;
@@ -11583,6 +11619,49 @@ renderAll();
   function voc(key){ try{ const v=(typeof myAsso!=='undefined' && myAsso && ORG_VOCAB[myAsso])||{}; return (v[key]!=null?v[key]:VOCAB_DEFAULT[key])||''; }catch(e){ return (VOCAB_DEFAULT[key]||''); } }
   // Applique le vocabulaire de l'org aux libellés (amorce : l'onglet « Adhérents »). Étendre ici au fil des besoins.
   function applyOrgVocab(){ try{ const b=document.querySelector('nav.tabs button[data-tab="members"]'); if(b) b.textContent='👥 '+voc('adherents'); }catch(e){} }
+  /* ===== Casting des compagnons (28/07/2026, décision GB) — même patron qu'ASSO_IDENTITY/ORG_VOCAB :
+     les prénoms OFFICIELS = ceux du catalogue (Léa · Guy · Ludo · Éva, cf. BIBLE-BOB « Bob + métier »),
+     et chaque asso peut PERSONNALISER son équipe — le CASE garde la sienne (Sabine · Trési · Nono · Roro).
+     Les visuels (4 portraits ananas, versions allégées -w) sont communs : seul le prénom change. ===== */
+  const CASTING_DEFAUT={
+    secretaire:{nom:'Léa',  role:'Bob Secrétaire', img:'bob-sabine-w.png'},
+    tresorier:{ nom:'Guy',  role:'Bob Compta',     img:'bob-tresi-w.png'},
+    animateur:{ nom:'Ludo', role:'Bob Animateur',  img:'bob-nono-w.png'},
+    rh:{        nom:'Éva',  role:'Bob RH',         img:'bob-roro-w.png'}
+  };
+  const ASSO_CASTING={
+    'd617489c-b18b-499b-ab17-c31656d0f08a':{ // CASE du Bois de Nèfles — son équipe historique
+      secretaire:{nom:'Sabine',role:'La Secrétaire'},
+      tresorier:{ nom:'Trési', role:'La Trésorière'},
+      animateur:{ nom:'Nono',  role:"L'Animateur"},
+      rh:{        nom:'Roro',  role:'Le RH'}
+    }
+  };
+  function castingOf(key){ try{ const o=(typeof myAsso!=='undefined'&&myAsso&&ASSO_CASTING[myAsso])||{}; return Object.assign({}, CASTING_DEFAUT[key]||{}, o[key]||{}); }catch(e){ return CASTING_DEFAUT[key]||{}; } }
+  window.bobCasting=castingOf;
+  /* Rappel visuel du compagnon sur SON tiroir (28/07/2026) : petite pastille avatar+prénom en tête de la
+     rangée d'onglets. LISTE NOIRE respectée : le personnage s'efface quand l'onglet actif est délicat. */
+  window.decorPersoNav=function(){
+    try{
+      var MAP={adherents:'secretaire',comm:'secretaire',finances:'tresorier',animation:'animateur',equipe:'rh'};
+      var NOIR={dettes:1,paie:1}; // pas d'ananas souriant sur un impayé ou une fiche de paie
+      document.querySelectorAll('nav.tabs .tabgroup').forEach(function(tg){
+        var k=MAP[tg.dataset.group]; var chip=tg.querySelector('.grpPerso');
+        if(!k){ if(chip) chip.remove(); return; }
+        var c=castingOf(k);
+        if(!chip){ chip=document.createElement('span'); chip.className='grpPerso'; tg.insertBefore(chip, tg.firstChild); }
+        chip.innerHTML='<img src="'+c.img+'" alt="" onerror="this.remove()">'+esc(c.nom);
+        chip.title=(c.role||'')+" — c'est son univers";
+      });
+      var upd=function(){ var act=document.querySelector('nav.tabs button[data-tab].active');
+        var hide=!!(act&&NOIR[act.dataset.tab]);
+        document.querySelectorAll('nav.tabs .grpPerso').forEach(function(ch){ ch.style.display=hide?'none':''; }); };
+      if(!window._persoNavUpd){ window._persoNavUpd=1;
+        document.querySelectorAll('nav.tabs button[data-tab]').forEach(function(b){ b.addEventListener('click',function(){ setTimeout(upd,0); }); });
+      }
+      upd();
+    }catch(e){}
+  };
   // Contenu spécifique CASE masqué pour les autres orgs (ex. assurance MAIF). Additif : CASE = tout visible, inchangé. Étendre ici (PDF projet-ados, ÉCLAT…) au besoin.
   function applyOrgContent(){ try{ const isCase=(typeof myAsso!=='undefined' && myAsso==='d617489c-b18b-499b-ab17-c31656d0f08a'); const ap=document.getElementById('assurancePanel'); if(ap) ap.style.display = isCase ? '' : 'none'; }catch(e){} }
   function applyAssoIdentity(assoId){
@@ -11791,7 +11870,9 @@ renderAll();
       maWaitingCount()
     ]);
     window.bobTodoByZone={adherents:0, animation:peri+atel+resa, comm:msgw+part, equipe:cg, finances:0, bureau:0, _total:cg+peri+cpt+part+ques+atel+resa+msgw}; // 27/07/2026 : tiroir lieux dissous → les demandes de salle comptent sur Animation
+    window.bobTodoByTab={conges:cg, periscolaire:peri, reserver:resa, messages:msgw, partenaires:part, ateliers:atel}; // 28/07/2026 : pastilles PAR PERSONNAGE (le hub additionne sur ses onglets ; les questions Zanana restent dans ⏰ À traiter — aucun personnage ne porte l'Aide)
     if(window.renderZoneCards) window.renderZoneCards();
+    if(window.renderMonEquipe) window.renderMonEquipe(); // rafraîchit les pastilles des compagnons
     const items=[
       {n:cg,emo:'🏖️',lab:"demande(s) de congé à valider",act:"bobGoTab('conges')"},
       {n:peri,emo:'🎒',lab:"dossier(s) périscolaire déposé(s) à valider",act:"bobGoTab('periscolaire')"},
