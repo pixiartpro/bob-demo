@@ -5778,7 +5778,13 @@ function printCaprep(){
     +'</div>';
   printHTML(html);
 }
+/* 29/07/2026 — CLOISON : ce qui suit est le contenu RÉEL du CASE (ordre du jour de CA, organigramme).
+   Il ne doit jamais être semé chez une autre association. `myAsso` appartient à l'IIFE du bloc <script>
+   suivant : hors de portée ici → on lit l'objet global `window.bobMe` (idiome maison, cf. l.6009). */
+const BOB_CASE_ID='d617489c-b18b-499b-ab17-c31656d0f08a';
+function estLeCase(){ try{ const me=(window.bobMe&&typeof window.bobMe==='object')?window.bobMe:null; return !!(me && me.asso===BOB_CASE_ID); }catch(e){ return false; } }
 function seedCaprepIfNeeded(){
+  if(!estLeCase()) return; // ces 7 points sont l'ordre du jour réel du CASE — jamais ailleurs
   if(!db.capoints) db.capoints=[];
   if(db.caprepSeeded22) return;
   db.caprepSeeded22=true;
@@ -7001,8 +7007,11 @@ const ORGA_DEFAUT={
     {id:'p5',emoji:'📡',nom:'Média de quartier « Ôté Kartié »',resp:'Service civique (binôme)',mission:'Média de proximité du quartier (via Unis-Cité)'}
   ]
 };
+/* 29/07/2026 — les pôles d'ORGA_DEFAUT sont ceux du CASE (Bringelliers, Ôté Kartié, périscolaire).
+   Une autre association part d'un organigramme neutre : les 3 rôles de bureau, et ses pôles à écrire. */
+const ORGA_NEUTRE={ gov:ORGA_DEFAUT.gov, poles:[] };
 function orgaDB(){
-  if(!db.orga || typeof db.orga!=='object'){ db.orga=JSON.parse(JSON.stringify(ORGA_DEFAUT)); }
+  if(!db.orga || typeof db.orga!=='object'){ db.orga=JSON.parse(JSON.stringify(estLeCase()?ORGA_DEFAUT:ORGA_NEUTRE)); }
   if(!Array.isArray(db.orga.gov)) db.orga.gov=[];
   if(!Array.isArray(db.orga.poles)) db.orga.poles=[];
   return db.orga;
@@ -12209,7 +12218,7 @@ renderAll();
     lastSyncTs = st?st.updated_at:null;
     // remplace l'enregistrement local par l'enregistrement en ligne
     save = function(){ jLog(); try{localStorage.setItem(KEY,JSON.stringify(db));}catch(e){} renderAll(); schedulePush(); };
-    try{ if(canWrite) seedCaprepIfNeeded(); }catch(e){}
+    try{ if(canWrite && myAsso===BOB_CASE_ID) seedCaprepIfNeeded(); }catch(e){} // 29/07/2026 : double cloison (ici + dans la fonction)
     addBanner();
     renderAll();
     applyPerms();
