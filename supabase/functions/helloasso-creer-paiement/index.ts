@@ -58,8 +58,22 @@ Deno.serve(async (req) => {
       .gte("created_at", since).order("created_at", { ascending: false }).limit(1).maybeSingle();
     if (recent?.ha_redirect_url) return json({ redirectUrl: recent.ha_redirect_url, montant_cents: recent.montant_cents, reuse: true });
 
+    // 30/07/2026 -- CLOISON D'ARGENT (fail-closed). La configuration HelloAsso est GLOBALE :
+    // un seul compte, celui de l'association declaree dans HELLOASSO_ASSO_ID. Sans ce controle,
+    // le paiement d'une AUTRE association partirait sur ce compte-la = encaissement pour le
+    // compte d'autrui. On refuse plutot que de deviner. Verification AVANT d'ecrire la ligne de
+    // paiement, pour ne pas laisser de ligne "en_attente" orpheline.
+    const cfg = (await admin.rpc("helloasso_config")).data as any;
+    if (!cfg?.client_id) return json({ error: "config_absente" }, 500);
+    if (!cfg?.asso_id) return json({ error: "config_sans_asso" }, 500);
+    if (insc.asso_id !== cfg.asso_id)
+      return json({ error: "paiement_non_configure_pour_cette_asso" }, 403);
+
     const montant_cents = insc.montant_du_cents;
-    const libelle = `Periscolaire ${insc.annee} - CASE du Bois de Nefles`;
+    // Libelle tire de l'association reelle (accents retires : le reste du fichier est sans accent).
+    const { data: assoRow } = await admin.from("associations").select("name").eq("id", insc.asso_id).maybeSingle();
+    const nomAsso = String(assoRow?.name || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim() || "association";
+    const libelle = `Periscolaire ${insc.annee} - ${nomAsso}`;
 
     const { data: pay, error: perr } = await admin.from("paiements").insert({
       asso_id: insc.asso_id, user_id: insc.user_id, inscription_periscolaire_id: insc.id,
@@ -67,8 +81,6 @@ Deno.serve(async (req) => {
     }).select("id").single();
     if (perr || !pay) return json({ error: "creation_paiement", detail: perr?.message }, 500);
 
-    const cfg = (await admin.rpc("helloasso_config")).data as any;
-    if (!cfg?.client_id) return json({ error: "config_absente" }, 500);
     const tok = await haToken(cfg);
     const r = await fetch(`${HA_API}/v5/organizations/${cfg.org_slug}/checkout-intents`, {
       method: "POST",

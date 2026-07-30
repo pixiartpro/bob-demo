@@ -3,6 +3,7 @@
 // verify_jwt reste false : on identifie la famille via son access_token (Authorization),
 // et on ecrit en service_role. La confirmation passe par le webhook generique helloasso-webhook
 // (par metadata.paiement_id) -> aucun changement du webhook necessaire.
+// v3 (30/07/2026) : cloison d'argent fail-closed + libelle tire de l'association reelle.
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "jsr:@supabase/supabase-js@2";
 
@@ -74,8 +75,22 @@ Deno.serve(async (req) => {
       .order("created_at", { ascending: false }).limit(1).maybeSingle();
     if (recent?.ha_redirect_url) return json({ redirectUrl: recent.ha_redirect_url, montant_cents: recent.montant_cents, reuse: true });
 
+    // 3-bis) 30/07/2026 -- CLOISON D'ARGENT (fail-closed). Cette fonction est appelable par
+    // TOUT utilisateur connecte, de TOUTE association, et la configuration HelloAsso est GLOBALE
+    // (un seul compte, celui de HELLOASSO_ASSO_ID). Sans ce controle, l'adhesion d'un membre
+    // d'une autre association partirait sur ce compte-la = encaissement pour le compte d'autrui.
+    // On refuse plutot que de deviner, et AVANT d'ecrire la ligne de paiement.
+    const cfg = (await admin.rpc("helloasso_config")).data as any;
+    if (!cfg?.client_id) return json({ error: "config_absente" }, 500);
+    if (!cfg?.asso_id) return json({ error: "config_sans_asso" }, 500);
+    if (asso_id !== cfg.asso_id)
+      return json({ error: "paiement_non_configure_pour_cette_asso" }, 403);
+
     // 4) Creer la ligne de paiement (montant FIXE cote serveur)
-    const libelle = `Adhesion ${annee} - CASE du Bois de Nefles`;
+    // Libelle tire de l'association reelle (accents retires : le reste du fichier est sans accent).
+    const { data: assoRow } = await admin.from("associations").select("name").eq("id", asso_id).maybeSingle();
+    const nomAsso = String(assoRow?.name || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim() || "association";
+    const libelle = `Adhesion ${annee} - ${nomAsso}`;
     const { data: pay, error: perr } = await admin.from("paiements").insert({
       asso_id, user_id: uid, objet: "adhesion", libelle,
       montant_cents: MONTANT_CENTS, statut: "en_attente",
@@ -83,9 +98,7 @@ Deno.serve(async (req) => {
     }).select("id").single();
     if (perr || !pay) return json({ error: "creation_paiement", detail: perr?.message }, 500);
 
-    // 5) Checkout HelloAsso (l'argent va direct sur le compte du CASE ; le pourboire eventuel est cote HelloAsso)
-    const cfg = (await admin.rpc("helloasso_config")).data as any;
-    if (!cfg?.client_id) return json({ error: "config_absente" }, 500);
+    // 5) Checkout HelloAsso (l'argent va sur le compte de l'association configuree, verifiee ci-dessus)
     const tok = await haToken(cfg);
     const r = await fetch(`${HA_API}/v5/organizations/${cfg.org_slug}/checkout-intents`, {
       method: "POST",
