@@ -378,6 +378,7 @@
       <button data-tab="aide">❓ Aide</button>
       <button data-tab="journal" style="display:none">🕘 Historique</button>
       <button data-tab="data">⚙️ Données</button>
+      <button data-tab="corbeille" style="display:none">🗑️ Corbeille</button>
       <button data-tab="admin" style="display:none">🛠️ Admin Bob</button>
     </div>
   </nav>
@@ -1854,6 +1855,15 @@
     </div>
   </section>
 
+  <!-- 🗑️ Corbeille (31/07/2026) — filet de rattrapage. Réservé au président : une fiche
+       archivée peut contenir des données de santé, protégées en table vivante par un droit à part. -->
+  <section id="corbeille" class="page">
+    <div class="panel">
+      <h2 style="margin:0 0 4px">🗑️ Corbeille</h2>
+      <p class="muted" style="margin:0">Ce qui a été supprimé est gardé ici. Rien ne part tout seul — tu peux tout remettre en place. Réservé au président.</p>
+    </div>
+    <div id="corbeilleListe"></div>
+  </section>
   <section id="admin" class="page">
     <div class="panel"><h2 style="margin:0 0 4px">🛠️ Admin Bob — toutes les associations</h2><p class="muted" style="margin:0">Console super-admin (PIX-I-ART) : tu autorises ici les fonctions de chaque association. Elle ne montre jamais les données privées des assos.</p></div>
     <div id="adminConsole"></div>
@@ -12148,6 +12158,56 @@ renderAll();
   window.bobMe=function(){ try{ return myProfile?((myProfile.full_name||myProfile.email||'').split('@')[0]):''; }catch(e){ return ''; } };
   window.bobFeatures=function(){ return window.__bobFeatures||{}; };
   window.bobIsAdmin=function(){ try{ return !!(myProfile&&myProfile.super_admin); }catch(e){ return false; } };
+
+  /* ===== 🗑️ CORBEILLE (31/07/2026) =====
+     Le déclencheur `trg_corbeille` archive toute ligne supprimée AVANT qu'elle parte.
+     Cet écran la rend visible et permet de la remettre en place. La restauration passe
+     par la fonction serveur `corbeille_restaurer` (liste blanche de tables + président
+     de l'asso concernée) : le navigateur n'écrit jamais directement dans les tables. */
+  const CORB_LIB={ enfants:{e:'🧒',n:'Fiche enfant'}, activites:{e:'🎨',n:'Activité'},
+                   inscriptions_activite:{e:'📝',n:'Inscription à une activité'},
+                   inscriptions_periscolaire:{e:'🎒',n:'Dossier périscolaire'},
+                   personnel:{e:'👤',n:'Salarié'} };
+  function corbNom(c){
+    const d=c.contenu||{};
+    /* On cherche un libellé lisible sans jamais afficher de donnée sensible. */
+    const cand=[ [d.prenom,d.nom].filter(Boolean).join(' '), d.nom, d.name, d.titre, d.libelle, d.foyer, d.annee ];
+    const t=cand.map(x=>(x==null?'':String(x)).trim()).find(x=>x.length>0);
+    return t || '(sans nom)';
+  }
+  window.bobLoadCorbeille=async function(){
+    const box=document.getElementById('corbeilleListe'); if(!box) return;
+    box.innerHTML='<div class="panel"><p class="muted">Lecture de la corbeille…</p></div>';
+    const {data,error}=await sbc.from('corbeille')
+      .select('id,table_source,ligne_id,contenu,supprime_le,supprime_par,restaure_le')
+      .order('supprime_le',{ascending:false}).limit(200);
+    if(error){ box.innerHTML='<div class="panel"><p class="muted">Corbeille illisible : '+esc(error.message)+'</p></div>'; return; }
+    const lignes=(data||[]).filter(c=>!c.restaure_le);
+    if(!lignes.length){
+      box.innerHTML='<div class="panel"><div class="empty">La corbeille est vide — rien n\'a été supprimé.</div></div>'; return;
+    }
+    box.innerHTML='<div class="panel"><table><thead><tr>'
+      +'<th>Ce qui a été supprimé</th><th>Quand</th><th></th></tr></thead><tbody>'
+      +lignes.map(c=>{
+        const L=CORB_LIB[c.table_source]||{e:'📄',n:c.table_source};
+        let q='';
+        try{ q=new Date(c.supprime_le).toLocaleDateString('fr-FR',{day:'2-digit',month:'long',year:'numeric'}); }catch(e){ q=''; }
+        return '<tr><td>'+L.e+' <strong>'+esc(corbNom(c))+'</strong><br>'
+          +'<span class="muted" style="font-size:12.5px">'+esc(L.n)+'</span></td>'
+          +'<td class="muted" style="font-size:13px">'+esc(q)+'</td>'
+          +'<td style="text-align:right"><button class="ghost btn" onclick="bobRestaurer('+c.id+')">↩︎ Remettre en place</button></td></tr>';
+      }).join('')
+      +'</tbody></table>'
+      +'<p class="hint" style="margin-top:10px;font-size:12.5px">Rien n\'est effacé définitivement d\'ici : je garde tout tant que tu ne me dis pas le contraire. '
+      +'Si une ligne refuse de revenir, c\'est qu\'une autre porte déjà le même identifiant — je ne remplace jamais ce qui existe.</p></div>';
+  };
+  window.bobRestaurer=async function(id){
+    if(!confirm('Remettre cette ligne en place ?')) return;
+    const {data,error}=await sbc.rpc('corbeille_restaurer',{p_id:id});
+    if(error){ alert('Restauration impossible : '+error.message); return; }
+    if(data&&data.ok){ alert('✅ Remis en place.'); if(window.bobLoadCorbeille) window.bobLoadCorbeille(); }
+    else { alert((data&&data.erreur)||'Restauration impossible.'); }
+  };
   // Console super-admin (réservée à pix.i.art.pro). Inclut la « Tour de contrôle des bouquets » EN LECTURE SEULE
   // (additif, super-admin only → invisible et sans effet pour le CASE). Le pilotage fin reste sur bob.re/admin.
   window.bobLoadAdmin=async function(){
@@ -12361,6 +12421,11 @@ renderAll();
     const perb=document.querySelector('nav.tabs button[data-tab="personnel"]'); if(perb) perb.addEventListener('click',()=>{ if(window.loadPersonnel) loadPersonnel(); });
     const jab=document.querySelector('nav.tabs button[data-tab="journal"]'); if(jab) jab.addEventListener('click',()=>{ if(window.loadJournalActions) loadJournalActions(); });
     if(prof.super_admin){ const adb=document.querySelector('nav.tabs button[data-tab="admin"]'); if(adb){ adb.style.display=''; adb.addEventListener('click',()=>{ if(window.bobLoadAdmin) window.bobLoadAdmin(); }); } }
+    /* 🗑️ Corbeille — visible pour le président seul (même règle que can_delete côté base). */
+    if(prof.role==='president' && prof.statut==='actif'){
+      const cb=document.querySelector('nav.tabs button[data-tab="corbeille"]');
+      if(cb){ cb.style.display=''; cb.addEventListener('click',()=>{ if(window.bobLoadCorbeille) window.bobLoadCorbeille(); }); }
+    }
     const dtb=document.querySelector('nav.tabs button[data-tab="dashboard"]'); if(dtb) dtb.addEventListener('click',()=>{ if(window.loadTodo) loadTodo(); });
     const ptb=document.querySelector('nav.tabs button[data-tab="projet"]'); if(ptb) ptb.addEventListener('click',()=>{ if(window.renderQuiFaitQuoi) renderQuiFaitQuoi(); });
     if(window.loadTodo) loadTodo();
