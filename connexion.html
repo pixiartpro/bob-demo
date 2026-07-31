@@ -103,6 +103,10 @@ function assoSlug(){
     let s=(u.searchParams.get('asso')||'').toLowerCase();
     if(!s){ const m=location.pathname.toLowerCase().match(/(?:^|\/)(case|bokaf)(?:\/|\.html|$)/); if(m) s=m[1]; }
     if(!s){ s=(localStorage.getItem('bob_asso')||'').toLowerCase(); }
+    /* 30/07/2026 — on distingue « aucune porte demandée » (défaut légitime sur le site du CASE)
+       de « porte DEMANDÉE mais inconnue » (faute de frappe : ?asso=bokaff). Avant, les deux
+       retombaient silencieusement sur le CASE — un inscrit se retrouvait chez lui sans le savoir. */
+    if(s && !ASSO_DOORS[s]){ window.__bobPorteInconnue = s; s='case'; }
     if(!ASSO_DOORS[s]) s='case';
     try{ localStorage.setItem('bob_asso',s); }catch(e){}
     return s;
@@ -204,6 +208,13 @@ async function signUp(){
   if(!prenom||!nom||!email||!pw){toast('Indique ton prénom, ton nom, ton email et un mot de passe.');return}
   if(pw.length<6){toast('Le mot de passe doit faire au moins 6 caractères.');return}
   if(!__cguAccepted){toast('Merci de lire le règlement jusqu\'en bas et de l\'accepter pour créer le compte.'); openReglement(); return}
+  /* 30/07/2026 — si la porte demandée était INCONNUE (faute de frappe : ?asso=bokaff), on refuse
+     l'inscription plutôt que de la faire atterrir chez le CASE. Le serveur mettrait le compte en
+     quarantaine, mais autant le dire ici, clairement, plutôt que de créer un compte fantôme. */
+  if(window.__bobPorteInconnue){
+    toast('Le lien que tu as suivi ne correspond à aucune association connue (« '+window.__bobPorteInconnue+' »). Vérifie l\'adresse auprès de ton association avant de créer ton compte.');
+    return;
+  }
   const btn=$('#r_btn'); btn.disabled=true; btn.textContent='Envoi…';
   const {data,error}=await sb.auth.signUp({email,password:pw,options:{emailRedirectTo:location.origin+location.pathname, data:{full_name:fullName, asso_slug:DOOR, cgu_accepted:true}}});
   btn.disabled=false; btn.textContent='Envoyer ma demande';

@@ -11809,8 +11809,18 @@ renderAll();
   };
   // Contenu spécifique CASE masqué pour les autres orgs (ex. assurance MAIF). Additif : CASE = tout visible, inchangé. Étendre ici (PDF projet-ados, ÉCLAT…) au besoin.
   function applyOrgContent(){ try{ const isCase=(typeof myAsso!=='undefined' && myAsso==='d617489c-b18b-499b-ab17-c31656d0f08a'); const ap=document.getElementById('assurancePanel'); if(ap) ap.style.display = isCase ? '' : 'none'; }catch(e){} }
+  /* 30/07/2026 — identité NEUTRE par défaut, jamais celle du CASE. Une association sans entrée
+     (ou un compte en quarantaine, asso_id null) portait jusqu'ici le titre, le sous-titre et le pied
+     de page du CASE. Même patron que VOCAB_DEFAULT / CASTING_DEFAUT plus haut : on ne devine pas. */
+  const IDENTITY_DEFAUT = {
+    title:'Bob', appTitle:'Bob',
+    h1:'Bob',
+    sub:'Gestion de l\'association',
+    footer:'Propulsé par Bob 🤖 · données en ligne (hébergement Paris · RGPD)',
+    theme:{ brand:'#3a51e8', brandDk:'#1f2a8f', headerBg:'#ffffff', headerInk:'#141a52', headerSub:'#5b6478', logoBg:'#3a51e8', logoHtml:'🤖', themeColor:'#3a51e8' }
+  };
   function applyAssoIdentity(assoId){
-    const id = ASSO_IDENTITY[assoId] || ASSO_IDENTITY['d617489c-b18b-499b-ab17-c31656d0f08a'];
+    const id = ASSO_IDENTITY[assoId] || IDENTITY_DEFAUT;
     try{ document.title=id.title; }catch(e){}
     try{ const m=document.querySelector('meta[name="apple-mobile-web-app-title"]'); if(m) m.setAttribute('content',id.appTitle); }catch(e){}
     try{ const h=document.querySelector('header.top h1'); if(h) h.innerHTML=id.h1; }catch(e){}
