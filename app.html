@@ -782,6 +782,8 @@
   <!-- SUBVENTIONS -->
   <section id="subventions" class="page">
     <div class="cards" id="subKpis"></div>
+    <!-- 🧮 Guy — « le solde que tu n'as pas réclamé ». Rempli par renderGuySoldes(). -->
+    <div id="guySoldes"></div>
     <div class="panel">
       <h2>Ajouter / suivre une subvention</h2>
       <p class="hint">Suis le pipeline : demandée → accordée → versée. Le statut se calcule tout seul. Seuls les <strong>montants versés</strong> comptent en recettes dans la comptabilité ; le reste est suivi ici sans fausser le solde.</p>
@@ -5079,6 +5081,77 @@ function delSubvention(id){
   if(s.opId) db.ops=db.ops.filter(o=>o.id!==s.opId);
   db.subventions=db.subventions.filter(x=>x.id!==id); save();
 }
+/* ===== 🧮 Guy — « Le solde que tu n'as pas réclamé » (31/07/2026) =====
+   Le premier geste intelligent d'un compagnon. Principe : Bob n'ajoute AUCUNE donnée,
+   il rapproche deux chiffres qu'il affiche déjà séparément (accordé / versé) et pose
+   la question que le trésorier ne se pose pas. Il PROPOSE, il ne décide pas :
+   il n'écrit aucune recette, n'envoie aucune relance, et ne juge pas s'il faut relancer.
+   Aucune IA : c'est une règle de calcul. */
+function guySoldesData(){
+  const subs=db.subventions||[];
+  const auj=new Date();
+  const lignes=subs.filter(s=>{
+    if(s.refusee) return false;
+    const a=Number(s.accorde)||0, v=Number(s.verse)||0;
+    return a>0 && a-v>0.005;            // accordé, pas entièrement versé
+  }).map(s=>{
+    const a=Number(s.accorde)||0, v=Number(s.verse)||0;
+    const vote=(s.dateVote||'').slice(0,10);
+    let moisDepuisVote=null;
+    if(/^\d{4}-\d{2}-\d{2}$/.test(vote)){
+      const d=new Date(vote+'T12:00:00');
+      if(!isNaN(d)) moisDepuisVote=Math.max(0,Math.round((auj-d)/(1000*60*60*24*30.44)));
+    }
+    return { id:s.id, nom:s.name||'(sans nom)', financeur:s.structure||'',
+             accorde:a, verse:v, reste:a-v, taux:Math.round(100*v/a),
+             vote, moisDepuisVote };
+  }).sort((x,y)=>y.reste-x.reste);
+  return {
+    lignes,
+    total: lignes.reduce((t,l)=>t+l.reste,0),
+    /* Deux familles, deux causes probables, deux questions différentes. */
+    entames: lignes.filter(l=>l.taux>0),   // un acompte est venu : c'est le SOLDE qui manque
+    riens:   lignes.filter(l=>l.taux===0), // rien n'est arrivé depuis le vote
+  };
+}
+function renderGuySoldes(){
+  const box=document.getElementById('guySoldes'); if(!box) return;
+  const g=guySoldesData();
+  if(!g.lignes.length){ box.innerHTML=''; return; }
+  const ligne=l=>{
+    const age = (l.moisDepuisVote==null) ? '<span class="muted" style="font-size:12px">date de vote à renseigner</span>'
+      : '<span class="muted" style="font-size:12px">voté il y a '+l.moisDepuisVote+' mois</span>';
+    return '<tr><td><strong>'+esc(l.nom)+'</strong><br>'+esc(l.financeur||'—')+' · '+age+'</td>'
+      +'<td class="num">'+euro(l.accorde)+'</td>'
+      +'<td class="num">'+euro(l.verse)+'</td>'
+      +'<td style="text-align:center"><span class="pill '+(l.taux===0?'no':'wait')+'">'+l.taux+' %</span></td>'
+      +'<td class="num"><strong>'+euro(l.reste)+'</strong></td></tr>';
+  };
+  const phrases=[];
+  if(g.entames.length){
+    phrases.push('<strong>'+g.entames.length+' dossier'+(g.entames.length>1?'s ont':' a')+' reçu un acompte</strong> mais pas le solde. '
+      +'Le versement du solde est en général conditionné au <strong>compte rendu d\'emploi</strong> de la subvention. L\'as-tu déposé ?');
+  }
+  if(g.riens.length){
+    const vieux=g.riens.filter(l=>l.moisDepuisVote!=null&&l.moisDepuisVote>=3).length;
+    phrases.push('<strong>'+g.riens.length+' dossier'+(g.riens.length>1?'s n\'ont':' n\'a')+' rien reçu du tout</strong> depuis le vote'
+      +(vieux?' — dont '+vieux+' voté'+(vieux>1?'s':'')+' il y a plus de 3 mois':'')+'.');
+  }
+  box.innerHTML='<div class="panel" style="border-left:4px solid #f3a712">'
+    +'<h2 style="margin-bottom:2px">🧮 Le solde que tu n\'as pas réclamé</h2>'
+    +'<p class="hint" style="margin-top:4px">'
+      +'Argent <strong>voté en ta faveur</strong> et pas encore arrivé sur le compte : <strong>'+euro(g.total)+'</strong> sur '
+      +g.lignes.length+' dossier'+(g.lignes.length>1?'s':'')+'.<br>'
+      +phrases.join('<br>')
+    +'</p>'
+    +'<table><thead><tr><th>Subvention</th><th class="num">Accordé</th><th class="num">Versé</th>'
+      +'<th style="text-align:center">Taux</th><th class="num">Reste dû</th></tr></thead>'
+    +'<tbody>'+g.lignes.map(ligne).join('')+'</tbody></table>'
+    +'<p class="hint" style="margin-top:10px;font-size:12px">'
+      +'Je ne relance personne et je n\'écris aucune recette : je te montre où est l\'argent, tu décides quoi en faire. '
+      +'Une recette n\'est comptée que le jour où tu saisis le montant <strong>versé</strong>.'
+    +'</p></div>';
+}
 function renderSubventions(){
   const subs=db.subventions||[];
   const sum=f=>subs.reduce((t,s)=>t+(s[f]||0),0);
@@ -5087,6 +5160,7 @@ function renderSubventions(){
     + kpi('Accordé',euro(sum('accorde')),'','notifié')
     + kpi('Versé',euro(sum('verse')),'green','reçu, compté en recettes')
     + kpi('Reste à percevoir',euro(reste),reste>0?'amber':'','accordé non encore versé');
+  renderGuySoldes();
   const tb=$('subRows');
   if(!subs.length){ tb.innerHTML='<tr><td colspan="8" class="empty">Aucune subvention enregistrée.</td></tr>'; return; }
   const pill=st=> st==='Versée'?'<span class="pill ok">Versée</span>':st==='Accordée'?'<span class="pill wait">Accordée</span>':st==='Refusée'?'<span class="pill no">Refusée</span>':'<span class="pill" style="background:#eef0f5;color:#6b7488">Demandée</span>';
