@@ -1661,6 +1661,12 @@
     <div class="panel" id="fmgen" style="border-left:4px solid var(--brand)">
       <h2 style="margin:0 0 4px">✨ Créer un carrousel dans ta voix</h2>
       <p class="hint">L'expert écrit le <strong>texte d'un carrousel</strong> (plusieurs vignettes) à partir de <strong>ta fiche ci-dessous</strong> — ta voix, tes piliers, ton ancrage de quartier. Tu vérifies, tu ajustes, tu publies où tu veux. <em>Rien n'est publié automatiquement.</em></p>
+      <!-- Transparence IA — règlement (UE) 2024/1689, art. 50, applicable au 02/08/2026. -->
+      <p class="hint" style="background:#eef1ff;border-left:3px solid var(--brand);border-radius:0 8px 8px 0;padding:9px 12px;margin-top:8px;font-size:12.5px">
+        🤖 <strong>Ce texte est écrit par une intelligence artificielle.</strong> Relis-le avant de le publier :
+        en le validant, c'est <strong>toi</strong> qui en deviens l'auteur responsable. Si tu le publies tel quel
+        ou presque, indique à ton public qu'il a été rédigé avec l'aide d'une IA.
+      </p>
       <div class="field"><label>De quoi parle ce post ? (le sujet)</label><input id="pg_sujet" placeholder="Ex. le forum des ados samedi · l'atelier cuisine · la rentrée…"></div>
       <div class="row" style="gap:18px;flex-wrap:wrap">
         <div class="field" style="flex:1;min-width:200px"><label>Ton objectif</label>
@@ -1691,6 +1697,12 @@
     <div class="panel" id="fmvisual" style="border-left:4px solid var(--brand)">
       <h2 style="margin:0 0 4px">🎨 Créer un visuel de post</h2>
       <p class="hint">L'expert fabrique une <strong>image à ta charte</strong> (tes couleurs, l'ambiance péi) pour illustrer un post — une <strong>illustration / affiche</strong>, <strong>sans vraie personne</strong> (l'IA habille le décor, jamais un vrai visage). Tu poses ton texte par-dessus, ou tu réutilises le carrousel.</p>
+      <!-- Transparence IA — règlement (UE) 2024/1689, art. 50, applicable au 02/08/2026. -->
+      <p class="hint" style="background:#eef1ff;border-left:3px solid var(--brand);border-radius:0 8px 8px 0;padding:9px 12px;margin-top:8px;font-size:12.5px">
+        🤖 <strong>Cette image est générée par une intelligence artificielle.</strong> Ce n'est pas une photo :
+        ne la présente jamais comme une image de ton activité réelle. Quand tu la publies,
+        <strong>indique qu'elle a été générée par IA</strong>.
+      </p>
       <div class="field"><label>Thème du visuel</label><input id="pv_theme" placeholder="Ex. ACM ados été 2026 — journée surf et bivouac"></div>
       <div class="row" style="gap:18px;flex-wrap:wrap">
         <div class="field" style="flex:1;min-width:180px"><label>Format</label>
@@ -9100,7 +9112,11 @@ renderAll();
     const res=document.getElementById('pg_result'); if(!res) return;
     const c=data.carrousel||{}, slides=Array.isArray(c.slides)?c.slides:[];
     const roleLbl={couverture:'Couverture',contenu:'Vignette',final:'Appel à l\'action'};
-    let h='<div class="row" style="flex-wrap:wrap;gap:10px">';
+    /* La mention voyage AVEC le contenu, pas seulement sur le formulaire : c'est ici qu'on la lit
+       au moment de copier. Art. 50 du règlement (UE) 2024/1689, applicable au 02/08/2026. */
+    let h='<div style="background:#eef1ff;border-left:3px solid var(--brand);border-radius:0 8px 8px 0;padding:9px 12px;margin-bottom:10px;font-size:12.5px;color:#2b3350">'
+      +'🤖 <strong>Texte généré par une intelligence artificielle.</strong> Relis-le : en le publiant, tu en deviens l\'auteur responsable.'
+      +'</div><div class="row" style="flex-wrap:wrap;gap:10px">';
     slides.forEach((s,i)=>{ h+='<div style="flex:1;min-width:190px;border:1px solid #e6e6ee;border-radius:10px;padding:12px;background:#fff">'
       +'<div class="muted" style="font-size:11px;text-transform:uppercase;letter-spacing:.5px">'+(i+1)+' · '+pgEsc(roleLbl[s.role]||s.role||'')+'</div>'
       +'<div style="font-weight:700;margin:4px 0">'+pgEsc(s.titre)+'</div>'
@@ -9146,7 +9162,12 @@ renderAll();
   function pvRender(data){
     const res=document.getElementById('pv_result'); if(!res) return;
     const url=data.image_url||''; const usd=data.cost&&data.cost.usd;
-    let h='<img src="'+url+'" alt="visuel de post" style="max-width:100%;max-height:440px;border-radius:12px;border:1px solid #e6e6ee;display:block">';
+    /* Mention attachée au visuel lui-même — c'est ici qu'on la lit avant de télécharger.
+       Art. 50 du règlement (UE) 2024/1689, applicable au 02/08/2026. */
+    let h='<div style="background:#eef1ff;border-left:3px solid var(--brand);border-radius:0 8px 8px 0;padding:9px 12px;margin-bottom:10px;font-size:12.5px;color:#2b3350">'
+      +'🤖 <strong>Image générée par une intelligence artificielle</strong> — ce n\'est pas une photo de ton activité. Signale-le quand tu la publies.'
+      +'</div>';
+    h+='<img src="'+url+'" alt="visuel de post généré par intelligence artificielle" style="max-width:100%;max-height:440px;border-radius:12px;border:1px solid #e6e6ee;display:block">';
     h+='<div class="toolbar" style="margin-top:10px"><div>'
       +'<button class="ghost btn" onclick="fmGenVisual()">🔄 Régénérer</button> '
       +'<button class="ghost btn" onclick="pvDownload()">⬇️ Télécharger</button></div>'
