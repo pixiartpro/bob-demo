@@ -12352,6 +12352,12 @@ renderAll();
       window.__bobFeatures=cached||{};
       window.__bobFeatsDegrade=!cached;
     }
+    // Pause technique (31/07/2026, bascule arbre famille) : uniquement l'appli bureau — espace-adherent.html
+    // et espace-personnel.html ne sont pas concernés par ce chantier, ils continuent de tourner normalement.
+    if(window.__bobFeatures && window.__bobFeatures.f_maintenance){
+      gate('<h2>🛠️ Bob fait une pause technique</h2><p>La gestion est en cours de mise à jour — de retour très vite. Réessaie dans quelques heures.</p>');
+      return;
+    }
     // === Version-check (Session 0 arbre famille, 27/07/2026) : kill-switch des caches. Bob lit la version
     // minimale exigée en base (app_meta.app_min_build) et se recharge UNE fois si cette page est une vieille
     // copie en cache ; au 2e échec il l'explique. FAIL-OPEN : si la lecture échoue (table pas encore créée,
