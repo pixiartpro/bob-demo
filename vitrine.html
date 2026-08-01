@@ -496,6 +496,9 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 const _sbPart=window.supabase.createClient('https://dkidtwypclpwznleiqnq.supabase.co','sb_publishable_HDfV-O2ION1Vw9v03aV_Qg_PkiAjLNo');
+// Cette page publique appartient au CASE du Bois de Nèfles — on le dit explicitement à la base
+// plutôt que de laisser le repli serveur deviner (correctif 31/07/2026, CARTE-ARCHITECTURE-SAAS).
+const _CASE_ASSO_ID='d617489c-b18b-499b-ab17-c31656d0f08a';
 // Compteur de visites (RGPD-clean : fait juste +1, aucune donnee perso). Fire-and-forget, ne bloque jamais la page.
 try{ _sbPart.rpc('compter_visite').then(null,function(){}); }catch(e){}
 function toggleForm(id){var e=document.getElementById(id);if(!e)return;var show=(!e.style.display||e.style.display==='none');e.style.display=show?'block':'none';if(show){var f=e.querySelector('input,select,textarea');if(f)f.focus();e.scrollIntoView({block:'nearest'});}}
@@ -505,6 +508,7 @@ async function submitPartner(){
   if(!commerce||!contact){ info.style.color='#c0392b'; info.textContent='Indiquez au moins le nom du commerce et votre nom.'; return; }
   const btn=g('pa_btn'); btn.disabled=true; btn.textContent='Envoi…';
   const {error}=await _sbPart.from('partenaires').insert({
+    asso_id:_CASE_ASSO_ID,
     commerce, contact, email:g('pa_email').value.trim(), phone:g('pa_phone').value.trim(),
     type_activite:g('pa_type').value.trim(), message:g('pa_message').value.trim()
   });
@@ -568,7 +572,7 @@ async function atSend(id){
   const contact=document.getElementById('atc_'+id).value.trim();
   const info=document.getElementById('ati_'+id);
   if(!nom){ info.style.color='#c0392b'; info.textContent='Indiquez votre nom.'; return; }
-  const {error}=await _sbPart.from('atelier_inscriptions').insert({atelier_id:id, nom, contact, type:_atForm[id]||'interesse'});
+  const {error}=await _sbPart.from('atelier_inscriptions').insert({asso_id:_CASE_ASSO_ID, atelier_id:id, nom, contact, type:_atForm[id]||'interesse'});
   if(error){
     info.style.color='#c0392b';
     info.textContent=(error.code==='23505')?'Vous êtes déjà inscrit·e à cet atelier 😉':'Oups, une erreur est survenue. Réessayez dans un instant.';
@@ -756,7 +760,7 @@ async function actSend(id){
   const nom=g('actn');
   const info=document.getElementById('acti_'+id);
   if(!nom){ info.style.color='#c0392b'; info.textContent='Indique le nom.'; return; }
-  const {error}=await _sbPart.from('inscriptions_activite').insert({ activite_id:id, nom, responsable:g('actr'), contact:g('actc') });
+  const {error}=await _sbPart.from('inscriptions_activite').insert({ asso_id:_CASE_ASSO_ID, activite_id:id, nom, responsable:g('actr'), contact:g('actc') });
   if(error){ info.style.color='#c0392b'; info.textContent=(error.code==='23505')?'Déjà inscrit·e 😉':"Oups : plus de place disponible, ou une erreur. Réessaie."; return; }
   info.style.color='var(--vert-fonce)'; info.textContent='✅ C\'est noté, merci ! Le CASE vous recontacte.';
   setTimeout(()=>{ loadActivitesPubliques(); loadEvenements(); }, 1800);

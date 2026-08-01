@@ -350,6 +350,9 @@ function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('show');cl
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 const _sbAt=window.supabase.createClient('https://dkidtwypclpwznleiqnq.supabase.co','sb_publishable_HDfV-O2ION1Vw9v03aV_Qg_PkiAjLNo');
+// Cet espace appartient au CASE du Bois de Nèfles — on le dit explicitement à la base
+// plutôt que de laisser le repli serveur deviner (correctif 31/07/2026, CARTE-ARCHITECTURE-SAAS).
+const _CASE_ASSO_ID='d617489c-b18b-499b-ab17-c31656d0f08a';
 let _atType={};
 async function loadAteliersAdh(){
   const grid=document.getElementById('ateliersGrid'); if(!grid) return;
@@ -391,7 +394,7 @@ async function adhSend(id){
   const contact=document.getElementById('adc_'+id).value.trim();
   const info=document.getElementById('adi_'+id);
   if(!nom){ info.style.color='#c0392b'; info.textContent='Indique ton nom.'; return; }
-  const {error}=await _sbAt.from('atelier_inscriptions').insert({atelier_id:id, nom, contact, type:_atType[id]||'interesse'});
+  const {error}=await _sbAt.from('atelier_inscriptions').insert({asso_id:_CASE_ASSO_ID, atelier_id:id, nom, contact, type:_atType[id]||'interesse'});
   if(error){
     info.style.color='#c0392b';
     info.textContent=(error.code==='23505')?'Tu es déjà inscrit·e à cet atelier 😉':'Oups, une erreur est survenue. Réessaie dans un instant.';
@@ -474,7 +477,7 @@ async function aqSendQuestion(){
   if(!q || q.length<2){ if(tag){tag.style.color='#c0392b';tag.textContent='Écris ta question d\'abord.';} return; }
   if(tag){ tag.style.color='var(--muted)'; tag.textContent='⏳ Envoi…'; }
   try{
-    const {error}=await _sbAt.from('questions_aide').insert({question:q});
+    const {error}=await _sbAt.from('questions_aide').insert({asso_id:_CASE_ASSO_ID, question:q});
     if(error){ if(tag){tag.style.color='#c0392b';tag.textContent='Oups, réessaie dans un instant.';} return; }
     if(tag){ tag.style.color='var(--vert-fonce)'; tag.textContent='✅ Envoyée, merci !'; }
   }catch(e){ if(tag){tag.style.color='#c0392b';tag.textContent='Oups, réessaie dans un instant.';} }
