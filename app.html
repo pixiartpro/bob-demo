@@ -2404,8 +2404,11 @@ Deux locaux complémentaires — le Bois de Nèfles (« le haut » : jeunesse, a
       <div style="overflow-x:auto;-webkit-overflow-scrolling:touch"><table style="margin-top:12px;min-width:560px"><thead><tr><th>Fermeture</th><th>Période</th><th>État</th><th></th></tr></thead>
         <tbody id="fermRows"></tbody></table></div>
     </div>
+    <div class="panel" style="border-left:4px solid #2b6cb0;background:#eef4fb">
+      <p style="margin:0;font-size:14px">📬 <strong>Les demandes déposées par les salarié·e·s depuis leur espace personnel</strong> (avec justificatif éventuel) n'apparaissent pas dans le tableau ci-dessous — elles arrivent et se valident dans <strong>👥 Dossiers salariés</strong>. <button class="ghost btn" onclick="cgGotoDossiers()">→ Voir les demandes à traiter</button></p>
+    </div>
     <div class="panel">
-      <h3 style="margin:0 0 8px">Nouvelle demande</h3>
+      <h3 style="margin:0 0 8px">Nouvelle demande <span class="muted" style="font-weight:400;font-size:13px">— saisie directe par le bureau (ex. absence signalée par téléphone)</span></h3>
       <div class="toolbar" style="flex-wrap:wrap;gap:10px">
         <div class="field" style="min-width:150px"><label>Salarié·e</label><select id="cg_salarie"></select></div>
         <div class="field" style="min-width:140px"><label>Type</label><select id="cg_type"></select></div>
@@ -7266,6 +7269,7 @@ function addConge(){
 }
 function setConge(id,statut){ const c=congesDB().find(x=>x.id===id); if(c){ c.statut=statut; save(); } }
 function delConge(id){ if(confirm('Supprimer cette demande ?')){ db.conges=congesDB().filter(x=>x.id!==id); save(); } }
+function cgGotoDossiers(){ const b=document.querySelector('nav.tabs button[data-tab="personnel"]'); if(b){ b.click(); } else { alert('Ouvre l\'onglet 👥 Dossiers salariés.'); } }
 function renderConges(){
   const box=$('congesRows'); if(!box) return;
   const ssel=$('cg_salarie'); if(ssel && !ssel.options.length) ssel.innerHTML=CG_SALARIES().map(s=>'<option>'+esc(s)+'</option>').join('');
