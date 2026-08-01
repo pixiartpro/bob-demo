@@ -11233,7 +11233,10 @@ renderAll();
 
   /* ---- 📓 Journal des actions (table journal_actions, lecture bureau seulement) ---- */
   let JA_ROWS=[];
-  const JA_TABLES={activites:'🎟️ Activités',inscriptions_activite:'📝 Inscription activité',inscriptions_periscolaire:'🏫 Inscription périscolaire',conges:'🏖️ Congés',enfants:'👧 Fiche enfant',ateliers:'🛠️ Ateliers',atelier_inscriptions:'📝 Inscription atelier',personnel:'🧑‍💼 Personnel'};
+  const JA_TABLES={activites:'🎟️ Activités',inscriptions_activite:'📝 Inscription activité',inscriptions_periscolaire:'🏫 Inscription périscolaire',conges:'🏖️ Congés',enfants:'👧 Fiche enfant',ateliers:'🛠️ Ateliers',atelier_inscriptions:'📝 Inscription atelier',personnel:'🧑‍💼 Personnel',
+    /* arbre famille (31/07/2026) + droits/argent : ces tables sont journalisées depuis ce jour */
+    foyers:'👨‍👩‍👧 Foyer',personnes:'🧑 Personne du foyer',adhesions:'🎟️ Adhésion',inscriptions:'📝 Inscription',contacts_enfant:'🔐 Contact d\'un enfant',presences:'📅 Présence',
+    profiles:'🔑 Compte & droits',paiements:'💶 Paiement',fiches_sanitaires:'🩺 Fiche sanitaire'};
   const JA_ACTS={INSERT:'➕ Création',UPDATE:'✏️ Modification',DELETE:'🗑️ Suppression'};
   window.loadJournalActions=async function(){
     const box=document.getElementById('journalActionsRows'); if(!box) return;
@@ -12182,7 +12185,15 @@ renderAll();
   const CORB_LIB={ enfants:{e:'🧒',n:'Fiche enfant'}, activites:{e:'🎨',n:'Activité'},
                    inscriptions_activite:{e:'📝',n:'Inscription à une activité'},
                    inscriptions_periscolaire:{e:'🎒',n:'Dossier périscolaire'},
-                   personnel:{e:'👤',n:'Salarié'} };
+                   personnel:{e:'👤',n:'Salarié'},
+                   /* arbre famille (31/07/2026) : ces tables sont protégées comme les autres */
+                   foyers:{e:'👨‍👩‍👧',n:'Foyer'},
+                   personnes:{e:'🧑',n:'Personne du foyer'},
+                   adhesions:{e:'🎟️',n:'Adhésion'},
+                   inscriptions:{e:'📝',n:'Inscription'},
+                   contacts_enfant:{e:'🔐',n:'Contact d\'un enfant'},
+                   presences:{e:'📅',n:'Présence'},
+                   conges:{e:'🏖️',n:'Demande de congé'} };
   function corbNom(c){
     const d=c.contenu||{};
     /* On cherche un libellé lisible sans jamais afficher de donnée sensible. */
