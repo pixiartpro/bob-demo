@@ -2664,7 +2664,12 @@ Deux locaux complémentaires — le Bois de Nèfles (« le haut » : jeunesse, a
 const $ = id => document.getElementById(id);
 const KEY = 'case_bdn_v1';
 const euro = n => (n||0).toLocaleString('fr-FR',{style:'currency',currency:'EUR'});
-const today = () => new Date().toISOString().slice(0,10);
+// ⚠️ Date LOCALE, jamais toISOString() : à La Réunion (UTC+4), minuit local = 20 h la veille
+// en UTC — toISOString() renvoyait donc HIER pour tout ce qui est saisi entre 20 h et minuit
+// (et un mois entier de décalage quand la date visée est un 1er). Piège maison déjà connu et
+// déjà payé deux fois ailleurs ; il traînait encore ici, sous 65 appels (dates comptables,
+// reçus, remises en banque…). Corrigé le 31/07/2026.
+const today = () => { const d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); };
 const fmtDate = d => d ? new Date(d).toLocaleDateString('fr-FR') : '';
 const uid = () => Date.now().toString(36)+Math.random().toString(36).slice(2,7);
 
@@ -9673,15 +9678,20 @@ renderAll();
   window.loadFoyers=async function(){
     const box=document.getElementById('foyersList'); if(!box) return;
     if(typeof sbc==='undefined'||!sbc||!myAsso){ box.innerHTML='<p class="hint">Connecte-toi pour voir les foyers.</p>'; return; }
-    const [rf,rp,ra,ri]=await Promise.all([
+    const [rf,rp,ra,ri,rq]=await Promise.all([
       sbc.from('foyers').select('*').order('nom',{ascending:true}),
       sbc.from('personnes').select('*'),
       sbc.from('adhesions').select('*'),
-      sbc.from('inscriptions').select('*')
+      sbc.from('inscriptions').select('*'),
+      // QF : table cloisonnée au bureau (le personnel lit la fiche foyer mais PAS le revenu).
+      // Pour un non-bureau la RLS renvoie simplement 0 ligne — pas une erreur.
+      sbc.from('foyer_qf').select('*').order('valable_du',{ascending:false})
     ]);
     const fyErr=rf.error||rp.error||ra.error||ri.error; // une SEULE lecture en erreur = on n'affiche RIEN de partiel (sinon « pas d'adhésion » mentirait)
     if(fyErr){ box.innerHTML='<p class="hint" style="color:#c0392b">Erreur de lecture ('+esc(fyErr.message)+') — recharge (↻) avant de te fier aux cartes.</p>'; return; }
-    window.__fyData={foyers:rf.data||[], personnes:rp.data||[], adhesions:ra.data||[], inscriptions:ri.data||[]};
+    // Même principe pour le QF : si SA lecture échoue, on ne montre pas « pas de QF » (ce serait un mensonge) — on se tait.
+    window.__fyData={foyers:rf.data||[], personnes:rp.data||[], adhesions:ra.data||[], inscriptions:ri.data||[],
+                     qf:(rq&&!rq.error)?(rq.data||[]):[], qfOk:!!(rq&&!rq.error)};
     renderFoyers();
   };
   window.renderFoyers=function(){
@@ -9691,6 +9701,14 @@ renderAll();
     const persByFoyer={}; D.personnes.forEach(p=>{ if(p.foyer_id) (persByFoyer[p.foyer_id]=persByFoyer[p.foyer_id]||[]).push(p); });
     const insByPers={}; D.inscriptions.forEach(i=>{ (insByPers[i.personne_id]=insByPers[i.personne_id]||[]).push(i); });
     const adhByFoyer={}; D.adhesions.forEach(a=>{ (adhByFoyer[a.foyer_id]=adhByFoyer[a.foyer_id]||[]).push(a); });
+    // QF en cours d'un foyer : le plus récent dont la période couvre aujourd'hui (liste déjà triée par date décroissante).
+    const qfByFoyer={}; (D.qf||[]).forEach(q=>{ (qfByFoyer[q.foyer_id]=qfByFoyer[q.foyer_id]||[]).push(q); });
+    const jourLocal=today(); // date LOCALE (jamais toISOString — cf. piège fuseau 974)
+    window.__fyQfCourant=function(fid){
+      return (qfByFoyer[fid]||[]).find(function(q){
+        return q.valable_du<=jourLocal && (!q.valable_au || q.valable_au>=jourLocal);
+      })||null;
+    };
     const kpi=document.getElementById('foyersKpis');
     if(kpi){
       const nbKids=D.personnes.filter(p=>p.role_foyer==='enfant'&&p.foyer_id).length; // seuls les enfants RATTACHÉS (les cartes ne montrent qu'eux)
@@ -9736,6 +9754,10 @@ renderAll();
         +'<strong style="font-size:15px">'+esc(f.nom)+'</strong> '
         +(f.code_famille?'<span class="pill" style="background:#e7f5ee;color:#127a51;font-weight:700;font-size:11px" title="Code famille — servira à relier le compte en ligne de la famille (fonction à venir)">🔑 '+esc(f.code_famille)+'</span> ':'')
         +adhBadge
+        /* QF : bureau seul, et seulement si sa lecture a réussi (sinon on se tait plutôt que de dire « pas de QF ») */
+        +((canWrite&&D.qfOk)?(function(){ const q=window.__fyQfCourant(f.id);
+            return q ? ' <span class="pill" style="background:#eef4fb;color:#23448a;font-size:11px" title="Quotient familial en cours — sert au calcul du tarif. Réservé au bureau.">💶 QF '+esc(q.qf)+'</span>'
+                     : ' <span class="pill" style="background:#fff5da;color:#8a6400;font-size:11px" title="Aucun quotient familial en cours : le tarif ne peut pas être calculé automatiquement.">💶 QF à saisir</span>'; })():'')
         +((f.tel||f.adresse)?'<br><span class="muted" style="font-size:12.5px">'+esc(f.tel||'')+((f.tel&&(f.adresse||f.ville))?' · ':'')+esc(((f.adresse||'')+' '+(f.cp||'')+' '+(f.ville||'')).trim())+'</span>':'')
         +(f.note?'<br><span style="color:#8a6400;font-size:12px">📝 '+esc(f.note)+'</span>':'')
         +'</div><div style="white-space:nowrap">'
@@ -9744,7 +9766,7 @@ renderAll();
         +'</div></div>'
         +'<div style="margin-top:6px">'+adultHtml+'</div>'
         +(kidHtml?'<div style="margin-top:6px;display:flex;flex-wrap:wrap">'+kidHtml+'</div>':'')
-        +(canWrite?'<div style="margin-top:7px"><button class="ghost btn" style="padding:2px 8px;font-size:11px" onclick="fyAddPersonne(\''+f.id+'\',\'parent\')">+ adulte</button> <button class="ghost btn" style="padding:2px 8px;font-size:11px" onclick="fyAddPersonne(\''+f.id+'\',\'enfant\')">+ enfant</button> <button class="ghost btn" style="padding:2px 8px;font-size:11px" onclick="fyAddAdhesion(\''+f.id+'\')">+ adhésion</button></div>':'')
+        +(canWrite?'<div style="margin-top:7px"><button class="ghost btn" style="padding:2px 8px;font-size:11px" onclick="fyAddPersonne(\''+f.id+'\',\'parent\')">+ adulte</button> <button class="ghost btn" style="padding:2px 8px;font-size:11px" onclick="fyAddPersonne(\''+f.id+'\',\'enfant\')">+ enfant</button> <button class="ghost btn" style="padding:2px 8px;font-size:11px" onclick="fyAddAdhesion(\''+f.id+'\')">+ adhésion</button> <button class="ghost btn" style="padding:2px 8px;font-size:11px" onclick="fySetQf(\''+f.id+'\')" title="Quotient familial (attestation CAF) — sert au calcul automatique du tarif">💶 QF</button> <button class="ghost btn" style="padding:2px 8px;font-size:11px" onclick="fyTarif(\''+f.id+'\')" title="Calculer le tarif périscolaire du foyer">🧮 Tarif</button></div>':'')
         +'</div>';
     }).join('');
   };
@@ -9876,6 +9898,46 @@ renderAll();
     const r=await sbc.from('adhesions').insert({asso_id:myAsso, foyer_id:fid, saison:saison.trim(), montant_cents:Math.round(montant*100), paye:paye, date_adhesion:paye?today():null});
     if(r.error){ alert('Erreur : '+r.error.message+(r.error.code==='23505'?'\n(Une adhésion existe déjà pour ce foyer et cette saison.)':'')); return; }
     loadFoyers();
+  };
+  // Veille d'une date ISO — pattern sûr côté fuseau (UTC pur des deux côtés, cf. piège 974) :
+  // jamais new Date(iso) local + toISOString().
+  function fyVeille(iso){ const d=new Date(iso+'T00:00:00Z'); d.setUTCDate(d.getUTCDate()-1); return d.toISOString().slice(0,10); }
+  // 💶 Saisie du quotient familial — BUREAU SEUL (table foyer_qf cloisonnée).
+  // Le QF d'un foyer est un revenu de ménage : il ne se lit pas depuis l'accueil.
+  window.fySetQf=async function(fid){
+    if(!canWrite){ alert('Le quotient familial est réservé au bureau.'); return; }
+    const cur=window.__fyQfCourant?window.__fyQfCourant(fid):null;
+    const s=prompt('Quotient familial CAF (le nombre de l\'attestation, ex. 700)'+(cur?'\n\nActuel : '+cur.qf+' (depuis le '+cur.valable_du+')':''), cur?String(cur.qf):'');
+    if(s===null) return;
+    const qf=parseInt(String(s).replace(/[^0-9]/g,''),10);
+    if(!Number.isFinite(qf)||qf<0){ alert('Indique un nombre (ex. 700).'); return; }
+    const du=prompt('Valable à partir du (AAAA-MM-JJ) :', today());
+    if(du===null) return;
+    if(!/^\d{4}-\d{2}-\d{2}$/.test(du.trim())){ alert('Date attendue au format AAAA-MM-JJ.'); return; }
+    // On ferme le QF précédent la veille : jamais deux quotients « en cours » sur un même foyer.
+    if(cur && !cur.valable_au){
+      const rc=await sbc.from('foyer_qf').update({valable_au:fyVeille(du.trim())}).eq('id',cur.id);
+      if(rc.error){ alert('Impossible de clore le quotient précédent : '+rc.error.message+'\nRien n\'a été enregistré.'); return; }
+    }
+    const r=await sbc.from('foyer_qf').insert({asso_id:myAsso, foyer_id:fid, qf:qf, valable_du:du.trim(), source:'attestation_caf'});
+    if(r.error){ alert('Erreur : '+r.error.message); return; }
+    loadFoyers();
+  };
+  // 🧮 Tarif périscolaire du foyer — calculé PAR LA BASE (formule unique, grille publiée).
+  window.fyTarif=async function(fid){
+    if(!canWrite){ alert('Réservé au bureau.'); return; }
+    const matin=confirm('Le matin est-il compris ?\n\nOK = oui   ·   Annuler = non');
+    const soir=confirm('Et le soir ?\n\nOK = oui   ·   Annuler = non');
+    if(!matin && !soir){ alert('Il faut au moins le matin ou le soir.'); return; }
+    const r=await sbc.rpc('peri_calcul_tarif',{p_foyer_id:fid, p_matin:matin, p_soir:soir});
+    if(r.error){ alert('Calcul impossible : '+r.error.message); return; }
+    const d=r.data||{};
+    alert('🧮 Tarif périscolaire — '+(d.libelle||'')+'\n\n'
+      +'Tarif du jour : '+euro(d.tarif_jour)+(d.supp_matin?'  ·  supplément matin : '+euro(d.supp_matin):'')+'\n'
+      +'Base : '+d.jours+' jours  ·  '+d.nb_enfants+' enfant'+(d.nb_enfants>1?'s':'')+' inscrit'+(d.nb_enfants>1?'s':'')+'\n'
+      +(d.nb_enfants>1?('Remise fratrie : −'+d.remise_par_enfant_pct+' % par enfant supplémentaire\n'):'')
+      +'\n➡️  '+euro(d.total_euros)+' / mois pour la famille\n\n'
+      +'(Calculé par Bob d\'après la grille publiée. À valider par le bureau avant facturation.)');
   };
   window.fyEditFoyer=async function(fid){
     if(!canWrite) return;

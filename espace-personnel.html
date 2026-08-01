@@ -221,6 +221,7 @@ function renderView(){
   else if(ME.view==='acm'){ vp.innerHTML=backBar('🌴 Mon ACM')+acmBlockHTML(); acmMountForm(); }
   else if(ME.view==='vepi'){ vp.innerHTML=backBar('📌 Mon VEPI')+vepiBlockHTML(); }
   else if(ME.view==='peridocs'){ vp.innerHTML=backBar('📎 Docs périscolaire')+periDocsBlockHTML(); }
+  else if(ME.view==='tarif'){ vp.innerHTML=backBar('🧮 Calculer un tarif')+tarifHTML(); }
   else { vp.innerHTML=hubHTML(); }
 }
 function backBar(t){ return '<div class="backbar"><button class="btn ghost" onclick="spView(\'hub\')">← Retour</button><span class="backttl">'+esc(t)+'</span></div>'; }
@@ -408,6 +409,8 @@ function hubHTML(){
         +'<div class="hubname">Photos du jour</div><div class="hubsub">'+esc(phSub)+'</div><div class="hubgo">Entrer →</div></button>'
       +'<button class="hubcard" onclick="spView(\'familles\')"><div class="hubico">👨‍👩‍👧</div>'
         +'<div class="hubname">Dossiers familles'+famHubBadge()+'</div><div class="hubsub">'+esc(famHubSub())+'</div><div class="hubgo">Entrer →</div></button>'
+      +'<button class="hubcard" onclick="spView(\'tarif\')"><div class="hubico">🧮</div>'
+        +'<div class="hubname">Calculer un tarif</div><div class="hubsub">Une famille au comptoir te demande combien ça coûte ? Réponds tout de suite.</div><div class="hubgo">Entrer →</div></button>'
       +'<button class="hubcard" onclick="spView(\'rh\')"><div class="hubico">🧑‍💼</div>'
         +'<div class="hubname">Mon RH'+rhBadge+'</div><div class="hubsub">'+esc(rhSub)+'</div><div class="hubgo">Entrer →</div></button>'
       +'<button class="hubcard" onclick="spView(\'messages\')"><div class="hubico">💬</div>'
@@ -418,6 +421,56 @@ function hubHTML(){
         +'<div class="hubname">Ma boîte mail</div><div class="hubsub">Ta messagerie pro @casebdn.re — s\'ouvre dans un nouvel onglet</div><div class="hubgo">Ouvrir ↗</div></a>'
     +'</div></section>';
 }
+
+// ===== 🧮 Calculateur de tarif périscolaire (accueil) =====
+// La famille est DEVANT toi : elle te donne son quotient familial (ou te montre son attestation),
+// tu tapes le chiffre, Bob annonce le tarif. Rien n'est enregistré, et on ne consulte JAMAIS le QF
+// d'une famille absente — ça, c'est réservé au bureau (verrouillé en base, pas juste à l'écran).
+// Le calcul est fait PAR LA BASE (peri_calcul_tarif) : même formule et même grille que le bureau,
+// donc jamais deux chiffres différents pour la même famille.
+function tarifHTML(){
+  return '<section class="block">'
+    +'<div class="card" style="background:#eef4fb;border:1px solid #cfe0f5">'
+      +'<p style="margin:0;font-size:14px">💡 <b>À utiliser avec la famille en face de toi.</b> Demande-lui son <b>quotient familial</b> (il est sur son attestation CAF) et tape-le ci-dessous. '
+      +'Rien n\'est enregistré : c\'est juste une réponse à donner tout de suite. Le <b>tarif définitif</b> est validé par le bureau d\'après l\'attestation.</p>'
+    +'</div>'
+    +'<div class="card">'
+      +'<div class="row" style="margin-bottom:10px">'
+        +'<div style="flex:1;min-width:150px"><label>Quotient familial (CAF)</label><input id="tf_qf" type="number" min="0" step="1" placeholder="ex. 700" style="width:100%"></div>'
+        +'<div style="min-width:120px"><label>Nombre d\'enfants</label><input id="tf_nb" type="number" min="1" max="10" step="1" value="1" style="width:100%"></div>'
+      +'</div>'
+      +'<div class="row" style="margin-bottom:12px;gap:16px;flex-wrap:wrap">'
+        +'<label style="display:flex;align-items:center;gap:6px"><input type="checkbox" id="tf_matin"> 🌅 Matin</label>'
+        +'<label style="display:flex;align-items:center;gap:6px"><input type="checkbox" id="tf_soir" checked> 🌆 Soir</label>'
+        +'<label style="display:flex;align-items:center;gap:6px"><input type="checkbox" id="tf_hors"> 🚗 Hors commune</label>'
+      +'</div>'
+      +'<button class="btn win" onclick="spTarifRun()">🧮 Calculer</button>'
+      +'<div id="tf_res" style="margin-top:14px"></div>'
+    +'</div>'
+  +'</section>';
+}
+window.spTarifRun=async function(){
+  const g=id=>document.getElementById(id);
+  const res=g('tf_res'); if(!res) return;
+  const hors=!!(g('tf_hors')||{}).checked;
+  const qf=parseInt((g('tf_qf')||{}).value,10);
+  const nb=Math.max(1,parseInt((g('tf_nb')||{}).value,10)||1);
+  const matin=!!(g('tf_matin')||{}).checked, soir=!!(g('tf_soir')||{}).checked;
+  if(!matin && !soir){ res.innerHTML='<p class="empty">Coche au moins le matin ou le soir.</p>'; return; }
+  if(!hors && (!Number.isFinite(qf)||qf<0)){ res.innerHTML='<p class="empty">Demande son quotient familial à la famille (ou coche « hors commune »).</p>'; return; }
+  res.innerHTML='<p class="sub">⏳ Calcul…</p>';
+  // p_qf est TOUJOURS fourni : on ne demande jamais à la base le QF enregistré d'un foyer.
+  const r=await sb.rpc('peri_calcul_tarif',{p_qf:hors?null:qf, p_nb_enfants:nb, p_matin:matin, p_soir:soir, p_hors_commune:hors});
+  if(r.error){ res.innerHTML='<p class="empty" style="color:#c0392b">Calcul impossible : '+esc(r.error.message)+'</p>'; return; }
+  const d=r.data||{};
+  const eur=n=>Number(n||0).toLocaleString('fr-FR',{minimumFractionDigits:2,maximumFractionDigits:2})+' €';
+  res.innerHTML='<div class="card" style="background:#fff;border:1px solid var(--line)">'
+    +'<div class="sub" style="margin:0">'+esc(d.libelle||'')+(d.soir?' · soir '+eur(d.tarif_jour):'')+(d.matin?' · matin +'+eur(d.supp_matin):'')+' · '+d.jours+' jours</div>'
+    +'<div style="font-size:26px;font-weight:900;color:var(--vert-fonce);margin-top:4px">'+eur(d.total_euros)+' <span style="font-size:15px;font-weight:700;color:var(--muted)">/ mois pour la famille</span></div>'
+    +(d.nb_enfants>1?'<div class="sub" style="margin:4px 0 0">'+d.nb_enfants+' enfants · remise fratrie −'+d.remise_par_enfant_pct+' % par enfant supplémentaire</div>':'')
+    +'<div class="sub" style="margin:8px 0 0;font-size:12.5px">Montant indicatif au tarif en vigueur — le bureau valide le tarif définitif d\'après l\'attestation CAF.</div>'
+  +'</div>';
+};
 
 // ===== Bloc Procédures (protocoles validés, lecture seule, accordéon) =====
 function proceduresHTML(){
