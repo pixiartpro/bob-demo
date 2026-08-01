@@ -143,6 +143,15 @@ async function boot(){
   const {data:prof}=await sb.from('profiles').select('full_name,email,role,statut,assistant_sanitaire').eq('id',session.user.id).maybeSingle();
   ME.prof=prof||null;
   if(!prof){ gate('<h2>Profil introuvable</h2><p class="sub">Contacte le bureau du CASE.</p>'); return; }
+  // Pause technique (31/07/2026) — même drapeau que l'appli bureau (features.f_maintenance).
+  // FAIL-OPEN : si la lecture échoue (réseau, RPC), l'espace s'ouvre normalement. Jamais l'inverse.
+  try{
+    const rM=await sb.rpc('my_asso_features');
+    if(!rM.error && rM.data && rM.data.f_maintenance){
+      gate('<h2>🛠️ Bob fait une pause technique</h2><p class="sub">Ton espace est en cours de mise à jour — de retour très vite. Rien de ce que tu as déposé ne bouge.</p>');
+      return;
+    }
+  }catch(e){}
   $('#logoutBtn').style.display='';
   if(prof.statut!=='actif'){ gate('<h2>⏳ Accès en attente</h2><p class="sub">Ton accès doit être validé par le bureau avant d\'ouvrir ton espace.</p>'); return; }
   if(prof.role!=='personnel'){

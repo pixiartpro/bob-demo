@@ -1801,8 +1801,26 @@ async function adhBoot(){
     }catch(e){ btn.disabled=false; btn.textContent='🪪 Payer mon adhésion — 10 €'; alert('Impossible d\'ouvrir le paiement pour le moment. Réessayez dans un instant.'); }
   };
 }
-_sbAt.auth.onAuthStateChange((event)=>{ if(event==='SIGNED_IN'||event==='SIGNED_OUT'){ periBoot(); adhBoot(); } });
-periBoot(); adhBoot();
+// Pause technique (31/07/2026) — même drapeau que l'appli bureau et l'espace salarié
+// (features.f_maintenance). FAIL-OPEN : toute erreur de lecture (non connecté, réseau)
+// laisse l'espace s'ouvrir normalement — jamais l'inverse.
+let _bobPause=false;
+_sbAt.auth.onAuthStateChange((event)=>{ if(_bobPause) return; if(event==='SIGNED_IN'||event==='SIGNED_OUT'){ periBoot(); adhBoot(); } });
+(async function(){
+  try{
+    const rM=await _sbAt.rpc('my_asso_features');
+    if(!rM.error && rM.data && rM.data.f_maintenance){
+      _bobPause=true;
+      document.body.innerHTML='<div style="max-width:560px;margin:70px auto;padding:0 22px;font-family:system-ui,-apple-system,Segoe UI,sans-serif;text-align:center">'
+        +'<div style="font-size:46px">🛠️</div>'
+        +'<h1 style="font-size:22px;margin:12px 0 8px;color:#1f5c44">Votre espace fait une pause technique</h1>'
+        +'<p style="color:#5a6b60;line-height:1.65;font-size:15px">Le CASE met son outil à jour — votre espace revient très vite.<br>Vos informations et vos dossiers ne bougent pas.</p>'
+        +'</div>';
+      return;
+    }
+  }catch(e){}
+  periBoot(); adhBoot();
+})();
 </script>
 
 <!-- 💬 Parler avec le CASE — messagerie 2 sens (table messages_adherents) -->
