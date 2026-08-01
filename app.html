@@ -9237,6 +9237,36 @@ renderAll();
     if(error){ alert('Erreur : '+error.message); return; }
     if(window.loadDossiersPeri) window.loadDossiersPeri();
   };
+  // 🧮 Bob PROPOSE le tarif, le bureau VALIDE — jamais l'inverse (c'est l'argent des familles).
+  // Le calcul vient de la base (peri_calcul_tarif) : QF enregistré du foyer + nombre d'enfants
+  // RÉELLEMENT au dossier + remise fratrie. La saisie à la main, elle, ignore la fratrie.
+  window.periProposerTarif=async function(id){
+    if(!canWrite){ alert('Réservé au bureau.'); return; }
+    const matin=confirm('Le matin est-il compris dans ce forfait ?\n\nOK = oui   ·   Annuler = non');
+    const soir=confirm('Et le soir ?\n\nOK = oui   ·   Annuler = non');
+    if(!matin && !soir){ alert('Il faut au moins le matin ou le soir.'); return; }
+    const jSaisi=parseInt((document.getElementById('pnb_'+id)||{}).value,10);
+    const r=await sbc.rpc('peri_calcul_tarif',{p_inscription_id:id, p_matin:matin, p_soir:soir,
+                                               p_jours:(Number.isFinite(jSaisi)&&jSaisi>0)?jSaisi:null});
+    if(r.error){ alert('Calcul impossible.\n\n'+r.error.message); return; }
+    const d=r.data||{};
+    const src={dossier:'comptés dans ce dossier','arbre famille':'d\'après la fiche famille',fourni:'imposés',defaut:'par défaut'}[d.source_nb]||d.source_nb;
+    let txt='🧮 Tarif proposé par Bob\n\n'
+      +(d.libelle||'')+'  ·  '+euro(d.tarif_jour)+' / jour'+(d.supp_matin?'  ·  matin +'+euro(d.supp_matin):'')+'\n'
+      +d.jours+' jours  ·  '+d.nb_enfants+' enfant'+(d.nb_enfants>1?'s':'')+' ('+src+')\n';
+    if(d.nb_enfants>1) txt+='Remise fratrie : −'+d.remise_par_enfant_pct+' % par enfant supplémentaire\n';
+    txt+='\n➡️  '+euro(d.total_euros)+' pour la famille\n\n'
+      +'Valider ce montant et générer le lien de paiement ?';
+    if(!confirm(txt)) return;
+    const detail={tarif_jour:d.tarif_jour, jours:d.jours, total:d.total_euros, mode:'calcule',
+                  nb_enfants:d.nb_enfants, source_nb:d.source_nb, remise_par_enfant_pct:d.remise_par_enfant_pct,
+                  qf_utilise:d.qf_utilise, source_qf:d.source_qf, matin:d.matin, soir:d.soir,
+                  detail:d.detail, formule:d.formule, calcule_le:d.calcule_le};
+    const {error}=await sbc.rpc('peri_valider_montant',{p_inscription_id:id,
+      p_montant_cents:Math.round(Number(d.total_euros)*100), p_detail:detail});
+    if(error){ alert('Erreur : '+error.message); return; }
+    if(window.loadDossiersPeri) window.loadDossiersPeri();
+  };
   window.periEditMontant=async function(id){
     const v=prompt('Nouveau montant a regler (en euros) :'); if(v===null) return;
     const euros=parseFloat(String(v).replace(',','.'));
@@ -9509,7 +9539,8 @@ renderAll();
             +'<input id="pnb_'+d.id+'" type="number" min="1" step="1" value="16" oninput="periCalc(\''+d.id+'\')" style="width:74px;padding:7px 10px;border:1px solid var(--line);border-radius:8px;font:inherit"> <span class="muted">jours</span>'
             +'<span class="muted">=</span><strong id="ptot_'+d.id+'" style="min-width:64px">—</strong>'
             +'<button class="btn" onclick="periValiderMontant(\''+d.id+'\')">🔒 Valider &amp; générer le lien</button>'
-            +'</div><div class="muted" style="font-size:12px;margin-top:4px">Forfait = tarif/jour (selon le QF) × nombre de jours du mois.</div></div>';
+            +'<button class="ghost btn" onclick="periProposerTarif(\''+d.id+'\')" title="Bob calcule d\'après le QF de la famille et le nombre d\'enfants du dossier, remise fratrie comprise">🧮 Proposer le tarif</button>'
+            +'</div><div class="muted" style="font-size:12px;margin-top:4px">Forfait = tarif/jour (selon le QF) × nombre de jours du mois. ⚠️ La saisie à la main <b>n\'applique pas la remise fratrie</b> — « 🧮 Proposer le tarif » la calcule.</div></div>';
         }
       }
       const actionsRow=encBtn?('<div class="row" style="gap:8px;flex-wrap:wrap;align-items:center;margin-top:8px">'+encBtn+'</div>'):'';
