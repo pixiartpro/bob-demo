@@ -9678,20 +9678,24 @@ renderAll();
   window.loadFoyers=async function(){
     const box=document.getElementById('foyersList'); if(!box) return;
     if(typeof sbc==='undefined'||!sbc||!myAsso){ box.innerHTML='<p class="hint">Connecte-toi pour voir les foyers.</p>'; return; }
-    const [rf,rp,ra,ri,rq]=await Promise.all([
+    const [rf,rp,ra,ri,rq,rc]=await Promise.all([
       sbc.from('foyers').select('*').order('nom',{ascending:true}),
       sbc.from('personnes').select('*'),
       sbc.from('adhesions').select('*'),
       sbc.from('inscriptions').select('*'),
       // QF : table cloisonnée au bureau (le personnel lit la fiche foyer mais PAS le revenu).
       // Pour un non-bureau la RLS renvoie simplement 0 ligne — pas une erreur.
-      sbc.from('foyer_qf').select('*').order('valable_du',{ascending:false})
+      sbc.from('foyer_qf').select('*').order('valable_du',{ascending:false}),
+      // Attestation CAF déjà déposée par la famille : permet de lire le quotient et de le saisir
+      // sans quitter cet écran. Bureau seul (la fonction renvoie 0 ligne aux autres).
+      sbc.rpc('foyer_attestation_caf')
     ]);
     const fyErr=rf.error||rp.error||ra.error||ri.error; // une SEULE lecture en erreur = on n'affiche RIEN de partiel (sinon « pas d'adhésion » mentirait)
     if(fyErr){ box.innerHTML='<p class="hint" style="color:#c0392b">Erreur de lecture ('+esc(fyErr.message)+') — recharge (↻) avant de te fier aux cartes.</p>'; return; }
     // Même principe pour le QF : si SA lecture échoue, on ne montre pas « pas de QF » (ce serait un mensonge) — on se tait.
     window.__fyData={foyers:rf.data||[], personnes:rp.data||[], adhesions:ra.data||[], inscriptions:ri.data||[],
-                     qf:(rq&&!rq.error)?(rq.data||[]):[], qfOk:!!(rq&&!rq.error)};
+                     qf:(rq&&!rq.error)?(rq.data||[]):[], qfOk:!!(rq&&!rq.error),
+                     caf:(rc&&!rc.error)?(rc.data||[]):[]};
     renderFoyers();
   };
   window.renderFoyers=function(){
@@ -9703,6 +9707,8 @@ renderAll();
     const adhByFoyer={}; D.adhesions.forEach(a=>{ (adhByFoyer[a.foyer_id]=adhByFoyer[a.foyer_id]||[]).push(a); });
     // QF en cours d'un foyer : le plus récent dont la période couvre aujourd'hui (liste déjà triée par date décroissante).
     const qfByFoyer={}; (D.qf||[]).forEach(q=>{ (qfByFoyer[q.foyer_id]=qfByFoyer[q.foyer_id]||[]).push(q); });
+    const cafByFoyer={}; (D.caf||[]).forEach(function(c){ cafByFoyer[c.foyer_id]=c; });
+    window.__fyCaf=function(fid){ return cafByFoyer[fid]||null; };
     const jourLocal=today(); // date LOCALE (jamais toISOString — cf. piège fuseau 974)
     window.__fyQfCourant=function(fid){
       return (qfByFoyer[fid]||[]).find(function(q){
@@ -9766,7 +9772,7 @@ renderAll();
         +'</div></div>'
         +'<div style="margin-top:6px">'+adultHtml+'</div>'
         +(kidHtml?'<div style="margin-top:6px;display:flex;flex-wrap:wrap">'+kidHtml+'</div>':'')
-        +(canWrite?'<div style="margin-top:7px"><button class="ghost btn" style="padding:2px 8px;font-size:11px" onclick="fyAddPersonne(\''+f.id+'\',\'parent\')">+ adulte</button> <button class="ghost btn" style="padding:2px 8px;font-size:11px" onclick="fyAddPersonne(\''+f.id+'\',\'enfant\')">+ enfant</button> <button class="ghost btn" style="padding:2px 8px;font-size:11px" onclick="fyAddAdhesion(\''+f.id+'\')">+ adhésion</button> <button class="ghost btn" style="padding:2px 8px;font-size:11px" onclick="fySetQf(\''+f.id+'\')" title="Quotient familial (attestation CAF) — sert au calcul automatique du tarif">💶 QF</button> <button class="ghost btn" style="padding:2px 8px;font-size:11px" onclick="fyTarif(\''+f.id+'\')" title="Calculer le tarif périscolaire du foyer">🧮 Tarif</button></div>':'')
+        +(canWrite?'<div style="margin-top:7px"><button class="ghost btn" style="padding:2px 8px;font-size:11px" onclick="fyAddPersonne(\''+f.id+'\',\'parent\')">+ adulte</button> <button class="ghost btn" style="padding:2px 8px;font-size:11px" onclick="fyAddPersonne(\''+f.id+'\',\'enfant\')">+ enfant</button> <button class="ghost btn" style="padding:2px 8px;font-size:11px" onclick="fyAddAdhesion(\''+f.id+'\')">+ adhésion</button> '+((canWrite&&window.__fyCaf&&window.__fyCaf(f.id))?('<button class="ghost btn" style="padding:2px 8px;font-size:11px" onclick="fyVoirCaf(\''+f.id+'\')" title="Ouvrir l\'attestation CAF déposée par la famille — pour y lire le quotient">📄 Attestation CAF</button> '):'')+'<button class="ghost btn" style="padding:2px 8px;font-size:11px" onclick="fySetQf(\''+f.id+'\')" title="Quotient familial (attestation CAF) — sert au calcul automatique du tarif">💶 QF</button> <button class="ghost btn" style="padding:2px 8px;font-size:11px" onclick="fyTarif(\''+f.id+'\')" title="Calculer le tarif périscolaire du foyer">🧮 Tarif</button></div>':'')
         +'</div>';
     }).join('');
   };
@@ -9902,6 +9908,18 @@ renderAll();
   // Veille d'une date ISO — pattern sûr côté fuseau (UTC pur des deux côtés, cf. piège 974) :
   // jamais new Date(iso) local + toISOString().
   function fyVeille(iso){ const d=new Date(iso+'T00:00:00Z'); d.setUTCDate(d.getUTCDate()-1); return d.toISOString().slice(0,10); }
+  // 📄 Ouvre l'attestation CAF déjà déposée par la famille (lien signé, 1 h) — pour lire le
+  // quotient et le saisir juste à côté, sans changer d'onglet. Bureau seul.
+  window.fyVoirCaf=async function(fid){
+    if(!canWrite){ alert('Réservé au bureau.'); return; }
+    const c=window.__fyCaf?window.__fyCaf(fid):null;
+    if(!c||!c.chemin){ alert('Aucune attestation CAF déposée pour ce foyer.'); return; }
+    try{
+      const {data,error}=await sbc.storage.from(c.bucket).createSignedUrl(c.chemin,3600);
+      if(error||!data){ alert('Attestation indisponible : '+((error&&error.message)||'lien impossible')); return; }
+      docView(data.signedUrl, c.nom_fichier||'Attestation CAF');
+    }catch(e){ alert('Attestation indisponible : '+e); }
+  };
   // 💶 Saisie du quotient familial — BUREAU SEUL (table foyer_qf cloisonnée).
   // Le QF d'un foyer est un revenu de ménage : il ne se lit pas depuis l'accueil.
   window.fySetQf=async function(fid){
