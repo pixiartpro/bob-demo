@@ -9744,7 +9744,7 @@ renderAll();
         +'</div></div>'
         +'<div style="margin-top:6px">'+adultHtml+'</div>'
         +(kidHtml?'<div style="margin-top:6px;display:flex;flex-wrap:wrap">'+kidHtml+'</div>':'')
-        +(canWrite?'<div style="margin-top:7px"><button class="ghost btn" style="padding:2px 8px;font-size:11px" onclick="fyAddPersonne(\''+f.id+'\',\'parent\')">+ adulte</button> <button class="ghost btn" style="padding:2px 8px;font-size:11px" onclick="fyAddPersonne(\''+f.id+'\',\'enfant\')">+ enfant</button></div>':'')
+        +(canWrite?'<div style="margin-top:7px"><button class="ghost btn" style="padding:2px 8px;font-size:11px" onclick="fyAddPersonne(\''+f.id+'\',\'parent\')">+ adulte</button> <button class="ghost btn" style="padding:2px 8px;font-size:11px" onclick="fyAddPersonne(\''+f.id+'\',\'enfant\')">+ enfant</button> <button class="ghost btn" style="padding:2px 8px;font-size:11px" onclick="fyAddAdhesion(\''+f.id+'\')">+ adhésion</button></div>':'')
         +'</div>';
     }).join('');
   };
@@ -9864,6 +9864,17 @@ renderAll();
     if(!prenom.trim()&&!nom.trim()){ alert('On ne vide pas complètement une fiche : garde au moins un prénom ou un nom.'); return; }
     const r=await sbc.from('personnes').update({prenom:prenom.trim()||null, nom:nom.trim()||null}).eq('id',pid);
     if(r.error){ alert('Erreur : '+r.error.message); return; }
+    loadFoyers();
+  };
+  window.fyAddAdhesion=async function(fid){
+    if(!canWrite) return;
+    const saison=prompt('Saison de l\'adhésion (ex. '+fySaisonDefaut()+') :', fySaisonDefaut()); if(saison===null) return;
+    if(!saison.trim()){ alert('Indique la saison.'); return; }
+    const montantStr=prompt('Montant de la cotisation, en euros (laisse vide si à définir plus tard) :', ''); if(montantStr===null) return;
+    const montant=parseFloat((montantStr||'').replace(',','.'))||0;
+    const paye=montantStr?confirm('La cotisation est-elle déjà réglée ?\nOK = oui, déjà payée.\nAnnuler = pas encore.'):false;
+    const r=await sbc.from('adhesions').insert({asso_id:myAsso, foyer_id:fid, saison:saison.trim(), montant_cents:Math.round(montant*100), paye:paye, date_adhesion:paye?today():null});
+    if(r.error){ alert('Erreur : '+r.error.message+(r.error.code==='23505'?'\n(Une adhésion existe déjà pour ce foyer et cette saison.)':'')); return; }
     loadFoyers();
   };
   window.fyEditFoyer=async function(fid){
