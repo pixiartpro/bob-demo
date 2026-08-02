@@ -3,6 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script>
+/* 02/08/2026 — BOKAF ne s'affiche plus sous l'adresse du CASE : l'ancienne URL bascule vers le domaine propre */
+if(/(^|\.)casebdn\.re$|(^|\.)github\.io$/.test(location.hostname)) location.replace('https://bokaf.bob.re/');
+</script>
 <title>BOKAF — Média · Évènement · Production</title>
 <meta name="description" content="BOKAF, association culturelle et audiovisuelle à La Réunion : web TV de quartier, captations, production et ateliers image.">
 <meta name="theme-color" content="#0d0d11">

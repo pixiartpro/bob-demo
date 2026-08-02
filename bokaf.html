@@ -6,9 +6,11 @@
 <title>BOKAF — accès</title>
 <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
 <script>
-  /* Porte d'entrée BOKAF : mémorise l'asso puis ouvre la connexion BOKAF */
+  /* Porte d'entrée BOKAF : mémorise l'asso puis ouvre la connexion BOKAF.
+     02/08/2026 — depuis l'adresse du CASE (ou github.io), on bascule vers le domaine propre bokaf.bob.re */
   try{ localStorage.setItem('bob_asso','bokaf'); }catch(e){}
-  location.replace('connexion.html?asso=bokaf');
+  if(/(^|\.)casebdn\.re$|(^|\.)github\.io$/.test(location.hostname)) location.replace('https://bokaf.bob.re/connexion.html');
+  else location.replace('connexion.html?asso=bokaf');
 </script>
 </head>
 <body style="font:16px/1.6 -apple-system,system-ui,Segoe UI,Roboto,sans-serif;padding:48px 24px;text-align:center;color:#1d3a2e">
