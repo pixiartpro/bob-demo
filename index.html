@@ -761,7 +761,23 @@ async function actSend(id){
   const info=document.getElementById('acti_'+id);
   if(!nom){ info.style.color='#c0392b'; info.textContent='Indique le nom.'; return; }
   const {error}=await _sbPart.from('inscriptions_activite').insert({ asso_id:_CASE_ASSO_ID, activite_id:id, nom, responsable:g('actr'), contact:g('actc') });
-  if(error){ info.style.color='#c0392b'; info.textContent=(error.code==='23505')?'Déjà inscrit·e 😉':"Oups : plus de place disponible, ou une erreur. Réessaie."; return; }
+  if(error){
+    info.style.color='#c0392b';
+    if(error.code==='23505'){ info.textContent='Déjà inscrit·e 😉'; return; }
+    // Pause technique (02/08/2026) : le refus peut venir du gel de maintenance,
+    // désormais appliqué DANS la règle de sécurité. On ne pose la question
+    // qu'en cas de refus — le parcours normal ne fait pas d'appel en plus.
+    try{
+      const p=await _sbPart.rpc('asso_en_pause',{p_asso_id:_CASE_ASSO_ID});
+      if(!p.error && p.data===true){
+        info.style.color='#8a6400';
+        info.textContent='🛠️ Les inscriptions sont en pause quelques minutes, le temps d\'une mise à jour. Réessayez tout à l\'heure — rien n\'est perdu.';
+        return;
+      }
+    }catch(e){}
+    info.textContent="Oups : plus de place disponible, ou une erreur. Réessaie.";
+    return;
+  }
   info.style.color='var(--vert-fonce)'; info.textContent='✅ C\'est noté, merci ! Le CASE vous recontacte.';
   setTimeout(()=>{ loadActivitesPubliques(); loadEvenements(); }, 1800);
 }
