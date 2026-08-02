@@ -205,6 +205,30 @@
   </div>
 </div>
 
+<!-- ===== Signature en direct (terrain) ===== -->
+<div class="modal" id="sigModal">
+  <div class="mbox">
+    <div class="mhead"><h2>✍️ Autorisation droit à l'image</h2><button class="xbtn" data-act="close-sig">✕</button></div>
+    <p class="h" id="sigIntro" style="color:var(--muted);font-size:13.5px"></p>
+    <div class="card" style="box-shadow:none;background:var(--soft)">
+      <p class="small" id="sigEngagement" style="margin:0"></p>
+    </div>
+    <div class="field"><label>Qui signe ?</label><input id="sigNom" placeholder="Nom et prénom du signataire"></div>
+    <div class="field"><label>En qualité de</label><select id="sigQualite">
+      <option value="moi-même" selected>Moi-même (majeur)</option>
+      <option value="responsable légal 1">Responsable légal 1 (mineur)</option>
+      <option value="responsable légal 2">Responsable légal 2 (mineur)</option></select></div>
+    <div class="field"><label>Signature au doigt, dans le cadre blanc :</label>
+      <canvas id="sigCanvas" width="600" height="220" style="width:100%;height:160px;background:#fff;border-radius:12px;touch-action:none;border:1.5px solid var(--line)"></canvas>
+    </div>
+    <div class="row" style="display:flex;gap:8px;align-items:center">
+      <button class="btn g sm" data-act="sig-clear">🧽 Effacer</button>
+      <span style="flex:1"></span>
+      <button class="btn p" data-act="sig-save" id="sigSaveBtn">✅ Valider la signature</button>
+    </div>
+  </div>
+</div>
+
 <!-- ===== Déclarer / modifier du matériel ===== -->
 <div class="modal" id="mModal">
   <div class="mbox">
@@ -418,7 +442,7 @@ async function openProject(id){
   const showMod=!cptr&&canEditProj(p);
   $('#pmModelesCard').style.display=showMod?'':'none';
   $('#pModal').classList.add('open');
-  if(showMod){ await loadModeles(p.id); renderModeles(); }
+  if(showMod){ await loadModeles(p.id); await loadSigs(p.id); renderModeles(); }
   await loadPosts(p.id);
   seenSet(p.id); renderMain();
 }
@@ -547,7 +571,9 @@ async function createProject(){
   if(!nom){ toast('Donne un nom à ton projet.'); return; }
   const btn=$('#createBtn'); btn.disabled=true; btn.textContent='Création…';
   const type=$('#npType')?$('#npType').value:'libre';
-  const d={ pitch:$('#npPitch').value.trim(), besoins:$('#npBesoins').value.trim(), statut:'actif',
+  let bes=$('#npBesoins').value.trim();
+  if(type==='sortie'&&!bes) bes='Manger / boire : \nTenues : \nTransport : \nMatériel à emprunter : \nDivers : ';
+  const d={ pitch:$('#npPitch').value.trim(), besoins:bes, statut:'actif',
     jalons:(type==='sortie'?JALONS_SORTIE.map(t=>({t:t,done:false})):[]), gabarit:type, porteur_nom:ME.name };
   const {data,error}=await sb.from('projects').insert({asso_id:ME.asso, owner_id:ME.id, name:nom, data:d}).select('id').maybeSingle();
   btn.disabled=false; btn.textContent='Créer mon projet';
@@ -564,6 +590,8 @@ const JALONS_SORTIE=[
   '📍 Repérage du lieu et de la lumière',
   '📝 Autorisations droit à l\'image signées (adulte / mineur)',
   '🎒 Vérifier le matériel : batteries, cartes vides, sauvegarde',
+  '🥤 Prévoir eau & manger pour l\'équipe',
+  '👕 Tenues & consignes données aux participants',
   '📸 Le jour J — shooting / tournage',
   '💾 Sauvegarder en DOUBLE le soir même',
   '🎞️ Tri et retouche / dérushage',
@@ -602,8 +630,10 @@ function renderModeles(){
       '<div class="meta" style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;align-items:center">'+
         '<select data-modstatut="'+esc(m.id)+'" style="width:auto;padding:6px 10px;font-size:13px">'+
           Object.keys(AUTOR).map(k=>'<option value="'+k+'"'+(m.autorisation===k?' selected':'')+'>'+AUTOR[k]+'</option>').join('')+'</select>'+
+        '<button class="btn p sm" data-modsign="'+esc(m.id)+'">✍️ Faire signer</button>'+
         (mail?'<a class="btn g sm" style="text-decoration:none" href="'+esc(mail)+'">✉️ Écrire</a>':'')+
         '<button class="btn g sm" data-moddel="'+esc(m.id)+'">🗑</button>'+
+        sigsFor(m.id).map(s=>'<button class="pill" data-sigview="'+esc(s.file_path)+'" style="cursor:pointer;border:none" title="Voir la preuve">✍️ '+esc(s.signed_by||'')+'</button>').join('')+
       '</div></div>';
   }).join('');
 }
@@ -628,6 +658,80 @@ async function delModele(id){
   const {error}=await sb.from('projet_modeles').delete().eq('id',id);
   if(error){ toast('Retrait refusé : '+error.message); return; }
   await loadModeles(CURRENT.id); renderModeles();
+}
+
+/* ===== Signatures en direct — terrain ===== */
+let SIGS=[]; let SIG_MODELE=null; let sigDirty=false; let sigCtx=null;
+async function loadSigs(projectId){
+  const {data,error}=await sb.from('projet_signatures').select('id,modele_id,signed_by,qualite,file_path,created_at').eq('project_id',projectId).order('created_at',{ascending:true});
+  SIGS=(error||!data)?[]:data;
+}
+const sigsFor=mid=>SIGS.filter(s=>s.modele_id===mid);
+function sigCanvasInit(){
+  const c=document.getElementById('sigCanvas'); if(!c) return;
+  sigCtx=c.getContext('2d');
+  const pos=e=>{ const r=c.getBoundingClientRect(); return { x:(e.clientX-r.left)*(c.width/r.width), y:(e.clientY-r.top)*(c.height/r.height) }; };
+  let draw=false;
+  c.addEventListener('pointerdown',e=>{ e.preventDefault(); draw=true; const p=pos(e); sigCtx.beginPath(); sigCtx.moveTo(p.x,p.y); });
+  c.addEventListener('pointermove',e=>{ if(!draw) return; e.preventDefault(); const p=pos(e); sigCtx.lineWidth=3; sigCtx.lineCap='round'; sigCtx.strokeStyle='#1a2440'; sigCtx.lineTo(p.x,p.y); sigCtx.stroke(); sigDirty=true; });
+  const stop=()=>{ draw=false; };
+  c.addEventListener('pointerup',stop); c.addEventListener('pointerleave',stop);
+  sigClear();
+}
+function sigClear(){ const c=document.getElementById('sigCanvas'); if(!c||!sigCtx) return; sigCtx.fillStyle='#ffffff'; sigCtx.fillRect(0,0,c.width,c.height); sigDirty=false; }
+function openSigModal(m){
+  if(!CURRENT) return;
+  SIG_MODELE=m;
+  $('#sigIntro').textContent='Projet « '+(CURRENT.name||'')+' » — pour '+(m.nom||'')+(m.mineur?' (mineur : il faut les DEUX responsables légaux — une signature chacun)':'')+'. Tends ton téléphone à la personne.';
+  $('#sigEngagement').textContent='« J\'autorise l\'association '+((ASSO&&ASSO.name)||'')+' à me photographier / me filmer (ou la personne dont je suis responsable légal) dans le cadre de ce projet, et à diffuser ces images pour ses activités associatives, sans but commercial ni cession à des tiers. Je peux retirer cette autorisation à tout moment, sur simple demande. »';
+  $('#sigNom').value=m.mineur?'':(m.nom||'');
+  $('#sigQualite').value=m.mineur?'responsable légal 1':'moi-même';
+  $('#sigModal').classList.add('open');
+  sigClear();
+}
+function sigWrap(x,text,px,py,maxW,lh){ const words=text.split(' '); let line=''; words.forEach(w=>{ const t=line?line+' '+w:w; if(x.measureText(t).width>maxW&&line){ x.fillText(line,px,py); line=w; py+=lh; } else line=t; }); if(line){ x.fillText(line,px,py); py+=lh; } return py; }
+async function sigSave(){
+  if(!SIG_MODELE||!CURRENT) return;
+  const nom=$('#sigNom').value.trim(); const qual=$('#sigQualite').value;
+  if(!nom){ toast('Indique le nom du signataire.'); return; }
+  if(!sigDirty){ toast('Il manque la signature dans le cadre blanc.'); return; }
+  const btn=$('#sigSaveBtn'); btn.disabled=true; btn.textContent='Enregistrement…';
+  try{
+    /* preuve composée : en-tête + engagement + trait, en UNE image horodatée */
+    const src=document.getElementById('sigCanvas');
+    const c=document.createElement('canvas'); c.width=900; c.height=640; const x=c.getContext('2d');
+    x.fillStyle='#ffffff'; x.fillRect(0,0,900,640);
+    x.fillStyle='#111'; x.font='bold 26px sans-serif';
+    x.fillText('Autorisation droit à l\'image — '+((ASSO&&ASSO.name)||''),30,48);
+    x.font='16px sans-serif'; let y=88;
+    x.fillText('Projet : '+(CURRENT.name||''),30,y); y+=26;
+    x.fillText('Personne photographiée / filmée : '+(SIG_MODELE.nom||'')+(SIG_MODELE.mineur?' (mineur)':''),30,y); y+=26;
+    x.fillText('Signataire : '+nom+' — '+qual,30,y); y+=26;
+    x.fillText('Fait le '+fmtDate(new Date().toISOString()),30,y); y+=34;
+    x.font='14px sans-serif'; x.fillStyle='#333';
+    y=sigWrap(x,$('#sigEngagement').textContent,30,y,840,20); y+=10;
+    x.fillStyle='#111'; x.font='16px sans-serif'; x.fillText('Signature :',30,y+6);
+    x.drawImage(src,30,y+16,600,220);
+    x.strokeStyle='#bbb'; x.strokeRect(30,y+16,600,220);
+    const blob=await new Promise(res=>c.toBlob(res,'image/png'));
+    const path=ME.asso+'/'+CURRENT.id+'/'+SIG_MODELE.id+'-'+Date.now()+'.png';
+    const {error:ue}=await sb.storage.from('signatures').upload(path,blob,{contentType:'image/png'});
+    if(ue){ toast('Enregistrement refusé : '+ue.message); return; }
+    const {error}=await sb.from('projet_signatures').insert({asso_id:ME.asso, project_id:CURRENT.id, modele_id:SIG_MODELE.id, signed_by:nom, qualite:qual, file_path:path});
+    if(error){ toast('Trace refusée : '+error.message); return; }
+    await loadSigs(CURRENT.id);
+    const n=sigsFor(SIG_MODELE.id).length;
+    if((!SIG_MODELE.mineur&&n>=1)||(SIG_MODELE.mineur&&n>=2)) await setModStatut(SIG_MODELE.id,'signee');
+    else if(SIG_MODELE.mineur&&n===1) await setModStatut(SIG_MODELE.id,'envoyee');
+    await loadModeles(CURRENT.id); renderModeles();
+    $('#sigModal').classList.remove('open'); SIG_MODELE=null;
+    toast('Signature enregistrée ✓');
+  } finally { btn.disabled=false; btn.textContent='✅ Valider la signature'; }
+}
+async function sigView(path){
+  const {data,error}=await sb.storage.from('signatures').createSignedUrl(path,600);
+  if(error||!data||!data.signedUrl){ toast('Ouverture impossible.'); return; }
+  window.open(data.signedUrl,'_blank');
 }
 
 /* ===== Matériel (brique 3) ===== */
@@ -731,6 +835,8 @@ document.addEventListener('click',async e=>{
   const med=e.target.closest('[data-matedit]'); if(med){ const m=MATERIEL.find(x=>x.id===med.getAttribute('data-matedit')); if(m) openMatModal(m); return; }
   const md=e.target.closest('[data-matdel]'); if(md){ matRetirer(md.getAttribute('data-matdel')); return; }
   const mdd=e.target.closest('[data-moddel]'); if(mdd){ delModele(mdd.getAttribute('data-moddel')); return; }
+  const msg=e.target.closest('[data-modsign]'); if(msg){ const m=MODELES.find(x=>x.id===msg.getAttribute('data-modsign')); if(m) openSigModal(m); return; }
+  const sv=e.target.closest('[data-sigview]'); if(sv){ sigView(sv.getAttribute('data-sigview')); return; }
   const act=e.target.closest('[data-act]'); if(!act) return;
   switch(act.getAttribute('data-act')){
     case 'open-n': $('#nModal').classList.add('open'); break;
@@ -746,6 +852,9 @@ document.addEventListener('click',async e=>{
     case 'close-m': $('#mModal').classList.remove('open'); MAT_EDIT=null; break;
     case 'save-materiel': saveMateriel(); break;
     case 'add-modele': addModele(); break;
+    case 'close-sig': $('#sigModal').classList.remove('open'); SIG_MODELE=null; break;
+    case 'sig-clear': sigClear(); break;
+    case 'sig-save': sigSave(); break;
     case 'pick-photo': $('#postPhoto').click(); break;
     case 'send-post': sendPost(); break;
   }
@@ -763,6 +872,7 @@ document.addEventListener('change',e=>{
 });
 document.querySelectorAll('.modal').forEach(m=>m.addEventListener('click',e=>{ if(e.target===m){ m.classList.remove('open'); if(m.id==='pModal') CURRENT=null; if(m.id==='mModal') MAT_EDIT=null; } }));
 $('#navOut').addEventListener('click',async()=>{ try{ await sb.auth.signOut(); }catch(e){} location.reload(); });
+sigCanvasInit();
 </script>
 </body>
 </html>
