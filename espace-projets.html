@@ -52,6 +52,8 @@
   .pill{display:inline-block;padding:3px 10px;border-radius:999px;font-size:12px;font-weight:800;background:var(--soft);color:var(--muted)}
   .pill.on{background:var(--p);color:#fff}
   .pill.done{background:var(--acc);color:var(--acc-ink)}
+  .pill.new{background:var(--red);color:#fff}
+  .pcard.comptoir{margin-bottom:16px;border-left:4px solid var(--p)}
   .pgrid{display:grid;grid-template-columns:1fr;gap:12px}
   @media(min-width:640px){.pgrid{grid-template-columns:1fr 1fr}}
   .pcard{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:16px;box-shadow:var(--shadow);cursor:pointer;transition:.18s ease-out}
@@ -123,7 +125,7 @@
       <p id="pmPitch" class="small" style="white-space:pre-wrap;margin:6px 0 0"></p>
     </div>
 
-    <div class="card" style="box-shadow:none">
+    <div class="card" id="pmJalonsCard" style="box-shadow:none">
       <h2>✅ Les étapes</h2>
       <p class="h">Coche au fur et à mesure — c'est le porteur qui gère ses étapes.</p>
       <div id="pmJalons"></div>
@@ -135,7 +137,7 @@
       </div>
     </div>
 
-    <div class="card" style="box-shadow:none">
+    <div class="card" id="pmBesoinsCard" style="box-shadow:none">
       <h2>🧰 Les besoins</h2>
       <div id="pmBesoins"></div>
     </div>
@@ -224,6 +226,8 @@ let ASSO=null;     /* {id, name, slug, features} */
 let PROJECTS=[];
 let CURRENT=null;  /* projet ouvert (objet) */
 let PHOTO_FILE=null;
+let COMPTOIR=null; /* fil général de l'asso (projet spécial data.type='comptoir') */
+let LATEST={};     /* project_id -> date du dernier message (pour le badge « du neuf ») */
 
 const canBureau=()=>ME&&['president','tresorier','bureau'].includes(ME.role);
 const canEditProj=p=>ME&&p&&(p.owner_id===ME.id||canBureau());
@@ -231,6 +235,11 @@ const featureOn=()=>{ try{ return ((ASSO&&ASSO.features&&ASSO.features.projets_a
 function fmtDate(iso){ if(!iso) return ''; const d=new Date(iso); if(isNaN(d)) return '';
   const p=n=>String(n).padStart(2,'0'); return p(d.getDate())+'/'+p(d.getMonth()+1)+'/'+d.getFullYear()+' '+p(d.getHours())+':'+p(d.getMinutes()); }
 const STATUTS={actif:'🟢 En cours', termine:'🏁 Terminé', archive:'📦 Archivé'};
+const isComptoir=p=>!!(p&&p.data&&p.data.type==='comptoir');
+/* « du neuf » : dernière visite mémorisée sur CE téléphone (pas d'infra, pas de compte à compte) */
+function seenGet(id){ try{ return localStorage.getItem('bob_vu_'+id)||''; }catch(e){ return ''; } }
+function seenSet(id){ try{ localStorage.setItem('bob_vu_'+id, new Date().toISOString()); }catch(e){} }
+function hasNew(id){ const l=LATEST[id]; if(!l) return false; const s=seenGet(id); return !s || (new Date(l).getTime()>new Date(s).getTime()); }
 
 /* ===== Démarrage ===== */
 applySkin(doorGuess());
@@ -263,7 +272,13 @@ function renderMsg(t,h){ $('#zone').innerHTML='<div class="card"><h2>'+esc(t)+'<
 async function loadProjects(){
   const {data,error}=await sb.from('projects').select('id,name,owner_id,data,created_at,updated_at').order('updated_at',{ascending:false});
   if(error){ toast('Lecture des projets impossible : '+error.message); PROJECTS=[]; return; }
-  PROJECTS=(data||[]).filter(p=>((p.data&&p.data.statut)||'actif')!=='archive' || p.owner_id===(ME&&ME.id));
+  const all=data||[];
+  COMPTOIR=all.find(isComptoir)||null;
+  PROJECTS=all.filter(p=>!isComptoir(p)).filter(p=>((p.data&&p.data.statut)||'actif')!=='archive' || p.owner_id===(ME&&ME.id));
+  /* date du dernier message par fil (badge « du neuf ») — les 300 plus récents suffisent à notre échelle */
+  LATEST={};
+  const {data:lp,error:le}=await sb.from('project_posts').select('project_id,created_at').order('created_at',{ascending:false}).limit(300);
+  if(!le&&lp){ lp.forEach(m=>{ if(!LATEST[m.project_id]) LATEST[m.project_id]=m.created_at; }); }
 }
 
 /* ===== Rendu principal ===== */
@@ -277,6 +292,7 @@ function pcardHtml(p){
     '<div class="meta">'+
       '<span class="pill'+(mine?' on':'')+'">'+(mine?'⭐ Mon projet':'👤 '+esc(d.porteur_nom||'Un adhérent'))+'</span>'+
       '<span class="pill">'+esc(st)+'</span>'+
+      (hasNew(p.id)?'<span class="pill new">🔴 du neuf</span>':'')+
     '</div></div>';
 }
 function renderMain(){
@@ -285,6 +301,14 @@ function renderMain(){
   let h='<div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap">'+
     '<span class="pill on">👋 '+esc(ME.name)+'</span><span style="flex:1"></span>'+
     '<button class="btn p" data-act="open-n">➕ Nouveau projet</button></div>';
+  if(COMPTOIR){
+    h+='<div class="pcard comptoir" data-proj="'+esc(COMPTOIR.id)+'">'+
+      '<h3>🗣️ '+esc(COMPTOIR.name)+'</h3>'+
+      '<p>'+esc((COMPTOIR.data&&COMPTOIR.data.pitch)||'')+'</p>'+
+      '<div class="meta"><span class="pill on">💬 La discussion de l\'asso</span>'+
+      (hasNew(COMPTOIR.id)?'<span class="pill new">🔴 du neuf</span>':'')+
+      '</div></div>';
+  }
   h+='<h2 style="font-size:17px;margin:6px 0 10px">⭐ Mes projets</h2>';
   h+= mine.length? '<div class="pgrid">'+mine.map(pcardHtml).join('')+'</div>'
      : '<div class="card"><p class="empty" style="padding:6px">Tu n\'as pas encore de projet. Lance-toi : clique sur <b>➕ Nouveau projet</b> !</p></div>';
@@ -299,21 +323,25 @@ function renderMain(){
 
 /* ===== Fiche projet ===== */
 async function openProject(id){
-  const p=PROJECTS.find(x=>x.id===id); if(!p) return;
+  const p=(COMPTOIR&&COMPTOIR.id===id)?COMPTOIR:PROJECTS.find(x=>x.id===id); if(!p) return;
   CURRENT=p; PHOTO_FILE=null; $('#photoTag').textContent=''; $('#postBody').value='';
-  const d=p.data||{};
-  $('#pmTitle').textContent=p.name||'Sans nom';
-  $('#pmPorteur').textContent=(p.owner_id===ME.id?'⭐ Porté par toi':'👤 '+(d.porteur_nom||'Un adhérent'));
-  $('#pmStatut').textContent=STATUTS[(d.statut||'actif')]||STATUTS.actif;
+  const d=p.data||{}; const cptr=isComptoir(p);
+  $('#pmTitle').textContent=(cptr?'🗣️ ':'')+(p.name||'Sans nom');
+  $('#pmPorteur').textContent=cptr?'💬 Ouvert à tous les adhérents':(p.owner_id===ME.id?'⭐ Porté par toi':'👤 '+(d.porteur_nom||'Un adhérent'));
+  $('#pmStatut').textContent=cptr?'🟢 Toujours ouvert':(STATUTS[(d.statut||'actif')]||STATUTS.actif);
   $('#pmDate').textContent='📅 '+fmtDate(p.created_at);
   $('#pmPitch').textContent=d.pitch||'(pas encore de description)';
-  renderEditBlock(p); renderJalons(p); renderBesoins(p);
+  /* le comptoir est un fil pur : pas d'étapes, pas de besoins, pas de bloc d'édition */
+  $('#pmJalonsCard').style.display=cptr?'none':'';
+  $('#pmBesoinsCard').style.display=cptr?'none':'';
+  renderEditBlock(p); if(!cptr){ renderJalons(p); renderBesoins(p); }
   $('#pModal').classList.add('open');
   await loadPosts(p.id);
+  seenSet(p.id); renderMain();
 }
 function renderEditBlock(p){
   const box=$('#pmEditBlock');
-  if(!canEditProj(p)){ box.innerHTML=''; return; }
+  if(isComptoir(p)||!canEditProj(p)){ box.innerHTML=''; return; }
   const d=p.data||{};
   box.innerHTML='<div class="card" style="box-shadow:none;background:var(--soft)"><h2>✏️ Je mets à jour</h2>'+
     '<div class="field"><label>Nom du projet</label><input id="edNom"></div>'+
@@ -425,6 +453,7 @@ async function sendPost(){
     if(error){ toast('Message refusé : '+error.message); btn.disabled=false; btn.textContent='Envoyer'; return; }
     $('#postBody').value=''; PHOTO_FILE=null; $('#photoTag').textContent=''; $('#postPhoto').value='';
     await loadPosts(CURRENT.id);
+    seenSet(CURRENT.id);
     await sb.from('projects').update({updated_at:new Date().toISOString()}).eq('id',CURRENT.id); /* remonte le projet ; silencieux si refusé (non-porteur) */
   } finally { btn.disabled=false; btn.textContent='Envoyer'; }
 }
