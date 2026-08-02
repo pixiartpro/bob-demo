@@ -3026,6 +3026,8 @@ const FAQ=[
    a:"Onglet <b>📌 VEPI</b> (menu 🎨 Animation) : un accueil de mineurs (6-11 ans) suivi <b>comme l'ACM</b>, avec <b>2 éditions par an</b>. En haut, <b>📋 Inscrits VEPI</b> liste <b>tous</b> les enfants inscrits — ceux saisis au comptoir <b>sans fiche</b> apparaissent par leur nom avec un badge <b>⚠️ à ficher</b> (à compléter dans 👶 Enfants / 🎒 Périscolaire pour les relier à une famille). En dessous, <b>🗄️ Éditions VEPI</b> : crée une édition, rattache-lui l'activité VEPI pour en tirer l'effectif, puis clôture-la en <b>dossier-bilan</b> comme l'ACM. Accessible au <b>bureau et à l'accueil</b> (personnel)."},
   {cat:'📌 VEPI',q:"Comment joindre des documents à un accueil VEPI, et l'équipe les voit-elle ?",kw:"document documents joindre deposer piece fichier vepi edition dossier bilan sdjes assurance emargement coffre visualiser telecharger equipe salariee mon vepi voir consulter publier automatique",
    a:"Comme l'ACM : ouvre l'édition VEPI (📌 VEPI → 🗄️ Éditions → 📖 Dossier-bilan), section <b>📎 Documents de l'édition</b>, et <b>dépose</b> tes fichiers (déclaration/récépissé SDJES, assurance, émargement…). Ils sont rangés dans le même coffre privé, distinct du coffre des familles. <b>Pas besoin de bouton « Publier » pour le VEPI</b> : dès que tu déposes (ou retires) un document, l'<b>équipe VEPI</b> le voit <b>automatiquement</b> en lecture seule dans son écran <b>« 📌 Mon VEPI »</b>. Dépôt et suppression réservés au bureau."},
+  {cat:'👶 Enfants',q:"Pourquoi des enfants affichent « 🌳 arbre » ou « 🌳 arbre seul », et d'où vient la liste ?",kw:"arbre pastille verte liste enfants lecture branchee source foyers registre comptoir arbre seul sans fiche pas dans arbre ecart bandeau diverge identite",
+   a:"Depuis le <b>02/08/2026</b>, la liste de l'onglet <b>👶 Enfants</b> est lue depuis l'<b>arbre famille</b> (le même registre que l'onglet 👨‍👩‍👧 Foyers) : chaque enfant relié à sa fiche porte la pastille <b>🌳 arbre</b>. <b>Rien ne change pour tes gestes</b> : rattacher, déplacer (⇄), retirer (✕) écrivent toujours au même endroit qu'avant. La vraie nouveauté : un enfant inscrit <b>au comptoir Foyers</b> (sans fiche enfant) apparaît enfin ici, marqué <b>🌳 arbre seul</b>, avec son 🎒 s'il est coché au périscolaire — en lecture, avec un bouton vers son foyer. Une fiche sans miroir dans l'arbre est marquée <b>⚠️ pas dans l'arbre</b>, et le bandeau du haut compte tous les écarts. Si l'arbre ne se lit pas, Bob affiche les fiches comme avant et te le dit."},
   {cat:'👶 Enfants',q:"Où je vois tous les enfants et où va chacun (périscolaire, ACM, VEPI) ?",kw:"enfants tous liste ou va chaque enfant accueil accueils periscolaire acm vepi activites filtre voir vue ensemble unifiee ou vont onglet",
    a:"Onglet <b>👶 Enfants</b> (dans 👨‍👩‍👧 Familles). Tu vois la <b>liste de tous les enfants</b> et, pour chacun, <b>où il va</b> : 🎒 périscolaire (matin/soir), 🌴 sessions d'ACM, 📌 VEPI, 🎟️ autres activités — avec sa classe et son responsable. En haut, un <b>filtre par accueil</b> : clique <b>Tous / Périscolaire / ACM / VEPI</b> pour ne voir que les enfants de cet accueil. Un enfant présent sur plusieurs semaines ou accueils n'apparaît qu'<b>une fois</b>. Depuis la fiche d'un enfant, tu peux le <b>rattacher</b> à un accueil (menu « Rattacher vers » : périscolaire matin/soir · VEPI · une semaine d'ACM) et le <b>retirer / déplacer</b> avec le ✕ sur chaque puce (bureau + accueil). ⚠️ Le périscolaire ne peut être complété que si la famille a déjà ouvert son dossier (avec pièces / quotient) depuis son espace."},
   {cat:'🌴 Vacances',q:"Où je vois la liste des enfants inscrits en ACM ?",kw:"liste enfants acm inscrits inscrit vacances qui roster effectif combien session semaine ete toussaint voir consolidee tableau",
@@ -3244,6 +3246,7 @@ function pageHelpGotoAide(){ pageHelpClose(); const b=document.querySelector('na
 
 /* ---- ✨ Quoi de neuf (nouveautés + notice chronologique) ---- */
 const NEWS=[
+  {id:'2026-08-02-enfants-lecture-arbre',date:'2026-08-02',tab:'👶 Enfants',titre:"🌳 L'onglet Enfants se lit dans l'arbre famille — les enfants du comptoir enfin visibles",desc:"La liste de l'onglet <b>👶 Enfants</b> vient maintenant de l'<b>arbre famille</b> (le registre de l'onglet 👨‍👩‍👧 Foyers) : pastille <b>🌳 arbre</b> sur chaque enfant relié à sa fiche, bandeau qui annonce la source et compte les écarts. <b>La vraie nouveauté</b> : un enfant inscrit <b>au comptoir Foyers</b> — sans compte en ligne ni fiche enfant — apparaît enfin dans cette vue, marqué <b>🌳 arbre seul</b>, avec son 🎒 périscolaire s'il est coché. <b>Tes gestes ne changent pas</b> : rattacher, déplacer (⇄) et retirer (✕) écrivent toujours comme avant. En cas de souci de lecture, Bob raffiche les fiches et le dit."},
   {id:'2026-08-02-adherents-lecture-arbre',date:'2026-08-02',tab:'👥 Adhérents',titre:"🌳 La liste des adhérents se lit désormais dans l'arbre famille",desc:"L'onglet <b>👥 Adhérents</b> affiche maintenant sa liste depuis l'<b>arbre famille</b> (le registre de l'onglet 👨‍👩‍👧 Foyers) : une pastille <b>🌳 arbre</b> marque chaque ligne, et un bandeau annonce la source et signale tout écart avec le livre des adhérents. <b>Tes gestes ne changent pas</b> : Ajouter, modifier, statut et suppression écrivent toujours dans le livre, comme avant. En cas de souci de lecture, Bob raffiche le livre et le dit."},
   {id:'2026-08-02-code-famille',date:'2026-08-02',tab:'👨‍👩‍👧 Foyers',titre:"🔑 Le code famille du récépissé sert enfin : la famille relie son compte toute seule",desc:"Depuis le comptoir, chaque récépissé porte un <b>code famille</b> — mais rien ne le consommait, la promesse imprimée n'était pas tenue. C'est réparé. La famille entre son code sur son espace en ligne (onglet <b>Mon compte</b>), <b>plus la date de naissance d'un de ses enfants</b>, et son compte est aussitôt relié à son dossier : elle y retrouve ses enfants et ses inscriptions, <b>sans que tu aies à intervenir</b> — utile pour la rentrée. Trois garde-fous : ① le <b>code ne sert qu'une fois</b> (Bob le remplace dès qu'il a servi, un récépissé égaré ne reste pas une clé) ; ② la <b>date de naissance</b> est demandée en plus, parce que se relier à un foyer donne accès à toute la fratrie ; ③ toutes les tentatives, réussies comme ratées, sont <b>journalisées</b>. Sur la carte du foyer, deux nouveaux boutons pour toi : <b>🔁 Nouveau code</b> (2ᵉ parent à relier, récépissé perdu) et <b>🔓</b> à côté de « 🔗 compte » pour <b>détacher</b> un compte relié par erreur — la fiche, elle, est conservée."},
   {id:'2026-07-28-fil-rouge',date:'2026-07-28',tab:'📊 Tableau de bord',titre:"🔴 Le marqueur rouge te conduit jusqu'au travail à faire",desc:"Avant, la pastille disait qu'il y avait quelque chose… sans dire où. Maintenant elle t'emmène. ① Une <b>petite pastille apparaît sur l'onglet précis</b> qui porte le travail (tu vois que c'est 🎒 Périscolaire qui a le « 2 », pas juste le tiroir Animation). ② <b>Cliquer un tiroir ouvre l'onglet chargé</b> — plus son premier onglet — et le <b>panneau concerné remonte à l'écran, encadré de rouge</b> quelques secondes. ③ La <b>pastille d'un personnage se clique</b> : elle mène droit à l'écran (ou ouvre sa fiche avec le détail « Ce qui t'attend chez lui » quand il y a plusieurs choses). ④ Les compteurs <b>redescendent tout de suite</b> après un traitement, et les éléments à traiter (dossiers déposés, demandes de partenariat, propositions d'atelier) sont <b>remontés en tête de liste</b>. ⚠️ Une correction importante au passage : la pastille des <b>congés</b> mène désormais à 👥 <b>Dossiers salariés</b>, là où se trouve vraiment le bouton ✅ Valider."},
@@ -3578,7 +3581,9 @@ function renderMembers(){
         +'<button class="ghost btn" style="padding:4px 9px;font-size:12px" onclick="bobGoDossierPeri(\''+m.id+'\')" title="Voir son dossier périscolaire (🎒 Périscolaire)">📨 Périscolaire</button> '
         +'<button class="danger" onclick="delMember(\''+m.id+'\')">Suppr.</button>';
     }else{
-      actionsTd='<button class="ghost btn" style="padding:4px 9px;font-size:12px" onclick="bobGoTab(\'foyers\')" title="Cette adhésion vit dans l\'arbre (pas de ligne au livre) — la voir dans l\'onglet 👨‍👩‍👧 Foyers">👨‍👩‍👧 Voir le foyer</button>';
+      /* ⚠️ canW seul : l'onglet Foyers est CACHÉ aux non-bureau (perms.foyers='cache') —
+         bobGoTab dessus donnerait un écran vide à un rôle en lecture. */
+      actionsTd=canW?'<button class="ghost btn" style="padding:4px 9px;font-size:12px" onclick="bobGoTab(\'foyers\')" title="Cette adhésion vit dans l\'arbre (pas de ligne au livre) — la voir dans l\'onglet 👨‍👩‍👧 Foyers">👨‍👩‍👧 Voir le foyer</button>':'';
     }
     rows.push('<tr>'
       +'<td><strong>'+esc(nom)+'</strong>'
@@ -10824,7 +10829,7 @@ renderAll();
   window.loadEnfantsHub=async function(){
     const box=document.getElementById('enfantsHubList'); if(!box) return;
     if(typeof sbc==='undefined'||!sbc){ box.innerHTML='<p class="hint">Connecte-toi pour voir les enfants.</p>'; return; }
-    const [rf,rp,ria,ra,rpr,rfs]=await Promise.all([
+    const [rf,rp,ria,ra,rpr,rfs,rpe,rfy,rin]=await Promise.all([
       sbc.from('enfants').select('id,prenom,nom,classe,ecole,naissance,parent_id'),
       sbc.from('inscriptions_periscolaire').select('id,user_id,enfants,pieces'),
       sbc.from('inscriptions_activite').select('id,enfant_id,activite_id,pieces,statut,note_bureau'),
@@ -10833,7 +10838,15 @@ renderAll();
       // ⚠️ PAS de `donnees` ici : le médical ne doit PAS descendre en bloc pour tous les
       // enfants au chargement de l'onglet (RGPD art. 9, minimisation). On ne prend que de
       // quoi afficher le badge ; le contenu part à la demande, dans enfHubFicheToggle.
-      sbc.from('fiches_sanitaires').select('id,enfant_id,statut,signe_le,annee,version').order('version',{ascending:false})
+      sbc.from('fiches_sanitaires').select('id,enfant_id,statut,signe_le,annee,version').order('version',{ascending:false}),
+      // 🌳 L'ARBRE (lecture seule, bascule en cours) : les personnes-enfants deviennent le
+      // pivot de la liste ; foyers pour nommer la famille d'un enfant du comptoir ;
+      // inscriptions (arbre) pour montrer le 🎒 coché au comptoir. Bornés asso (cf. Adhérents).
+      // minimisation : ni naissance ni ecole — la carte n'affiche que prénom/nom/classe,
+      // et les autres champs se comparent en base via arbre_rattraper(), pas au navigateur
+      sbc.from('personnes').select('id,foyer_id,prenom,nom,classe,enfant_legacy_id').eq('role_foyer','enfant').eq('asso_id',myAsso),
+      sbc.from('foyers').select('id,nom').eq('asso_id',myAsso),
+      sbc.from('inscriptions').select('personne_id,type,matin,soir,statut').eq('asso_id',myAsso)
     ]);
     if(rf.error){ box.innerHTML='<p class="hint" style="color:#c0392b">Erreur : '+esc(rf.error.message)+'</p>'; return; }
     const actById={}; (ra.data||[]).forEach(a=>{ if(a) actById[a.id]=a; });
@@ -10868,7 +10881,7 @@ renderAll();
     const EXIG={peri:{req:['caf','impots','domicile','assurance','vaccin','livret'],sanit:false}, acm:{req:['caf','impots','domicile','assurance','vaccin','livret'],sanit:true}};
     const complFor=(kind,k)=>{ const cfg=EXIG[kind]; if(!cfg) return null; const pot=Object.assign({}, piecesByParent[k.parent_id]||{}, actPiecesByEnfant[k.id]||{}); const manque=cfg.req.filter(x=>!(pot[x]||pot[x+'__'+k.id])).map(x=>PLAB[x]||x); if(cfg.sanit&&!ficheSet[k.id]) manque.push('Fiche sanitaire'); return {complete:manque.length===0, manque:manque}; };
     const inactif=i=>i.statut==='deplace'||i.statut==='annule';
-    window.__enfHubModel=(rf.data||[]).map(k=>{
+    const buildFiche=k=>{
       const insList=(actByEnfant[k.id]||[]); const mem=[]; const hist=[];
       const periD=periByEnfant[k.id]; const periActIns=insList.filter(i=>isPeriAct(actById[i.activite_id])&&!inactif(i));
       if(periD) mem.push({kind:'peri',src:'dossier',dossierId:periD.dossierId,matin:periD.matin,soir:periD.soir,compl:complFor('peri',k)});
@@ -10880,7 +10893,62 @@ renderAll();
         else if(!isPeriAct(a)) mem.push({kind:'autre',insId:i.id,aid:i.activite_id,name:a.nom});
       });
       return {k, resp:(k.parent_id&&pmap[k.parent_id])||'', mem:mem, hist:hist};
-    });
+    };
+    /* 🌳 PIVOT « arbre famille » (bascule en cours) : la LISTE vient des personnes-enfants
+       de l'arbre, chacune retrouvant sa fiche par enfant_legacy_id (FK posée au backfill,
+       entretenue par les triggers fail-open de la migration 40). Les GESTES (rattacher,
+       retirer, déplacer) restent indexés sur la FICHE enfants — zéro changement d'écriture.
+       Écarts affichés, jamais tus : enfant du comptoir sans fiche (« arbre seul », enfin
+       visible ici), fiche sans personne miroir (« pas dans l'arbre », trigger raté —
+       arbre_rattraper() au balayage le répare), identité qui diverge entre les deux.
+       Arbre illisible → pivot historique (les fiches) + bandeau qui le dit. */
+    const arbreErr=(rpe&&rpe.error)||(rfy&&rfy.error)||(rin&&rin.error);
+    if(arbreErr){
+      window.__enfHubArbre={err:arbreErr.message};
+      window.__enfHubModel=(rf.data||[]).map(buildFiche);
+    } else if(!((rpe&&rpe.data)||[]).length && (rf.data||[]).length){
+      // Arbre VIDE alors que des fiches existent : asso sans arbre construit (ou lecture
+      // incomplète). Afficher « N fiches pas dans l'arbre » serait alarmiste et faux →
+      // pivot historique + bandeau neutre, sans compteurs d'écart.
+      window.__enfHubArbre={vide:true};
+      window.__enfHubModel=(rf.data||[]).map(buildFiche);
+    } else {
+      const foyerNomById={}; ((rfy&&rfy.data)||[]).forEach(f=>{ foyerNomById[f.id]=f.nom||''; });
+      const enfById={}; (rf.data||[]).forEach(k=>{ enfById[k.id]=k; });
+      const insArbreByPers={}; ((rin&&rin.data)||[]).forEach(i=>{ if(i.type==='periscolaire'&&i.statut!=='annule'&&i.statut!=='deplace'&&i.personne_id){ const c=insArbreByPers[i.personne_id]||{matin:false,soir:false}; c.matin=c.matin||!!i.matin; c.soir=c.soir||!!i.soir; insArbreByPers[i.personne_id]=c; } });
+      const normId=s=>String(s||'').trim().toLowerCase();
+      const usedEid={}; const liesNoms={}; const model=[]; let nbSeuls=0, nbDivId=0, nbNonLues=0, nbDup=0;
+      ((rpe&&rpe.data)||[]).forEach(p=>{
+        const k=p.enfant_legacy_id?enfById[p.enfant_legacy_id]:null;
+        if(k){
+          usedEid[k.id]=1;
+          liesNoms[normId(p.prenom)+'|'+normId(p.nom)]=1;
+          const it=buildFiche(k);
+          it.arbre=p;
+          it.divId=(normId(p.prenom)!==normId(k.prenom)||normId(p.nom)!==normId(k.nom)||normId(p.classe)!==normId(k.classe));
+          if(it.divId) nbDivId++;
+          model.push(it);
+        } else {
+          const pa=insArbreByPers[p.id];
+          const it={k:{id:'',prenom:p.prenom||'',nom:p.nom||'',classe:p.classe||'',ecole:'',naissance:'',parent_id:null},
+            resp:(p.foyer_id&&foyerNomById[p.foyer_id])?('👨‍👩‍👧 '+foyerNomById[p.foyer_id]):'',
+            mem:pa?[{kind:'peri',src:'arbre',matin:pa.matin,soir:pa.soir}]:[],
+            hist:[], arbreSeul:true};
+          // enfant_legacy_id posé mais fiche non descendue (RLS, plafond de lecture…) :
+          // ce n'est PAS « un enfant du comptoir sans fiche » — l'étiqueter honnêtement.
+          if(p.enfant_legacy_id){ it.ficheNonLue=true; nbNonLues++; } else nbSeuls++;
+          model.push(it);
+        }
+      });
+      // Doublon PROBABLE comptoir↔fiche : le trigger enfants→personnes ne rapproche jamais
+      // la personne du comptoir (il insère un 2e miroir) → même prénom+nom qu'une carte
+      // reliée = à réconcilier, pas un vrai « sans fiche ».
+      model.forEach(it=>{ if(it.arbreSeul&&!it.ficheNonLue&&liesNoms[normId(it.k.prenom)+'|'+normId(it.k.nom)]){ it.doublonProbable=true; nbDup++; } });
+      const hors=(rf.data||[]).filter(k=>!usedEid[k.id]);
+      hors.forEach(k=>{ const it=buildFiche(k); it.horsArbre=true; model.push(it); });
+      window.__enfHubArbre={ok:true,total:((rpe&&rpe.data)||[]).length,nbSeuls:nbSeuls,nbHors:hors.length,nbDivId:nbDivId,nbNonLues:nbNonLues,nbDup:nbDup};
+      window.__enfHubModel=model;
+    }
     renderEnfHub();
   };
   function renderEnfHub(){
@@ -10891,14 +10959,31 @@ renderAll();
     const counts={tous:model.length, periscolaire:model.filter(m=>has(m,'peri')).length, acm:model.filter(m=>has(m,'acm')).length, vepi:model.filter(m=>has(m,'vepi')).length};
     const inAcc=(m,acc)=> acc==='periscolaire'?has(m,'peri') : acc==='acm'?has(m,'acm') : acc==='vepi'?has(m,'vepi') : true;
     const FILTERS=[['tous','Tous'],['periscolaire','🎒 Périscolaire'],['acm','🌴 ACM'],['vepi','📌 VEPI']];
-    const bar='<div class="row" style="gap:6px;flex-wrap:wrap;margin-bottom:10px">'+FILTERS.map(function(ff){ const on=f===ff[0];
+    /* 🌳 Bandeau de source (bascule en cours) — même langage que l'onglet 👥 Adhérents */
+    var Aa=window.__enfHubArbre||null; var arbreBar='';
+    if(Aa&&Aa.ok){
+      var soucis=[];
+      if(Aa.nbHors) soucis.push(Aa.nbHors+' fiche'+(Aa.nbHors>1?'s':'')+' pas (encore) dans l\'arbre');
+      if(Aa.nbSeuls) soucis.push(Aa.nbSeuls+' enfant'+(Aa.nbSeuls>1?'s':'')+' du comptoir sans fiche (🌳 arbre seul)');
+      if(Aa.nbDup) soucis.push(Aa.nbDup+' doublon'+(Aa.nbDup>1?'s':'')+' probable'+(Aa.nbDup>1?'s':'')+' comptoir↔fiche à réconcilier');
+      if(Aa.nbNonLues) soucis.push(Aa.nbNonLues+' fiche'+(Aa.nbNonLues>1?'s':'')+' reliée'+(Aa.nbNonLues>1?'s':'')+' mais non lue'+(Aa.nbNonLues>1?'s':''));
+      if(Aa.nbDivId) soucis.push(Aa.nbDivId+' identité'+(Aa.nbDivId>1?'s':'')+' qui diverge'+(Aa.nbDivId>1?'nt':'')+' entre fiche et arbre');
+      arbreBar='<p class="hint" style="margin:0 0 8px">🌳 Liste branchée en <b>lecture</b> sur l\'arbre famille : <b>'+Aa.total+'</b> enfant'+(Aa.total>1?'s':'')+' dans l\'arbre (le registre de l\'onglet 👨‍👩‍👧 Foyers)'
+        +(soucis.length?' · <span style="color:#8a5a00;font-weight:600">⚠️ '+soucis.join(' · ')+'</span>':' · fiches et arbre d\'accord ✅')
+        +' — tes gestes (rattacher, ⇄, ✕) écrivent toujours comme avant.</p>';
+    } else if(Aa&&Aa.vide){
+      arbreBar='<p class="hint" style="margin:0 0 8px">🌳 L\'arbre famille ne contient encore aucun enfant — liste affichée depuis les <b>fiches enfants</b>, comme avant.</p>';
+    } else if(Aa&&Aa.err){
+      arbreBar='<p class="hint" style="margin:0 0 8px">⚠️ Arbre famille illisible ('+esc(Aa.err)+') — liste affichée depuis les <b>fiches enfants</b> (rien de perdu). <button class="ghost btn" style="padding:2px 8px;font-size:12px" onclick="if(window.loadEnfantsHub)loadEnfantsHub()">↻ Réessayer</button></p>';
+    }
+    const bar=arbreBar+'<div class="row" style="gap:6px;flex-wrap:wrap;margin-bottom:10px">'+FILTERS.map(function(ff){ const on=f===ff[0];
       return '<span onclick="enfHubSetFilter(\''+ff[0]+'\')" style="cursor:pointer;user-select:none;font-size:13px;font-weight:600;padding:5px 12px;border-radius:999px;border:1px solid '+(on?'#127a51':'var(--line)')+';background:'+(on?'#dff5e9':'#fff')+';color:'+(on?'#127a51':'#555')+'">'+ff[1]+' · '+(counts[ff[0]]||0)+'</span>';
     }).join('')+'</div>';
     const list=model.filter(m=>inAcc(m,f)).sort((a,b)=>(((a.k.nom||'')+(a.k.prenom||'')).toLowerCase()).localeCompare(((b.k.nom||'')+(b.k.prenom||'')).toLowerCase()));
     if(!list.length){ box.innerHTML=bar+'<p class="hint">Aucun enfant dans ce filtre.</p>'; return; }
     box.innerHTML=bar+list.map(function(m){ const eid=m.k.id; var moveBoxes='';
       const chips=m.mem.map(function(x){ var bg,c,lab,rm;
-        if(x.kind==='peri'){ bg='#eef3ef';c='#2f5d4c'; var fm=[x.matin?'matin':null,x.soir?'soir':null].filter(Boolean).join(' & '); lab='🎒 Périscolaire'+(fm?' ('+fm+')':''); rm=(x.src==='dossier')?('enfHubRemovePeri(\''+x.dossierId+'\',\''+eid+'\')'):('enfHubRemoveAct(\''+x.insId+'\')'); }
+        if(x.kind==='peri'){ bg='#eef3ef';c='#2f5d4c'; var fm=[x.matin?'matin':null,x.soir?'soir':null].filter(Boolean).join(' & '); lab='🎒 Périscolaire'+(fm?' ('+fm+')':'')+(x.src==='arbre'?' 🌳':''); rm=(x.src==='arbre')?null:((x.src==='dossier')?('enfHubRemovePeri(\''+x.dossierId+'\',\''+eid+'\')'):('enfHubRemoveAct(\''+x.insId+'\')')); }
         else if(x.kind==='acm'){ bg='#eef4ff';c='#23448a'; lab='🌴 '+esc(x.name||''); rm='enfHubRemoveAct(\''+x.insId+'\')'; }
         else if(x.kind==='vepi'){ bg='#f3ecfb';c='#5b3a9c'; lab='📌 '+esc(x.name||'VEPI'); rm='enfHubRemoveAct(\''+x.insId+'\')'; }
         else { bg='#f5f2ec';c='#7a5a1a'; lab='🎟️ '+esc(x.name||''); rm='enfHubRemoveAct(\''+x.insId+'\')'; }
@@ -10908,10 +10993,10 @@ renderAll();
           if(opts){ moveBtn=' <span onclick="enfHubMoveToggle(\''+x.insId+'\')" title="Déplacer vers un autre accueil (sans perte)" style="cursor:pointer;font-weight:700;opacity:.55">⇄</span>';
             moveBoxes+='<div id="enfmovebox_'+x.insId+'" style="display:none;margin:4px 0;padding:6px 8px;background:#eef4ff;border:1px dashed #9db8e8;border-radius:8px;font-size:12px">↪ Déplacer <b>'+esc(x.name||'')+'</b> vers <select id="enfmove_'+x.insId+'" style="font:inherit;padding:3px 6px;border:1px solid var(--line);border-radius:6px;max-width:180px">'+opts+'</select> <button class="btn" style="padding:2px 10px" onclick="enfHubMove(\''+x.insId+'\',\''+eid+'\',\''+x.aid+'\')">Déplacer</button> <span onclick="enfHubMoveToggle(\''+x.insId+'\')" style="cursor:pointer;color:#8a8f98;margin-left:4px">annuler</span></div>'; }
         }
-        return '<span class="pill" style="background:'+bg+';color:'+c+';font-size:11px;margin:0 3px 3px 0;display:inline-flex;align-items:center;gap:5px">'+lab+moveBtn+(canPeri?' <span onclick="'+rm+'" title="Annuler / retirer (conservé en historique)" style="cursor:pointer;font-weight:700;opacity:.55">✕</span>':'')+'</span>';
+        return '<span class="pill" style="background:'+bg+';color:'+c+';font-size:11px;margin:0 3px 3px 0;display:inline-flex;align-items:center;gap:5px">'+lab+moveBtn+((canPeri&&rm)?' <span onclick="'+rm+'" title="Annuler / retirer (conservé en historique)" style="cursor:pointer;font-weight:700;opacity:.55">✕</span>':'')+'</span>';
       }).join('');
       var complBlk=m.mem.filter(function(x){return x.compl;}).map(function(x){ var lab=(x.kind==='acm')?('🌴 '+esc(x.name||'ACM')):'🎒 Périscolaire'; return x.compl.complete?('<span style="font-size:11px;color:#127a51;margin:0 10px 3px 0;display:inline-block">'+lab+' : ✅ dossier complet</span>'):('<span style="font-size:11px;color:#b23a23;margin:0 10px 3px 0;display:inline-block">'+lab+' : ⚠️ manque '+x.compl.manque.map(esc).join(', ')+'</span>'); }).join('');
-      const addCtrl=canPeri?('<div class="row" style="gap:6px;flex-wrap:wrap;align-items:center;margin-top:8px;background:#f4f8f5;border:1px dashed var(--line);border-radius:8px;padding:6px 8px">'
+      const addCtrl=(canPeri&&!m.arbreSeul)?('<div class="row" style="gap:6px;flex-wrap:wrap;align-items:center;margin-top:8px;background:#f4f8f5;border:1px dashed var(--line);border-radius:8px;padding:6px 8px">'
         +'<span style="font-size:12px;color:#5c7468">➕ Rattacher vers</span>'
         +'<select id="enf_dest_'+eid+'" onchange="enfHubDestChange(\''+eid+'\')" style="padding:5px 8px;border:1px solid var(--line);border-radius:8px;font:inherit;max-width:210px">'+(window.__enfHubDestOpts||'')+'</select>'
         +'<span id="enf_ms_'+eid+'" style="display:inline-flex;gap:8px;align-items:center">'
@@ -10919,7 +11004,9 @@ renderAll();
         +'<label style="font-size:12px;display:flex;align-items:center;gap:3px"><input type="checkbox" id="enf_soir_'+eid+'" checked> soir</label>'
         +'</span>'
         +'<button class="btn" style="padding:4px 12px" onclick="enfHubAdd(\''+eid+'\')">Ajouter</button>'
-        +'</div>'):'';
+        +'</div>'):((m.arbreSeul&&canWrite)?'<div style="margin-top:8px"><button class="ghost btn" style="font-size:12px;padding:4px 12px" onclick="bobGoTab(\'foyers\')" title="Cet enfant a été saisi au comptoir Foyers : il vit dans l\'arbre famille et n\'a pas (encore) de fiche enfant — sa famille est dans l\'onglet 👨‍👩‍👧 Foyers">👨‍👩‍👧 Voir le foyer</button></div>':'');
+      /* ⚠️ bouton « Voir le foyer » = canWrite SEUL : l'onglet Foyers est CACHÉ aux
+         non-bureau (perms.foyers='cache') — bobGoTab dessus donnerait un écran vide. */
       var fx=(window.__enfHubFiches||{})[eid];
       var sanitBlk=fx?('<div style="margin-top:6px">'
         +'<button class="ghost btn" style="font-size:11px;padding:2px 9px" onclick="enfHubFicheToggle(\''+eid+'\')">🩺 Fiche sanitaire</button> '
@@ -10928,8 +11015,13 @@ renderAll();
           : '<span style="font-size:11px;color:#8a6400;font-weight:600">📝 brouillon — pas encore signée</span>')
         +'<div id="enffiche_'+eid+'" style="margin-top:6px"></div></div>'):'';
       var histBlk=(m.hist&&m.hist.length)?('<div style="margin-top:4px"><span onclick="var n=this.nextElementSibling;n.style.display=n.style.display===\'none\'?\'\':\'none\'" style="cursor:pointer;font-size:11px;color:#8a8f98">🕘 '+m.hist.length+' mouvement'+(m.hist.length>1?'s':'')+' — historique</span><div style="display:none;margin-top:3px">'+m.hist.map(function(h){return '<div style="font-size:11px;color:#8a8f98">'+(h.statut==='deplace'?'↪ déplacé':'✕ annulé')+' · '+esc(h.name||'')+(h.note?' <span style="color:#a7abb2">— '+esc(h.note)+'</span>':'')+'</div>';}).join('')+'</div></div>'):'';
+      var badges='';
+      if(m.arbre||m.arbreSeul) badges+=' <span class="pill" style="background:#e7f5ee;color:#127a51;font-size:10px" title="'+(m.arbreSeul?(m.ficheNonLue?'Cet enfant est relié à une fiche que Bob n\'a pas pu lire (droits ou lecture incomplète) — gestes coupés par prudence':'Enfant saisi au comptoir Foyers — il vit dans l\'arbre famille, sans fiche enfant pour l\'instant'):'Ligne lue depuis l\'arbre famille (le registre de l\'onglet 👨‍👩‍👧 Foyers), reliée à sa fiche enfant')+'">🌳 arbre'+(m.arbreSeul?(m.ficheNonLue?' (fiche non lue)':' seul'):'')+'</span>';
+      if(m.horsArbre) badges+=' <span class="pill" style="background:#fff4e0;color:#8a5a00;font-size:10px" title="Cette fiche enfant n\'a pas (encore) de miroir dans l\'arbre famille — le balayage arbre_rattraper() du bureau la rattrapera">⚠️ pas dans l\'arbre</span>';
+      if(m.doublonProbable) badges+=' <span class="pill" style="background:#fdeeee;color:#b03a2e;font-size:10px" title="Un enfant relié porte le même prénom et nom : probablement la même personne, saisie au comptoir PUIS en fiche — à réconcilier (l\'arbre ne fusionne pas tout seul)">👥 doublon probable</span>';
+      if(m.divId) badges+=' <span class="pill" style="background:#fdeeee;color:#b03a2e;font-size:10px" title="Le prénom/nom/classe de la fiche et celui de l\'arbre ne disent pas pareil — à réconcilier">🌳 ≠ fiche</span>';
       return '<div class="panel" style="margin:8px 0;padding:10px 12px">'
-        +'<div><strong>'+esc(((m.k.prenom||'')+' '+(m.k.nom||'')).trim()||'?')+'</strong>'+(m.k.classe?' <span class="muted" style="font-size:12px">· '+esc(m.k.classe)+'</span>':'')+(m.resp?' <span class="muted" style="font-size:12px">· '+esc(m.resp)+'</span>':'')+'</div>'
+        +'<div><strong>'+esc(((m.k.prenom||'')+' '+(m.k.nom||'')).trim()||'?')+'</strong>'+badges+(m.k.classe?' <span class="muted" style="font-size:12px">· '+esc(m.k.classe)+'</span>':'')+(m.resp?' <span class="muted" style="font-size:12px">· '+esc(m.resp)+'</span>':'')+'</div>'
         +'<div style="margin-top:6px;display:flex;flex-wrap:wrap">'+(chips||'<span class="hint">— aucun accueil</span>')+'</div>'
         +(moveBoxes||'')
         +(complBlk?('<div style="margin-top:5px">'+complBlk+'</div>'):'')
