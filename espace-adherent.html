@@ -167,6 +167,19 @@
 </section>
 
 <!-- 📎 REPÈRE DÉPÔT DOCUMENTS — raccourci vers le dossier périscolaire (ajouté 25/07/2026 : une famille ne trouvait pas où déposer ses pièces) -->
+<!-- CODE FAMILLE (02/08/2026) — relier son compte au dossier de son foyer.
+     Le comptoir « Nouveau foyer » imprime le code sur le récépissé depuis le 27/07 ;
+     jusqu'ici rien ne le consommait. -->
+<section class="block" data-tab="compte" id="lienFoyerSection" style="padding:22px 0 0">
+  <div class="wrap">
+    <div class="card" style="border-left:5px solid #2b6cb0;background:#eef4fb">
+      <h2 class="title" style="font-size:19px">🔑 Relier mon compte à mon dossier</h2>
+      <p class="sub" style="margin:2px 0 12px">Le CASE vous a remis un <b>récépissé</b> avec un <b>code famille</b> (il commence par <b>BDN-</b>) ? Entrez-le ici : votre compte sera relié à votre dossier, et vous y retrouverez vos enfants et vos inscriptions.</p>
+      <div id="lienFoyerBody"><p class="sub">Chargement…</p></div>
+    </div>
+  </div>
+</section>
+
 <section class="block" data-tab="compte" id="depotRepere" style="padding:22px 0 0">
   <div class="wrap">
     <div class="card" style="border-left:5px solid var(--ananas);background:#fff8ec">
@@ -408,6 +421,8 @@ loadAteliersAdh();
 
 /* ---- Aide adhérent : « Demande à Zanana » (FAQ jetons, sans IA) ---- */
 const AQ=[
+  {cat:'📜 Mon espace',q:"J'ai un code famille sur mon récépissé : comment relier mon compte à mon dossier ?",kw:"code famille recepisse bdn relier lier rattacher rattachement compte dossier foyer comptoir accueil papier retrouver mes enfants inscriptions date de naissance",
+   a:"Allez dans l'onglet <b>🪪 Mon compte</b> : le bloc <b>🔑 Relier mon compte à mon dossier</b> vous demande deux choses — le <b>code famille</b> de votre récépissé (il commence par <b>BDN-</b>) et la <b>date de naissance d'un de vos enfants</b>. Validez : votre compte est aussitôt relié, et vous retrouvez vos enfants et vos inscriptions.<br><br>Pourquoi la date de naissance en plus du code ? Parce qu'un dossier contient les informations de <b>tous vos enfants</b> : nous préférons deux vérifications plutôt qu'une.<br><br><b>Le code ne fonctionne qu'une seule fois.</b> Si le deuxième parent veut relier son compte à son tour, ou si vous avez égaré le récépissé, demandez simplement un nouveau code au CASE. 🍍"},
   {cat:'🎒 Inscriptions',q:"Où et comment je dépose mes documents (dossier périscolaire) ?",kw:"deposer depose documents document demandes demande demander demandees reclamees pieces piece dossier periscolaire ou comment envoyer joindre televerser scanner fichier photo caf imposition domicile assurance vaccins livret mettre en ligne ajouter mes papiers",
    a:"Dans votre espace : onglet <b>👨‍👩‍👧 Ma famille</b> → tuile <b>🎒 Périscolaire</b> → bloc <b>📎 Mes pièces</b>. Pour chaque pièce (attestation CAF de <b>moins de 3 mois</b>, avis d'imposition, justificatif de domicile, assurance, vaccins, livret de famille), touchez <b>« 📷 Scanner / choisir un fichier »</b> — vous pouvez prendre la photo avec votre téléphone. Vous pouvez déposer <b>même s'il vous manque une pièce</b> et enregistrer en brouillon pour finir plus tard. Le plus simple : le bouton <b>« 📎 Déposer mes documents »</b> sur l'écran <b>🪪 Mon compte</b> vous y amène directement. 🍍"},
   {cat:'🎒 Inscriptions',q:"Comment savoir quelles inscriptions sont ouvertes en ce moment ?",kw:"inscriptions ouvertes bandeau haut site periscolaire acm vepi vacances moment annonce quand ouvre",
@@ -1801,11 +1816,105 @@ async function adhBoot(){
     }catch(e){ btn.disabled=false; btn.textContent='🪪 Payer mon adhésion — 10 €'; alert('Impossible d\'ouvrir le paiement pour le moment. Réessayez dans un instant.'); }
   };
 }
+/* ===== Relier son compte à son dossier par CODE FAMILLE (02/08/2026) =====
+   Le récépissé du comptoir promet depuis le 27/07 que le code reliera le compte
+   au dossier. Voilà la promesse tenue. Deux garde-fous, tenus EN BASE (pas ici) :
+   · le code ne sert qu'une fois — la base le régénère dès qu'il a servi ;
+   · une 2e vérification par la date de naissance d'un enfant du foyer, parce que
+     se relier à un foyer donne accès à TOUTE la fratrie.
+   ⚠️ supabase-js ne LÈVE PAS sur erreur : on teste `.error` à chaque appel. */
+function lienMsg(code){
+  switch(String(code||'')){
+    case 'non_connecte': return 'Connectez-vous d’abord à votre compte famille.';
+    case 'asso_absente': return 'Impossible d’identifier votre association. Rechargez la page.';
+    case 'trop_essais':  return 'Trop de tentatives. Réessayez dans une heure, ou contactez le CASE.';
+    case 'code_ou_date': return 'Code ou date de naissance incorrects. Vérifiez votre récépissé.';
+    case 'deja_relie':   return 'Votre compte est déjà relié à un dossier. Contactez le CASE si ce n’est pas le bon.';
+    case 'choix_requis': return 'Plusieurs adultes sont enregistrés sur ce dossier : recommencez pour indiquer qui vous êtes.';
+    case 'personne_indisponible': return 'Cette personne n’est plus disponible dans ce dossier. Recommencez.';
+    default: return 'Impossible de relier le dossier pour le moment. Réessayez dans un instant.';
+  }
+}
+function lienForm(b,msg){
+  b.innerHTML=(msg?'<div style="background:#fdecec;border:1px solid #f5c2c2;color:#a12626;border-radius:12px;padding:10px 12px;margin-bottom:12px;font-size:14px">'+periEsc(msg)+'</div>':'')
+    +'<div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end">'
+    +'<div style="flex:1;min-width:180px"><label for="lien_code" style="font-weight:700;font-size:14px;display:block;margin-bottom:4px">Code famille</label>'
+    +'<input id="lien_code" type="text" autocomplete="off" spellcheck="false" placeholder="BDN-XXXXXX" style="width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:10px;font:inherit;text-transform:uppercase"></div>'
+    +'<div style="flex:1;min-width:190px"><label for="lien_naiss" style="font-weight:700;font-size:14px;display:block;margin-bottom:4px">Date de naissance d’un de vos enfants</label>'
+    +'<input id="lien_naiss" type="date" style="width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:10px;font:inherit"></div>'
+    +'<button id="lien_go" class="btn" type="button" style="background:#2b6cb0;color:#fff;border:0;border-radius:12px;padding:12px 18px;font-size:15px;font-weight:700;cursor:pointer">🔑 Relier mon dossier</button>'
+    +'</div>'
+    +'<p class="sub" style="font-size:12.5px;margin:11px 0 0">Le code ne sert qu’une fois : dès que votre compte est relié, il est remplacé. Si un deuxième parent doit relier le sien, demandez un nouveau code au CASE.</p>';
+  const go=document.getElementById('lien_go'); if(go) go.onclick=lienGo;
+  const ci=document.getElementById('lien_code');
+  if(ci) ci.addEventListener('keydown',function(e){ if(e.key==='Enter') lienGo(); });
+}
+function lienOk(b,nom){
+  b.innerHTML='<div style="background:#e9f8f0;border:1px solid #bfe6d0;color:#0f6b46;border-radius:12px;padding:12px 14px;font-weight:600">✅ Votre compte est relié'+(nom?' au dossier <b>'+periEsc(nom)+'</b>':'')+'.</div>'
+    +'<p class="sub" style="font-size:12.5px;margin:10px 0 0">Ce n’est pas le bon dossier ? Contactez le CASE : le bureau peut corriger le rattachement.</p>';
+}
+async function lienRattacher(code,naiss,personneId){
+  const b=document.getElementById('lienFoyerBody');
+  const r=await _sbAt.rpc('foyer_rattacher_par_code',{p_asso_id:_CASE_ASSO_ID,p_code:code,p_naissance:naiss||null,p_personne_id:personneId||null});
+  if(r.error){ lienForm(b,lienMsg('')); return; }   // supabase-js ne lève pas : on teste .error
+  const d=r.data||{};
+  if(!d.ok){ lienForm(b,lienMsg(d.erreur)); return; }
+  lienOk(b,d.foyer_nom||'');
+  try{ periBoot(); }catch(e){}
+}
+function lienChoix(b,code,naiss,info){
+  const list=(info&&info.adultes)||[];
+  b.innerHTML='<p class="sub" style="margin:0 0 10px">Dossier <b>'+periEsc(info.foyer_nom||'')+'</b> trouvé ✅ — qui êtes-vous ?</p>'
+    +'<div style="display:flex;flex-direction:column;gap:8px">'
+    +list.map(function(p,i){ return '<label style="display:flex;align-items:center;gap:9px;padding:10px 12px;border:1px solid var(--line);border-radius:10px;cursor:pointer;background:#fff">'
+      +'<input type="radio" name="lien_qui" value="'+periEsc(p.id)+'"'+(i===0?' checked':'')+'>'
+      +'<span style="font-weight:600">'+periEsc(((p.prenom||'')+' '+(p.nom||'')).trim()||'Adulte')+'</span></label>'; }).join('')
+    +'</div>'
+    +'<button id="lien_go2" class="btn" type="button" style="margin-top:12px;background:#2b6cb0;color:#fff;border:0;border-radius:12px;padding:12px 18px;font-size:15px;font-weight:700;cursor:pointer">🔑 C’est moi — relier</button>';
+  const g=document.getElementById('lien_go2');
+  if(g) g.onclick=async function(){
+    const sel=document.querySelector('input[name="lien_qui"]:checked');
+    this.disabled=true; this.textContent='Rattachement…';
+    await lienRattacher(code,naiss,sel?sel.value:null);
+  };
+}
+async function lienGo(){
+  const b=document.getElementById('lienFoyerBody'); if(!b) return;
+  const btn=document.getElementById('lien_go');
+  const code=((document.getElementById('lien_code')||{}).value||'').trim();
+  const naiss=((document.getElementById('lien_naiss')||{}).value||'').trim();
+  if(!code){ lienForm(b,'Entrez le code famille figurant sur votre récépissé.'); return; }
+  if(btn){ btn.disabled=true; btn.textContent='Vérification…'; }
+  const v=await _sbAt.rpc('foyer_code_verifier',{p_asso_id:_CASE_ASSO_ID,p_code:code,p_naissance:naiss||null});
+  if(v.error){ lienForm(b,lienMsg('')); return; }   // supabase-js ne lève pas : on teste .error
+  const d=v.data||{};
+  if(!d.ok){ lienForm(b,lienMsg(d.erreur)); return; }
+  if((d.adultes||[]).length>1){ lienChoix(b,code,naiss,d); return; }
+  await lienRattacher(code,naiss,null);
+}
+async function lienBoot(){
+  const b=document.getElementById('lienFoyerBody'); if(!b) return;
+  let session=null; try{ session=(await _sbAt.auth.getSession()).data.session; }catch(e){}
+  if(!session){
+    b.innerHTML='<p class="sub" style="margin:0">Connectez-vous à votre compte famille pour relier votre dossier. <a href="connexion.html" style="color:#2b6cb0;font-weight:800">Se connecter / créer mon compte →</a></p>';
+    return;
+  }
+  try{
+    const r=await _sbAt.from('personnes').select('id,foyer_id').eq('auth_user_id',session.user.id).limit(1);
+    if(!r.error && r.data && r.data.length){
+      let nom='';
+      try{ const rf=await _sbAt.from('foyers').select('nom').eq('id',r.data[0].foyer_id).limit(1);
+           if(!rf.error && rf.data && rf.data.length) nom=rf.data[0].nom||''; }catch(e){}
+      lienOk(b,nom); return;
+    }
+  }catch(e){}
+  lienForm(b,'');
+}
 // Pause technique (31/07/2026) — même drapeau que l'appli bureau et l'espace salarié
 // (features.f_maintenance). FAIL-OPEN : toute erreur de lecture (non connecté, réseau)
 // laisse l'espace s'ouvrir normalement — jamais l'inverse.
 let _bobPause=false;
-_sbAt.auth.onAuthStateChange((event)=>{ if(_bobPause) return; if(event==='SIGNED_IN'||event==='SIGNED_OUT'){ periBoot(); adhBoot(); } });
+_sbAt.auth.onAuthStateChange((event)=>{ if(_bobPause) return; if(event==='SIGNED_IN'||event==='SIGNED_OUT'){ periBoot(); adhBoot(); lienBoot(); } });
 (async function(){
   try{
     const rM=await _sbAt.rpc('my_asso_features');
@@ -1819,7 +1928,7 @@ _sbAt.auth.onAuthStateChange((event)=>{ if(_bobPause) return; if(event==='SIGNED
       return;
     }
   }catch(e){}
-  periBoot(); adhBoot();
+  periBoot(); adhBoot(); lienBoot();
 })();
 </script>
 
