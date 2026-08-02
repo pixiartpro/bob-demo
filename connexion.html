@@ -535,13 +535,15 @@ async function renderLoggedIn(user){
       <span class="role-pill pill ${r.pill}">${r.label}</span>
       <span class="role-pill pill ${st.pill}">${st.label}</span></div>
     <div style="margin-left:auto;display:flex;gap:8px;flex-wrap:wrap">
-      ${(()=>{ if(p.role==='adherent') return p.statut!=='suspendu'?`<a class="btn p" style="text-decoration:none" href="espace-adherent.html">Mon espace →</a>`:''; if(p.role==='personnel') return p.statut==='actif'?`<a class="btn p" style="text-decoration:none" href="espace-personnel.html">Mon espace salarié →</a>`:''; if(p.role==='intervenant') return p.statut==='actif'?`<a class="btn p" style="text-decoration:none" href="espace-intervenant.html">Mon espace intervenant →</a>`:''; if(['president','tresorier','bureau'].includes(p.role)) return p.statut==='actif'?`<a class="btn p" style="text-decoration:none" href="app.html">Entrer dans la gestion →</a>`:''; return ''; })()}
+      ${(()=>{ if(p.role==='adherent') return p.statut!=='suspendu'?(DOOR==='bokaf'?`<a class="btn p" style="text-decoration:none" href="espace-projets.html">Mes projets →</a>`:`<a class="btn p" style="text-decoration:none" href="espace-adherent.html">Mon espace →</a>`):''; if(p.role==='personnel') return p.statut==='actif'?`<a class="btn p" style="text-decoration:none" href="espace-personnel.html">Mon espace salarié →</a>`:''; if(p.role==='intervenant') return p.statut==='actif'?`<a class="btn p" style="text-decoration:none" href="espace-intervenant.html">Mon espace intervenant →</a>`:''; if(['president','tresorier','bureau'].includes(p.role)) return p.statut==='actif'?`<a class="btn p" style="text-decoration:none" href="app.html">Entrer dans la gestion →</a>`:''; return ''; })()}
       <button class="btn g" onclick="changePwd()">Mot de passe</button>
       <button class="btn g" onclick="signOut()">Déconnexion</button>
     </div></div>`;
 
   if(p.statut==='en_attente'){
-    if(p.role==='adherent'){
+    if(p.role==='adherent'&&DOOR==='bokaf'){
+      html+=`<div class="notice">🎬 <b>Bienvenue chez BOKAF !</b> Ton compte doit être <b>validé par le bureau</b> — dès que c'est fait, tu accèdes à l'espace projets pour porter les tiens et suivre ceux de l'asso.</div>`;
+    } else if(p.role==='adherent'){
       html+=`<div class="notice">👨‍👩‍👧 <b>Bienvenue dans ton espace famille !</b> Tu peux déjà <b>déposer ton dossier périscolaire</b> et <b>réserver tes activités</b> — clique sur « Mon espace famille → » ci-dessus. L'adhésion (10 €, un seul parent suffit pour tous les enfants) sera régularisée avec le bureau du CASE.</div>`;
     } else {
       html+=`<div class="notice">⏳ <b>Ton accès est en attente de validation.</b> Un administrateur (Président ou Trésorier) doit valider ta demande et t'attribuer un rôle. Tu seras alors autorisé à entrer dans la gestion.</div>`;

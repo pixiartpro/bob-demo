@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Projets — mon association</title>
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="favicon-16.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  /* ===== Tokens — peau claire (CASE / Bob) par défaut ; body.bokaf = peau cinéma sombre ===== */
+  :root{--p:#1f9d6b;--p2:#0f6b46;--acc:#f4b740;--acc-ink:#5b4300;--ink:#1d3a2e;--muted:#5c7468;
+        --bg:#f4f7f5;--card:#fff;--line:#e2ebe6;--soft:#eef7f2;--red:#e0533d;
+        --shadow:0 6px 22px rgba(20,60,40,.10);--shadow-lg:0 16px 44px rgba(20,60,40,.16)}
+  body.bokaf{--p:#d81e5b;--p2:#b3134a;--acc:#2f6fdb;--acc-ink:#fff;--ink:#f2eef4;--muted:#a99cb0;
+        --bg:#141318;--card:#1d1722;--line:#332740;--soft:#251c2f;--red:#ff7a66;
+        --shadow:0 8px 26px rgba(0,0,0,.45);--shadow-lg:0 18px 50px rgba(0,0,0,.6)}
+  *{box-sizing:border-box}
+  body{margin:0;font-family:'Inter',-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;color:var(--ink);background:var(--bg);line-height:1.55}
+  body.bokaf{background:linear-gradient(160deg,#141318,#1c1424 55%,#141318) fixed}
+  h1,h2,h3{font-family:'Poppins',-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;letter-spacing:-.4px}
+  .wrap{max-width:860px;margin:0 auto;padding:0 16px 60px}
+  header{background:var(--card);border-bottom:1px solid var(--line)}
+  body.bokaf header{background:linear-gradient(100deg,#141318,#26182e 55%,#141318)}
+  header .bar{display:flex;align-items:center;gap:10px;max-width:860px;margin:0 auto;padding:12px 16px}
+  .logo{display:flex;align-items:center;gap:9px;font-weight:900;text-decoration:none;color:var(--ink)}
+  .logo .pine{font-size:24px}
+  .logo img{width:34px;height:34px;border-radius:9px;object-fit:cover}
+  header nav{margin-left:auto;display:flex;gap:6px;align-items:center}
+  header nav a,header nav button{padding:8px 12px;border-radius:10px;font-weight:600;font-size:14px;text-decoration:none;color:var(--muted);background:none;border:none;cursor:pointer;font-family:inherit}
+  header nav a:hover,header nav button:hover{background:var(--soft);color:var(--ink)}
+  .flag{background:var(--soft);color:var(--muted);text-align:center;font-weight:700;font-size:12.5px;padding:8px 14px}
+  h1.t{font-size:24px;margin:22px 0 2px;font-weight:800}
+  .sub{color:var(--muted);margin:0 0 18px;font-size:14px}
+  .tagline{font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--p);font-weight:700;margin:0 0 4px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:20px;box-shadow:var(--shadow);margin-bottom:16px}
+  .card h2{margin:0 0 4px;font-size:17px}
+  .card .h{color:var(--muted);font-size:13.5px;margin:0 0 12px}
+  .btn{border:none;cursor:pointer;font:inherit;font-weight:800;border-radius:999px;padding:11px 18px;font-size:14px;transition:.18s ease-out}
+  .btn.p{background:var(--p);color:#fff} .btn.p:hover{background:var(--p2)}
+  .btn.s{background:var(--acc);color:var(--acc-ink)}
+  .btn.g{background:var(--soft);color:var(--ink)}
+  .btn.sm{padding:7px 13px;font-size:13px}
+  .btn:disabled{opacity:.5;cursor:default}
+  input,textarea,select{font:inherit;padding:11px 13px;border:1.5px solid var(--line);border-radius:12px;background:var(--card);color:var(--ink);width:100%}
+  input:focus,textarea:focus,select:focus{outline:none;border-color:var(--p)}
+  textarea{resize:vertical;min-height:74px}
+  .field{display:flex;flex-direction:column;gap:5px;margin-bottom:12px}
+  .field label{font-weight:700;font-size:13.5px}
+  .pill{display:inline-block;padding:3px 10px;border-radius:999px;font-size:12px;font-weight:800;background:var(--soft);color:var(--muted)}
+  .pill.on{background:var(--p);color:#fff}
+  .pill.done{background:var(--acc);color:var(--acc-ink)}
+  .pgrid{display:grid;grid-template-columns:1fr;gap:12px}
+  @media(min-width:640px){.pgrid{grid-template-columns:1fr 1fr}}
+  .pcard{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:16px;box-shadow:var(--shadow);cursor:pointer;transition:.18s ease-out}
+  .pcard:hover{transform:translateY(-2px);box-shadow:var(--shadow-lg)}
+  .pcard h3{margin:0 0 4px;font-size:16px}
+  .pcard .meta{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-top:8px}
+  .pcard p{margin:4px 0 0;font-size:13.5px;color:var(--muted);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+  .modal{display:none;position:fixed;inset:0;background:rgba(10,8,14,.55);z-index:50;align-items:flex-end;justify-content:center}
+  .modal.open{display:flex}
+  .mbox{background:var(--card);color:var(--ink);width:100%;max-width:760px;max-height:96dvh;overflow:auto;border-radius:22px 22px 0 0;padding:20px 18px 30px;box-shadow:var(--shadow-lg)}
+  @media(min-width:760px){.modal{align-items:center}.mbox{border-radius:22px;max-height:88dvh}}
+  .mhead{display:flex;align-items:flex-start;gap:10px}
+  .mhead h2{margin:0;font-size:20px;flex:1}
+  .xbtn{border:none;background:var(--soft);color:var(--ink);border-radius:999px;width:34px;height:34px;font-size:16px;cursor:pointer;flex:none}
+  .jalon{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px dashed var(--line)}
+  .jalon:last-child{border-bottom:none}
+  .jalon input[type=checkbox]{width:20px;height:20px;flex:none;accent-color:var(--p)}
+  .jalon .txt{flex:1;font-size:14.5px}
+  .jalon.done .txt{text-decoration:line-through;color:var(--muted)}
+  .jalon .del{border:none;background:none;color:var(--muted);cursor:pointer;font-size:15px;padding:4px}
+  .post{padding:12px 0;border-bottom:1px dashed var(--line)}
+  .post:last-child{border-bottom:none}
+  .post .who{font-weight:700;font-size:13.5px}
+  .post .when{color:var(--muted);font-size:12px;font-weight:500;margin-left:6px}
+  .post .body{margin:4px 0 0;font-size:14.5px;white-space:pre-wrap;word-break:break-word}
+  .post img{max-width:100%;border-radius:12px;margin-top:8px;display:block}
+  .composer{display:flex;flex-direction:column;gap:8px;margin-top:12px}
+  .composer .row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  .photo-tag{font-size:12.5px;color:var(--muted)}
+  .muted{color:var(--muted)} .small{font-size:13px}
+  .empty{text-align:center;color:var(--muted);padding:18px 8px;font-size:14px}
+  #toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%) translateY(40px);background:#131017;color:#fff;padding:11px 18px;border-radius:999px;font-weight:700;box-shadow:var(--shadow-lg);opacity:0;transition:.25s;z-index:99;max-width:90%;text-align:center}
+  #toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+  @media (prefers-reduced-motion: reduce){*{transition-duration:.001ms !important;animation-duration:.001ms !important}}
+</style>
+</head>
+<body>
+<div class="flag" id="secureFlag">🔒 Espace sécurisé — réservé aux adhérents de l'association.</div>
+<header><div class="bar">
+  <a href="connexion.html" class="logo" id="brandLogo"><span class="pine">🍍</span><span id="brandName"><b>Mon asso</b></span></a>
+  <nav>
+    <a href="connexion.html" id="navCompte">Mon compte</a>
+    <button id="navOut" style="display:none">Se déconnecter</button>
+  </nav>
+</div></header>
+
+<div class="wrap">
+  <p class="tagline" id="tagline" style="display:none"></p>
+  <h1 class="t">🎬 Les projets</h1>
+  <p class="sub">L'établi des projets de l'association : chacun porte le sien, tout le monde peut suivre et donner un coup de main.</p>
+
+  <div id="zone"><p class="muted">Chargement…</p></div>
+</div>
+
+<!-- ===== Fiche projet ===== -->
+<div class="modal" id="pModal">
+  <div class="mbox">
+    <div class="mhead"><h2 id="pmTitle">Projet</h2><button class="xbtn" data-act="close-p">✕</button></div>
+    <div class="meta" style="display:flex;gap:6px;flex-wrap:wrap;margin:8px 0 14px">
+      <span class="pill" id="pmPorteur"></span>
+      <span class="pill" id="pmStatut"></span>
+      <span class="pill" id="pmDate"></span>
+    </div>
+
+    <div id="pmEditBlock"></div>
+
+    <div class="card" style="box-shadow:none">
+      <h2>🎯 Le projet</h2>
+      <p id="pmPitch" class="small" style="white-space:pre-wrap;margin:6px 0 0"></p>
+    </div>
+
+    <div class="card" style="box-shadow:none">
+      <h2>✅ Les étapes</h2>
+      <p class="h">Coche au fur et à mesure — c'est le porteur qui gère ses étapes.</p>
+      <div id="pmJalons"></div>
+      <div class="composer row" id="pmJalonAdd" style="display:none">
+        <div class="row" style="display:flex;gap:8px;width:100%">
+          <input id="jalonInput" placeholder="Nouvelle étape… (ex : repérage du lieu)" style="flex:1">
+          <button class="btn g sm" data-act="add-jalon">Ajouter</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" style="box-shadow:none">
+      <h2>🧰 Les besoins</h2>
+      <div id="pmBesoins"></div>
+    </div>
+
+    <div class="card" style="box-shadow:none">
+      <h2>💬 Le fil du projet</h2>
+      <p class="h">Questions, avancées, photos : tout se raconte ici.</p>
+      <div id="pmPosts"><p class="empty">Chargement du fil…</p></div>
+      <div class="composer">
+        <textarea id="postBody" placeholder="Écris un message pour l'équipe…"></textarea>
+        <div class="row">
+          <input type="file" id="postPhoto" accept="image/*" style="display:none">
+          <button class="btn g sm" data-act="pick-photo">📸 Joindre une photo</button>
+          <span class="photo-tag" id="photoTag"></span>
+          <span style="flex:1"></span>
+          <button class="btn p sm" data-act="send-post" id="sendBtn">Envoyer</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== Nouveau projet ===== -->
+<div class="modal" id="nModal">
+  <div class="mbox">
+    <div class="mhead"><h2>➕ Mon nouveau projet</h2><button class="xbtn" data-act="close-n">✕</button></div>
+    <p class="h" style="color:var(--muted);font-size:13.5px">Décris ton idée simplement — tu pourras tout compléter après.</p>
+    <div class="field"><label>Le nom du projet</label><input id="npNom" placeholder="Ex : Portrait de Mme Payet, la couturière du quartier"></div>
+    <div class="field"><label>En quelques phrases, c'est quoi ?</label><textarea id="npPitch" placeholder="Ce qu'on veut faire, pour qui, et pourquoi ça compte."></textarea></div>
+    <div class="field"><label>De quoi as-tu besoin ? (optionnel)</label><textarea id="npBesoins" placeholder="Matériel, coups de main, contacts…" style="min-height:56px"></textarea></div>
+    <button class="btn p" data-act="create-project" id="createBtn" style="width:100%">Créer mon projet</button>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+/* ================================================================
+   ESPACE PROJETS — module plateforme Bob, multi-assos (brique 1
+   du chantier « BOKAF autonome », 02/08/2026).
+   · S'allume par asso via associations.features->>'projets_adherents'
+     (la RLS le vérifie côté serveur ; l'écran ne fait que l'afficher).
+   · Un adhérent ACTIF crée et porte SES projets ; tout le monde lit
+     et discute ; le bureau garde la main (policies bureau inchangées).
+   · ⚠️ supabase-js ne LÈVE PAS : on teste `.error` à chaque appel.
+   ================================================================ */
+const SUPABASE_URL='https://dkidtwypclpwznleiqnq.supabase.co';
+const SUPABASE_KEY='sb_publishable_HDfV-O2ION1Vw9v03aV_Qg_PkiAjLNo';
+const sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+const $=s=>document.querySelector(s);
+function esc(s){return (s==null?'':String(s)).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('show');clearTimeout(t._tm);t._tm=setTimeout(()=>t.classList.remove('show'),3600)}
+
+/* ===== Portes & habillage (même famille que connexion.html) ===== */
+const DOORS={
+  'case-bdn':{pine:'🍍', nom:'CASE', nom2:'Bois de Nèfles', dark:false, tagline:''},
+  'bokaf':{pine:'🎬', nom:'BOKAF', nom2:'', dark:true, logoImg:'bokaf-logo.png', tagline:'MÉDIA · ÉVÉNEMENT · PRODUCTION', site:'site-bokaf.html'},
+  'pixiart':{pine:'🔴', nom:'PIX-I-ART', nom2:'', dark:false, tagline:''}
+};
+function doorGuess(){
+  try{
+    const u=new URL(location.href);
+    let s=(u.searchParams.get('asso')||'').toLowerCase();
+    if(!s) s=(localStorage.getItem('bob_asso')||'').toLowerCase();
+    if(s==='case') s='case-bdn';
+    return DOORS[s]?s:'case-bdn';
+  }catch(e){ return 'case-bdn'; }
+}
+function applySkin(slug){
+  const d=DOORS[slug]||DOORS['case-bdn'];
+  document.body.classList.toggle('bokaf', !!d.dark);
+  try{ document.title='Projets — '+d.nom; }catch(e){}
+  const mark=d.logoImg?'<img src="'+d.logoImg+'" alt="'+esc(d.nom)+'">':'<span class="pine">'+d.pine+'</span>';
+  $('#brandLogo').innerHTML=mark+'<span><b>'+esc(d.nom)+'</b>'+(d.nom2?' <span>'+esc(d.nom2)+'</span>':'')+'</span>';
+  if(d.site){ $('#brandLogo').setAttribute('href',d.site); }
+  const tg=$('#tagline'); if(d.tagline){ tg.textContent=d.tagline; tg.style.display='block'; } else tg.style.display='none';
+  const nc=$('#navCompte'); if(nc) nc.setAttribute('href','connexion.html?asso='+encodeURIComponent(slug==='case-bdn'?'case':slug));
+}
+
+/* ===== État ===== */
+let ME=null;       /* {id, name, role, statut, asso} */
+let ASSO=null;     /* {id, name, slug, features} */
+let PROJECTS=[];
+let CURRENT=null;  /* projet ouvert (objet) */
+let PHOTO_FILE=null;
+
+const canBureau=()=>ME&&['president','tresorier','bureau'].includes(ME.role);
+const canEditProj=p=>ME&&p&&(p.owner_id===ME.id||canBureau());
+const featureOn=()=>{ try{ return ((ASSO&&ASSO.features&&ASSO.features.projets_adherents)||'')==='on'; }catch(e){ return false; } };
+function fmtDate(iso){ if(!iso) return ''; const d=new Date(iso); if(isNaN(d)) return '';
+  const p=n=>String(n).padStart(2,'0'); return p(d.getDate())+'/'+p(d.getMonth()+1)+'/'+d.getFullYear()+' '+p(d.getHours())+':'+p(d.getMinutes()); }
+const STATUTS={actif:'🟢 En cours', termine:'🏁 Terminé', archive:'📦 Archivé'};
+
+/* ===== Démarrage ===== */
+applySkin(doorGuess());
+boot();
+async function boot(){
+  let session=null;
+  try{ session=(await sb.auth.getSession()).data.session; }catch(e){}
+  if(!session){ renderGate(); return; }
+  $('#navOut').style.display='';
+  const {data:p,error:pe}=await sb.from('profiles').select('id,full_name,email,role,statut,asso_id').eq('id',session.user.id).maybeSingle();
+  if(pe||!p){ renderMsg('😕 Impossible de lire ton profil','Réessaie dans un instant, ou reconnecte-toi depuis la page de connexion.'); return; }
+  ME={ id:p.id, name:(p.full_name||p.email||'').split('@')[0], role:p.role, statut:p.statut, asso:p.asso_id };
+  if(!ME.asso){ renderMsg('⏳ Compte à rattacher','Ton compte n\'est pas encore rattaché à une association. Le bureau doit le faire depuis son espace.'); return; }
+  const {data:a,error:ae}=await sb.from('associations').select('id,name,slug,features').eq('id',ME.asso).maybeSingle();
+  if(!ae&&a){ ASSO=a; applySkin(DOORS[a.slug]?a.slug:'case-bdn'); try{ localStorage.setItem('bob_asso',a.slug==='case-bdn'?'case':a.slug); }catch(e){} }
+  if(ME.statut!=='actif'){ renderMsg('⏳ Compte en attente','Ton compte doit être validé par le bureau de l\'association avant d\'accéder aux projets. Reviens bientôt !'); return; }
+  if(!featureOn()){ renderMsg('🔒 Module non activé','L\'espace projets n\'est pas encore ouvert pour ton association. Parles-en au bureau !'); return; }
+  await loadProjects();
+  renderMain();
+}
+function renderGate(){
+  const slug=doorGuess(); const d=DOORS[slug];
+  $('#zone').innerHTML='<div class="card"><h2>👋 Connecte-toi d\'abord</h2>'+
+    '<p class="h">L\'espace projets est réservé aux adhérents de <b>'+esc(d.nom+(d.nom2?' '+d.nom2:''))+'</b>. Connecte-toi (ou crée ton compte) et reviens ici.</p>'+
+    '<a class="btn p" style="text-decoration:none;display:inline-block" href="connexion.html?asso='+encodeURIComponent(slug==='case-bdn'?'case':slug)+'">Me connecter →</a></div>';
+}
+function renderMsg(t,h){ $('#zone').innerHTML='<div class="card"><h2>'+esc(t)+'</h2><p class="h" style="margin:0">'+esc(h)+'</p></div>'; }
+
+/* ===== Données ===== */
+async function loadProjects(){
+  const {data,error}=await sb.from('projects').select('id,name,owner_id,data,created_at,updated_at').order('updated_at',{ascending:false});
+  if(error){ toast('Lecture des projets impossible : '+error.message); PROJECTS=[]; return; }
+  PROJECTS=(data||[]).filter(p=>((p.data&&p.data.statut)||'actif')!=='archive' || p.owner_id===(ME&&ME.id));
+}
+
+/* ===== Rendu principal ===== */
+function pcardHtml(p){
+  const d=p.data||{};
+  const st=STATUTS[(d.statut||'actif')]||STATUTS.actif;
+  const mine=p.owner_id===ME.id;
+  return '<div class="pcard" data-proj="'+esc(p.id)+'">'+
+    '<h3>'+esc(p.name||'Sans nom')+'</h3>'+
+    '<p>'+esc(d.pitch||'')+'</p>'+
+    '<div class="meta">'+
+      '<span class="pill'+(mine?' on':'')+'">'+(mine?'⭐ Mon projet':'👤 '+esc(d.porteur_nom||'Un adhérent'))+'</span>'+
+      '<span class="pill">'+esc(st)+'</span>'+
+    '</div></div>';
+}
+function renderMain(){
+  const mine=PROJECTS.filter(p=>p.owner_id===ME.id);
+  const others=PROJECTS.filter(p=>p.owner_id!==ME.id);
+  let h='<div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap">'+
+    '<span class="pill on">👋 '+esc(ME.name)+'</span><span style="flex:1"></span>'+
+    '<button class="btn p" data-act="open-n">➕ Nouveau projet</button></div>';
+  h+='<h2 style="font-size:17px;margin:6px 0 10px">⭐ Mes projets</h2>';
+  h+= mine.length? '<div class="pgrid">'+mine.map(pcardHtml).join('')+'</div>'
+     : '<div class="card"><p class="empty" style="padding:6px">Tu n\'as pas encore de projet. Lance-toi : clique sur <b>➕ Nouveau projet</b> !</p></div>';
+  h+='<h2 style="font-size:17px;margin:20px 0 10px">🤝 Les projets de l\'asso</h2>';
+  h+= others.length? '<div class="pgrid">'+others.map(pcardHtml).join('')+'</div>'
+     : '<div class="card"><p class="empty" style="padding:6px">Pas encore d\'autre projet — le tien sera peut-être le premier !</p></div>';
+  h+='<div class="card" style="margin-top:20px"><h2>❓ Comment ça marche</h2><p class="h" style="margin:0">'+
+     '1. <b>Crée ton projet</b> et décris-le simplement. · 2. <b>Découpe-le en étapes</b> et coche au fur et à mesure. · '+
+     '3. <b>Raconte dans le fil</b> : questions, avancées, photos. · Le bureau voit tout et peut aider.</p></div>';
+  $('#zone').innerHTML=h;
+}
+
+/* ===== Fiche projet ===== */
+async function openProject(id){
+  const p=PROJECTS.find(x=>x.id===id); if(!p) return;
+  CURRENT=p; PHOTO_FILE=null; $('#photoTag').textContent=''; $('#postBody').value='';
+  const d=p.data||{};
+  $('#pmTitle').textContent=p.name||'Sans nom';
+  $('#pmPorteur').textContent=(p.owner_id===ME.id?'⭐ Porté par toi':'👤 '+(d.porteur_nom||'Un adhérent'));
+  $('#pmStatut').textContent=STATUTS[(d.statut||'actif')]||STATUTS.actif;
+  $('#pmDate').textContent='📅 '+fmtDate(p.created_at);
+  $('#pmPitch').textContent=d.pitch||'(pas encore de description)';
+  renderEditBlock(p); renderJalons(p); renderBesoins(p);
+  $('#pModal').classList.add('open');
+  await loadPosts(p.id);
+}
+function renderEditBlock(p){
+  const box=$('#pmEditBlock');
+  if(!canEditProj(p)){ box.innerHTML=''; return; }
+  const d=p.data||{};
+  box.innerHTML='<div class="card" style="box-shadow:none;background:var(--soft)"><h2>✏️ Je mets à jour</h2>'+
+    '<div class="field"><label>Nom du projet</label><input id="edNom"></div>'+
+    '<div class="field"><label>Description</label><textarea id="edPitch"></textarea></div>'+
+    '<div class="field"><label>Où en est-il ?</label><select id="edStatut">'+
+      '<option value="actif">🟢 En cours</option><option value="termine">🏁 Terminé</option><option value="archive">📦 Archivé</option></select></div>'+
+    '<button class="btn p sm" data-act="save-project">Enregistrer</button></div>';
+  $('#edNom').value=p.name||''; $('#edPitch').value=d.pitch||''; $('#edStatut').value=d.statut||'actif';
+}
+function renderJalons(p){
+  const d=p.data||{}; const js=Array.isArray(d.jalons)?d.jalons:[];
+  const editable=canEditProj(p);
+  $('#pmJalonAdd').style.display=editable?'':'none';
+  if(!js.length){ $('#pmJalons').innerHTML='<p class="empty" style="padding:4px">Pas encore d\'étape.'+(editable?' Ajoute la première ci-dessous !':'')+'</p>'; return; }
+  $('#pmJalons').innerHTML=js.map((j,i)=>'<div class="jalon'+(j.done?' done':'')+'">'+
+    '<input type="checkbox" data-jalon="'+i+'" '+(j.done?'checked':'')+(editable?'':' disabled')+'>'+
+    '<span class="txt">'+esc(j.t||'')+'</span>'+
+    (editable?'<button class="del" data-deljalon="'+i+'" title="Retirer">✕</button>':'')+
+    '</div>').join('');
+}
+function renderBesoins(p){
+  const d=p.data||{}; const b=d.besoins||'';
+  if(canEditProj(p)){
+    $('#pmBesoins').innerHTML='<div class="field"><textarea id="edBesoins" placeholder="Matériel, coups de main, contacts…" style="min-height:56px"></textarea></div>'+
+      '<button class="btn g sm" data-act="save-besoins">Enregistrer les besoins</button>';
+    $('#edBesoins').value=b;
+  }else{
+    $('#pmBesoins').innerHTML='<p class="small" style="white-space:pre-wrap;margin:0">'+(b?esc(b):'(rien de déclaré pour l\'instant)')+'</p>';
+  }
+}
+async function saveProject(){
+  if(!CURRENT||!canEditProj(CURRENT)) return;
+  const name=$('#edNom').value.trim()||'Sans nom';
+  const d=Object.assign({},CURRENT.data||{});
+  d.pitch=$('#edPitch').value.trim(); d.statut=$('#edStatut').value;
+  const {error}=await sb.from('projects').update({name:name,data:d,updated_at:new Date().toISOString()}).eq('id',CURRENT.id);
+  if(error){ toast('Enregistrement impossible : '+error.message); return; }
+  CURRENT.name=name; CURRENT.data=d; toast('Projet mis à jour ✓');
+  await loadProjects(); renderMain(); openProject(CURRENT.id);
+}
+async function saveBesoins(){
+  if(!CURRENT||!canEditProj(CURRENT)) return;
+  const d=Object.assign({},CURRENT.data||{}); d.besoins=$('#edBesoins').value.trim();
+  const {error}=await sb.from('projects').update({data:d,updated_at:new Date().toISOString()}).eq('id',CURRENT.id);
+  if(error){ toast('Enregistrement impossible : '+error.message); return; }
+  CURRENT.data=d; toast('Besoins enregistrés ✓');
+}
+async function toggleJalon(i,done){
+  if(!CURRENT||!canEditProj(CURRENT)) return;
+  const d=Object.assign({},CURRENT.data||{}); const js=Array.isArray(d.jalons)?d.jalons.slice():[];
+  if(!js[i]) return; js[i]=Object.assign({},js[i],{done:!!done}); d.jalons=js;
+  const {error}=await sb.from('projects').update({data:d,updated_at:new Date().toISOString()}).eq('id',CURRENT.id);
+  if(error){ toast('Impossible de cocher : '+error.message); return; }
+  CURRENT.data=d; renderJalons(CURRENT);
+}
+async function delJalon(i){
+  if(!CURRENT||!canEditProj(CURRENT)) return;
+  const d=Object.assign({},CURRENT.data||{}); const js=Array.isArray(d.jalons)?d.jalons.slice():[];
+  js.splice(i,1); d.jalons=js;
+  const {error}=await sb.from('projects').update({data:d,updated_at:new Date().toISOString()}).eq('id',CURRENT.id);
+  if(error){ toast('Impossible de retirer : '+error.message); return; }
+  CURRENT.data=d; renderJalons(CURRENT);
+}
+async function addJalon(){
+  if(!CURRENT||!canEditProj(CURRENT)) return;
+  const t=$('#jalonInput').value.trim(); if(!t) return;
+  const d=Object.assign({},CURRENT.data||{}); const js=Array.isArray(d.jalons)?d.jalons.slice():[];
+  js.push({t:t,done:false}); d.jalons=js;
+  const {error}=await sb.from('projects').update({data:d,updated_at:new Date().toISOString()}).eq('id',CURRENT.id);
+  if(error){ toast('Impossible d\'ajouter : '+error.message); return; }
+  $('#jalonInput').value=''; CURRENT.data=d; renderJalons(CURRENT);
+}
+
+/* ===== Fil de discussion ===== */
+async function loadPosts(projectId){
+  const box=$('#pmPosts');
+  const {data,error}=await sb.from('project_posts').select('id,author_id,author_name,body,photo_path,created_at').eq('project_id',projectId).order('created_at',{ascending:true});
+  if(error){ box.innerHTML='<p class="empty">Fil illisible pour l\'instant ('+esc(error.message)+').</p>'; return; }
+  if(!data||!data.length){ box.innerHTML='<p class="empty">Personne n\'a encore écrit — lance la discussion !</p>'; return; }
+  /* photos privées → liens signés temporaires */
+  const paths=data.filter(m=>m.photo_path).map(m=>m.photo_path);
+  const urls={};
+  if(paths.length){
+    const {data:signed,error:se}=await sb.storage.from('projets').createSignedUrls(paths,3600);
+    if(!se&&signed){ signed.forEach(s=>{ if(s&&s.path&&s.signedUrl) urls[s.path]=s.signedUrl; }); }
+  }
+  box.innerHTML=data.map(m=>'<div class="post">'+
+    '<span class="who">'+esc(m.author_name||'Un adhérent')+'</span><span class="when">'+esc(fmtDate(m.created_at))+'</span>'+
+    (m.body?'<p class="body">'+esc(m.body)+'</p>':'')+
+    (m.photo_path&&urls[m.photo_path]?'<img src="'+esc(urls[m.photo_path])+'" alt="photo du projet" loading="lazy">':'')+
+    '</div>').join('');
+  box.scrollTop=box.scrollHeight;
+}
+function cleanFileName(n){ return String(n||'photo').toLowerCase().replace(/[^a-z0-9.]+/g,'-').replace(/^-+|-+$/g,'').slice(-60)||'photo.jpg'; }
+async function sendPost(){
+  if(!CURRENT) return;
+  const body=$('#postBody').value.trim();
+  if(!body&&!PHOTO_FILE){ toast('Écris un message ou joins une photo.'); return; }
+  const btn=$('#sendBtn'); btn.disabled=true; btn.textContent='Envoi…';
+  let photoPath=null;
+  try{
+    if(PHOTO_FILE){
+      if(PHOTO_FILE.size>8*1024*1024){ toast('Photo trop lourde (8 Mo max).'); btn.disabled=false; btn.textContent='Envoyer'; return; }
+      photoPath=ME.asso+'/'+CURRENT.id+'/'+Date.now()+'-'+cleanFileName(PHOTO_FILE.name);
+      const {error:ue}=await sb.storage.from('projets').upload(photoPath,PHOTO_FILE,{contentType:PHOTO_FILE.type||'image/jpeg'});
+      if(ue){ toast('Photo refusée : '+ue.message); btn.disabled=false; btn.textContent='Envoyer'; return; }
+    }
+    const {error}=await sb.from('project_posts').insert({asso_id:ME.asso, project_id:CURRENT.id, author_id:ME.id, author_name:ME.name, body:body||null, photo_path:photoPath});
+    if(error){ toast('Message refusé : '+error.message); btn.disabled=false; btn.textContent='Envoyer'; return; }
+    $('#postBody').value=''; PHOTO_FILE=null; $('#photoTag').textContent=''; $('#postPhoto').value='';
+    await loadPosts(CURRENT.id);
+    await sb.from('projects').update({updated_at:new Date().toISOString()}).eq('id',CURRENT.id); /* remonte le projet ; silencieux si refusé (non-porteur) */
+  } finally { btn.disabled=false; btn.textContent='Envoyer'; }
+}
+
+/* ===== Nouveau projet ===== */
+async function createProject(){
+  const nom=$('#npNom').value.trim();
+  if(!nom){ toast('Donne un nom à ton projet.'); return; }
+  const btn=$('#createBtn'); btn.disabled=true; btn.textContent='Création…';
+  const d={ pitch:$('#npPitch').value.trim(), besoins:$('#npBesoins').value.trim(), statut:'actif', jalons:[], porteur_nom:ME.name };
+  const {data,error}=await sb.from('projects').insert({asso_id:ME.asso, owner_id:ME.id, name:nom, data:d}).select('id').maybeSingle();
+  btn.disabled=false; btn.textContent='Créer mon projet';
+  if(error){ toast('Création impossible : '+error.message); return; }
+  $('#nModal').classList.remove('open'); $('#npNom').value=''; $('#npPitch').value=''; $('#npBesoins').value='';
+  toast('Projet créé ✓ — à toi de jouer !');
+  await loadProjects(); renderMain();
+  if(data&&data.id) openProject(data.id);
+}
+
+/* ===== Événements (délégués — jamais d'onclick interpolé) ===== */
+document.addEventListener('click',async e=>{
+  const pj=e.target.closest('[data-proj]'); if(pj){ openProject(pj.getAttribute('data-proj')); return; }
+  const dj=e.target.closest('[data-deljalon]'); if(dj){ delJalon(parseInt(dj.getAttribute('data-deljalon'),10)); return; }
+  const act=e.target.closest('[data-act]'); if(!act) return;
+  switch(act.getAttribute('data-act')){
+    case 'open-n': $('#nModal').classList.add('open'); break;
+    case 'close-n': $('#nModal').classList.remove('open'); break;
+    case 'close-p': $('#pModal').classList.remove('open'); CURRENT=null; break;
+    case 'create-project': createProject(); break;
+    case 'save-project': saveProject(); break;
+    case 'save-besoins': saveBesoins(); break;
+    case 'add-jalon': addJalon(); break;
+    case 'pick-photo': $('#postPhoto').click(); break;
+    case 'send-post': sendPost(); break;
+  }
+});
+document.addEventListener('change',e=>{
+  if(e.target&&e.target.id==='postPhoto'){
+    PHOTO_FILE=e.target.files&&e.target.files[0]?e.target.files[0]:null;
+    $('#photoTag').textContent=PHOTO_FILE?('📎 '+PHOTO_FILE.name):'';
+    return;
+  }
+  const cb=e.target.closest?e.target.closest('[data-jalon]'):null;
+  if(cb){ toggleJalon(parseInt(cb.getAttribute('data-jalon'),10), cb.checked); }
+});
+document.querySelectorAll('.modal').forEach(m=>m.addEventListener('click',e=>{ if(e.target===m){ m.classList.remove('open'); if(m.id==='pModal') CURRENT=null; } }));
+$('#navOut').addEventListener('click',async()=>{ try{ await sb.auth.signOut(); }catch(e){} location.reload(); });
+</script>
+</body>
+</html>
