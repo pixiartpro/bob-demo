@@ -101,6 +101,8 @@ function assoSlug(){
   try{
     const u=new URL(location.href);
     let s=(u.searchParams.get('asso')||'').toLowerCase();
+    /* 02/08/2026 — porte par NOM DE DOMAINE (bokaf.bob.re, case.bob.re) : l'adresse suffit, sans ?asso= */
+    if(!s){ const hp=location.hostname.toLowerCase().split('.')[0]; if(hp==='bokaf'||hp==='case') s=hp; }
     if(!s){ const m=location.pathname.toLowerCase().match(/(?:^|\/)(case|bokaf)(?:\/|\.html|$)/); if(m) s=m[1]; }
     if(!s){ s=(localStorage.getItem('bob_asso')||'').toLowerCase(); }
     /* 30/07/2026 — on distingue « aucune porte demandée » (défaut légitime sur le site du CASE)

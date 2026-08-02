@@ -200,6 +200,8 @@ function doorGuess(){
   try{
     const u=new URL(location.href);
     let s=(u.searchParams.get('asso')||'').toLowerCase();
+    /* 02/08/2026 — porte par NOM DE DOMAINE (bokaf.bob.re, case.bob.re) : l'adresse suffit, sans ?asso= */
+    if(!s){ const hp=location.hostname.toLowerCase().split('.')[0]; if(hp==='bokaf'||hp==='case') s=hp; }
     if(!s) s=(localStorage.getItem('bob_asso')||'').toLowerCase();
     if(s==='case') s='case-bdn';
     return DOORS[s]?s:'case-bdn';
