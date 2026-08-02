@@ -509,8 +509,10 @@
     <div class="panel">
       <div class="toolbar">
         <h2 style="margin:0">Liste des adhérents</h2>
+        <button class="ghost btn" onclick="if(window.loadMembersArbre)loadMembersArbre()" title="Relire l'arbre famille">↻</button>
         <input id="m_search" placeholder="🔎 Rechercher..." oninput="renderMembers()" style="max-width:240px">
       </div>
+      <div id="membersArbreBar"></div>
       <div style="overflow-x:auto;-webkit-overflow-scrolling:touch"><table style="min-width:720px"><thead><tr><th>Nom</th><th>Contact</th><th>Adresse</th><th>Adhésion</th><th class="num">Cotisation</th><th>Statut</th><th></th></tr></thead>
         <tbody id="memberRows"></tbody></table></div>
     </div>
@@ -3068,6 +3070,8 @@ const FAQ=[
    a:"Sur la page de connexion, clique sur <b>« Mot de passe oublié ? »</b> : tu recevras un email pour en choisir un nouveau. Tu peux aussi utiliser <b>« Recevoir un lien de connexion par email »</b> pour entrer sans mot de passe.<br><br><b>Trois choses à savoir, sinon on tourne en rond :</b><br>• <b>Un seul clic suffit.</b> On ne peut redemander qu'au bout d'une minute — recliquer dix fois ne fait qu'allonger l'attente.<br>• <b>Regarde dans les indésirables.</b> L'email vient de <i>noreply@mail.app.supabase.io</i> : il n'est pas signé « CASE », les messageries s'en méfient.<br>• <b>Si tu en as reçu plusieurs, ouvre le plus récent</b> — chaque nouvel envoi annule le lien précédent."},
   {cat:'🚀 Démarrer',q:"Est-ce que mes données sont en sécurité ?",kw:"securite securisé prive confidentiel rgpd protection heberge piratage vol",
    a:"Oui. Les données sont hébergées <b>en France</b> (RGPD), chaque association ne voit que <b>ses propres données</b>, et l'accès est réservé au bureau connecté. Pense quand même à faire des sauvegardes régulières dans ⚙️ Données."},
+  {cat:'👥 Adhérents',q:"Pourquoi la liste des adhérents affiche « 🌳 arbre », et d'où viennent ces lignes ?",kw:"arbre pastille verte liste adherents lecture branchee source foyers registre pas dans arbre ecart livre difference bandeau reconcilier",
+   a:"Depuis le <b>02/08/2026</b>, la liste de l'onglet <b>👥 Adhérents</b> est lue depuis l'<b>arbre famille</b> (le même registre que l'onglet 👨‍👩‍👧 Foyers) : chaque ligne marquée <b>🌳 arbre</b> vient de là. <b>Rien ne change pour tes gestes</b> : Ajouter, modifier (✏️), changer le statut, supprimer — tout écrit toujours dans le <b>livre des adhérents</b>, comme avant. Si une entrée du livre n'existe pas encore dans l'arbre, elle reste affichée avec la marque <b>⚠️ pas dans l'arbre</b> et le bandeau du haut te la compte : rien n'est perdu, c'est un écart à réconcilier (il ne se résorbe pas tout seul). Et si l'arbre ne se lit pas (souci de réseau…), Bob raffiche le livre et te le dit — jamais une liste à moitié vraie."},
   {cat:'👥 Adhérents',q:"Comment j'ajoute un adhérent ?",kw:"ajouter adherent membre nouveau inscrire cotisation creer enregistrer",
    a:"Onglet <b>👥 Adhérents</b> : remplis le nom (et ce que tu veux : email, téléphone, cotisation…) en haut, puis clique sur <b>« Ajouter »</b>. L'adhérent apparaît dans la liste juste en dessous."},
   {cat:'👥 Adhérents',q:"Comment je modifie la fiche d'un adhérent ?",kw:"modifier corriger changer adherent membre fiche editer mettre a jour",
@@ -3240,6 +3244,7 @@ function pageHelpGotoAide(){ pageHelpClose(); const b=document.querySelector('na
 
 /* ---- ✨ Quoi de neuf (nouveautés + notice chronologique) ---- */
 const NEWS=[
+  {id:'2026-08-02-adherents-lecture-arbre',date:'2026-08-02',tab:'👥 Adhérents',titre:"🌳 La liste des adhérents se lit désormais dans l'arbre famille",desc:"L'onglet <b>👥 Adhérents</b> affiche maintenant sa liste depuis l'<b>arbre famille</b> (le registre de l'onglet 👨‍👩‍👧 Foyers) : une pastille <b>🌳 arbre</b> marque chaque ligne, et un bandeau annonce la source et signale tout écart avec le livre des adhérents. <b>Tes gestes ne changent pas</b> : Ajouter, modifier, statut et suppression écrivent toujours dans le livre, comme avant. En cas de souci de lecture, Bob raffiche le livre et le dit."},
   {id:'2026-08-02-code-famille',date:'2026-08-02',tab:'👨‍👩‍👧 Foyers',titre:"🔑 Le code famille du récépissé sert enfin : la famille relie son compte toute seule",desc:"Depuis le comptoir, chaque récépissé porte un <b>code famille</b> — mais rien ne le consommait, la promesse imprimée n'était pas tenue. C'est réparé. La famille entre son code sur son espace en ligne (onglet <b>Mon compte</b>), <b>plus la date de naissance d'un de ses enfants</b>, et son compte est aussitôt relié à son dossier : elle y retrouve ses enfants et ses inscriptions, <b>sans que tu aies à intervenir</b> — utile pour la rentrée. Trois garde-fous : ① le <b>code ne sert qu'une fois</b> (Bob le remplace dès qu'il a servi, un récépissé égaré ne reste pas une clé) ; ② la <b>date de naissance</b> est demandée en plus, parce que se relier à un foyer donne accès à toute la fratrie ; ③ toutes les tentatives, réussies comme ratées, sont <b>journalisées</b>. Sur la carte du foyer, deux nouveaux boutons pour toi : <b>🔁 Nouveau code</b> (2ᵉ parent à relier, récépissé perdu) et <b>🔓</b> à côté de « 🔗 compte » pour <b>détacher</b> un compte relié par erreur — la fiche, elle, est conservée."},
   {id:'2026-07-28-fil-rouge',date:'2026-07-28',tab:'📊 Tableau de bord',titre:"🔴 Le marqueur rouge te conduit jusqu'au travail à faire",desc:"Avant, la pastille disait qu'il y avait quelque chose… sans dire où. Maintenant elle t'emmène. ① Une <b>petite pastille apparaît sur l'onglet précis</b> qui porte le travail (tu vois que c'est 🎒 Périscolaire qui a le « 2 », pas juste le tiroir Animation). ② <b>Cliquer un tiroir ouvre l'onglet chargé</b> — plus son premier onglet — et le <b>panneau concerné remonte à l'écran, encadré de rouge</b> quelques secondes. ③ La <b>pastille d'un personnage se clique</b> : elle mène droit à l'écran (ou ouvre sa fiche avec le détail « Ce qui t'attend chez lui » quand il y a plusieurs choses). ④ Les compteurs <b>redescendent tout de suite</b> après un traitement, et les éléments à traiter (dossiers déposés, demandes de partenariat, propositions d'atelier) sont <b>remontés en tête de liste</b>. ⚠️ Une correction importante au passage : la pastille des <b>congés</b> mène désormais à 👥 <b>Dossiers salariés</b>, là où se trouve vraiment le bouton ✅ Valider."},
   {id:'2026-07-28-compagnons-vivants',date:'2026-07-28',tab:'📊 Tableau de bord',titre:"🍍 Ton équipe s'active : elle compte ce qui t'attend et se souvient d'où tu étais",desc:"Trois nouveautés sur l'accueil et le menu. ① La <b>pastille rouge</b> sur un personnage n'affiche plus son nombre d'outils mais <b>ce qui t'attend chez lui</b> : un dossier périscolaire déposé fait monter « 1 » sur Nono, une demande de congé sur Roro. ② Un bouton <b>« ↩ Reprendre »</b> apparaît sur le personnage chez qui tu travaillais la dernière fois — un clic et tu reprends pile où tu t'étais arrêté (chacun sa mémoire, même sur une tablette partagée). ③ Dans le menu, un <b>petit visage</b> en tête de la rangée te rappelle chez qui tu es — Nono sur Animation, Trési sur Finances — et il s'efface poliment sur les écrans délicats (paie, dettes). Bonus : les portraits sont 5× plus légers — l'accueil s'ouvre bien plus vite au téléphone."},
@@ -3492,21 +3497,122 @@ function addMember(){
 function togglePaid(id){ const m=db.members.find(x=>x.id===id); if(m){m.paid=!m.paid; save();} }
 function delMember(id){ if(confirm('Supprimer cet adhérent ?')){ db.members=db.members.filter(x=>x.id!==id); save(); } }
 function renderMembers(){
-  const q = ($('m_search').value||'').toLowerCase();
-  const list = db.members.filter(m=>m.name.toLowerCase().includes(q)||(m.email||'').toLowerCase().includes(q));
-  const tb = $('memberRows');
-  if(!list.length){ tb.innerHTML='<tr><td colspan="7" class="empty">Aucun adhérent pour le moment.</td></tr>'; return; }
-  tb.innerHTML = list.map(m=>`<tr>
-    <td><strong>${esc(m.name)}</strong>${m.typeAdh?' <span class="pill" style="background:#eef2fb;color:#1f4fc4;font-size:11px">'+esc(m.typeAdh)+'</span>':''}<br><span class="muted" style="font-size:12px">${m.site?esc(m.site)+' · ':''}Depuis le ${fmtDate(m.date)}</span></td>
+  const tb = $('memberRows'); if(!tb) return;
+  const bar = document.getElementById('membersArbreBar');
+  const q = (($('m_search')||{}).value||'').toLowerCase();
+  /* `canWrite` est un `let` de l'IIFE connexion — hors de portée ici (cf. incident portée 11/07) */
+  const canW = !!(window.bobMe&&window.bobMe.canWrite);
+  const mems = db.members||[];
+  /* Statut du livre : cliquable UNIQUEMENT avec droit d'écriture (applyPerms masque les
+     <button> en niveau lecture, mais pas un <span onclick> — on ferme ce trou ici). */
+  const statutLivre = m => canW
+    ? '<span class="pill '+(m.paid?'ok':'wait')+'" style="cursor:pointer" title="Statut du livre — clique pour changer (écrit dans le livre, comme avant)" onclick="togglePaid(\''+m.id+'\')">'+(m.paid?'À jour':'En attente')+'</span>'
+    : '<span class="pill '+(m.paid?'ok':'wait')+'">'+(m.paid?'À jour':'En attente')+'</span>';
+  /* Ligne « livre » (db.members, coffre) — le rendu historique */
+  const rowLivre = (m, pill) => `<tr>
+    <td><strong>${esc(m.name)}</strong>${m.typeAdh?' <span class="pill" style="background:#eef2fb;color:#1f4fc4;font-size:11px">'+esc(m.typeAdh)+'</span>':''}${pill||''}<br><span class="muted" style="font-size:12px">${m.site?esc(m.site)+' · ':''}Depuis le ${fmtDate(m.date)}</span></td>
     <td style="font-size:13px">${esc(m.email||'—')}<br><span class="muted">${esc(m.phone||'')}</span></td>
     <td style="font-size:13px">${esc(m.addr||'—')}<br><span class="muted">${esc(((m.cp||'')+' '+(m.city||'')).trim())}</span></td>
     <td>${fmtDate(m.date)}</td>
     <td class="num">${euro(m.amount)}${m.mode?'<br><span class="muted" style="font-size:11px">'+esc(modeLabel(m.mode))+'</span>':''}</td>
-    <td><span class="pill ${m.paid?'ok':'wait'}" style="cursor:pointer" onclick="togglePaid('${m.id}')">${m.paid?'À jour':'En attente'}</span></td>
+    <td>${statutLivre(m)}</td>
     <td style="white-space:nowrap"><button class="ghost btn" style="padding:4px 9px;font-size:12px" onclick="openEdit('members','${m.id}')" title="Modifier">✏️</button>
       <button class="ghost btn" style="padding:4px 9px;font-size:12px" onclick="memberReceipt('${m.id}')">🧾 Reçu</button>
       <button class="ghost btn" style="padding:4px 9px;font-size:12px" onclick="bobGoDossierPeri('${m.id}')" title="Voir son dossier périscolaire (🎒 Périscolaire)">📨 Périscolaire</button>
-      <button class="danger" onclick="delMember('${m.id}')">Suppr.</button></td></tr>`).join('');
+      <button class="danger" onclick="delMember('${m.id}')">Suppr.</button></td></tr>`;
+  const emptyRow = () => '<tr><td colspan="7" class="empty">'+(q?'Aucun adhérent ne correspond à la recherche.':'Aucun adhérent pour le moment.')+'</td></tr>';
+  /* 🌳 LECTURE branchée sur l'arbre famille (bascule en cours) — les ÉCRITURES restent
+     sur le livre (db.members → coffre) : chaque adhésion du backfill retrouve sa ligne du
+     livre par SA legacy_key ('livre:<id>') et les boutons écrivent là où ils écrivaient.
+     Tout écart entre les deux — entrée du livre absente de l'arbre, adhésion de l'arbre
+     retirée du livre, statut/montant/date qui divergent — est AFFICHÉ et compté dans le
+     bandeau, jamais tu : il ne se résorbe pas tout seul (aucune synchro livre↔arbre).
+     Arbre illisible → repli sur le livre seul, annoncé dans le bandeau. */
+  const A = window.__maData;
+  if(!A || A.err){
+    if(bar) bar.innerHTML='<p class="hint" style="margin:6px 0">'+(A&&A.err
+      ?'⚠️ Arbre famille illisible ('+esc(A.err)+') — liste affichée depuis le <b>livre des adhérents</b> (rien de perdu).'
+      :'🌳 Arbre famille pas encore lu — liste affichée depuis le <b>livre des adhérents</b>.')
+      +' <button class="ghost btn" style="padding:2px 8px;font-size:12px" onclick="if(window.loadMembersArbre)loadMembersArbre()">↻ Réessayer</button></p>';
+    const list = mems.filter(m=>m.name.toLowerCase().includes(q)||(m.email||'').toLowerCase().includes(q));
+    tb.innerHTML = list.length ? list.map(m=>rowLivre(m,'')).join('') : emptyRow();
+    return;
+  }
+  const foyerById={}; A.foyers.forEach(f=>{ foyerById[f.id]=f; });
+  const usedMid={}; // ids du livre déjà représentés par une ligne de l'arbre
+  const rows=[];
+  let nbDiv=0, nbDel=0; // compteurs d'écart calculés sur TOUT (jamais sous le filtre de recherche)
+  const adhs=A.adhesions.slice().sort((x,y)=>
+    String(y.saison||'').localeCompare(String(x.saison||'')) ||
+    String(y.date_adhesion||'').localeCompare(String(x.date_adhesion||'')) ||
+    String((foyerById[x.foyer_id]||{}).nom||'').localeCompare(String((foyerById[y.foyer_id]||{}).nom||''),'fr'));
+  adhs.forEach(a=>{
+    const f=foyerById[a.foyer_id]||{};
+    /* Appariement par la clé de L'ADHÉSION seule — jamais par celle du foyer : une
+       réadhésion prise au comptoir Foyers (sans legacy_key) sur un foyer venu du livre
+       matcherait sinon la ligne d'une AUTRE saison → doublons armés des mêmes boutons. */
+    const lk=String(a.legacy_key||'');
+    const mid=lk.indexOf('livre:')===0 ? lk.slice(6) : '';
+    const m=mid ? mems.find(x=>x.id===mid) : null;
+    const retiree = !!(mid && !m); // son entrée du livre a été supprimée ; l'arbre, lui, garde l'adhésion
+    if(m) usedMid[m.id]=1;
+    const divPaye    = m && (!!m.paid)!==(!!a.paye);
+    const divMontant = m && Math.round((parseFloat(m.amount)||0)*100)!==(a.montant_cents||0);
+    const divDate    = m && String(m.date||'')!==String(a.date_adhesion||'');
+    if(m && (divPaye||divMontant||divDate)) nbDiv++;
+    if(retiree) nbDel++;
+    const nom=f.nom||'(foyer non lisible)';
+    const hay=(nom+' '+(m?(m.name+' '+(m.email||'')):'')).toLowerCase();
+    if(q && hay.indexOf(q)===-1) return;
+    let statutTd;
+    if(m){
+      statutTd=statutLivre(m)
+        +(divPaye?'<br><span class="pill" style="background:#fdeeee;color:#b03a2e;font-size:10px" title="Le livre et l\'arbre ne disent pas pareil — à réconcilier">🌳 arbre : '+(a.paye?'payé':'en attente')+'</span>':'');
+    }else{
+      statutTd='<span class="pill '+(a.paye?'ok':'wait')+'">'+(a.paye?'À jour':'En attente')+'</span>';
+    }
+    let actionsTd;
+    if(m){
+      actionsTd='<button class="ghost btn" style="padding:4px 9px;font-size:12px" onclick="openEdit(\'members\',\''+m.id+'\')" title="Modifier (écrit dans le livre, comme avant)">✏️</button> '
+        +'<button class="ghost btn" style="padding:4px 9px;font-size:12px" onclick="memberReceipt(\''+m.id+'\')">🧾 Reçu</button> '
+        +'<button class="ghost btn" style="padding:4px 9px;font-size:12px" onclick="bobGoDossierPeri(\''+m.id+'\')" title="Voir son dossier périscolaire (🎒 Périscolaire)">📨 Périscolaire</button> '
+        +'<button class="danger" onclick="delMember(\''+m.id+'\')">Suppr.</button>';
+    }else{
+      actionsTd='<button class="ghost btn" style="padding:4px 9px;font-size:12px" onclick="bobGoTab(\'foyers\')" title="Cette adhésion vit dans l\'arbre (pas de ligne au livre) — la voir dans l\'onglet 👨‍👩‍👧 Foyers">👨‍👩‍👧 Voir le foyer</button>';
+    }
+    rows.push('<tr>'
+      +'<td><strong>'+esc(nom)+'</strong>'
+      +(m&&m.typeAdh?' <span class="pill" style="background:#eef2fb;color:#1f4fc4;font-size:11px">'+esc(m.typeAdh)+'</span>':'')
+      +' <span class="pill" style="background:#e7f5ee;color:#127a51;font-size:10px" title="Ligne lue depuis l\'arbre famille (le registre de l\'onglet 👨‍👩‍👧 Foyers)">🌳 arbre</span>'
+      +(retiree?' <span class="pill" style="background:#fdeeee;color:#b03a2e;font-size:10px" title="Cette adhésion existe dans l\'arbre mais son entrée du livre a été supprimée — l\'arbre, lui, ne s\'efface pas d\'ici (voir l\'onglet 👨‍👩‍👧 Foyers)">⚠️ retirée du livre</span>':'')
+      +'<br><span class="muted" style="font-size:12px">Saison '+esc(a.saison||'—')+'</span></td>'
+      +'<td style="font-size:13px">'+esc((m&&m.email)||'—')+'<br><span class="muted">'+esc(f.tel||(m&&m.phone)||'')+'</span></td>'
+      +'<td style="font-size:13px">'+esc(f.adresse||(m&&m.addr)||'—')+'<br><span class="muted">'+esc(((f.cp||(m&&m.cp)||'')+' '+(f.ville||(m&&m.city)||'')).trim())+'</span></td>'
+      +'<td>'+(a.date_adhesion?fmtDate(a.date_adhesion):'—')
+        +(divDate?'<br><span class="pill" style="background:#fdeeee;color:#b03a2e;font-size:10px" title="Le livre dit une autre date — le 🧾 Reçu imprime celle du livre">🧾 livre : '+fmtDate(m.date)+'</span>':'')+'</td>'
+      +'<td class="num">'+euro((a.montant_cents||0)/100)
+        +(divMontant?'<br><span class="pill" style="background:#fdeeee;color:#b03a2e;font-size:10px" title="Le livre dit un autre montant — le 🧾 Reçu imprime celui du livre">🧾 livre : '+euro(m.amount)+'</span>':'')
+        +(m&&m.mode?'<br><span class="muted" style="font-size:11px">'+esc(modeLabel(m.mode))+'</span>':'')+'</td>'
+      +'<td>'+statutTd+'</td>'
+      +'<td style="white-space:nowrap">'+actionsTd+'</td></tr>');
+  });
+  /* Entrées du livre SANS adhésion dans l'arbre : affichées quand même, marquées. */
+  const orphelins = mems.filter(m=>!usedMid[m.id]);
+  orphelins.forEach(m=>{
+    if(q && !(m.name.toLowerCase().includes(q)||(m.email||'').toLowerCase().includes(q))) return;
+    rows.push(rowLivre(m,' <span class="pill" style="background:#fff4e0;color:#8a5a00;font-size:10px" title="Cette entrée du livre n\'a pas (encore) d\'adhésion dans l\'arbre famille — le rattachement ne se fait pas tout seul">⚠️ pas dans l\'arbre</span>'));
+  });
+  if(bar){
+    const nbA=A.adhesions.length, nbOrph=orphelins.length;
+    const soucis=[];
+    if(nbOrph) soucis.push(nbOrph+' entrée'+(nbOrph>1?'s':'')+' du livre pas encore dans l\'arbre');
+    if(nbDel) soucis.push(nbDel+' adhésion'+(nbDel>1?'s':'')+' de l\'arbre retirée'+(nbDel>1?'s':'')+' du livre');
+    if(nbDiv) soucis.push(nbDiv+' ligne'+(nbDiv>1?'s':'')+' où livre et arbre divergent');
+    bar.innerHTML='<p class="hint" style="margin:6px 0">🌳 Liste branchée en <b>lecture</b> sur l\'arbre famille : <b>'+nbA+'</b> adhésion'+(nbA>1?'s':'')+' (le registre de l\'onglet 👨‍👩‍👧 Foyers)'
+      +(soucis.length?' · <span style="color:#8a5a00;font-weight:600">⚠️ '+soucis.join(' · ')+'</span>':' · livre et arbre d\'accord ✅')
+      +' — tes gestes (✏️, statut, suppr., Ajouter) écrivent toujours dans le livre, comme avant.</p>';
+  }
+  tb.innerHTML = rows.length ? rows.join('') : emptyRow();
 }
 
 /* ---- Accounting ---- */
@@ -9344,6 +9450,25 @@ renderAll();
     const ms=document.getElementById('peri_ms_'+id);
     if(ms) ms.style.display=(destEl&&destEl.value==='PERI')?'':'none';
   };
+  /* 🌳 Écran 👥 Adhérents — LECTURE de l'arbre famille (bascule en cours).
+     Lit adhesions + foyers (les tables neuves) pour la liste des adhérents ;
+     n'écrit JAMAIS rien ici : les écritures restent sur le livre (db.members → coffre).
+     Garde-fou copié de loadFoyers : une lecture en erreur = on n'affiche RIEN de
+     partiel venant de l'arbre (sinon « pas d'adhésion » mentirait) → repli livre. */
+  window.loadMembersArbre=async function(){
+    if(typeof sbc==='undefined'||!sbc||!myAsso){ window.__maData=null; if(typeof renderMembers==='function')renderMembers(); return; }
+    try{
+      const [ra,rf]=await Promise.all([
+        // colonnes explicites + borne asso (la RLS cloisonne déjà, mais un bureau membre
+        // de DEUX assos verrait sinon les deux mélangées dans le même écran)
+        sbc.from('adhesions').select('foyer_id,saison,date_adhesion,montant_cents,paye,legacy_key').eq('asso_id',myAsso),
+        sbc.from('foyers').select('id,nom,tel,adresse,cp,ville,legacy_key').eq('asso_id',myAsso)
+      ]);
+      const err=ra.error||rf.error;
+      window.__maData = err ? {err:err.message} : {adhesions:ra.data||[], foyers:rf.data||[]};
+    }catch(e){ window.__maData={err:(e&&e.message)||'erreur réseau'}; }
+    if(typeof renderMembers==='function') renderMembers();
+  };
   window.loadAdhesionsEnLigne=async function(){
     const box=document.getElementById('adhOnlineBox'); if(!box) return;
     if(typeof sbc==='undefined'||!sbc){ box.innerHTML='<p class="hint">Connecte-toi pour voir les paiements en ligne.</p>'; return; }
@@ -12585,8 +12710,9 @@ renderAll();
     const vepb=document.querySelector('nav.tabs button[data-tab="vepi"]'); if(vepb) vepb.addEventListener('click',()=>{ if(window.acmLoadEditionsData) acmLoadEditionsData(); });
     const enfb=document.querySelector('nav.tabs button[data-tab="enfants"]'); if(enfb) enfb.addEventListener('click',()=>{ if(window.loadEnfantsHub) loadEnfantsHub(); });
     if(window.loadDossiersPeri) loadDossiersPeri();
-    const meb=document.querySelector('nav.tabs button[data-tab="members"]'); if(meb) meb.addEventListener('click',()=>{ if(window.loadAdhesionsEnLigne) loadAdhesionsEnLigne(); });
+    const meb=document.querySelector('nav.tabs button[data-tab="members"]'); if(meb) meb.addEventListener('click',()=>{ if(window.loadAdhesionsEnLigne) loadAdhesionsEnLigne(); if(window.loadMembersArbre) loadMembersArbre(); });
     if(window.loadAdhesionsEnLigne) loadAdhesionsEnLigne();
+    if(window.loadMembersArbre) loadMembersArbre();
     const perb=document.querySelector('nav.tabs button[data-tab="personnel"]'); if(perb) perb.addEventListener('click',()=>{ if(window.loadPersonnel) loadPersonnel(); });
     const jab=document.querySelector('nav.tabs button[data-tab="journal"]'); if(jab) jab.addEventListener('click',()=>{ if(window.loadJournalActions) loadJournalActions(); });
     if(prof.super_admin){ const adb=document.querySelector('nav.tabs button[data-tab="admin"]'); if(adb){ adb.style.display=''; adb.addEventListener('click',()=>{ if(window.bobLoadAdmin) window.bobLoadAdmin(); }); } }
