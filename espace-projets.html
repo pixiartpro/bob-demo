@@ -148,6 +148,30 @@
       <div id="pmBesoins"></div>
     </div>
 
+    <div class="card" id="pmDocsCard" style="box-shadow:none;display:none">
+      <h2>📚 Les documents</h2>
+      <p class="h">À ouvrir sur le terrain ou à imprimer avant la sortie.</p>
+      <div id="pmDocs" style="display:flex;gap:8px;flex-wrap:wrap"></div>
+    </div>
+
+    <div class="card" id="pmModelesCard" style="box-shadow:none;display:none">
+      <h2>🧑‍🤝‍🧑 Les modèles <span class="pill">🔒 porteur + bureau</span></h2>
+      <p class="h">Les personnes photographiées ou filmées : contact, demande, autorisation. Personne d'autre ne voit ce bloc.</p>
+      <div id="pmModeles"></div>
+      <div class="composer">
+        <div class="row" style="display:flex;gap:8px;flex-wrap:wrap">
+          <input id="modNom" placeholder="Nom" style="flex:1;min-width:120px">
+          <input id="modContact" placeholder="Email ou téléphone" style="flex:1;min-width:150px">
+        </div>
+        <textarea id="modDemande" placeholder="Ce qu'on lui demande (ex : portrait devant sa boutique, mardi 17 h)" style="min-height:48px"></textarea>
+        <div class="row" style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+          <label style="font-size:13.5px;display:flex;align-items:center;gap:6px"><input type="checkbox" id="modMineur" style="width:18px;height:18px;accent-color:var(--p)"> 🧒 Mineur (2 signatures parentales)</label>
+          <span style="flex:1"></span>
+          <button class="btn p sm" data-act="add-modele">Ajouter</button>
+        </div>
+      </div>
+    </div>
+
     <div class="card" style="box-shadow:none">
       <h2>💬 Le fil du projet</h2>
       <p class="h">Questions, avancées, photos : tout se raconte ici.</p>
@@ -171,6 +195,9 @@
   <div class="mbox">
     <div class="mhead"><h2>➕ Mon nouveau projet</h2><button class="xbtn" data-act="close-n">✕</button></div>
     <p class="h" style="color:var(--muted);font-size:13.5px">Décris ton idée simplement — tu pourras tout compléter après.</p>
+    <div class="field"><label>Type de projet</label><select id="npType">
+      <option value="libre" selected>🧩 Projet libre</option>
+      <option value="sortie">📸 Sortie photo / vidéo — étapes pré-remplies</option></select></div>
     <div class="field"><label>Le nom du projet</label><input id="npNom" placeholder="Ex : Portrait de Mme Payet, la couturière du quartier"></div>
     <div class="field"><label>En quelques phrases, c'est quoi ?</label><textarea id="npPitch" placeholder="Ce qu'on veut faire, pour qui, et pourquoi ça compte."></textarea></div>
     <div class="field"><label>De quoi as-tu besoin ? (optionnel)</label><textarea id="npBesoins" placeholder="Matériel, coups de main, contacts…" style="min-height:56px"></textarea></div>
@@ -384,7 +411,14 @@ async function openProject(id){
   $('#pmJalonsCard').style.display=cptr?'none':'';
   $('#pmBesoinsCard').style.display=cptr?'none':'';
   renderEditBlock(p); if(!cptr){ renderJalons(p); renderBesoins(p); }
+  /* documents de terrain (par asso) + bloc modèles (porteur/bureau seulement) */
+  const showDocs=!cptr&&ASSO&&ASSO.slug==='bokaf';
+  $('#pmDocsCard').style.display=showDocs?'':'none';
+  if(showDocs){ $('#pmDocs').innerHTML=DOCS_BOKAF.map(x=>'<a class="btn g sm" style="text-decoration:none" target="_blank" rel="noopener" href="'+esc(x.href)+'">'+esc(x.t)+'</a>').join(''); }
+  const showMod=!cptr&&canEditProj(p);
+  $('#pmModelesCard').style.display=showMod?'':'none';
   $('#pModal').classList.add('open');
+  if(showMod){ await loadModeles(p.id); renderModeles(); }
   await loadPosts(p.id);
   seenSet(p.id); renderMain();
 }
@@ -512,7 +546,9 @@ async function createProject(){
   const nom=$('#npNom').value.trim();
   if(!nom){ toast('Donne un nom à ton projet.'); return; }
   const btn=$('#createBtn'); btn.disabled=true; btn.textContent='Création…';
-  const d={ pitch:$('#npPitch').value.trim(), besoins:$('#npBesoins').value.trim(), statut:'actif', jalons:[], porteur_nom:ME.name };
+  const type=$('#npType')?$('#npType').value:'libre';
+  const d={ pitch:$('#npPitch').value.trim(), besoins:$('#npBesoins').value.trim(), statut:'actif',
+    jalons:(type==='sortie'?JALONS_SORTIE.map(t=>({t:t,done:false})):[]), gabarit:type, porteur_nom:ME.name };
   const {data,error}=await sb.from('projects').insert({asso_id:ME.asso, owner_id:ME.id, name:nom, data:d}).select('id').maybeSingle();
   btn.disabled=false; btn.textContent='Créer mon projet';
   if(error){ toast('Création impossible : '+error.message); return; }
@@ -520,6 +556,78 @@ async function createProject(){
   toast('Projet créé ✓ — à toi de jouer !');
   await loadProjects(); renderMain();
   if(data&&data.id) openProject(data.id);
+}
+
+/* ===== Sortie photo/vidéo : gabarit, documents, modèles ===== */
+const JALONS_SORTIE=[
+  '📋 Définir le sujet et les personnes à photographier/filmer',
+  '📍 Repérage du lieu et de la lumière',
+  '📝 Autorisations droit à l\'image signées (adulte / mineur)',
+  '🎒 Vérifier le matériel : batteries, cartes vides, sauvegarde',
+  '📸 Le jour J — shooting / tournage',
+  '💾 Sauvegarder en DOUBLE le soir même',
+  '🎞️ Tri et retouche / dérushage',
+  '📤 Livrer aux modèles + diffuser'
+];
+const DOCS_BOKAF=[
+  {t:'📝 Autorisation image — adulte', href:'bokaf-autorisation-image-adulte.html'},
+  {t:'📝 Autorisation image — mineur', href:'bokaf-autorisation-image-mineur.html'},
+  {t:'📸 Rappels photo — fiche terrain', href:'fiche-technique-photo.html'},
+  {t:'🎬 Rappels vidéo — fiche terrain', href:'fiche-technique-video.html'}
+];
+const AUTOR={a_demander:'⏳ À demander', envoyee:'✉️ Envoyée', signee:'✅ Signée', refusee:'🚫 Refusée'};
+let MODELES=[];
+async function loadModeles(projectId){
+  const {data,error}=await sb.from('projet_modeles').select('*').eq('project_id',projectId).order('created_at',{ascending:true});
+  if(error){ MODELES=[]; return; }
+  MODELES=data||[];
+}
+function mailtoModele(m){
+  if(!m.contact||m.contact.indexOf('@')<0) return '';
+  const doc='https://bokaf.bob.re/bokaf-autorisation-image-'+(m.mineur?'mineur':'adulte')+'.html';
+  const sujet='BOKAF — '+((CURRENT&&CURRENT.name)||'notre projet')+' : infos & autorisation';
+  const corps='Bonjour '+(m.nom||'')+',\n\n'+(m.demande||'Nous aimerions te photographier/filmer pour notre projet associatif.')+
+    '\n\nL\'autorisation à signer : '+doc+'\n\nMerci beaucoup !\n'+ME.name+' — BOKAF';
+  return 'mailto:'+encodeURIComponent(m.contact)+'?subject='+encodeURIComponent(sujet)+'&body='+encodeURIComponent(corps);
+}
+function renderModeles(){
+  const box=$('#pmModeles');
+  if(!MODELES.length){ box.innerHTML='<p class="empty" style="padding:4px">Personne pour l\'instant — ajoute un modèle ci-dessous.</p>'; return; }
+  box.innerHTML=MODELES.map(m=>{
+    const mail=mailtoModele(m);
+    return '<div class="post">'+
+      '<span class="who">'+esc(m.nom||'')+(m.mineur?' 🧒':'')+'</span>'+
+      (m.contact?'<span class="when">'+esc(m.contact)+'</span>':'')+
+      (m.demande?'<p class="body" style="margin-top:2px">'+esc(m.demande)+'</p>':'')+
+      '<div class="meta" style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;align-items:center">'+
+        '<select data-modstatut="'+esc(m.id)+'" style="width:auto;padding:6px 10px;font-size:13px">'+
+          Object.keys(AUTOR).map(k=>'<option value="'+k+'"'+(m.autorisation===k?' selected':'')+'>'+AUTOR[k]+'</option>').join('')+'</select>'+
+        (mail?'<a class="btn g sm" style="text-decoration:none" href="'+esc(mail)+'">✉️ Écrire</a>':'')+
+        '<button class="btn g sm" data-moddel="'+esc(m.id)+'">🗑</button>'+
+      '</div></div>';
+  }).join('');
+}
+async function addModele(){
+  if(!CURRENT) return;
+  const nom=$('#modNom').value.trim();
+  if(!nom){ toast('Indique au moins le nom.'); return; }
+  const {error}=await sb.from('projet_modeles').insert({ asso_id:ME.asso, project_id:CURRENT.id, nom:nom,
+    contact:$('#modContact').value.trim()||null, demande:$('#modDemande').value.trim()||null, mineur:$('#modMineur').checked });
+  if(error){ toast('Ajout refusé : '+error.message); return; }
+  $('#modNom').value=''; $('#modContact').value=''; $('#modDemande').value=''; $('#modMineur').checked=false;
+  await loadModeles(CURRENT.id); renderModeles();
+}
+async function setModStatut(id,val){
+  const {error}=await sb.from('projet_modeles').update({autorisation:val, updated_at:new Date().toISOString()}).eq('id',id);
+  if(error){ toast('Changement refusé : '+error.message); return; }
+  const m=MODELES.find(x=>x.id===id); if(m) m.autorisation=val;
+}
+async function delModele(id){
+  const m=MODELES.find(x=>x.id===id); if(!m) return;
+  if(!confirm('Retirer '+(m.nom||'ce modèle')+' de la liste ?')) return;
+  const {error}=await sb.from('projet_modeles').delete().eq('id',id);
+  if(error){ toast('Retrait refusé : '+error.message); return; }
+  await loadModeles(CURRENT.id); renderModeles();
 }
 
 /* ===== Matériel (brique 3) ===== */
@@ -622,6 +730,7 @@ document.addEventListener('click',async e=>{
   const mg=e.target.closest('[data-matgive]'); if(mg){ matRendre(mg.getAttribute('data-matgive')); return; }
   const med=e.target.closest('[data-matedit]'); if(med){ const m=MATERIEL.find(x=>x.id===med.getAttribute('data-matedit')); if(m) openMatModal(m); return; }
   const md=e.target.closest('[data-matdel]'); if(md){ matRetirer(md.getAttribute('data-matdel')); return; }
+  const mdd=e.target.closest('[data-moddel]'); if(mdd){ delModele(mdd.getAttribute('data-moddel')); return; }
   const act=e.target.closest('[data-act]'); if(!act) return;
   switch(act.getAttribute('data-act')){
     case 'open-n': $('#nModal').classList.add('open'); break;
@@ -636,6 +745,7 @@ document.addEventListener('click',async e=>{
     case 'open-m': openMatModal(null); break;
     case 'close-m': $('#mModal').classList.remove('open'); MAT_EDIT=null; break;
     case 'save-materiel': saveMateriel(); break;
+    case 'add-modele': addModele(); break;
     case 'pick-photo': $('#postPhoto').click(); break;
     case 'send-post': sendPost(); break;
   }
@@ -646,6 +756,8 @@ document.addEventListener('change',e=>{
     $('#photoTag').textContent=PHOTO_FILE?('📎 '+PHOTO_FILE.name):'';
     return;
   }
+  const ms=e.target.closest?e.target.closest('[data-modstatut]'):null;
+  if(ms){ setModStatut(ms.getAttribute('data-modstatut'), ms.value); return; }
   const cb=e.target.closest?e.target.closest('[data-jalon]'):null;
   if(cb){ toggleJalon(parseInt(cb.getAttribute('data-jalon'),10), cb.checked); }
 });
