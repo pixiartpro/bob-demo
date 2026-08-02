@@ -105,7 +105,13 @@
   <h1 class="t">🎬 Les projets</h1>
   <p class="sub">L'établi des projets de l'association : chacun porte le sien, tout le monde peut suivre et donner un coup de main.</p>
 
+  <div id="espTabs" style="display:none;gap:8px;margin:0 0 16px">
+    <button class="btn p sm" id="tabProjets" data-act="tab-projets">🎬 Projets</button>
+    <button class="btn g sm" id="tabMateriel" data-act="tab-materiel">🧰 Matériel</button>
+  </div>
+
   <div id="zone"><p class="muted">Chargement…</p></div>
+  <div id="zoneMat" style="display:none"></div>
 </div>
 
 <!-- ===== Fiche projet ===== -->
@@ -172,6 +178,27 @@
   </div>
 </div>
 
+<!-- ===== Déclarer / modifier du matériel ===== -->
+<div class="modal" id="mModal">
+  <div class="mbox">
+    <div class="mhead"><h2 id="mmTitle">🧰 Déclarer du matériel</h2><button class="xbtn" data-act="close-m">✕</button></div>
+    <p class="h" style="color:var(--muted);font-size:13.5px">Ton matériel reste le tien — le registre dit juste qui possède quoi et entre quelles mains ça se trouve.</p>
+    <div class="field"><label>C'est quoi ?</label><input id="mNom" placeholder="Ex : Canon R6 + objectif 24-70"></div>
+    <div class="field"><label>Catégorie</label><select id="mCat">
+      <option value="camera">📷 Caméra / photo</option><option value="son">🎙️ Son</option>
+      <option value="lumiere">💡 Lumière</option><option value="info">💻 Informatique</option>
+      <option value="autre" selected>🧰 Autre</option></select></div>
+    <div class="field" id="mProprioField" style="display:none"><label>À qui appartient-il ?</label><select id="mProprio">
+      <option value="adherent" selected>🎒 À moi</option><option value="asso">🏛️ À l'association</option>
+      <option value="mise_a_dispo">🤝 Mise à disposition (partenaire)</option></select></div>
+    <div class="field"><label>État</label><select id="mEtat">
+      <option value="bon" selected>🟢 Bon état</option><option value="moyen">🟠 Fatigué</option>
+      <option value="hs">🔴 En panne</option></select></div>
+    <div class="field"><label>Notes (optionnel)</label><textarea id="mNotes" placeholder="Accessoires, particularités, précautions…" style="min-height:56px"></textarea></div>
+    <button class="btn p" data-act="save-materiel" id="mSaveBtn" style="width:100%">Déclarer</button>
+  </div>
+</div>
+
 <div id="toast"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -228,6 +255,8 @@ let CURRENT=null;  /* projet ouvert (objet) */
 let PHOTO_FILE=null;
 let COMPTOIR=null; /* fil général de l'asso (projet spécial data.type='comptoir') */
 let LATEST={};     /* project_id -> date du dernier message (pour le badge « du neuf ») */
+let MATERIEL=[];   /* registre du matériel (brique 3) */
+let MAT_EDIT=null; /* fiche matériel en cours de modification (null = déclaration) */
 
 const canBureau=()=>ME&&['president','tresorier','bureau'].includes(ME.role);
 const canEditProj=p=>ME&&p&&(p.owner_id===ME.id||canBureau());
@@ -240,6 +269,14 @@ const isComptoir=p=>!!(p&&p.data&&p.data.type==='comptoir');
 function seenGet(id){ try{ return localStorage.getItem('bob_vu_'+id)||''; }catch(e){ return ''; } }
 function seenSet(id){ try{ localStorage.setItem('bob_vu_'+id, new Date().toISOString()); }catch(e){} }
 function hasNew(id){ const l=LATEST[id]; if(!l) return false; const s=seenGet(id); return !s || (new Date(l).getTime()>new Date(s).getTime()); }
+const featMat=()=>{ try{ return ((ASSO&&ASSO.features&&ASSO.features.materiel)||'')==='on'; }catch(e){ return false; } };
+const CATS={camera:'📷 Caméra / photo', son:'🎙️ Son', lumiere:'💡 Lumière', info:'💻 Informatique', autre:'🧰 Autre'};
+const ETATS={bon:'🟢 Bon état', moyen:'🟠 Fatigué', hs:'🔴 En panne'};
+function proprioLabel(m){
+  if(m.proprietaire_type==='asso') return '🏛️ '+((ASSO&&ASSO.name)||'l\'asso');
+  if(m.proprietaire_type==='mise_a_dispo') return '🤝 Mise à dispo';
+  return '🎒 '+(m.proprietaire_nom||'Un adhérent');
+}
 
 /* ===== Démarrage ===== */
 applySkin(doorGuess());
@@ -259,6 +296,18 @@ async function boot(){
   if(!featureOn()){ renderMsg('🔒 Module non activé','L\'espace projets n\'est pas encore ouvert pour ton association. Parles-en au bureau !'); return; }
   await loadProjects();
   renderMain();
+  if(featMat()){ $('#espTabs').style.display='flex'; await loadMateriel(); renderMateriel(); }
+}
+function showEspTab(k){
+  const mat=k==='materiel';
+  $('#zone').style.display=mat?'none':'';
+  $('#zoneMat').style.display=mat?'':'none';
+  $('#tabProjets').className='btn sm '+(mat?'g':'p');
+  $('#tabMateriel').className='btn sm '+(mat?'p':'g');
+  document.querySelector('h1.t').textContent=mat?'🧰 Le matériel':'🎬 Les projets';
+  document.querySelector('p.sub').textContent=mat
+    ?'Le registre du matériel : qui possède quoi, en quel état, et entre quelles mains.'
+    :'L\'établi des projets de l\'association : chacun porte le sien, tout le monde peut suivre et donner un coup de main.';
 }
 function renderGate(){
   const slug=doorGuess(); const d=DOORS[slug];
@@ -473,10 +522,106 @@ async function createProject(){
   if(data&&data.id) openProject(data.id);
 }
 
+/* ===== Matériel (brique 3) ===== */
+async function loadMateriel(){
+  const {data,error}=await sb.from('materiel').select('*').order('updated_at',{ascending:false});
+  if(error){ toast('Lecture du matériel impossible : '+error.message); MATERIEL=[]; return; }
+  MATERIEL=data||[];
+}
+function matCardHtml(m){
+  const mine=m.proprietaire_id===ME.id;
+  const heldByMe=m.detenu_par_id===ME.id;
+  const held=!!m.detenu_par_id;
+  return '<div class="pcard" style="cursor:default">'+
+    '<h3>'+esc(m.nom||'Sans nom')+'</h3>'+
+    (m.notes?'<p>'+esc(m.notes)+'</p>':'')+
+    '<div class="meta">'+
+      '<span class="pill">'+esc(CATS[m.categorie]||CATS.autre)+'</span>'+
+      '<span class="pill'+(mine?' on':'')+'">'+esc(proprioLabel(m))+'</span>'+
+      '<span class="pill">'+esc(ETATS[m.etat]||ETATS.bon)+'</span>'+
+      '<span class="pill'+(held?' done':'')+'">'+(held?'✋ chez '+esc(m.detenu_par_nom||'quelqu\'un'):'🏠 disponible')+'</span>'+
+    '</div>'+
+    '<div class="meta" style="margin-top:10px">'+
+      (heldByMe?'<button class="btn g sm" data-matgive="'+esc(m.id)+'">↩️ Je le rends</button>'
+               :'<button class="btn p sm" data-mattake="'+esc(m.id)+'">✋ Je l\'emprunte</button>')+
+      ((mine||canBureau())?'<button class="btn g sm" data-matedit="'+esc(m.id)+'">✏️ Modifier</button>':'')+
+      ((mine||canBureau())?'<button class="btn g sm" data-matdel="'+esc(m.id)+'">🗑 Retirer</button>':'')+
+    '</div></div>';
+}
+function renderMateriel(){
+  let h='<div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap">'+
+    '<span class="pill on">👋 '+esc(ME.name)+'</span><span style="flex:1"></span>'+
+    '<button class="btn p" data-act="open-m">➕ Déclarer du matériel</button></div>';
+  h+= MATERIEL.length? '<div class="pgrid">'+MATERIEL.map(matCardHtml).join('')+'</div>'
+     : '<div class="card"><p class="empty" style="padding:6px">Rien au registre pour l\'instant. Déclare ce que tu peux apporter — caméra, micro, pied, ordi… tout compte !</p></div>';
+  h+='<div class="card" style="margin-top:20px"><h2>❓ Comment ça marche</h2><p class="h" style="margin:0">'+
+     'Chacun <b>déclare son propre matériel</b> et en reste propriétaire. Avant un tournage, tu vois qui a quoi ; '+
+     'tu cliques <b>✋ je l\'emprunte</b> quand tu le prends, <b>↩️ je le rends</b> quand tu le ramènes. Le bureau peut déclarer le matériel commun.</p></div>';
+  $('#zoneMat').innerHTML=h;
+}
+function openMatModal(m){
+  MAT_EDIT=m||null;
+  $('#mmTitle').textContent=m?'✏️ Modifier « '+(m.nom||'')+' »':'🧰 Déclarer du matériel';
+  $('#mSaveBtn').textContent=m?'Enregistrer':'Déclarer';
+  $('#mNom').value=m?(m.nom||''):'';
+  $('#mCat').value=m?(m.categorie||'autre'):'autre';
+  $('#mEtat').value=m?(m.etat||'bon'):'bon';
+  $('#mNotes').value=m?(m.notes||''):'';
+  /* le choix du propriétaire n'apparaît qu'au bureau, et seulement à la déclaration */
+  $('#mProprioField').style.display=(!m&&canBureau())?'':'none';
+  $('#mProprio').value='adherent';
+  $('#mModal').classList.add('open');
+}
+async function saveMateriel(){
+  const nom=$('#mNom').value.trim();
+  if(!nom){ toast('Donne un nom au matériel.'); return; }
+  const btn=$('#mSaveBtn'); btn.disabled=true;
+  try{
+    if(MAT_EDIT){
+      const {error}=await sb.from('materiel').update({nom:nom, categorie:$('#mCat').value, etat:$('#mEtat').value, notes:$('#mNotes').value.trim(), updated_at:new Date().toISOString()}).eq('id',MAT_EDIT.id);
+      if(error){ toast('Modification refusée : '+error.message); return; }
+      toast('Matériel mis à jour ✓');
+    }else{
+      const t=(canBureau()?$('#mProprio').value:'adherent');
+      const row={ asso_id:ME.asso, nom:nom, categorie:$('#mCat').value, etat:$('#mEtat').value, notes:$('#mNotes').value.trim(),
+        proprietaire_type:t,
+        proprietaire_id:(t==='adherent'?ME.id:null),
+        proprietaire_nom:(t==='adherent'?ME.name:(t==='asso'?((ASSO&&ASSO.name)||'l\'asso'):'Partenaire')) };
+      const {error}=await sb.from('materiel').insert(row);
+      if(error){ toast('Déclaration refusée : '+error.message); return; }
+      toast('Matériel déclaré ✓');
+    }
+    $('#mModal').classList.remove('open'); MAT_EDIT=null;
+    await loadMateriel(); renderMateriel();
+  } finally { btn.disabled=false; }
+}
+async function matPrendre(id){
+  const {error}=await sb.rpc('materiel_prendre',{p_id:id});
+  if(error){ toast('Emprunt impossible : '+error.message); return; }
+  await loadMateriel(); renderMateriel();
+}
+async function matRendre(id){
+  const {error}=await sb.rpc('materiel_rendre',{p_id:id});
+  if(error){ toast('Retour impossible : '+error.message); return; }
+  await loadMateriel(); renderMateriel();
+}
+async function matRetirer(id){
+  const m=MATERIEL.find(x=>x.id===id); if(!m) return;
+  if(!confirm('Retirer « '+(m.nom||'')+' » du registre ?')) return;
+  const {error}=await sb.from('materiel').delete().eq('id',id);
+  if(error){ toast('Retrait refusé : '+error.message); return; }
+  toast('Retiré du registre ✓');
+  await loadMateriel(); renderMateriel();
+}
+
 /* ===== Événements (délégués — jamais d'onclick interpolé) ===== */
 document.addEventListener('click',async e=>{
   const pj=e.target.closest('[data-proj]'); if(pj){ openProject(pj.getAttribute('data-proj')); return; }
   const dj=e.target.closest('[data-deljalon]'); if(dj){ delJalon(parseInt(dj.getAttribute('data-deljalon'),10)); return; }
+  const mt=e.target.closest('[data-mattake]'); if(mt){ matPrendre(mt.getAttribute('data-mattake')); return; }
+  const mg=e.target.closest('[data-matgive]'); if(mg){ matRendre(mg.getAttribute('data-matgive')); return; }
+  const med=e.target.closest('[data-matedit]'); if(med){ const m=MATERIEL.find(x=>x.id===med.getAttribute('data-matedit')); if(m) openMatModal(m); return; }
+  const md=e.target.closest('[data-matdel]'); if(md){ matRetirer(md.getAttribute('data-matdel')); return; }
   const act=e.target.closest('[data-act]'); if(!act) return;
   switch(act.getAttribute('data-act')){
     case 'open-n': $('#nModal').classList.add('open'); break;
@@ -486,6 +631,11 @@ document.addEventListener('click',async e=>{
     case 'save-project': saveProject(); break;
     case 'save-besoins': saveBesoins(); break;
     case 'add-jalon': addJalon(); break;
+    case 'tab-projets': showEspTab('projets'); break;
+    case 'tab-materiel': showEspTab('materiel'); break;
+    case 'open-m': openMatModal(null); break;
+    case 'close-m': $('#mModal').classList.remove('open'); MAT_EDIT=null; break;
+    case 'save-materiel': saveMateriel(); break;
     case 'pick-photo': $('#postPhoto').click(); break;
     case 'send-post': sendPost(); break;
   }
@@ -499,7 +649,7 @@ document.addEventListener('change',e=>{
   const cb=e.target.closest?e.target.closest('[data-jalon]'):null;
   if(cb){ toggleJalon(parseInt(cb.getAttribute('data-jalon'),10), cb.checked); }
 });
-document.querySelectorAll('.modal').forEach(m=>m.addEventListener('click',e=>{ if(e.target===m){ m.classList.remove('open'); if(m.id==='pModal') CURRENT=null; } }));
+document.querySelectorAll('.modal').forEach(m=>m.addEventListener('click',e=>{ if(e.target===m){ m.classList.remove('open'); if(m.id==='pModal') CURRENT=null; if(m.id==='mModal') MAT_EDIT=null; } }));
 $('#navOut').addEventListener('click',async()=>{ try{ await sb.auth.signOut(); }catch(e){} location.reload(); });
 </script>
 </body>
