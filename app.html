@@ -69,7 +69,7 @@
   nav.famtabs button:hover{transform:translateY(-1px)}
   /* liseré d'accent toujours visible (la couleur ne dépend pas de l'état actif) */
   nav.famtabs button[data-group="accueil"]{border-bottom-color:#5a6b7a}
-  nav.famtabs button[data-group="adherents"]{border-bottom-color:#127a51}
+  nav.famtabs button[data-group="adherents"]{border-bottom-color:var(--brand)}
   nav.famtabs button[data-group="equipe"]{border-bottom-color:#7a3b5e}
   nav.famtabs button[data-group="finances"]{border-bottom-color:#c8881f}
   nav.famtabs button[data-group="regl"]{border-bottom-color:#7d8a83}
@@ -83,7 +83,7 @@
   /* niveau 2 : l'onglet actif prend la teinte de sa famille, légère profondeur */
   nav.tabs button.active{box-shadow:0 3px 9px -3px rgba(60,50,40,.34)}
   nav.tabs .tabgroup[data-group="accueil"] button.active{background:#5a6b7a}
-  nav.tabs .tabgroup[data-group="adherents"] button.active{background:#127a51}
+  nav.tabs .tabgroup[data-group="adherents"] button.active{background:var(--brand)}
   nav.tabs .tabgroup[data-group="equipe"] button.active{background:#7a3b5e}
   nav.tabs .tabgroup[data-group="finances"] button.active{background:#c8881f}
   nav.tabs .tabgroup[data-group="regl"] button.active{background:#7d8a83}
@@ -196,7 +196,7 @@
   }
   @media(max-width:600px){.field{min-width:100%}}
   /* Organigramme */
-  .orga-band{background:linear-gradient(135deg,#127a51,#0f6b46);color:#fff;text-align:center;font-weight:700;padding:10px 14px;border-radius:12px;font-size:14px}
+  .orga-band{background:linear-gradient(135deg,var(--brand),var(--brand-dk));color:#fff;text-align:center;font-weight:700;padding:10px 14px;border-radius:12px;font-size:14px}
   .orga-link{text-align:center;color:var(--brand);font-size:18px;line-height:1;margin:2px 0}
   .orga-h{margin:6px 0 10px;font-size:14px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
   .orga-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
@@ -220,7 +220,7 @@
   .qfq-contact{font-size:12px;color:var(--muted);margin-top:7px;display:flex;gap:12px;flex-wrap:wrap}
   .qfq-contact a{color:var(--brand);text-decoration:none}
   .qfq-tag{font-size:10.5px;font-weight:700;padding:2px 8px;border-radius:999px;white-space:nowrap}
-  .qfq-tag.sal{background:#e2f4ec;color:#127a51}
+  .qfq-tag.sal{background:#e2f4ec;color:var(--brand)}
   .qfq-tag.ben{background:#eef1fb;color:#3a51c8}
   .qfq-tag.todo{background:#fbe9d7;color:#b9760f}
   .qfq-tag.off{background:#eef1ef;color:#5c6b63}
@@ -231,7 +231,7 @@
   .ados-y{flex:0 0 auto;width:56px;height:34px;border-radius:8px;background:#2a55c4;color:#fff;font-weight:800;font-size:14px;display:flex;align-items:center;justify-content:center;z-index:1}
   .ados-t{flex:1;font-size:13.5px;line-height:1.55;padding-top:5px}
   /* ===== Accueil bureau : bienvenue + accès rapide (22/06/2026) ===== */
-  .dashwelcome{background:linear-gradient(135deg,#127a51,#0f6b46);color:#fff;border-radius:16px;padding:18px 22px;margin-bottom:20px;display:flex;align-items:center;gap:16px;box-shadow:var(--shadow)}
+  .dashwelcome{background:linear-gradient(135deg,var(--brand),var(--brand-dk));color:#fff;border-radius:16px;padding:18px 22px;margin-bottom:20px;display:flex;align-items:center;gap:16px;box-shadow:var(--shadow)}
   .dashwelcome .dwav{width:46px;height:46px;border-radius:50%;background:rgba(255,255,255,.18);display:grid;place-items:center;font-size:24px;flex:0 0 auto}
   .dashwelcome h2{margin:0;font-size:19px;color:#fff}
   .dashwelcome p{margin:2px 0 0;font-size:13px;opacity:.92}
@@ -2122,7 +2122,7 @@
 
   <!-- PROJET & ORIENTATIONS -->
   <section id="projet" class="page">
-    <div class="panel" style="background:linear-gradient(135deg,#127a51,#0f6b46);color:#fff">
+    <div class="panel" style="background:linear-gradient(135deg,var(--brand),var(--brand-dk));color:#fff">
       <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap">
         <div style="font-size:42px;flex:0 0 auto">🧭</div>
         <div style="flex:1;min-width:240px">
@@ -2585,7 +2585,7 @@ Deux locaux complémentaires — le Bois de Nèfles (« le haut » : jeunesse, a
     </div>
 
     <!-- étape2 23/06 : ancien onglet « 🎤 Présentation » fusionné ici en « 📖 Découvrir Bob ». Revert = redéplacer ce bloc dans <section id="presentation"> + rendre le bouton -->
-    <div class="panel" style="background:linear-gradient(135deg,#127a51,#0f6b46);color:#fff">
+    <div class="panel" style="background:linear-gradient(135deg,var(--brand),var(--brand-dk));color:#fff">
       <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap">
         <div style="font-size:42px;flex:0 0 auto">🍍</div>
         <div style="flex:1;min-width:240px">
@@ -3469,14 +3469,14 @@ function askZanana(live){
   if(q.length<3){ out.innerHTML=''; return; }
   const res=faqScore(q);
   if(res.length && res[0].sc>=2){
-    let html='<div style="display:flex;gap:10px;align-items:flex-start"><img src="zanana-point.png" style="width:34px;height:34px;object-fit:contain;flex:0 0 auto" onerror="this.style.display=\'none\'"><div style="flex:1"><b>Voici ce que je te propose :</b></div></div>';
+    let html='<div style="display:flex;gap:10px;align-items:flex-start"><img src="'+((window.bobMasc&&window.bobMasc('point'))||'zanana-point.png')+'" style="width:34px;height:34px;object-fit:contain;flex:0 0 auto" onerror="this.style.display=\'none\'"><div style="flex:1"><b>Voici ce que je te propose :</b></div></div>';
     html+=faqCard(res[0].item,true);
     const autres=res.slice(1,3).filter(x=>x.sc>=2);
     if(autres.length){ html+='<p class="hint" style="margin:10px 0 2px">Ça peut aussi t\'aider :</p>'+autres.map(x=>faqCard(x.item,false)).join(''); }
     out.innerHTML=html;
   } else {
     out.innerHTML='<div class="panel" style="background:#fff8ec;border:1px solid #f0d9a8">'
-      +'<div style="display:flex;gap:10px;align-items:flex-start"><img src="zanana-point.png" style="width:34px;height:34px;object-fit:contain;flex:0 0 auto" onerror="this.style.display=\'none\'">'
+      +'<div style="display:flex;gap:10px;align-items:flex-start"><img src="'+((window.bobMasc&&window.bobMasc('point'))||'zanana-point.png')+'" style="width:34px;height:34px;object-fit:contain;flex:0 0 auto" onerror="this.style.display=\'none\'">'
       +'<div style="flex:1"><b>Je n\'ai pas encore la réponse à ça.</b><p class="hint" style="margin:6px 0 10px">Transmets ta question : on y répondra et elle sera ajoutée à l\'aide.</p>'
       +'<button class="btn" onclick="faqAskHelp()">📨 Transmettre ma question</button> <span id="faqSent" class="muted" style="font-size:13px"></span></div></div></div>';
   }
@@ -4142,7 +4142,7 @@ window.docView=function(url,name){
     else if(office) body='<iframe src="https://view.officeapps.live.com/op/embed.aspx?src='+encodeURIComponent(url)+'" style="width:100%;height:80vh;border:none;border-radius:10px;background:#fff"></iframe>'
       +'<div class="hint" style="margin-top:6px;font-size:11px">Aperçu Excel/PowerPoint affiché via le visualiseur Microsoft (le fichier, lui, reste stocké dans Bob). S\'il ne s\'affiche pas, utilise le ⬇️ en haut à droite.</div>';
     else if(isHtml) body='<iframe src="'+url+'" style="width:100%;height:80vh;border:none;border-radius:10px;background:#fff"></iframe>';
-    else body='<div style="padding:28px;text-align:center;color:#5c7468">Ce type de fichier ne s\'affiche pas dans le navigateur.<br><a href="'+url+'" target="_blank" rel="noopener" style="display:inline-block;margin-top:12px;background:#127a51;color:#fff;text-decoration:none;border-radius:999px;padding:9px 16px;font-weight:800">⬇️ Télécharger</a></div>';
+    else body='<div style="padding:28px;text-align:center;color:#5c7468">Ce type de fichier ne s\'affiche pas dans le navigateur.<br><a href="'+url+'" target="_blank" rel="noopener" style="display:inline-block;margin-top:12px;background:var(--brand);color:#fff;text-decoration:none;border-radius:999px;padding:9px 16px;font-weight:800">⬇️ Télécharger</a></div>';
   }
   let ov=document.getElementById('docViewer');
   if(!ov){ ov=document.createElement('div'); ov.id='docViewer'; ov.style.cssText='position:fixed;inset:0;z-index:3000'; document.body.appendChild(ov); }
@@ -4185,7 +4185,7 @@ window.docxRenderLocal=async function(url, boxId){
       box.querySelectorAll('table').forEach(function(t){ t.style.maxWidth='100%'; });
     }
   }catch(e){
-    box.innerHTML='<div style="padding:28px;text-align:center;color:#5c7468">L\'aperçu n\'a pas pu être généré ('+esc((e&&e.message)||'erreur')+').<br><a href="'+url+'" target="_blank" rel="noopener" style="display:inline-block;margin-top:12px;background:#127a51;color:#fff;text-decoration:none;border-radius:999px;padding:9px 16px;font-weight:800">⬇️ Télécharger</a></div>';
+    box.innerHTML='<div style="padding:28px;text-align:center;color:#5c7468">L\'aperçu n\'a pas pu être généré ('+esc((e&&e.message)||'erreur')+').<br><a href="'+url+'" target="_blank" rel="noopener" style="display:inline-block;margin-top:12px;background:var(--brand);color:#fff;text-decoration:none;border-radius:999px;padding:9px 16px;font-weight:800">⬇️ Télécharger</a></div>';
   }
 };
 window.docViewClose=function(){ const ov=document.getElementById('docViewer'); if(ov){ ov.style.display='none'; ov.innerHTML=''; } document.body.style.overflow=''; };
@@ -5857,7 +5857,7 @@ function afficheQR(){
       +'<p style="margin:16px 0 4px;font-weight:600;font-size:15px">📱 Ouvrez l\'appareil photo du téléphone,<br>visez le code… et c\'est parti&nbsp;!</p>'
       +'<p style="margin:0 0 16px;color:#62756b;font-size:13.5px">ou tapez&nbsp;: <b style="color:#16302a">casebdn.re</b></p>'
       +'<div style="border-top:1px solid #e7efe9;padding-top:12px;display:flex;align-items:center;justify-content:center;gap:10px">'
-        +'<img src="zanana-wave.png" alt="" onerror="this.style.display=\'none\'" style="height:44px">'
+        +'<img src="'+((window.bobMasc&&window.bobMasc('wave'))||'zanana-wave.png')+'" alt="" onerror="this.style.display=\'none\'" style="height:44px">'
         +'<span style="font-size:12.5px;color:#62756b;text-align:left">CASE du Bois de Nèfles<br>122 Place de la Fraternité, 97490 Sainte-Clotilde</span>'
       +'</div>'
     +'</div>';
@@ -5912,7 +5912,7 @@ function renderCaprep(){
     } else {
       const mine=(p.avis||[]).find(function(a){return a.email===me.email;});
       action='<div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap">'
-        +'<button class="btn" style="background:#127a51;color:#fff;flex:1;min-width:160px" onclick="avisCaPoint(\''+p.id+'\',\'accord\')">✅ Lu, je suis d\'accord</button>'
+        +'<button class="btn" style="background:var(--brand);color:#fff;flex:1;min-width:160px" onclick="avisCaPoint(\''+p.id+'\',\'accord\')">✅ Lu, je suis d\'accord</button>'
         +'<button class="btn ghost" style="flex:1;min-width:140px" onclick="avisCaPoint(\''+p.id+'\',\'a_parler\')">💬 Je veux en parler</button>'
         +'</div>';
       if(mine){ action+='<div style="margin-top:6px;font-size:12px;color:#5c7468">Ton avis : <b>'+(mine.valeur==='accord'?'✅ d\'accord':'💬 à discuter')+'</b>'+(mine.ts?' le '+pvFmtTs(mine.ts):'')+' · <a href="#" onclick="retirerAvis(\''+p.id+'\');return false">retirer mon avis</a></div>'; }
@@ -8286,7 +8286,7 @@ renderAll();
   function addBanner(){
     const bar=document.createElement('div');
     bar.id='cloudBar';
-    bar.style.cssText='position:sticky;top:0;z-index:50;background:#127a51;color:#fff;display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:8px 14px;font:600 13px/-apple-system,Segoe UI,Roboto,sans-serif';
+    bar.style.cssText='position:sticky;top:0;z-index:50;background:var(--brand);color:#fff;display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:8px 14px;font:600 13px/-apple-system,Segoe UI,Roboto,sans-serif';
     bar.innerHTML='<span>🟢 En ligne — <b>'+esc(myProfile.full_name||myProfile.email||'')+'</b> · '+(ROLE_LABEL[myProfile.role]||myProfile.role)+'</span>'
       +'<span id="cloudSync" style="opacity:.9">✓ synchronisé</span>'
       +(canWrite?'':'<span style="background:#f6b400;color:#5b4300;padding:2px 9px;border-radius:999px">Lecture seule</span>')
@@ -8918,7 +8918,7 @@ renderAll();
       const list=(byMois[m.id]||[]);
       const cnt={fiche:0,cotisations:0,dsn:0}; list.forEach(function(p){ if(cnt[p.type]!=null)cnt[p.type]++; });
       const complet=cnt.fiche>0&&cnt.cotisations>0&&cnt.dsn>0;
-      const badge=complet?'<span style="background:#127a51;color:#fff;padding:2px 9px;border-radius:999px;font-size:12px">✅ complet</span>':'<span style="background:#f6b400;color:#5b4300;padding:2px 9px;border-radius:999px;font-size:12px">⏳ à compléter</span>';
+      const badge=complet?'<span style="background:var(--brand);color:#fff;padding:2px 9px;border-radius:999px;font-size:12px">✅ complet</span>':'<span style="background:#f6b400;color:#5b4300;padding:2px 9px;border-radius:999px;font-size:12px">⏳ à compléter</span>';
       const titre=(PAIE_MOIS_FR[m.mois]||('mois '+m.mois))+' '+m.annee;
       const groups=['fiche','cotisations','dsn'].map(function(t){
         const items=list.filter(function(p){return p.type===t;});
@@ -10897,7 +10897,7 @@ renderAll();
     let curP={photos:[],missing:0,total:0};
     try{ curP=await acmCuratedPhotos(ed); }catch(e){}
     const photoBlk=curP.total?('<h2>Photos retenues ('+curP.photos.length+(curP.missing?' affichée'+(curP.photos.length>1?'s':'')+' · '+curP.missing+' indisponible'+(curP.missing>1?'s':''):'')+')</h2><p class="meta">Usage à vérifier selon l\'autorisation de droit à l\'image (album interne ≠ diffusion à un tiers comme la Mairie). Document régénéré à chaque impression : une photo retirée du stockage n\'apparaît plus ici'+(curP.missing?' ('+curP.missing+' photo'+(curP.missing>1?'s':'')+' retenue'+(curP.missing>1?'s':'')+' non disponible'+(curP.missing>1?'s':'')+' actuellement)':'')+'.</p><div class="ph">'+curP.photos.map(function(p){ return '<figure><img src="'+E(p.url)+'" alt=""><figcaption>'+E(p.titre||'')+(p.jour?' · '+E(fmtDate(p.jour)):'')+'</figcaption></figure>'; }).join('')+'</div>'):'';
-    const html='<!doctype html><html lang="fr"><head><meta charset="utf-8"><title>Bilan — '+E(ed.nom)+'</title><style>body{font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;color:#1a1a1a;max-width:820px;margin:22px auto;padding:0 20px;line-height:1.5}h1{font-size:22px;margin:0 0 2px}h2{font-size:15px;border-bottom:2px solid #1d9e75;padding-bottom:3px;margin:22px 0 8px;color:#127a51}.meta{color:#555;font-size:13px}table{border-collapse:collapse;width:100%;font-size:13px}th,td{border:1px solid #ccc;padding:5px 8px;text-align:left}th{background:#f0f5f2}ul{margin:4px 0}.ident{font-size:13px;color:#333;margin:6px 0 4px}.ident div{margin:1px 0}.ph{display:flex;flex-wrap:wrap;gap:10px;margin-top:6px}.ph figure{margin:0;width:170px;break-inside:avoid;page-break-inside:avoid}.ph img{width:170px;height:128px;object-fit:cover;border-radius:6px;border:1px solid #ccc;display:block}.ph figcaption{font-size:11px;color:#555;margin-top:2px}@media print{.noprint{display:none}}</style></head><body><div class="noprint" style="text-align:right;margin-bottom:10px"><button onclick="window.print()" style="padding:8px 14px;font-size:14px;cursor:pointer">🖨️ Imprimer / Enregistrer en PDF</button></div><h1>Bilan d\'édition ACM — '+E(ed.nom)+'</h1>'+identBlk+'<h2>Effectif ('+eff.nb+')</h2><table><thead><tr><th>#</th><th>Enfant</th><th>Classe</th><th>Responsable</th></tr></thead><tbody>'+rows+'</tbody></table>'+(eff.sansFiche?'<p class="meta">+ '+eff.sansFiche+' inscription(s) « sans fiche enfant » (saisies au comptoir) au moment de la clôture.</p>':'')+encHtml+'<h2>Compte-rendu</h2><div>'+cr+'</div>'+projEducHtml+pedaSection+'<h2>Démarches (avant · pendant · après)</h2>'+dem+photoBlk+'<p class="meta" style="margin-top:30px">Document généré par Bob — '+E(asso)+'</p></body></html>';
+    const html='<!doctype html><html lang="fr"><head><meta charset="utf-8"><title>Bilan — '+E(ed.nom)+'</title><style>body{font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;color:#1a1a1a;max-width:820px;margin:22px auto;padding:0 20px;line-height:1.5}h1{font-size:22px;margin:0 0 2px}h2{font-size:15px;border-bottom:2px solid #1d9e75;padding-bottom:3px;margin:22px 0 8px;color:var(--brand)}.meta{color:#555;font-size:13px}table{border-collapse:collapse;width:100%;font-size:13px}th,td{border:1px solid #ccc;padding:5px 8px;text-align:left}th{background:#f0f5f2}ul{margin:4px 0}.ident{font-size:13px;color:#333;margin:6px 0 4px}.ident div{margin:1px 0}.ph{display:flex;flex-wrap:wrap;gap:10px;margin-top:6px}.ph figure{margin:0;width:170px;break-inside:avoid;page-break-inside:avoid}.ph img{width:170px;height:128px;object-fit:cover;border-radius:6px;border:1px solid #ccc;display:block}.ph figcaption{font-size:11px;color:#555;margin-top:2px}@media print{.noprint{display:none}}</style></head><body><div class="noprint" style="text-align:right;margin-bottom:10px"><button onclick="window.print()" style="padding:8px 14px;font-size:14px;cursor:pointer">🖨️ Imprimer / Enregistrer en PDF</button></div><h1>Bilan d\'édition ACM — '+E(ed.nom)+'</h1>'+identBlk+'<h2>Effectif ('+eff.nb+')</h2><table><thead><tr><th>#</th><th>Enfant</th><th>Classe</th><th>Responsable</th></tr></thead><tbody>'+rows+'</tbody></table>'+(eff.sansFiche?'<p class="meta">+ '+eff.sansFiche+' inscription(s) « sans fiche enfant » (saisies au comptoir) au moment de la clôture.</p>':'')+encHtml+'<h2>Compte-rendu</h2><div>'+cr+'</div>'+projEducHtml+pedaSection+'<h2>Démarches (avant · pendant · après)</h2>'+dem+photoBlk+'<p class="meta" style="margin-top:30px">Document généré par Bob — '+E(asso)+'</p></body></html>';
     try{ w.document.open(); w.document.write(html); w.document.close(); }catch(e){}
   };
 
@@ -11988,17 +11988,17 @@ renderAll();
   function addChatWidget(){
     chatSeen=parseInt(localStorage.getItem(chatSeenKey())||'0',10)||0;
     const st=document.createElement('style');
-    st.textContent='#chatFab{position:fixed;right:20px;bottom:20px;z-index:200;width:58px;height:58px;border-radius:50%;border:none;cursor:pointer;background:#127a51;color:#fff;font-size:24px;box-shadow:0 10px 26px rgba(16,60,40,.35)}'
+    st.textContent='#chatFab{position:fixed;right:20px;bottom:20px;z-index:200;width:58px;height:58px;border-radius:50%;border:none;cursor:pointer;background:var(--brand);color:#fff;font-size:24px;box-shadow:0 10px 26px rgba(16,60,40,.35)}'
       +'#chatFab:hover{background:#0f6b46}'
       +'#chatBadge{position:absolute;top:-4px;right:-4px;min-width:22px;height:22px;border-radius:11px;background:#e0533d;color:#fff;font-size:12px;font-weight:800;display:none;align-items:center;justify-content:center;padding:0 5px;border:2px solid #fff}'
       +'#chatPanel{position:fixed;right:20px;bottom:88px;z-index:200;width:340px;max-width:calc(100vw - 32px);height:460px;max-height:70vh;background:#fff;border:1px solid #e6ece7;border-radius:18px;box-shadow:0 20px 50px rgba(16,60,40,.25);display:none;flex-direction:column;overflow:hidden}'
       +'#chatPanel.open{display:flex}'
-      +'#chatHead{background:#127a51;color:#fff;padding:12px 14px;font-weight:800;display:flex;align-items:center;justify-content:space-between}'
+      +'#chatHead{background:var(--brand);color:#fff;padding:12px 14px;font-weight:800;display:flex;align-items:center;justify-content:space-between}'
       +'#chatHead button{background:rgba(255,255,255,.2);border:none;color:#fff;cursor:pointer;border-radius:8px;font-size:15px;width:28px;height:28px}'
       +'#chatBody{flex:1;overflow:auto;padding:8px;background:#f7faf8}'
       +'#chatBar{display:flex;gap:6px;padding:8px;border-top:1px solid #e6ece7}'
       +'#chatBar input{flex:1;font:inherit;padding:10px 12px;border:1px solid #e6ece7;border-radius:10px}'
-      +'#chatBar button{background:#127a51;color:#fff;border:none;border-radius:10px;padding:0 14px;font-size:16px;cursor:pointer}'
+      +'#chatBar button{background:var(--brand);color:#fff;border:none;border-radius:10px;padding:0 14px;font-size:16px;cursor:pointer}'
       +'@keyframes chatpulse{0%,100%{transform:scale(1)}50%{transform:scale(1.13)}}#chatFab.pulse{animation:chatpulse 1.3s ease-in-out infinite}';
     document.head.appendChild(st);
     const fab=document.createElement('button'); fab.id='chatFab'; fab.title='Chat du bureau'; fab.innerHTML='💬<span id="chatBadge"></span>';
@@ -12022,7 +12022,7 @@ renderAll();
   function showChatToast(name,body){
     let t=document.getElementById('chatToast');
     if(!t){ t=document.createElement('div'); t.id='chatToast';
-      t.style.cssText='position:fixed;right:20px;bottom:88px;z-index:201;max-width:300px;background:#127a51;color:#fff;padding:12px 14px;border-radius:14px;box-shadow:0 14px 36px rgba(16,60,40,.3);cursor:pointer;font:600 14px -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans-serif;display:none';
+      t.style.cssText='position:fixed;right:20px;bottom:88px;z-index:201;max-width:300px;background:var(--brand);color:#fff;padding:12px 14px;border-radius:14px;box-shadow:0 14px 36px rgba(16,60,40,.3);cursor:pointer;font:600 14px -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans-serif;display:none';
       t.onclick=function(){ t.style.display='none'; if(!chatOpen) window.toggleChat(); };
       document.body.appendChild(t);
     }
@@ -12064,7 +12064,7 @@ renderAll();
       const w=document.createElement('div'); w.id='welcomeBar';
       w.style.cssText='display:flex;gap:12px;align-items:center;justify-content:center;flex-wrap:wrap;background:linear-gradient(90deg,#fff7e6,#eafaf1);border-bottom:1px solid #e6ece7;padding:10px 16px;font-size:14px;color:#1d3a2e';
       w.innerHTML='<span>👋 Bienvenue ! On améliore Bob en continu — une idée, un truc à améliorer, un bug&nbsp;? Le bouton <b>💡</b> en bas à droite. Les commentaires des salariés et des familles arrivent ici aussi.</span>';
-      const b=document.createElement('button'); b.textContent='J\'ai compris'; b.style.cssText='flex:0 0 auto;background:#127a51;color:#fff;border:none;border-radius:999px;padding:7px 14px;font-weight:800;cursor:pointer';
+      const b=document.createElement('button'); b.textContent='J\'ai compris'; b.style.cssText='flex:0 0 auto;background:var(--brand);color:#fff;border:none;border-radius:999px;padding:7px 14px;font-weight:800;cursor:pointer';
       b.onclick=function(){ try{localStorage.setItem('case_welcome_bureau_v1','1');}catch(e){} w.remove(); };
       w.appendChild(b);
       document.body.insertBefore(w, document.body.firstChild);
@@ -12259,20 +12259,30 @@ renderAll();
      les prénoms OFFICIELS = ceux du catalogue (Léa · Guy · Ludo · Éva, cf. BIBLE-BOB « Bob + métier »),
      et chaque asso peut PERSONNALISER son équipe — le CASE garde la sienne (Sabine · Trési · Nono · Roro).
      Les visuels (4 portraits ananas, versions allégées -w) sont communs : seul le prénom change. ===== */
+  /* 03/08/2026 — le DÉFAUT est désormais la VRAIE mascotte Bob (robot bleu/jaune du produit, visuels
+     issus de projets/bob-produit/visuels/mascotte). C'est le MÊME Bob qui change de casquette selon le
+     métier — l'ananas est l'emblème du CASE, pas celui du produit. Le CASE garde ses 4 ananas ci-dessous. */
   const CASTING_DEFAUT={
-    secretaire:{nom:'Léa',  role:'Bob Secrétaire', img:'bob-sabine-w.png'},
-    tresorier:{ nom:'Guy',  role:'Bob Compta',     img:'bob-tresi-w.png'},
-    animateur:{ nom:'Ludo', role:'Bob Animateur',  img:'bob-nono-w.png'},
-    rh:{        nom:'Éva',  role:'Bob RH',         img:'bob-roro-w.png'}
+    secretaire:{nom:'Léa',  role:'Bob Secrétaire', img:'bob-wave.png'},
+    tresorier:{ nom:'Guy',  role:'Bob Compta',     img:'bob-hero.png'},
+    animateur:{ nom:'Ludo', role:'Bob Animateur',  img:'bob-celebrate.png'},
+    rh:{        nom:'Éva',  role:'Bob RH',         img:'bob-think.png'}
   };
   const ASSO_CASTING={
-    'd617489c-b18b-499b-ab17-c31656d0f08a':{ // CASE du Bois de Nèfles — son équipe historique
-      secretaire:{nom:'Sabine',role:'La Secrétaire'},
-      tresorier:{ nom:'Trési', role:'La Trésorière'},
-      animateur:{ nom:'Nono',  role:"L'Animateur"},
-      rh:{        nom:'Roro',  role:'Le RH'}
+    'd617489c-b18b-499b-ab17-c31656d0f08a':{ // CASE du Bois de Nèfles — son équipe historique (ananas 🍍)
+      secretaire:{nom:'Sabine',role:'La Secrétaire', img:'bob-sabine-w.png'},
+      tresorier:{ nom:'Trési', role:'La Trésorière', img:'bob-tresi-w.png'},
+      animateur:{ nom:'Nono',  role:"L'Animateur",   img:'bob-nono-w.png'},
+      rh:{        nom:'Roro',  role:'Le RH',         img:'bob-roro-w.png'}
     }
   };
+  /* Mascotte d'AIDE selon l'asso : le CASE a Zanana 🍍, tout le reste a Bob 🤖.
+     `window.bobMasc('point'|'wave')` donne le bon fichier ; les <img> déjà dans le HTML sont
+     repatchées au démarrage par applyAssoIdentity (elles sont écrites avant que l'asso soit connue). */
+  const MASC_CASE={ point:'zanana-point.png', wave:'zanana-wave.png' };
+  const MASC_BOB ={ point:'bob-think.png',    wave:'bob-wave.png'    };
+  function mascSet(){ try{ return (typeof myAsso!=='undefined' && myAsso==='d617489c-b18b-499b-ab17-c31656d0f08a') ? MASC_CASE : MASC_BOB; }catch(e){ return MASC_BOB; } }
+  window.bobMasc=function(k){ return (mascSet()[k])||MASC_BOB[k]||''; };
   function castingOf(key){ try{ const o=(typeof myAsso!=='undefined'&&myAsso&&ASSO_CASTING[myAsso])||{}; return Object.assign({}, CASTING_DEFAUT[key]||{}, o[key]||{}); }catch(e){ return CASTING_DEFAUT[key]||{}; } }
   window.bobCasting=castingOf;
   /* Rappel visuel du compagnon sur SON tiroir (28/07/2026) : petite pastille avatar+prénom en tête de la
@@ -12381,6 +12391,17 @@ renderAll();
     const id = ASSO_IDENTITY[assoId] || IDENTITY_DEFAUT;
     /* 03/08/2026 — le nom de l'org devient lisible PARTOUT (impressions, exports, mails) via window.bobOrgName */
     try{ window.bobOrgName=id.orgName||null; }catch(e){}
+    /* 03/08/2026 — mascotte d'aide : les <img zanana-*> écrites en dur dans le HTML sont repatchées vers
+       Bob 🤖 dès qu'on N'EST PAS le CASE (l'ananas reste l'emblème du CASE seul). */
+    try{
+      if(assoId!=='d617489c-b18b-499b-ab17-c31656d0f08a'){
+        document.querySelectorAll('img[src*="zanana-"]').forEach(function(im){
+          const s=im.getAttribute('src')||'';
+          if(s.indexOf('wave')>=0) im.setAttribute('src','bob-wave.png');
+          else im.setAttribute('src','bob-think.png');
+        });
+      }
+    }catch(e){}
     try{ document.title=id.title; }catch(e){}
     try{ const m=document.querySelector('meta[name="apple-mobile-web-app-title"]'); if(m) m.setAttribute('content',id.appTitle); }catch(e){}
     try{ const h=document.querySelector('header.top h1'); if(h) h.innerHTML=id.h1; }catch(e){}
