@@ -3066,6 +3066,8 @@ const FAQ=[
    a:"C'est <b>volontaire</b> : la grille tarifaire du périscolaire est <b>verrouillée par défaut</b> pour éviter qu'un tarif soit changé par erreur. Pour la modifier : onglet <b>🎒 Périscolaire</b> → dépliant <b>⚙️ Paramétrage</b> → panneau <b>💶 Grille tarifaire</b> → clique <b>« 🔓 Déverrouiller pour modifier »</b> (une confirmation te le demande), change les cases, puis <b>💾 Enregistrer la grille</b> — elle se <b>reverrouille toute seule</b> après. ⚠️ <b>Réservé au bureau</b> : les salariés voient la grille mais ne peuvent pas la déverrouiller."},
   {cat:'🎒 Périscolaire',q:"Comment gérer le périscolaire, les tarifs et ce que paient les familles ?",kw:"periscolaire garderie tarif grille quotient familial qf enfant inscription facture facturation matin apres-midi aprem fratrie remise extrascolaire acm vepi place",
    a:"Onglet <b>🎒 Périscolaire</b>. La <b>grille tarifaire</b> est par <b>jour</b> selon le quotient familial (pré-remplie avec les tarifs 2024-2025) : modifie une case puis clique <b>💾 Enregistrer la grille</b> pour la réévaluer (ex. pour la rentrée d'août). Ajoute ensuite chaque <b>enfant</b> (tranche, matin et/ou après-midi, rang dans la fratrie) : Bob calcule tout seul ce qu'il doit par mois — <i>tarif jour × nombre de jours du mois, + supplément matin, − remise fratrie</i> — et le total des recettes attendues. C'est la gestion interne ; l'affichage des <b>places restantes</b> côté site public viendra ensuite."},
+  {cat:'🎒 Périscolaire',q:"Comment chiffrer le forfait d'un dossier et générer le lien de paiement ?",kw:"chiffrer chiffrage forfait proposer proposition tarif calculer apercu creneaux cocher cases matin soir generer lien paiement verrouiller montant du famille corriger rectifier retoucher popup pop-up fenetre boite dialogue confirmation annuler ok",
+   a:"Onglet <b>🎒 Périscolaire</b> → panneau <b>📨 Dossiers d'inscription</b>, sur la carte de la famille. Deux chemins, au choix :<br>① <b>Laisse Bob proposer (recommandé)</b> — clique <b>« 🧮 Proposer le tarif »</b> : un petit panneau s'ouvre <b>dans la carte</b>, avec les cases <b>matin</b> et <b>soir</b> <b>déjà cochées</b> d'après les créneaux des enfants du dossier, et <b>le montant déjà calculé</b> juste en dessous (tarif du jour selon le quotient familial × nombre de jours, + supplément matin, − remise fratrie). Tu décoches ou recoches un créneau ? Le chiffre <b>se recalcule tout seul</b>. Quand il te va : <b>« ✅ Valider ce montant et générer le lien »</b>.<br>② <b>À la main</b> — saisis <b>€ / jour</b> et le <b>nombre de jours</b>, puis <b>« 🔒 Valider &amp; générer le lien »</b>. ⚠️ Ce chemin-là <b>n'applique pas la remise fratrie</b>.<br>Une fois le montant verrouillé, la carte affiche <b>🔗 Lien de paiement en ligne</b> (à envoyer par mail ou SMS — la famille paie <b>sans se connecter</b>) et <b>✏️ Modifier le montant</b>, qui ouvre un <b>champ dans la carte</b> : corrige, <b>🔒 Enregistrer</b> (la touche <b>Entrée</b> marche aussi, <b>Échap</b> referme). Si un règlement est déjà encaissé, Bob te le rappelle avant que tu changes le chiffre.<br>💡 <b>Bob propose, tu valides</b> : aucun montant ne part vers une famille sans qu'un humain ait vu le chiffre à l'écran. C'est pour ça que le bouton « Valider » <b>disparaît</b> le temps d'un recalcul — on ne valide jamais un chiffre périmé. ⚖️ Réservé au bureau. Bob ne peut pas chiffrer ? Il te dit ce qui manque — le plus souvent le <b>quotient familial</b> du foyer (onglet 👨‍👩‍👧 Foyers)."},
   {cat:'🚀 Démarrer',q:"Où je vois les nouveautés de Bob ?",kw:"nouveaute nouveau quoi de neuf notice changement evolution pastille rouge mise a jour decouvrir fonctionnalite",
    a:"Onglet <b>❓ Aide</b>, panneau <b>✨ Quoi de neuf</b> : chaque évolution de Bob y arrive avec sa date et l'onglet concerné. Une <b>pastille rouge</b> sur l'onglet Aide te prévient tant que tu n'as pas regardé ; une fois lues, les cartes restent — c'est la notice chronologique de Bob. La FAQ ci-dessous sert de notice par thème."},
   {cat:'🚀 Démarrer',q:"Comment je me connecte à Bob ?",kw:"connexion connecter login mot de passe identifiant entrer acceder ouvrir session",
@@ -3248,6 +3250,7 @@ function pageHelpGotoAide(){ pageHelpClose(); const b=document.querySelector('na
 
 /* ---- ✨ Quoi de neuf (nouveautés + notice chronologique) ---- */
 const NEWS=[
+  {id:'2026-08-03-tarif-peri-sans-popup',date:'2026-08-03',tab:'🎒 Périscolaire',titre:"🧮 Chiffrer un forfait : fini les trois pop-ups, tout se passe dans la carte",desc:"Chiffrer le forfait d'un dossier demandait <b>trois fenêtres d'affilée</b> (« le matin ? », « et le soir ? », puis le récapitulatif) — pour un geste que tu fais tous les mois. C'est terminé. Clique <b>« 🧮 Proposer le tarif »</b> : un panneau s'ouvre <b>dans la carte de la famille</b>, avec les cases <b>matin</b> et <b>soir</b> <b>déjà cochées d'après les créneaux des enfants du dossier</b>, et <b>le montant déjà calculé</b> en dessous (quotient familial, nombre de jours, supplément matin, remise fratrie). Décoche un créneau ou change le nombre de jours : le chiffre <b>se recalcule tout seul</b>. Un clic sur <b>« ✅ Valider ce montant et générer le lien »</b> et c'est verrouillé. Même chose pour <b>✏️ Modifier le montant</b> : un <b>champ dans la carte</b> (Entrée valide, Échap referme), et Bob te rappelle ce qui a déjà été encaissé avant que tu changes le chiffre. <b>La règle ne bouge pas</b> : Bob propose, <b>tu</b> valides — le bouton « Valider » disparaît le temps d'un recalcul, pour qu'aucun montant périmé ne parte vers une famille. <b>Tes calculs ne changent pas</b> : c'est la même formule qu'avant."},
   {id:'2026-08-02-periscolaire-controle-arbre',date:'2026-08-02',tab:'🎒 Périscolaire',titre:"🌳 Les dossiers périscolaire sous contrôle de l'arbre famille",desc:"Le panneau <b>📨 Dossiers d'inscription</b> est maintenant relié en <b>lecture</b> à l'arbre famille : un bandeau 🌳 confirme que chaque dossier a son <b>miroir</b> dans le registre des foyers (sinon marque <b>⚠️ pas dans l'arbre</b>), et un panneau <b>« Cochés au comptoir »</b> fait remonter tout seul les enfants inscrits au <b>comptoir Foyers</b> qui n'apparaissent encore dans aucun dossier — ce report était à surveiller de tête, Bob le suit désormais automatiquement. <b>Tes gestes ne changent pas</b> : pièces, montants et encaissements écrivent toujours comme avant."},
   {id:'2026-08-02-enfants-lecture-arbre',date:'2026-08-02',tab:'👶 Enfants',titre:"🌳 L'onglet Enfants se lit dans l'arbre famille — les enfants du comptoir enfin visibles",desc:"La liste de l'onglet <b>👶 Enfants</b> vient maintenant de l'<b>arbre famille</b> (le registre de l'onglet 👨‍👩‍👧 Foyers) : pastille <b>🌳 arbre</b> sur chaque enfant relié à sa fiche, bandeau qui annonce la source et compte les écarts. <b>La vraie nouveauté</b> : un enfant inscrit <b>au comptoir Foyers</b> — sans compte en ligne ni fiche enfant — apparaît enfin dans cette vue, marqué <b>🌳 arbre seul</b>, avec son 🎒 périscolaire s'il est coché. <b>Tes gestes ne changent pas</b> : rattacher, déplacer (⇄) et retirer (✕) écrivent toujours comme avant. En cas de souci de lecture, Bob raffiche les fiches et le dit."},
   {id:'2026-08-02-adherents-lecture-arbre',date:'2026-08-02',tab:'👥 Adhérents',titre:"🌳 La liste des adhérents se lit désormais dans l'arbre famille",desc:"L'onglet <b>👥 Adhérents</b> affiche maintenant sa liste depuis l'<b>arbre famille</b> (le registre de l'onglet 👨‍👩‍👧 Foyers) : une pastille <b>🌳 arbre</b> marque chaque ligne, et un bandeau annonce la source et signale tout écart avec le livre des adhérents. <b>Tes gestes ne changent pas</b> : Ajouter, modifier, statut et suppression écrivent toujours dans le livre, comme avant. En cas de souci de lecture, Bob raffiche le livre et le dit."},
@@ -9356,39 +9359,126 @@ renderAll();
   // 🧮 Bob PROPOSE le tarif, le bureau VALIDE — jamais l'inverse (c'est l'argent des familles).
   // Le calcul vient de la base (peri_calcul_tarif) : QF enregistré du foyer + nombre d'enfants
   // RÉELLEMENT au dossier + remise fratrie. La saisie à la main, elle, ignore la fratrie.
-  window.periProposerTarif=async function(id){
+  /* 03/08/2026 — plus AUCUNE boîte de dialogue native ici (2 confirm pour les créneaux + 1 confirm
+     de récapitulatif, et un prompt pour la retouche). Deux raisons : ① confirm/prompt GÈLENT le
+     rendu de la page (tout pilotage automatisé du navigateur expirait en « renderer frozen ») ;
+     ② côté humain c'était trois pop-ups d'affilée pour un geste courant du bureau. Tout se passe
+     désormais DANS la carte du dossier, en 2 clics : « 🧮 Proposer le tarif » ouvre le panneau
+     AVEC le chiffre déjà calculé, « ✅ Valider » l'enregistre.
+     ⚖️ La règle produit ne bouge pas : le montant validé est EXACTEMENT celui affiché à l'écran.
+     C'est `__periSim[id].calc` qui le garantit — remis à null dès qu'une case ou le nombre de jours
+     bouge, et le bouton « Valider » n'existe que le temps où l'aperçu est frais. Jamais de montant
+     envoyé à une famille sans qu'un humain ait vu le chiffre. */
+  window.__periSim={}; // par dossier : {seq, timer, calc} — `calc` = le calcul EXACTEMENT tel qu'affiché
+  function periSimEls(id){
+    return {box:document.getElementById('perisim_'+id), res:document.getElementById('perisim_res_'+id),
+            m:document.getElementById('perisim_matin_'+id), s:document.getElementById('perisim_soir_'+id)};
+  }
+  function periSimEtat(id){ return (window.__periSim[id]=window.__periSim[id]||{seq:0,timer:null,calc:null}); }
+  window.periProposerTarif=function(id){
     if(!canWrite){ alert('Réservé au bureau.'); return; }
-    const matin=confirm('Le matin est-il compris dans ce forfait ?\n\nOK = oui   ·   Annuler = non');
-    const soir=confirm('Et le soir ?\n\nOK = oui   ·   Annuler = non');
-    if(!matin && !soir){ alert('Il faut au moins le matin ou le soir.'); return; }
+    const e=periSimEls(id); if(!e.box) return;
+    e.box.style.display='';
+    window.periSimCalc(id); // un clic = le chiffre est là ; le 2e clic le valide
+  };
+  window.periSimFermer=function(id){
+    const e=periSimEls(id); if(!e.box) return;
+    const st=periSimEtat(id); clearTimeout(st.timer); st.seq++; st.calc=null;
+    e.box.style.display='none'; if(e.res) e.res.innerHTML='';
+  };
+  // Le nombre de jours se tape chiffre par chiffre : on invalide tout de suite l'aperçu (le bouton
+  // Valider disparaît donc), puis on recalcule une fois la frappe finie.
+  window.periSimDebounce=function(id){
+    const e=periSimEls(id); if(!e.box||e.box.style.display==='none') return;
+    const st=periSimEtat(id); st.calc=null; st.seq++; clearTimeout(st.timer);
+    if(e.res) e.res.innerHTML='<span class="muted" style="font-size:12.5px">⏳ Bob recalcule…</span>';
+    st.timer=setTimeout(function(){ window.periSimCalc(id); },600);
+  };
+  window.periSimCalc=async function(id){
+    const e=periSimEls(id); if(!e.box||!e.res) return;
+    const st=periSimEtat(id); clearTimeout(st.timer);
+    st.calc=null; // tant qu'il n'y a pas de résultat FRAIS, il n'y a rien à valider
+    const matin=!!(e.m&&e.m.checked), soir=!!(e.s&&e.s.checked);
+    if(!matin&&!soir){ st.seq++; e.res.innerHTML='<span style="color:#b23a23;font-size:12.5px">Coche au moins « matin » ou « soir » pour que Bob puisse calculer.</span>'; return; }
+    const seq=++st.seq;
+    e.res.innerHTML='<span class="muted" style="font-size:12.5px">⏳ Bob calcule…</span>';
     const jSaisi=parseInt((document.getElementById('pnb_'+id)||{}).value,10);
     const r=await sbc.rpc('peri_calcul_tarif',{p_inscription_id:id, p_matin:matin, p_soir:soir,
                                                p_jours:(Number.isFinite(jSaisi)&&jSaisi>0)?jSaisi:null});
-    if(r.error){ alert('Calcul impossible.\n\n'+r.error.message); return; }
-    const d=r.data||{};
-    const src={dossier:'comptés dans ce dossier','arbre famille':'d\'après la fiche famille',fourni:'imposés',defaut:'par défaut'}[d.source_nb]||d.source_nb;
-    let txt='🧮 Tarif proposé par Bob\n\n'
-      +(d.libelle||'')+'  ·  '+euro(d.tarif_jour)+' / jour'+(d.supp_matin?'  ·  matin +'+euro(d.supp_matin):'')+'\n'
-      +d.jours+' jours  ·  '+d.nb_enfants+' enfant'+(d.nb_enfants>1?'s':'')+' ('+src+')\n';
-    if(d.nb_enfants>1) txt+='Remise fratrie : −'+d.remise_par_enfant_pct+' % par enfant supplémentaire\n';
-    txt+='\n➡️  '+euro(d.total_euros)+' pour la famille\n\n'
-      +'Valider ce montant et générer le lien de paiement ?';
-    if(!confirm(txt)) return;
+    if(seq!==st.seq) return; // une case a rebougé pendant l'appel : cette réponse est périmée
+    if(r.error){ e.res.innerHTML='<span style="color:#b23a23;font-size:12.5px">Calcul impossible : '+esc(r.error.message)+'</span>'; return; }
+    // ⚠️ Number(null) vaut 0 : sans ce filtre, un total ABSENT passerait pour un tarif de 0 €.
+    const d=r.data||{}, brut=d.total_euros;
+    const tot=(brut===null||brut===undefined||brut==='')?NaN:Number(brut);
+    if(!Number.isFinite(tot)){
+      e.res.innerHTML='<span style="color:#b23a23;font-size:12.5px">Bob n\'a pas pu chiffrer ce dossier — il manque sans doute le <b>quotient familial</b> du foyer (👨‍👩‍👧 Foyers) ou une ligne de la grille tarifaire. Tu peux aussi saisir le montant à la main ci-dessus.</span>';
+      return;
+    }
+    if(tot>0) st.calc=d; // tant que le total n'est pas un vrai montant, il n'y a RIEN à valider
+    const src={dossier:'comptés dans ce dossier','arbre famille':'d\'après la fiche famille',fourni:'imposés',defaut:'par défaut'}[d.source_nb]||d.source_nb||'';
+    let h='<div class="row" style="gap:7px;flex-wrap:wrap;align-items:baseline">'
+      +'<strong style="font-size:18px;color:#127a51">'+esc(euro(tot))+'</strong>'
+      +'<span class="muted" style="font-size:12.5px">pour la famille</span></div>'
+      +'<div class="muted" style="font-size:12.5px;margin-top:2px">'
+        +(d.libelle?esc(d.libelle)+' · ':'')+esc(euro(d.tarif_jour))+' / jour'
+        +(d.supp_matin?' · matin +'+esc(euro(d.supp_matin)):'')
+        +' × '+esc(String(d.jours))+' jour'+((d.jours>1)?'s':'')
+        +' · '+esc(String(d.nb_enfants))+' enfant'+((d.nb_enfants>1)?'s':'')+(src?' ('+esc(src)+')':'')
+      +'</div>';
+    if(d.nb_enfants>1) h+='<div class="muted" style="font-size:12.5px">👨‍👩‍👧‍👦 Remise fratrie : −'+esc(String(d.remise_par_enfant_pct))+' % par enfant supplémentaire</div>';
+    if(d.qf_utilise!=null) h+='<div class="muted" style="font-size:12.5px">Quotient familial utilisé : '+esc(String(d.qf_utilise))+(d.source_qf?' ('+esc(String(d.source_qf))+')':'')+'</div>';
+    h+='<div class="row" style="gap:8px;flex-wrap:wrap;align-items:center;margin-top:8px">';
+    h+=(tot>0)
+      ? '<button class="btn" id="perisim_ok_'+id+'" onclick="periSimValider(\''+id+'\')">✅ Valider ce montant et générer le lien</button>'
+      : '<span style="color:#b23a23;font-size:12.5px">Total calculé à 0 € — il n\'y a rien à faire payer. Vérifie le quotient familial du foyer avant d\'aller plus loin.</span>';
+    h+='<button class="ghost btn" onclick="periSimFermer(\''+id+'\')">Fermer</button></div>';
+    e.res.innerHTML=h;
+  };
+  window.periSimValider=async function(id){
+    const st=periSimEtat(id), d=st.calc, e=periSimEls(id);
+    if(!d){ if(e.res) e.res.innerHTML='<span style="color:#b23a23;font-size:12.5px">Le calcul a changé depuis l\'affichage — laisse Bob recalculer avant de valider.</span>'; return; }
+    const btn=document.getElementById('perisim_ok_'+id);
+    if(btn){ btn.disabled=true; btn.textContent='⏳ Enregistrement…'; }
     const detail={tarif_jour:d.tarif_jour, jours:d.jours, total:d.total_euros, mode:'calcule',
                   nb_enfants:d.nb_enfants, source_nb:d.source_nb, remise_par_enfant_pct:d.remise_par_enfant_pct,
                   qf_utilise:d.qf_utilise, source_qf:d.source_qf, matin:d.matin, soir:d.soir,
                   detail:d.detail, formule:d.formule, calcule_le:d.calcule_le};
     const {error}=await sbc.rpc('peri_valider_montant',{p_inscription_id:id,
       p_montant_cents:Math.round(Number(d.total_euros)*100), p_detail:detail});
-    if(error){ alert('Erreur : '+error.message); return; }
+    if(error){
+      if(btn){ btn.disabled=false; btn.textContent='✅ Valider ce montant et générer le lien'; }
+      if(e.res) e.res.insertAdjacentHTML('beforeend','<div style="color:#b23a23;font-size:12.5px;margin-top:5px">Erreur : '+esc(error.message)+' — <b>rien n\'a été enregistré</b>.</div>');
+      return;
+    }
+    st.calc=null; st.seq++;
     if(window.loadDossiersPeri) window.loadDossiersPeri();
   };
-  window.periEditMontant=async function(id){
-    const v=prompt('Nouveau montant a regler (en euros) :'); if(v===null) return;
-    const euros=parseFloat(String(v).replace(',','.'));
-    if(!(euros>0)){ alert('Montant invalide.'); return; }
+  // ✏️ Retouche d'un montant déjà verrouillé — même principe : un champ dans la carte, pas un prompt().
+  window.periEditMontant=function(id){
+    if(!canWrite){ alert('Réservé au bureau.'); return; }
+    const b=document.getElementById('perimod_'+id); if(!b) return;
+    const ouvre=(b.style.display==='none');
+    b.style.display=ouvre?'':'none';
+    const stEl=document.getElementById('perimod_st_'+id); if(stEl){ stEl.style.color=''; stEl.textContent=''; }
+    const i=document.getElementById('perimod_m_'+id);
+    if(ouvre&&i){ i.focus(); i.select(); }
+  };
+  window.periEditKey=function(ev,id){
+    if(!ev) return;
+    if(ev.key==='Enter'){ ev.preventDefault(); window.periEditMontantOk(id); }
+    else if(ev.key==='Escape'){ ev.preventDefault(); const b=document.getElementById('perimod_'+id); if(b) b.style.display='none'; }
+  };
+  window.periEditMontantOk=async function(id){
+    const i=document.getElementById('perimod_m_'+id); if(!i) return;
+    const stEl=document.getElementById('perimod_st_'+id);
+    const dis=t=>{ if(stEl){ stEl.style.color='#b23a23'; stEl.textContent=t; } };
+    const euros=parseFloat(String(i.value).replace(',','.'));
+    if(!(euros>0)){ dis('Indique un montant en euros, supérieur à 0.'); i.focus(); return; }
+    const btn=document.getElementById('perimod_ok_'+id);
+    if(btn) btn.disabled=true;
+    if(stEl){ stEl.style.color=''; stEl.textContent='⏳ Enregistrement…'; }
     const {error}=await sbc.rpc('peri_valider_montant',{p_inscription_id:id,p_montant_cents:Math.round(euros*100),p_detail:null});
-    if(error){ alert('Erreur : '+error.message); return; }
+    if(error){ if(btn) btn.disabled=false; dis('Erreur : '+error.message+' — rien n\'a été enregistré.'); return; }
     if(window.loadDossiersPeri) window.loadDossiersPeri();
   };
   window.periCopyLien=async function(url){
@@ -9737,18 +9827,50 @@ renderAll();
       if(canWrite){
         if(du&&d.pay_token){
           const url=new URL('payer.html',location.href).href+'?t='+d.pay_token;
+          // ✏️ La retouche du montant se fait dans un champ DE LA CARTE (avant : un prompt() natif qui gelait la page)
           chiffrage='<div class="row" style="gap:8px;flex-wrap:wrap;align-items:center;margin-top:2px">'
             +'<button class="ghost btn" onclick="periCopyLien(\''+esc(url)+'\')">🔗 Lien de paiement en ligne</button>'
-            +'<button class="ghost btn" onclick="periEditMontant(\''+d.id+'\')">✏️ Modifier le montant</button></div>';
+            +'<button class="ghost btn" onclick="periEditMontant(\''+d.id+'\')">✏️ Modifier le montant</button></div>'
+            +'<div id="perimod_'+d.id+'" style="display:none;margin-top:8px;background:#f4f8f5;border:1px dashed var(--line);border-radius:8px;padding:8px">'
+            +'<div class="row" style="gap:6px;flex-wrap:wrap;align-items:center">'
+            +'<span style="font-size:12px;font-weight:600">✏️ Nouveau montant dû :</span>'
+            +'<input id="perimod_m_'+d.id+'" type="number" min="0" step="0.01" value="'+(du/100).toFixed(2)+'" onkeydown="periEditKey(event,\''+d.id+'\')" style="width:104px;padding:7px 10px;border:1px solid var(--line);border-radius:8px;font:inherit">'
+            +'<span class="muted">€</span>'
+            +'<button class="btn" id="perimod_ok_'+d.id+'" onclick="periEditMontantOk(\''+d.id+'\')">🔒 Enregistrer</button>'
+            +'<button class="ghost btn" onclick="periEditMontant(\''+d.id+'\')">Annuler</button>'
+            +'</div>'
+            +((paid>0)?('<div style="font-size:11.5px;margin-top:4px;color:#8a6400">⚠️ '+eur(paid)+' déjà encaissé sur ce dossier — le « reste » se recalculera tout seul.</div>'):'')
+            +'<div id="perimod_st_'+d.id+'" style="font-size:11.5px;margin-top:4px"></div>'
+            +'<div class="muted" style="font-size:11px;margin-top:2px">Remplace le montant dû par la famille. Tu vois le chiffre avant qu\'il parte — c\'est la règle.</div>'
+            +'</div>';
         } else if(!du){
+          /* 🧮 Panneau « Bob propose » : les cases matin / soir sont PRÉ-COCHÉES d'après les créneaux
+             déjà enregistrés sur les enfants du dossier (JSON `enfants`) — le bureau n'a normalement
+             rien à cocher, il lit le chiffre et valide. Remplace les 3 confirm() natifs du 02/08. */
+          const enfDos=(Array.isArray(d.enfants)?d.enfants:[]);
+          const preM=enfDos.some(e=>e&&e.matin), preS=enfDos.some(e=>e&&e.soir);
+          const sansCreneau=!preM&&!preS;
+          const provenance=sansCreneau
+            ? '⚠️ aucun créneau enregistré sur les enfants de ce dossier — Bob a pré-coché « soir », vérifie'
+            : ('pré-coché d\'après le dossier : '+[preM?'matin':null,preS?'soir':null].filter(Boolean).join(' & '));
           chiffrage='<div style="margin-top:2px"><div class="row" style="gap:6px;flex-wrap:wrap;align-items:center">'
             +'<input id="pjour_'+d.id+'" type="number" min="0" step="0.01" placeholder="€ / jour" oninput="periCalc(\''+d.id+'\')" style="width:96px;padding:7px 10px;border:1px solid var(--line);border-radius:8px;font:inherit">'
             +'<span class="muted">×</span>'
-            +'<input id="pnb_'+d.id+'" type="number" min="1" step="1" value="16" oninput="periCalc(\''+d.id+'\')" style="width:74px;padding:7px 10px;border:1px solid var(--line);border-radius:8px;font:inherit"> <span class="muted">jours</span>'
+            +'<input id="pnb_'+d.id+'" type="number" min="1" step="1" value="16" oninput="periCalc(\''+d.id+'\');periSimDebounce(\''+d.id+'\')" style="width:74px;padding:7px 10px;border:1px solid var(--line);border-radius:8px;font:inherit"> <span class="muted">jours</span>'
             +'<span class="muted">=</span><strong id="ptot_'+d.id+'" style="min-width:64px">—</strong>'
             +'<button class="btn" onclick="periValiderMontant(\''+d.id+'\')">🔒 Valider &amp; générer le lien</button>'
             +'<button class="ghost btn" onclick="periProposerTarif(\''+d.id+'\')" title="Bob calcule d\'après le QF de la famille et le nombre d\'enfants du dossier, remise fratrie comprise">🧮 Proposer le tarif</button>'
-            +'</div><div class="muted" style="font-size:12px;margin-top:4px">Forfait = tarif/jour (selon le QF) × nombre de jours du mois. ⚠️ La saisie à la main <b>n\'applique pas la remise fratrie</b> — « 🧮 Proposer le tarif » la calcule.</div></div>';
+            +'</div><div class="muted" style="font-size:12px;margin-top:4px">Forfait = tarif/jour (selon le QF) × nombre de jours du mois. ⚠️ La saisie à la main <b>n\'applique pas la remise fratrie</b> — « 🧮 Proposer le tarif » la calcule.</div>'
+            +'<div id="perisim_'+d.id+'" style="display:none;margin-top:8px;background:#f4f8f5;border:1px dashed var(--line);border-radius:8px;padding:9px 10px">'
+              +'<div style="font-size:12.5px;font-weight:600;margin-bottom:5px">🧮 Bob propose — tu valides</div>'
+              +'<div class="row" style="gap:12px;flex-wrap:wrap;align-items:center">'
+              +'<label style="font-size:12.5px;display:flex;align-items:center;gap:4px;cursor:pointer"><input type="checkbox" id="perisim_matin_'+d.id+'"'+(preM?' checked':'')+' onchange="periSimCalc(\''+d.id+'\')"> matin</label>'
+              +'<label style="font-size:12.5px;display:flex;align-items:center;gap:4px;cursor:pointer"><input type="checkbox" id="perisim_soir_'+d.id+'"'+((preS||sansCreneau)?' checked':'')+' onchange="periSimCalc(\''+d.id+'\')"> soir</label>'
+              +'<span class="muted" style="font-size:11.5px">'+esc(provenance)+'</span>'
+              +'</div>'
+              +'<div id="perisim_res_'+d.id+'" style="margin-top:7px"></div>'
+            +'</div>'
+            +'</div>';
         }
       }
       const actionsRow=encBtn?('<div class="row" style="gap:8px;flex-wrap:wrap;align-items:center;margin-top:8px">'+encBtn+'</div>'):'';
@@ -12223,6 +12345,11 @@ renderAll();
   const ASSO_IDENTITY = {
     'd617489c-b18b-499b-ab17-c31656d0f08a': { // CASE — valeurs actuelles, inchangées
       orgName:'CASE du Bois de Nèfles',
+      /* identité LÉGALE des documents imprimés (PV, relevés, émargement, budget signé).
+         ⚠️ 03/08/2026 — le n° « 122 » est repris tel quel de l'existant ; la fiche mémoire
+         case-coordonnees-legales retient « 132 » (source CAF) : à trancher par Guillaume. */
+      legal:{ nom:'CASE DU BOIS DE NÈFLES', sous:"Centre d'Animation Socio-Éducatif",
+              adresse:'122 Place de la Fraternité, 97490 Sainte-Clotilde', siren:'325 635 738' },
       title:'Bob — secrétaire-directeur du CASE du Bois de Nèfles', appTitle:'Bob CASE',
       h1:'Bob <span style="font-weight:500;opacity:.85">· secrétaire-directeur du CASE</span>',
       sub:'La Bible du CASE du Bois de Nèfles : adhésions, comptabilité, subventions, répertoire',
@@ -12231,6 +12358,8 @@ renderAll();
     },
     '30cab5ff-fb7d-4734-8f2d-bac3100841ed': { // BOKAF
       orgName:'BOKAF',
+      legal:{ nom:'ASSOCIATION BOKAF', sous:'Association loi 1901 — média, évènement, production',
+              adresse:'79 chemin Finette, 97490 Sainte-Clotilde', siren:'480 088 855' },
       title:'Bob — association BOKAF', appTitle:'Bob BOKAF',
       h1:'Bob <span style="font-weight:500;opacity:.85">· association BOKAF</span>',
       sub:'Gestion de l\'association BOKAF : adhésions, comptabilité, projets',
@@ -12239,6 +12368,8 @@ renderAll();
     },
     '1b4f1aea-1e7a-45dd-97c0-1efa94319b94': { // PIX-I-ART (studio / entreprise — additif, ne touche pas CASE/BOKAF)
       orgName:'PIX-I-ART',
+      legal:{ nom:'PIX-I-ART', sous:'SASU — production audiovisuelle',
+              adresse:'Village by CA Réunion, 20 rue Maxime Rivière, 97490 Sainte-Clotilde', siren:'980 951 065' },
       title:'Bob — studio PIX-I-ART', appTitle:'Bob PIX-I-ART',
       h1:'Bob <span style="font-weight:500;opacity:.85">· studio PIX-I-ART</span>',
       sub:'Gestion du studio PIX-I-ART : projets, clients, comptabilité',
