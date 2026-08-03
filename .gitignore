@@ -11,3 +11,9 @@
 
 # Vercel
 .vercel
+
+# Sauvegardes locales avant édition — git est le vrai filet, elles n'ont rien à faire dans le dépôt
+*.BACKUP-*
+
+# Config locale de l'outillage
+.claude/
