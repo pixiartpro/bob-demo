@@ -92,7 +92,7 @@ const $=s=>document.querySelector(s);
 const ASSO_DOORS = {
   case:  { pine:'🍍', nom:'CASE', nom2:'Bois de Nèfles', titre:'Mon espace — CASE du Bois de Nèfles',
            theme:{ vert:'#1f9d6b', vertFonce:'#0f6b46' } },
-  bokaf: { pine:'🎬', nom:'BOKAF', nom2:'', titre:'Espace bureau — association BOKAF', logoImg:'bokaf-logo.png',
+  bokaf: { pine:'🎬', nom:'BOKAF', nom2:'', titre:'Mon espace — association BOKAF', logoImg:'bokaf-logo.png',
            theme:{ vert:'#d81e5b', vertFonce:'#b3134a', dark:true, headerBg:'linear-gradient(100deg,#141318,#26182e 55%,#141318)', flagBg:'#221826', flagInk:'#f1c6d8' } },
   pixiart: { pine:'🔴', nom:'PIX-I-ART', nom2:'pilotage', titre:'Espace pilotage — PIX-I-ART',
            theme:{ vert:'#E8300A', vertFonce:'#b3210a' } }
@@ -130,6 +130,9 @@ const DOOR = assoSlug();
   if(t){
     try{ const rs=document.documentElement.style; rs.setProperty('--vert',t.vert); rs.setProperty('--vert-fonce',t.vertFonce); }catch(e){}
     if(t.dark){
+      /* 03/08/2026 — l'espace BOKAF n'est plus réservé au bureau : titre + sous-titre adaptés (adhésion SUR DEMANDE) */
+      try{ const h1=document.querySelector('h1.t'); if(h1) h1.textContent='🎬 Mon espace BOKAF'; }catch(e){}
+      try{ const su=document.querySelector('p.sub'); if(su) su.textContent='Connecte-toi — ou demande à rejoindre l\'association : le bureau étudie chaque demande.'; }catch(e){}
       try{ const hd=document.querySelector('header'); if(hd) hd.style.background=t.headerBg; }catch(e){}
       try{ const lb=document.querySelector('.logo b'); if(lb) lb.style.color='#fff'; }catch(e){}
       /* le site public BOKAF existe : logo + lien « Site public » pointent dessus (et plus vers le site du CASE) */
@@ -185,9 +188,22 @@ const REGLEMENT_HTML = `
 <b>7. Données personnelles (RGPD).</b> Vos données (y compris de santé) sont hébergées dans l'Union européenne, utilisées uniquement pour la gestion des activités, et conservées le temps nécessaire. Vous disposez d'un droit d'accès, de rectification et de suppression : case.bdn@gmail.com.<br><br>
 <i>Brouillon — en cours de validation. Version du 20/06/2026.</i>
 </p>`;
+/* 03/08/2026 — Règlement propre à BOKAF (l'adhésion y est SUR DEMANDE, et l'espace sert aux projets photo/vidéo) */
+const REGLEMENT_BOKAF_HTML = `
+<h3 style="margin:0 0 10px">Règlement de l'espace en ligne — association BOKAF</h3>
+<p style="font-size:13.5px;line-height:1.6">
+<b>1. Objet.</b> Cet espace permet de demander l'adhésion à BOKAF, de porter des projets photo/vidéo, d'échanger entre membres (comptoir, fils de projets) et de gérer le matériel de l'association.<br><br>
+<b>2. Adhésion sur demande.</b> L'adhésion à BOKAF n'est <b>pas automatique</b> : chaque demande est étudiée par le bureau, qui reste libre de l'accepter ou de la refuser, conformément aux statuts. La cotisation n'est due <b>qu'après acceptation</b>.<br><br>
+<b>3. Compte &amp; identifiants.</b> Le compte est personnel. Vous gardez votre mot de passe confidentiel et êtes responsable de toute action effectuée depuis votre compte.<br><br>
+<b>4. Droit à l'image &amp; respect des personnes.</b> Nos projets impliquent des prises de vue : chaque membre s'engage à faire signer les <b>autorisations avant toute diffusion</b>, à respecter le refus d'une personne, et à ne jamais diffuser une image sans accord — en particulier pour les mineurs (autorisation des <b>deux</b> responsables légaux).<br><br>
+<b>5. Matériel.</b> Le matériel déclaré au registre reste la propriété de celui qui l'apporte. On emprunte avec soin, on rend en l'état, on signale toute casse.<br><br>
+<b>6. Bonne conduite.</b> Les échanges restent bienveillants et constructifs. Le bureau peut suspendre l'accès d'un membre en cas d'abus.<br><br>
+<b>7. Données personnelles (RGPD).</b> Vos données sont hébergées dans l'Union européenne et servent uniquement à la vie associative. Droit d'accès, de rectification et de suppression auprès du bureau de l'association.<br><br>
+<i>Brouillon — à faire valider par le bureau BOKAF. Version du 03/08/2026.</i>
+</p>`;
 function openReglement(){
   const m=document.getElementById('regModal'), body=document.getElementById('regBody'); if(!m||!body) return;
-  body.innerHTML=REGLEMENT_HTML; body.scrollTop=0; m.style.display='flex';
+  body.innerHTML=(DOOR==='bokaf'?REGLEMENT_BOKAF_HTML:REGLEMENT_HTML); body.scrollTop=0; m.style.display='flex';
   const btn=document.getElementById('regAcceptBtn'), hint=document.getElementById('regHint');
   const setState=ok=>{ btn.disabled=!ok; btn.style.opacity=ok?'1':'.5'; if(hint) hint.textContent=ok?'✅ Vous pouvez accepter.':'⬇︎ Faites défiler jusqu\'en bas pour pouvoir accepter.'; };
   setState(false);
@@ -276,7 +292,7 @@ function isBanned(error){
 }
 const BANNED_HTML='🔒 <b>Ton accès à cet espace a été bloqué</b> (mesure de sécurité).'
   +'<br>Ce n\'est pas ton mot de passe : <b>aucun lien « mot de passe oublié » ne pourra le débloquer.</b>'
-  +'<br>Contacte le <b>Président</b> (case.bdn@gmail.com) pour le rétablir.';
+  +'<br>Contacte le <b>Président</b> ('+(DOOR==='bokaf'?'asso.bokaf@gmail.com':'case.bdn@gmail.com')+') pour le rétablir.';
 
 /* Plus jamais un message brut anglais sous les yeux d'une salariée. */
 function authErrFr(error){
@@ -493,8 +509,8 @@ function renderLoggedOut(){
       </div>
     </div>
     <div class="card">
-      <h2>Demander un accès</h2>
-      <p class="h">Crée ton compte. Ta demande arrive en « en attente » et un administrateur t'accrédite.</p>
+      <h2>${DOOR==='bokaf'?'Demander à rejoindre BOKAF':'Demander un accès'}</h2>
+      <p class="h">${DOOR==='bokaf'?'L\'adhésion n\'est <b>pas automatique</b> : ta demande est étudiée par le bureau, qui l\'accepte… ou pas. La cotisation ne se règle qu\'après acceptation.':'Crée ton compte. Ta demande arrive en « en attente » et un administrateur t\'accrédite.'}</p>
       <div style="display:flex;gap:10px;flex-wrap:wrap">
         <div class="field" style="flex:1;min-width:130px"><label>Prénom</label><input id="r_prenom" placeholder="ex. Guy"></div>
         <div class="field" style="flex:1;min-width:130px"><label>Nom</label><input id="r_nom" placeholder="ex. Robert"></div>
