@@ -5866,7 +5866,11 @@ function renderZoneCards(){
   if(box){
     const SITES={'d617489c-b18b-499b-ab17-c31656d0f08a':{url:'https://casebdn.re/',lib:'Voir le site public du CASE'},
                  '30cab5ff-fb7d-4734-8f2d-bac3100841ed':{url:'https://bokaf.bob.re/',lib:'Voir le site public de BOKAF'}};
-    const s=SITES[myAsso];
+    /* ⚠️ 04/08/2026 — page blanche : `myAsso` est un `let` de l'IIFE du bloc <script> connexion (l.8337),
+       donc HORS DE PORTÉE ici (bloc moteur) → ReferenceError NON avalée dans renderZoneCards, qui tue
+       renderAll() puis boot() avant la ligne qui rend le document visible. Même motif que l'incident du
+       11/07 (commit b6f0b01). On lit le global exposé, comme estLeCase() juste au-dessus. */
+    const s=SITES[(window.bobMe&&window.bobMe.asso)||''];
     box.innerHTML=(s?('<a href="'+s.url+'" target="_blank" rel="noopener" style="display:inline-block;margin:2px 0;font-size:13px;color:var(--muted);text-decoration:none">🌐 '+s.lib+' ↗</a>'):'')
       +(estLeCase()?'<button onclick="afficheQR()" style="margin-left:14px;border:none;background:transparent;padding:2px 0;font-size:13px;font-weight:600;color:var(--brand);cursor:pointer">📣 Affiche à partager (QR code)</button>':'');
   }
