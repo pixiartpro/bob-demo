@@ -108,10 +108,12 @@
   <div id="espTabs" style="display:none;gap:8px;margin:0 0 16px">
     <button class="btn p sm" id="tabProjets" data-act="tab-projets">🎬 Projets</button>
     <button class="btn g sm" id="tabMateriel" data-act="tab-materiel">🧰 Matériel</button>
+    <button class="btn g sm" id="tabFiches" data-act="tab-fiches" style="display:none">📚 Fiches techniques</button>
   </div>
 
   <div id="zone"><p class="muted">Chargement…</p></div>
   <div id="zoneMat" style="display:none"></div>
+  <div id="zoneFiches" style="display:none"></div>
 </div>
 
 <!-- ===== Fiche projet ===== -->
@@ -146,6 +148,13 @@
     <div class="card" id="pmBesoinsCard" style="box-shadow:none">
       <h2>🧰 Les besoins</h2>
       <div id="pmBesoins"></div>
+    </div>
+
+    <div class="card" id="pmEquipeCard" style="box-shadow:none">
+      <h2>👥 L'équipe du projet</h2>
+      <p class="h">Qui donne un coup de main. Chacun s'inscrit — ou se retire — tout seul.</p>
+      <div id="pmEquipe"></div>
+      <div style="margin-top:10px"><button class="btn p sm" data-act="toggle-part" id="btnPart">✋ Je participe</button></div>
     </div>
 
     <div class="card" id="pmDocsCard" style="box-shadow:none;display:none">
@@ -307,6 +316,7 @@ let PHOTO_FILE=null;
 let COMPTOIR=null; /* fil général de l'asso (projet spécial data.type='comptoir') */
 let LATEST={};     /* project_id -> date du dernier message (pour le badge « du neuf ») */
 let MATERIEL=[];   /* registre du matériel (brique 3) */
+let PARTS=[];      /* qui participe à quoi (demande de Sonny, 04/08/2026) */
 let MAT_EDIT=null; /* fiche matériel en cours de modification (null = déclaration) */
 
 const canBureau=()=>ME&&['president','tresorier','bureau'].includes(ME.role);
@@ -316,11 +326,14 @@ function fmtDate(iso){ if(!iso) return ''; const d=new Date(iso); if(isNaN(d)) r
   const p=n=>String(n).padStart(2,'0'); return p(d.getDate())+'/'+p(d.getMonth()+1)+'/'+d.getFullYear()+' '+p(d.getHours())+':'+p(d.getMinutes()); }
 const STATUTS={actif:'🟢 En cours', termine:'🏁 Terminé', archive:'📦 Archivé'};
 const isComptoir=p=>!!(p&&p.data&&p.data.type==='comptoir');
+const partsOf=id=>PARTS.filter(x=>x.project_id===id);
+const jeParticipe=id=>PARTS.some(x=>x.project_id===id && x.user_id===(ME&&ME.id));
 /* « du neuf » : dernière visite mémorisée sur CE téléphone (pas d'infra, pas de compte à compte) */
 function seenGet(id){ try{ return localStorage.getItem('bob_vu_'+id)||''; }catch(e){ return ''; } }
 function seenSet(id){ try{ localStorage.setItem('bob_vu_'+id, new Date().toISOString()); }catch(e){} }
 function hasNew(id){ const l=LATEST[id]; if(!l) return false; const s=seenGet(id); return !s || (new Date(l).getTime()>new Date(s).getTime()); }
 const featMat=()=>{ try{ return ((ASSO&&ASSO.features&&ASSO.features.materiel)||'')==='on'; }catch(e){ return false; } };
+const estBokaf=()=>{ try{ return !!(ASSO&&ASSO.slug==='bokaf'); }catch(e){ return false; } };
 const CATS={camera:'📷 Caméra / photo', son:'🎙️ Son', lumiere:'💡 Lumière', info:'💻 Informatique', autre:'🧰 Autre'};
 const ETATS={bon:'🟢 Bon état', moyen:'🟠 Fatigué', hs:'🔴 En panne'};
 function proprioLabel(m){
@@ -347,18 +360,28 @@ async function boot(){
   if(!featureOn()){ renderMsg('🔒 Module non activé','L\'espace projets n\'est pas encore ouvert pour ton association. Parles-en au bureau !'); return; }
   await loadProjects();
   renderMain();
-  if(featMat()){ $('#espTabs').style.display='flex'; await loadMateriel(); renderMateriel(); }
+  if(featMat()){ await loadMateriel(); renderMateriel(); } else { $('#tabMateriel').style.display='none'; }
+  /* Les fiches techniques sont un savoir-faire d'image : elles n'ont de sens que chez BOKAF. */
+  if(estBokaf()){ $('#tabFiches').style.display=''; renderFiches(); }
+  if(featMat()||estBokaf()) $('#espTabs').style.display='flex';
 }
+const ESP_TABS={
+  projets : {zone:'#zone',       btn:'#tabProjets',  titre:'🎬 Les projets',
+             sub:'L\'établi des projets de l\'association : chacun porte le sien, tout le monde peut suivre et donner un coup de main.'},
+  materiel: {zone:'#zoneMat',    btn:'#tabMateriel', titre:'🧰 Le matériel',
+             sub:'Le registre du matériel : qui possède quoi, en quel état, et entre quelles mains.'},
+  fiches  : {zone:'#zoneFiches', btn:'#tabFiches',   titre:'📚 Les fiches techniques',
+             sub:'Les rappels à relire avant de partir — la lumière, l\'ouverture, les réglages. À garder dans la poche.'}
+};
 function showEspTab(k){
-  const mat=k==='materiel';
-  $('#zone').style.display=mat?'none':'';
-  $('#zoneMat').style.display=mat?'':'none';
-  $('#tabProjets').className='btn sm '+(mat?'g':'p');
-  $('#tabMateriel').className='btn sm '+(mat?'p':'g');
-  document.querySelector('h1.t').textContent=mat?'🧰 Le matériel':'🎬 Les projets';
-  document.querySelector('p.sub').textContent=mat
-    ?'Le registre du matériel : qui possède quoi, en quel état, et entre quelles mains.'
-    :'L\'établi des projets de l\'association : chacun porte le sien, tout le monde peut suivre et donner un coup de main.';
+  const cur=ESP_TABS[k]||ESP_TABS.projets;
+  for(const [key,t] of Object.entries(ESP_TABS)){
+    const z=$(t.zone), b=$(t.btn);
+    if(z) z.style.display = key===k ? '' : 'none';
+    if(b) b.className = 'btn sm '+(key===k?'p':'g');
+  }
+  document.querySelector('h1.t').textContent=cur.titre;
+  document.querySelector('p.sub').textContent=cur.sub;
 }
 function renderGate(){
   const slug=doorGuess(); const d=DOORS[slug];
@@ -375,6 +398,9 @@ async function loadProjects(){
   const all=data||[];
   COMPTOIR=all.find(isComptoir)||null;
   PROJECTS=all.filter(p=>!isComptoir(p)).filter(p=>((p.data&&p.data.statut)||'actif')!=='archive' || p.owner_id===(ME&&ME.id));
+  /* qui participe à quels projets — une seule requête pour toute la page */
+  const {data:pa,error:pe}=await sb.from('projet_participants').select('project_id,user_id,nom');
+  PARTS=(pe||!pa)?[]:pa;
   /* date du dernier message par fil (badge « du neuf ») — les 300 plus récents suffisent à notre échelle */
   LATEST={};
   const {data:lp,error:le}=await sb.from('project_posts').select('project_id,created_at').order('created_at',{ascending:false}).limit(300);
@@ -393,11 +419,15 @@ function pcardHtml(p){
       '<span class="pill'+(mine?' on':'')+'">'+(mine?'⭐ Mon projet':'👤 '+esc(d.porteur_nom||'Un adhérent'))+'</span>'+
       '<span class="pill">'+esc(st)+'</span>'+
       (hasNew(p.id)?'<span class="pill new">🔴 du neuf</span>':'')+
+      ((()=>{ const n=partsOf(p.id).length; return n?('<span class="pill'+(jeParticipe(p.id)?' done':'')+'">👥 '+n+' participant'+(n>1?'s':'')+'</span>'):''; })())+
     '</div></div>';
 }
 function renderMain(){
   const mine=PROJECTS.filter(p=>p.owner_id===ME.id);
-  const others=PROJECTS.filter(p=>p.owner_id!==ME.id);
+  /* 04/08/2026 (retour de Sonny) — « Les projets de l'asso » montrait seulement CEUX DES AUTRES :
+     après avoir créé son projet, il ne le voyait pas dans la liste commune et ne pouvait donc pas
+     vérifier qu'il était bien visible par le reste de l'équipe. C'est la liste de TOUT LE MONDE. */
+  const others=PROJECTS;
   let h='<div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap">'+
     '<span class="pill on">👋 '+esc(ME.name)+'</span><span style="flex:1"></span>'+
     '<button class="btn p" data-act="open-n">➕ Nouveau projet</button></div>';
@@ -412,9 +442,9 @@ function renderMain(){
   h+='<h2 style="font-size:17px;margin:6px 0 10px">⭐ Mes projets</h2>';
   h+= mine.length? '<div class="pgrid">'+mine.map(pcardHtml).join('')+'</div>'
      : '<div class="card"><p class="empty" style="padding:6px">Tu n\'as pas encore de projet. Lance-toi : clique sur <b>➕ Nouveau projet</b> !</p></div>';
-  h+='<h2 style="font-size:17px;margin:20px 0 10px">🤝 Les projets de l\'asso</h2>';
+  h+='<h2 style="font-size:17px;margin:20px 0 10px">🤝 Les projets de l\'asso <small class="muted" style="font-weight:400;font-size:13px">— visibles par tous les adhérents</small></h2>';
   h+= others.length? '<div class="pgrid">'+others.map(pcardHtml).join('')+'</div>'
-     : '<div class="card"><p class="empty" style="padding:6px">Pas encore d\'autre projet — le tien sera peut-être le premier !</p></div>';
+     : '<div class="card"><p class="empty" style="padding:6px">Aucun projet pour l\'instant — le tien sera le premier !</p></div>';
   h+='<div class="card" style="margin-top:20px"><h2>❓ Comment ça marche</h2><p class="h" style="margin:0">'+
      '1. <b>Crée ton projet</b> et décris-le simplement. · 2. <b>Découpe-le en étapes</b> et coche au fur et à mesure. · '+
      '3. <b>Raconte dans le fil</b> : questions, avancées, photos. · Le bureau voit tout et peut aider.</p></div>';
@@ -442,6 +472,7 @@ async function openProject(id){
   const showMod=!cptr&&canEditProj(p);
   $('#pmModelesCard').style.display=showMod?'':'none';
   $('#pModal').classList.add('open');
+  renderEquipe();
   if(showMod){ await loadModeles(p.id); await loadSigs(p.id); renderModeles(); }
   await loadPosts(p.id);
   seenSet(p.id); renderMain();
@@ -520,6 +551,48 @@ async function addJalon(){
   const {error}=await sb.from('projects').update({data:d,updated_at:new Date().toISOString()}).eq('id',CURRENT.id);
   if(error){ toast('Impossible d\'ajouter : '+error.message); return; }
   $('#jalonInput').value=''; CURRENT.data=d; renderJalons(CURRENT);
+}
+
+/* ===== « Je participe » (demande de Sonny, 04/08/2026) ===== */
+function renderEquipe(){
+  if(!CURRENT) return;
+  const cptr=isComptoir(CURRENT);
+  const card=$('#pmEquipeCard'); if(card) card.style.display=cptr?'none':'';
+  if(cptr) return;
+  const list=partsOf(CURRENT.id);
+  const box=$('#pmEquipe');
+  const porteur=(CURRENT.data&&CURRENT.data.porteur_nom)||'le porteur';
+  box.innerHTML='<div class="meta" style="display:flex;gap:6px;flex-wrap:wrap">'
+    +'<span class="pill on">⭐ '+esc(porteur)+' — porteur</span>'
+    +(list.length? list.map(x=>'<span class="pill">'+esc(x.nom||'Un adhérent')+'</span>').join('')
+                 : '<span class="muted small">Personne d\'autre pour l\'instant.</span>')
+    +'</div>';
+  const b=$('#btnPart');
+  if(b){
+    const dedans=jeParticipe(CURRENT.id);
+    b.textContent = dedans ? '↩️ Je me retire' : '✋ Je participe';
+    b.className = 'btn sm '+(dedans?'g':'p');
+  }
+}
+async function toggleParticipation(){
+  if(!CURRENT||isComptoir(CURRENT)) return;
+  const b=$('#btnPart'); if(b) b.disabled=true;
+  try{
+    if(jeParticipe(CURRENT.id)){
+      const {error}=await sb.from('projet_participants').delete().eq('project_id',CURRENT.id).eq('user_id',ME.id);
+      if(error){ toast('Impossible de se retirer : '+error.message); return; }
+    }else{
+      const {error}=await sb.from('projet_participants').insert({asso_id:ME.asso, project_id:CURRENT.id, user_id:ME.id, nom:ME.name});
+      if(error){ toast('Inscription impossible : '+error.message); return; }
+      /* le porteur doit VOIR que quelqu'un l'a rejoint : une ligne dans le fil, pas une notification muette */
+      await sb.from('project_posts').insert({asso_id:ME.asso, project_id:CURRENT.id, author_id:ME.id, author_name:ME.name, body:'✋ '+ME.name+' a rejoint le projet.'});
+      await loadPosts(CURRENT.id); seenSet(CURRENT.id);
+      toast('Tu participes à ce projet ✓');
+    }
+    const {data:pa}=await sb.from('projet_participants').select('project_id,user_id,nom');
+    PARTS=pa||[];
+    renderEquipe(); renderMain();
+  } finally { if(b) b.disabled=false; }
 }
 
 /* ===== Fil de discussion ===== */
@@ -603,6 +676,47 @@ const DOCS_BOKAF=[
   {t:'📸 Rappels photo — fiche terrain', href:'fiche-technique-photo.html'},
   {t:'🎬 Rappels vidéo — fiche terrain', href:'fiche-technique-video.html'}
 ];
+
+/* ===== Les fiches techniques (brique 6) — 04/08/2026 ==========================
+   Guillaume : « des rappels sur la lumière, sur l'ouverture, s'ils ont des
+   questions sur leur appareil — il faudra avoir un espace juste pour ça ».
+   Les fiches existaient déjà, mais SEULEMENT dans #pmDocsCard, donc au fond
+   d'un projet : introuvables pour qui n'en porte pas. D'où cet onglet à part. */
+const FICHES=[
+  {ico:'⚙️', href:'fiche-technique-appareil.html', t:'Comprendre ton appareil',
+   d:'Ouverture, vitesse, ISO : ce que fait chaque réglage, et lequel toucher quand ça ne rend pas ce que tu voulais.',
+   pts:['Le fond flou (f/2.8) et le piège des photos de groupe','Pourquoi une photo est floue — et ce que ça n\'est jamais','Les modes A / S / M : lequel, quand','5 pannes classiques et leur cause réelle','Et au téléphone : l\'appui long qui change tout']},
+  {ico:'📸', href:'fiche-technique-photo.html', t:'Photo — la fiche terrain',
+   d:'À relire le matin d\'un shooting : la lumière selon l\'heure, le cadrage, l\'attitude en kartié.',
+   pts:['L\'heure dorée, le piège de midi, le contre-jour','La règle des tiers et la hauteur du regard','Le tableau des réglages selon la situation','Demander avant de photographier quelqu\'un','La double sauvegarde du soir même']},
+  {ico:'🎬', href:'fiche-technique-video.html', t:'Vidéo — la fiche terrain',
+   d:'Le son d\'abord, puis les plans qu\'il faut ramener pour que le montage tienne debout.',
+   pts:['Le son se répare mal : la règle n°1','Les 5 plans à ramener systématiquement','Interviewer sans que ça sonne faux','Lumière et stabilité sans matériel lourd','Le rangement des rushes en rentrant']}
+];
+function renderFiches(){
+  let h='<div class="card" style="margin-bottom:16px"><h2>🎒 À quoi ça sert</h2><p class="h" style="margin:0">'+
+    'Pas besoin d\'être photographe pour sortir avec BOKAF. Ces fiches sont des <b>aide-mémoire</b>, pas un cours : '+
+    'on les ouvre <b>avant</b> de partir, ou <b>sur place</b> quand un réglage résiste. Elles s\'ouvrent sur le téléphone — '+
+    'garde l\'onglet ouvert pendant la sortie.</p></div>';
+  h+='<div class="pgrid">'+FICHES.map(f=>
+      '<a class="pcard" style="text-decoration:none;color:inherit;display:block" target="_blank" rel="noopener" href="'+esc(f.href)+'">'+
+        '<h3 style="margin:0 0 6px">'+f.ico+' '+esc(f.t)+'</h3>'+
+        '<p class="h" style="margin:0 0 10px;display:block;-webkit-line-clamp:unset;overflow:visible">'+esc(f.d)+'</p>'+
+        '<ul style="margin:0 0 12px;padding-left:18px">'+f.pts.map(p=>'<li style="font-size:13px;margin-bottom:3px">'+esc(p)+'</li>').join('')+'</ul>'+
+        '<span class="btn p sm">Ouvrir la fiche →</span>'+
+      '</a>').join('')+'</div>';
+  h+='<div class="card" style="margin-top:20px"><h2>📝 Les papiers du terrain</h2>'+
+     '<p class="h">Autre chose que les réglages, mais ça se prépare pareil : dès qu\'on filme ou photographie <b>quelqu\'un</b>, '+
+     'il faut son autorisation. À imprimer avant de partir, ou à faire signer au doigt depuis la fiche du projet.</p>'+
+     '<div style="display:flex;gap:8px;flex-wrap:wrap">'+
+     DOCS_BOKAF.filter(x=>x.href.indexOf('autorisation')>-1).map(x=>
+       '<a class="btn g sm" style="text-decoration:none" target="_blank" rel="noopener" href="'+esc(x.href)+'">'+esc(x.t)+'</a>').join('')+
+     '</div></div>';
+  h+='<div class="card" style="margin-top:16px"><h2>💡 Il manque une fiche ?</h2><p class="h" style="margin:0">'+
+     'Une question qui revient sur le terrain, un réglage qui bloque tout le monde : dis-le au bureau, on en fait une fiche. '+
+     'C\'est fait pour grandir avec l\'association.</p></div>';
+  $('#zoneFiches').innerHTML=h;
+}
 const AUTOR={a_demander:'⏳ À demander', envoyee:'✉️ Envoyée', signee:'✅ Signée', refusee:'🚫 Refusée'};
 let MODELES=[];
 async function loadModeles(projectId){
@@ -848,10 +962,12 @@ document.addEventListener('click',async e=>{
     case 'add-jalon': addJalon(); break;
     case 'tab-projets': showEspTab('projets'); break;
     case 'tab-materiel': showEspTab('materiel'); break;
+    case 'tab-fiches': showEspTab('fiches'); break;
     case 'open-m': openMatModal(null); break;
     case 'close-m': $('#mModal').classList.remove('open'); MAT_EDIT=null; break;
     case 'save-materiel': saveMateriel(); break;
     case 'add-modele': addModele(); break;
+    case 'toggle-part': toggleParticipation(); break;
     case 'close-sig': $('#sigModal').classList.remove('open'); SIG_MODELE=null; break;
     case 'sig-clear': sigClear(); break;
     case 'sig-save': sigSave(); break;
