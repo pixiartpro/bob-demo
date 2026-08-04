@@ -1322,14 +1322,14 @@ function famNorm(s){ return String(s||'').toLowerCase().normalize('NFD').replace
 async function loadFamilles(){
   try{
     const [rk,rd,rf]=await Promise.all([
-      sb.from('enfants').select('id,nom,prenom,naissance,classe,ecole,allergies,regime,conduite_urgence,sante,autorises,droit_image').order('nom',{ascending:true}),
+      sb.from('enfants').select('id,parent_id,nom,prenom,naissance,classe,ecole,allergies,regime,conduite_urgence,sante,autorises,droit_image').order('nom',{ascending:true}),
       sb.from('inscriptions_periscolaire').select('id,asso_id,user_id,annee,foyer,email,tel,enfants,pieces,statut,besoin_aide,note_bureau,updated_at').order('updated_at',{ascending:false}),
       // ⚠️ PAS de `donnees` : le médical ne descend plus en bloc au chargement (RGPD art. 9,
       // minimisation). Ici on ne prend que le statut, de quoi afficher le badge ; le contenu
       // part à la demande dans famFicheToggle. Défaut repéré le 14/07, corrigé le 19/07.
       sb.from('fiches_sanitaires').select('id,enfant_id,annee,version,statut,signe_le,signe_mode').order('version',{ascending:false})
     ]);
-    ME.famKids=(rk.data||[]).map(function(k){ return { id:k.id, nom:k.nom||'', prenom:k.prenom||'', naissance:k.naissance||'', classe:k.classe||'', ecole:k.ecole||'',
+    ME.famKids=(rk.data||[]).map(function(k){ return { id:k.id, parent_id:k.parent_id||'', nom:k.nom||'', prenom:k.prenom||'', naissance:k.naissance||'', classe:k.classe||'', ecole:k.ecole||'',
       allergies:String(k.allergies||'').trim(), regime:String(k.regime||'').trim(), conduite_urgence:String(k.conduite_urgence||'').trim(), sante:String(k.sante||'').trim(), autorises:String(k.autorises||'').trim(), droit_image:k.droit_image }; });
     ME.famDoss=rd.data||[];
     // Fiches sanitaires filtrées par la RLS : le salarié ne reçoit QUE celles qu'il a le droit de lire
@@ -1343,7 +1343,31 @@ function famDossierFor(k){
     const it=arr.find(function(e){ return (e.enfant_id&&e.enfant_id===k.id) || (famNorm(e.nom)===famNorm(k.nom) && famNorm(e.prenom)===famNorm(k.prenom) && famNorm(k.nom+k.prenom)!==''); });
     if(it) return {d:d,it:it};
   }
+  // Repli par FOYER (04/08/2026) — cas vécu (Zoé J.) : une famille dépose ses pièces mais ne
+  // termine pas l'étape « enfant ». Son dossier reste en brouillon avec une liste d'enfants VIDE :
+  // la boucle ci-dessus ne trouvait rien, et l'écran annonçait « pas de dossier périscolaire » +
+  // « aucune coordonnée parent enregistrée » alors que le dossier ET le mail existaient, avec
+  // 4 pièces déjà déposées. On rattache donc par parent_id, comme le fait déjà l'onglet 👶 Enfants
+  // du bureau. `it` vide = aucun créneau matin/soir pour CET enfant, ce qui est exact : il n'est
+  // pas (encore) au dossier — `viaFoyer` sert à le DIRE à l'écran plutôt qu'à le laisser croire.
+  if(k.parent_id){
+    const d=ME.famDoss.find(function(x){ return x.user_id===k.parent_id; });
+    if(d) return {d:d, it:{}, viaFoyer:true};
+  }
   return null;
+}
+// Pièces du dossier périscolaire du foyer, résolues POUR CET ENFANT. Deux rangements coexistent
+// en base : à plat (`assurance`) pour les dépôts d'avant la bascule, et par enfant
+// (`assurance__<id>`) depuis. Le bureau lit les deux (app.html → complFor) ; ici on n'en lisait
+// qu'un, donc une pièce bien présente pouvait s'afficher « manquante ». Le par-enfant est
+// appliqué en second : plus précis, il gagne sur le dépôt à plat.
+function famPiecesDossier(k){
+  const out={}; const dj=famDossierFor(k); if(!dj) return out;
+  const src=(dj.d.pieces&&typeof dj.d.pieces==='object')?dj.d.pieces:{};
+  const put=function(base,key){ const p=src[key]; if(p&&p.path) out[base]=Object.assign({},p,{_from:'doss',_id:dj.d.id,_key:key}); };
+  Object.keys(src).forEach(function(key){ if(key.indexOf('__')<0) put(key,key); });
+  Object.keys(src).forEach(function(key){ const m=key.match(/^(.+?)__(.+)$/); if(m&&m[2]===k.id) put(m[1],key); });
+  return out;
 }
 function famBilan(k){
   const checks=[
@@ -1365,7 +1389,7 @@ function famBilan(k){
   }
   const dj=famDossierFor(k);
   let missPieces=[];
-  if(dj){ const pieces=(dj.d.pieces&&typeof dj.d.pieces==='object')?dj.d.pieces:{}; missPieces=FAM_PIECES.filter(function(p){ return !(pieces[p.k]&&pieces[p.k].path); }); }
+  if(dj){ const pieces=famPiecesDossier(k); missPieces=FAM_PIECES.filter(function(p){ return !pieces[p.k]; }); }
   const manque=checks.filter(function(c){ return !c.ok&&!c.opt; }).length + ((dj&&(dj.d.statut==='incomplet'||missPieces.length))?1:0);
   return {checks:checks, dj:dj, missPieces:missPieces, manque:manque, aide:!!(dj&&dj.d.besoin_aide)};
 }
@@ -1469,19 +1493,20 @@ function famCardHtml(k,b){
     const s=SL[d.statut]||[esc(d.statut||'—'),'b-demande'];
     const acc=[(it.matin?'🌅 matin':''),(it.soir?'🌇 soir':'')].filter(Boolean).join(' + ');
     const pc=FAM_PIECES.length-b.missPieces.length;
-    const pieces=(d.pieces&&typeof d.pieces==='object')?d.pieces:{};
+    const pieces=famPiecesDossier(k);
     const pieceRows=FAM_PIECES.map(function(p){
-      const got=pieces[p.k]&&pieces[p.k].path;
+      const got=pieces[p.k];
       return '<div style="display:flex;align-items:center;gap:8px;padding:4px 0;border-bottom:1px dashed var(--line);font-size:13.5px">'
         +'<span style="flex:1;font-weight:600;color:'+(got?'#0f6b46':'#9a6a0a')+'">'+(got?'✓ ':'⚠️ ')+esc(p.lab)
-          +(got&&pieces[p.k].par==='accueil'?' <span style="font-weight:400;font-size:11.5px;color:var(--muted)">(déposée par l\'accueil)</span>':'')+'</span>'
+          +(got&&got.par==='accueil'?' <span style="font-weight:400;font-size:11.5px;color:var(--muted)">(déposée par l\'accueil)</span>':'')+'</span>'
         +(got
-          ?'<button class="btn ghost" style="padding:3px 10px;font-size:12px" onclick="famVoirPiece(\''+d.id+'\',\''+p.k+'\')">👁️ Voir</button>'
+          ?'<button class="btn ghost" style="padding:3px 10px;font-size:12px" onclick="famVoirPiece(\''+d.id+'\',\''+got._key+'\')">👁️ Voir</button>'
           :'<label class="btn win" style="padding:3px 10px;font-size:12px;cursor:pointer">📎 Déposer<input type="file" accept="image/*,application/pdf" style="display:none" onchange="famUpload(\''+d.id+'\',\''+p.k+'\',this)"></label>')
       +'</div>';
     }).join('');
     doss='<div style="margin-top:10px;padding-top:10px;border-top:1px dashed var(--line);font-size:14px">'
-      +'<b>🎒 Dossier périscolaire'+(d.annee?' '+esc(d.annee):'')+'</b> <span class="badge '+s[1]+'">'+s[0]+'</span>'+(acc?' · '+acc:'')+' <span class="sub">· pièces : <b>'+pc+'/'+FAM_PIECES.length+'</b></span>'
+      +'<b>🎒 Dossier périscolaire'+(b.dj.viaFoyer?' du foyer':'')+(d.annee?' '+esc(d.annee):'')+'</b> <span class="badge '+s[1]+'">'+s[0]+'</span>'+(acc?' · '+acc:'')+' <span class="sub">· pièces : <b>'+pc+'/'+FAM_PIECES.length+'</b></span>'
+      +(b.dj.viaFoyer?'<div class="sub" style="margin-top:4px">ℹ️ Cet enfant n\'est <b>pas rattaché</b> au dossier périscolaire de sa famille — il n\'est donc pas inscrit à la garderie. Les pièces ci-dessous sont celles du <b>foyer</b> : elles comptent aussi pour l\'ACM et le VEPI, inutile de les redemander.</div>':'')
       +((d.statut==='incomplet'&&d.note_bureau)?'<div style="margin-top:4px;background:#fbe9e7;border:1px solid #f3c4ba;color:#b23a23;border-radius:10px;padding:6px 10px;font-size:13px">📝 Bureau : '+esc(d.note_bureau)+'</div>':'')
       +'<div style="margin-top:4px">'+pieceRows+'</div>'
       +'<div id="famup_'+d.id+'" class="sub" style="margin:4px 0 0"></div>'
@@ -1613,12 +1638,22 @@ function actDocProfile(a){
   if(/(zumba|danse|sport|fitness|gym|muscu|yoga|fit|foot|basket|hand|athl|natation|boxe|karate|judo|rugby|volley|tennis|course|running|cardio|pilates|renfo|capoeira|hip *hop|moring)/.test(t)) return 'sport';
   return 'aucun';
 }
+// `got` porte d'où vient la pièce (_from doss|act, _id/_insId, _key) : une pièce du dossier
+// périscolaire vit dans le bucket `dossiers-periscolaire`, une pièce d'inscription dans
+// `dossiers-activites` — le 👁️ Voir doit viser le bon, sinon il ouvre le vide.
 function famPieceRow(insId, key, lab, got){
+  const doss=!!(got&&got._from==='doss');
+  let src='';
+  if(doss) src=' <span style="font-weight:400;font-size:11px;color:var(--muted)">(dossier famille)</span>';
+  else if(got&&got._insId&&got._insId!==insId) src=' <span style="font-weight:400;font-size:11px;color:var(--muted)">(déjà déposée)</span>';
+  else if(got&&got.par==='accueil') src=' <span style="font-weight:400;font-size:11px;color:var(--muted)">(par l\'accueil)</span>';
+  const voir=doss
+    ? 'famVoirPiece(\''+got._id+'\',\''+got._key+'\')'
+    : 'famActVoir(\''+((got&&got._insId)||insId)+'\',\''+((got&&got._key)||key)+'\')';
   return '<div style="display:flex;align-items:center;gap:8px;padding:3px 0;font-size:13.5px">'
-    +'<span style="flex:1;font-weight:600;color:'+(got?'#0f6b46':'#9a6a0a')+'">'+(got?'✓ ':'⚠️ ')+esc(lab)
-      +(got&&got.par==='accueil'?' <span style="font-weight:400;font-size:11px;color:var(--muted)">(par l\'accueil)</span>':'')+'</span>'
+    +'<span style="flex:1;font-weight:600;color:'+(got?'#0f6b46':'#9a6a0a')+'">'+(got?'✓ ':'⚠️ ')+esc(lab)+src+'</span>'
     +(got
-      ?'<button class="btn ghost" style="padding:2px 9px;font-size:12px" onclick="famActVoir(\''+insId+'\',\''+key+'\')">👁️ Voir</button>'
+      ?'<button class="btn ghost" style="padding:2px 9px;font-size:12px" onclick="'+voir+'">👁️ Voir</button>'
       :'<label class="btn win" style="padding:2px 9px;font-size:12px;cursor:pointer">📎 Déposer<input type="file" accept="image/*,application/pdf" style="display:none" onchange="famActUpload(\''+insId+'\',\''+key+'\',this)"></label>')
   +'</div>';
 }
@@ -1640,9 +1675,21 @@ function famActsHtml(k){
           +'<label class="btn ghost" style="padding:3px 10px;font-size:12px;cursor:pointer;display:inline-block;margin-top:4px">📎 Ajouter un document<input type="file" accept="image/*,application/pdf" style="display:none" onchange="famActUpload(\''+i.id+'\',\'\',this)"></label>';
       } else {
         const list=ACT_DOC_PROFILES[prof].pieces;
-        const done=list.filter(function(p){ return pieces[p.k]&&pieces[p.k].path; }).length;
+        // Même règle que le bureau (app.html → complFor) : une pièce déposée UNE fois compte pour
+        // TOUS les accueils de l'enfant. Ce compteur ne lisait que l'inscription courante — d'où
+        // des « 0/6 » affichés à Kathy le 04/08/2026 alors que 4 pièces étaient déposées au dossier
+        // de la famille, et l'invitation à redéposer les 6 mêmes documents sur chaque semaine d'ACM.
+        // On empile du plus général au plus précis : ① dossier périscolaire du foyer (accueil de
+        // mineurs seulement — ce sont les pièces CASF) ② les autres inscriptions de l'enfant
+        // ③ l'inscription courante en dernier, prioritaire : c'est SON fichier que 👁️ Voir ouvre.
+        const pot=(prof==='mineurs')?famPiecesDossier(k):{};
+        const empile=function(ins){ const pp=(ins.pieces&&typeof ins.pieces==='object')?ins.pieces:{};
+          Object.keys(pp).forEach(function(kk){ if(pp[kk]&&pp[kk].path) pot[kk]=Object.assign({},pp[kk],{_from:'act',_insId:ins.id,_key:kk}); }); };
+        mine.forEach(function(y){ if(y.ins.id!==i.id && y.ins.statut!=='annule') empile(y.ins); });
+        empile(i);
+        const done=list.filter(function(p){ return !!pot[p.k]; }).length;
         docs='<div class="sub" style="margin:2px 0 2px">📋 Pièces ('+ACT_DOC_PROFILES[prof].label+') — <b>'+done+'/'+list.length+'</b></div>'
-          +list.map(function(p){ return famPieceRow(i.id, p.k, p.lab, (pieces[p.k]&&pieces[p.k].path)?pieces[p.k]:null); }).join('');
+          +list.map(function(p){ return famPieceRow(i.id, p.k, p.lab, pot[p.k]||null); }).join('');
       }
       return '<div style="padding:6px 0;border-bottom:1px dashed var(--line)">'
         +'<div style="display:flex;align-items:center;gap:8px;font-size:14px">'
