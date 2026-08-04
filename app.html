@@ -1381,11 +1381,11 @@
   <section id="pilotage" class="page">
     <div class="panel">
       <h2>Créer une action</h2>
-      <p class="hint">Une « action » = une activité du CASE (périscolaire, ACM, VEPI, événement…). Elle devient le <strong>point d'accroche unique</strong> de son budget : les dépenses et les subventions déjà saisies dans Bob se relient à elle par son nom, sans double saisie. Ouvre le <strong>budget détaillé</strong> d'une action pour le coût du personnel (coût horaire × heures affectées), les dépenses par poste, les recettes (subventions + participations), les contributions en nature et l'<strong>aperçu à recopier</strong> pour le dossier Mairie. Les onglets <strong>📊 Consolidé</strong> et <strong>👤 Charge salariés</strong> donnent la vue annuelle et le garde-fou anti-double-comptage.</p>
+      <p class="hint">Une « action » = une activité de l'association (atelier, projet, événement…). Elle devient le <strong>point d'accroche unique</strong> de son budget : les dépenses et les subventions déjà saisies dans Bob se relient à elle par son nom, sans double saisie. Ouvre le <strong>budget détaillé</strong> d'une action pour le coût du personnel (coût horaire × heures affectées), les dépenses par poste, les recettes (subventions + participations), les contributions en nature et l'<strong>aperçu à recopier</strong> pour le dossier Mairie. Les onglets <strong>📊 Consolidé</strong> et <strong>👤 Charge salariés</strong> donnent la vue annuelle et le garde-fou anti-double-comptage.</p>
       <div class="row">
-        <div class="field" style="flex:2"><label>Nom de l'action</label><input id="fa_nom" placeholder="Ex. Périscolaire Piton, ACM Ados, VEPI…"></div>
+        <div class="field" style="flex:2"><label>Nom de l'action</label><input id="fa_nom" placeholder="Ex. le nom de ton action"></div>
         <div class="field"><label>Type</label>
-          <select id="fa_type"><option>Périscolaire</option><option>ACM</option><option>VEPI</option><option>Événement</option><option>Autre</option></select>
+          <select id="fa_type"></select>
         </div>
         <div class="field" style="flex:0"><label>&nbsp;</label><button class="btn" onclick="addFicheAction()">+ Créer</button></div>
       </div>
@@ -2585,6 +2585,7 @@ Deux locaux complémentaires — le Bois de Nèfles (« le haut » : jeunesse, a
     </div>
 
     <!-- étape2 23/06 : ancien onglet « 🎤 Présentation » fusionné ici en « 📖 Découvrir Bob ». Revert = redéplacer ce bloc dans <section id="presentation"> + rendre le bouton -->
+    <div id="plaquetteCase">
     <div class="panel" style="background:linear-gradient(135deg,var(--brand),var(--brand-dk));color:#fff">
       <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap">
         <div style="font-size:42px;flex:0 0 auto">🍍</div>
@@ -2625,6 +2626,7 @@ Deux locaux complémentaires — le Bois de Nèfles (« le haut » : jeunesse, a
 
     <div class="panel" style="border-left:4px solid var(--brand);background:#f3fbf6">
       <p style="margin:0;font-size:14px"><strong>Le message :</strong> en quelques mois, le CASE s'est doté d'<strong>outils</strong>, de <strong>suivi</strong> et d'un <strong>cadre</strong> — précisément les manques pointés au diagnostic. Bob centralise tout ça et le rend visible, partageable et durable.</p>
+    </div>
     </div>
   </section>
 
@@ -3270,7 +3272,7 @@ const NEWS=[
   {id:'2026-07-24-subvention-repartition',date:'2026-07-24',tab:'🏛️ Subventions',titre:"🎯 Répartir une subvention sur plusieurs actions",desc:"Une même subvention peut maintenant financer <b>plusieurs actions</b>, avec un <b>montant affecté à chacune</b>. Sur la ligne d'une subvention (<b>🏛️ Subventions</b>), le nouveau bouton <b>🎯</b> ouvre sa <b>répartition</b> : une ligne par action — par ex. la <b>Subvention ACM Ados</b> de la Mairie répartie entre <b>ACM Ados 2026 - 1</b>, <b>- 2</b> et <b>- 3</b> — et Bob vérifie que la somme colle au <b>montant accordé</b>. Chaque part se range <b>toute seule</b> dans le <b>🎯 Budget par action</b> concerné, et les <b>versements</b> enregistrés ensuite se répartissent dans la même proportion : fini de créer une subvention séparée par action. Sans répartition, rien ne change — la subvention reste sur son unique action."},
   {id:'2026-07-23-pieces-subvention',date:'2026-07-23',tab:'🗂️ Répertoire',titre:"📋 Nouveau : les 8 pièces de subvention, cochées toutes seules",desc:"Dans <b>🗂️ Répertoire</b> → <b>📁 Documents officiels</b>, une carte <b>« 📋 Les 8 pièces de subvention »</b> en tête du panneau. Ce sont les documents que la Ville redemande à <b>chaque</b> campagne : <b>RIB, avis SIREN, parution au Journal officiel, attestation d'assurance, contrat d'engagement républicain, bilan financier, budget prévisionnel, dernier PV d'assemblée</b>. Dépose-les une fois dans le coffre : chaque pièce se <b>coche toute seule</b> (✅) et un compteur <b>x/8</b> te dit d'un coup d'œil ce qui est prêt avant un dépôt — fini d'aller chercher chaque pièce à droite à gauche. Le repérage se fait d'après le nom du fichier, à vérifier d'un œil. Réservé au bureau."},
   {id:'2026-07-21-previsionnel-replanifier',date:'2026-07-21',tab:'🔮 Prévisionnel',titre:"⏳ Fin des mois « trop beaux » : les subventions en retard ne gonflent plus un mois au hasard",
-   desc:"Avant, une subvention dont la date d'encaissement théorique était <b>déjà passée</b> était entièrement rebasculée sur le <b>premier mois à venir</b> : ce mois affichait une rentrée énorme qui n'arrivait jamais (au CASE, <b>33 792,80 €</b> apparaissaient ainsi en août). Désormais ces montants sortent des mois et se rangent dans deux lignes bien visibles, <b>non comptées</b> dans les totaux (écran, export Excel et PDF signé) : <b>🔴 accordé non versé — à relancer</b> et <b>⏳ en attente de vote</b>. Pour qu'une subvention retrouve sa place dans le calendrier, il suffit de renseigner sa <b>date de vote</b> (réelle ou prévue) dans sa fiche. Deuxième correction : les subventions à venir ne s'inscrivent plus sur un code comptable <b>« N-1 »</b> (celui des régularisations de l'année précédente) mais sur le code de l'année en cours. Troisième correction : les tranches de subvention étaient datées <b>d'un mois trop tôt</b> (un décalage d'heure entre La Réunion et le calendrier interne) — elles tombent désormais dans le bon mois."},
+   desc:"Avant, une subvention dont la date d'encaissement théorique était <b>déjà passée</b> était entièrement rebasculée sur le <b>premier mois à venir</b> : ce mois affichait une rentrée énorme qui n'arrivait jamais (des dizaines de milliers d'euros pouvaient ainsi apparaître d'un coup). Désormais ces montants sortent des mois et se rangent dans deux lignes bien visibles, <b>non comptées</b> dans les totaux (écran, export Excel et PDF signé) : <b>🔴 accordé non versé — à relancer</b> et <b>⏳ en attente de vote</b>. Pour qu'une subvention retrouve sa place dans le calendrier, il suffit de renseigner sa <b>date de vote</b> (réelle ou prévue) dans sa fiche. Deuxième correction : les subventions à venir ne s'inscrivent plus sur un code comptable <b>« N-1 »</b> (celui des régularisations de l'année précédente) mais sur le code de l'année en cours. Troisième correction : les tranches de subvention étaient datées <b>d'un mois trop tôt</b> (un décalage d'heure entre La Réunion et le calendrier interne) — elles tombent désormais dans le bon mois."},
   {id:'2026-07-21-connexion-plus-claire',date:'2026-07-21',tab:'🛟 Le reste',titre:"🔑 La page de connexion explique enfin ce qui se passe",desc:"Deux salariées n'arrivaient plus à se connecter depuis un ordinateur. Trois choses ont changé.<br><br><b>1.</b> Les messages ne sont plus en anglais. Quand quelqu'un demande un nouveau mot de passe, un encart <b>reste affiché</b> à l'écran : il dit que l'email est parti, qu'il faut <b>regarder dans les indésirables</b>, et affiche un compte à rebours avant de pouvoir redemander. Avant, le message disparaissait en 3 secondes et l'on croyait à une panne — d'où dix clics d'affilée qui bloquaient tout.<br><br><b>2.</b> Après un échec, la page rappelle qu'on peut entrer <b>sans mot de passe</b> (bouton « ✨ Recevoir un lien de connexion par email », code à 6 chiffres).<br><br><b>3.</b> ⚠️ <b>« Déconnexion » ne coupe plus que l'appareil en cours.</b> Avant, se déconnecter de l'ordinateur fermait aussi la session du téléphone — sans prévenir.<br><br>💡 <b>À retenir pour les prochains comptes :</b> quand on crée un compte salarié à la main, la personne ne choisit jamais son mot de passe et ne le retape jamais tant qu'elle reste sur le même appareil. Le jour où elle change de téléphone ou passe sur un ordinateur, elle est bloquée. <b>Faites-lui faire « Mot de passe oublié ? » dès le premier jour</b>, pour qu'elle choisisse le sien."},
   {id:'2026-07-20-espace-salarie-dit-la-verite',date:'2026-07-20',tab:'👥 Dossiers salariés',titre:"🍍 L'espace salarié dit enfin pourquoi il est vide",desc:"Correctif venu du terrain, et le plus coûteux qu'on ait eu : une animatrice a travaillé <b>quatre jours devant un écran vide</b>, sans un mot d'explication. Cause réelle : aucune <b>équipe</b> (ACM / Périscolaire / VEPI) ne lui avait été attribuée — le cloisonnement faisait donc son travail, mais <b>en silence</b>. Pire, une simple <b>coupure réseau</b> produisait exactement le même écran : rien ne permettait de distinguer « on ne t'a pas encore ouvert l'accès » de « Bob n'a pas réussi à vérifier ». Trois choses changent. <b>1) Un bandeau en haut de l'accueil</b> nomme la situation : en 🍍 orange « il te manque un rattachement à une équipe — ce n'est pas une panne, et ce n'est pas de ta faute », avec le message tout prêt à envoyer au bureau ; en 📡 rouge « on n'a pas pu vérifier tes accès », avec un bouton <b>Recharger</b>. Deux messages franchement différents, parce que ce sont deux problèmes opposés. <b>2) Les cartes ne s'évanouissent plus.</b> « Mon ACM » disparaissait purement et simplement du menu — on ne s'étonne pas d'une absence qu'on n'a jamais vue. Elle reste désormais affichée, <b>éteinte, avec son motif</b>. <b>3) Les écrans cessent d'affirmer des choses fausses.</b> « Aucune fiche enfant — les familles n'ont pas encore créé leur compte » s'affichait alors que les enfants étaient bien en base ; « Crée ta première activité » poussait à ressaisir en double un catalogue déjà rempli. Et surtout l'alerte <b>📵 droit à l'image</b> : quand Bob ne connaît aucun enfant, il ne peut pas dire qui a le droit d'être photographié — il l'écrit maintenant en rouge (« dans le doute, ne publie pas ») au lieu de se taire, ce qui revenait à laisser croire que <b>personne n'était interdit de photo</b>."},
   {id:'2026-07-18-conduite-urgence',date:'2026-07-18',tab:'👶 Enfants',titre:"🚨 « En cas d'urgence, que faire ? » — le geste est enfin à côté de l'allergie",desc:"L'animateur voyait bien « <b>Arachides</b> » sur la fiche de l'enfant… mais <b>pas quoi faire</b> en cas de crise : la conduite à tenir était rangée dans la fiche sanitaire, réservée au bureau. Or une crise se gère <b>en secondes, par la personne présente</b>. Nouveau champ <b>🚨 En cas d'urgence</b> sur la fiche de l'enfant (rempli par la famille, ou par l'accueil avec elle), affiché à <b>toute l'équipe</b> juste sous l'allergie. <b>Et surtout :</b> si une allergie ou un souci de santé est déclaré <b>sans</b> conduite à tenir, Bob l'écrit <b>en rouge</b> — « conduite à tenir non renseignée, à demander à la famille ». <b>Aujourd'hui 2 enfants sont dans ce cas</b> (une allergie et un asthme sans consigne) : c'est visible dès maintenant dans 👶 Enfants et dans l'espace des salariés."},
@@ -3969,11 +3971,22 @@ const ORG_LISTS={
     sites:["C.A.S.E Bois de Nèfles","Local des Bringelliers"],
     actions:["Périscolaire","Accueil de loisirs (ACM)","VEPI","Secteur ados / Kaz Zados","Danse","Musique","Permanence du samedi","Jeudi info population","Sport & santé","Accompagnement à la parentalité","Animation de quartier","Fêt nout kartyé","Ôté Kartié","Fonctionnement"],
     cats:["Cotisations","Subvention","Dons","Événement","Matériel","Frais"],
-    typesAdh:["Membre","Danse","Périscolaire","VEPI","ACM","Musique","Famille"]
+    typesAdh:["Membre","Danse","Périscolaire","VEPI","ACM","Musique","Famille"],
+    /* 04/08/2026 — listes du 🎯 Budget par action, jusqu'ici EN DUR pour tout le monde */
+    typesAction:["Périscolaire","ACM","VEPI","Événement","Autre"],
+    postesBudget:['Alimentation / goûter','Matériel pédagogique','Transport','Sorties / activités','Prestataires / intervenants','Hébergement / séjour','Communication','Assurance','Autre'],
+    stdCharges:['Alimentation / goûter','Transport','Matériel pédagogique','Prestataires / intervenants','Hébergement / séjour','Assurance'],
+    stdRecettes:['CAF · PS ALSH','Participations familles','Autres produits']
   }
 };
 // Socle générique pour toute org non listée (ex. PIX-I-ART, BOKAF) : catégories compta universelles, le reste vierge à compléter.
-const ORG_LISTS_DEFAULT={ sites:[], actions:["Fonctionnement"], cats:["Cotisations","Subvention","Dons","Événement","Matériel","Frais"], typesAdh:["Membre"] };
+const ORG_LISTS_DEFAULT={ sites:[], actions:["Fonctionnement"], cats:["Cotisations","Subvention","Dons","Événement","Matériel","Frais"], typesAdh:["Membre"],
+  /* socle NEUTRE : ni périscolaire, ni ACM, ni CAF — une asso qui n'accueille pas d'enfants ne doit pas
+     se voir proposer « Périscolaire » comme type d'action par DÉFAUT (il finissait gravé dans ses fiches). */
+  typesAction:["Activité","Événement","Projet","Fonctionnement","Autre"],
+  postesBudget:['Matériel','Transport','Prestataires / intervenants','Communication','Assurance','Autre'],
+  stdCharges:['Matériel','Transport','Prestataires / intervenants','Communication'],
+  stdRecettes:['Subvention','Participations','Autres produits'] };
 function orgLists(){ try{ return (typeof myAsso!=='undefined' && myAsso && ORG_LISTS[myAsso]) || ORG_LISTS_DEFAULT; }catch(e){ return ORG_LISTS_DEFAULT; } }
 /* listes paramétrables : standard (par org, ci-dessus) + perso (db[key]) + déjà utilisées */
 const LIST_DEFS={
@@ -4548,10 +4561,14 @@ const PILOT_TAUXBEN=12.31;                    // valorisation du bénévolat €
 const PILOT_POSTES=['Alimentation / goûter','Matériel pédagogique','Transport','Sorties / activités','Prestataires / intervenants','Hébergement / séjour','Communication','Assurance','Fluides & divers','Autre'];
 const PILOT_STD_CHARGES=['Alimentation / goûter','Transport','Matériel pédagogique','Prestataires / intervenants','Hébergement / séjour','Assurance'];
 const PILOT_STD_REC=['CAF · PS ALSH','Participations familles','Autres produits'];
+/* 04/08/2026 — accès par organisation (repli = les constantes ci-dessus, comportement historique) */
+function piloPostes(){ try{ return orgLists().postesBudget||PILOT_POSTES; }catch(e){ return PILOT_POSTES; } }
+function piloStdCharges(){ try{ return orgLists().stdCharges||PILOT_STD_CHARGES; }catch(e){ return PILOT_STD_CHARGES; } }
+function piloStdRec(){ try{ return orgLists().stdRecettes||PILOT_STD_REC; }catch(e){ return PILOT_STD_REC; } }
 function pilotSeedBudget(o){
   if(!Array.isArray(o.charges)) o.charges=[]; if(!Array.isArray(o.recAutres)) o.recAutres=[]; if(!Array.isArray(o.personnel)) o.personnel=[];
-  if(!o.charges.length) PILOT_STD_CHARGES.forEach(p=>o.charges.push({poste:p,lib:'',prev:0}));
-  if(!o.recAutres.length) PILOT_STD_REC.forEach(l=>o.recAutres.push({lib:l,prev:0}));
+  if(!o.charges.length) piloStdCharges().forEach(p=>o.charges.push({poste:p,lib:'',prev:0}));
+  if(!o.recAutres.length) piloStdRec().forEach(l=>o.recAutres.push({lib:l,prev:0}));
   if(!o.personnel.length) (db.salaries||[]).forEach(s=>o.personnel.push({sid:s.id,hPrev:0,hReel:0}));
 }
 function pilotSeedFiche(id){ const f=_pf(id); if(f){ pilotSeedBudget(f); save(); } }
@@ -4628,6 +4645,11 @@ function pilotApercuText(f){
 }
 function pilotCopyApercu(id){ const pre=$('pilotApercu_'+id); if(pre&&navigator.clipboard){ navigator.clipboard.writeText(pre.textContent).then(()=>{ const b=$('pilotCopyBtn_'+id); if(b){ const o=b.textContent; b.textContent='Copié ✓'; setTimeout(()=>{b.textContent=o;},1500); } }); } }
 function renderPilotage(){
+  /* 04/08/2026 — le menu « Type » était figé sur Périscolaire/ACM/VEPI ; il suit maintenant l'organisation. */
+  try{
+    const s=$('fa_type');
+    if(s && !s.options.length){ (orgLists().typesAction||['Activité','Événement','Autre']).forEach(t=>{ const o=document.createElement('option'); o.textContent=t; s.appendChild(o); }); }
+  }catch(e){}
   const el=$('pilotageRows'); if(!el) return;
   window._pilotMode=window._pilotMode||'list'; window._pilotOpen=window._pilotOpen||{};
   const yOpts=pilotYears().map(y=>`<option ${y===pilotYear()?'selected':''}>${y}</option>`).join('');
@@ -4756,7 +4778,7 @@ function pilotSessionFocus(f,i){
   const reste=(s.cible?(s.cible-(dep||0)-pc.reel):null);
   const rowsP=(s.personnel||[]).map((p,pi)=>{ const c=pilotCoutHTrav(pilotSal(p.sid)); return `<tr><td><select onchange="pilotSetSessPers('${f.id}',${i},${pi},'sid',this.value)">${salOpts(p.sid)}</select></td><td style="text-align:right">${c.toFixed(2).replace('.',',')}</td><td style="text-align:right"><input type="number" min="0" step="1" value="${p.hPrev||0}" style="width:62px;text-align:right" onchange="pilotSetSessPers('${f.id}',${i},${pi},'hPrev',this.value)"></td><td style="text-align:right"><input type="number" min="0" step="1" value="${p.hReel||0}" style="width:62px;text-align:right" onchange="pilotSetSessPers('${f.id}',${i},${pi},'hReel',this.value)"></td><td style="text-align:right">${eur(c*(p.hPrev||0))}</td><td style="text-align:right">${eur(c*(p.hReel||0))}</td><td><button class="danger btn" onclick="pilotDelSessPers('${f.id}',${i},${pi})">✕</button></td></tr>`; }).join('');
   const perso=`<div style="margin-top:8px;padding:8px 10px;background:var(--card2,#faf9f6);border-radius:8px"><div style="font-weight:600;font-size:13px;margin-bottom:4px">👥 Qui encadre cet ACM ?</div><div class="scroll" style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:12.5px"><tr style="text-align:left;color:var(--muted)"><th>Salarié·e</th><th style="text-align:right">Coût/h</th><th style="text-align:right">H. prév.</th><th style="text-align:right">H. réel.</th><th style="text-align:right">Coût prévu</th><th style="text-align:right">Coût réel</th><th></th></tr>${rowsP||'<tr><td colspan="7" class="muted">Personne pour l\'instant.</td></tr>'}<tr style="font-weight:700;border-top:1px solid var(--line,#e4e2da)"><td colspan="4">Total personnel de cet ACM</td><td style="text-align:right">${eur(pc.prev)}</td><td style="text-align:right">${eur(pc.reel)}</td><td></td></tr></table></div><button class="btn" style="margin-top:6px" onclick="pilotAddSessPers('${f.id}',${i})">+ Ajouter un·e encadrant·e</button></div>`;
-  const posteOptsS=sel=>PILOT_POSTES.map(pp=>`<option ${pp===sel?'selected':''}>${esc(pp)}</option>`).join('');
+  const posteOptsS=sel=>piloPostes().map(pp=>`<option ${pp===sel?'selected':''}>${esc(pp)}</option>`).join('');
   const rowsC=(s.charges||[]).map((c,ci)=>`<tr><td><select onchange="pilotSetSessCharge('${f.id}',${i},${ci},'poste',this.value)">${posteOptsS(c.poste)}</select></td><td><input value="${esc(c.lib||'')}" placeholder="détail (goûter, car, matériel…)" style="width:100%" onchange="pilotSetSessCharge('${f.id}',${i},${ci},'lib',this.value)"></td><td style="text-align:right"><input type="number" step="1" value="${c.prev||0}" style="width:84px;text-align:right" onchange="pilotSetSessCharge('${f.id}',${i},${ci},'prev',this.value)"></td><td><button class="danger btn" onclick="pilotDelSessCharge('${f.id}',${i},${ci})">✕</button></td></tr>`).join('');
   const frais=`<div style="margin-top:8px;padding:8px 10px;background:var(--card2,#faf9f6);border-radius:8px"><div style="font-weight:600;font-size:13px;margin-bottom:4px">🧾 Autres frais de cet ACM <span class="muted" style="font-weight:400;font-size:11px">prévu ici · le réel remonte tout seul par les dates</span></div><div class="scroll" style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:12.5px"><tr style="text-align:left;color:var(--muted)"><th>Poste</th><th>Libellé</th><th style="text-align:right">Prévu</th><th></th></tr>${rowsC||'<tr><td colspan="4" class="muted">Aucun frais prévu.</td></tr>'}<tr style="font-weight:700;border-top:1px solid var(--line,#e4e2da)"><td colspan="2">Total frais prévus</td><td style="text-align:right">${eur(pilotSessChargesPrev(s))}</td><td></td></tr></table></div><button class="btn" style="margin-top:6px" onclick="pilotAddSessCharge('${f.id}',${i})">+ Ajouter un frais</button></div>`;
   const rowsR=(s.recAutres||[]).map((r,ri)=>`<tr><td><input value="${esc(r.lib||'')}" placeholder="ex. Participations familles" style="width:100%" onchange="pilotSetSessRec('${f.id}',${i},${ri},'lib',this.value)"></td><td style="text-align:right"><input type="number" step="1" value="${r.prev||0}" style="width:84px;text-align:right" onchange="pilotSetSessRec('${f.id}',${i},${ri},'prev',this.value)"></td><td><button class="danger btn" onclick="pilotDelSessRec('${f.id}',${i},${ri})">✕</button></td></tr>`).join('');
@@ -4791,7 +4813,7 @@ function pilotSessionFocus(f,i){
 function pilotAnnualBody(f,t){
   const eur=pilotEur, sals=(db.salaries||[]);
   const salOpts=sel=>'<option value="">— salarié —</option>'+sals.map(s=>`<option value="${s.id}" ${s.id===sel?'selected':''}>${esc(s.name)}</option>`).join('');
-  const posteOpts=sel=>PILOT_POSTES.map(p=>`<option ${p===sel?'selected':''}>${esc(p)}</option>`).join('');
+  const posteOpts=sel=>piloPostes().map(p=>`<option ${p===sel?'selected':''}>${esc(p)}</option>`).join('');
   let h='<div class="muted" style="font-size:12.5px">📄 <b>Plan financier de l\'action</b> — vue consolidée de l\'année (tous les ACM inclus). C\'est ce plan qu\'on dépose à la Mairie.</div>';
   h+='<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:12px;align-items:start"><div>';
   h+='<div><div style="font-weight:700;margin-bottom:6px">👥 Personnel <span class="muted" style="font-weight:400;font-size:12px">coût/h travaillé (base '+PILOT_HTRAV+'/'+PILOT_HPAYE+') × heures affectées</span></div><div class="scroll" style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:13px"><tr style="text-align:left;color:var(--muted)"><th>Salarié·e</th><th style="text-align:right">Coût/h</th><th style="text-align:right">H. prév.</th><th style="text-align:right">H. réel.</th><th style="text-align:right">Prévu (64)</th><th style="text-align:right">Réel est.</th><th></th></tr>';
@@ -8417,6 +8439,11 @@ renderAll();
        VISIBLE de toute asso ayant la compta) mais il est 100 % accueil de loisirs, grille tarifaire
        réelle du CASE comprise. Il suit désormais le bouquet ACM, comme l'onglet Périscolaire. */
     if(feats['f_metier_acm']!==true) css.push('#simuGarderie{display:none!important}');
+    /* 04/08/2026 — 📖 « Découvrir Bob » : présenté comme de l'aide, c'est en réalité le document de
+       présentation du CASE à SES financeurs (bilan 3 mois, échéanciers URSSAF/DGFiP, convention
+       ÉCLAT, diagnostic DLA). Aucune autre asso n'a à lire ça → réservé au CASE. Une version neutre,
+       alimentée par les bouquets réellement actifs, reste à écrire si on veut s'en servir pour vendre. */
+    if(!estLeCase()) css.push('#plaquetteCase{display:none!important}');
     if(!canWrite) css.push('#docsPeriPanel{display:none!important}'); // 📋 Docs officiels (fusionnés dans Périscolaire) → bureau uniquement (préserve l'ancien perms.docsperi='cache')
     if(!canWrite) css.push('#periDocsPanel{display:none!important}'); // 📎 Documents du périscolaire (dépôt + validation) → bureau uniquement ; l'équipe les voit dans espace-personnel
     const old=document.getElementById('permsStyle'); if(old)old.remove();
