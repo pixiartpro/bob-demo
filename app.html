@@ -442,7 +442,7 @@
       <div class="row" style="justify-content:space-between;align-items:center;gap:10px">
         <div class="row" style="align-items:center;gap:10px">
           <img src="zanana-point.png" alt="" onerror="this.style.display='none'" style="height:42px">
-          <h3 style="margin:0">🍍 Zanana t'explique cette page</h3>
+          <h3 style="margin:0" id="pageHelpTitre">🍍 Zanana t'explique cette page</h3>
         </div>
         <button class="ghost btn" onclick="pageHelpClose()">✕</button>
       </div>
@@ -947,7 +947,7 @@
     <div class="panel">
       <h2 style="margin:0 0 4px">📊 Compte de résultat prévisionnel</h2>
       <p class="hint">Coche « récurrent » pour les lignes qui reviennent chaque mois (loyer, charges…) : elles sont projetées jusqu'à décembre. Les lignes non cochées (cotisations, dons, subventions ponctuelles) sont comptées une seule fois, telles que saisies. Les subventions à venir sont estimées automatiquement (ligne « auto »).</p>
-      <h3 style="margin:14px 0 6px;font-size:15px;color:#127a51">Recettes</h3>
+      <h3 style="margin:14px 0 6px;font-size:15px;color:var(--brand)">Recettes</h3>
       <table><thead><tr><th>Catégorie</th><th class="num">Réel à ce jour</th><th style="text-align:center">Récurrent&nbsp;?</th><th class="num">Projeté</th></tr></thead><tbody id="prevRecRows"></tbody></table>
       <h3 style="margin:18px 0 6px;font-size:15px;color:#c0392b">Dépenses</h3>
       <table><thead><tr><th>Catégorie</th><th class="num">Réel à ce jour</th><th style="text-align:center">Récurrent&nbsp;?</th><th class="num">Projeté</th></tr></thead><tbody id="prevDepRows"></tbody></table>
@@ -987,7 +987,7 @@
         <div class="field" style="min-width:180px"><label>Autres coûts / an (collation…)</label><input type="number" id="sg_autres" min="0" step="10" oninput="renderSimuGarderie()"></div>
       </div>
 
-      <h3 style="margin:14px 0 6px;font-size:15px;color:#127a51">Ce que ça rapporte — seulement l'argent NOUVEAU</h3>
+      <h3 style="margin:14px 0 6px;font-size:15px;color:var(--brand)">Ce que ça rapporte — seulement l'argent NOUVEAU</h3>
       <p class="hint" style="margin:0 0 6px">⚠️ Un enfant déjà inscrit le soir qui vient en plus le matin ne rapporte rien de nouveau… sauf si on crée un <strong>supplément matin</strong>. Seuls comptent donc : le supplément payé par les enfants déjà inscrits, et les <strong>nouveaux enfants</strong> attirés par le matin.</p>
       <div class="toolbar" style="flex-wrap:wrap;gap:10px">
         <div class="field" style="min-width:210px"><label>Enfants déjà inscrits qui prendront le matin</label><input type="number" id="sg_enf" min="0" max="60" step="1" oninput="renderSimuGarderie()"></div>
@@ -5120,7 +5120,7 @@ function printPrevisionnel(){
   t+= E.depSeries.length ? E.depSeries.map(codeRow).join('') : '<tr><td colspan="14">Aucune dépense saisie.</td></tr>';
   t+=totRow('Total dépenses',E.depTotM)+totRow('Recettes − Dépenses (solde du mois)',E.netM)+totRow('Variation (solde cumulé)',E.cumM)+'</tbody></table>';
   const html='<div style="font-family:-apple-system,Segoe UI,Roboto,sans-serif;color:#111">'
-    +'<div style="text-align:center;margin-bottom:6px"><b>CASE DU BOIS DE NÈFLES</b><br><span style="font-size:12px;color:#444">Centre d\'Animation Socio-Éducatif · 122 Place de la Fraternité, 97490 Sainte-Clotilde · SIREN 325 635 738</span></div>'
+    +((window.bobDocEntete&&window.bobDocEntete())||'')
     +'<h2 style="text-align:center;margin:10px 0 2px">Budget prévisionnel '+E.Y+'</h2>'
     +'<div style="text-align:center;font-size:12px;color:#555;margin-bottom:10px">Budget mensuel détaillé par code comptable — document établi le '+fmtDate(today())+'</div>'
     +t
@@ -5830,8 +5830,18 @@ function renderZoneCards(){
   if(window.renderTabDots) window.renderTabDots();
   // accès discret au site public (remplace l'ancienne grosse carte « Site public »)
   const box=document.getElementById('zoneCards');
-  if(box) box.innerHTML='<a href="https://pixiartpro.github.io/bob-demo/" target="_blank" rel="noopener" style="display:inline-block;margin:2px 0;font-size:13px;color:var(--muted);text-decoration:none">🌐 Voir le site public du CASE ↗</a>'
-    +'<button onclick="afficheQR()" style="margin-left:14px;border:none;background:transparent;padding:2px 0;font-size:13px;font-weight:600;color:var(--brand);cursor:pointer">📣 Affiche à partager (QR code)</button>';
+  /* 04/08/2026 — le lien pointait vers le site du CASE, et l'affiche QR est ENTIÈREMENT au CASE
+     (adresse postale, casebdn.re, QR gravé en dur). Une autre asso pouvait l'imprimer et la diffuser.
+     → le lien suit désormais le site de l'asso connectée ; l'affiche reste réservée au CASE tant
+     qu'elle n'est pas paramétrable (cf. audit du 03/08/2026). */
+  if(box){
+    const SITES={'d617489c-b18b-499b-ab17-c31656d0f08a':{url:'https://casebdn.re/',lib:'Voir le site public du CASE'},
+                 '30cab5ff-fb7d-4734-8f2d-bac3100841ed':{url:'https://bokaf.bob.re/',lib:'Voir le site public de BOKAF'}};
+    const s=SITES[myAsso];
+    box.innerHTML=(s?('<a href="'+s.url+'" target="_blank" rel="noopener" style="display:inline-block;margin:2px 0;font-size:13px;color:var(--muted);text-decoration:none">🌐 '+s.lib+' ↗</a>'):'')
+      +(estLeCase()?'<button onclick="afficheQR()" style="margin-left:14px;border:none;background:transparent;padding:2px 0;font-size:13px;font-weight:600;color:var(--brand);cursor:pointer">📣 Affiche à partager (QR code)</button>':'');
+  }
+
   const st=document.getElementById('dashState');
   if(st){
     const total=z?(z._total||0):0; // _total est toujours posé par loadTodo (l'ancien repli additionnait des clés de tiroirs dissous)
@@ -5990,7 +6000,7 @@ function printCaprep(){
   const sec=function(t,arr){return arr.length?('<h3 style="margin:16px 0 8px">'+t+'</h3>'+arr.map(block).join('')):'';};
   const today=new Date().toLocaleDateString('fr-FR',{day:'2-digit',month:'2-digit',year:'numeric'});
   const html='<div style="font-family:-apple-system,Segoe UI,Roboto,sans-serif;color:#111;max-width:720px">'
-    +'<div style="text-align:center;margin-bottom:6px"><b>CASE DU BOIS DE NÈFLES</b><br><span style="font-size:12px;color:#444">Centre d\'Animation Socio-Éducatif · 122 Place de la Fraternité, 97490 Sainte-Clotilde · SIREN 325 635 738</span></div>'
+    +((window.bobDocEntete&&window.bobDocEntete())||'')
     +'<h2 style="text-align:center;margin:10px 0 2px">PROJET DE RELEVÉ — à présenter au Conseil d\'administration</h2>'
     +'<div style="text-align:center;font-size:12px;color:#555;margin-bottom:14px">Document de préparation établi le '+today+'</div>'
     +sec('✅ Points faisant consensus (à adopter en bloc en séance)',consensus)
@@ -6102,7 +6112,7 @@ function renderReunions(){
       +'</div>'
       +(r.decisions?'<div class="hint" style="margin-top:6px;padding:6px 10px;background:#f7f7f2;border-radius:8px">📝 Décisions (texte libre) : '+esc(r.decisions)+'</div>':'')
       +'<div style="margin-top:6px"><div style="font-weight:700;font-size:13px">🗳️ Délibérations</div>'+delibHtml+'</div>'
-      +'<details style="margin-top:10px"><summary style="cursor:pointer;font-size:13px;color:#127a51;font-weight:600">➕ Ajouter une délibération'+(capOpts?' / importer un point préparé':'')+'</summary>'
+      +'<details style="margin-top:10px"><summary style="cursor:pointer;font-size:13px;color:var(--brand);font-weight:600">➕ Ajouter une délibération'+(capOpts?' / importer un point préparé':'')+'</summary>'
         +'<div style="margin-top:8px;padding:10px;border:1px dashed var(--line);border-radius:10px">'
           +(capOpts?'<div class="row" style="margin-bottom:8px"><div class="field" style="flex:2"><label>📎 Importer un point « Préparer le CA »</label><select id="dlb_imp_'+rid+'" onchange="prefillDelibFromCapoint(\''+rid+'\')"><option value="">— Choisir un point décidé en CA —</option>'+capOpts+'</select></div></div>':'')
           +'<input type="hidden" id="dlb_cap_'+rid+'">'
@@ -6118,7 +6128,7 @@ function renderReunions(){
           +'<div style="margin-top:8px"><button class="btn" onclick="addDelib(\''+rid+'\')">＋ Ajouter la délibération</button></div>'
         +'</div>'
       +'</details>'
-      +'<details style="margin-top:8px"><summary style="cursor:pointer;font-size:13px;color:#127a51;font-weight:600">👥 Présence & quorum</summary>'
+      +'<details style="margin-top:8px"><summary style="cursor:pointer;font-size:13px;color:var(--brand);font-weight:600">👥 Présence & quorum</summary>'
         +'<div id="presence_'+rid+'" style="margin-top:8px;padding:10px;border:1px dashed var(--line);border-radius:10px">'+presenceBlock(rid,r)+'</div>'
       +'</details>'
       +(delibs.length?pvSignBlock(rid,r):'')
@@ -6169,7 +6179,7 @@ function printReleve(rid){
   }).join('');
   const today=new Date().toLocaleDateString('fr-FR',{day:'2-digit',month:'2-digit',year:'numeric'});
   const html='<div style="font-family:-apple-system,Segoe UI,Roboto,sans-serif;color:#111;max-width:720px">'
-    +'<div style="text-align:center;margin-bottom:6px"><b>CASE DU BOIS DE NÈFLES</b><br><span style="font-size:12px;color:#444">Centre d\'Animation Socio-Éducatif · 122 Place de la Fraternité, 97490 Sainte-Clotilde · SIREN 325 635 738</span></div>'
+    +((window.bobDocEntete&&window.bobDocEntete())||'')
     +'<h2 style="text-align:center;margin:10px 0 2px">PROJET DE RELEVÉ DE DÉLIBÉRATIONS</h2>'
     +'<div style="text-align:center;font-size:13px;color:#333;margin-bottom:4px">'+esc(r.type||'')+' du '+fmtDate(r.date)+'</div>'
     +(r.present?'<div style="font-size:12px;color:#555;margin-bottom:12px"><b>Présents :</b> '+esc(r.present)+'</div>':'<div style="margin-bottom:12px"></div>')
@@ -6207,7 +6217,7 @@ function printPV(rid){
     +'</div>';
   }).join('');
   const html='<div style="font-family:-apple-system,Segoe UI,Roboto,sans-serif;color:#111;max-width:720px">'
-    +'<div style="text-align:center;margin-bottom:6px"><b>CASE DU BOIS DE NÈFLES</b><br><span style="font-size:12px;color:#444">Centre d\'Animation Socio-Éducatif · 122 Place de la Fraternité, 97490 Sainte-Clotilde · SIREN 325 635 738</span></div>'
+    +((window.bobDocEntete&&window.bobDocEntete())||'')
     +'<h2 style="text-align:center;margin:10px 0 2px">PROCÈS-VERBAL DE DÉLIBÉRATION</h2>'
     +'<div style="text-align:center;font-size:13px;color:#333;margin-bottom:8px">'+esc(r.type||'')+' du '+fmtDate(r.date)+'</div>'
     +'<div style="font-size:12.5px;color:#444;margin:4px 0"><b>Présents :</b> '+presentsTxt+'</div>'
@@ -6378,7 +6388,7 @@ function printEmargement(rid){
   }).join('');
   const today=new Date().toLocaleDateString('fr-FR',{day:'2-digit',month:'2-digit',year:'numeric'});
   const html='<div style="font-family:-apple-system,Segoe UI,Roboto,sans-serif;color:#111;max-width:720px">'
-    +'<div style="text-align:center;margin-bottom:6px"><b>CASE DU BOIS DE NÈFLES</b><br><span style="font-size:12px;color:#444">122 Place de la Fraternité, 97490 Sainte-Clotilde · SIREN 325 635 738</span></div>'
+    +((window.bobDocEntete&&window.bobDocEntete())||'')
     +'<h2 style="text-align:center;margin:10px 0 2px">FEUILLE D\'ÉMARGEMENT</h2>'
     +'<div style="text-align:center;font-size:13px;color:#333;margin-bottom:10px">'+esc(r.type||'')+' du '+fmtDate(r.date)+'</div>'
     +'<table style="width:100%;border-collapse:collapse;font-size:13px"><thead><tr><th style="padding:5px 8px;border:1px solid #ccc;text-align:left">Membre</th><th style="padding:5px 8px;border:1px solid #ccc;text-align:left">Titre</th><th style="padding:5px 8px;border:1px solid #ccc;text-align:left">Statut</th><th style="padding:5px 8px;border:1px solid #ccc;text-align:left">Émargement</th></tr></thead><tbody>'+rows+'</tbody></table>'
@@ -6663,7 +6673,7 @@ function renderPrevisionnel(){
   const secRow=(label,color)=>`<tr><td colspan="14" style="background:${color};color:#fff;font-weight:700;font-size:12px;letter-spacing:.03em">${label}</td></tr>`;
 
   let mh='<thead><tr><th style="text-align:left">Code comptable</th>'+[...Array(12)].map((_,i)=>colH(i+1)).join('')+'<th class="num">Total an</th></tr></thead><tbody>';
-  mh+=secRow('➕ RECETTES','#127a51');
+  mh+=secRow('➕ RECETTES','var(--brand)');
   mh+= recSeries.length ? recSeries.map(r=>codeRow(r,'green')).join('') : '<tr><td colspan="14" class="empty">Aucune recette saisie.</td></tr>';
   const mLigneHorsTotal=(sty,lib,montant)=>'<tr style="'+sty+'"><td style="white-space:nowrap">'+lib+'</td>'
     +[...Array(12)].map(()=>'<td class="num"><span style="opacity:.5">·</span></td>').join('')
@@ -7244,7 +7254,9 @@ function orgaAddGov(){ orgaDB().gov.push({id:uid(),role:'Nouveau rôle',nom:'',m
 function orgaDelGov(id){ if(confirm('Retirer ce rôle du bureau ?')){ const o=orgaDB(); o.gov=o.gov.filter(x=>x.id!==id); save(); } }
 function orgaAddPole(){ orgaDB().poles.push({id:uid(),emoji:'•',nom:'Nouveau pôle',resp:'',mission:''}); save(); }
 function orgaDelPole(id){ if(confirm('Retirer ce pôle / poste ?')){ const o=orgaDB(); o.poles=o.poles.filter(x=>x.id!==id); save(); } }
-function orgaReset(){ if(confirm('Revenir à l\'organigramme pré-rempli ? Tes modifications seront remplacées.')){ db.orga=JSON.parse(JSON.stringify(ORGA_DEFAUT)); save(); } }
+/* 04/08/2026 — même garde que orgaInit ci-dessus : hors CASE, « réinitialiser » ne doit PAS réinjecter
+   les pôles du CASE (Bringelliers, périscolaire, Ôté Kartié) dans la base d'une autre association. */
+function orgaReset(){ if(confirm('Revenir à l\'organigramme pré-rempli ? Tes modifications seront remplacées.')){ db.orga=JSON.parse(JSON.stringify(estLeCase()?ORGA_DEFAUT:ORGA_NEUTRE)); save(); } }
 function renderOrga(){
   const o=orgaDB();
   const g=$('orgaGov');
@@ -7312,7 +7324,11 @@ const ACT_DEFAUT=[
   {id:'a12',sujet:'Démarches service civique (Unis-Cité / Ôté Kartié)',statut:'Fait',note:'Relancer le contact Unis-Cité'}
 ];
 const ACT_STATUTS=['À faire','En cours','En attente','Fait'];
-function actionsDB(){ if(!Array.isArray(db.actionsSuivi)) db.actionsSuivi=JSON.parse(JSON.stringify(ACT_DEFAUT)); return db.actionsSuivi; }
+/* 04/08/2026 — ACT_DEFAUT est le tableau de marche RÉEL du CASE (Bringelliers, impayés parents, CAF,
+   médecine du travail, Hexopée…). Hors CASE, une autre asso ouvrait son onglet Suivi pré-rempli avec
+   ces 12 actions — et elles étaient ÉCRITES dans sa base au premier enregistrement. Même garde que
+   l'organigramme : le CASE garde son tableau, tout le monde d'autre démarre à vide. */
+function actionsDB(){ if(!Array.isArray(db.actionsSuivi)) db.actionsSuivi=estLeCase()?JSON.parse(JSON.stringify(ACT_DEFAUT)):[]; return db.actionsSuivi; }
 const ACT_PRIOS=['🔴 Haute','🟠 Moyenne','🟢 Basse'];
 /* Liste des personnes pour les menus « qui » (bureau + salariés + noms déjà utilisés) — plus besoin de retaper */
 function actPeople(){
@@ -8296,7 +8312,7 @@ renderAll();
       +'<span style="margin-left:auto;display:flex;gap:8px">'
       +'<button onclick="cloudRefresh()" style="cursor:pointer;border:none;border-radius:999px;padding:6px 12px;font:inherit;background:rgba(255,255,255,.2);color:#fff">↻ Rafraîchir</button>'
       +'<a href="connexion.html" style="text-decoration:none;border-radius:999px;padding:6px 12px;background:rgba(255,255,255,.2);color:#fff">Espace bureau</a>'
-      +'<button onclick="cloudLogout()" style="cursor:pointer;border:none;border-radius:999px;padding:6px 12px;font:inherit;background:#fff;color:#127a51">Déconnexion</button>'
+      +'<button onclick="cloudLogout()" style="cursor:pointer;border:none;border-radius:999px;padding:6px 12px;font:inherit;background:#fff;color:var(--brand)">Déconnexion</button>'
       +'</span>';
     document.body.insertBefore(bar, document.body.firstChild);
     const setBarH=()=>document.documentElement.style.setProperty('--barH', bar.offsetHeight+'px');
@@ -8426,7 +8442,7 @@ renderAll();
         +'.eq-hello{margin:0 0 2px;font-size:clamp(20px,3vw,26px);font-weight:800;color:var(--ink,#16302a)}'
         +'.eq-sub{margin:0 0 15px;color:var(--muted,#62756b);font-size:14px}'
         +'.eq-dir{display:flex;align-items:center;gap:13px;flex-wrap:wrap;background:linear-gradient(120deg,#eafaf2,#f4fbf7);border:1px solid #d7ece0;border-radius:16px;padding:13px 15px;margin:0 0 16px}'
-        +'.eq-dico{width:46px;height:46px;border-radius:13px;background:linear-gradient(145deg,#1f9d6b,#0f6b46);display:grid;place-items:center;font-size:23px;flex:0 0 auto}'
+        +'.eq-dico{width:46px;height:46px;border-radius:13px;background:linear-gradient(145deg,var(--brand),var(--brand-dk));display:grid;place-items:center;font-size:23px;flex:0 0 auto}'
         +'.eq-dir b{font-size:15px}.eq-dir p{margin:2px 0 0;color:var(--muted,#62756b);font-size:12.5px}'
         +'.eq-dchips{display:flex;gap:6px;flex-wrap:wrap;margin-left:auto}'
         +'.eq-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}'
@@ -8447,7 +8463,7 @@ renderAll();
         +'.eq-x{position:absolute;top:12px;right:12px;width:32px;height:32px;border:none;border-radius:50%;background:#f0f5f2;font-size:15px;cursor:pointer}'
         +'.eq-dh{display:flex;align-items:center;gap:14px;padding-right:28px}'
         +'.eq-dh img{height:76px}.eq-dh b{font-size:18px}.eq-dh p{margin:3px 0 0;color:var(--muted,#62756b);font-size:13px}'
-        +'.eq-lab{margin:14px 0 8px;font-size:11.5px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:#127a51}'
+        +'.eq-lab{margin:14px 0 8px;font-size:11.5px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:var(--brand)}'
         +'.eq-chips{display:flex;gap:8px;flex-wrap:wrap}'
         /* compagnons vivants (28/07/2026) : pastille = travail en attente · halo « Reprendre » */
         +'.eq-cnt-todo{background:var(--red,#c0392b);color:#fff;font-size:12px}'
@@ -9417,7 +9433,7 @@ renderAll();
     if(tot>0) st.calc=d; // tant que le total n'est pas un vrai montant, il n'y a RIEN à valider
     const src={dossier:'comptés dans ce dossier','arbre famille':'d\'après la fiche famille',fourni:'imposés',defaut:'par défaut'}[d.source_nb]||d.source_nb||'';
     let h='<div class="row" style="gap:7px;flex-wrap:wrap;align-items:baseline">'
-      +'<strong style="font-size:18px;color:#127a51">'+esc(euro(tot))+'</strong>'
+      +'<strong style="font-size:18px;color:var(--brand)">'+esc(euro(tot))+'</strong>'
       +'<span class="muted" style="font-size:12.5px">pour la famille</span></div>'
       +'<div class="muted" style="font-size:12.5px;margin-top:2px">'
         +(d.libelle?esc(d.libelle)+' · ':'')+esc(euro(d.tarif_jour))+' / jour'
@@ -10117,7 +10133,7 @@ renderAll();
           +(ins?'<br>'+ins:'')
           +'</div>';
       }).join(''):'';
-      return '<div class="panel" style="margin:10px 0;padding:14px 16px;border-left:4px solid #127a51">'
+      return '<div class="panel" style="margin:10px 0;padding:14px 16px;border-left:4px solid var(--brand)">'
         +'<div class="toolbar" style="align-items:flex-start"><div>'
         +'<strong style="font-size:15px">'+esc(f.nom)+'</strong> '
         +(f.code_famille?'<span class="pill" style="background:#e7f5ee;color:#127a51;font-weight:700;font-size:11px" title="Code famille — la famille entre ce code dans son espace en ligne pour relier son compte à ce dossier. Il ne vaut que pour UN rattachement : il est remplacé ensuite.">🔑 '+esc(f.code_famille)+'</span> ':'')
@@ -12414,6 +12430,18 @@ renderAll();
   const MASC_BOB ={ point:'bob-think.png',    wave:'bob-wave.png'    };
   function mascSet(){ try{ return (typeof myAsso!=='undefined' && myAsso==='d617489c-b18b-499b-ab17-c31656d0f08a') ? MASC_CASE : MASC_BOB; }catch(e){ return MASC_BOB; } }
   window.bobMasc=function(k){ return (mascSet()[k])||MASC_BOB[k]||''; };
+  /* 04/08/2026 — EN-TÊTE DES DOCUMENTS OFFICIELS (PV, relevés de décisions, émargement, budget signé).
+     Il était écrit EN DUR au nom du CASE dans 5 fonctions d'impression : un PV de BOKAF sortait donc
+     avec l'adresse ET le SIREN d'une autre association — document inopposable. Une seule source
+     désormais : l'identité `legal` de l'asso connectée. Repli = le CASE (comportement historique). */
+  const LEGAL_CASE={ nom:'CASE DU BOIS DE NÈFLES', sous:"Centre d'Animation Socio-Éducatif",
+                     adresse:'122 Place de la Fraternité, 97490 Sainte-Clotilde', siren:'325 635 738' };
+  window.bobDocEntete=function(){
+    const L=(window.bobLegal&&typeof window.bobLegal==='object')?window.bobLegal:LEGAL_CASE;
+    const bas=[L.sous,L.adresse,(L.siren?('SIREN '+L.siren):'')].filter(Boolean).join(' · ');
+    return '<div style="text-align:center;margin-bottom:6px"><b>'+esc(L.nom||'')+'</b>'
+         + (bas?'<br><span style="font-size:12px;color:#444">'+esc(bas)+'</span>':'')+'</div>';
+  };
   function castingOf(key){ try{ const o=(typeof myAsso!=='undefined'&&myAsso&&ASSO_CASTING[myAsso])||{}; return Object.assign({}, CASTING_DEFAUT[key]||{}, o[key]||{}); }catch(e){ return CASTING_DEFAUT[key]||{}; } }
   window.bobCasting=castingOf;
   /* Rappel visuel du compagnon sur SON tiroir (28/07/2026) : petite pastille avatar+prénom en tête de la
@@ -12522,6 +12550,14 @@ renderAll();
     const id = ASSO_IDENTITY[assoId] || IDENTITY_DEFAUT;
     /* 03/08/2026 — le nom de l'org devient lisible PARTOUT (impressions, exports, mails) via window.bobOrgName */
     try{ window.bobOrgName=id.orgName||null; }catch(e){}
+    try{ window.bobLegal=id.legal||null; }catch(e){}  /* 04/08 : sert l'en-tête des documents officiels */
+    /* 04/08/2026 — le NOM de la mascotte suivait encore le CASE alors que son IMAGE était déjà dynamique
+       (« 🍍 Zanana t'explique cette page » à côté du robot Bob). On aligne les deux. */
+    try{
+      const t=document.getElementById('pageHelpTitre');
+      if(t) t.textContent = (assoId==='d617489c-b18b-499b-ab17-c31656d0f08a')
+        ? "🍍 Zanana t'explique cette page" : "🤖 Bob t'explique cette page";
+    }catch(e){}
     /* 03/08/2026 — mascotte d'aide : les <img zanana-*> écrites en dur dans le HTML sont repatchées vers
        Bob 🤖 dès qu'on N'EST PAS le CASE (l'ananas reste l'emblème du CASE seul). */
     try{
