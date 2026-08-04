@@ -1369,6 +1369,11 @@ function famPiecesDossier(k){
   Object.keys(src).forEach(function(key){ const m=key.match(/^(.+?)__(.+)$/); if(m&&m[2]===k.id) put(m[1],key); });
   return out;
 }
+// Un salarié SANS la section 🎒 Périscolaire ne reçoit AUCUN dossier de famille (RLS `peri_sel`) :
+// les pièces lui sont alors INVISIBLES, pas ABSENTES. Écrire « ⚠️ manquant » dans ce cas, c'est
+// affirmer du faux — et l'envoyer relancer une famille qui a déjà tout déposé. Même famille de
+// défaut que le « 0/6 » du 04/08/2026 : un écran qui ne sait pas doit le DIRE, pas conclure.
+function famDossierInvisible(){ return ME.secOK===true && (ME.sections||[]).indexOf('periscolaire')<0; }
 function famBilan(k){
   const checks=[
     {lab:'Date de naissance', ok:!!k.naissance, val:k.naissance?fdate(k.naissance):''},
@@ -1513,6 +1518,8 @@ function famCardHtml(k,b){
       +(b.aide?'<div style="margin-top:4px;font-weight:700;color:#b9770e">🙋 La famille a coché « j\'ai besoin d\'aide » — c\'est le moment de l\'accompagner.</div>':'')
       +((d.foyer||d.email||d.tel)?'<div class="sub" style="margin:4px 0 0">👪 '+esc(d.foyer||'Famille')+(d.email?' · 📧 '+esc(d.email):'')+(d.tel?' · 📞 '+esc(d.tel):'')+'</div>':'')
     +'</div>';
+  } else if(famDossierInvisible()){
+    doss='<div class="sub" style="margin-top:10px;padding-top:10px;border-top:1px dashed var(--line);color:#9a6a0a">🎒 <b>Dossier de la famille : non visible avec ton accès.</b> Les pièces (CAF, impôts, domicile, assurance, vaccins, livret) sont rangées sur le dossier de la famille, réservé à l\'équipe <b>🎒 Périscolaire</b>. <b>Ne relance pas la famille là-dessus</b> — demande au bureau : elle a peut-être déjà tout déposé.</div>';
   } else {
     doss='<div class="sub" style="margin-top:10px;padding-top:10px;border-top:1px dashed var(--line)">🎒 Pas de dossier périscolaire — normal si la famille n\'utilise pas la garderie. (Pour en créer un : la famille se connecte à son espace, avec toi à côté si besoin.)</div>';
   }
@@ -1641,17 +1648,21 @@ function actDocProfile(a){
 // `got` porte d'où vient la pièce (_from doss|act, _id/_insId, _key) : une pièce du dossier
 // périscolaire vit dans le bucket `dossiers-periscolaire`, une pièce d'inscription dans
 // `dossiers-activites` — le 👁️ Voir doit viser le bon, sinon il ouvre le vide.
-function famPieceRow(insId, key, lab, got){
+function famPieceRow(insId, key, lab, got, aveugle){
   const doss=!!(got&&got._from==='doss');
   let src='';
   if(doss) src=' <span style="font-weight:400;font-size:11px;color:var(--muted)">(dossier famille)</span>';
   else if(got&&got._insId&&got._insId!==insId) src=' <span style="font-weight:400;font-size:11px;color:var(--muted)">(déjà déposée)</span>';
   else if(got&&got.par==='accueil') src=' <span style="font-weight:400;font-size:11px;color:var(--muted)">(par l\'accueil)</span>';
+  // Rien trouvé + dossier famille hors de portée = on ne SAIT pas, on n'affirme pas « manquant ».
+  else if(!got&&aveugle) src=' <span style="font-weight:400;font-size:11px;color:var(--muted)">(peut-être au dossier famille — non visible avec ton accès)</span>';
+  const marque=got?'✓ ':(aveugle?'❔ ':'⚠️ ');
+  const couleur=got?'#0f6b46':(aveugle?'var(--muted)':'#9a6a0a');
   const voir=doss
     ? 'famVoirPiece(\''+got._id+'\',\''+got._key+'\')'
     : 'famActVoir(\''+((got&&got._insId)||insId)+'\',\''+((got&&got._key)||key)+'\')';
   return '<div style="display:flex;align-items:center;gap:8px;padding:3px 0;font-size:13.5px">'
-    +'<span style="flex:1;font-weight:600;color:'+(got?'#0f6b46':'#9a6a0a')+'">'+(got?'✓ ':'⚠️ ')+esc(lab)+src+'</span>'
+    +'<span style="flex:1;font-weight:600;color:'+couleur+'">'+marque+esc(lab)+src+'</span>'
     +(got
       ?'<button class="btn ghost" style="padding:2px 9px;font-size:12px" onclick="'+voir+'">👁️ Voir</button>'
       :'<label class="btn win" style="padding:2px 9px;font-size:12px;cursor:pointer">📎 Déposer<input type="file" accept="image/*,application/pdf" style="display:none" onchange="famActUpload(\''+insId+'\',\''+key+'\',this)"></label>')
@@ -1688,8 +1699,10 @@ function famActsHtml(k){
         mine.forEach(function(y){ if(y.ins.id!==i.id && y.ins.statut!=='annule') empile(y.ins); });
         empile(i);
         const done=list.filter(function(p){ return !!pot[p.k]; }).length;
-        docs='<div class="sub" style="margin:2px 0 2px">📋 Pièces ('+ACT_DOC_PROFILES[prof].label+') — <b>'+done+'/'+list.length+'</b></div>'
-          +list.map(function(p){ return famPieceRow(i.id, p.k, p.lab, pot[p.k]||null); }).join('');
+        const aveugle=(prof==='mineurs')&&famDossierInvisible()&&done<list.length;
+        docs='<div class="sub" style="margin:2px 0 2px">📋 Pièces ('+ACT_DOC_PROFILES[prof].label+') — <b>'+done+'/'+list.length+'</b>'
+            +(aveugle?' <span style="color:#9a6a0a">· le reste est peut-être au dossier famille, que ton accès ne montre pas</span>':'')+'</div>'
+          +list.map(function(p){ return famPieceRow(i.id, p.k, p.lab, pot[p.k]||null, aveugle); }).join('');
       }
       return '<div style="padding:6px 0;border-bottom:1px dashed var(--line)">'
         +'<div style="display:flex;align-items:center;gap:8px;font-size:14px">'
