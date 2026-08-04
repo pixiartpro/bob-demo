@@ -279,12 +279,20 @@ const $=s=>document.querySelector(s);
 function esc(s){return (s==null?'':String(s)).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('show');clearTimeout(t._tm);t._tm=setTimeout(()=>t.classList.remove('show'),3600)}
 
-/* ===== Portes & habillage (même famille que connexion.html) ===== */
+/* ===== Portes & habillage (même famille que connexion.html) =====
+   04/08/2026 — `fiches` a rejoint ce registre : la veille, les fiches techniques étaient
+   allumées par un `ASSO.slug==='bokaf'` écrit en dur dans le code. Un « si c'est ce client »
+   dans un produit multi-assos est une dette de multi-tenance : indolore à 3 assos, c'est le mur
+   à la 20e. Ici c'est un DÉMÉNAGEMENT DE CONSTANTE, pas une abstraction — on n'invente pas de
+   moteur générique tant que le besoin n'est pas apparu 3 fois (on en est à 2 : voir aussi le
+   SITES{} d'app.html, qui associe des UUID d'asso en dur aux sites publics). */
 const DOORS={
   'case-bdn':{pine:'🍍', nom:'CASE', nom2:'Bois de Nèfles', dark:false, tagline:''},
-  'bokaf':{pine:'🎬', nom:'BOKAF', nom2:'', dark:true, logoImg:'bokaf-logo.png', tagline:'MÉDIA · ÉVÉNEMENT · PRODUCTION', site:'site-bokaf.html'},
+  'bokaf':{pine:'🎬', nom:'BOKAF', nom2:'', dark:true, logoImg:'bokaf-logo.png', tagline:'MÉDIA · ÉVÉNEMENT · PRODUCTION', site:'site-bokaf.html', fiches:true},
   'pixiart':{pine:'🔴', nom:'PIX-I-ART', nom2:'', dark:false, tagline:''}
 };
+/* Vrai si l'asso connectée a un espace « fiches techniques » (savoir-faire image). */
+const assoOpt=(k)=>{ try{ return !!(ASSO && DOORS[ASSO.slug] && DOORS[ASSO.slug][k]); }catch(e){ return false; } };
 function doorGuess(){
   try{
     const u=new URL(location.href);
@@ -333,7 +341,9 @@ function seenGet(id){ try{ return localStorage.getItem('bob_vu_'+id)||''; }catch
 function seenSet(id){ try{ localStorage.setItem('bob_vu_'+id, new Date().toISOString()); }catch(e){} }
 function hasNew(id){ const l=LATEST[id]; if(!l) return false; const s=seenGet(id); return !s || (new Date(l).getTime()>new Date(s).getTime()); }
 const featMat=()=>{ try{ return ((ASSO&&ASSO.features&&ASSO.features.materiel)||'')==='on'; }catch(e){ return false; } };
-const estBokaf=()=>{ try{ return !!(ASSO&&ASSO.slug==='bokaf'); }catch(e){ return false; } };
+/* Remplacé par le registre DOORS (déménagement de constante du 04/08/2026) : on demande
+   « cette asso a-t-elle des fiches ? », plus « est-ce que c'est BOKAF ? ». */
+const aFiches=()=>assoOpt('fiches');
 const CATS={camera:'📷 Caméra / photo', son:'🎙️ Son', lumiere:'💡 Lumière', info:'💻 Informatique', autre:'🧰 Autre'};
 const ETATS={bon:'🟢 Bon état', moyen:'🟠 Fatigué', hs:'🔴 En panne'};
 function proprioLabel(m){
@@ -362,8 +372,8 @@ async function boot(){
   renderMain();
   if(featMat()){ await loadMateriel(); renderMateriel(); } else { $('#tabMateriel').style.display='none'; }
   /* Les fiches techniques sont un savoir-faire d'image : elles n'ont de sens que chez BOKAF. */
-  if(estBokaf()){ $('#tabFiches').style.display=''; renderFiches(); }
-  if(featMat()||estBokaf()) $('#espTabs').style.display='flex';
+  if(aFiches()){ $('#tabFiches').style.display=''; renderFiches(); }
+  if(featMat()||aFiches()) $('#espTabs').style.display='flex';
 }
 const ESP_TABS={
   projets : {zone:'#zone',       btn:'#tabProjets',  titre:'🎬 Les projets',
@@ -466,7 +476,7 @@ async function openProject(id){
   $('#pmBesoinsCard').style.display=cptr?'none':'';
   renderEditBlock(p); if(!cptr){ renderJalons(p); renderBesoins(p); }
   /* documents de terrain (par asso) + bloc modèles (porteur/bureau seulement) */
-  const showDocs=!cptr&&ASSO&&ASSO.slug==='bokaf';
+  const showDocs=!cptr&&aFiches();
   $('#pmDocsCard').style.display=showDocs?'':'none';
   if(showDocs){ $('#pmDocs').innerHTML=DOCS_BOKAF.map(x=>'<a class="btn g sm" style="text-decoration:none" target="_blank" rel="noopener" href="'+esc(x.href)+'">'+esc(x.t)+'</a>').join(''); }
   const showMod=!cptr&&canEditProj(p);
