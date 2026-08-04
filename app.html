@@ -1494,7 +1494,7 @@
       </div>
       <div class="row" style="margin-top:8px">
         <div class="field" style="flex:2"><label>Dossier (lien, optionnel)</label><input id="st_url" placeholder="https://… (dossier de la structure)"></div>
-        <div class="field" style="flex:3"><label>Correspondant / note (optionnel)</label><input id="st_note" placeholder="Ex. Réf. Didier Laravine · drajes.acm@ac-reunion.fr · 02 62 20 54 54"></div>
+        <div class="field" style="flex:3"><label>Correspondant / note (optionnel)</label><input id="st_note" placeholder="Ex. Réf. Prénom Nom · contact@financeur.fr · 02 62 00 00 00"></div>
       </div>
       <div id="echeancesSoonBox" style="margin-top:16px"></div>
       <div id="structuresBody" style="margin-top:8px"><p class="hint">Chargement…</p></div>
@@ -1804,7 +1804,7 @@
         <div class="field" style="flex:1"><label>Téléphone</label><input id="fm_telephone" placeholder="Ex. 0262 …"></div>
       </div>
       <div class="row">
-        <div class="field" style="flex:1"><label>Email public</label><input id="fm_email" placeholder="Ex. contact@casebdn.re"></div>
+        <div class="field" style="flex:1"><label>Email public</label><input id="fm_email" placeholder="Ex. contact@mon-asso.re"></div>
         <div class="field" style="flex:2"><label>Lien / page d'inscription</label><input id="fm_lien_inscription" placeholder="https://… (le lien où les gens s'inscrivent)"></div>
       </div>
       <div class="field"><label>Horaires d'accueil du public</label><input id="fm_horaires_public" placeholder="Ex. lun-ven 9h-12h / 14h-17h30 (PAS les horaires des salariés)"></div>
@@ -2127,14 +2127,14 @@
         <div style="font-size:42px;flex:0 0 auto">🧭</div>
         <div style="flex:1;min-width:240px">
           <h2 style="margin:0 0 4px;color:#fff">Notre projet associatif &amp; nos orientations</h2>
-          <p style="margin:0;opacity:.93;font-size:14px">Pourquoi le CASE existe, ce qu'il défend, où il veut aller — et qui fait quoi. Tout est <strong>pré-rempli</strong> à partir du travail mené (diagnostic, DLA, organisation des deux locaux) et <strong>modifiable&nbsp;: tes changements sont enregistrés dans le coffre du bureau</strong>.</p>
+          <p style="margin:0;opacity:.93;font-size:14px">Pourquoi l'association existe, ce qu'elle défend, où elle veut aller — et qui fait quoi. Tout est <strong>pré-rempli</strong> à partir du travail mené (diagnostic, DLA, organisation des deux locaux) et <strong>modifiable&nbsp;: tes changements sont enregistrés dans le coffre du bureau</strong>.</p>
         </div>
       </div>
     </div>
 
     <div class="panel">
       <h3 style="margin:0 0 4px">🌱 Notre raison d'être (le projet)</h3>
-      <p class="hint" style="margin:0 0 8px">La mission du CASE en quelques phrases — à montrer à un partenaire, à la Mairie, à la CAF ou en AG. Modifie librement.</p>
+      <p class="hint" style="margin:0 0 8px">La mission de l'association en quelques phrases — à montrer à un partenaire, à la Mairie, à la CAF ou en AG. Modifie librement.</p>
       <textarea id="projetMission" onchange="saveProjet('projetMission')" style="width:100%;min-height:200px;font:inherit;padding:10px 12px;border:1px solid #e6ece7;border-radius:10px;resize:vertical;line-height:1.55">LE CASE DU BOIS DE NÈFLES — NOTRE PROJET (point de départ, à affiner)
 
 Le CASE du Bois de Nèfles est une association de quartier (loi 1901) d'animation sociale et d'éducation populaire, implantée à La Réunion. Sa raison d'être : faire vivre le lien social sur le quartier, accompagner les familles et donner aux enfants, aux jeunes et aux habitants un accès aux loisirs, à la culture et à l'entraide, au plus près de chez eux.
@@ -2201,7 +2201,7 @@ Deux locaux complémentaires — le Bois de Nèfles (« le haut » : jeunesse, a
 
     <div class="panel">
       <h3 style="margin:0 0 4px">🗺️ Organigramme — rôles &amp; postes</h3>
-      <p class="hint" style="margin:0 0 10px">Qui fait quoi au CASE. Clique dans une case pour la modifier — c'est enregistré dans le coffre. La gouvernance est bénévole (le bureau) ; les pôles sont l'équipe de terrain.</p>
+      <p class="hint" style="margin:0 0 10px">Qui fait quoi dans l'association. Clique dans une case pour la modifier — c'est enregistré dans le coffre. La gouvernance est bénévole (le bureau) ; les pôles sont l'équipe de terrain.</p>
 
       <div class="orga-band">🏛️ Assemblée générale &amp; Conseil d'administration</div>
       <div class="orga-link">▼</div>
@@ -3207,7 +3207,8 @@ const FAQ_STOP=new Set("le la les un une des de du au aux et ou a à je tu il on
 function faqTokens(s){return faqNorm(s).split(' ').filter(w=>w.length>2&&!FAQ_STOP.has(w));}
 function faqScore(query){
   const qt=faqTokens(query); if(!qt.length) return [];
-  return FAQ.map(item=>{
+  /* 04/08/2026 — on ne propose que les fiches d'onglets réellement ouverts à cette asso */
+  return FAQ.filter(it=>!window.bobTabVisible||window.bobTabVisible(it.cat)).map(item=>{
     const hay=new Set(faqTokens(item.q+' '+item.kw));
     let sc=0; qt.forEach(w=>{ if(hay.has(w))sc+=2; else if([...hay].some(h=>h.startsWith(w)||w.startsWith(h)))sc+=1; });
     return {item,sc};
@@ -3220,7 +3221,7 @@ function faqCard(item,open){
 }
 function renderFaqList(){
   const box=$('faqList'); if(!box) return;
-  box.innerHTML=FAQ.map(it=>faqCard(it,false)).join('');
+  box.innerHTML=FAQ.filter(it=>!window.bobTabVisible||window.bobTabVisible(it.cat)).map(it=>faqCard(it,false)).join('');
 }
 /* ---- Aide contextuelle : « Comment marche cette page » (réutilise la FAQ Zanana, 1 bouton générique pour TOUS les onglets) ---- */
 function pageHelpNorm(s){ return (s||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^a-z0-9]+/g,' ').trim(); }
@@ -3448,7 +3449,7 @@ function newsLus(){ try{ return JSON.parse(localStorage.getItem('bob_news_lus')|
 function newsMarkRead(){ try{ localStorage.setItem('bob_news_lus',JSON.stringify(NEWS.map(n=>n.id))); }catch(e){} newsBadge(); renderNews(); }
 function newsBadge(){
   const b=document.querySelector('nav.tabs button[data-tab="aide"]'); if(!b) return;
-  const lus=newsLus(), nb=NEWS.filter(n=>!lus.includes(n.id)).length;
+  const lus=newsLus(), nb=NEWS.filter(n=>!lus.includes(n.id) && (!window.bobTabVisible||window.bobTabVisible(n.tab))).length;
   let s=b.querySelector('.newsdot');
   if(!s){ s=document.createElement('span'); s.className='newsdot'; s.style.cssText='display:inline-block;margin-left:6px;background:var(--red);color:#fff;border-radius:10px;padding:0 7px;font-size:11px;font-weight:700'; b.appendChild(s); }
   s.style.display=nb?'inline-block':'none'; s.textContent=nb;
@@ -3459,7 +3460,7 @@ function newsBadge(){
 function renderNews(){
   const el=$('newsList'); if(!el) return;
   const lus=newsLus();
-  el.innerHTML=NEWS.map(n=>`<div class="kv" style="align-items:flex-start;padding:8px 0;border-bottom:1px solid #eef3ef">
+  el.innerHTML=NEWS.filter(n=>!window.bobTabVisible||window.bobTabVisible(n.tab)).map(n=>`<div class="kv" style="align-items:flex-start;padding:8px 0;border-bottom:1px solid #eef3ef">
     <span style="flex:1;min-width:0"><strong>${esc(n.titre)}</strong> <span class="pill ${lus.includes(n.id)?'ok':'no'}">${lus.includes(n.id)?'vu':'nouveau'}</span><br>
       <span class="muted" style="font-size:13px;line-height:1.45">${n.desc}</span></span><!-- desc = contenu MAISON balisé (<b>…) : ne pas échapper, sinon les balises s'affichent en clair -->
     <span class="muted" style="white-space:nowrap;font-size:12px;text-align:right;margin-left:12px">${fmtDate(n.date)}<br>${esc(n.tab)}</span></div>`).join('');
@@ -5871,7 +5872,7 @@ function afficheQR(){
       +'<p style="margin:0 0 16px;color:#62756b;font-size:13.5px">ou tapez&nbsp;: <b style="color:#16302a">casebdn.re</b></p>'
       +'<div style="border-top:1px solid #e7efe9;padding-top:12px;display:flex;align-items:center;justify-content:center;gap:10px">'
         +'<img src="'+((window.bobMasc&&window.bobMasc('wave'))||'zanana-wave.png')+'" alt="" onerror="this.style.display=\'none\'" style="height:44px">'
-        +'<span style="font-size:12.5px;color:#62756b;text-align:left">CASE du Bois de Nèfles<br>122 Place de la Fraternité, 97490 Sainte-Clotilde</span>'
+        +'<span style="font-size:12.5px;color:#62756b;text-align:left">CASE du Bois de Nèfles<br>132 Place de la Fraternité, 97490 Sainte-Clotilde</span>'
       +'</div>'
     +'</div>';
   window.docViewHtml('📣 Affiche à partager — le site du CASE', html);
@@ -7215,9 +7216,20 @@ function renderAvenants(){
 
 /* ---- Projet & orientations (onglet 🧭) ---- */
 function saveProjet(key){ const el=$(key); if(el){ db[key]=el.value; save(); } }
+/* 04/08/2026 — les 3 zones de texte sont pré-remplies EN DUR avec le projet associatif du CASE
+   (périscolaire, ACM, Bringelliers, équipe salariée, orientations DLA). Une autre asso ouvrait donc
+   l'onglet destiné à SON AG et à SES partenaires en lisant le projet d'une autre association.
+   Hors CASE et tant que rien n'a été saisi : on vide et on invite à écrire. */
+const PROJET_AMORCE={
+  projetMission:"Écris ici la raison d'être de ton association : pourquoi elle existe, pour qui, et ce qu'elle change concrètement sur son territoire.\n\nCe texte se montre à un partenaire, à la Mairie, à un financeur ou en assemblée générale.",
+  projetValeurs:"Les valeurs que défend ton association, en quelques lignes.",
+  projetOrientations:"Les grandes orientations des prochaines années : ce que vous voulez développer, consolider ou lancer."
+};
 function renderProjet(){
   ['projetMission','projetValeurs','projetOrientations'].forEach(k=>{
-    const t=$(k); if(t && db[k] && document.activeElement!==t) t.value=db[k];
+    const t=$(k); if(!t || document.activeElement===t) return;
+    if(db[k]) { t.value=db[k]; return; }
+    if(typeof estLeCase==='function' && !estLeCase() && !t.dataset.amorce){ t.value=PROJET_AMORCE[k]||''; t.dataset.amorce='1'; }
   });
   renderOrga();
   if(window.renderQuiFaitQuoi) renderQuiFaitQuoi();
@@ -8384,21 +8396,45 @@ renderAll();
       return l;
     };
     const css=[];
+    /* 04/08/2026 — on MÉMORISE les libellés des onglets cachés. Ils servent à filtrer l'aide et les
+       nouveautés : une fiche « 🎒 Périscolaire » ou une carte pointant un onglet éteint n'a rien à
+       faire chez une asso qui ne peut même pas ouvrir cet onglet (audit du 03/08 : 73 fiches et
+       85 cartes hors sujet chez BOKAF, plus une pastille rouge qui l'y poussait). */
+    const _libCaches=[];
     document.querySelectorAll('nav.tabs button[data-tab]').forEach(b=>{
       const k=b.dataset.tab;
       const lvl=lvlOf(k);
       if(lvl==='cache'){
         css.push('nav.tabs button[data-tab="'+k+'"]{display:none!important}');
         css.push('#'+k+'{display:none!important}');
+        _libCaches.push(((b.dataset.lbl||b.textContent)||'').trim());
       } else if(lvl==='lecture'){
         css.push('#'+k+' button{display:none!important}');
         css.push('#'+k+' input,#'+k+' select,#'+k+' textarea{pointer-events:none!important;background:#f1f1f1!important;opacity:.6}');
       }
     });
+    /* 04/08/2026 — 📐 Simulateur « périscolaire du matin » : il vit dans l'onglet Prévisionnel (donc
+       VISIBLE de toute asso ayant la compta) mais il est 100 % accueil de loisirs, grille tarifaire
+       réelle du CASE comprise. Il suit désormais le bouquet ACM, comme l'onglet Périscolaire. */
+    if(feats['f_metier_acm']!==true) css.push('#simuGarderie{display:none!important}');
     if(!canWrite) css.push('#docsPeriPanel{display:none!important}'); // 📋 Docs officiels (fusionnés dans Périscolaire) → bureau uniquement (préserve l'ancien perms.docsperi='cache')
     if(!canWrite) css.push('#periDocsPanel{display:none!important}'); // 📎 Documents du périscolaire (dépôt + validation) → bureau uniquement ; l'équipe les voit dans espace-personnel
     const old=document.getElementById('permsStyle'); if(old)old.remove();
     if(css.length){ const st=document.createElement('style'); st.id='permsStyle'; st.textContent=css.join('\n'); document.head.appendChild(st); }
+    /* 04/08/2026 — publication de la liste des onglets cachés + le test utilisé par l'aide et les
+       nouveautés. Repose sur la convention maison : le `cat` d'une fiche FAQ et le `tab` d'une carte
+       NEWS reprennent le LIBELLÉ EXACT de l'onglet. Libellé inconnu → on GARDE l'entrée (jamais de
+       disparition silencieuse). Au CASE tout est visible, donc rien n'est filtré : zéro régression. */
+    try{
+      const norm=s=>(s||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^a-z0-9]+/g,' ').trim();
+      window.bobLibCaches=_libCaches.map(norm).filter(Boolean);
+      window.bobTabVisible=function(lib){
+        try{
+          const c=norm(lib); if(!c) return true;
+          return !window.bobLibCaches.some(h=>h && (h===c || h.indexOf(c)===0 || c.indexOf(h)===0));
+        }catch(e){ return true; }
+      };
+    }catch(e){}
     // masquer une famille dont TOUS les onglets sont cachés (lecture seule OU bouquet éteint)
     document.querySelectorAll('nav.famtabs button[data-group]').forEach(fb=>{
       const tabs=[...document.querySelectorAll('nav.tabs .tabgroup[data-group="'+fb.dataset.group+'"] button[data-tab]')];
@@ -12365,7 +12401,7 @@ renderAll();
          ⚠️ 03/08/2026 — le n° « 122 » est repris tel quel de l'existant ; la fiche mémoire
          case-coordonnees-legales retient « 132 » (source CAF) : à trancher par Guillaume. */
       legal:{ nom:'CASE DU BOIS DE NÈFLES', sous:"Centre d'Animation Socio-Éducatif",
-              adresse:'122 Place de la Fraternité, 97490 Sainte-Clotilde', siren:'325 635 738' },
+              adresse:'132 Place de la Fraternité, 97490 Sainte-Clotilde', siren:'325 635 738' },
       title:'Bob — secrétaire-directeur du CASE du Bois de Nèfles', appTitle:'Bob CASE',
       h1:'Bob <span style="font-weight:500;opacity:.85">· secrétaire-directeur du CASE</span>',
       sub:'La Bible du CASE du Bois de Nèfles : adhésions, comptabilité, subventions, répertoire',
@@ -12435,7 +12471,7 @@ renderAll();
      avec l'adresse ET le SIREN d'une autre association — document inopposable. Une seule source
      désormais : l'identité `legal` de l'asso connectée. Repli = le CASE (comportement historique). */
   const LEGAL_CASE={ nom:'CASE DU BOIS DE NÈFLES', sous:"Centre d'Animation Socio-Éducatif",
-                     adresse:'122 Place de la Fraternité, 97490 Sainte-Clotilde', siren:'325 635 738' };
+                     adresse:'132 Place de la Fraternité, 97490 Sainte-Clotilde', siren:'325 635 738' };
   window.bobDocEntete=function(){
     const L=(window.bobLegal&&typeof window.bobLegal==='object')?window.bobLegal:LEGAL_CASE;
     const bas=[L.sous,L.adresse,(L.siren?('SIREN '+L.siren):'')].filter(Boolean).join(' · ');
