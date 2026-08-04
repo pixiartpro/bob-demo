@@ -410,7 +410,7 @@ function hubHTML(){
       +'<button class="hubcard" onclick="spView(\'familles\')"><div class="hubico">👨‍👩‍👧</div>'
         +'<div class="hubname">Dossiers familles'+famHubBadge()+'</div><div class="hubsub">'+esc(famHubSub())+'</div><div class="hubgo">Entrer →</div></button>'
       +'<button class="hubcard" onclick="spView(\'tarif\')"><div class="hubico">🧮</div>'
-        +'<div class="hubname">Calculer un tarif</div><div class="hubsub">Une famille au comptoir te demande combien ça coûte ? Réponds tout de suite.</div><div class="hubgo">Entrer →</div></button>'
+        +'<div class="hubname">Calculer un tarif</div><div class="hubsub">Une famille au comptoir demande combien ça coûte ? Périscolaire au mois, vacances à la semaine.</div><div class="hubgo">Entrer →</div></button>'
       +'<button class="hubcard" onclick="spView(\'rh\')"><div class="hubico">🧑‍💼</div>'
         +'<div class="hubname">Mon RH'+rhBadge+'</div><div class="hubsub">'+esc(rhSub)+'</div><div class="hubgo">Entrer →</div></button>'
       +'<button class="hubcard" onclick="spView(\'messages\')"><div class="hubico">💬</div>'
@@ -426,29 +426,76 @@ function hubHTML(){
 // La famille est DEVANT toi : elle te donne son quotient familial (ou te montre son attestation),
 // tu tapes le chiffre, Bob annonce le tarif. Rien n'est enregistré, et on ne consulte JAMAIS le QF
 // d'une famille absente — ça, c'est réservé au bureau (verrouillé en base, pas juste à l'écran).
-// Le calcul est fait PAR LA BASE (peri_calcul_tarif) : même formule et même grille que le bureau,
-// donc jamais deux chiffres différents pour la même famille.
+//
+// PÉRISCOLAIRE (au mois) — calcul fait PAR LA BASE (peri_calcul_tarif) : même formule et même grille
+//   que le bureau, donc jamais deux chiffres différents pour la même famille.
+//   ⚠️ Le forfait n'est PAS le même tous les mois : il vaut « tarif jour × jours d'OUVERTURE du mois »,
+//   et c'est la grille officielle qui fixe ces jours, mois par mois. Les 16 jours du réglage sont une
+//   MOYENNE de modélisation : le 03/08/2026 elle a fait chiffrer 88 € un mois d'août qui en vaut ~38,50 €.
+//   → ici le nombre de jours est DEMANDÉ, jamais supposé. Tant qu'il n'est pas saisi, on n'affiche que
+//   le prix PAR JOUR (celui-là est exact) et AUCUN total mensuel : pas de réponse plutôt qu'une fausse.
+//   (Techniquement : p_jours=1 → la base renvoie le coût d'une seule journée, arrondi une seule fois.)
+//
+// VACANCES / ACM (à la semaine) — pas de fonction en base : on lit la grille PUBLIÉE (tarifs_publics),
+//   la même source que le calculateur des familles, et on en déduit la tranche avec les seuils de cette
+//   grille (aucun seuil recopié ici). Si on ne sait pas la lire, on REFUSE de répondre — pas de repli sur
+//   une grille en dur : sur de l'argent, la grille officielle fait foi, jamais le défaut de l'outil.
 function tarifHTML(){
   return '<section class="block">'
     +'<div class="card" style="background:#eef4fb;border:1px solid #cfe0f5">'
       +'<p style="margin:0;font-size:14px">💡 <b>À utiliser avec la famille en face de toi.</b> Demande-lui son <b>quotient familial</b> (il est sur son attestation CAF) et tape-le ci-dessous. '
-      +'Rien n\'est enregistré : c\'est juste une réponse à donner tout de suite. Le <b>tarif définitif</b> est validé par le bureau d\'après l\'attestation.</p>'
+      +'Rien n\'est enregistré : c\'est juste une réponse à donner tout de suite. Le <b>montant définitif</b> est validé par le bureau d\'après l\'attestation.</p>'
     +'</div>'
+
     +'<div class="card">'
+      +'<h3 style="margin:0 0 12px;font-size:16px">🎒 Périscolaire <span style="font-weight:400;color:var(--muted)">— au mois</span></h3>'
       +'<div class="row" style="margin-bottom:10px">'
-        +'<div style="flex:1;min-width:150px"><label>Quotient familial (CAF)</label><input id="tf_qf" type="number" min="0" step="1" placeholder="ex. 700" style="width:100%"></div>'
-        +'<div style="min-width:120px"><label>Nombre d\'enfants</label><input id="tf_nb" type="number" min="1" max="10" step="1" value="1" style="width:100%"></div>'
+        +'<div style="flex:1;min-width:150px"><label>Quotient familial (CAF)</label><input id="tf_qf" type="number" min="0" step="1" placeholder="ex. 700" oninput="spTarifReset()" style="width:100%"></div>'
+        +'<div style="min-width:120px"><label>Nombre d\'enfants</label><input id="tf_nb" type="number" min="1" max="10" step="1" value="1" oninput="spTarifReset()" style="width:100%"></div>'
+        +'<div style="min-width:180px"><label>Jours d\'ouverture ce mois-ci</label><input id="tf_jours" type="number" min="1" max="26" step="1" placeholder="le bureau te le donne" oninput="spTarifReset()" style="width:100%"></div>'
       +'</div>'
       +'<div class="row" style="margin-bottom:12px;gap:16px;flex-wrap:wrap">'
-        +'<label style="display:flex;align-items:center;gap:6px"><input type="checkbox" id="tf_matin"> 🌅 Matin</label>'
-        +'<label style="display:flex;align-items:center;gap:6px"><input type="checkbox" id="tf_soir" checked> 🌆 Soir</label>'
-        +'<label style="display:flex;align-items:center;gap:6px"><input type="checkbox" id="tf_hors"> 🚗 Hors commune</label>'
+        +'<label style="display:flex;align-items:center;gap:6px"><input type="checkbox" id="tf_matin" onchange="spTarifReset()"> 🌅 Matin</label>'
+        +'<label style="display:flex;align-items:center;gap:6px"><input type="checkbox" id="tf_soir" checked onchange="spTarifReset()"> 🌆 Soir</label>'
+        +'<label style="display:flex;align-items:center;gap:6px"><input type="checkbox" id="tf_hors" onchange="spTarifReset()"> 🚗 Hors commune</label>'
+      +'</div>'
+      +'<div style="background:#fff8e6;border:1px solid #f0dca8;border-radius:12px;padding:10px 12px;margin:0 0 12px">'
+        +'<p style="margin:0;font-size:13.5px">⚠️ <b>Le forfait n\'est pas le même tous les mois.</b> Il se calcule sur les <b>jours d\'ouverture</b> du mois, et la grille officielle les fixe mois par mois : demande le chiffre du mois en cours au bureau. '
+        +'Sans lui, Bob te donne le <b>prix par jour</b> (celui-là est juste) mais <b>aucun total mensuel</b> — un mois calculé au hasard a déjà fait annoncer plus du double du vrai montant.</p>'
       +'</div>'
       +'<button class="btn win" onclick="spTarifRun()">🧮 Calculer</button>'
       +'<div id="tf_res" style="margin-top:14px"></div>'
     +'</div>'
+
+    +'<div class="card">'
+      +'<h3 style="margin:0 0 12px;font-size:16px">🌴 Vacances (ACM) <span style="font-weight:400;color:var(--muted)">— à la semaine</span></h3>'
+      +'<div class="row" style="margin-bottom:10px">'
+        +'<div style="flex:1;min-width:150px"><label>Quotient familial (CAF)</label><input id="ta_qf" type="number" min="0" step="1" placeholder="ex. 700" oninput="spAcmReset()" style="width:100%"></div>'
+        +'<div style="min-width:190px"><label>Période</label><select id="ta_type" onchange="spAcmReset()" style="width:100%"><option value="grandes">☀️ Grandes vacances (été)</option><option value="petites">🍂 Petites vacances</option></select></div>'
+        +'<div style="min-width:130px"><label>Nombre de semaines</label><input id="ta_sem" type="number" min="1" max="12" step="1" value="1" oninput="spAcmReset()" style="width:100%"></div>'
+      +'</div>'
+      +'<div class="row" style="margin-bottom:12px;gap:16px;flex-wrap:wrap">'
+        +'<label style="display:flex;align-items:center;gap:6px"><input type="checkbox" id="ta_hors" onchange="spAcmReset()"> 🚗 Hors commune</label>'
+      +'</div>'
+      +'<button class="btn win" onclick="spAcmTarifRun()">🧮 Calculer</button>'
+      +'<div id="ta_res" style="margin-top:14px"></div>'
+    +'</div>'
   +'</section>';
 }
+function tfEur(n){ return Number(n||0).toLocaleString('fr-FR',{minimumFractionDigits:2,maximumFractionDigits:2})+' €'; }
+
+// 🔒 VERROU DE FRAÎCHEUR — un montant affiché doit TOUJOURS correspondre à ce qui est saisi à l'écran.
+// Deux façons de rater ça, les deux fermées ici (le jumeau du bureau, periSimDebounce dans app.html,
+// fait exactement la même chose) :
+//   ① la salariée change une case sans recliquer sur « Calculer » → le vieux chiffre resterait affiché
+//      alors que la famille suivante est déjà devant elle. → chaque champ efface le résultat.
+//   ② deux calculs se croisent (elle clique, se ravise, reclique) → la réponse LENTE du premier
+//      pourrait repeindre par-dessus la bonne. → chaque calcul prend un numéro et ne peint que s'il
+//      est encore le dernier.
+let TF_SEQ=0, TA_SEQ=0;
+window.spTarifReset=function(){ TF_SEQ++; const r=document.getElementById('tf_res'); if(r) r.innerHTML=''; };
+window.spAcmReset=function(){ TA_SEQ++; const r=document.getElementById('ta_res'); if(r) r.innerHTML=''; };
+
 window.spTarifRun=async function(){
   const g=id=>document.getElementById(id);
   const res=g('tf_res'); if(!res) return;
@@ -456,19 +503,98 @@ window.spTarifRun=async function(){
   const qf=parseInt((g('tf_qf')||{}).value,10);
   const nb=Math.max(1,parseInt((g('tf_nb')||{}).value,10)||1);
   const matin=!!(g('tf_matin')||{}).checked, soir=!!(g('tf_soir')||{}).checked;
+  const brut=String((g('tf_jours')||{}).value||'').trim();
+  const jSaisi=parseInt(brut,10);
+  const jOK=(brut!=='')&&Number.isFinite(jSaisi)&&jSaisi>=1&&jSaisi<=26;
+  if(brut!=='' && !jOK){ res.innerHTML='<p class="empty">Le nombre de jours d\'ouverture doit être un nombre entre 1 et 26. Laisse la case vide si tu ne l\'as pas.</p>'; return; }
   if(!matin && !soir){ res.innerHTML='<p class="empty">Coche au moins le matin ou le soir.</p>'; return; }
   if(!hors && (!Number.isFinite(qf)||qf<0)){ res.innerHTML='<p class="empty">Demande son quotient familial à la famille (ou coche « hors commune »).</p>'; return; }
   res.innerHTML='<p class="sub">⏳ Calcul…</p>';
+  const seq=++TF_SEQ;
   // p_qf est TOUJOURS fourni : on ne demande jamais à la base le QF enregistré d'un foyer.
-  const r=await sb.rpc('peri_calcul_tarif',{p_qf:hors?null:qf, p_nb_enfants:nb, p_matin:matin, p_soir:soir, p_hors_commune:hors});
+  // p_jours=1 quand on ne connaît pas le mois → le résultat est le coût d'UNE journée, et on n'affiche pas de mois.
+  const r=await sb.rpc('peri_calcul_tarif',{p_qf:hors?null:qf, p_nb_enfants:nb, p_matin:matin, p_soir:soir, p_jours:(jOK?jSaisi:1), p_hors_commune:hors});
+  if(seq!==TF_SEQ) return;   // une saisie a changé (ou un autre calcul est parti) pendant l'attente : on ne peint pas.
   if(r.error){ res.innerHTML='<p class="empty" style="color:#c0392b">Calcul impossible : '+esc(r.error.message)+'</p>'; return; }
   const d=r.data||{};
-  const eur=n=>Number(n||0).toLocaleString('fr-FR',{minimumFractionDigits:2,maximumFractionDigits:2})+' €';
+  const detail=esc(d.libelle||'')+(d.soir?' · soir '+tfEur(d.tarif_jour):'')+(d.matin?' · matin +'+tfEur(d.supp_matin):'');
+  const fratrie=(d.nb_enfants>1?'<div class="sub" style="margin:4px 0 0">'+d.nb_enfants+' enfants · remise fratrie −'+d.remise_par_enfant_pct+' % par enfant supplémentaire</div>':'');
+  // ⚠️ Le périscolaire chiffre TOUTE la fratrie d'un coup (la remise se calcule sur l'ensemble), alors que
+  // la carte Vacances juste en dessous annonce un prix PAR ENFANT. Deux conventions opposées à 20 cm d'écart :
+  // celle du périscolaire doit donc être écrite noir sur blanc, sinon on multiplie un total déjà complet.
+  const pourQui=(d.nb_enfants>1?(' pour les '+d.nb_enfants+' enfants'):' pour la famille');
+  if(jOK){
+    res.innerHTML='<div class="card" style="background:#fff;border:1px solid var(--line)">'
+      +'<div class="sub" style="margin:0">'+detail+' · '+d.jours+' jours d\'ouverture</div>'
+      +'<div style="font-size:26px;font-weight:900;color:var(--vert-fonce);margin-top:4px">'+tfEur(d.total_euros)+' <span style="font-size:15px;font-weight:700;color:var(--muted)">pour ce mois-ci,'+pourQui+'</span></div>'
+      +fratrie
+      +'<div class="sub" style="margin:8px 0 0;font-size:12.5px">Calculé sur <b>'+d.jours+' jours d\'ouverture</b> : ce montant ne vaut que pour un mois qui en compte '+d.jours+'. Le <b>forfait est dû en entier même si l\'enfant ne vient pas tous les jours</b>. Tarif définitif validé par le bureau d\'après l\'attestation CAF.</div>'
+    +'</div>';
+  } else {
+    res.innerHTML='<div class="card" style="background:#fff;border:1px solid var(--line)">'
+      +'<div class="sub" style="margin:0">'+detail+'</div>'
+      +'<div style="font-size:26px;font-weight:900;color:var(--vert-fonce);margin-top:4px">'+tfEur(d.total_euros)+' <span style="font-size:15px;font-weight:700;color:var(--muted)">par jour d\'ouverture,'+pourQui+'</span></div>'
+      +fratrie
+      +'<div style="background:#fff8e6;border:1px solid #f0dca8;border-radius:10px;padding:9px 11px;margin-top:10px;font-size:13px">'
+        +'⚠️ <b>Ce n\'est pas un prix « à la présence ».</b> Le forfait du mois est dû <b>en entier</b>, que l\'enfant vienne ou non : ne multiplie jamais ce chiffre par le nombre de jours où il vient.<br>'
+        +'👉 <b>Pas de total du mois tant que le nombre de jours n\'est pas renseigné.</b> Demande au bureau combien de jours d\'ouverture compte le mois, saisis-le au-dessus, et relance le calcul. '
+        +'<b>N\'annonce pas un forfait mensuel de tête</b> — il change à chaque mois.</div>'
+    +'</div>';
+  }
+};
+
+// Grille publiée (tarifs_publics) : relue À CHAQUE calcul, jamais mise en cache.
+// Même source que le calculateur des familles → jamais deux grilles différentes dans la maison.
+// ⚠️ Pas de cache exprès : une grille gardée en mémoire, c'est le scénario « on facture avec une
+// vieille grille » que la doctrine (formule + grille en base) existe pour empêcher. Une requête de
+// plus par clic ne coûte rien ; annoncer un prix révoqué coûte cher.
+async function spGrilleTarifs(){
+  if(!ME.asso){ try{ const pr=await sb.from('profiles').select('asso_id').eq('id',ME.session.user.id).maybeSingle(); ME.asso=pr.data?pr.data.asso_id:null; }catch(e){} }
+  if(!ME.asso) return null;
+  try{
+    const {data}=await sb.from('tarifs_publics').select('data').eq('asso_id',ME.asso).maybeSingle();
+    if(data&&data.data) return data.data;
+  }catch(e){ console.warn('tarifs_publics (réseau)',e); }
+  return null;
+}
+window.spAcmTarifRun=async function(){
+  const g=id=>document.getElementById(id);
+  const res=g('ta_res'); if(!res) return;
+  const hors=!!(g('ta_hors')||{}).checked;
+  const qf=parseInt((g('ta_qf')||{}).value,10);
+  const sem=Math.max(1,parseInt((g('ta_sem')||{}).value,10)||1);
+  const type=((g('ta_type')||{}).value)||'grandes';
+  if(!hors && (!Number.isFinite(qf)||qf<0)){ res.innerHTML='<p class="empty">Demande son quotient familial à la famille (ou coche « hors commune »).</p>'; return; }
+  res.innerHTML='<p class="sub">⏳ Calcul…</p>';
+  const seq=++TA_SEQ;
+  const refus=m=>{ res.innerHTML='<p class="empty" style="color:#c0392b">'+m+' <b>N\'annonce pas de montant</b> : demande au bureau.</p>'; };
+  const G=await spGrilleTarifs();
+  if(seq!==TA_SEQ) return;   // même verrou que côté périscolaire : pas de peinture d'un calcul dépassé.
+  const acm=G&&G.acm;
+  const bareme=acm&&(type==='petites'?acm.petites:acm.grandes);
+  if(!G||!Array.isArray(G.tranches)||!G.tranches.length||!Array.isArray(bareme)||!bareme.length){ refus('Impossible de lire la grille des vacances.'); return; }
+  let semaine, lab;
+  if(hors){
+    semaine=Number(acm.horsCommune);
+    lab='Hors commune';
+    if(!(semaine>0)){ refus('La grille ne donne pas de tarif « hors commune » pour les vacances.'); return; }
+  } else {
+    // Seuils pris dans la grille PUBLIÉE (max de chaque tranche), jamais recopiés ici :
+    // si le bureau revote la grille, ce calculateur suit tout seul.
+    let idx=G.tranches.findIndex(t=>t&&(t.max==null||qf<=Number(t.max)));
+    if(idx<0) idx=G.tranches.length-1;
+    if(idx>=bareme.length){ refus('La grille des vacances ne couvre pas cette tranche de quotient familial.'); return; }
+    semaine=Number(bareme[idx]);
+    if(!(semaine>0)){ refus('La grille des vacances n\'a pas de tarif pour cette tranche.'); return; }
+    lab='Tranche '+(idx+1)+' (QF '+qf+')';
+  }
+  const total=semaine*sem;
+  const typeLab=(type==='petites'?'petites vacances':'grandes vacances (été)');
   res.innerHTML='<div class="card" style="background:#fff;border:1px solid var(--line)">'
-    +'<div class="sub" style="margin:0">'+esc(d.libelle||'')+(d.soir?' · soir '+eur(d.tarif_jour):'')+(d.matin?' · matin +'+eur(d.supp_matin):'')+' · '+d.jours+' jours</div>'
-    +'<div style="font-size:26px;font-weight:900;color:var(--vert-fonce);margin-top:4px">'+eur(d.total_euros)+' <span style="font-size:15px;font-weight:700;color:var(--muted)">/ mois pour la famille</span></div>'
-    +(d.nb_enfants>1?'<div class="sub" style="margin:4px 0 0">'+d.nb_enfants+' enfants · remise fratrie −'+d.remise_par_enfant_pct+' % par enfant supplémentaire</div>':'')
-    +'<div class="sub" style="margin:8px 0 0;font-size:12.5px">Montant indicatif au tarif en vigueur — le bureau valide le tarif définitif d\'après l\'attestation CAF.</div>'
+    +'<div class="sub" style="margin:0">'+esc(lab)+' · '+typeLab+' · '+tfEur(semaine)+' la semaine × '+sem+' semaine'+(sem>1?'s':'')+'</div>'
+    +'<div style="font-size:26px;font-weight:900;color:var(--vert-fonce);margin-top:4px">'+tfEur(total)+' <span style="font-size:15px;font-weight:700;color:var(--muted)">pour '+sem+' semaine'+(sem>1?'s':'')+', <b>par enfant</b></span></div>'
+    +'<div class="sub" style="margin:8px 0 0;font-size:12.5px">Forfait de <b>5 jours</b> : une <b>semaine commencée est une semaine due</b>, même si l\'enfant ne vient pas tous les jours (un geste commercial reste possible — c\'est le bureau qui décide). L\'<b>ACM d\'été = grandes vacances</b>. Pour une <b>semaine avec un jour férié</b>, ne tranche pas au comptoir : c\'est le bureau qui confirme.</div>'
+    +'<div class="sub" style="margin:6px 0 0;font-size:12.5px">Ce montant est <b>par enfant</b> : pour une fratrie, le bureau confirme le total (la remise fratrie sur les vacances n\'est pas tranchée). Tarif définitif validé par le bureau d\'après l\'attestation CAF.</div>'
   +'</div>';
 };
 
