@@ -187,7 +187,11 @@
   .pmd-line b{color:var(--vert-fonce)}
   /* Nos activités — liste compacte + inscription */
   .actlist{display:flex;flex-direction:column;gap:10px;max-width:780px;margin:0 auto}
-  .actrow{display:flex;align-items:center;gap:14px;background:#fff;border:1px solid var(--line);border-radius:16px;padding:12px 14px 12px 16px;box-shadow:var(--shadow);transition:.15s}
+  .actrow{display:flex;flex-wrap:wrap;align-items:center;gap:14px;background:#fff;border:1px solid var(--line);border-radius:16px;padding:12px 14px 12px 16px;box-shadow:var(--shadow);transition:.15s}
+  /* Le dépliant « 🗓️ Jours & horaires » (07/08/2026) prend toute la largeur et
+     passe SOUS la ligne : sans ça il entre dans la rangée flex et écrase la description. */
+  .actrow>details{flex:0 0 100%;margin-top:2px}
+  .actrow .abody{min-width:180px}
   .actrow:hover{box-shadow:var(--shadow-lg)}
   .actrow .aico{font-size:27px;flex:0 0 auto;width:34px;text-align:center}
   .actrow .abody{flex:1;min-width:0}
@@ -684,6 +688,41 @@ function renderPlan(){
   B.innerHTML=b;
 }
 /* ===== Nos activités : lecture en direct (places restantes) + inscription ===== */
+/* ===== Jours & horaires des cours (07/08/2026) =====
+   Demandé par une adhérente le 01/08/2026 : découvrir les jours et horaires
+   AVANT de s'inscrire. Lu depuis la vue `creneaux_publics`, qui n'expose PAS
+   le nom des intervenants (donnée personnelle — voir migration 50). */
+const PLAN_JOURS_V=['','Lun','Mar','Mer','Jeu','Ven','Sam'];
+let PLANNING_V={};
+function planHeureV(t){ const p=String(t==null?'':t).slice(0,5).split(':'); if(p.length<2) return String(t==null?'':t); return p[0].replace(/^0/,'')+'h'+(p[1]==='00'?'':p[1]); }
+async function planChargerV(ids){
+  PLANNING_V={};
+  const list=(ids||[]).filter(Boolean);
+  if(!list.length) return;
+  try{
+    const {data}=await _sbPart.from('creneaux_publics').select('*').in('activite_id',list);
+    (data||[]).forEach(function(c){ (PLANNING_V[c.activite_id]=PLANNING_V[c.activite_id]||[]).push(c); });
+    Object.keys(PLANNING_V).forEach(function(k){
+      PLANNING_V[k].sort(function(x,y){ return (x.jour-y.jour)||String(x.debut).localeCompare(String(y.debut)); });
+    });
+  }catch(e){ PLANNING_V={}; }   /* pas de planning = rien ne s'affiche, jamais d'erreur visible */
+}
+function planHtmlV(actId){
+  const cr=PLANNING_V[actId];
+  if(!cr||!cr.length) return '';
+  const parJour={};
+  cr.forEach(function(c){ (parJour[c.jour]=parJour[c.jour]||[]).push(c); });
+  const lignes=Object.keys(parJour).sort(function(a,b){ return a-b; }).map(function(j){
+    const items=parJour[j].map(function(c){
+      return planHeureV(c.debut)+'–'+planHeureV(c.fin)+' '+escP(c.titre)
+        +(c.public_vise?' <span style="color:var(--muted)">('+escP(c.public_vise)+')</span>':'');
+    }).join('<br>');
+    return '<div style="display:flex;gap:9px;margin-top:4px"><b style="flex:0 0 32px;color:var(--vert)">'+(PLAN_JOURS_V[j]||'')+'</b><span>'+items+'</span></div>';
+  }).join('');
+  return '<details><summary style="cursor:pointer;font-weight:800;font-size:13px;color:var(--vert)">🗓️ Jours &amp; horaires</summary>'
+    +'<div style="font-size:12.5px;line-height:1.45;margin-top:2px">'+lignes+'</div></details>';
+}
+
 function actRowHtml(a){
   const famille=(a.categorie||'')==='Péri & extrascolaire';   // périscolaire / ACM / VEPI → compte famille (réservation en ligne)
   const bientot=a.statut==='bientot';
@@ -696,6 +735,7 @@ function actRowHtml(a){
       +'<div class="abody"><b>'+escP(a.nom)+'</b><span>'+escP(a.description||'')+'</span></div>'
       +badge
       +(bientot?'':'<a class="btn primary" style="text-decoration:none;white-space:nowrap" href="tel:+262262293790">📞 Appeler</a>')
+      +planHtmlV(a.id)
     +'</div>';
   }
   const places=Math.max(0,(a.capacite||0)-(a.nb_inscrits||0));
@@ -708,6 +748,7 @@ function actRowHtml(a){
       +'<span class="aico">'+(a.emoji||'•')+'</span>'
       +'<div class="abody"><b>'+escP(a.nom)+'</b><span>'+escP(a.description||'')+'</span></div>'
       +badge+btn
+      +planHtmlV(a.id)
     +'</div>';
 }
 const QFAM=[
@@ -724,6 +765,7 @@ async function loadActivitesPubliques(){
   if(error){ box.innerHTML='<p style="grid-column:1/-1;text-align:center;color:#c0392b">Impossible de charger les activités pour le moment.</p>'; return; }
   _actByCat={};
   (data||[]).forEach(a=>{ const c=a.categorie||'Autres'; (_actByCat[c]=_actByCat[c]||[]).push(a); });
+  await planChargerV((data||[]).map(function(a){ return a.id; }));
   Object.keys(_actByCat).forEach(function(k){_actByCat[k]=collapseAcm(_actByCat[k]);});
   box.innerHTML=QFAM.map((f,idx)=>{
     let names;

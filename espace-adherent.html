@@ -443,6 +443,8 @@ const AQ=[
    a:"L'adhésion (<b>10 €</b>, valable du <b>1ᵉʳ août au 31 juillet</b>) se règle auprès du <b>bureau du CASE</b>. <b>Un seul parent adhérent suffit pour tous les enfants.</b> Vous pouvez déjà créer votre compte, déposer votre dossier périscolaire et réserver vos activités en ligne — le bureau régularise l'adhésion."},
   {cat:'🎟️ Mes activités',q:"Comment je m'inscris à une activité pour moi (danse, musique, sport) ?",kw:"mes activites adulte danse musique zumba sport renforcement inscrire inscription moi meme tout public loisir bien etre",
    a:"Dans <b>🎟️ Mes activités</b> (dans votre espace), vous voyez les activités ouvertes aux adultes — danse, musique, zumba, renforcement… Cliquez <b>« 🎟️ M'inscrire »</b> : votre demande part au <b>bureau du CASE</b>, qui confirme. Être adhérent (10 €/an) suffit. Les activités de vos <b>enfants</b> (périscolaire, ACM) sont plus bas, dans la partie « Famille ». 🍍"},
+  {cat:'🎟️ Mes activités',q:"Quels sont les jours et les horaires d'une activité ?",kw:"jour jours horaire horaires heure heures planning quand creneau creneaux seance semaine emploi du temps decouvrir avant savoir cours",
+   a:"Sur la fiche de l'activité, dépliez <b>« 🗓️ Jours &amp; horaires »</b> : tous les cours de la semaine s'affichent, jour par jour, avec l'âge concerné.<br><br>Rien ne s'affiche ? C'est que les créneaux de cette activité ne sont pas encore enregistrés par le bureau — écrivez-nous via <b>💬 Parler au CASE</b> et on vous répond. 🍍"},
   {cat:'🌴 Activités & ACM',q:"Comment je réserve une place à l'ACM ?",kw:"acm reserver place activite sortie vacances ado inscrire reservation ete enfant",
    a:"Dans <b>🌴 Mes activités & sorties</b> (en haut de votre espace), choisissez l'activité, cliquez <b>« 🌴 Réserver une place »</b>, indiquez le prénom de votre enfant et validez. La réservation est reliée à votre famille ; le bureau confirme (et régularise l'adhésion si besoin)."},
   {cat:'🌴 Activités & ACM',q:"Faut-il être adhérent pour l'ACM ?",kw:"adherent adhesion obligatoire acm activite droit famille parent assurance payer venir",
@@ -839,6 +841,43 @@ window.periSave=async function(depose){
 /* ===== Mes activités & sorties (ACM) — réservation reliée au compte famille ===== */
 const ACM = { uid:null, profile:null, asso:null, mineById:{} };
 function acmEsc(s){return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+/* ===== Jours & horaires des cours (07/08/2026) =====
+   Demandé par une maman le 01/08/2026 : « Est-ce que l'on peut découvrir les
+   activités avant de s'inscrire ? Connaitre les jours et horaires ? »
+   Les horaires existaient déjà dans Bob (planning des salles) mais n'étaient
+   reliés à aucune activité. On lit la vue `creneaux_publics`, qui expose les
+   créneaux SANS le nom des intervenants (donnée personnelle, migration 50). */
+const PLAN_JOURS=['','Lun','Mar','Mer','Jeu','Ven','Sam'];
+let PLANNING={};
+function planHeure(t){ const p=String(t==null?'':t).slice(0,5).split(':'); if(p.length<2) return String(t==null?'':t); return p[0].replace(/^0/,'')+'h'+(p[1]==='00'?'':p[1]); }
+async function planCharger(ids){
+  PLANNING={};
+  const list=(ids||[]).filter(Boolean);
+  if(!list.length) return;
+  try{
+    const {data}=await _sbAt.from('creneaux_publics').select('*').in('activite_id',list);
+    (data||[]).forEach(function(c){ (PLANNING[c.activite_id]=PLANNING[c.activite_id]||[]).push(c); });
+    Object.keys(PLANNING).forEach(function(k){
+      PLANNING[k].sort(function(x,y){ return (x.jour-y.jour)||String(x.debut).localeCompare(String(y.debut)); });
+    });
+  }catch(e){ PLANNING={}; }   /* pas de planning = on n'affiche rien, jamais d'erreur bloquante */
+}
+function planHtml(actId){
+  const cr=PLANNING[actId];
+  if(!cr||!cr.length) return '';
+  const parJour={};
+  cr.forEach(function(c){ (parJour[c.jour]=parJour[c.jour]||[]).push(c); });
+  const lignes=Object.keys(parJour).sort(function(a,b){ return a-b; }).map(function(j){
+    const items=parJour[j].map(function(c){
+      return planHeure(c.debut)+'–'+planHeure(c.fin)+' '+acmEsc(c.titre)
+        +(c.public_vise?' <span style="color:var(--muted)">('+acmEsc(c.public_vise)+')</span>':'');
+    }).join('<br>');
+    return '<div style="display:flex;gap:9px;margin-top:4px"><b style="flex:0 0 32px;color:var(--vert-fonce)">'+(PLAN_JOURS[j]||'')+'</b><span>'+items+'</span></div>';
+  }).join('');
+  return '<details style="margin-top:7px"><summary style="cursor:pointer;font-weight:800;font-size:13px;color:var(--vert-fonce)">🗓️ Jours &amp; horaires</summary>'
+    +'<div style="font-size:12.5px;line-height:1.45;margin-top:2px">'+lignes+'</div></details>';
+}
+
 async function acmBoot(){
   const body=document.getElementById('acmBody'); const vbody=document.getElementById('vepiBody'); if(!body) return;
   if(!ACM.uid){
@@ -860,6 +899,7 @@ async function acmBoot(){
     // Branchement fiche sanitaire : un enfant dont la fiche de l'année est SIGNÉE n'a plus à redéposer sa « fiche de liaison ».
     ACM.signedByKid={}; (rf&&rf.data?rf.data:[]).forEach(f=>{ if(f.statut==='signee') ACM.signedByKid[f.enfant_id]=true; });
   }catch(e){ const er='<p class="sub" style="color:#b23a23">Impossible de charger pour le moment.</p>'; body.innerHTML=er; if(vbody) vbody.innerHTML=er; return; }
+  await planCharger(acts.map(function(a){ return a.id; }));
   const byAct={}; ACM.mineById={}; mine.forEach(m=>{ ACM.mineById[m.id]=m; (byAct[m.activite_id]=byAct[m.activite_id]||[]).push(m); });
   function acmCardHtml(a){
     const places=Math.max(0,(a.capacite||0)-(a.nb_inscrits||0));
@@ -868,7 +908,7 @@ async function acmBoot(){
     return '<div class="card" style="box-shadow:none;border:1px solid var(--line);gap:6px">'
       +'<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px">'
       +'<div><div style="font-size:24px">'+(a.emoji||'🎫')+'</div><b>'+acmEsc(a.nom)+'</b>'
-      +(a.quand?'<div class="when">'+acmEsc(a.quand)+'</div>':'')+'</div>'
+      +(a.quand?'<div class="when">'+acmEsc(a.quand)+'</div>':'')+planHtml(a.id)+'</div>'
       +'<span style="flex:0 0 auto;font-weight:800;font-size:13px;color:'+(complet?'#b23a23':'var(--vert-fonce)')+'">'+(complet?'Complet':places+' place'+(places>1?'s':''))+'</span>'
       +'</div>'
       +(myK.length?'<div style="display:flex;flex-direction:column;gap:6px">'+acmStatusHtml(a,myK)+'</div>':'')
@@ -930,6 +970,7 @@ async function actiBoot(){
     // Coup 3 : masquer les inscriptions annulées/déplacées (sinon la famille se voit « inscrite » et ne peut pas se réinscrire).
     mine=(rm.data||[]).filter(function(m){ return m.statut!=='deplace'&&m.statut!=='annule'; });
   }catch(e){ body.innerHTML='<p class="sub" style="color:#b23a23">Impossible de charger les activités pour le moment.</p>'; return; }
+  await planCharger(acts.map(function(a){ return a.id; }));
   const mineByAct={}; mine.forEach(function(m){ mineByAct[m.activite_id]=m; });
   if(!acts.length){ body.innerHTML='<p class="sub" style="margin:0">Aucune activité adulte ouverte pour le moment. 🍍</p>'; return; }
   body.innerHTML='<div class="grid">'+acts.map(function(a){
@@ -949,7 +990,7 @@ async function actiBoot(){
       +'<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px">'
       +'<div><div style="font-size:24px">'+(a.emoji||'🎟️')+'</div><b>'+acmEsc(a.nom)+'</b>'
       +(a.quand?'<div class="when">'+acmEsc(a.quand)+'</div>':'')
-      +(a.lieu?'<div class="when">📍 '+acmEsc(a.lieu)+'</div>':'')+'</div>'
+      +(a.lieu?'<div class="when">📍 '+acmEsc(a.lieu)+'</div>':'')+planHtml(a.id)+'</div>'
       +(hasCap?'<span style="flex:0 0 auto;font-weight:800;font-size:13px;color:'+(complet?'#b23a23':'var(--vert-fonce)')+'">'+(complet?'Complet':places+' place'+(places>1?'s':''))+'</span>':'')
       +'</div>'+action+'</div>';
   }).join('')+'</div>';
