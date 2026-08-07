@@ -1952,10 +1952,27 @@ _sbAt.auth.onAuthStateChange((event)=>{ if(_bobPause) return; if(event==='SIGNED
     const rM=await _sbAt.rpc('my_asso_features');
     if(!rM.error && rM.data && rM.data.f_maintenance){
       _bobPause=true;
+      // Le bloc « appelez-nous » est de la DONNÉE, pas du code : chaque asso pose ses
+      // coordonnées dans features.maint = {nom, phrase, tel, tel_label, tel2, tel2_label}.
+      // Aucune coordonnée renseignée → on n'affiche que le message de pause (jamais un bouton vide).
+      const _mE=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+      const _mT=s=>String(s==null?'':s).replace(/[^0-9+]/g,'');
+      const _m=(rM.data.maint&&typeof rM.data.maint==='object')?rM.data.maint:{};
+      const _qui=_m.nom?_mE(_m.nom):'Votre association';
+      let _appel='';
+      if(_m.tel){
+        _appel='<div style="margin:22px auto 0;max-width:420px;background:#fff3da;border:1px solid #f2d9a8;border-radius:14px;padding:18px 20px">'
+          +'<p style="margin:0 0 6px;font-weight:800;color:#1f5c44;font-size:15px">📞 Vous aviez une démarche en cours ?</p>'
+          +'<p style="margin:0 0 14px;color:#5a6b60;line-height:1.6;font-size:14px">'+(_m.phrase?_mE(_m.phrase):'Ne restez pas bloqué : appelez-nous, on le fait avec vous par téléphone.')+'</p>'
+          +'<a href="tel:'+_mT(_m.tel)+'" style="display:block;background:#1f5c44;color:#fff;text-decoration:none;font-weight:800;font-size:17px;padding:13px 16px;border-radius:11px">'+(_m.tel_label?_mE(_m.tel_label):'Nous appeler')+' — '+_mE(_m.tel)+'</a>'
+          +(_m.tel2?'<a href="tel:'+_mT(_m.tel2)+'" style="display:block;margin-top:8px;color:#1f5c44;text-decoration:none;font-weight:700;font-size:14px;padding:9px">'+(_m.tel2_label?_mE(_m.tel2_label):'ou')+' — '+_mE(_m.tel2)+'</a>':'')
+          +'</div>';
+      }
       document.body.innerHTML='<div style="max-width:560px;margin:70px auto;padding:0 22px;font-family:system-ui,-apple-system,Segoe UI,sans-serif;text-align:center">'
         +'<div style="font-size:46px">🛠️</div>'
         +'<h1 style="font-size:22px;margin:12px 0 8px;color:#1f5c44">Votre espace fait une pause technique</h1>'
-        +'<p style="color:#5a6b60;line-height:1.65;font-size:15px">Le CASE met son outil à jour — votre espace revient très vite.<br>Vos informations et vos dossiers ne bougent pas.</p>'
+        +'<p style="color:#5a6b60;line-height:1.65;font-size:15px">'+_qui+' met son outil à jour — votre espace revient très vite.<br>Vos informations et vos dossiers ne bougent pas.</p>'
+        +_appel
         +'</div>';
       return;
     }
