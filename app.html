@@ -9961,9 +9961,12 @@ renderAll();
       if(canWrite){
         if(du&&d.pay_token){
           const url=new URL('payer.html',location.href).href+'?t='+d.pay_token;
-          // ✏️ La retouche du montant se fait dans un champ DE LA CARTE (avant : un prompt() natif qui gelait la page)
+          // 💤 Paiement EN LIGNE en pause (drapeau features.f_paiement_ligne, 07/08/2026) :
+          // les règlements se font en liquide et en chèque. Le jeton n'est pas supprimé,
+          // seul le bouton disparaît — remettre le drapeau à true le fait revenir.
+          const payLigneOn = !(window.__bobFeatures && window.__bobFeatures.f_paiement_ligne === false);
           chiffrage='<div class="row" style="gap:8px;flex-wrap:wrap;align-items:center;margin-top:2px">'
-            +'<button class="ghost btn" onclick="periCopyLien(\''+esc(url)+'\')">🔗 Lien de paiement en ligne</button>'
+            +(payLigneOn?('<button class="ghost btn" onclick="periCopyLien(\''+esc(url)+'\')">🔗 Lien de paiement en ligne</button>'):'')
             +'<button class="ghost btn" onclick="periEditMontant(\''+d.id+'\')">✏️ Modifier le montant</button></div>'
             +'<div id="perimod_'+d.id+'" style="display:none;margin-top:8px;background:#f4f8f5;border:1px dashed var(--line);border-radius:8px;padding:8px">'
             +'<div class="row" style="gap:6px;flex-wrap:wrap;align-items:center">'
