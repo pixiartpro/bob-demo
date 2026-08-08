@@ -1888,7 +1888,8 @@
       </div>
       <p class="hint" style="margin-top:8px">L'« export pour le comptable » détaille une ligne par ventilation (compte comptable, site, action, débit/crédit) — prêt à transmettre à votre comptable et au commissaire aux comptes. 📅 <strong>Astuce :</strong> choisissez d'abord l'<strong>exercice</strong> dans l'onglet Comptabilité (Journal des opérations) ; les exports ne contiendront que cet exercice.</p>
       <p class="hint" style="margin-top:18px;color:var(--red)">Zone sensible :</p>
-      <button class="danger" onclick="resetAll()">🗑️ Tout effacer et repartir de zéro</button>
+      <button class="danger" id="btnResetAll" style="display:none" onclick="resetAll()">🗑️ Tout effacer et repartir de zéro</button>
+      <p class="hint" id="hintResetAll" style="display:none;margin-top:6px">La remise à zéro complète est réservée au <b>président</b> de l'association. Les autres membres du bureau suppriment ligne à ligne — avec la corbeille comme filet.</p>
     </div>
     <div class="panel">
       <h2>Plan comptable — comptes personnalisés</h2>
@@ -8352,9 +8353,25 @@ async function resetAll(){
       : 'Mot de passe incorrect — rien n\'a été effacé.\n\n(Si tu te connectes par lien magique et n\'as pas de mot de passe, tu peux en définir un via « Mot de passe oublié ? » sur la page de connexion.)');
     return;
   }
+  /* 08/08/2026 — l'effacement passe désormais par une fonction SERVEUR réservée au
+     président (bob_reset_asso). Avant, il empruntait le chemin ordinaire de sauvegarde,
+     dont la garde est « membre du bureau » : n'importe qui du bureau pouvait effacer
+     toute l'association avec SON PROPRE mot de passe, alors que supprimer UNE ligne
+     restait réservé au président. Les deux droits étaient inversés.
+     Le serveur prend lui-même l'instantané avant d'effacer : le filet ne dépend plus
+     d'un téléchargement navigateur, qui peut échouer en silence. */
+  const sbc=window.bobSbc;
+  if(!sbc){ alert('Connexion à Bob indisponible — rien n\'a été effacé.'); return; }
   try{ exportJSON('avant-remise-a-zero'); }catch(e){}
-  db=blank(); _jPrev=null; db.journal=[jEntry('Données','🧹 Toutes les données ont été effacées (remise à zéro, confirmée par mot de passe)')]; save();
-  alert('✅ Remise à zéro effectuée. Une sauvegarde de l\'état précédent a été téléchargée dans tes fichiers.');
+  const r=await sbc.rpc('bob_reset_asso',{p_expected:null});
+  if(r.error){
+    alert(String(r.error.message||'').indexOf('Remise à zéro refusée')>=0
+      ? r.error.message
+      : 'La remise à zéro n\'a pas pu être effectuée ('+(r.error.message||'erreur inconnue')+').\n\nRien n\'a été effacé.');
+    return;
+  }
+  db=blank(); _jPrev=null; renderAll();
+  alert('✅ Remise à zéro effectuée. Une sauvegarde a été conservée en ligne, et une copie téléchargée dans tes fichiers.');
 }
 /* init */
 $('m_date').value=today(); $('a_date').value=today(); $('t_date').value=today(); $('q_date').value=today(); $('r_date').value=today(); $('i_date').value=today(); $('de_date').value=today();
@@ -13446,6 +13463,17 @@ renderAll();
       try{ sessionStorage.removeItem('bob_vreload'); }catch(e){}
     }catch(e){}
     try{ applyAssoIdentity(myAsso); }catch(e){}
+    /* 08/08/2026 — « Tout effacer » n'apparaît QUE pour le président. Le bouton est
+       masqué par défaut dans le HTML (jamais l'inverse : si ce code ne tournait pas,
+       le geste resterait caché plutôt qu'offert à tout le bureau). Le vrai verrou est
+       côté serveur (bob_reset_asso) — ceci n'est que la politesse de l'écran. */
+    try{
+      const _pres = prof && prof.role === 'president';
+      const _b = document.getElementById('btnResetAll');
+      const _h = document.getElementById('hintResetAll');
+      if(_b) _b.style.display = _pres ? '' : 'none';
+      if(_h) _h.style.display = _pres ? 'none' : '';
+    }catch(e){}
     /* puis la charte de l'asso par-dessus, si elle est remplie (asynchrone, jamais bloquant) */
     try{ applyCharteAsso(myAsso); }catch(e){}
     try{ applyOrgVocab(); }catch(e){}
