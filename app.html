@@ -3981,9 +3981,11 @@ function renderVentilation(){
   $('ventSiteIn').innerHTML = ventTable('site','in');
   $('ventActionIn').innerHTML = ventTable('action','in');
 }
-/* ===== Listes métier PAR ORGANISATION — même patron qu'ASSO_IDENTITY (config front par asso_id, ZÉRO base de données).
+/* ===== Listes métier PAR ORGANISATION — config front par asso_id, ZÉRO base de données.
    Le CASE garde EXACTEMENT ses listes historiques ; les autres orgs partent d'un socle générique (pas de fuite « CASE »).
-   Chaque org complète ensuite ses propres listes via db[key] (coffre), inchangé. ===== */
+   Chaque org complète ensuite ses propres listes via db[key] (coffre), inchangé.
+   ⚠️ Dernier tableau d'identité par UUID encore dans le code (ASSO_IDENTITY, lui, est parti en base
+   le 08/08/2026) : candidat au même déménagement quand les listes métier deviendront un réglage. ===== */
 const ORG_LISTS={
   'd617489c-b18b-499b-ab17-c31656d0f08a':{ // CASE — listes historiques, INCHANGÉES
     sites:["C.A.S.E Bois de Nèfles","Local des Bringelliers"],
@@ -5112,7 +5114,7 @@ function printBilan(){
   const tbl=(rows,tot,head='Catégorie')=>`<table><thead><tr><th>${head}</th><th class="num">Montant</th></tr></thead><tbody>`
     + rows.map(([k,v])=>`<tr><td>${esc(k)}</td><td class="num">${euro(v)}</td></tr>`).join('')
     + `<tr><td><strong>Total</strong></td><td class="num"><strong>${euro(tot)}</strong></td></tr></tbody></table>`;
-  printHTML(`<h1 style="margin:0">${window.bobOrgName||'CASE du Bois de Nèfles'}</h1>
+  printHTML(`<h1 style="margin:0">${esc(window.bobOrgName||'CASE du Bois de Nèfles')}</h1>
     <p style="margin:2px 0 0">Association loi 1901 — La Réunion</p>
     <h2>Compte de résultat — exercice ${y}</h2>
     <h3 style="margin-bottom:0">Recettes par catégorie</h3>${tbl(d.rec,d.tIn)}
@@ -5204,7 +5206,7 @@ function renderRelances(){
 function memberReceipt(id){
   const m=db.members.find(x=>x.id===id); if(!m) return;
   const y=(m.date||today()).slice(0,4);
-  printHTML(`<h1 style="margin:0">${window.bobOrgName||'CASE du Bois de Nèfles'}</h1>
+  printHTML(`<h1 style="margin:0">${esc(window.bobOrgName||'CASE du Bois de Nèfles')}</h1>
     <p style="margin:2px 0 0">Association loi 1901 — La Réunion</p>
     <h2>Reçu de cotisation — année ${y}</h2>
     <p>L'association atteste que <strong>${esc(m.name)}</strong>${m.addr?', demeurant '+esc(m.addr)+' '+esc(m.cp||'')+' '+esc(m.city||''):''} est adhérent(e) pour l'année ${y}.</p>
@@ -5833,7 +5835,7 @@ const MODELS={
 function fillModel(){ $('cr_corps').value = MODELS[$('cr_model').value]||''; }
 function printCourrier(){
   const objet=$('cr_objet').value.trim(), dest=$('cr_dest').value.trim(), corps=$('cr_corps').value;
-  printHTML(`<h1 style="margin:0">${window.bobOrgName||'CASE du Bois de Nèfles'}</h1>
+  printHTML(`<h1 style="margin:0">${esc(window.bobOrgName||'CASE du Bois de Nèfles')}</h1>
     <p style="margin:2px 0 0">Association loi 1901 — La Réunion</p>
     <p style="text-align:right;margin-top:24px">Saint-Denis, le ${fmtDate(today())}</p>
     ${dest?`<p style="margin-top:10px"><strong>${esc(dest)}</strong></p>`:''}
@@ -12491,52 +12493,57 @@ renderAll();
     await loadMessagesAdh(); maOpen(id);
   };
 
-  /* ===== Multi-assos : l'identité affichée suit l'asso du compte connecté (CASE = défaut, inchangé) ===== */
-  const ASSO_IDENTITY = {
-    'd617489c-b18b-499b-ab17-c31656d0f08a': { // CASE — valeurs actuelles, inchangées
-      orgName:'CASE du Bois de Nèfles',
-      /* identité LÉGALE des documents imprimés (PV, relevés, émargement, budget signé).
-         ⚠️ 03/08/2026 — le n° « 122 » est repris tel quel de l'existant ; la fiche mémoire
-         case-coordonnees-legales retient « 132 » (source CAF) : à trancher par Guillaume. */
-      legal:{ nom:'CASE DU BOIS DE NÈFLES', sous:"Centre d'Animation Socio-Éducatif",
-              adresse:'132 Place de la Fraternité, 97490 Sainte-Clotilde', siren:'325 635 738' },
-      title:'Bob — secrétaire-directeur du CASE du Bois de Nèfles', appTitle:'Bob CASE',
-      h1:'Bob <span style="font-weight:500;opacity:.85">· secrétaire-directeur du CASE</span>',
-      sub:'La Bible du CASE du Bois de Nèfles : adhésions, comptabilité, subventions, répertoire',
-      footer:'Propulsé par Bob 🤖 · outil de gestion du CASE du Bois de Nèfles · données sécurisées en ligne (hébergement Paris · RGPD)',
-      theme:{ brand:'#127a51', brandDk:'#0f6b46', headerBg:'#ffffff', headerInk:'#16302a', headerSub:'#62756b', logoBg:'#127a51', logoHtml:'🤖', themeColor:'#127a51' }
-    },
-    '30cab5ff-fb7d-4734-8f2d-bac3100841ed': { // BOKAF
-      orgName:'BOKAF',
-      legal:{ nom:'ASSOCIATION BOKAF', sous:'Association loi 1901 — média, évènement, production',
-              adresse:'79 chemin Finette, 97490 Sainte-Clotilde', siren:'480 088 855' },
-      title:'Bob — association BOKAF', appTitle:'Bob BOKAF',
-      h1:'Bob <span style="font-weight:500;opacity:.85">· association BOKAF</span>',
-      sub:'Gestion de l\'association BOKAF : adhésions, comptabilité, projets',
-      footer:'Bob · association BOKAF · MÉDIA · ÉVÈNEMENT · PRODUCTION · données en ligne (Supabase, hébergement Paris · RGPD)',
-      theme:{ brand:'#d81e5b', brandDk:'#b3134a', headerBg:'linear-gradient(100deg,#141318 0%,#26182e 52%,#141318 100%)', headerInk:'#ffffff', headerSub:'#bcc2d0', logoBg:'#0e0e12', logoHtml:'<img src="bokaf-logo.png" alt="BOKAF" style="width:100%;height:100%;object-fit:cover;border-radius:inherit">', themeColor:'#141318' }
-    },
-    '1b4f1aea-1e7a-45dd-97c0-1efa94319b94': { // PIX-I-ART (studio / entreprise — additif, ne touche pas CASE/BOKAF)
-      orgName:'PIX-I-ART',
-      legal:{ nom:'PIX-I-ART', sous:'SASU — production audiovisuelle',
-              adresse:'Village by CA Réunion, 20 rue Maxime Rivière, 97490 Sainte-Clotilde', siren:'980 951 065' },
-      title:'Bob — studio PIX-I-ART', appTitle:'Bob PIX-I-ART',
-      h1:'Bob <span style="font-weight:500;opacity:.85">· studio PIX-I-ART</span>',
-      sub:'Gestion du studio PIX-I-ART : projets, clients, comptabilité',
-      footer:'Bob · PIX-I-ART · studio créatif · MADE IN RÉUNION ISLAND · données en ligne (Supabase, hébergement Paris · RGPD)',
-      theme:{ brand:'#E8300A', brandDk:'#c0260a', headerBg:'linear-gradient(100deg,#23262d 0%,#2c3038 52%,#1b1e23 100%)', headerInk:'#ffffff', headerSub:'#b9bfc9', logoBg:'#E8300A', logoHtml:'<span style="font-weight:800;font-size:12px;letter-spacing:.3px;color:#fff">PIX</span>', themeColor:'#23262d' }
-    }
-  };
-  /* ===== Vocabulaire PAR ORGANISATION (amorce) — même patron qu'ASSO_IDENTITY. Le CASE n'a PAS d'entrée → garde « Adhérent » par défaut.
-     Pour adapter une org, ajoute son asso_id ci-dessous. voc('adherents'|'adherent'|'adhesion'|'cotisation') donne le mot juste de l'org connectée. ===== */
-  const ORG_VOCAB={
-    '1b4f1aea-1e7a-45dd-97c0-1efa94319b94':{ adherents:'Clients', adherent:'Client', adhesion:'Contrat', cotisation:'Facture' } // PIX-I-ART (entreprise)
-  };
+  /* ===== Multi-assos : l'identité de GESTION vient de la BASE ==========================
+     08/08/2026 — la constante ASSO_IDENTITY (un tableau d'UUID écrits en dur) est partie en
+     base : `associations.features.identite.gestion` + `.legal` (migration
+     identite_gestion_legal_en_base, valeurs déplacées à l'identique). Le code ne connaît
+     plus aucun client. La base porte des DONNÉES (textes, couleurs) et le code garde la
+     STRUCTURE : aucun HTML n'est stocké ni injecté sans échappement — un président écrit
+     ses textes, jamais du balisage. Repli champ par champ = IDENTITY_DEFAUT (neutre),
+     plus jamais l'identité d'un autre client. ======================================== */
+  function identiteGestion(){
+    const D=IDENTITY_DEFAUT;
+    let it=null; try{ it=(window.__bobFeatures&&typeof window.__bobFeatures.identite==='object')?window.__bobFeatures.identite:null; }catch(e){}
+    if(!it) return D;
+    const s=v=>(v==null?'':String(v));
+    const hex=v=>/^#[0-9a-fA-F]{3,8}$/.test(s(v).trim())?s(v).trim():'';
+    /* Un FOND accepte un hex ou un dégradé linéaire de hex — jamais un url() : une « couleur »
+       posée en base ne doit pas pouvoir faire sortir une requête du navigateur des membres. */
+    const fond=v=>{ v=s(v).trim(); return (/^#[0-9a-fA-F]{3,8}$/.test(v)||/^linear-gradient\([a-z0-9#,%.\s-]+\)$/i.test(v))?v:''; };
+    const g=(typeof it.gestion==='object'&&it.gestion)?it.gestion:{};
+    const legal=(typeof it.legal==='object'&&it.legal)?{ nom:s(it.legal.nom), sous:s(it.legal.sous), adresse:s(it.legal.adresse), siren:s(it.legal.siren) }:null;
+    return {
+      orgName: s(it.nom)||D.orgName,
+      legal: legal,
+      title: s(g.title)||D.title, appTitle: s(g.app_title)||D.appTitle,
+      h1suffixe: s(g.h1_suffixe),
+      sub: s(g.sub)||D.sub, footer: s(g.footer)||D.footer,
+      theme:{
+        brand: hex(it.accent)||D.theme.brand,
+        brandDk: hex(g.brand_dk)||hex(it.accent)||D.theme.brandDk,
+        headerBg: fond(g.header_bg)||D.theme.headerBg,
+        headerInk: hex(g.header_ink)||D.theme.headerInk,
+        headerSub: hex(g.header_sub)||D.theme.headerSub,
+        logoBg: fond(g.logo_bg)||D.theme.logoBg,
+        logoImg: s(g.logo_img), logoSigle: s(g.logo_sigle),
+        logoTexte: s(g.logo_texte)||D.theme.logoTexte,
+        themeColor: hex(g.theme_color)||hex(it.accent)||D.theme.themeColor
+      }
+    };
+  }
+  /* Le pavé logo de l'en-tête : une image (détourée), un sigle, ou un emblème texte — toujours échappé. */
+  function logoGestionHtml(t,orgName){
+    if(t.logoImg) return '<img src="'+esc(t.logoImg)+'" alt="'+esc(orgName||'')+'" style="width:100%;height:100%;object-fit:cover;border-radius:inherit">';
+    if(t.logoSigle) return '<span style="font-weight:800;font-size:12px;letter-spacing:.3px;color:#fff">'+esc(t.logoSigle)+'</span>';
+    return esc(t.logoTexte||'🤖');
+  }
+  /* Vocabulaire de l'organisation : `identite.mots` en base (une entreprise dit « Client » là où
+     une asso dit « Adhérent »). voc('adherents'|'adherent'|'adhesion'|'cotisation') donne le mot juste. */
   const VOCAB_DEFAULT={ adherents:'Adhérents', adherent:'Adhérent', adhesion:'Adhésion', cotisation:'Cotisation' };
-  function voc(key){ try{ const v=(typeof myAsso!=='undefined' && myAsso && ORG_VOCAB[myAsso])||{}; return (v[key]!=null?v[key]:VOCAB_DEFAULT[key])||''; }catch(e){ return (VOCAB_DEFAULT[key]||''); } }
+  function voc(key){ try{ const it=(window.__bobFeatures&&window.__bobFeatures.identite)||{}; const v=(typeof it.mots==='object'&&it.mots)||{}; return (v[key]!=null?String(v[key]):VOCAB_DEFAULT[key])||''; }catch(e){ return (VOCAB_DEFAULT[key]||''); } }
   // Applique le vocabulaire de l'org aux libellés (amorce : l'onglet « Adhérents »). Étendre ici au fil des besoins.
   function applyOrgVocab(){ try{ const b=document.querySelector('nav.tabs button[data-tab="members"]'); if(b) b.textContent='👥 '+voc('adherents'); }catch(e){} }
-  /* ===== Casting des compagnons (28/07/2026, décision GB) — même patron qu'ASSO_IDENTITY/ORG_VOCAB :
+  /* ===== Casting des compagnons (28/07/2026, décision GB) — config par asso, défaut neutre :
      les prénoms OFFICIELS = ceux du catalogue (Léa · Guy · Ludo · Éva, cf. BIBLE-BOB « Bob + métier »),
      et chaque asso peut PERSONNALISER son équipe — le CASE garde la sienne (Sabine · Trési · Nono · Roro).
      Les visuels (4 portraits ananas, versions allégées -w) sont communs : seul le prénom change. ===== */
@@ -12567,11 +12574,13 @@ renderAll();
   /* 04/08/2026 — EN-TÊTE DES DOCUMENTS OFFICIELS (PV, relevés de décisions, émargement, budget signé).
      Il était écrit EN DUR au nom du CASE dans 5 fonctions d'impression : un PV de BOKAF sortait donc
      avec l'adresse ET le SIREN d'une autre association — document inopposable. Une seule source
-     désormais : l'identité `legal` de l'asso connectée. Repli = le CASE (comportement historique). */
-  const LEGAL_CASE={ nom:'CASE DU BOIS DE NÈFLES', sous:"Centre d'Animation Socio-Éducatif",
-                     adresse:'132 Place de la Fraternité, 97490 Sainte-Clotilde', siren:'325 635 738' };
+     désormais : l'identité `legal` de l'asso connectée (en base depuis le 08/08/2026).
+     08/08/2026 — le repli CASE a disparu avec la constante : sans identité légale lisible, on
+     imprime le NOM de l'org seul. Un document sans SIREN vaut mieux qu'un document au SIREN d'un autre. */
   window.bobDocEntete=function(){
-    const L=(window.bobLegal&&typeof window.bobLegal==='object')?window.bobLegal:LEGAL_CASE;
+    const L=(window.bobLegal&&typeof window.bobLegal==='object')?window.bobLegal:null;
+    if(!L){ const n=(window.bobOrgName?String(window.bobOrgName):'');
+      return n?'<div style="text-align:center;margin-bottom:6px"><b>'+esc(n)+'</b></div>':''; }
     const bas=[L.sous,L.adresse,(L.siren?('SIREN '+L.siren):'')].filter(Boolean).join(' · ');
     return '<div style="text-align:center;margin-bottom:6px"><b>'+esc(L.nom||'')+'</b>'
          + (bas?'<br><span style="font-size:12px;color:#444">'+esc(bas)+'</span>':'')+'</div>';
@@ -12669,19 +12678,20 @@ renderAll();
   };
   // Contenu spécifique CASE masqué pour les autres orgs (ex. assurance MAIF). Additif : CASE = tout visible, inchangé. Étendre ici (PDF projet-ados, ÉCLAT…) au besoin.
   function applyOrgContent(){ try{ const isCase=(typeof myAsso!=='undefined' && myAsso==='d617489c-b18b-499b-ab17-c31656d0f08a'); const ap=document.getElementById('assurancePanel'); if(ap) ap.style.display = isCase ? '' : 'none'; }catch(e){} }
-  /* 30/07/2026 — identité NEUTRE par défaut, jamais celle du CASE. Une association sans entrée
-     (ou un compte en quarantaine, asso_id null) portait jusqu'ici le titre, le sous-titre et le pied
-     de page du CASE. Même patron que VOCAB_DEFAULT / CASTING_DEFAUT plus haut : on ne devine pas. */
+  /* 30/07/2026 — identité NEUTRE par défaut, jamais celle du CASE. Une association sans identité
+     déclarée (ou un compte en quarantaine, asso_id null) portait jusqu'ici le titre, le sous-titre
+     et le pied de page du CASE. Même patron que VOCAB_DEFAULT / CASTING_DEFAUT plus haut : on ne devine pas. */
   const IDENTITY_DEFAUT = {
     orgName:'Association',
+    legal:null,
     title:'Bob', appTitle:'Bob',
-    h1:'Bob',
+    h1suffixe:'',
     sub:'Gestion de l\'association',
     footer:'Propulsé par Bob 🤖 · données en ligne (hébergement Paris · RGPD)',
-    theme:{ brand:'#3a51e8', brandDk:'#1f2a8f', headerBg:'#ffffff', headerInk:'#141a52', headerSub:'#5b6478', logoBg:'#3a51e8', logoHtml:'🤖', themeColor:'#3a51e8' }
+    theme:{ brand:'#3a51e8', brandDk:'#1f2a8f', headerBg:'#ffffff', headerInk:'#141a52', headerSub:'#5b6478', logoBg:'#3a51e8', logoImg:'', logoSigle:'', logoTexte:'🤖', themeColor:'#3a51e8' }
   };
   function applyAssoIdentity(assoId){
-    const id = ASSO_IDENTITY[assoId] || IDENTITY_DEFAUT;
+    const id = identiteGestion();
     /* 03/08/2026 — le nom de l'org devient lisible PARTOUT (impressions, exports, mails) via window.bobOrgName */
     try{ window.bobOrgName=id.orgName||null; }catch(e){}
     try{ window.bobLegal=id.legal||null; }catch(e){}  /* 04/08 : sert l'en-tête des documents officiels */
@@ -12705,20 +12715,26 @@ renderAll();
     }catch(e){}
     try{ document.title=id.title; }catch(e){}
     try{ const m=document.querySelector('meta[name="apple-mobile-web-app-title"]'); if(m) m.setAttribute('content',id.appTitle); }catch(e){}
-    try{ const h=document.querySelector('header.top h1'); if(h) h.innerHTML=id.h1; }catch(e){}
+    /* le h1 garde sa structure dans le CODE ; la base ne fournit que le texte du suffixe */
+    try{ const h=document.querySelector('header.top h1');
+      if(h) h.innerHTML='Bob'+(id.h1suffixe?' <span style="font-weight:500;opacity:.85">'+esc(id.h1suffixe)+'</span>':''); }catch(e){}
     try{ const p=document.querySelector('header.top p'); if(p) p.textContent=id.sub; }catch(e){}
     try{ const f=document.querySelector('footer'); if(f) f.textContent=id.footer; }catch(e){}
-    /* habillage par asso : couleurs + en-tête + logo (CASE = défaut inchangé) */
+    /* habillage par asso : couleurs + en-tête + logo (repli = neutre) */
     const t=id.theme;
     if(t){
       try{ const rs=document.documentElement.style; rs.setProperty('--brand',t.brand); rs.setProperty('--brand-dk',t.brandDk); }catch(e){}
       try{ const hd=document.querySelector('header.top'); if(hd){ hd.style.background=t.headerBg; hd.style.color=t.headerInk; } }catch(e){}
       try{ const h=document.querySelector('header.top h1'); if(h) h.style.color=t.headerInk; }catch(e){}
       try{ const p=document.querySelector('header.top p'); if(p) p.style.color=t.headerSub; }catch(e){}
-      try{ const lg=document.querySelector('header.top .logo'); if(lg){ lg.style.background=t.logoBg; lg.style.overflow='hidden'; lg.innerHTML=t.logoHtml; } }catch(e){}
+      try{ const lg=document.querySelector('header.top .logo'); if(lg){ lg.style.background=t.logoBg; lg.style.overflow='hidden'; lg.innerHTML=logoGestionHtml(t,id.orgName); } }catch(e){}
       try{ const mc=document.querySelector('meta[name="theme-color"]'); if(mc) mc.setAttribute('content',t.themeColor); }catch(e){}
     }
   }
+  /* Hook console/support : rejouer l'habillage de gestion à la main (window.__bobFeatures posé,
+     puis bobApplyIdentity()). Sans argument, il reprend l'asso connectée — sinon un appel nu
+     ferait passer les mascottes du CASE (Zanana) pour celles du produit. */
+  try{ window.bobApplyIdentity=function(a){ return applyAssoIdentity(a===undefined?(typeof myAsso!=='undefined'?myAsso:null):a); }; }catch(e){}
 
   /* ===== 07/08/2026 — L'HABILLAGE SUIT LA CHARTE DE L'ASSO ==========================
      L'asso remplit déjà ses couleurs et son logo dans l'onglet Communication (table
@@ -12729,10 +12745,10 @@ renderAll();
 
      ADDITIF ET RÉVERSIBLE — pour supprimer, enlever cette fonction et son unique appel :
        - fiche absente, vide ou erreur réseau  → on ne touche à RIEN (comportement d'avant) ;
-       - asso DÉJÀ dessinée (CASE, BOKAF, PIX-I-ART) → on garde son en-tête tel quel, on ne
-         reprend que l'accent, le logo détouré et la couleur d'app. Le travail de design
-         existant n'est jamais écrasé ;
-       - asso SANS entrée dans ASSO_IDENTITY (la 4e, la 20e) → là seulement on construit
+       - asso DÉJÀ dessinée (identite.gestion posée en base) → on garde son en-tête tel quel,
+         on ne reprend que l'accent, le logo détouré et la couleur d'app. Le travail de
+         design existant n'est jamais écrasé ;
+       - asso SANS identite.gestion (la 4e, la 20e) → là seulement on construit
          son en-tête depuis sa charte, avec contrôle de contraste WCAG pour que le texte
          reste lisible. Elle n'hérite plus du bleu neutre par défaut.
      ================================================================================== */
@@ -12802,10 +12818,12 @@ renderAll();
       }catch(e){}
     }
 
-    /* 3. l'en-tête — UNIQUEMENT pour une asso qui n'a pas d'habillage dessiné.
-          Une asso déjà dessinée garde le sien : on ne réécrit pas du design validé. */
+    /* 3. l'en-tête — UNIQUEMENT pour une asso qui n'a pas d'habillage dessiné
+          (= pas d'identite.gestion en base). Une asso dessinée garde le sien. */
     try{
-      if(!ASSO_IDENTITY[assoId]){
+      const dejaDessinee=(function(){ try{ const it=window.__bobFeatures&&window.__bobFeatures.identite;
+        return !!(it&&typeof it.gestion==='object'&&it.gestion); }catch(e){ return false; } })();
+      if(!dejaDessinee){
         const encre=_charteEncre(P);
         const hd=document.querySelector('header.top');
         if(hd){ hd.style.background=P; hd.style.color=encre; }
