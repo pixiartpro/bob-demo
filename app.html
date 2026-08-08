@@ -404,7 +404,7 @@
         <h2 style="margin:0">📨 Messages des adhérents</h2>
         <span id="maCount"></span>
       </div>
-      <p class="hint" style="margin:4px 0 12px">Le canal « 💬 Parler avec le CASE » de l'espace adhérent. Chaque adhérent a un fil privé ; réponds ici <b>au nom du CASE</b>. Accueil et bureau y ont accès.</p>
+      <p class="hint" style="margin:4px 0 12px">Le canal de messagerie de l'espace adhérent. Chaque adhérent a un fil privé ; réponds ici <b>au nom de l'association</b>. Accueil et bureau y ont accès.</p>
       <div id="maListView"><div id="maList"><p class="hint">Chargement…</p></div></div>
       <div id="maThreadView" style="display:none">
         <button class="ghost btn" onclick="maBack()" style="margin-bottom:10px">← Tous les messages</button>
@@ -500,7 +500,7 @@
     </div>
     <div class="panel">
       <div class="toolbar">
-        <h2 style="margin:0">💳 Adhésions payées en ligne <small style="font-weight:400;color:#5c7468;font-size:13px">— via HelloAsso, argent direct sur le compte du CASE</small></h2>
+        <h2 style="margin:0">💳 Adhésions payées en ligne <small style="font-weight:400;color:#5c7468;font-size:13px">— via HelloAsso, argent direct sur le compte de l'association</small></h2>
         <button class="ghost btn" onclick="if(window.loadAdhesionsEnLigne)loadAdhesionsEnLigne()">↻ Rafraîchir</button>
       </div>
       <p class="hint">Les familles qui ont réglé leur adhésion (10 €) en ligne depuis leur espace. Rien à re-saisir ici.</p>
@@ -1435,7 +1435,7 @@
   <section id="repertoire" class="page">
     <div class="panel">
       <h2>📇 Contacts</h2>
-      <p class="hint">Le carnet d'adresses du CASE : comptable, commissaire aux comptes, financeurs, fournisseurs, partenaires… La Bible des bons interlocuteurs.</p>
+      <p class="hint">Le carnet d'adresses de l'association : comptable, commissaire aux comptes, financeurs, fournisseurs, partenaires… La Bible des bons interlocuteurs.</p>
       <div class="row">
         <div class="field"><label>Nom</label><input id="c_name" placeholder="Ex. Cabinet Untel"></div>
         <div class="field"><label>Organisme / rôle</label><input id="c_org" placeholder="Ex. Comptable, Mairie, CAF..."></div>
@@ -1509,7 +1509,7 @@
     </div>
     <details style="margin:8px 0">
       <summary style="cursor:pointer;color:#5c7468;font-size:13px">Ce que cette page n'est PAS</summary>
-      <div style="font-size:13px;color:#444;padding:6px 0">Ce n'est pas un vote. Ce n'est pas une délibération. Ce n'est pas un compte autorisé ni une grille validée. C'est un brouillon d'ordre du jour et d'avis, horodaté, pour gagner du temps en séance. En cas de doute sur le formalisme : Hexopée (conseil juridique du CASE).</div>
+      <div style="font-size:13px;color:#444;padding:6px 0">Ce n'est pas un vote. Ce n'est pas une délibération. Ce n'est pas un compte autorisé ni une grille validée. C'est un brouillon d'ordre du jour et d'avis, horodaté, pour gagner du temps en séance. En cas de doute sur le formalisme : rapproche-toi du conseil juridique de ton association.</div>
     </details>
     <div style="display:flex;gap:8px;flex-wrap:wrap;margin:10px 0">
       <button class="btn" onclick="printCaprep()">🖨️ Imprimer le projet de relevé pour le CA</button>
@@ -2587,8 +2587,8 @@ Deux locaux complémentaires — le Bois de Nèfles (« le haut » : jeunesse, a
       <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap">
         <img src="zanana-point.png" alt="Zanana" style="width:74px;height:74px;object-fit:contain;flex:0 0 auto" onerror="this.style.display='none'">
         <div style="flex:1;min-width:220px">
-          <h2 style="margin:0 0 4px">❓ Demande à Zanana</h2>
-          <p class="hint" style="margin:0">Pose ta question avec tes mots — « Comment j'ajoute un adhérent ? », « Où je sauvegarde ? » — et Zanana te montre la marche à suivre. Si elle ne sait pas, ta question est transmise pour qu'on y réponde.</p>
+          <h2 style="margin:0 0 4px" id="aideMascTitre">❓ Demande à Zanana</h2>
+          <p class="hint" style="margin:0" id="aideMascHint">Pose ta question avec tes mots — « Comment j'ajoute un adhérent ? », « Où je sauvegarde ? » — et Zanana te montre la marche à suivre. Si elle ne sait pas, ta question est transmise pour qu'on y réponde.</p>
         </div>
       </div>
       <div class="row" style="margin-top:14px;gap:8px;flex-wrap:nowrap">
@@ -2644,7 +2644,7 @@ Deux locaux complémentaires — le Bois de Nèfles (« le haut » : jeunesse, a
         <div class="card"><div class="label">👥 Public &amp; activités</div><div class="sub" style="margin-top:6px;font-size:13px">Adhérents (+ relances) · Périscolaire (grille au quotient familial + facturation auto) · Activités &amp; places · Lieux · Ateliers</div></div>
         <div class="card"><div class="label">🧑‍💼 RH &amp; équipe</div><div class="sub" style="margin-top:6px;font-size:13px">Équipe (masse salariale, contrats) · RH &amp; Organisation · Suivi des actions · Congés (demande + validation)</div></div>
         <div class="card"><div class="label">🤝 Accompagnement &amp; réseau</div><div class="sub" style="margin-top:6px;font-size:13px">Accompagnement (DLA, MDA, ressources expertes) · Partenaires · Répertoire · Secrétariat · Événements</div></div>
-        <div class="card"><div class="label">❓ Aide intégrée</div><div class="sub" style="margin-top:6px;font-size:13px">« Demande à Zanana » (questions / réponses) · « Quoi de neuf » (les nouveautés au fil du temps)</div></div>
+        <div class="card"><div class="label">❓ Aide intégrée</div><div class="sub" style="margin-top:6px;font-size:13px" id="aideMascCarte">« Demande à Zanana » (questions / réponses) · « Quoi de neuf » (les nouveautés au fil du temps)</div></div>
       </div>
     </div>
 
@@ -2673,7 +2673,7 @@ Deux locaux complémentaires — le Bois de Nèfles (« le haut » : jeunesse, a
         <h2 style="margin:0">📓 Journal des actions</h2>
         <div class="field" style="max-width:280px;flex:1"><input id="ja_search" placeholder="🔍 Filtrer (qui, rubrique, action…)" oninput="renderJournalActions()"></div>
       </div>
-      <p class="hint">Qui a fait quoi, en direct sur les activités, inscriptions, congés et fiches enfants/personnel — <b>salariés compris</b>. Avec la date, l'heure et la personne. Réservé au bureau, infalsifiable.</p>
+      <p class="hint">Qui a fait quoi, en direct sur les données que l'association gère dans Bob — <b>salariés compris</b>. Avec la date, l'heure et la personne. Réservé au bureau, infalsifiable.</p>
       <div id="journalActionsRows"><p class="hint">Ouvre cet onglet pour charger le journal…</p></div>
     </div>
   </section>
@@ -3277,7 +3277,7 @@ function pageHelp(){
   const r=pageHelpItems();
   let h='';
   if(!r.label){ h='<p class="muted">Ouvre une page pour voir son aide.</p>'; }
-  else if(!r.items.length){ h='<p class="muted">Pas encore d\'explication dédiée pour <b>'+esc(r.label)+'</b>. Pose ta question à Zanana 👇</p>'; }
+  else if(!r.items.length){ h='<p class="muted">Pas encore d\'explication dédiée pour <b>'+esc(r.label)+'</b>. Pose ta question à '+esc(window.bobMascNom?window.bobMascNom():'Bob')+' 👇</p>'; }
   else { h='<p class="muted" style="margin:0 0 8px">Voici comment marche <b>'+esc(r.label)+'</b> :</p>'+r.items.map((it,i)=>faqCard(it,i===0)).join(''); }
   box.innerHTML=h;
   const m=$('pageHelpModal'); if(m) m.style.display='flex';
@@ -6300,7 +6300,7 @@ function printPV(rid){
     +'<h3 style="margin:14px 0 8px">Résolutions soumises au vote</h3>'
     +resHtml
     +'<div style="margin-top:24px;display:flex;justify-content:space-between;gap:30px"><div>Le Président de séance<br><br>__________________</div><div>Le Secrétaire de séance<br><br>__________________</div></div>'
-    +'<div style="margin-top:18px;font-size:11px;color:#666;border-top:1px solid #ccc;padding-top:8px">Procès-verbal <b>à valider et signer en séance</b>. L\'adoption des décisions relève du Conseil d\'administration réuni (art.13 des statuts). En cas de doute sur le formalisme : Hexopée (conseil juridique du CASE).</div>'
+    +'<div style="margin-top:18px;font-size:11px;color:#666;border-top:1px solid #ccc;padding-top:8px">Procès-verbal <b>à valider et signer en séance</b>. L\'adoption des décisions relève du Conseil d\'administration réuni (art.13 des statuts). En cas de doute sur le formalisme : rapproche-toi du conseil juridique de ton association.</div>'
     +'</div>';
   printHTML(html);
 }
@@ -8450,9 +8450,17 @@ renderAll();
   //     Bob Animateur = métier ACM + ateliers/partenaires). La clé morte « equipe » est supprimée. ===
   const BOB_TAB_PACK={
     /* Bob Secrétaire (Léa) */
-    members:'f_adherents', foyers:'f_adherents', repertoire:'f_adherents',
-    secretariat:'f_adherents', caprep:'f_adherents', reserver:'f_adherents',
+    members:'f_adherents', repertoire:'f_adherents',
+    secretariat:'f_adherents', caprep:'f_adherents',
     messages:'f_adherents', communication:'f_adherents',
+    /* 08/08/2026 — « foyers » et « reserver » étaient rangés ici, donc allumés par f_adherents :
+       toute asso ayant des adhérents les voyait, même sans accueil d'enfants ni salles.
+       Constaté chez BOKAF (production audiovisuelle, 5 adultes) : un registre des FAMILLES qui
+       renvoie vers « Enfants » et « Périscolaire » — deux onglets masqués chez elle — et un
+       guichet de réservation de SALLES alors que « lieux » et « salles » sont masqués ; son
+       sélecteur propose en dur les trois salles du CASE (danse, musique, réunion), soit les
+       locaux d'une AUTRE association. Ces deux onglets relèvent du métier ACM, pas du
+       secrétariat. Aucun effet sur le CASE, qui a f_metier_acm ET f_adherents. */
     /* Bob Compta (Guy) — un SKU, trois fonctions allumées ensemble */
     accounting:'f_compta_base', caisse:'f_compta_base',
     dettes:'f_compta_avancee', bilan:'f_compta_avancee', previsionnel:'f_compta_avancee', pilotage:'f_compta_avancee',
@@ -8461,6 +8469,7 @@ renderAll();
     periscolaire:'f_metier_acm', activites:'f_metier_acm', rdv:'f_metier_acm', acmvac:'f_metier_acm',
     acmenc:'f_metier_acm', vepi:'f_metier_acm', projetados:'f_metier_acm', enfants:'f_metier_acm',
     lieux:'f_metier_acm', salles:'f_metier_acm', intervenants:'f_metier_acm',
+    foyers:'f_metier_acm', reserver:'f_metier_acm',
     ateliers:'f_ateliers_partenaires', partenaires:'f_ateliers_partenaires',
     /* Bob RH (Éva) — paie & masse salariale incluses (fiche casting) */
     rh:'f_rh_equipe', personnel:'f_rh_equipe', fiches:'f_rh_equipe', conges:'f_rh_equipe',
@@ -11582,7 +11591,16 @@ renderAll();
   window.loadAteliers=async function(){
     const box=document.getElementById('atList'); if(!box) return;
     const [ra,ri]=await Promise.all([
-      sbc.from('ateliers').select('*').order('created_at',{ascending:false}),
+      /* 🔴 08/08/2026 — signalé par Guillaume : le bureau de BOKAF voyait « Jardin Partagé
+         Bringelliers », un atelier du CASE, avec les boutons Dépublier / Archiver / Supprimer.
+         La RLS n'est pas en cause : la policy `at_sel_membres` dit
+         « (asso_id = my_asso_id() ET membre actif) OU publie = true » — le second terme est
+         VOULU, c'est lui qui permet au site public de lister les ateliers ouverts. Mais un
+         écran de GESTION n'est pas le site public : sans filtre, il affichait les ateliers
+         publiés de TOUTES les associations comme s'ils étaient les siens (et exposait le nom
+         de leur proposant). Les actions, elles, échouaient côté serveur — at_upd/at_del
+         exigent asso_id = my_asso_id(). On filtre donc ici, à la source. */
+      sbc.from('ateliers').select('*').eq('asso_id',myAsso).order('created_at',{ascending:false}),
       sbc.from('atelier_inscriptions').select('*').order('created_at',{ascending:true})
     ]);
     if(ra.error){ box.innerHTML='<p class="hint" style="color:#c0392b">Erreur : '+esc(ra.error.message)+'</p>'; return; }
@@ -12314,7 +12332,7 @@ renderAll();
   function updateBadge(n){ const b=document.getElementById('chatBadge'); if(!b)return; if(n>0){ b.textContent=n>9?'9+':n; b.style.display='flex'; } else b.style.display='none'; }
   function markChatRead(){ chatSeen=Math.floor(Date.now()/1000); try{localStorage.setItem(chatSeenKey(),String(chatSeen));}catch(e){} updateBadge(0); lastUnread=0;
     const fab=document.getElementById('chatFab'); if(fab) fab.classList.remove('pulse');
-    try{document.title='Bob — CASE';}catch(e){}
+    try{document.title=(window.bobTitre||'Bob');}catch(e){}
     try{ if(navigator.clearAppBadge) navigator.clearAppBadge(); }catch(e){}
     try{ sbc.from('profiles').update({chat_read_at:new Date().toISOString()}).eq('id',myProfile.id).then(function(){},function(){}); }catch(e){}
   }
@@ -12476,7 +12494,7 @@ renderAll();
     const shown=chatOpen?0:unread;
     updateBadge(shown);
     const fab=document.getElementById('chatFab'); if(fab) fab.classList.toggle('pulse', shown>0);
-    try{ document.title = shown>0 ? '('+shown+') 💬 Bob — CASE' : 'Bob — CASE'; }catch(e){}
+    try{ const t=(window.bobTitre||'Bob'); document.title = shown>0 ? '('+shown+') 💬 '+t : t; }catch(e){}
     try{ if(shown>0 && navigator.setAppBadge) navigator.setAppBadge(shown); else if(navigator.clearAppBadge) navigator.clearAppBadge(); }catch(e){}
     if(shown>0 && unread>lastUnread){ chatBeep(); const lo=[...msgs].reverse().find(m=>m.author_id!==myProfile.id); if(lo) showChatToast(lo.author_name, lo.body); }
     lastUnread=unread;
@@ -12635,6 +12653,13 @@ renderAll();
   const MASC_BOB ={ point:'bob-think.png',    wave:'bob-wave.png'    };
   function mascSet(){ try{ return (typeof myAsso!=='undefined' && myAsso==='d617489c-b18b-499b-ab17-c31656d0f08a') ? MASC_CASE : MASC_BOB; }catch(e){ return MASC_BOB; } }
   window.bobMasc=function(k){ return (mascSet()[k])||MASC_BOB[k]||''; };
+  /* 08/08/2026 — l'IMAGE de la mascotte suivait déjà l'asso (repatch plus bas), mais son NOM
+     restait « Zanana » dans l'onglet Aide : chez une autre association, le robot Bob s'affichait
+     donc sous le nom de la mascotte du CASE. Même défaut que « 🍍 Zanana t'explique cette page »
+     corrigé le 04/08 — il n'avait été traité que pour l'aide contextuelle. Une seule source pour
+     le nom ET l'image ; le genre suit, sinon « il/elle » se contredit dans la phrase. */
+  window.bobMascNom=function(){ return (mascSet()===MASC_CASE) ? 'Zanana' : 'Bob'; };
+  window.bobMascElle=function(){ return mascSet()===MASC_CASE; };
   /* 04/08/2026 — EN-TÊTE DES DOCUMENTS OFFICIELS (PV, relevés de décisions, émargement, budget signé).
      Il était écrit EN DUR au nom du CASE dans 5 fonctions d'impression : un PV de BOKAF sortait donc
      avec l'adresse ET le SIREN d'une autre association — document inopposable. Une seule source
@@ -12768,6 +12793,22 @@ renderAll();
       if(t) t.textContent = (assoId==='d617489c-b18b-499b-ab17-c31656d0f08a')
         ? "🍍 Zanana t'explique cette page" : "🤖 Bob t'explique cette page";
     }catch(e){}
+    /* 08/08/2026 — l'onglet ❓ Aide avait été oublié par le correctif du 04/08 : son image était
+       repatchée vers Bob, mais les trois textes disaient toujours « Zanana ». On les aligne, en
+       accordant le genre (Zanana : elle ; Bob : il). Calculé sur `assoId` — le paramètre reçu —
+       et non sur bobMascNom(), qui lit `myAsso` : au premier habillage il peut ne pas être posé. */
+    try{
+      const zan=(assoId==='d617489c-b18b-499b-ab17-c31656d0f08a');
+      const N=zan?'Zanana':'Bob', pron=zan?'elle':'il';
+      const tt=document.getElementById('aideMascTitre');
+      if(tt) tt.textContent='❓ Demande à '+N;
+      const hh=document.getElementById('aideMascHint');
+      if(hh) hh.textContent="Pose ta question avec tes mots — « Comment j'ajoute un adhérent ? », "
+        +"« Où je sauvegarde ? » — et "+N+" te montre la marche à suivre. Si "+pron+" ne sait pas, "
+        +"ta question est transmise pour qu'on y réponde.";
+      const cc=document.getElementById('aideMascCarte');
+      if(cc) cc.textContent='« Demande à '+N+' » (questions / réponses) · « Quoi de neuf » (les nouveautés au fil du temps)';
+    }catch(e){}
     /* 03/08/2026 — mascotte d'aide : les <img zanana-*> écrites en dur dans le HTML sont repatchées vers
        Bob 🤖 dès qu'on N'EST PAS le CASE (l'ananas reste l'emblème du CASE seul). */
     try{
@@ -12779,6 +12820,11 @@ renderAll();
         });
       }
     }catch(e){}
+    /* 08/08/2026 — on MÉMORISE le titre de l'asso : la messagerie le réécrit à chaque
+       relevé de messages (compteur « (3) 💬 … ») et l'écrasait par un « Bob — CASE » en dur.
+       Vécu sur bokaf.bob.re : l'en-tête disait « association BOKAF », l'onglet du navigateur
+       disait « CASE ». La base était bonne — c'était le code qui repassait derrière. */
+    try{ window.bobTitre = id.title; }catch(e){}
     try{ document.title=id.title; }catch(e){}
     try{ const m=document.querySelector('meta[name="apple-mobile-web-app-title"]'); if(m) m.setAttribute('content',id.appTitle); }catch(e){}
     /* le h1 garde sa structure dans le CODE ; la base ne fournit que le texte du suffixe */
