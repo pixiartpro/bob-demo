@@ -8250,15 +8250,36 @@ function renderAll(){ renderCoffre(); renderDashboard(); renderZoneCards(); rend
 /* ---- Data import/export ---- */
 function exportJSON(motif){
   const blob=new Blob([JSON.stringify(db,null,2)],{type:'application/json'});
-  download(blob,'sauvegarde-CASE-'+(motif?motif+'-':'')+today()+'.json');
+  /* le nom du fichier suit l'ASSO connectée (window.bobOrgName), plus « CASE » en dur */
+  const org=String(window.bobOrgName||'association').replace(/[^\wÀ-ÿ -]/g,'').trim().replace(/\s+/g,'-')||'association';
+  download(blob,'sauvegarde-'+org+'-'+(motif?motif+'-':'')+today()+'.json');
 }
 function importJSON(e){
   const f=e.target.files[0]; if(!f)return;
   const r=new FileReader();
   r.onload=()=>{
     let d; try{ d=JSON.parse(r.result); }catch(err){ alert('Fichier illisible — ce n\'est pas une sauvegarde Bob valide.'); return; }
-    if(!confirm('⚠️ Importer cette sauvegarde va REMPLACER toutes les données de l\'association en ligne (adhérents, comptabilité, etc.) par celles du fichier.\n\nPar sécurité, une sauvegarde de l\'état actuel va d\'abord être téléchargée.\n\nContinuer ?')){ return; }
-    try{ exportJSON('avant-import'); }catch(e){}
+    /* 08/08/2026 — ① le fichier doit RESSEMBLER à une sauvegarde Bob. Sans ce contrôle,
+       n\'importe quel JSON (y compris « {} ») passait et vidait le coffre en un clic. */
+    if(!d || typeof d!=='object' || Array.isArray(d)){ alert('Ce fichier n\'est pas une sauvegarde Bob (structure inattendue). Rien n\'a été modifié.'); return; }
+    const attendues=['members','ops','projects','subventions','comptes','contacts','notes','incidents','periscolaire'];
+    const reconnues=attendues.filter(k=>Object.prototype.hasOwnProperty.call(d,k));
+    if(reconnues.length<3){
+      alert('Ce fichier ne ressemble pas à une sauvegarde Bob : aucune des rubriques attendues n\'y figure (adhérents, comptabilité, projets…).\n\nRien n\'a été modifié.');
+      return;
+    }
+    /* ② la confirmation NOMME ce qui va disparaître — un avertissement générique ne se lit plus */
+    const n=k=>Array.isArray(db[k])?db[k].length:0;
+    const perte=[n('members')+' adhérent(s)', n('ops')+' opération(s) comptable(s)', n('subventions')+' subvention(s)',
+                 n('projects')+' projet(s)', n('incidents')+' événement(s)'].join('\n  · ');
+    if(!confirm('⚠️ REMPLACER toutes les données en ligne de '+(window.bobOrgName||'l\'association')+' par celles du fichier ?\n\nCe qui va être écrasé :\n  · '+perte+'\n\nUne sauvegarde de l\'état actuel va d\'abord être téléchargée. Si ce téléchargement échoue, l\'import sera ANNULÉ.\n\nContinuer ?')){ return; }
+    /* ③ FAIL-CLOSED : l\'erreur de l\'export de sécurité était avalée par un catch vide —
+       téléchargement bloqué par le navigateur = écrasement SANS filet. On arrête net. */
+    try{ exportJSON('avant-import'); }
+    catch(err){
+      alert('La sauvegarde de sécurité n\'a pas pu être téléchargée ('+((err&&err.message)||err)+').\n\nImport ANNULÉ : rien n\'a été modifié. Vérifie que ton navigateur autorise les téléchargements, puis réessaie.');
+      return;
+    }
     db=Object.assign(blank(),d); _jPrev=null; db.journal=(db.journal||[]).concat([jEntry('Données','📥 Sauvegarde importée (remplacement des données)')]).slice(-500); save(); alert('Sauvegarde importée ✅');
   };
   r.readAsText(f); e.target.value='';
