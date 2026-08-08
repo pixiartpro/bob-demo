@@ -780,6 +780,19 @@
       </div>
     </div>
     <div id="projectList"></div>
+
+    <!-- 🎬 08/08/2026 — signalé par Guillaume : « on ne voit pas les projets, par exemple celui
+         de Sonny ». Les adhérents déposent leurs projets dans leur espace (table `projects`),
+         la gestion ne lisait QUE le coffre : deux listes étanches qui portent le même nom, et
+         un bureau qui ne voit pas l'activité de son association. Ici on AJOUTE la vue des
+         projets portés par les adhérents, sans toucher aux projets de gestion ci-dessus
+         (BOKAF en a 4 dans son coffre, le CASE 1 : les remplacer les aurait fait disparaître). -->
+    <div class="panel" id="projAdherentsPanel" style="display:none">
+      <h2 style="margin:0 0 4px">🎬 Portés par les adhérents</h2>
+      <p class="hint" id="projAdherentsIntro">Les projets déposés par les adhérents depuis leur espace.
+        <b>En lecture seule ici</b> : chacun reste maître du sien — tu peux en discuter dans le fil, depuis l'espace membre.</p>
+      <div id="projAdherentsListe"></div>
+    </div>
   </section>
 
   <!-- SUBVENTIONS -->
@@ -11673,6 +11686,55 @@ renderAll();
   window.delAtelier=async function(id){ if(!confirm('Supprimer définitivement cet atelier et ses inscriptions ?'))return; const {error}=await sbc.from('ateliers').delete().eq('id',id); if(error){alert(error.message);return;} loadAteliers(); };
   window.delInscription=async function(id){ if(!confirm('Retirer cette inscription ?'))return; const {error}=await sbc.from('atelier_inscriptions').delete().eq('id',id); if(error){alert(error.message);return;} loadAteliers(); };
 
+  /* ---- 🎬 Les projets portés par les ADHÉRENTS (table `projects`, celle de l'espace membre) ----
+     08/08/2026. La gestion lit son coffre (db.projects : budget, dépenses reliées) ; l'espace
+     membre écrit dans la table `projects`. Aucune passerelle n'existait : le bureau ne voyait
+     pas le travail de ses adhérents. On lit ici la même table qu'eux — SANS y écrire : la RLS
+     réserve l'écriture au porteur, et un bureau qui corrige le projet d'un autre écraserait son
+     texte. La liste du coffre, au-dessus, n'est pas touchée.
+     ⚠️ Filtré sur asso_id : les policies le font déjà, mais on ne s'en remet pas à elles seules
+     pour un écran de gestion (cf. les ateliers, corrigés le même jour). */
+  window.loadProjetsAdherents=async function(){
+    const panel=document.getElementById('projAdherentsPanel'), box=document.getElementById('projAdherentsListe');
+    if(!panel||!box) return;
+    const f=(window.bobFeatures&&window.bobFeatures())||{};
+    /* la soudure 'on'/true : le produit écrit les deux formes */
+    const ouvert=(f.projets_adherents===true||f.projets_adherents==='on');
+    if(!ouvert){ panel.style.display='none'; return; }
+    panel.style.display='';
+    box.innerHTML='<p class="hint">Chargement…</p>';
+    const [rp,rpa,rpo]=await Promise.all([
+      sbc.from('projects').select('id,name,data,created_at,updated_at').eq('asso_id',myAsso).order('updated_at',{ascending:false}),
+      sbc.from('projet_participants').select('project_id,nom').eq('asso_id',myAsso),
+      sbc.from('project_posts').select('project_id,created_at').eq('asso_id',myAsso)
+    ]);
+    /* ⚠️ supabase-js ne LÈVE pas : on teste .error à chaque appel. */
+    if(rp.error){ box.innerHTML='<p class="hint" style="color:var(--red)">Lecture impossible : '+esc(rp.error.message)+'</p>'; return; }
+    const parts={}, posts={};
+    (rpa.data||[]).forEach(p=>{ (parts[p.project_id]=parts[p.project_id]||[]).push(p.nom||''); });
+    (rpo.data||[]).forEach(p=>{ const d=p.created_at; if(!posts[p.project_id]||d>posts[p.project_id]) posts[p.project_id]=d; });
+    /* le « comptoir » est le fil de discussion général, pas un projet : il a son propre écran */
+    const li=(rp.data||[]).filter(p=>((p.data||{}).type!=='comptoir'));
+    if(!li.length){ box.innerHTML='<p class="hint">Aucun projet déposé par un adhérent pour le moment.</p>'; return; }
+    box.innerHTML=li.map(p=>{
+      const d=p.data||{}, j=Array.isArray(d.jalons)?d.jalons:[];
+      const faits=j.filter(x=>x&&x.done).length;
+      const noms=(parts[p.id]||[]).filter(Boolean);
+      const dern=posts[p.id]||p.updated_at||p.created_at;
+      return '<div style="border:1px solid var(--line);border-radius:12px;padding:14px 16px;margin-bottom:10px">'
+       +'<div style="display:flex;gap:10px;align-items:baseline;flex-wrap:wrap">'
+       +'<b style="font-size:15px">'+esc(p.name||'Sans titre')+'</b>'
+       +(d.porteur_nom?'<span class="hint" style="margin:0">porté par '+esc(d.porteur_nom)+'</span>':'')
+       +(d.statut?'<span class="pill">'+esc(d.statut)+'</span>':'')+'</div>'
+       +(d.pitch?'<p class="hint" style="margin:6px 0 0">'+esc(d.pitch)+'</p>':'')
+       +'<p class="hint" style="margin:8px 0 0;font-size:12.5px">'
+       +(j.length?('Étapes : <b>'+faits+' / '+j.length+'</b> · '):'')
+       +(noms.length?('Avec : '+esc(noms.join(', '))+' · '):'')
+       +'Dernière activité : '+esc(dern?String(dern).slice(0,10):'—')
+       +'</p></div>';
+    }).join('');
+  };
+
   /* ---- Gestion des Activités & places (table activites + inscriptions_activite) ---- */
   const ACT_STATUTS={ouvert:'Ouvert',bientot:'Arrive bientôt',archive:'Archivé'};
   window.acmPushPublic=async function(){
@@ -13611,6 +13673,9 @@ renderAll();
     if(window.loadPartenaires) loadPartenaires();
     const ab=document.querySelector('nav.tabs button[data-tab="ateliers"]'); if(ab) ab.addEventListener('click',()=>{ if(window.loadAteliers) loadAteliers(); });
     if(window.loadAteliers) loadAteliers();
+    /* 08/08/2026 — même motif pour les projets d'adhérents : au clic sur l'onglet et au boot. */
+    const pjb=document.querySelector('nav.tabs button[data-tab="projects"]'); if(pjb) pjb.addEventListener('click',()=>{ if(window.loadProjetsAdherents) loadProjetsAdherents(); });
+    if(window.loadProjetsAdherents) loadProjetsAdherents();
     const cb=document.querySelector('nav.tabs button[data-tab="activites"]'); if(cb) cb.addEventListener('click',()=>{ if(window.loadActivitesGestion) loadActivitesGestion(); });
     const rb=document.querySelector('nav.tabs button[data-tab="rdv"]'); if(rb) rb.addEventListener('click',()=>{ if(window.loadRdvAdmin) loadRdvAdmin(); });
     const lgb=document.querySelector('nav.tabs button[data-tab="lieux"]'); if(lgb) lgb.addEventListener('click',()=>{ if(window.loadLieuxGestion) loadLieuxGestion(); });
