@@ -4,9 +4,8 @@
    07/08/2026. Brique produit, pas brique client.
 
    LE PROBLÈME QU'ELLE FERME
-   Jusqu'ici l'habillage d'une asso vivait dans DEUX tableaux écrits en dur :
-     · app.html            → ASSO_IDENTITY, indexé par UUID d'association
-     · espace-projets.html → DOORS{}, indexé par slug ('bokaf', 'case-bdn'…)
+   Jusqu'ici l'habillage d'une asso vivait dans des tableaux écrits en dur
+   (un par UUID dans la gestion, un par slug dans l'espace projets historique).
    Conséquence : la 4e association ne pouvait PAS avoir son identité sans qu'on
    rouvre deux fichiers. C'est une dette de multi-tenance — indolore à 3 assos,
    c'est le mur à la 20e.
@@ -26,8 +25,12 @@
    ORDRE DE RÉSOLUTION (le premier qui répond gagne, champ par champ)
      1. associations.features.identite   ← la voie produit
      2. fiches_marque (si lisible)       ← la charte déjà remplie par l'asso
-     3. AMORCE (ci-dessous)              ← graine de migration, transitoire
-     4. défaut neutre                    ← une asso sans rien reste présentable
+     3. défaut neutre                    ← une asso sans rien reste présentable
+
+   L'AMORCE (graine des anciens tableaux en dur) a vécu ici du 07 au 08/08/2026,
+   le temps que `_interne/migration-identite-tenant.sql` pose l'identité des
+   trois fondatrices en base. Supprimée le 08/08/2026 : plus AUCUN nom de
+   client ne vit dans ce fichier.
 
    RÉVERSIBLE : ne rien trouver n'est pas une panne. Sans aucune donnée, on rend
    le défaut neutre et l'application reste utilisable.
@@ -218,35 +221,7 @@
   };
 
   /* ---------------------------------------------------------------------------
-     4. AMORCE — GRAINE DE MIGRATION (transitoire, à faire disparaître)
-     Ce bloc n'est PAS le mécanisme : c'est le contenu des anciens tableaux en
-     dur, posé ici en attendant qu'il parte en base (voir
-     `_interne/migration-identite-tenant.sql`). Les données de la base PRIMENT
-     toujours sur cette amorce. Le jour où la migration est passée, ce bloc se
-     supprime sans rien casser — et plus aucun nom de client ne vit dans le code.
-     --------------------------------------------------------------------------- */
-  var AMORCE = {
-    'case-bdn': {
-      nom: 'CASE du Bois de Nèfles', nom_court: 'CASE', embleme: '🍍',
-      monde: 'chaleur', accent: '#127a51', accent_2: '#f4b740',
-      tagline: '', logo: '', site: 'index.html'
-    },
-    bokaf: {
-      nom: 'BOKAF', nom_court: 'BOKAF', embleme: '🎬',
-      monde: 'cinema', accent: '#d81e5b', accent_2: '#2f6fdb',
-      tagline: 'MÉDIA · ÉVÉNEMENT · PRODUCTION',
-      logo: 'bokaf-logo.png', site: 'site-bokaf.html',
-      mots: { projet: 'projet', projets: 'projets' }
-    },
-    pixiart: {
-      nom: 'PIX-I-ART', nom_court: 'PIX-I-ART', embleme: '🔴',
-      monde: 'cinema', accent: '#E8300A', accent_2: '#ff7a18',
-      tagline: 'MADE IN RÉUNION ISLAND', logo: '', site: ''
-    }
-  };
-
-  /* ---------------------------------------------------------------------------
-     5. RÉSOLUTION
+     4. RÉSOLUTION
      --------------------------------------------------------------------------- */
 
   function estCouleur(v) { return !!versRgb(v); }
@@ -272,7 +247,6 @@
     asso = asso || {};
     var features = asso.features || {};
     var enBase = (features && typeof features.identite === 'object' && features.identite) || {};
-    var graine = AMORCE[String(asso.slug || '').toLowerCase()] || {};
 
     /* La charte de marque : un COMPLÉMENT, jamais un prérequis.
        Illisible (adhérent) ou absente → on continue sans, en silence.
@@ -301,34 +275,33 @@
     var id = {
       asso_id: asso.id || null,
       slug: asso.slug || null,
-      nom: premier(enBase.nom, asso.name, graine.nom, DEFAUT.nom),
-      nom_court: premier(enBase.nom_court, graine.nom_court, asso.name, DEFAUT.nom),
-      embleme: premier(enBase.embleme, graine.embleme, DEFAUT.embleme),
-      tagline: premier(enBase.tagline, graine.tagline, DEFAUT.tagline) || '',
-      logo: premier(enBase.logo, charte.logo, graine.logo, DEFAUT.logo) || '',
-      site: premier(enBase.site, graine.site, DEFAUT.site) || '',
-      monde: premier(enBase.monde, graine.monde, DEFAUT.monde),
+      nom: premier(enBase.nom, asso.name, DEFAUT.nom),
+      nom_court: premier(enBase.nom_court, asso.name, DEFAUT.nom),
+      embleme: premier(enBase.embleme, DEFAUT.embleme),
+      tagline: premier(enBase.tagline, DEFAUT.tagline) || '',
+      logo: premier(enBase.logo, charte.logo, DEFAUT.logo) || '',
+      site: premier(enBase.site, DEFAUT.site) || '',
+      monde: premier(enBase.monde, DEFAUT.monde),
       accent: premier(
         estCouleur(enBase.accent) ? enBase.accent : null,
-        charte.accent, graine.accent, DEFAUT.accent
+        charte.accent, DEFAUT.accent
       ),
       accent_2: premier(
         estCouleur(enBase.accent_2) ? enBase.accent_2 : null,
-        charte.accent_2, graine.accent_2, DEFAUT.accent_2
+        charte.accent_2, DEFAUT.accent_2
       ),
       /* Vocabulaire : une entreprise dit « client » là où une asso dit « adhérent ». */
-      mots: Object.assign({}, DEFAUT.mots, graine.mots || {}, enBase.mots || {}),
+      mots: Object.assign({}, DEFAUT.mots, enBase.mots || {}),
       /* Traçabilité — d'où vient l'habillage affiché (utile en support). */
       _source: Object.keys(enBase).length ? 'base'
-             : (Object.keys(charte).length ? 'charte'
-             : (Object.keys(graine).length ? 'amorce' : 'defaut'))
+             : (Object.keys(charte).length ? 'charte' : 'defaut')
     };
     if (!MONDES[id.monde]) id.monde = DEFAUT.monde;
     return id;
   }
 
   /* ---------------------------------------------------------------------------
-     6. APPLICATION — l'identité devient des variables CSS, rien d'autre
+     5. APPLICATION — l'identité devient des variables CSS, rien d'autre
      Aucune règle de style ne vit ici : la page dessine avec les tokens, cette
      fonction ne fait que les poser. On peut donc rhabiller sans toucher au CSS.
      --------------------------------------------------------------------------- */
@@ -420,15 +393,23 @@
     };
   }
 
+  /** Échappement HTML : l'identité vient de la BASE (écrite par le président de
+      l'asso) — tout ce qui part dans innerHTML passe par ici, sans exception. */
+  function echapper(v) {
+    return String(v == null ? '' : v).replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+  }
+
   /** Le bloc de marque (logo ou emblème + nom), rendu de façon uniforme. */
   function marqueHtml(id, taille) {
     taille = taille || 34;
     var s = 'width:' + taille + 'px;height:' + taille + 'px;border-radius:' + Math.round(taille * .28) + 'px;flex:none;';
     if (id.logo) {
-      return '<img src="' + String(id.logo).replace(/"/g, '&quot;') + '" alt="" style="' + s + 'object-fit:cover">';
+      return '<img src="' + echapper(id.logo) + '" alt="" style="' + s + 'object-fit:cover">';
     }
     return '<span style="' + s + 'display:grid;place-items:center;background:var(--brand);'
-         + 'font-size:' + Math.round(taille * .5) + 'px;line-height:1">' + (id.embleme || '🤖') + '</span>';
+         + 'font-size:' + Math.round(taille * .5) + 'px;line-height:1">' + echapper(id.embleme || '🤖') + '</span>';
   }
 
   global.BobIdentite = {
@@ -441,7 +422,8 @@
       contraste: contraste, luminance: luminance, encreSur: encreSur,
       lisibleSur: lisibleSur, remplissageLisible: remplissageLisible,
       melanger: melanger, assombrir: assombrir,
-      eclaircir: eclaircir, versRgb: versRgb, versHex: versHex
+      eclaircir: eclaircir, versRgb: versRgb, versHex: versHex,
+      echapper: echapper
     }
   };
 })(window);
