@@ -790,8 +790,21 @@ async function chargerFeatures(assoId){
   return MES_FEATURES;
 }
 const featureOuverte=k=>{ const v=(MES_FEATURES||{})[k]; return v===true||v==='on'; };
-function espaceDeLAdherent(){ return featureOuverte('projets_adherents')?'espace.html':'espace-adherent.html'; }
-function espaceLibelle(){ return featureOuverte('projets_adherents')?'Mon espace':'Mon espace'; }
+/* 08/08/2026 — CHAQUE ESPACE EST LE MIROIR D'UN BOUQUET (décision Guillaume) :
+   · f_metier_acm  (Ludo)  → l'espace FAMILLE d'abord : dossiers périscolaire/ACM,
+     fiches sanitaires — c'est vital, il prime quand l'asso fait ce métier ;
+   · projets_adherents (Ta Direction) → l'espace MEMBRE (projets, comptoir,
+     galerie, matériel).
+   Une asso peut avoir LES DEUX (le CASE depuis ce jour) : la famille atterrit
+   sur son espace famille, qui offre un lien vers les projets — pas l'inverse,
+   parce qu'un dossier d'enfant ne doit jamais être à deux clics derrière un
+   fil de discussion. */
+function espaceDeLAdherent(){
+  if(featureOuverte('f_metier_acm')) return 'espace-adherent.html';
+  if(featureOuverte('projets_adherents')) return 'espace.html';
+  return 'espace-adherent.html';   /* repli historique */
+}
+function espaceLibelle(){ return featureOuverte('f_metier_acm')?'Mon espace famille':'Mon espace'; }
 
 async function renderLoggedIn(user){
   if(!myProfile){

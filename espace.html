@@ -455,7 +455,15 @@ function renderNav(){
     return '<button class="navbtn" data-vue="'+s.k+'"'+(VUE===s.k?' aria-current="page"':'')+'>'
       +'<span class="ic" aria-hidden="true">'+s.ic+'</span><span class="lb">'+esc(s.lb)+'</span>'
       +(n?'<span class="cpt">'+n+'</span>':'')+'</button>';
-  }).join('');
+  }).join('')
+  /* Une asso qui fait du périscolaire/ACM (le CASE) a AUSSI un espace famille :
+     le pont est affiché, jamais supposé connu. Simple lien — l'autre page reste
+     la seule à savoir gérer un dossier d'enfant. */
+  +(feat('f_metier_acm')
+     ?'<a class="navbtn" href="espace-adherent.html" style="text-decoration:none">'
+      +'<span class="ic" aria-hidden="true">👨‍👩‍👧</span><span class="lb">Espace famille</span>'
+      +'<span class="cpt" style="background:transparent;color:var(--muted-2)">↗</span></a>'
+     :'');
   /* La barre du bas ne tient pas 7 entrées : on garde les 5 premières ouvertes. */
   $('#dock').innerHTML=list.slice(0,5).map(s=>{
     const n=badgeDe(s.k);
