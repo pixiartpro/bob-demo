@@ -130,6 +130,7 @@
 
 <!-- ===== BARRE D'ONGLETS (espace adhérent) ===== -->
 <nav class="adh-tabs" id="adhTabs" aria-label="Sections de mon espace">
+  <button data-tab="accueil" onclick="showTab('accueil')">🏠 Accueil</button>
   <button data-tab="compte" onclick="showTab('compte')">🪪 Mon compte</button>
   <button data-tab="activites" onclick="showTab('activites')">🎟️ Mes activités</button>
   <button data-tab="familia" onclick="showTab('familia')">👨‍👩‍👧 Ma famille</button>
@@ -138,6 +139,19 @@
   <button data-tab="aide" onclick="showTab('aide')">📅 Aide &amp; RDV</button>
   <button data-tab="messages" onclick="showTab('messages');window.maLoad&&maLoad()">💬 Parler au CASE</button>
 </nav>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     ACCUEIL FAMILLE — « qu'est-ce qu'on attend de moi ? »
+     Cet écran n'invente AUCUN état : il relit les mêmes sources que les écrans
+     qui font foi (famExpectedPieces() pour les pièces, PERI.row.statut pour le
+     dossier, ACM.signedByKid pour les fiches sanitaires, ADH.paye pour
+     l'adhésion). Toute source non encore chargée est déclarée « en cours de
+     vérification » — on ne dit JAMAIS « tout est bon » par défaut, parce
+     qu'une famille qui le lit à tort ne revient pas.
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="block" data-tab="accueil" id="accueilSection" style="padding:22px 0 6px">
+  <div class="wrap"><div id="accueilBody"><p class="sub">Chargement de votre espace…</p></div></div>
+</section>
 <script>
   var __activeFam='kids';
   function showTab(key){
@@ -159,7 +173,9 @@
     showTab('familia'); showFam('peri');
     setTimeout(function(){ var el=document.getElementById('periSection'); if(el){ try{ el.scrollIntoView({behavior:'smooth',block:'start'}); }catch(e){ el.scrollIntoView(); } } }, 130);
   }
-  document.addEventListener('DOMContentLoaded', function(){ try{ showTab('compte'); }catch(e){} });
+  /* 08/08/2026 — on arrive sur l'ACCUEIL : « qu'est-ce qu'on attend de moi ? »
+   plutôt que sur « Mon compte », qui obligeait à chercher dans sept onglets. */
+document.addEventListener('DOMContentLoaded', function(){ try{ showTab('accueil'); }catch(e){} });
 </script>
 
 <!-- 👨‍👩‍👧 Ma famille : tuiles de sélection (une sous-section à la fois) -->
@@ -649,7 +665,8 @@ async function periBoot(){
   const body=document.getElementById('periBody'); if(!body) return;
   let session=null;
   try{ session=(await _sbAt.auth.getSession()).data.session; }catch(e){ session=null; }
-  if(!session){ ACM.uid=null; ACM.profile=null; ACM.asso=null; PERI.uid=null; PERI.asso=null; acmBoot(); actiBoot(); rdvBoot(); salleBoot(); photosBoot(); KIDS.list=[]; kidsRender(); periRenderLocked('connexion'); renderFamDocsAcm(); return; }
+  if(!session){ try{ setTimeout(accueilRender,0); }catch(e){}
+    ACM.uid=null; ACM.profile=null; ACM.asso=null; PERI.uid=null; PERI.asso=null; acmBoot(); actiBoot(); rdvBoot(); salleBoot(); photosBoot(); KIDS.list=[]; kidsRender(); periRenderLocked('connexion'); renderFamDocsAcm(); return; }
   PERI.uid=session.user.id;
   const {data:prof}=await _sbAt.from('profiles').select('full_name,email,statut,role,asso_id').eq('id',PERI.uid).maybeSingle();
   PERI.profile=prof||null;
@@ -660,9 +677,11 @@ async function periBoot(){
   PERI.asso=prof.asso_id;
   PERI.statut=prof.statut;
   await kidsLoad(); kidsRender();
+  try{ accueilRender(); }catch(e){}   /* les enfants sont connus */
   const {data:row}=await _sbAt.from('inscriptions_periscolaire').select('*').eq('user_id',PERI.uid).eq('annee',PERI.ANNEE).maybeSingle();
   PERI.row = row || {foyer:prof.full_name||'', email:prof.email||'', tel:'', enfants:[], pieces:{}, statut:'brouillon', annee:PERI.ANNEE};
   if(!Array.isArray(PERI.row.enfants)) PERI.row.enfants=[];
+  try{ accueilRender(); }catch(e){}   /* le dossier est connu */
   if(!PERI.row.pieces||typeof PERI.row.pieces!=='object') PERI.row.pieces={};
   PERI.editMode=false;
   periRenderForm();
@@ -833,6 +852,151 @@ function periRecapHtml(r){
     +'</div>'
     +'<div style="margin-top:14px"><button class="btn use" onclick="periEdit()">✏️ Modifier mon dossier</button></div>';
 }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   ACCUEIL FAMILLE — 08/08/2026
+   Répond à la seule question qu'une famille se pose en arrivant : « qu'est-ce
+   qu'on attend de moi ? ». Aujourd'hui la réponse est éparpillée dans sept
+   onglets, et c'est le CASE qui relance les familles une par une.
+
+   ⚠️ RÈGLE DE SÛRETÉ DE CET ÉCRAN : il ne CALCULE aucun état, il RELIT ceux qui
+   font déjà foi ailleurs. Un second calcul finirait par diverger du premier, et
+   afficher « tout est bon » à une famille dont le dossier est incomplet est
+   pire que ne rien afficher. Quand une source n'est pas encore chargée, on le
+   DIT au lieu de conclure.
+   ═══════════════════════════════════════════════════════════════════════════ */
+function accueilRender(){
+  const box=document.getElementById('accueilBody'); if(!box) return;
+
+  /* Pas connecté : on n'affiche rien d'autre que l'invitation à se connecter. */
+  if(!PERI.uid){
+    box.innerHTML='<div class="card"><h3 style="margin:0 0 6px">👋 Bienvenue</h3>'
+      +'<p class="sub" style="margin:0">Connectez-vous à votre compte famille pour retrouver votre dossier, '
+      +'vos inscriptions et vos documents.</p>'
+      +'<p style="margin:12px 0 0"><a class="btn win" style="text-decoration:none" href="connexion.html">Se connecter / créer mon compte →</a></p></div>';
+    return;
+  }
+
+  const aFaire=[], faits=[], enCours=[];
+  const r=PERI.row;
+
+  /* ── 1. Les pièces du dossier ────────────────────────────────────────────
+     Même source que le récapitulatif : famExpectedPieces() + PERI.row.pieces. */
+  if(!r){ enCours.push('votre dossier périscolaire'); }
+  else{
+    const pieces=(r.pieces&&typeof r.pieces==='object')?r.pieces:{};
+    let attendues=[];
+    try{ attendues=famExpectedPieces()||[]; }catch(e){ attendues=[]; }
+    if(!attendues.length){ enCours.push('la liste des pièces'); }
+    else{
+      const manquantes=attendues.filter(e=>!(pieces[e.fk]&&pieces[e.fk].path));
+      if(manquantes.length){
+        aFaire.push({
+          ico:'📎',
+          titre: manquantes.length+' pièce'+(manquantes.length>1?'s':'')+' manque'+(manquantes.length>1?'nt':'')+' à votre dossier',
+          detail: manquantes.map(m=>m.lab).join(' · '),
+          lien:'periDossier', bouton:'Déposer mes pièces'
+        });
+      } else {
+        faits.push('Toutes vos pièces sont déposées ('+attendues.length+'/'+attendues.length+')');
+      }
+    }
+    /* Le bureau a demandé quelque chose de précis : ça passe AVANT tout le reste. */
+    if(r.statut==='incomplet' && r.note_bureau){
+      aFaire.unshift({ico:'📝', titre:'Le bureau vous a écrit', detail:r.note_bureau,
+                      lien:'periDossier', bouton:'Voir mon dossier'});
+    }
+    if(r.statut==='valide') faits.push('Votre dossier périscolaire est validé par le bureau');
+  }
+
+  /* ── 2. L'adhésion ─────────────────────────────────────────────────────── */
+  if(typeof ADH.paye==='undefined'){ enCours.push('votre adhésion'); }
+  else if(!ADH.paye){
+    aFaire.push({ico:'🪪', titre:"L'adhésion de l'année n'est pas encore réglée",
+                 detail:"10 € pour toute la famille — un seul parent adhérent suffit pour tous les enfants.",
+                 lien:'adhSection', bouton:'Voir mon adhésion'});
+  } else { faits.push('Votre adhésion est à jour'); }
+
+  /* ── 3. Les fiches sanitaires, enfant par enfant ────────────────────────── */
+  if(!Array.isArray(KIDS.list)){ enCours.push('vos enfants'); }
+  else if(KIDS.list.length && ACM.signedByKid){
+    const sans=KIDS.list.filter(k=>!ACM.signedByKid[k.id]);
+    if(sans.length){
+      aFaire.push({ico:'🩺',
+        titre:'Fiche sanitaire à signer pour '+sans.map(k=>(k.prenom||k.nom||'votre enfant')).join(', '),
+        detail:"Obligatoire pour les vacances (ACM). Elle se remplit et se signe en ligne, une fois par an.",
+        lien:'kidsSection', bouton:'Remplir la fiche'});
+    } else { faits.push('Les fiches sanitaires sont signées'); }
+  }
+
+  /* ── Rendu ─────────────────────────────────────────────────────────────── */
+  const prenom=((PERI.profile&&(PERI.profile.full_name||PERI.profile.email))||'').split('@')[0].split(' ')[0];
+  const h=new Date().getHours();
+  const salut=(h<5?'Bonne nuit':h<18?'Bonjour':'Bonsoir')+(prenom?' '+periEsc(prenom):'');
+
+  let out='<h2 class="title" style="margin:0 0 2px">'+salut+'</h2>';
+  out += aFaire.length
+    ? '<p class="sub">Il y a <b>'+aFaire.length+' chose'+(aFaire.length>1?'s':'')+'</b> à faire de votre côté.</p>'
+    : (enCours.length ? '<p class="sub">Vérification de votre dossier en cours…</p>'
+                      : '<p class="sub">Tout est à jour de votre côté — rien à faire. 🎉</p>');
+
+  if(aFaire.length){
+    out+='<div class="grid" style="margin-bottom:14px">'+aFaire.map(a=>
+      '<div class="card" style="border-left:4px solid var(--jaune)">'
+      +'<div class="ico">'+a.ico+'</div>'
+      +'<h3 style="margin:2px 0 0">'+periEsc(a.titre)+'</h3>'
+      +'<p class="when" style="margin:4px 0 0">'+periEsc(a.detail)+'</p>'
+      +'<div class="foot"><span></span>'
+      +'<button class="btn win" onclick="accueilAller(\''+a.lien+'\')">'+periEsc(a.bouton)+' →</button></div>'
+      +'</div>').join('')+'</div>';
+  }
+
+  /* Ce qui est en cours de lecture est DIT — jamais compté comme « fait ». */
+  if(enCours.length){
+    out+='<div class="card" style="margin-bottom:14px"><p class="sub" style="margin:0">⏳ On vérifie encore : '
+      +periEsc(enCours.join(', '))+'. Rechargez la page dans un instant si rien ne s\'affiche.</p></div>';
+  }
+
+  if(faits.length){
+    out+='<div class="card"><h3 style="margin:0 0 8px">✅ Ce qui est déjà en règle</h3>'
+      +faits.map(f=>'<div style="padding:5px 0;font-size:14.5px">✔︎ '+periEsc(f)+'</div>').join('')
+      +'</div>';
+  }
+
+  out+='<div class="card" style="margin-top:14px"><h3 style="margin:0 0 6px">Une question ?</h3>'
+    +'<p class="sub" style="margin:0 0 10px">Le CASE répond directement ici — ou par téléphone si c\'est plus simple.</p>'
+    +'<button class="btn use" onclick="showTab(\'messages\');window.maLoad&&maLoad()">💬 Parler au CASE</button></div>';
+
+  box.innerHTML=out;
+}
+/* Emmène au bon endroit : on change d'onglet PUIS on fait remonter la section. */
+/* Filet : si l'accueil n'a jamais réussi à s'afficher (source muette, erreur
+   inattendue), une famille resterait devant « Chargement… » sans issue. Au bout
+   de 8 s, on l'envoie vers les onglets qui, eux, fonctionnent — on ne la laisse
+   jamais dans une impasse. */
+setTimeout(function(){
+  try{
+    const b=document.getElementById('accueilBody');
+    if(b && /Chargement de votre espace/.test(b.textContent)){
+      b.innerHTML='<div class="card"><h3 style="margin:0 0 6px">Votre espace met du temps à répondre</h3>'
+        +'<p class="sub" style="margin:0 0 10px">Tout reste accessible par les onglets ci-dessus : '
+        +'<b>Ma famille</b> pour le dossier périscolaire, <b>Mon compte</b> pour l\'adhésion.</p>'
+        +'<button class="btn use" onclick="location.reload()">↻ Recharger</button></div>';
+    }
+  }catch(e){}
+}, 8000);
+
+window.accueilAller=function(cible){
+  const ongletDe={periDossier:'familia', adhSection:'compte', kidsSection:'familia'};
+  const t=ongletDe[cible]||'compte';
+  try{ showTab(t); }catch(e){}
+  if(t==='familia'){ try{ showFam('peri'); }catch(e){} }
+  setTimeout(function(){
+    const el=document.getElementById(cible)||document.getElementById('periSection');
+    if(el) el.scrollIntoView({behavior:'smooth',block:'start'});
+  },160);
+};
+
 window.periEdit=function(){ PERI.editMode=true; periRenderForm(); };
 window.periBackToRecap=function(){ PERI.editMode=false; periRenderForm(); };
 window.periPickOn=function(el){ if(!el||!el.checked) return; const card=el.closest('[data-pk]'); if(card){ const on=card.querySelector('[data-pf="on"]'); if(on) on.checked=true; } };
@@ -970,6 +1134,7 @@ async function acmBoot(){
     mine=(rm.data||[]).filter(m=>m.statut!=='deplace'&&m.statut!=='annule');
     // Branchement fiche sanitaire : un enfant dont la fiche de l'année est SIGNÉE n'a plus à redéposer sa « fiche de liaison ».
     ACM.signedByKid={}; (rf&&rf.data?rf.data:[]).forEach(f=>{ if(f.statut==='signee') ACM.signedByKid[f.enfant_id]=true; });
+    try{ accueilRender(); }catch(e){}   /* les fiches sanitaires sont connues */
   }catch(e){ const er='<p class="sub" style="color:#b23a23">Impossible de charger pour le moment.</p>'; body.innerHTML=er; if(vbody) vbody.innerHTML=er; return; }
   await planCharger(acts.map(function(a){ return a.id; }));
   const byAct={}; ACM.mineById={}; mine.forEach(m=>{ ACM.mineById[m.id]=m; (byAct[m.activite_id]=byAct[m.activite_id]||[]).push(m); });
@@ -1942,6 +2107,8 @@ async function adhBoot(){
   const justPaid=new URLSearchParams(location.search).get('paiement')==='ok';
   let paye=false;
   try{ const {data}=await _sbAt.from('paiements').select('id').eq('objet','adhesion').eq('statut','paye').contains('metadata',{annee:ADH.ANNEE}).limit(1); paye=!!(data&&data.length); }catch(e){}
+  ADH.paye=paye;              /* mémorisé pour l'accueil : il ne recalcule rien */
+  try{ accueilRender(); }catch(e){}
   if(paye){ b.innerHTML='<div style="background:var(--ok-soft);border:1px solid var(--line);color:var(--ok-ink);border-radius:12px;padding:12px 14px;font-weight:600">✅ Adhésion à jour <span style="font-weight:400">('+ADH.ANNEE+')</span>. Merci ❤️ Un seul parent adhérent suffit pour tous vos enfants.</div>'; return; }
   if(justPaid){ b.innerHTML='<div style="background:var(--ok-soft);border:1px solid var(--line);color:var(--ok-ink);border-radius:12px;padding:12px 14px">Merci ❤️ Votre paiement est bien reçu — l\'indicateur « adhésion à jour » s\'affiche dans un instant (HelloAsso confirme le règlement). Un justificatif vous est envoyé par HelloAsso.</div>'; setTimeout(adhBoot,6000); return; }
   b.innerHTML='<button id="adhPayBtn" class="btn" style="background:var(--vert-fonce);color:#fff;border:0;border-radius:12px;padding:14px 20px;font-size:16px;font-weight:700;cursor:pointer;width:100%;max-width:340px">🪪 Payer mon adhésion — 10 €</button>'

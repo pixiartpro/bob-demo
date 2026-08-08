@@ -169,18 +169,26 @@
    de `assos_publiques` — donc la 4e association apparaît ici toute seule. */
 let PORTES=[
   { slug:'case',  nom:'CASE du Bois de Nèfles', sig:'Centre d\'animation socio-éducatif · Sainte-Clotilde',
-    embleme:'🍍', teinte:'#1a855b' },
+    embleme:'🍍', teinte:'#1a855b', domaine:'https://case.bob.re' },
   { slug:'bokaf', nom:'BOKAF', sig:'Média · Évènement · Production',
-    embleme:'🎬', logo:'bokaf-logo.png', teinte:'#141318' }
+    embleme:'🎬', logo:'bokaf-logo.png', teinte:'#141318', domaine:'https://bokaf.bob.re' }
 ];
 
 const $=s=>document.querySelector(s);
 const esc=s=>(s==null?'':String(s)).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const lien=slug=>'connexion.html?asso='+encodeURIComponent(slug);
+/* Le lien mène au DOMAINE PROPRE de l'association quand elle en a un.
+   Ce n'est pas cosmétique : cela évite que bob.re devienne une 3e origine
+   d'authentification (chaque origine exige sa Redirect URL dans Supabase Auth,
+   sans quoi les mails de confirmation renvoient les gens chez une autre asso).
+   Et la personne repart avec l'adresse de SON association comme signet.
+   Repli : le lien relatif, qui marche quand la porte est servie avec l'appli. */
+const lien=(slug,domaine)=>
+  (domaine ? domaine.replace(/\/$/,'')+'/connexion.html?asso='+encodeURIComponent(slug)
+           : 'connexion.html?asso='+encodeURIComponent(slug));
 
 function rendreAssos(){
   $('#assos').innerHTML=PORTES.map(p=>
-    '<a class="asso" href="'+lien(p.slug)+'">'
+    '<a class="asso" href="'+lien(p.slug,p.domaine)+'">'
     +'<span class="ecu" style="background:'+esc(p.teinte)+';color:#fff">'
       +(p.logo?'<img src="'+esc(p.logo)+'" alt="">':esc(p.embleme))+'</span>'
     +'<span class="txt"><span class="nom">'+esc(p.nom)+'</span>'
@@ -215,7 +223,8 @@ const sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
       embleme: a.embleme || '🤖',
       logo: a.logo || '',
       /* la pastille prend la couleur de l'asso ; en monde cinéma, son fond sombre */
-      teinte: (a.monde==='cinema' ? '#141318' : (a.accent || '#3a51e8'))
+      teinte: (a.monde==='cinema' ? '#141318' : (a.accent || '#3a51e8')),
+      domaine: a.domaine || ''
     })).sort((x,y)=>x.nom.localeCompare(y.nom,'fr'));
     rendreAssos();
   }catch(e){ /* on garde ce qui est déjà à l'écran */ }
@@ -244,7 +253,7 @@ const sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
     +'<span class="av">'+esc(ini)+'</span>'
     +'<span class="t"><b>Content de te revoir, '+esc(nom)+'</b>'
     +'<span>Tu es membre de '+esc(a.name)+'.</span></span>'
-    +'<a class="b p" href="'+lien(a.slug==='case-bdn'?'case':a.slug)+'">Continuer →</a>'
+    +'<a class="b p" href="'+lien(a.slug==='case-bdn'?'case':a.slug, (PORTES.find(x=>x.slug===(a.slug==='case-bdn'?'case':a.slug))||{}).domaine)+'">Continuer →</a>'
     +'</div>';
 })();
 </script>
