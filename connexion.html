@@ -316,13 +316,16 @@ window.BOB_PORTES = {
    rendu, et sans attendre le moindre fichier distant. */
 (function(){
   var d=window.BOB_PORTES[window.BOB_PORTE];
+  /* 08/08/2026 — ces valeurs peuvent venir du cache alimenté par la BASE
+     (assos_publiques, écrite par chaque président) : on échappe TOUT avant
+     innerHTML, comme entree.html le fait déjà pour les mêmes champs. */
+  var ech=function(v){ return String(v==null?'':v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];}); };
   var mark = d.logoImg
-    ? '<img src="'+d.logoImg+'" alt="'+d.nom+'" style="width:34px;height:34px;border-radius:9px;object-fit:cover;vertical-align:middle;margin-right:4px">'
-    : '<span class="pine">'+d.pine+'</span>';
+    ? '<img src="'+ech(d.logoImg)+'" alt="'+ech(d.nom)+'" style="width:34px;height:34px;border-radius:9px;object-fit:cover;vertical-align:middle;margin-right:4px">'
+    : '<span class="pine">'+ech(d.pine)+'</span>';
   var lg=document.getElementById('brandLogo');
-  lg.innerHTML=mark+'<span><b>'+d.nom+'</b>'+(d.nom2?' <span>'+d.nom2+'</span>':'')+'</span>';
-  lg.setAttribute('href',d.site);
-  document.getElementById('lienSitePublic').setAttribute('href',d.site);
+  lg.innerHTML=mark+'<span><b>'+ech(d.nom)+'</b>'+(d.nom2?' <span>'+ech(d.nom2)+'</span>':'')+'</span>';
+  if(d.site){ lg.setAttribute('href',d.site); document.getElementById('lienSitePublic').setAttribute('href',d.site); }
   document.getElementById('titrePage').textContent=d.h1;
   document.getElementById('sousTitrePage').textContent=d.sub;
   /* La mascotte n'apparaît que si l'asso en a une — src posé ici, jamais dans le HTML. */
@@ -366,13 +369,14 @@ const ASSO_DOORS = window.BOB_PORTES;   /* alias : le reste du fichier lit ce no
     const {data,error}=await sb.from('assos_publiques').select('*');
     if(error||!data||!data.length) return;
     const cache={};
+    const hexOk=v=>/^#[0-9a-fA-F]{3,8}$/.test(String(v||'').trim());   /* une « couleur » qui n'en est pas une (url()…) n'entre jamais dans les jetons CSS */
     data.forEach(a=>{
       const cle = a.slug==='case-bdn' ? 'case' : a.slug;   /* la porte du CASE s'écrit « case » */
       cache[cle]={
         pine:a.embleme||'🤖', nom:a.nom_court||a.nom||'', nom2:'',
         titre:'Mon espace — '+(a.nom||''), logoImg:a.logo||'',
         site:a.site||'', h1:(a.embleme?a.embleme+' ':'')+'Mon espace '+(a.nom_court||a.nom||''),
-        theme:{ vert:a.accent||undefined, vertFonce:a.accent||undefined, dark:(a.monde==='cinema') }
+        theme:{ vert:hexOk(a.accent)?a.accent:undefined, vertFonce:hexOk(a.accent)?a.accent:undefined, dark:(a.monde==='cinema') }
       };
       /* on ne recopie PAS `sub`, `mascotte` ni `mascotteTxt` : ce sont des textes
          de la page, pas de l'habillage — la base n'a pas à les décider. */
@@ -780,12 +784,13 @@ function renderLoggedOut(){
    sur le NOM d'un client, qu'il aurait fallu rouvrir pour la 4e association. On
    demande désormais ce que l'asso a OUVERT (`associations.features`), pas qui elle
    est. Repli = l'espace famille historique → aucune régression pour le CASE. */
-let MES_FEATURES=null;
+let MES_FEATURES=null, MON_SLUG='';
 async function chargerFeatures(assoId){
   if(MES_FEATURES||!assoId) return MES_FEATURES;
   try{
-    const {data,error}=await sb.from('associations').select('features').eq('id',assoId).maybeSingle();
+    const {data,error}=await sb.from('associations').select('slug,features').eq('id',assoId).maybeSingle();
     MES_FEATURES=(error||!data)?{}:(data.features||{});
+    if(!error&&data&&data.slug) MON_SLUG=String(data.slug).trim().toLowerCase();
   }catch(e){ MES_FEATURES={}; }
   return MES_FEATURES;
 }
@@ -814,10 +819,15 @@ async function renderLoggedIn(user){
     return;
   }
   const p=myProfile, r=ROLES[p.role]||ROLES.adherent, st=STATUTS[p.statut]||STATUTS.en_attente;
-  /* 03/08/2026 — une fois CONNECTÉ, la porte suit l'ASSO DU COMPTE (un invité BOKAF arrivant par casebdn.re voyait la porte CASE) */
-  const ASSO_TO_DOOR={'30cab5ff-fb7d-4734-8f2d-bac3100841ed':'bokaf','d617489c-b18b-499b-ab17-c31656d0f08a':'case','1b4f1aea-1e7a-45dd-97c0-1efa94319b94':'pixiart'};
-  const pDoor=ASSO_TO_DOOR[p.asso_id]||DOOR;
-  await chargerFeatures(p.asso_id);   /* décide vers quel espace envoyer l'adhérent */
+  /* 03/08/2026 — une fois CONNECTÉ, la porte suit l'ASSO DU COMPTE (un invité BOKAF arrivant par casebdn.re voyait la porte CASE).
+     08/08/2026 — le dictionnaire d'UUID en dur (ASSO_TO_DOOR) est remplacé par le slug lu en base
+     dans la MÊME requête que les features : la 4e association a sa porte sans une ligne de code. */
+  await chargerFeatures(p.asso_id);   /* décide vers quel espace envoyer l'adhérent + donne le slug */
+  /* On ne retient que les portes que le script de tête sait rouvrir (BOB_PORTES = table de
+     secours + cache assos_publiques) : une asso pas encore habillée en base garde DOOR — sinon
+     on écrirait dans bob_asso un slug que le rechargement traiterait en « porte inconnue ». */
+  const _porteSlug=MON_SLUG==='case-bdn'?'case':MON_SLUG;
+  const pDoor=(_porteSlug && ASSO_DOORS[_porteSlug]) ? _porteSlug : DOOR;
   try{ if(pDoor!==DOOR) localStorage.setItem('bob_asso',pDoor); }catch(e){}
   const nom=p.full_name||user.email;
   let html=`<div class="who"><div class="av">${p.role==='president'?'👑':isAdmin(p)?'🛡️':'👤'}</div>
