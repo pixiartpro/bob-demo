@@ -608,6 +608,10 @@ async function submitTempsFort(){
   if(!titre||!nom){ info.style.color='#c0392b'; info.textContent='Indiquez au moins votre idée et votre nom.'; return; }
   const contact=(g('tf_contact').value||'').trim();
   const btn=g('tf_btn'); btn.disabled=true; btn.textContent='Envoi…';
+  /* 09/08/2026 (audit adverse) — b5d7a5f affirmait que « toutes les autres requetes de ces
+     pages filtraient deja sur _CASE_ASSO_ID ». C'ETAIT FAUX : seule `ateliers` l'etait. Les
+     policies publiques sont toutes du meme motif « publie = true » sans borne d'association :
+     des qu'une autre asso hebergee publie une activite ou un lieu, ils apparaissaient ici. */
   const {error}=await _sbPart.from('activites').insert({ nom:titre, type:'evenement', categorie:'Temps forts', publie:false, statut:'bientot',
     programme:(g('tf_desc').value||'').trim(), description:'💡 Proposé par '+nom+(contact?' ('+contact+')':'') });
   btn.disabled=false; btn.textContent='Envoyer ma proposition';
@@ -704,7 +708,7 @@ async function planChargerV(ids){
   const list=(ids||[]).filter(Boolean);
   if(!list.length) return;
   try{
-    const {data}=await _sbPart.from('creneaux_publics').select('*').in('activite_id',list);
+    const {data}=await _sbPart.from('creneaux_publics').select('*').eq('asso_id',_CASE_ASSO_ID).in('activite_id',list);
     (data||[]).forEach(function(c){ (PLANNING_V[c.activite_id]=PLANNING_V[c.activite_id]||[]).push(c); });
     Object.keys(PLANNING_V).forEach(function(k){
       PLANNING_V[k].sort(function(x,y){ return (x.jour-y.jour)||String(x.debut).localeCompare(String(y.debut)); });
@@ -765,7 +769,7 @@ function collapseAcm(list){var out=[],seen=false;(list||[]).forEach(function(a){
 let _actByCat={};
 async function loadActivitesPubliques(){
   const box=document.getElementById('actQuartiers'); if(!box) return;
-  const {data,error}=await _sbPart.from('activites').select('*').eq('publie',true).eq('type','activite').neq('statut','archive').order('ordre',{ascending:true});
+  const {data,error}=await _sbPart.from('activites').select('*').eq('asso_id',_CASE_ASSO_ID).eq('publie',true).eq('type','activite').neq('statut','archive').order('ordre',{ascending:true});
   if(error){ box.innerHTML='<p style="grid-column:1/-1;text-align:center;color:#c0392b">Impossible de charger les activités pour le moment.</p>'; return; }
   _actByCat={};
   (data||[]).forEach(a=>{ const c=a.categorie||'Autres'; (_actByCat[c]=_actByCat[c]||[]).push(a); });
@@ -832,7 +836,7 @@ async function actSend(id){
    Le statut fait le libellé ; 3 chips max ; le bandeau reste caché s'il n'y a rien. */
 async function loadInsBar(){
   const bar=document.getElementById('insbar'); if(!bar) return;
-  const {data,error}=await _sbPart.from('activites').select('nom,emoji,statut,capacite,nb_inscrits,quand')
+  const {data,error}=await _sbPart.from('activites').select('nom,emoji,statut,capacite,nb_inscrits,quand').eq('asso_id',_CASE_ASSO_ID)
     .eq('publie',true).eq('type','activite').eq('categorie','Péri & extrascolaire')
     .neq('statut','archive').order('ordre',{ascending:true}).limit(4);
   if(error||!data||!data.length) return;               // rien → pas de bandeau
@@ -882,7 +886,7 @@ function openEvent(id){
 async function loadEvenements(){
   const box=document.getElementById('agendaList'); if(!box) return;
   box.className='qgrid';
-  const {data,error}=await _sbPart.from('activites').select('*').eq('publie',true).eq('type','evenement').neq('statut','archive');
+  const {data,error}=await _sbPart.from('activites').select('*').eq('asso_id',_CASE_ASSO_ID).eq('publie',true).eq('type','evenement').neq('statut','archive');
   if(error){ box.innerHTML=`<p style="grid-column:1/-1;text-align:center;color:#c0392b">Agenda indisponible pour le moment.</p>`; return; }
   const today=todayISO();
   const dated=(data||[]).filter(e=>e.date_event && e.date_event>=today).sort((a,b)=>a.date_event<b.date_event?-1:(a.date_event>b.date_event?1:0));
@@ -896,8 +900,8 @@ async function loadEvenements(){
 async function loadLieux(){
   const box=document.getElementById('lieuxList'); if(!box) return;
   const [rl,ra]=await Promise.all([
-    _sbPart.from('lieux').select('*').eq('publie',true).order('ordre',{ascending:true}),
-    _sbPart.from('activites').select('nom,emoji,lieu').eq('publie',true).eq('type','activite')
+    _sbPart.from('lieux').select('*').eq('asso_id',_CASE_ASSO_ID).eq('publie',true).order('ordre',{ascending:true}),
+    _sbPart.from('activites').select('nom,emoji,lieu').eq('asso_id',_CASE_ASSO_ID).eq('publie',true).eq('type','activite')
   ]);
   if(rl.error||!rl.data||!rl.data.length){ box.innerHTML='<p style="grid-column:1/-1;text-align:center;color:var(--muted)">Nos lieux arrivent bientôt. 🍍</p>'; return; }
   const acts=ra.data||[];

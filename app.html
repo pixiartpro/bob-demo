@@ -536,7 +536,9 @@
         <label style="font-weight:700;font-size:14px">Salle :</label>
         <select id="salleSelect" onchange="if(window.loadCreneaux)loadCreneaux()" style="font:inherit;padding:8px 12px;border:1.5px solid var(--line,#e7efe9);border-radius:10px;background:#fff">
           <!-- 09/08/2026 — les 3 salles du CASE étaient écrites ICI, en dur : toute asso ayant
-               f_metier_acm voyait les locaux d'une autre (PIX-I-ART, qui l'a à true, les voyait).
+               f_metier_acm voyait les locaux d'une autre. Au moment du correctif, PIX-I-ART avait
+               ce réglage à true et les voyait donc ; il a été éteint dans la foulée, si bien que
+               seul le CASE l'a aujourd'hui — le trou est refermé avant d'avoir servi à nouveau.
                Elles viennent maintenant de `associations.features.salles`, remplies par
                remplirSalles() au démarrage. Vide par défaut : une asso sans salles déclarées
                n'en invente pas. -->
@@ -8496,10 +8498,11 @@ renderAll();
        toute asso ayant des adhérents les voyait, même sans accueil d'enfants ni salles.
        Constaté chez BOKAF (production audiovisuelle, 5 adultes) : un registre des FAMILLES qui
        renvoie vers « Enfants » et « Périscolaire » — deux onglets masqués chez elle — et un
-       guichet de réservation de SALLES alors que « lieux » et « salles » sont masqués ; son
-       sélecteur propose en dur les trois salles du CASE (danse, musique, réunion), soit les
-       locaux d'une AUTRE association. Ces deux onglets relèvent du métier ACM, pas du
-       secrétariat. Aucun effet sur le CASE, qui a f_metier_acm ET f_adherents. */
+       guichet de validation des demandes de SALLE alors que « lieux » et « salles » sont masqués
+       chez elle. ⚠️ Rectifié le 09/08 : ce guichet ne contient PAS de sélecteur de salles — le
+       sélecteur (et les trois salles du CASE alors écrites en dur) vit dans la section `salles`,
+       déjà réservée au métier ACM. Ces deux onglets relèvent du métier ACM, pas du secrétariat.
+       Aucun effet sur le CASE, qui a f_metier_acm ET f_adherents. */
     /* Bob Compta (Guy) — un SKU, trois fonctions allumées ensemble */
     accounting:'f_compta_base', caisse:'f_compta_base',
     dettes:'f_compta_avancee', bilan:'f_compta_avancee', previsionnel:'f_compta_avancee', pilotage:'f_compta_avancee',
@@ -11621,9 +11624,27 @@ renderAll();
 
   // Ateliers participatifs — tables ateliers + atelier_inscriptions (hors coffre, comme partenaires)
   const AT_STATUTS={proposition:'💡 Proposition à étudier',inscriptions:'📝 Inscriptions ouvertes',ouvert:'✅ Atelier ouvert',archive:'📦 Archivé'};
-  const AT_URL='https://pixiartpro.github.io/bob-demo/#ateliers';
+  /* 🔴 09/08/2026 (audit adverse) — l'annonce à partager était signée « Le CASE du Bois de
+     Nèfles » avec l'URL de SON site, en dur, pour TOUTES les assos. Le bouton s'affiche dès
+     qu'un atelier est publié : le bureau de BOKAF publiait son propre atelier, copiait
+     l'annonce, et collait sur Facebook un texte au nom d'une autre association — avec un lien
+     vers le site de cette autre association, où son atelier à elle n'apparaît même pas.
+     Le nom et le site viennent maintenant de l'identité du tenant, comme le reste. */
+  function atAnnonceSource(){
+    const it=(window.__bobFeatures&&window.__bobFeatures.identite)||{};
+    const nom=String(it.nom||'').trim() || 'notre association';
+    let url='';
+    try{
+      const brut=String(it.site||'').trim();
+      if(/^[A-Za-z0-9._-]{1,80}\.html$/.test(brut)) url=new URL(brut, location.href).href;
+      else if(/^https:\/\/[A-Za-z0-9.-]+(\/[^\s"'<>]*)?$/.test(brut)) url=brut;
+    }catch(e){}
+    return { nom:nom, url:url };
+  }
   window.atCopyAnnonce=async function(titre){
-    const txt='💡 Le CASE du Bois de Nèfles cherche du monde pour l\'atelier « '+titre+' » — ça vous intéresse, ou vous sauriez l\'animer ? Dites-le nous ici : '+AT_URL;
+    const S=atAnnonceSource();
+    const txt='💡 '+S.nom+' cherche du monde pour l\'atelier « '+titre+' » — ça vous intéresse, ou vous sauriez l\'animer ?'
+      +(S.url?(' Dites-le nous ici : '+S.url+'#ateliers'):' Dites-le nous !');
     try{ await navigator.clipboard.writeText(txt); alert('📣 Annonce copiée !\n\nCollez-la sur LinkedIn, Facebook, WhatsApp, ou envoyez-la à la Maison des Associations.'); }
     catch(e){ prompt('Copiez ce texte :', txt); }
   };
@@ -11720,6 +11741,11 @@ renderAll();
      texte. La liste du coffre, au-dessus, n'est pas touchée.
      ⚠️ Filtré sur asso_id : les policies le font déjà, mais on ne s'en remet pas à elles seules
      pour un écran de gestion (cf. les ateliers, corrigés le même jour). */
+  /* 09/08/2026 (audit adverse) — la pastille affichait la CLÉ technique (« actif », « archive »)
+     alors que l'espace membre montre « 🟢 En cours » / « 📦 Archivé » aux mêmes adhérents. Deux
+     écrans qui nomment différemment la même chose, c'est précisément ce que le titrage des deux
+     listes cherchait à éviter. Mêmes libellés que espace.html. */
+  const PROJ_STATUTS={actif:'🟢 En cours', termine:'🏁 Terminé', archive:'📦 Archivé'};
   window.loadProjetsAdherents=async function(){
     const panel=document.getElementById('projAdherentsPanel'), box=document.getElementById('projAdherentsListe');
     if(!panel||!box) return;
@@ -11734,15 +11760,22 @@ renderAll();
       sbc.from('projet_participants').select('project_id,nom').eq('asso_id',myAsso),
       sbc.from('project_posts').select('project_id,created_at').eq('asso_id',myAsso)
     ]);
-    /* ⚠️ supabase-js ne LÈVE pas : on teste .error à chaque appel. */
+    /* ⚠️ supabase-js ne LÈVE pas : on teste .error à chaque appel. Le commentaire disait « à
+       chaque appel » alors que deux des trois erreurs étaient avalées par `(r.data||[])` —
+       corrigé le 09/08 : la liste des projets est bloquante, les deux compléments (participants,
+       messages) ne le sont pas, mais leur échec se VOIT au lieu d'afficher « aucun participant »
+       à la place de « on n'a pas pu lire ». */
     if(rp.error){ box.innerHTML='<p class="hint" style="color:var(--red)">Lecture impossible : '+esc(rp.error.message)+'</p>'; return; }
+    const incomplet=[]; if(rpa.error) incomplet.push('les participants'); if(rpo.error) incomplet.push('les messages');
     const parts={}, posts={};
     (rpa.data||[]).forEach(p=>{ (parts[p.project_id]=parts[p.project_id]||[]).push(p.nom||''); });
     (rpo.data||[]).forEach(p=>{ const d=p.created_at; if(!posts[p.project_id]||d>posts[p.project_id]) posts[p.project_id]=d; });
     /* le « comptoir » est le fil de discussion général, pas un projet : il a son propre écran */
     const li=(rp.data||[]).filter(p=>((p.data||{}).type!=='comptoir'));
     if(!li.length){ box.innerHTML='<p class="hint">Aucun projet déposé par un adhérent pour le moment.</p>'; return; }
-    box.innerHTML=li.map(p=>{
+    box.innerHTML=(incomplet.length?('<p class="hint" style="color:var(--red);margin:0 0 10px">⚠️ '
+      +esc(incomplet.join(' et '))+' n\'ont pas pu être lus : la liste ci-dessous est incomplète.</p>'):'')
+     +li.map(p=>{
       const d=p.data||{}, j=Array.isArray(d.jalons)?d.jalons:[];
       const faits=j.filter(x=>x&&x.done).length;
       const noms=(parts[p.id]||[]).filter(Boolean);
@@ -11751,7 +11784,7 @@ renderAll();
        +'<div style="display:flex;gap:10px;align-items:baseline;flex-wrap:wrap">'
        +'<b style="font-size:15px">'+esc(p.name||'Sans titre')+'</b>'
        +(d.porteur_nom?'<span class="hint" style="margin:0">porté par '+esc(d.porteur_nom)+'</span>':'')
-       +(d.statut?'<span class="pill">'+esc(d.statut)+'</span>':'')+'</div>'
+       +(d.statut?'<span class="pill">'+esc(PROJ_STATUTS[d.statut]||d.statut)+'</span>':'')+'</div>'
        +(d.pitch?'<p class="hint" style="margin:6px 0 0">'+esc(d.pitch)+'</p>':'')
        +'<p class="hint" style="margin:8px 0 0;font-size:12.5px">'
        +(j.length?('Étapes : <b>'+faits+' / '+j.length+'</b> · '):'')
@@ -11787,7 +11820,11 @@ renderAll();
   window.loadActivitesGestion=async function(){
     const box=document.getElementById('actgList'); if(!box) return;
     const [ra,ri,rp,rpay]=await Promise.all([
-      sbc.from('activites').select('*').order('ordre',{ascending:true}).order('created_at',{ascending:true}),
+      /* 🔴 09/08/2026 (audit adverse) — même défaut que les ateliers : la policy act_sel_membres
+         est « (publie = true) OU (asso_id = my_asso_id() ET …) », le premier terme n'étant borné
+         à aucune asso. Un écran de GESTION sans filtre remontait donc les activités publiées de
+         toutes les associations. On filtre à la source. */
+      sbc.from('activites').select('*').eq('asso_id',myAsso).order('ordre',{ascending:true}).order('created_at',{ascending:true}),
       sbc.from('inscriptions_activite').select('*').order('created_at',{ascending:true}),
       sbc.from('profiles').select('id,full_name,email,role,assistant_sanitaire,psc1_note').eq('asso_id',myAsso).in('role',['personnel','bureau','president','tresorier']).eq('statut','actif').order('full_name',{ascending:true}),
       sbc.from('paiements').select('id,inscription_activite_id,montant_cents,mode,ref_piece,motif,paid_at,created_at').eq('objet','activite').eq('statut','paye')
@@ -12166,8 +12203,11 @@ renderAll();
   window.loadLieuxGestion=async function(){
     const box=document.getElementById('lieuxgList'); if(!box) return;
     const [rl,ra]=await Promise.all([
-      sbc.from('lieux').select('*').order('ordre',{ascending:true}),
-      sbc.from('activites').select('nom,emoji,lieu,type').eq('type','activite')
+      /* 🔴 09/08/2026 (audit adverse) — lieu_sel_membres = « (asso_id = my_asso_id() ET actif)
+         OU publie = true » : sans filtre, l'écran de gestion des lieux affichait aussi les lieux
+         publiés des autres associations. */
+      sbc.from('lieux').select('*').eq('asso_id',myAsso).order('ordre',{ascending:true}),
+      sbc.from('activites').select('nom,emoji,lieu,type').eq('asso_id',myAsso).eq('type','activite')
     ]);
     if(rl.error){ box.innerHTML='<p class="hint" style="color:#c0392b">Erreur : '+esc(rl.error.message)+'</p>'; return; }
     const lieux=rl.data||[], acts=ra.data||[];
