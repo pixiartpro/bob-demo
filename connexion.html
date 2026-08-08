@@ -7,55 +7,284 @@
 <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
 <link rel="icon" type="image/png" sizes="16x16" href="favicon-16.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
-<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+
+<script>
+/* ══════════════════════════════════════════════════════════════════════════
+   LA PORTE SE RÉSOUT AVANT LE PREMIER PIXEL — 08/08/2026
+   ──────────────────────────────────────────────────────────────────────────
+   BUG CORRIGÉ (signalé par Guillaume) : « il y a encore des images furtives
+   CASE BDN quand on se connecte à BOKAF ».
+   La page était ÉCRITE aux couleurs du CASE (titre, 🍍, « Mon espace CASE »,
+   et surtout <img src="zanana-wave.png">, dont le téléchargement partait
+   aussitôt) ; le script qui rhabille en BOKAF ne s'exécutait qu'APRÈS le
+   chargement de supabase-js depuis un CDN. Résultat : l'identité du CASE
+   restait à l'écran le temps d'un aller-retour réseau — plusieurs centaines
+   de millisecondes, parfaitement visibles, sur le domaine d'une AUTRE asso.
+
+   Règle qui en découle : une page multi-assos ne peint JAMAIS une identité
+   avant de savoir laquelle. Ce script est en tête, sans dépendance réseau ;
+   il décide la porte, pose le thème, et l'identité visible est écrite juste
+   après le balisage qu'elle remplit. Aucune image d'identité n'a de `src`
+   dans le HTML : c'est ce qui empêche la requête furtive.
+   ══════════════════════════════════════════════════════════════════════════ */
+window.BOB_PORTES = {
+  case:  { pine:'🍍', nom:'CASE', nom2:'Bois de Nèfles', titre:'Mon espace — CASE du Bois de Nèfles',
+           site:'vitrine.html', h1:'🍍 Mon espace CASE',
+           sub:'Connectez-vous à votre espace, ou créez votre compte en 2 minutes.',
+           mascotte:'zanana-wave.png',
+           mascotteTxt:'Salut, c\'est <b style="color:var(--accent-txt)">Zanana</b> ! Connecte-toi à ton espace, ou crée ton compte 🍍',
+           theme:{ vert:'#1f9d6b', vertFonce:'#0f6b46' } },
+  bokaf: { pine:'🎬', nom:'BOKAF', nom2:'', titre:'Mon espace — association BOKAF', logoImg:'bokaf-logo.png',
+           site:'site-bokaf.html', h1:'🎬 Mon espace BOKAF',
+           sub:'Connecte-toi — ou demande à rejoindre l\'association : le bureau étudie chaque demande.',
+           mascotte:'', mascotteTxt:'',
+           theme:{ vert:'#d81e5b', vertFonce:'#b3134a', dark:true,
+                   headerBg:'linear-gradient(100deg,#141318,#26182e 55%,#141318)',
+                   flagBg:'#221826', flagInk:'#f1c6d8' } },
+  pixiart:{ pine:'🔴', nom:'PIX-I-ART', nom2:'pilotage', titre:'Espace pilotage — PIX-I-ART',
+           site:'vitrine.html', h1:'🔴 Espace pilotage',
+           sub:'Connectez-vous à votre espace.', mascotte:'', mascotteTxt:'',
+           theme:{ vert:'#E8300A', vertFonce:'#b3210a' } }
+};
+/* ── L'habillage vient de la BASE, sans jamais retarder le premier rendu ──────
+   08/08/2026. La vue `assos_publiques` (lisible par anon : elle n'expose que de
+   la décoration) est la source de vérité. Mais la page ne peut pas l'attendre :
+   un aller-retour réseau avant de peindre, c'est précisément le flash qu'on
+   vient de supprimer.
+   D'où le compromis honnête : on peint INSTANTANÉMENT avec ce qu'on a en cache
+   (ou, à la toute première visite, avec la table de secours ci-dessus), puis on
+   rafraîchit le cache en arrière-plan pour la fois suivante. La donnée gagne
+   toujours — avec une visite de retard, ce qui est sans conséquence pour un
+   habillage. */
+(function(){
+  try{
+    var cache=JSON.parse(localStorage.getItem('bob_portes')||'null');
+    if(cache && typeof cache==='object'){
+      Object.keys(cache).forEach(function(k){
+        window.BOB_PORTES[k]=Object.assign({},window.BOB_PORTES[k]||{},cache[k]);
+      });
+    }
+  }catch(e){ /* cache illisible : la table de secours suffit */ }
+})();
+(function(){
+  function slug(){
+    try{
+      var u=new URL(location.href);
+      var s=(u.searchParams.get('asso')||'').toLowerCase();
+      /* porte par NOM DE DOMAINE (bokaf.bob.re, case.bob.re) : l'adresse suffit */
+      if(!s){ var hp=location.hostname.toLowerCase().split('.')[0]; if(hp==='bokaf'||hp==='case') s=hp; }
+      if(!s){ var m=location.pathname.toLowerCase().match(/(?:^|\/)(case|bokaf)(?:\/|\.html|$)/); if(m) s=m[1]; }
+      if(!s){ s=(localStorage.getItem('bob_asso')||'').toLowerCase(); }
+      /* porte DEMANDÉE mais inconnue (faute de frappe) ≠ aucune porte demandée :
+         on le retient pour le signaler, on ne rattache jamais en silence. */
+      if(s && !window.BOB_PORTES[s]){ window.__bobPorteInconnue=s; s='case'; }
+      if(!window.BOB_PORTES[s]) s='case';
+      try{ localStorage.setItem('bob_asso',s); }catch(e){}
+      return s;
+    }catch(e){ return 'case'; }
+  }
+  /* Encre lisible sur une couleur, calculée ici même : ce script ne doit
+     dépendre d'AUCUN fichier, sinon on réintroduit l'attente qu'on vient de
+     supprimer. (Même calcul WCAG que bob-identite.js, en 6 lignes.) */
+  function lum(h){
+    try{
+      var v=String(h).replace('#',''); if(v.length===3) v=v[0]+v[0]+v[1]+v[1]+v[2]+v[2];
+      var c=[0,2,4].map(function(i){ var x=parseInt(v.substr(i,2),16)/255;
+        return x<=0.03928 ? x/12.92 : Math.pow((x+0.055)/1.055,2.4); });
+      return 0.2126*c[0]+0.7152*c[1]+0.0722*c[2];
+    }catch(e){ return 0; }
+  }
+  function ratio(a,b){ var x=lum(a),y=lum(b),hi=Math.max(x,y),lo=Math.min(x,y); return (hi+0.05)/(lo+0.05); }
+  function encreSur(bg){ return ratio(bg,'#ffffff') >= ratio(bg,'#141118') ? '#ffffff' : '#141118'; }
+  function assombrir(h,p){
+    try{
+      var v=String(h).replace('#',''); if(v.length===3) v=v[0]+v[0]+v[1]+v[1]+v[2]+v[2];
+      var o=[0,2,4].map(function(i){ return Math.max(0,Math.round(parseInt(v.substr(i,2),16)*(1-p))); });
+      return '#'+o.map(function(n){ return ('0'+n.toString(16)).slice(-2); }).join('');
+    }catch(e){ return h; }
+  }
+  /* Un bouton plein porte un libellé BLANC — c'est le geste maison, et il doit se
+     lire. Mesuré le 08/08/2026 : sur le vert du CASE #1f9d6b, le blanc ne rend que
+     3,45:1, sous le seuil AA (4,5). Plutôt que de basculer le libellé en sombre —
+     ce qui change l'allure de la marque —, on assombrit le REMPLISSAGE juste ce
+     qu'il faut, en gardant la teinte. Le magenta BOKAF, lui, passe déjà (4,93) et
+     n'est pas touché. */
+  function remplissagePourBlanc(c){
+    if(ratio(c,'#ffffff')>=4.5) return c;
+    for(var i=1;i<=24;i++){ var f=assombrir(c,i*0.03); if(ratio(f,'#ffffff')>=4.5) return f; }
+    return c;
+  }
+  function eclaircir(h,p){
+    try{
+      var v=String(h).replace('#',''); if(v.length===3) v=v[0]+v[0]+v[1]+v[1]+v[2]+v[2];
+      var o=[0,2,4].map(function(i){ var n=parseInt(v.substr(i,2),16); return Math.round(n+(255-n)*p); });
+      return '#'+o.map(function(n){ return ('0'+n.toString(16)).slice(-2); }).join('');
+    }catch(e){ return h; }
+  }
+  /* La marque sert AUSSI de couleur de TEXTE (liens). C'est un rôle distinct du
+     remplissage : un lien doit se lire sur le fond d'une carte. Mesuré le
+     08/08/2026 : `--vert-fonce` servait aux DEUX — survol de bouton (donc plus
+     sombre) et couleur de lien — deux exigences contradictoires en peau sombre,
+     où « Mot de passe oublié ? » tombait à 2,86:1. On sépare les rôles. */
+  function lisibleSur(c,fondCarte){
+    if(ratio(c,fondCarte)>=4.5) return c;
+    var versClair = lum(fondCarte) < 0.18;
+    for(var i=1;i<=24;i++){
+      var f = versClair ? eclaircir(c,i*0.045) : assombrir(c,i*0.045);
+      if(ratio(f,fondCarte)>=4.5) return f;
+    }
+    return c;
+  }
+
+  var s=slug(), d=window.BOB_PORTES[s];
+  window.BOB_PORTE=s;
+  var r=document.documentElement;
+  r.setAttribute('data-asso',s);
+  var t=d.theme||{};
+  /* La PEAU est un attribut : toute la feuille de style en découle, appliquée
+     au premier rendu. On ne distribue plus des `element.style` après coup — ils
+     arrivaient trop tard, c'était la cause du flash. */
+  r.setAttribute('data-peau', t.dark ? 'sombre' : 'clair');
+  try{ document.title=d.titre; }catch(e){}
+  try{
+    if(t.vert){
+      var fill=remplissagePourBlanc(t.vert);
+      r.style.setProperty('--vert',fill);
+      r.style.setProperty('--ink-sur-marque','#ffffff');
+      /* la couleur DÉCLARÉE reste disponible pour les liens et les filets */
+      r.style.setProperty('--marque-declaree',t.vert);
+    }
+    if(t.vertFonce) r.style.setProperty('--vert-fonce',assombrir(remplissagePourBlanc(t.vert||t.vertFonce),.14));
+    /* fond de carte de la peau courante : c'est là que les liens se posent */
+    var fondCarte = t.dark ? '#17161f' : '#ffffff';
+    r.style.setProperty('--marque-lisible', lisibleSur(t.vert||'#1f9d6b', fondCarte));
+    /* le bouton secondaire aussi : son libellé doit se lire sur SA couleur */
+    var second = t.dark ? '#2f6fdb' : '#f4b740';
+    r.style.setProperty('--jaune',second);
+    r.style.setProperty('--ink-sur-jaune',encreSur(second));
+  }catch(e){}
+  /* Seul reliquat en style injecté : l'en-tête dégradé, qui n'est pas un jeton. */
+  if(t.dark && t.headerBg){
+    var st=document.createElement('style');
+    st.textContent='header{background:'+t.headerBg+'}';
+    document.head.appendChild(st);
+  }
+})();
+</script>
+
 <style>
-  :root{--vert:#1f9d6b;--vert-fonce:#0f6b46;--jaune:#f4b740;--ananas:#dc8f38; --accent-txt:#9c5410;--ink:#1d3a2e;--muted:#5c7468;
-        --bg:#f4f7f5;--card:#fff;--line:#e2ebe6;--red:#e0533d;--shadow:0 6px 22px rgba(20,60,40,.10);--shadow-lg:0 16px 44px rgba(20,60,40,.16)}
-  *{box-sizing:border-box}
-  body{margin:0;font-family:'Inter',-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;color:var(--ink);background:var(--bg);line-height:1.55}
-  h1,h2,h3,h4{font-family:'Poppins',-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;letter-spacing:-.3px}
-  .wrap{max-width:860px;margin:0 auto;padding:0 18px}
-  header{background:#fff;border-bottom:1px solid var(--line)}
-  header .bar{display:flex;align-items:center;gap:10px;max-width:860px;margin:0 auto;padding:12px 18px}
-  .logo{display:flex;align-items:center;gap:9px;font-weight:900;text-decoration:none}
-  .logo .pine{font-size:26px} .logo b{color:var(--vert)} .logo span{color:var(--ananas)}
+  /* 07/08/2026 — polices AUTO-HÉBERGÉES. Elles venaient du CDN Google : sur une
+     page de CONNEXION, cela envoyait à un tiers l'adresse IP de chaque personne
+     qui s'y présente, avant même qu'elle se connecte. Mêmes fontes, servies par
+     nous ; au passage la page ne dépend plus d'un domaine externe pour s'afficher. */
+  @font-face{font-family:'Poppins';src:url('fonts/poppins-600.woff2') format('woff2');font-weight:600;font-display:swap}
+  @font-face{font-family:'Poppins';src:url('fonts/poppins-700.woff2') format('woff2');font-weight:700;font-display:swap}
+  @font-face{font-family:'Poppins';src:url('fonts/poppins-800.woff2') format('woff2');font-weight:800;font-display:swap}
+  @font-face{font-family:'Inter';src:url('fonts/inter-variable.woff2') format('woff2');font-weight:100 900;font-display:swap}
+  @font-face{font-family:'Sora';src:url('fonts/sora-600.woff2') format('woff2');font-weight:600;font-display:swap}
+  @font-face{font-family:'Sora';src:url('fonts/sora-700.woff2') format('woff2');font-weight:700;font-display:swap}
+  @font-face{font-family:'Sora';src:url('fonts/sora-800.woff2') format('woff2');font-weight:800;font-display:swap}
+
+  /* ══════════════════════════════════════════════════════════════════════════
+     08/08/2026 — PRÉSENTATION alignée sur l'espace membre (espace.html).
+     ⚠️ Aucune fonction n'a été touchée : cette page porte du savoir chèrement
+     acquis (compte banni, plafond d'envoi avec compte à rebours, refus d'une
+     porte inconnue, messages traduits). On change la peau, pas la mécanique —
+     les NOMS DE CLASSES sont donc conservés à l'identique.
+     Les anciens noms (--vert, --jaune, --ananas…) restent définis et pointent
+     vers les nouveaux jetons : les styles en ligne du HTML continuent de marcher.
+     ══════════════════════════════════════════════════════════════════════════ */
+  :root{
+    /* peau claire par défaut (monde « chaleur ») ; la porte sombre surcharge plus bas */
+    --bg:#f6f3ee; --bg-2:#fffdfa; --card:#ffffff; --surface-2:#f2ede6;
+    --ink:#2c2521; --muted:#6b5d54; --muted-2:#7a6c62;
+    --line:rgba(60,50,46,.13); --line-2:rgba(60,50,46,.24);
+    --shadow:0 8px 24px rgba(120,90,70,.10); --shadow-lg:0 20px 54px rgba(120,90,70,.16);
+    --radius:18px; --ease:cubic-bezier(.33,1,.68,1); --dur:.2s;
+    --ls-titre:-.02em;
+    --font-display:'Poppins',system-ui,sans-serif; --font-body:'Inter',system-ui,sans-serif;
+    /* la marque de la porte (posée par le script de tête) */
+    --vert:#1f9d6b; --vert-fonce:#0f6b46; --ink-sur-marque:#fff;
+    --jaune:#f4b740; --ananas:#dc8f38; --accent-txt:#9c5410; --red:#c53b26;
+    /* Sémantiques : elles portent un SENS (validé, en attente, bloqué) et ne
+       prennent JAMAIS la couleur de l'asso — on y perdrait le sens. */
+    --ok-soft:#e3f5ec;        --ok-ink:#14663f;
+    --attention-soft:#fdf3e0; --attention-ink:#8a5a08;
+    --alerte-soft:#fdecea;    --alerte-ink:#a3301c;
+    --info-soft:#e8eefc;      --info-ink:#1f4fc4;
+    --neutre-soft:#f1eef0;    --neutre-ink:#6f6570;
+  }
+  /* Porte sombre : mêmes classes, autres jetons. Aucune règle en double. */
+  html[data-peau="sombre"]{
+    --bg:#0a0910; --bg-2:#12111b; --card:#17161f; --surface-2:#1e1c29;
+    --ink:#f5f4f8; --muted:#adaab9; --muted-2:#908c9e;
+    --line:rgba(255,255,255,.085); --line-2:rgba(255,255,255,.16);
+    --shadow:0 10px 30px -8px rgba(0,0,0,.55); --shadow-lg:0 32px 80px -28px rgba(0,0,0,.72);
+    --font-display:'Sora',system-ui,sans-serif; --ls-titre:-.028em;
+    --ease:cubic-bezier(.22,.61,.36,1); --dur:.24s;
+    --jaune:#2f6fdb; --ananas:#c9c5d4; --accent-txt:#e6b8c8; --red:#ff6b5e;
+    --ok-soft:#12261e;        --ok-ink:#4fd699;
+    --attention-soft:#2a2113; --attention-ink:#f5b544;
+    --alerte-soft:#2a1615;    --alerte-ink:#ff8c80;
+    --info-soft:#141d2e;      --info-ink:#8fb4f2;
+    --neutre-soft:#1e1c29;    --neutre-ink:#a9a5b5;
+  }
+  *{box-sizing:border-box;font-variant-numeric:tabular-nums}
+  body{margin:0;font-family:var(--font-body);color:var(--ink);background:var(--bg);line-height:1.55;
+       font-size:15px;-webkit-font-smoothing:antialiased}
+  h1,h2,h3,h4{font-family:var(--font-display);letter-spacing:var(--ls-titre)}
+  :focus-visible{outline:2px solid var(--vert);outline-offset:2px;border-radius:6px}
+  .wrap{max-width:900px;margin:0 auto;padding:0 18px 56px}
+  header{background:var(--bg-2);border-bottom:1px solid var(--line)}
+  header .bar{display:flex;align-items:center;gap:10px;max-width:900px;margin:0 auto;padding:13px 18px}
+  .logo{display:flex;align-items:center;gap:9px;font-weight:800;text-decoration:none;color:var(--ink);
+        font-family:var(--font-display);letter-spacing:var(--ls-titre)}
+  .logo .pine{font-size:24px} .logo b{color:var(--ink)} .logo span{color:var(--muted);font-weight:600}
   header nav{margin-left:auto;display:flex;gap:8px}
-  header nav a{padding:8px 12px;border-radius:10px;font-weight:600;font-size:14px;text-decoration:none;color:var(--muted)}
-  header nav a:hover{background:#eef7f2;color:var(--ink)}
-  .secure-flag{background:#e3f5ec;color:var(--vert-fonce);text-align:center;font-weight:700;font-size:13px;padding:9px 14px}
-  h1.t{font-size:24px;margin:22px 0 2px;font-weight:900}
-  .sub{color:var(--muted);margin:0 0 18px}
-  .card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:22px;box-shadow:var(--shadow);margin-bottom:18px}
-  .card h2{margin:0 0 4px;font-size:17px}
+  header nav a{padding:8px 12px;border-radius:10px;font-weight:600;font-size:13.5px;text-decoration:none;color:var(--muted)}
+  header nav a:hover{background:var(--surface-2);color:var(--ink)}
+  .secure-flag{background:var(--surface-2);color:var(--muted);text-align:center;font-weight:600;font-size:12.5px;padding:9px 14px}
+  h1.t{font-size:clamp(24px,3.2vw,31px);margin:26px 0 4px;font-weight:800}
+  .sub{color:var(--muted);margin:0 0 22px;max-width:58ch}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:22px;
+        box-shadow:var(--shadow);margin-bottom:18px}
+  .card h2{margin:0 0 4px;font-size:17px;font-weight:700}
   .card .h{color:var(--muted);font-size:13.5px;margin:0 0 14px}
   .grid2{display:grid;grid-template-columns:1fr 1fr;gap:18px}
-  .field{display:flex;flex-direction:column;gap:5px;margin-bottom:12px}
-  .field label{font-weight:700;font-size:13.5px}
-  input,select{font:inherit;padding:11px 13px;border:1.5px solid var(--line);border-radius:11px;background:#fdfffe}
+  .field{display:flex;flex-direction:column;gap:6px;margin-bottom:13px}
+  .field label{font-weight:600;font-size:13.5px;color:var(--muted)}
+  input,select,textarea{font:inherit;color:var(--ink);padding:11px 13px;border:1px solid var(--line-2);
+        border-radius:12px;background:var(--bg-2);width:100%;transition:border-color var(--dur) var(--ease)}
   input:focus,select:focus{outline:none;border-color:var(--vert)}
+  input::placeholder{color:var(--muted-2)}
   .pw-wrap{position:relative;display:flex}
   .pw-wrap input{flex:1;width:100%;padding-right:46px}
-  .pw-eye{position:absolute;right:5px;top:50%;transform:translateY(-50%);border:none;background:transparent;cursor:pointer;font-size:17px;line-height:1;padding:5px 7px;border-radius:9px}
-  .pw-eye:hover{background:#eef2f0}
-  .btn{border:none;cursor:pointer;font:inherit;font-weight:800;border-radius:999px;padding:11px 18px;font-size:14px;transition:.15s}
-  .btn.p{background:var(--vert);color:#fff} .btn.p:hover{background:var(--vert-fonce)}
-  .btn.s{background:var(--jaune);color:#5b4300}
-  .btn.g{background:#eef2f0;color:var(--ink)}
-  .btn.d{background:#fde9e5;color:var(--red)}
-  .btn:disabled{opacity:.5;cursor:default}
+  .pw-eye{position:absolute;right:5px;top:50%;transform:translateY(-50%);border:none;background:transparent;
+        cursor:pointer;font-size:17px;line-height:1;padding:5px 7px;border-radius:9px;color:var(--muted)}
+  .pw-eye:hover{background:var(--surface-2)}
+  .btn{border:1px solid transparent;cursor:pointer;font:inherit;font-weight:700;border-radius:100px;
+       padding:11px 18px;font-size:14px;line-height:1.2;
+       transition:background var(--dur) var(--ease),transform var(--dur) var(--ease)}
+  .btn:hover{transform:translateY(-1px)}
+  .btn:active{transform:none}
+  .btn.p{background:var(--vert);color:var(--ink-sur-marque)} .btn.p:hover{background:var(--vert-fonce)}
+  .btn.s{background:var(--jaune);color:var(--ink-sur-jaune,#5b4300)}
+  .btn.g{background:var(--surface-2);color:var(--ink);border-color:var(--line)}
+  .btn.g:hover{border-color:var(--line-2)}
+  .btn.d{background:var(--surface-2);color:var(--red)}
+  .btn:disabled{opacity:.45;cursor:default;transform:none}
   .pill{display:inline-block;padding:3px 10px;border-radius:999px;font-size:12px;font-weight:800}
-  .pill.ok{background:#e3f5ec;color:var(--vert-fonce)} .pill.wait{background:#fcf2de;color:var(--accent-txt)} .pill.boss{background:#e8eefc;color:#1f4fc4} .pill.off{background:#f1eef0;color:#8a7d86}
+  .pill.ok{background:var(--ok-soft);color:var(--ok-ink)} .pill.wait{background:var(--attention-soft);color:var(--attention-ink)} .pill.boss{background:var(--info-soft);color:var(--info-ink)} .pill.off{background:var(--neutre-soft);color:var(--neutre-ink)}
   .kv{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:11px 0;border-bottom:1px dashed var(--line)}
   .kv:last-child{border-bottom:none}
   .role-pill{font-size:11.5px}
-  .danger{border:1.5px solid #f3c4ba;background:#fff6f4;border-radius:14px;padding:16px;margin-top:6px}
+  .danger{border:1px solid var(--line-2);background:var(--alerte-soft);border-radius:14px;padding:16px;margin-top:6px}
   .danger h2{color:var(--red)}
-  .who{background:linear-gradient(135deg,var(--vert),var(--vert-fonce));color:#fff;border-radius:16px;padding:16px 20px;display:flex;align-items:center;gap:14px;margin-bottom:16px}
+  .who{background:linear-gradient(135deg,var(--vert),var(--vert-fonce));color:var(--ink-sur-marque);border-radius:16px;padding:16px 20px;display:flex;align-items:center;gap:14px;margin-bottom:16px}
   .who .av{width:46px;height:46px;border-radius:50%;background:rgba(255,255,255,.2);display:grid;place-items:center;font-size:22px}
   .who b{font-size:17px}
   .muted{color:var(--muted)} .small{font-size:13px}
-  .notice{background:#fcf8ec;border:1px solid #f0e2b6;border-radius:12px;padding:12px 14px;font-size:13.5px;margin-bottom:16px}
+  .notice{background:var(--attention-soft);color:var(--attention-ink);border:1px solid var(--line);border-radius:12px;padding:12px 14px;font-size:13.5px;margin-bottom:16px}
   #toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%) translateY(40px);background:var(--ink);color:#fff;padding:11px 18px;border-radius:999px;font-weight:700;box-shadow:var(--shadow-lg);opacity:0;transition:.25s;z-index:99;max-width:90%;text-align:center}
   #toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
   @media(max-width:640px){.grid2{grid-template-columns:1fr}}
@@ -63,20 +292,48 @@
 </head>
 <body>
 <div class="secure-flag">🔒 Espace sécurisé — connexion chiffrée (Supabase). Les accès sont accordés par le Président.</div>
+<!-- ⚠️ AUCUNE identité d'association n'est écrite ici, et l'image de mascotte n'a
+     PAS de `src` : c'est ce qui empêchait le 🍍, le titre « CASE » et le
+     téléchargement de zanana-wave.png d'apparaître furtivement sur BOKAF.
+     Le script juste en dessous les remplit, pendant l'analyse du document. -->
 <header><div class="bar">
-  <a href="vitrine.html" class="logo"><span class="pine">🍍</span><span><b>CASE</b> <span>Bois de Nèfles</span></span></a>
-  <nav><a href="vitrine.html">← Site public</a></nav>
+  <a class="logo" id="brandLogo" href="#"></a>
+  <nav><a id="lienSitePublic" href="#">← Site public</a></nav>
 </div></header>
 
 <div class="wrap">
-  <h1 class="t">🍍 Mon espace CASE</h1>
-  <p class="sub">Connectez-vous à votre espace, ou créez votre compte en 2 minutes.</p>
-  <div id="welcomeMascot" style="text-align:center;margin:4px 0 16px">
-    <img src="zanana-wave.png" onerror="this.style.display='none'" alt="Zanana" style="width:92px;height:auto;filter:drop-shadow(0 8px 14px rgba(16,60,40,.18))">
-    <p style="margin:6px auto 0;font-weight:700;color:#3a5246;font-size:14.5px;max-width:420px">Salut, c'est <b style="color:var(--accent-txt)">Zanana</b> ! Connecte-toi à ton espace, ou crée ton compte 🍍</p>
+  <h1 class="t" id="titrePage"></h1>
+  <p class="sub" id="sousTitrePage"></p>
+  <div id="welcomeMascot" style="text-align:center;margin:4px 0 16px;display:none">
+    <img id="mascotteImg" alt="" onerror="this.style.display='none'" style="width:92px;height:auto;filter:drop-shadow(0 8px 14px rgba(16,60,40,.18))">
+    <p id="mascotteTxt" style="margin:6px auto 0;font-weight:700;color:#3a5246;font-size:14.5px;max-width:420px"></p>
   </div>
   <div id="app"><p class="muted">Chargement…</p></div>
 </div>
+<script>
+/* Rendu de l'identité — inline et synchrone, juste après le balisage qu'il
+   remplit : il s'exécute pendant l'analyse du document, donc AVANT le premier
+   rendu, et sans attendre le moindre fichier distant. */
+(function(){
+  var d=window.BOB_PORTES[window.BOB_PORTE];
+  var mark = d.logoImg
+    ? '<img src="'+d.logoImg+'" alt="'+d.nom+'" style="width:34px;height:34px;border-radius:9px;object-fit:cover;vertical-align:middle;margin-right:4px">'
+    : '<span class="pine">'+d.pine+'</span>';
+  var lg=document.getElementById('brandLogo');
+  lg.innerHTML=mark+'<span><b>'+d.nom+'</b>'+(d.nom2?' <span>'+d.nom2+'</span>':'')+'</span>';
+  lg.setAttribute('href',d.site);
+  document.getElementById('lienSitePublic').setAttribute('href',d.site);
+  document.getElementById('titrePage').textContent=d.h1;
+  document.getElementById('sousTitrePage').textContent=d.sub;
+  /* La mascotte n'apparaît que si l'asso en a une — src posé ici, jamais dans le HTML. */
+  if(d.mascotte){
+    document.getElementById('mascotteImg').src=d.mascotte;
+    document.getElementById('mascotteImg').alt=d.nom;
+    document.getElementById('mascotteTxt').innerHTML=d.mascotteTxt||'';
+    document.getElementById('welcomeMascot').style.display='';
+  }
+})();
+</script>
 <div id="toast"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -88,62 +345,41 @@ const sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 
 const $=s=>document.querySelector(s);
 
-/* ===== Multi-assos : "porte" d'entrée (slug dans l'URL : ?asso=bokaf, /bokaf, ou /bokaf.html) ===== */
-const ASSO_DOORS = {
-  case:  { pine:'🍍', nom:'CASE', nom2:'Bois de Nèfles', titre:'Mon espace — CASE du Bois de Nèfles',
-           theme:{ vert:'#1f9d6b', vertFonce:'#0f6b46' } },
-  bokaf: { pine:'🎬', nom:'BOKAF', nom2:'', titre:'Mon espace — association BOKAF', logoImg:'bokaf-logo.png',
-           theme:{ vert:'#d81e5b', vertFonce:'#b3134a', dark:true, headerBg:'linear-gradient(100deg,#141318,#26182e 55%,#141318)', flagBg:'#221826', flagInk:'#f1c6d8' } },
-  pixiart: { pine:'🔴', nom:'PIX-I-ART', nom2:'pilotage', titre:'Espace pilotage — PIX-I-ART',
-           theme:{ vert:'#E8300A', vertFonce:'#b3210a' } }
-};
-function assoSlug(){
+/* ===== La porte a DÉJÀ été résolue par le script de tête ==========================
+   08/08/2026 — il y avait ici un second registre de portes (`ASSO_DOORS`), une
+   seconde résolution du slug et un second habillage. Ils faisaient doublon avec
+   le script de tête… et surtout ils s'exécutaient APRÈS lui : le titre, le logo
+   et les couleurs qu'ils reposaient écrasaient les décisions déjà prises — c'est
+   très exactement ce qui rendait le flash visible, et ce qui annulait en silence
+   la correction de contraste du bouton.
+   Une seule source désormais : `window.BOB_PORTE` / `window.BOB_PORTES`.
+   ================================================================================ */
+const DOOR = window.BOB_PORTE || 'case';
+const ASSO_DOORS = window.BOB_PORTES;   /* alias : le reste du fichier lit ce nom */
+
+/* Rafraîchit le cache d'habillage depuis la base, SANS rien changer à l'écran
+   en cours (on ne repeint pas sous les yeux de quelqu'un qui tape son mot de
+   passe) : la mise à jour s'appliquera à la prochaine ouverture.
+   ⚠️ supabase-js ne LÈVE PAS : on teste `.error`. */
+(async function(){
   try{
-    const u=new URL(location.href);
-    let s=(u.searchParams.get('asso')||'').toLowerCase();
-    /* 02/08/2026 — porte par NOM DE DOMAINE (bokaf.bob.re, case.bob.re) : l'adresse suffit, sans ?asso= */
-    if(!s){ const hp=location.hostname.toLowerCase().split('.')[0]; if(hp==='bokaf'||hp==='case') s=hp; }
-    if(!s){ const m=location.pathname.toLowerCase().match(/(?:^|\/)(case|bokaf)(?:\/|\.html|$)/); if(m) s=m[1]; }
-    if(!s){ s=(localStorage.getItem('bob_asso')||'').toLowerCase(); }
-    /* 30/07/2026 — on distingue « aucune porte demandée » (défaut légitime sur le site du CASE)
-       de « porte DEMANDÉE mais inconnue » (faute de frappe : ?asso=bokaff). Avant, les deux
-       retombaient silencieusement sur le CASE — un inscrit se retrouvait chez lui sans le savoir. */
-    if(s && !ASSO_DOORS[s]){ window.__bobPorteInconnue = s; s='case'; }
-    if(!ASSO_DOORS[s]) s='case';
-    try{ localStorage.setItem('bob_asso',s); }catch(e){}
-    return s;
-  }catch(e){ return 'case'; }
-}
-const DOOR = assoSlug();
-(function(){
-  const d=ASSO_DOORS[DOOR]||ASSO_DOORS.case;
-  try{ document.title=d.titre; }catch(e){}
-  try{
-    const lg=$('.logo');
-    if(lg){
-      const mark = d.logoImg ? '<img src="'+d.logoImg+'" alt="'+d.nom+'" style="width:34px;height:34px;border-radius:9px;object-fit:cover;vertical-align:middle;margin-right:4px">' : '<span class="pine">'+d.pine+'</span>';
-      lg.innerHTML = mark+'<span><b>'+d.nom+'</b>'+(d.nom2?' <span>'+d.nom2+'</span>':'')+'</span>';
-    }
-  }catch(e){}
-  /* habillage par porte : CASE = no-op (valeurs actuelles), BOKAF = sombre + spectre */
-  const t=d.theme;
-  if(t){
-    try{ const rs=document.documentElement.style; rs.setProperty('--vert',t.vert); rs.setProperty('--vert-fonce',t.vertFonce); }catch(e){}
-    if(t.dark){
-      /* 03/08/2026 — l'espace BOKAF n'est plus réservé au bureau : titre + sous-titre adaptés (adhésion SUR DEMANDE) */
-      try{ const h1=document.querySelector('h1.t'); if(h1) h1.textContent='🎬 Mon espace BOKAF'; }catch(e){}
-      try{ const su=document.querySelector('p.sub'); if(su) su.textContent='Connecte-toi — ou demande à rejoindre l\'association : le bureau étudie chaque demande.'; }catch(e){}
-      try{ const hd=document.querySelector('header'); if(hd) hd.style.background=t.headerBg; }catch(e){}
-      try{ const lb=document.querySelector('.logo b'); if(lb) lb.style.color='#fff'; }catch(e){}
-      /* le site public BOKAF existe : logo + lien « Site public » pointent dessus (et plus vers le site du CASE) */
-      try{ const la=document.querySelector('a.logo'); if(la) la.setAttribute('href','site-bokaf.html'); }catch(e){}
-      try{ const na=document.querySelector('header nav a'); if(na){ na.setAttribute('href','site-bokaf.html'); na.style.color='#cbd0da'; } }catch(e){}
-      try{ const sf=document.querySelector('.secure-flag'); if(sf){ sf.style.background=t.flagBg; sf.style.color=t.flagInk; } }catch(e){}
-      try{ const mm=document.getElementById('welcomeMascot'); if(mm) mm.style.display='none'; }catch(e){}
-      /* bouton secondaire : remplace le jaune CASE par un bleu du spectre BOKAF (couvre aussi les boutons rendus après coup) */
-      try{ const st=document.createElement('style'); st.textContent='.btn.s{background:#2f6fdb !important;color:#fff !important}'; document.head.appendChild(st); }catch(e){}
-    }
-  }
+    const {data,error}=await sb.from('assos_publiques').select('*');
+    if(error||!data||!data.length) return;
+    const cache={};
+    data.forEach(a=>{
+      const cle = a.slug==='case-bdn' ? 'case' : a.slug;   /* la porte du CASE s'écrit « case » */
+      cache[cle]={
+        pine:a.embleme||'🤖', nom:a.nom_court||a.nom||'', nom2:'',
+        titre:'Mon espace — '+(a.nom||''), logoImg:a.logo||'',
+        site:a.site||'', h1:(a.embleme?a.embleme+' ':'')+'Mon espace '+(a.nom_court||a.nom||''),
+        theme:{ vert:a.accent||undefined, vertFonce:a.accent||undefined, dark:(a.monde==='cinema') }
+      };
+      /* on ne recopie PAS `sub`, `mascotte` ni `mascotteTxt` : ce sont des textes
+         de la page, pas de l'habillage — la base n'a pas à les décider. */
+      Object.keys(cache[cle]).forEach(k=>{ if(cache[cle][k]===''||cache[cle][k]===undefined) delete cache[cle][k]; });
+    });
+    localStorage.setItem('bob_portes',JSON.stringify(cache));
+  }catch(e){ /* hors ligne : le cache précédent reste valable */ }
 })();
 /* P13 (21/06/2026) — arrivée en « mode famille » (depuis la vitrine) : on retire le vocabulaire « bureau », rassurant pour un parent */
 (function(){
@@ -214,7 +450,7 @@ function closeReglement(){ const m=document.getElementById('regModal'); if(m) m.
 function acceptReglement(){
   __cguAccepted=true; closeReglement();
   const b=document.getElementById('r_cgu_btn'); if(b){ b.textContent='✅ Règlement lu et accepté'; }
-  const s=document.getElementById('r_cgu_status'); if(s){ s.textContent='✅ Vous pouvez créer votre compte.'; s.style.color='var(--vert-fonce)'; }
+  const s=document.getElementById('r_cgu_status'); if(s){ s.textContent='✅ Vous pouvez créer votre compte.'; s.style.color='var(--ok-ink)'; }
 }
 /* ---- Inscription = demande d'accès ---- */
 async function signUp(){
@@ -252,9 +488,9 @@ let __noteTimer=null;
 function noteHide(){ const n=$('#l_note'); if(n){ n.style.display='none'; n.innerHTML=''; } if(__noteTimer){ clearInterval(__noteTimer); __noteTimer=null; } }
 function note(html,type){
   const n=$('#l_note'); if(!n) return;
-  const bd = type==='ok' ? 'var(--vert)' : type==='ko' ? '#c0392b' : 'var(--ananas)';
-  const bg = type==='ok' ? '#eaf7f0'     : type==='ko' ? '#fdecea' : '#fff8ec';
-  n.style.cssText='margin-top:12px;padding:12px 14px;border-left:5px solid '+bd+';background:'+bg+';border-radius:0 12px 12px 0;font-size:14px;line-height:1.55;text-align:left';
+  const bd = type==='ok' ? 'var(--ok-ink)'   : type==='ko' ? 'var(--alerte-ink)'   : 'var(--attention-ink)';
+  const bg = type==='ok' ? 'var(--ok-soft)'  : type==='ko' ? 'var(--alerte-soft)'  : 'var(--attention-soft)';
+  n.style.cssText='margin-top:12px;padding:12px 14px;border-left:5px solid '+bd+';background:'+bg+';color:var(--ink);border-radius:0 12px 12px 0;font-size:14px;line-height:1.55;text-align:left';
   n.innerHTML=html; n.style.display='block';
 }
 /* Supabase plafonne les envois d'email et les essais ; son refus arrive en anglais. */
@@ -497,7 +733,7 @@ function renderLoggedOut(){
           <button type="button" class="pw-eye" onclick="togglePw('l_pw',this)" aria-label="Afficher le mot de passe">👁️</button></div></div>
       <button id="l_btn" class="btn p" style="width:100%" onclick="signIn()">Se connecter</button>
       <div id="l_note" role="status" aria-live="polite" style="display:none"></div>
-      <p class="small muted" style="margin-top:10px;text-align:center"><a href="#" onclick="resetPwd();return false" style="color:var(--vert-fonce)">Mot de passe oublié ?</a></p>
+      <p class="small muted" style="margin-top:10px;text-align:center"><a href="#" onclick="resetPwd();return false" style="color:var(--marque-lisible)">Mot de passe oublié ?</a></p>
       <div style="display:flex;align-items:center;gap:10px;margin:14px 0 10px"><div style="flex:1;height:1px;background:var(--line)"></div><span class="small muted">ou, sans mot de passe</span><div style="flex:1;height:1px;background:var(--line)"></div></div>
       <button id="magic_btn" class="btn g" style="width:100%" onclick="magicLink()">✨ Recevoir un lien de connexion par email</button>
       <p class="small muted" style="margin-top:8px;text-align:center">Tu reçois un email : tu cliques le lien, <b>ou</b> tu tapes le code. (Saisis ton email ci-dessus d'abord.)</p>
@@ -539,6 +775,24 @@ function renderLoggedOut(){
   </div>`;
 }
 
+/* 07/08/2026 — VERS QUEL ESPACE ENVOYER UN ADHÉRENT ?
+   La réponse était `pDoor==='bokaf' ? espace-projets : espace-adherent` : un test
+   sur le NOM d'un client, qu'il aurait fallu rouvrir pour la 4e association. On
+   demande désormais ce que l'asso a OUVERT (`associations.features`), pas qui elle
+   est. Repli = l'espace famille historique → aucune régression pour le CASE. */
+let MES_FEATURES=null;
+async function chargerFeatures(assoId){
+  if(MES_FEATURES||!assoId) return MES_FEATURES;
+  try{
+    const {data,error}=await sb.from('associations').select('features').eq('id',assoId).maybeSingle();
+    MES_FEATURES=(error||!data)?{}:(data.features||{});
+  }catch(e){ MES_FEATURES={}; }
+  return MES_FEATURES;
+}
+const featureOuverte=k=>{ const v=(MES_FEATURES||{})[k]; return v===true||v==='on'; };
+function espaceDeLAdherent(){ return featureOuverte('projets_adherents')?'espace.html':'espace-adherent.html'; }
+function espaceLibelle(){ return featureOuverte('projets_adherents')?'Mon espace':'Mon espace'; }
+
 async function renderLoggedIn(user){
   if(!myProfile){
     $('#app').innerHTML=`<div class="card"><h2>Compte sans profil</h2>
@@ -550,6 +804,7 @@ async function renderLoggedIn(user){
   /* 03/08/2026 — une fois CONNECTÉ, la porte suit l'ASSO DU COMPTE (un invité BOKAF arrivant par casebdn.re voyait la porte CASE) */
   const ASSO_TO_DOOR={'30cab5ff-fb7d-4734-8f2d-bac3100841ed':'bokaf','d617489c-b18b-499b-ab17-c31656d0f08a':'case','1b4f1aea-1e7a-45dd-97c0-1efa94319b94':'pixiart'};
   const pDoor=ASSO_TO_DOOR[p.asso_id]||DOOR;
+  await chargerFeatures(p.asso_id);   /* décide vers quel espace envoyer l'adhérent */
   try{ if(pDoor!==DOOR) localStorage.setItem('bob_asso',pDoor); }catch(e){}
   const nom=p.full_name||user.email;
   let html=`<div class="who"><div class="av">${p.role==='president'?'👑':isAdmin(p)?'🛡️':'👤'}</div>
@@ -557,9 +812,12 @@ async function renderLoggedIn(user){
       <span class="role-pill pill ${r.pill}">${r.label}</span>
       <span class="role-pill pill ${st.pill}">${st.label}</span></div>
     <div style="margin-left:auto;display:flex;gap:8px;flex-wrap:wrap">
-      ${(()=>{ if(p.role==='adherent') return p.statut!=='suspendu'?(pDoor==='bokaf'?`<a class="btn p" style="text-decoration:none" href="espace-projets.html">Mes projets →</a>`:`<a class="btn p" style="text-decoration:none" href="espace-adherent.html">Mon espace →</a>`):''; if(p.role==='personnel') return p.statut==='actif'?`<a class="btn p" style="text-decoration:none" href="espace-personnel.html">Mon espace salarié →</a>`:''; if(p.role==='intervenant') return p.statut==='actif'?`<a class="btn p" style="text-decoration:none" href="espace-intervenant.html">Mon espace intervenant →</a>`:''; if(['president','tresorier','bureau'].includes(p.role)) return p.statut==='actif'?`<a class="btn p" style="text-decoration:none" href="app.html">Entrer dans la gestion →</a>`:''; return ''; })()}
-      <button class="btn g" onclick="changePwd()">Mot de passe</button>
-      <button class="btn g" onclick="signOut()">Déconnexion</button>
+      ${(()=>{ if(p.role==='adherent') return p.statut!=='suspendu'?`<a class="btn p" style="text-decoration:none" href="${espaceDeLAdherent()}">${espaceLibelle()} →</a>`:''; if(p.role==='personnel') return p.statut==='actif'?`<a class="btn p" style="text-decoration:none" href="espace-personnel.html">Mon espace salarié →</a>`:''; if(p.role==='intervenant') return p.statut==='actif'?`<a class="btn p" style="text-decoration:none" href="espace-intervenant.html">Mon espace intervenant →</a>`:''; if(['president','tresorier','bureau'].includes(p.role)) return p.statut==='actif'?`<a class="btn p" style="text-decoration:none" href="app.html">Entrer dans la gestion →</a>`:''; return ''; })()}
+      <!-- 07/08/2026, retour d'un adhérent BOKAF : « Mot de passe induit en erreur,
+           vu qu'en réalité c'est CHANGER mot de passe ». Un bouton se nomme par le
+           geste qu'il déclenche, jamais par la chose qu'il touche. -->
+      <button class="btn g" onclick="changePwd()">Changer mon mot de passe</button>
+      <button class="btn g" onclick="signOut()">Me déconnecter</button>
     </div></div>`;
 
   if(p.statut==='en_attente'){
@@ -571,9 +829,9 @@ async function renderLoggedIn(user){
       html+=`<div class="notice">⏳ <b>Ton accès est en attente de validation.</b> Un administrateur (Président ou Trésorier) doit valider ta demande et t'attribuer un rôle. Tu seras alors autorisé à entrer dans la gestion.</div>`;
     }
   } else if(p.statut==='suspendu'){
-    html+=`<div class="notice" style="background:#fdeeea;border-color:#f3c4ba">🚫 <b>Ton accès est suspendu.</b> Contacte le Président pour le rétablir.</div>`;
+    html+=`<div class="notice" style="background:var(--alerte-soft);color:var(--alerte-ink)">🚫 <b>Ton accès est suspendu.</b> Contacte le Président pour le rétablir.</div>`;
   } else {
-    html+=`<div class="card"><h2>Mon accréditation</h2><p class="h" style="margin:0">${r.perm}</p></div>`;
+    html+=`<div class="card"><h2>Ce à quoi j'ai accès</h2><p class="h" style="margin:0">${r.perm}</p></div>`;
   }
 
   if(isAdmin(p) && p.statut==='actif'){

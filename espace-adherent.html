@@ -7,24 +7,44 @@
 <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
 <link rel="icon" type="image/png" sizes="16x16" href="favicon-16.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
-<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
-  :root{--vert:#1f9d6b;--vert-fonce:#0f6b46;--jaune:#f4b740;--ananas:#dc8f38;--ink:#1d3a2e;--muted:#5c7468;
-        --bg:#fffef7;--card:#fff;--line:#e7efe9;--shadow:0 6px 22px rgba(20,60,40,.10);--shadow-lg:0 16px 44px rgba(20,60,40,.16)}
+  /* 08/08/2026 — polices AUTO-HÉBERGÉES (elles venaient du CDN Google : chaque
+     ouverture de l'espace envoyait l'adresse IP d'une famille à un tiers). */
+  @font-face{font-family:'Poppins';src:url('fonts/poppins-600.woff2') format('woff2');font-weight:600;font-display:swap}
+  @font-face{font-family:'Poppins';src:url('fonts/poppins-700.woff2') format('woff2');font-weight:700;font-display:swap}
+  @font-face{font-family:'Poppins';src:url('fonts/poppins-800.woff2') format('woff2');font-weight:800;font-display:swap}
+  @font-face{font-family:'Inter';src:url('fonts/inter-variable.woff2') format('woff2');font-weight:100 900;font-display:swap}
+  :root{
+    /* 08/08/2026 — mêmes jetons que l'espace membre (espace.html) : l'espace
+       famille cesse d'être une 2e charte. Les NOMS DE VARIABLES sont conservés
+       à l'identique, donc aucun style en ligne du fichier n'est cassé.
+       ⚠️ Le vert du CASE est ici #1a855b et non #1f9d6b : sur le vert déclaré,
+       un libellé BLANC ne rendait que 3,45:1 — sous le seuil AA (4,5). On garde
+       la teinte, on l'assombrit juste ce qu'il faut. Mesuré, pas décidé. */
+    --vert:#1a855b; --vert-declare:#1f9d6b; --vert-fonce:#166f4c;
+    --jaune:#f4b740; --ananas:#a86a1e;
+    --ink:#231f1b; --muted:#6b5d54; --muted-2:#7a6c62;
+    --bg:#f8f5f0; --bg-2:#fffdfa; --card:#ffffff; --surface-2:#f2ede6;
+    --line:rgba(60,50,46,.13); --line-2:rgba(60,50,46,.24);
+    --shadow:0 8px 24px rgba(120,90,70,.10); --shadow-lg:0 20px 54px rgba(120,90,70,.16);
+    --radius:18px; --ease:cubic-bezier(.33,1,.68,1); --dur:.2s;
+    --ok-soft:#e3f5ec; --ok-ink:#14663f;
+    --attention-soft:#fdf3e0; --attention-ink:#8a5a08;
+    --alerte-soft:#fdecea; --alerte-ink:#a3301c;
+  }
   *{box-sizing:border-box}
   body{margin:0;font-family:'Inter',-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;color:var(--ink);background:var(--bg);line-height:1.6}
   h1,h2,h3,h4{font-family:'Poppins',-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;letter-spacing:-.3px}
   .wrap{max-width:1000px;margin:0 auto;padding:0 20px}
-  header{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.93);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+  header{position:sticky;top:0;z-index:50;background:color-mix(in srgb,var(--bg-2) 93%,transparent);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
   header .bar{display:flex;align-items:center;gap:12px;padding:12px 20px;max-width:1000px;margin:0 auto}
   .logo{display:flex;align-items:center;gap:10px;font-weight:900;font-size:17px;text-decoration:none}
   .logo .pine{font-size:28px} .logo b{color:var(--vert)} .logo span{color:var(--ananas)}
   header nav{margin-left:auto;display:flex;gap:8px;align-items:center}
   header nav a{padding:8px 12px;border-radius:10px;font-weight:600;font-size:14px;text-decoration:none;color:var(--muted)}
-  header nav a:hover{background:#f0f7f3;color:var(--ink)}
+  header nav a:hover{background:var(--surface-2);color:var(--ink)}
   .demo-flag{background:var(--jaune);color:#5b4300;text-align:center;font-weight:700;font-size:13.5px;padding:8px}
-  .hero{background:linear-gradient(180deg,#aee5c4,var(--bg));padding:30px 0 10px}
+  .hero{background:linear-gradient(180deg,var(--ok-soft),var(--bg));padding:30px 0 10px}
   .hello{font-size:24px;font-weight:900;margin:0}
   .explain{display:flex;gap:14px;flex-wrap:wrap;justify-content:center;color:var(--muted);font-weight:600;margin:8px 0 0;font-size:14.5px}
   section.block{padding:30px 0}
@@ -43,8 +63,8 @@
   .btn.win{background:var(--vert);color:#fff} .btn.win:hover{background:var(--vert-fonce)}
   .btn.use{background:var(--jaune);color:#5b4300} .btn.use:hover{filter:brightness(.97)}
   .btn:disabled{opacity:.5;cursor:default}
-  .alt{background:linear-gradient(180deg,#fff8ec,var(--bg))}
-  .hist{background:#fff;border:1px solid var(--line);border-radius:16px;padding:8px 16px;box-shadow:var(--shadow)}
+  .alt{background:linear-gradient(180deg,var(--attention-soft),var(--bg))}
+  .hist{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:8px 16px;box-shadow:var(--shadow)}
   .hist .row{display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px dashed var(--line);font-size:14.5px}
   .hist .row:last-child{border-bottom:none}
   .hist .plus{color:var(--vert-fonce);font-weight:800} .hist .minus{color:var(--ananas);font-weight:800}
@@ -69,9 +89,9 @@
   #fbBar textarea{width:100%;font:inherit;padding:9px 11px;border:1px solid var(--line);border-radius:10px;resize:none;height:60px}
   #fbBar button{margin-top:6px;width:100%;background:var(--jaune);color:#5b4300;border:none;border-radius:10px;padding:10px;font-weight:800;cursor:pointer}
   /* ===== ONGLETS de l'espace adhérent ===== */
-  nav.adh-tabs{display:flex;gap:6px;flex-wrap:nowrap;overflow-x:auto;position:sticky;top:0;z-index:60;background:rgba(255,255,255,.96);backdrop-filter:blur(8px);border-bottom:2px solid var(--vert);padding:10px 14px;box-shadow:0 2px 10px rgba(20,60,40,.08);-webkit-overflow-scrolling:touch}
+  nav.adh-tabs{display:flex;gap:6px;flex-wrap:nowrap;overflow-x:auto;position:sticky;top:0;z-index:60;background:color-mix(in srgb,var(--bg-2) 96%,transparent);backdrop-filter:blur(8px);border-bottom:2px solid var(--vert);padding:10px 14px;box-shadow:0 2px 10px rgba(20,60,40,.08);-webkit-overflow-scrolling:touch}
   nav.adh-tabs button{flex:0 0 auto;border:none;background:transparent;color:var(--muted);padding:9px 13px;font-size:14px;font-weight:700;font-family:'Poppins',-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;cursor:pointer;border-radius:12px;white-space:nowrap;transition:.15s}
-  nav.adh-tabs button:hover{background:#f0f7f3;color:var(--ink)}
+  nav.adh-tabs button:hover{background:var(--surface-2);color:var(--ink)}
   nav.adh-tabs button.active{background:var(--vert);color:#fff;box-shadow:0 3px 9px -3px rgba(31,157,107,.4)}
   nav.adh-tabs button.has-dot{position:relative}
   nav.adh-tabs button.has-dot::after{content:'';position:absolute;top:5px;right:6px;width:9px;height:9px;border-radius:50%;background:#e0483d;box-shadow:0 0 0 2px #fff}
@@ -361,8 +381,59 @@ function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('show');cl
 </script>
 <!-- Ateliers participatifs : vraies données (table ateliers de Bob, lecture publique) -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="bob-identite.js"></script>
 <script>
 const _sbAt=window.supabase.createClient('https://dkidtwypclpwznleiqnq.supabase.co','sb_publishable_HDfV-O2ION1Vw9v03aV_Qg_PkiAjLNo');
+
+/* ══════════════════════════════════════════════════════════════════════════
+   L'ESPACE FAMILLE PREND LES COULEURS DE SON ASSOCIATION — 08/08/2026
+   ──────────────────────────────────────────────────────────────────────────
+   Le périscolaire et l'ACM sont le métier qu'on vendra à d'autres associations.
+   Or les couleurs de cet écran étaient écrites en dur dans son `:root` : une
+   2e asso faisant de l'ACM aurait hérité du VERT du CASE, dans SON espace, sous
+   SON nom. C'est la dette de multi-tenance, au même endroit que d'habitude —
+   pas un `if` sur un nom de client, mais une valeur qui aurait dû être une
+   donnée.
+
+   Ici on a le droit de lire : la famille est CONNECTÉE, donc `sel_asso`
+   (`id = my_asso_id()`) répond. On résout l'identité comme l'espace membre, via
+   `bob-identite.js`, et on la reverse dans les NOMS DE VARIABLES historiques —
+   aucun style en ligne du fichier n'est touché.
+
+   Réversible : sans identité en base, sans réseau ou en cas d'erreur, on ne
+   change RIEN et le `:root` du fichier reste en vigueur.
+   ══════════════════════════════════════════════════════════════════════════ */
+async function habillerDepuisLAsso(assoId){
+  try{
+    if(!assoId || !window.BobIdentite) return;
+    const {data:a,error}=await _sbAt.from('associations')
+      .select('id,name,slug,features').eq('id',assoId).maybeSingle();
+    if(error||!a) return;                       /* illisible → on ne touche à rien */
+    const id=await window.BobIdentite.resoudre(_sbAt,a,{lireCharte:false});
+    const O=window.BobIdentite.outils;
+    const M=window.BobIdentite.MONDES[id.monde]||window.BobIdentite.MONDES.chaleur;
+    /* Le libellé d'un bouton plein est BLANC dans cet écran : on cale donc le
+       REMPLISSAGE pour que le blanc passe AA, plutôt que de basculer l'encre. */
+    let fill=id.accent;
+    if(O.contraste(fill,'#ffffff')<4.5){
+      for(let i=1;i<=24;i++){ const f=O.assombrir(id.accent,i*0.03);
+        if(O.contraste(f,'#ffffff')>=4.5){ fill=f; break; } }
+    }
+    const rs=document.documentElement.style;
+    const poser=(k,v)=>{ if(v) rs.setProperty(k,v); };
+    poser('--vert',fill);
+    poser('--vert-declare',id.accent);
+    poser('--vert-fonce',O.assombrir(fill,.14));
+    poser('--jaune',id.accent_2);
+    poser('--ink',M.encre); poser('--muted',M.discret); poser('--muted-2',M.tres_discret);
+    poser('--bg',M.bg); poser('--bg-2',M.bg2); poser('--card',M.surface); poser('--surface-2',M.surface2);
+    poser('--line',M.ligne); poser('--line-2',M.ligne_forte);
+    poser('--shadow',M.ombre); poser('--shadow-lg',M.ombre_lg);
+    document.documentElement.setAttribute('data-monde',id.monde);
+    try{ const mc=document.querySelector('meta[name="theme-color"]'); if(mc) mc.setAttribute('content',M.bg); }catch(e){}
+    if(console&&console.info) console.info('[Bob] espace famille habillé « '+id.nom+' » (source : '+id._source+')');
+  }catch(e){ /* jamais au prix de l'écran : sans habillage, il reste utilisable */ }
+}
 // Cet espace appartient au CASE du Bois de Nèfles — on le dit explicitement à la base
 // plutôt que de laisser le repli serveur deviner (correctif 31/07/2026, CARTE-ARCHITECTURE-SAAS).
 const _CASE_ASSO_ID='d617489c-b18b-499b-ab17-c31656d0f08a';
@@ -584,6 +655,7 @@ async function periBoot(){
   PERI.profile=prof||null;
   // Contexte partagé pour la réservation d'activités/ACM (même compte famille)
   ACM.uid=PERI.uid; ACM.profile=prof||null; ACM.asso=prof?prof.asso_id:null; acmBoot(); actiBoot(); rdvBoot(); salleBoot(); photosBoot();
+  habillerDepuisLAsso(ACM.asso);   /* l'espace prend les couleurs de SON association */
   if(!prof){ periRenderLocked('noprofile'); renderFamDocsAcm(); return; }
   PERI.asso=prof.asso_id;
   PERI.statut=prof.statut;
@@ -1870,8 +1942,8 @@ async function adhBoot(){
   const justPaid=new URLSearchParams(location.search).get('paiement')==='ok';
   let paye=false;
   try{ const {data}=await _sbAt.from('paiements').select('id').eq('objet','adhesion').eq('statut','paye').contains('metadata',{annee:ADH.ANNEE}).limit(1); paye=!!(data&&data.length); }catch(e){}
-  if(paye){ b.innerHTML='<div style="background:#e9f8f0;border:1px solid #bfe6d0;color:#0f6b46;border-radius:12px;padding:12px 14px;font-weight:600">✅ Adhésion à jour <span style="font-weight:400">('+ADH.ANNEE+')</span>. Merci ❤️ Un seul parent adhérent suffit pour tous vos enfants.</div>'; return; }
-  if(justPaid){ b.innerHTML='<div style="background:#e9f8f0;border:1px solid #bfe6d0;color:#0f6b46;border-radius:12px;padding:12px 14px">Merci ❤️ Votre paiement est bien reçu — l\'indicateur « adhésion à jour » s\'affiche dans un instant (HelloAsso confirme le règlement). Un justificatif vous est envoyé par HelloAsso.</div>'; setTimeout(adhBoot,6000); return; }
+  if(paye){ b.innerHTML='<div style="background:var(--ok-soft);border:1px solid var(--line);color:var(--ok-ink);border-radius:12px;padding:12px 14px;font-weight:600">✅ Adhésion à jour <span style="font-weight:400">('+ADH.ANNEE+')</span>. Merci ❤️ Un seul parent adhérent suffit pour tous vos enfants.</div>'; return; }
+  if(justPaid){ b.innerHTML='<div style="background:var(--ok-soft);border:1px solid var(--line);color:var(--ok-ink);border-radius:12px;padding:12px 14px">Merci ❤️ Votre paiement est bien reçu — l\'indicateur « adhésion à jour » s\'affiche dans un instant (HelloAsso confirme le règlement). Un justificatif vous est envoyé par HelloAsso.</div>'; setTimeout(adhBoot,6000); return; }
   b.innerHTML='<button id="adhPayBtn" class="btn" style="background:var(--vert-fonce);color:#fff;border:0;border-radius:12px;padding:14px 20px;font-size:16px;font-weight:700;cursor:pointer;width:100%;max-width:340px">🪪 Payer mon adhésion — 10 €</button>'
     +'<div class="sub" style="font-size:12px;margin-top:10px">💡 Paiement sécurisé <b>via HelloAsso</b> — <b>sans frais pour vous</b>. HelloAsso proposera une <b>contribution facultative</b> en plus : elle soutient HelloAsso et <b>ne revient pas au CASE</b>. Vous pouvez la mettre à <b>0 €</b> — seuls les 10 € sont dus au CASE.</div>';
   document.getElementById('adhPayBtn').onclick=async function(){
@@ -1923,7 +1995,7 @@ function lienForm(b,msg){
   if(ci) ci.addEventListener('keydown',function(e){ if(e.key==='Enter') lienGo(); });
 }
 function lienOk(b,nom){
-  b.innerHTML='<div style="background:#e9f8f0;border:1px solid #bfe6d0;color:#0f6b46;border-radius:12px;padding:12px 14px;font-weight:600">✅ Votre compte est relié'+(nom?' au dossier <b>'+periEsc(nom)+'</b>':'')+'.</div>'
+  b.innerHTML='<div style="background:var(--ok-soft);border:1px solid var(--line);color:var(--ok-ink);border-radius:12px;padding:12px 14px;font-weight:600">✅ Votre compte est relié'+(nom?' au dossier <b>'+periEsc(nom)+'</b>':'')+'.</div>'
     +'<p class="sub" style="font-size:12.5px;margin:10px 0 0">Ce n’est pas le bon dossier ? Contactez le CASE : le bureau peut corriger le rattachement.</p>';
 }
 async function lienRattacher(code,naiss,personneId){

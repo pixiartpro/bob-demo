@@ -17,3 +17,8 @@
 
 # Config locale de l'outillage
 .claude/
+
+# Notes de chantier et migrations : le dépôt est SERVI PUBLIQUEMENT (Cloudflare →
+# GitHub Pages, et .nojekyll fait que même les dossiers en « _ » sont servis).
+# Ces documents restent locaux ; l'état du projet vit dans Notion.
+_interne/

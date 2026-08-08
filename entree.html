@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Bob — l'outil des associations</title>
+<meta name="theme-color" content="#fbf8f4">
+<meta name="description" content="Bob, l'outil de gestion des associations. Connectez-vous à l'espace de votre association.">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<style>
+  @font-face{font-family:'Poppins';src:url('fonts/poppins-600.woff2') format('woff2');font-weight:600;font-display:swap}
+  @font-face{font-family:'Poppins';src:url('fonts/poppins-700.woff2') format('woff2');font-weight:700;font-display:swap}
+  @font-face{font-family:'Poppins';src:url('fonts/poppins-800.woff2') format('woff2');font-weight:800;font-display:swap}
+  @font-face{font-family:'Inter';src:url('fonts/inter-variable.woff2') format('woff2');font-weight:100 900;font-display:swap}
+
+  /* ══════════════════════════════════════════════════════════════════════════
+     LA PORTE DU PRODUIT — 08/08/2026
+     Cette page est la SEULE du produit qui ne porte l'identité d'aucun client :
+     c'est celle de Bob. Elle répond à une question et une seule — « chez quelle
+     association allez-vous ? » — puis passe la main.
+
+     ⚠️ ELLE N'AUTHENTIFIE PAS, ET C'EST VOULU. La page de connexion porte du
+     savoir chèrement acquis (compte bloqué, plafond d'envoi avec compte à
+     rebours, refus d'une porte inconnue, messages traduits). Le dupliquer ici
+     créerait deux mécaniques d'authentification qui divergeraient au premier
+     correctif. Cette page ROUTE ; `connexion.html` authentifie.
+     ══════════════════════════════════════════════════════════════════════════ */
+  :root{
+    --bg:#fbf8f4; --bg-2:#ffffff; --surface:#ffffff; --surface-2:#f2ede6;
+    --ink:#211c19; --muted:#6b5d54; --muted-2:#7a6c62;
+    --line:rgba(45,35,30,.12); --line-2:rgba(45,35,30,.22);
+    --shadow:0 8px 24px rgba(120,90,70,.09); --shadow-lg:0 22px 60px rgba(120,90,70,.15);
+    --radius:20px; --ease:cubic-bezier(.33,1,.68,1); --dur:.2s;
+    /* Bob : bleu franc + ambre. C'est la marque du PRODUIT, pas celle d'un client. */
+    --bob:#3a51e8; --bob-fonce:#2b3ec2; --bob-ambre:#ffb02e; --bob-ink:#ffffff;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --bg:#121116; --bg-2:#1a181f; --surface:#1a181f; --surface-2:#232029;
+      --ink:#f4f2f7; --muted:#aaa4b3; --muted-2:#8e8899;
+      --line:rgba(255,255,255,.09); --line-2:rgba(255,255,255,.17);
+      --shadow:0 10px 30px -8px rgba(0,0,0,.55); --shadow-lg:0 30px 70px -26px rgba(0,0,0,.7);
+      --bob:#8093ff; --bob-fonce:#6d80f0; --bob-ink:#12101a;
+    }
+  }
+  *{box-sizing:border-box;font-variant-numeric:tabular-nums}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:'Inter',system-ui,sans-serif;
+       font-size:15px;line-height:1.55;-webkit-font-smoothing:antialiased;
+       min-height:100dvh;display:flex;flex-direction:column}
+  h1,h2,h3{font-family:'Poppins',system-ui,sans-serif;letter-spacing:-.025em;margin:0;font-weight:800}
+  a{color:var(--bob);text-decoration:none}
+  a:hover{text-decoration:underline}
+  :focus-visible{outline:2px solid var(--bob);outline-offset:3px;border-radius:8px}
+
+  header{padding:20px 22px;border-bottom:1px solid var(--line)}
+  header .in{max-width:1040px;margin:0 auto;display:flex;align-items:center;gap:11px}
+  .marque{display:flex;align-items:center;gap:10px;font-family:'Poppins',sans-serif;font-weight:800;font-size:17px;
+          letter-spacing:-.02em;color:var(--ink)}
+  .marque img{width:34px;height:34px;border-radius:10px;object-fit:cover}
+  header .in .droite{margin-left:auto;font-size:13.5px;color:var(--muted)}
+
+  main{flex:1;max-width:1040px;width:100%;margin:0 auto;padding:52px 22px 70px}
+  .eyebrow{font-size:11.5px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--bob);margin:0 0 10px}
+  h1{font-size:clamp(28px,4.6vw,44px);line-height:1.1;margin-bottom:12px}
+  .chapeau{color:var(--muted);font-size:17px;max-width:52ch;margin:0 0 38px}
+
+  .assos{display:grid;gap:14px;grid-template-columns:1fr;margin-bottom:34px}
+  @media(min-width:680px){.assos{grid-template-columns:1fr 1fr}}
+  .asso{display:flex;align-items:center;gap:15px;padding:19px 20px;background:var(--surface);
+        border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);
+        transition:transform var(--dur) var(--ease),border-color var(--dur) var(--ease),box-shadow var(--dur) var(--ease);
+        color:inherit;text-decoration:none}
+  .asso:hover{transform:translateY(-2px);border-color:var(--line-2);box-shadow:var(--shadow-lg);text-decoration:none}
+  .asso .ecu{width:52px;height:52px;border-radius:15px;flex:none;display:grid;place-items:center;
+             font-size:25px;line-height:1;overflow:hidden}
+  .asso .ecu img{width:100%;height:100%;object-fit:cover}
+  .asso .txt{min-width:0;flex:1}
+  /* `display:block` : ce sont des <span> (un lien ne peut pas contenir de <div>
+     sans casser la sémantique), ils resteraient sinon sur la même ligne. */
+  .asso .nom{display:block;font-family:'Poppins',sans-serif;font-weight:700;font-size:16.5px;letter-spacing:-.02em;
+             white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .asso .sig{display:block;font-size:12.5px;color:var(--muted);margin-top:3px;
+             white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .asso .fleche{color:var(--muted-2);font-size:19px;flex:none}
+
+  .bloc{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);
+        padding:22px 24px;box-shadow:var(--shadow);margin-bottom:14px}
+  .bloc h2{font-size:17px;margin-bottom:5px}
+  .bloc p{color:var(--muted);font-size:14px;margin:0 0 15px;max-width:56ch}
+  .b{display:inline-flex;align-items:center;gap:8px;border:1px solid transparent;cursor:pointer;
+     font:inherit;font-weight:700;border-radius:100px;padding:11px 20px;font-size:14.5px;
+     transition:background var(--dur) var(--ease),transform var(--dur) var(--ease);text-decoration:none}
+  .b:hover{transform:translateY(-1px);text-decoration:none}
+  .b.p{background:var(--bob);color:var(--bob-ink)}
+  .b.p:hover{background:var(--bob-fonce)}
+  .b.g{background:var(--surface-2);color:var(--ink);border-color:var(--line)}
+  .b.g:hover{border-color:var(--line-2)}
+
+  .reprise{display:flex;align-items:center;gap:14px;padding:17px 20px;border-radius:var(--radius);
+           background:var(--surface-2);border:1px solid var(--line);margin-bottom:30px}
+  .reprise .av{width:42px;height:42px;border-radius:13px;flex:none;display:grid;place-items:center;
+               background:var(--bob);color:var(--bob-ink);font-weight:800;font-family:'Poppins',sans-serif}
+  .reprise .t{flex:1;min-width:0;display:block}
+  .reprise .t b{display:block;font-size:14.5px}
+  .reprise .t span{display:block;font-size:13px;color:var(--muted);margin-top:2px}
+
+  footer{border-top:1px solid var(--line);padding:22px;color:var(--muted-2);font-size:12.5px;text-align:center}
+  footer a{color:var(--muted)}
+  .em{display:inline-block;min-width:1.25em;margin-right:.28em;text-align:center}
+  .b .em{margin-right:0;min-width:1.1em}
+  @media (prefers-reduced-motion: reduce){
+    *,*::before,*::after{animation-duration:.001ms!important;transition-duration:.001ms!important}
+    .asso:hover,.b:hover{transform:none}
+  }
+</style>
+</head>
+<body>
+
+<header><div class="in">
+  <span class="marque"><img src="bob-wave.png" alt="" onerror="this.style.display='none'">Bob</span>
+  <span class="droite">L'outil des associations</span>
+</div></header>
+
+<main>
+  <p class="eyebrow">Bienvenue</p>
+  <h1>Chez quelle association allez-vous ?</h1>
+  <p class="chapeau">Bob héberge l'espace en ligne de plusieurs associations. Choisissez la vôtre —
+    votre compte, lui, ne change pas d'adresse.</p>
+
+  <div id="reprise"></div>
+  <div class="assos" id="assos"></div>
+
+  <div class="bloc">
+    <h2>Vous ne trouvez pas la vôtre ?</h2>
+    <p>Chaque association a sa propre adresse, donnée par son bureau. Si la vôtre n'est pas
+      dans la liste, demandez-lui le lien : c'est lui qui ouvre le bon espace, et c'est le
+      bureau qui accepte les demandes d'adhésion.</p>
+  </div>
+
+  <div class="bloc">
+    <h2>Vous êtes une association et vous cherchez un outil ?</h2>
+    <p>Adhésions, comptabilité, projets, documents officiels : Bob fait tourner une association
+      sans tableur. On peut vous le montrer sur vos propres besoins.</p>
+    <a class="b p" href="https://bob.re/demo"><span class="em">👋</span>Découvrir Bob</a>
+  </div>
+</main>
+
+<footer>
+  Bob · outil de gestion pour associations · données hébergées dans l'Union européenne (RGPD)<br>
+  <a href="mentions-legales.html">Mentions légales</a> · <a href="confidentialite.html">Confidentialité</a>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+/* ══════════════════════════════════════════════════════════════════════════
+   LES PORTES CONNUES
+   ⚠️ Cette liste est en dur, et c'est aujourd'hui INÉVITABLE : mesuré le
+   08/08/2026, la policy `sel_asso` est `id = my_asso_id()`. Un visiteur NON
+   connecté ne lit donc AUCUNE association — et c'est correct : avant
+   authentification, il n'y a pas de tenant.
+   → Le chemin propre est la vue `assos_publiques` (bloc optionnel de
+     `_interne/migration-identite-tenant.sql`), qui n'expose que l'habillage
+     public. Le jour où elle existe, cette liste se remplace par une lecture.
+     C'est le DERNIER endroit du produit où un nom de client vit dans le code.
+   ══════════════════════════════════════════════════════════════════════════ */
+/* Table de SECOURS : sert uniquement si la base ne répond pas (hors ligne,
+   panne). En marche normale, la liste ci-dessous est REMPLACÉE par la lecture
+   de `assos_publiques` — donc la 4e association apparaît ici toute seule. */
+let PORTES=[
+  { slug:'case',  nom:'CASE du Bois de Nèfles', sig:'Centre d\'animation socio-éducatif · Sainte-Clotilde',
+    embleme:'🍍', teinte:'#1a855b' },
+  { slug:'bokaf', nom:'BOKAF', sig:'Média · Évènement · Production',
+    embleme:'🎬', logo:'bokaf-logo.png', teinte:'#141318' }
+];
+
+const $=s=>document.querySelector(s);
+const esc=s=>(s==null?'':String(s)).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const lien=slug=>'connexion.html?asso='+encodeURIComponent(slug);
+
+function rendreAssos(){
+  $('#assos').innerHTML=PORTES.map(p=>
+    '<a class="asso" href="'+lien(p.slug)+'">'
+    +'<span class="ecu" style="background:'+esc(p.teinte)+';color:#fff">'
+      +(p.logo?'<img src="'+esc(p.logo)+'" alt="">':esc(p.embleme))+'</span>'
+    +'<span class="txt"><span class="nom">'+esc(p.nom)+'</span>'
+    +'<span class="sig">'+esc(p.sig)+'</span></span>'
+    +'<span class="fleche" aria-hidden="true">→</span></a>').join('');
+}
+rendreAssos();
+
+
+
+/* ─────────────────────────────────────────────────────────────────────────
+   Si la personne est DÉJÀ connectée, on ne lui demande pas de choisir : son
+   association vient de son COMPTE, jamais de l'adresse. C'est la règle du
+   produit depuis le 03/08/2026 — cette page ne fait que la respecter.
+   ⚠️ supabase-js ne LÈVE PAS : on teste `.error` à chaque appel.
+   ───────────────────────────────────────────────────────────────────────── */
+const SUPABASE_URL='https://dkidtwypclpwznleiqnq.supabase.co';
+const SUPABASE_KEY='sb_publishable_HDfV-O2ION1Vw9v03aV_Qg_PkiAjLNo';
+const sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+
+/* La vraie liste vient de la base : une association hébergée qui a rempli son
+   identité (et qui accepte de figurer dans la liste — réglage `listee`)
+   apparaît ici sans qu'on rouvre ce fichier. C'est le test du 4e client. */
+(async function(){
+  try{
+    const {data,error}=await sb.from('assos_publiques').select('*');
+    if(error||!data||!data.length) return;         /* hors ligne → table de secours */
+    PORTES=data.map(a=>({
+      slug: a.slug==='case-bdn' ? 'case' : a.slug,
+      nom:  a.nom || a.nom_court || a.slug,
+      sig:  a.tagline || '',
+      embleme: a.embleme || '🤖',
+      logo: a.logo || '',
+      /* la pastille prend la couleur de l'asso ; en monde cinéma, son fond sombre */
+      teinte: (a.monde==='cinema' ? '#141318' : (a.accent || '#3a51e8'))
+    })).sort((x,y)=>x.nom.localeCompare(y.nom,'fr'));
+    rendreAssos();
+  }catch(e){ /* on garde ce qui est déjà à l'écran */ }
+})();
+
+(async function(){
+  let session=null;
+  try{ session=(await sb.auth.getSession()).data.session; }catch(e){ return; }
+  if(!session) return;
+  const {data:p,error}=await sb.from('profiles')
+    .select('full_name,email,asso_id,role,statut').eq('id',session.user.id).maybeSingle();
+  if(error||!p) return;
+  const {data:a}=await sb.from('associations').select('slug,name').eq('id',p.asso_id).maybeSingle();
+  /* Un compte SANS association ne se rabat jamais sur la première venue :
+     il attend un geste du bureau, et on le dit. */
+  if(!a){
+    $('#reprise').innerHTML='<div class="reprise"><span class="av">⏳</span><span class="t">'
+      +'<b>Ton compte n\'est rattaché à aucune association</b>'
+      +'<span>Le bureau doit le faire depuis son espace — préviens-le, il ne le voit pas tout seul.</span>'
+      +'</span></div>';
+    return;
+  }
+  const nom=(p.full_name||p.email||'').split('@')[0];
+  const ini=String(nom).trim().split(/\s+/).slice(0,2).map(x=>x[0]||'').join('').toUpperCase()||'?';
+  $('#reprise').innerHTML='<div class="reprise">'
+    +'<span class="av">'+esc(ini)+'</span>'
+    +'<span class="t"><b>Content de te revoir, '+esc(nom)+'</b>'
+    +'<span>Tu es membre de '+esc(a.name)+'.</span></span>'
+    +'<a class="b p" href="'+lien(a.slug==='case-bdn'?'case':a.slug)+'">Continuer →</a>'
+    +'</div>';
+})();
+</script>
+</body>
+</html>

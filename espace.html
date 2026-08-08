@@ -1,0 +1,1382 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Mon espace</title>
+<meta name="theme-color" content="#0a0910">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<!-- Polices auto-hébergées (RGPD + performance) — jamais de Google Fonts CDN. -->
+<style>
+  @font-face{font-family:'Sora';src:url('fonts/sora-400.woff2') format('woff2');font-weight:400;font-style:normal;font-display:swap}
+  @font-face{font-family:'Sora';src:url('fonts/sora-600.woff2') format('woff2');font-weight:600;font-style:normal;font-display:swap}
+  @font-face{font-family:'Sora';src:url('fonts/sora-700.woff2') format('woff2');font-weight:700;font-style:normal;font-display:swap}
+  @font-face{font-family:'Sora';src:url('fonts/sora-800.woff2') format('woff2');font-weight:800;font-style:normal;font-display:swap}
+  @font-face{font-family:'Poppins';src:url('fonts/poppins-600.woff2') format('woff2');font-weight:600;font-style:normal;font-display:swap}
+  @font-face{font-family:'Poppins';src:url('fonts/poppins-700.woff2') format('woff2');font-weight:700;font-style:normal;font-display:swap}
+  @font-face{font-family:'Poppins';src:url('fonts/poppins-800.woff2') format('woff2');font-weight:800;font-style:normal;font-display:swap}
+  @font-face{font-family:'Inter';src:url('fonts/inter-variable.woff2') format('woff2');font-weight:100 900;font-style:normal;font-display:swap}
+
+  /* ══════════════════════════════════════════════════════════════════════
+     AUCUNE COULEUR D'ASSOCIATION N'EST ÉCRITE ICI.
+     Toutes les valeurs viennent de bob-identite.js, qui les résout depuis
+     la BASE. Ces valeurs de départ ne servent qu'au premier peint, avant
+     que l'identité soit connue — elles évitent le flash blanc.
+     ══════════════════════════════════════════════════════════════════════ */
+  :root{
+    --bg:#0a0910; --bg-2:#12111b; --surface:#17161f; --surface-2:#1e1c29;
+    --ink:#f5f4f8; --muted:#a3a0b0; --muted-2:#6f6c7d;
+    --line:rgba(255,255,255,.085); --line-2:rgba(255,255,255,.16);
+    --shadow:0 10px 30px -8px rgba(0,0,0,.55); --shadow-lg:0 32px 80px -28px rgba(0,0,0,.72);
+    --font-display:'Sora',system-ui,sans-serif; --font-body:'Inter',system-ui,sans-serif;
+    --ls-titre:-.028em; --radius:18px; --radius-pill:100px; --radius-champ:12px;
+    --ease:cubic-bezier(.22,.61,.36,1); --dur:.24s;
+    --ok:#3ecf8e; --attention:#f5a524; --alerte:#ff6b5e;
+    --brand:#d81e5b; --brand-lisible:#dd3c71; --brand-fill:#d81e5b; --brand-ink:#fff;
+    --brand-hover:#df3a70; --brand-press:#a41645; --brand-soft:#241520; --brand-soft-2:#331926;
+    --brand-2:#2f6fdb; --brand-2-lisible:#427cde;
+    --grad:linear-gradient(120deg,#d81e5b,#2f6fdb);
+    --halo:radial-gradient(closest-side at 82% -4%,#2a121e,transparent 68%);
+    --rail:250px; --dock:66px;
+  }
+  *{box-sizing:border-box;font-variant-numeric:tabular-nums}
+  html,body{height:100%}
+  body{
+    margin:0;background:var(--bg);color:var(--ink);
+    font-family:var(--font-body);font-size:15px;line-height:1.55;
+    -webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;
+  }
+  body::before{content:'';position:fixed;inset:0;background:var(--halo);pointer-events:none;z-index:0}
+  h1,h2,h3,h4{font-family:var(--font-display);letter-spacing:var(--ls-titre);margin:0;font-weight:700}
+  a{color:var(--brand-lisible);text-decoration:none}
+  a:hover{text-decoration:underline}
+  button,input,select,textarea{font:inherit;color:inherit}
+  ::selection{background:var(--brand);color:var(--brand-ink)}
+  :focus-visible{outline:2px solid var(--brand-lisible);outline-offset:2px;border-radius:6px}
+
+  /* ─── Ossature ───────────────────────────────────────────────────── */
+  .app{position:relative;z-index:1;display:grid;grid-template-columns:var(--rail) 1fr;min-height:100dvh}
+  .rail{
+    position:sticky;top:0;height:100dvh;display:flex;flex-direction:column;gap:4px;
+    padding:20px 14px calc(20px + env(safe-area-inset-bottom));
+    border-right:1px solid var(--line);background:var(--bg-2);overflow-y:auto;
+  }
+  .rail .marque{display:flex;align-items:center;gap:11px;padding:4px 8px 16px;min-width:0}
+  .rail .marque .n{font-family:var(--font-display);font-weight:800;font-size:16px;letter-spacing:-.02em;
+    line-height:1.15;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  /* La signature de l'asso peut être longue (« MÉDIA · ÉVÉNEMENT · PRODUCTION ») :
+     elle se replie sur deux lignes plutôt que de se faire couper par des points
+     de suspension, qui donnaient l'impression d'un texte tronqué par erreur. */
+  .rail .marque .t{display:block;font-size:11px;letter-spacing:.15em;color:var(--brand-lisible);
+    font-weight:700;margin-top:4px;line-height:1.35;font-family:var(--font-body)}
+  .navbtn{
+    display:flex;align-items:center;gap:11px;width:100%;padding:10px 12px;border:none;cursor:pointer;
+    background:transparent;color:var(--muted);border-radius:12px;font-weight:600;font-size:14.5px;
+    text-align:left;transition:background var(--dur) var(--ease),color var(--dur) var(--ease);
+  }
+  .navbtn .ic{font-size:17px;width:22px;text-align:center;flex:none;line-height:1}
+  .navbtn .lb{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .navbtn:hover{background:var(--surface);color:var(--ink)}
+  .navbtn[aria-current="page"]{background:var(--brand-soft);color:var(--ink)}
+  .navbtn[aria-current="page"] .ic{filter:none}
+  .navbtn .cpt{
+    flex:none;min-width:20px;height:20px;padding:0 6px;border-radius:999px;background:var(--brand-fill);
+    color:var(--brand-ink);font-size:11.5px;font-weight:800;display:grid;place-items:center;font-family:var(--font-body)
+  }
+  .rail .bas{padding-top:10px;border-top:1px solid var(--line);display:flex;flex-direction:column;gap:2px}
+  .rail .moi{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:12px;min-width:0;
+    margin-top:auto;background:none;border:1px solid transparent;text-align:left;font:inherit;color:inherit;
+    width:100%;cursor:default}
+  .rail .moi .av{width:32px;height:32px;border-radius:10px;background:var(--grad);display:grid;place-items:center;
+    font-weight:800;font-size:13px;flex:none;color:#fff;font-family:var(--font-display)}
+  .rail .moi .nm{font-size:13.5px;font-weight:700;line-height:1.2;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .rail .moi .rl{font-size:12px;color:var(--muted-2)}
+  .lien-bas{display:block;padding:7px 12px;font-size:13.5px;color:var(--muted-2);border-radius:10px}
+  .lien-bas:hover{color:var(--ink);background:var(--surface);text-decoration:none}
+
+  .main{min-width:0;display:flex;flex-direction:column}
+  .vue{display:none;padding:34px 34px calc(48px + env(safe-area-inset-bottom));max-width:1120px;width:100%;margin:0 auto}
+  .vue.on{display:block;animation:entree .3s var(--ease) both}
+  @keyframes entree{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:none}}
+
+  /* ─── Titres de vue ──────────────────────────────────────────────── */
+  .eyebrow{font-size:11px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--brand-lisible);margin:0 0 7px}
+  .vue > h1{font-size:clamp(25px,3.4vw,33px);font-weight:800;margin:0 0 6px}
+  .chapeau{color:var(--muted);margin:0 0 26px;max-width:60ch;font-size:15px}
+
+  /* ─── Cartes ─────────────────────────────────────────────────────── */
+  .carte{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:20px 22px}
+  .carte + .carte{margin-top:14px}
+  .carte h2{font-size:16.5px;margin:0 0 3px;font-weight:700}
+  .carte .sous{color:var(--muted);font-size:13.5px;margin:0 0 14px}
+  .grille{display:grid;gap:14px}
+  @media(min-width:760px){.g2{grid-template-columns:1fr 1fr}.g3{grid-template-columns:repeat(3,1fr)}}
+
+  /* ─── Boutons ────────────────────────────────────────────────────── */
+  .b{border:1px solid transparent;cursor:pointer;font-weight:700;border-radius:var(--radius-pill);
+     padding:10px 18px;font-size:14px;transition:background var(--dur) var(--ease),border-color var(--dur) var(--ease),
+     transform var(--dur) var(--ease);display:inline-flex;align-items:center;gap:7px;text-decoration:none;line-height:1.2}
+  .b:hover{text-decoration:none;transform:translateY(-1px)}
+  .b:active{transform:none}
+  .b.p{background:var(--brand-fill);color:var(--brand-ink)}
+  .b.p:hover{background:var(--brand-hover)}
+  .b.g{background:var(--surface-2);color:var(--ink);border-color:var(--line)}
+  .b.g:hover{border-color:var(--line-2)}
+  .b.nu{background:transparent;color:var(--muted);padding:8px 12px}
+  .b.nu:hover{color:var(--ink);background:var(--surface-2)}
+  .b.sm{padding:7px 14px;font-size:13.5px}
+  .b:disabled{opacity:.45;cursor:default;transform:none}
+
+  /* ─── Pastilles ──────────────────────────────────────────────────── */
+  .p{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:999px;
+     font-size:12px;font-weight:700;background:var(--surface-2);color:var(--muted);border:1px solid var(--line);
+     white-space:nowrap}
+  .p.mien{background:var(--brand-soft-2);color:var(--ink);border-color:transparent}
+  .p.neuf{background:var(--alerte-fill);color:var(--alerte-fill-ink);border-color:transparent}
+  .p.fait{background:var(--ok-soft);color:var(--ok-ink);border-color:transparent}
+
+  /* ─── Formulaires ────────────────────────────────────────────────── */
+  .champ{display:flex;flex-direction:column;gap:6px;margin-bottom:13px}
+  .champ label{font-weight:600;font-size:13px;color:var(--muted)}
+  input,textarea,select{width:100%;padding:11px 13px;border:1px solid var(--line-2);border-radius:var(--radius-champ);
+    background:var(--bg-2);color:var(--ink);transition:border-color var(--dur) var(--ease)}
+  input:focus,textarea:focus,select:focus{outline:none;border-color:var(--brand-lisible)}
+  textarea{resize:vertical;min-height:78px;line-height:1.5}
+  select{appearance:none;background-image:linear-gradient(45deg,transparent 50%,var(--muted) 50%),linear-gradient(135deg,var(--muted) 50%,transparent 50%);
+    background-position:calc(100% - 18px) 50%,calc(100% - 13px) 50%;background-size:5px 5px,5px 5px;background-repeat:no-repeat;padding-right:36px}
+
+  /* ─── Le pouls (chiffres) ────────────────────────────────────────── */
+  .pouls{display:grid;grid-template-columns:repeat(auto-fit,minmax(132px,1fr));gap:12px;margin-bottom:26px}
+  .kpi{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:15px 17px}
+  .kpi .n{font-family:var(--font-display);font-size:27px;font-weight:800;letter-spacing:-.03em;line-height:1.05}
+  .kpi .l{font-size:12.5px;color:var(--muted);margin-top:3px}
+
+  /* ─── Cartes projet ──────────────────────────────────────────────── */
+  .barre{display:flex;gap:9px;align-items:center;flex-wrap:wrap;margin-bottom:22px}
+  .pgrille{display:grid;gap:14px;grid-template-columns:1fr}
+  @media(min-width:700px){.pgrille{grid-template-columns:1fr 1fr}}
+  /* ⚠️ Un <button> centre verticalement son contenu quand il est plus haut que
+     lui : dans une grille, deux cartes voisines de contenus inégaux voyaient
+     leurs titres décalés. D'où le flex-colonne ancré en haut. */
+  .proj{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:18px 19px;
+        cursor:pointer;transition:border-color var(--dur) var(--ease),transform var(--dur) var(--ease),
+        box-shadow var(--dur) var(--ease);text-align:left;width:100%;font:inherit;color:inherit;
+        display:flex;flex-direction:column;align-items:stretch;justify-content:flex-start}
+  .proj:hover{border-color:var(--line-2);transform:translateY(-2px);box-shadow:var(--shadow)}
+  .proj h3{font-size:16px;margin:0 0 5px;font-weight:700}
+  .proj .pitch{color:var(--muted);font-size:13.5px;margin:0;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+  .proj .meta{display:flex;gap:6px;flex-wrap:wrap;margin-top:12px}
+  .jauge{height:5px;border-radius:999px;background:var(--surface-2);overflow:hidden;margin-top:13px}
+  .jauge i{display:block;height:100%;background:var(--grad);border-radius:999px;transition:width .5s var(--ease)}
+  .jauge-lb{display:flex;justify-content:space-between;font-size:12px;color:var(--muted-2);margin-top:6px}
+
+  /* ─── Le fil (comptoir & projets) ────────────────────────────────── */
+  .msg{display:flex;gap:11px;padding:13px 0;border-bottom:1px solid var(--line)}
+  .msg:last-child{border-bottom:none}
+  .msg .av{width:32px;height:32px;border-radius:10px;flex:none;display:grid;place-items:center;
+    font-weight:800;font-size:12px;background:var(--surface-2);color:var(--muted);font-family:var(--font-display)}
+  .msg .co{min-width:0;flex:1}
+  .msg .qui{font-weight:700;font-size:13.5px}
+  .msg .qd{color:var(--muted-2);font-size:12px;margin-left:7px;font-weight:500}
+  .msg .tx{margin:3px 0 0;font-size:14.5px;white-space:pre-wrap;word-break:break-word}
+  .msg img{max-width:min(100%,420px);border-radius:12px;margin-top:9px;display:block;border:1px solid var(--line)}
+  .redac{margin-top:16px;padding-top:16px;border-top:1px solid var(--line)}
+  .redac .ln{display:flex;gap:9px;align-items:center;flex-wrap:wrap;margin-top:9px}
+
+  /* ─── Vide (états honnêtes) ──────────────────────────────────────── */
+  .vide{text-align:center;padding:34px 20px;color:var(--muted)}
+  .vide .ic{font-size:34px;opacity:.55;display:block;margin-bottom:10px}
+  .vide h3{font-size:16px;margin:0 0 5px;color:var(--ink)}
+  .vide p{margin:0 auto;max-width:44ch;font-size:14px}
+  .vide .b{margin-top:16px}
+  .vide-ok{margin:0;padding:12px 14px;border-radius:12px;background:var(--ok-soft);color:var(--ok-ink);
+    font-size:13.5px;font-weight:600;display:flex;align-items:center;gap:2px}
+
+  /* ─── Galerie ────────────────────────────────────────────────────── */
+  .gal{display:grid;grid-template-columns:repeat(auto-fill,minmax(212px,1fr));gap:12px}
+  .gal figure{margin:0;position:relative;aspect-ratio:4/3;border-radius:14px;overflow:hidden;
+    background:var(--surface-2);border:1px solid var(--line);cursor:zoom-in}
+  .gal img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .4s var(--ease)}
+  .gal figure:hover img{transform:scale(1.045)}
+  .gal figcaption{position:absolute;inset:auto 0 0 0;padding:16px 10px 8px;font-size:12px;font-weight:600;
+    background:linear-gradient(transparent,rgba(0,0,0,.9));color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.85);
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+  /* ─── Panneau (fiche projet) ─────────────────────────────────────── */
+  .voile{position:fixed;inset:0;background:rgba(5,4,9,.68);backdrop-filter:blur(3px);z-index:60;
+    display:none;align-items:flex-end;justify-content:center}
+  .voile.on{display:flex}
+  .panneau{background:var(--bg-2);border:1px solid var(--line);width:100%;max-width:780px;max-height:94dvh;
+    overflow-y:auto;border-radius:22px 22px 0 0;box-shadow:var(--shadow-lg);
+    padding:22px 22px calc(30px + env(safe-area-inset-bottom));animation:monte .3s var(--ease) both}
+  @keyframes monte{from{transform:translateY(22px);opacity:0}to{transform:none;opacity:1}}
+  @media(min-width:780px){.voile{align-items:center}.panneau{border-radius:22px;max-height:90dvh}}
+  .ptete{display:flex;align-items:flex-start;gap:12px;margin-bottom:6px}
+  .ptete h2{flex:1;font-size:21px;font-weight:800}
+  .x{border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:999px;
+     width:34px;height:34px;font-size:15px;cursor:pointer;flex:none;line-height:1}
+  .x:hover{border-color:var(--line-2)}
+  .bloc{border-top:1px solid var(--line);padding-top:16px;margin-top:16px}
+  .bloc h3{font-size:14px;font-weight:700;margin:0 0 3px}
+  .bloc .sous{color:var(--muted);font-size:12.5px;margin:0 0 11px}
+
+  /* ─── Étapes ─────────────────────────────────────────────────────── */
+  .etape{display:flex;align-items:flex-start;gap:11px;padding:9px 0;border-bottom:1px dashed var(--line)}
+  .etape:last-child{border-bottom:none}
+  .etape input[type=checkbox]{width:19px;height:19px;flex:none;margin-top:2px;accent-color:var(--brand-fill);cursor:pointer}
+  .etape .tx{flex:1;font-size:14.5px}
+  .etape.ok .tx{text-decoration:line-through;color:var(--muted-2)}
+  .etape .sup{border:none;background:none;color:var(--muted-2);cursor:pointer;font-size:14px;padding:2px 5px}
+  .etape .sup:hover{color:var(--alerte)}
+
+  /* ─── Barre mobile ───────────────────────────────────────────────── */
+  .dock{display:none}
+  @media(max-width:900px){
+    .app{grid-template-columns:1fr}
+    /* ⚠️ PAS d'`overflow-x:auto` ici : dès qu'un axe est en `auto`, le navigateur
+       rogne AUSSI l'autre — et le menu du compte, positionné sous le rail,
+       disparaissait. Les onglets sont masqués sur téléphone, il n'y a plus rien
+       à faire défiler. */
+    .rail{position:static;height:auto;flex-direction:row;align-items:center;gap:8px;padding:10px 14px;
+      border-right:none;border-bottom:1px solid var(--line);overflow:visible}
+    .rail .marque{padding:0;flex:1;min-width:0}
+    .rail .navbtn{display:none}
+    /* Le bloc du bas quitte la colonne et devient un menu sous l'avatar :
+       sans lui, il n'existait AUCUN moyen de se déconnecter sur téléphone. */
+    .rail .bas{position:absolute;top:calc(100% - 6px);right:12px;z-index:60;margin:0;padding:8px;
+      background:var(--bg-2);border:1px solid var(--line-2);border-radius:14px;box-shadow:var(--shadow-lg);
+      min-width:196px;display:none}
+    .rail .bas.on{display:flex}
+    /* Le rail doit passer AU-DESSUS du contenu, sinon le menu s'ouvre derrière
+       la vue (qui est animée, donc peinte dans son propre plan). */
+    .rail{position:relative;z-index:70}
+    .rail .moi{padding:4px;cursor:pointer;margin-top:0;width:auto;flex:none}
+    .rail .moi:hover{border-color:var(--line-2)}
+    .rail .moi .nm,.rail .moi .rl{display:none}
+    .rail .moi::after{content:'▾';color:var(--muted);font-size:11px}
+    .vue{padding:22px 16px calc(var(--dock) + 34px + env(safe-area-inset-bottom))}
+    .dock{
+      display:flex;position:fixed;left:0;right:0;bottom:0;z-index:50;background:color-mix(in srgb,var(--bg-2) 92%,transparent);
+      backdrop-filter:saturate(150%) blur(14px);border-top:1px solid var(--line);
+      padding:6px 4px calc(6px + env(safe-area-inset-bottom));justify-content:space-around
+    }
+    .dock button{flex:1;max-width:96px;background:none;border:none;cursor:pointer;color:var(--muted-2);
+      display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 2px;border-radius:12px;position:relative}
+    .dock button .ic{font-size:19px;line-height:1}
+    .dock button .lb{font-size:10.5px;font-weight:700;letter-spacing:-.01em}
+    .dock button[aria-current="page"]{color:var(--brand-lisible)}
+    .dock button .pt{position:absolute;top:3px;right:calc(50% - 20px);width:8px;height:8px;border-radius:50%;background:var(--alerte)}
+  }
+
+  /* ─── Bandeau & divers ───────────────────────────────────────────── */
+  .bandeau{background:var(--brand-soft);border:1px solid var(--line);border-radius:14px;padding:13px 16px;
+    font-size:13.5px;margin-bottom:20px;display:flex;gap:11px;align-items:flex-start}
+  .toast{position:fixed;left:50%;bottom:24px;transform:translate(-50%,52px);background:var(--ink);color:var(--bg);
+    padding:11px 20px;border-radius:999px;font-weight:700;font-size:14px;box-shadow:var(--shadow-lg);
+    opacity:0;transition:opacity var(--dur) var(--ease),transform var(--dur) var(--ease);z-index:99;
+    max-width:90vw;text-align:center;pointer-events:none}
+  .toast.on{opacity:1;transform:translate(-50%,0)}
+  @media(max-width:900px){.toast{bottom:calc(var(--dock) + 16px)}}
+  .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+  /* Certains emojis (📸 🪪 🎞️…) ont une chasse qui MANGE visuellement l'espace
+     qui les suit : le DOM contient bien « 📸 a partagé », l'écran affiche
+     « 📸a partagé ». Constaté au rendu le 07/08/2026. On ne compte donc pas sur
+     un caractère espace — on donne au pictogramme sa propre boîte. */
+  /* Une marge ne suffit pas : le glyphe emoji est DESSINÉ plus large que sa
+     chasse et recouvre la marge (mesuré : boîte de 13px, glyphe ~17px). D'où la
+     largeur minimale explicite — le pictogramme a sa colonne, le texte la sienne. */
+  .em{display:inline-block;min-width:1.3em;margin-right:.28em;text-align:center;font-style:normal}
+  /* Dans un conteneur flex, le `gap` sépare déjà le pictogramme du texte. */
+  .b .em,.navbtn .em{margin-right:0;min-width:1.15em}
+  .p .em{margin-right:.18em;min-width:1.1em}
+  .chargement{color:var(--muted);padding:26px 0;text-align:center;font-size:14px}
+
+  @media (prefers-reduced-motion: reduce){
+    *,*::before,*::after{animation-duration:.001ms !important;animation-iteration-count:1 !important;
+      transition-duration:.001ms !important;scroll-behavior:auto !important}
+    .proj:hover,.b:hover{transform:none}
+  }
+</style>
+</head>
+<body>
+
+<div class="app">
+  <aside class="rail">
+    <div class="marque" id="marque"></div>
+    <nav id="nav" aria-label="Sections"></nav>
+    <button class="moi" id="moi" aria-haspopup="true" aria-expanded="false" aria-controls="menuCompte"></button>
+    <div class="bas" id="menuCompte">
+      <a class="lien-bas" id="lienSite" href="#" style="display:none"><span class="em">↗</span>Le site public</a>
+      <a class="lien-bas" href="connexion.html"><span class="em">🪪</span>Mon compte</a>
+      <a class="lien-bas" href="#" id="sortir"><span class="em">⏻</span>Me déconnecter</a>
+    </div>
+  </aside>
+
+  <main class="main" id="main">
+    <div class="vue on" id="vue-chargement"><p class="chargement">Chargement de ton espace…</p></div>
+  </main>
+</div>
+
+<nav class="dock" id="dock" aria-label="Sections"></nav>
+
+<div class="voile" id="voile" role="dialog" aria-modal="true" aria-labelledby="pmTitre">
+  <div class="panneau" id="panneau"></div>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="bob-identite.js"></script>
+<script>
+/* ══════════════════════════════════════════════════════════════════════════
+   L'ESPACE DE MON ASSOCIATION — application membre de Bob
+   --------------------------------------------------------------------------
+   07/08/2026. Succède à `espace-projets.html`, qui n'offrait qu'UN écran
+   (« Les projets ») : pas d'accueil, aucun moyen de savoir qu'il se passait
+   quelque chose sans ouvrir les fils un par un, et une peau appliquée par un
+   `body.bokaf` avec des couleurs écrites en dur.
+
+   TROIS RÈGLES TENUES ICI
+   1. AUCUN NOM DE CLIENT dans le code. Ce que l'asso est (nom, couleurs,
+      monde, tagline, logo) vient de bob-identite.js → la base. Ce qu'elle a
+      le droit d'ouvrir vient de `associations.features`. Le 4e client arrive
+      sans qu'on rouvre ce fichier.
+   2. ⚠️ supabase-js NE LÈVE PAS d'exception : on teste `.error` à CHAQUE appel.
+   3. On n'écrit jamais en base au clic sur « nouveau » : brouillon d'abord,
+      écriture à la validation.
+
+   CE QUE LA RLS AUTORISE VRAIMENT (mesuré le 07/08/2026 — à ne pas oublier
+   en dessinant un écran, sous peine de promettre du vide) :
+   · profiles      → un adhérent ne voit QUE lui-même. Bureau : toute l'asso.
+   · fiches_marque → is_staff() seulement : inutilisable côté adhérent.
+   · projects / project_posts / projet_participants / materiel
+                   → tout membre ACTIF de l'asso, si la fonctionnalité est on.
+   ══════════════════════════════════════════════════════════════════════════ */
+const SUPABASE_URL='https://dkidtwypclpwznleiqnq.supabase.co';
+const SUPABASE_KEY='sb_publishable_HDfV-O2ION1Vw9v03aV_Qg_PkiAjLNo';
+const sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+
+const $=s=>document.querySelector(s);
+const $$=s=>Array.from(document.querySelectorAll(s));
+const esc=s=>(s==null?'':String(s)).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('on');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('on'),3400);}
+
+/* ─── État ────────────────────────────────────────────────────────────── */
+let ME=null;        /* {id,name,role,statut,asso} */
+let ASSO=null;      /* ligne `associations` */
+let ID=null;        /* identité résolue (bob-identite.js) */
+let PROJETS=[];     /* projets hors comptoir */
+let COMPTOIR=null;  /* le fil général : un projet data.type='comptoir' */
+let PARTS=[];       /* qui participe à quoi */
+let POSTS=[];       /* les 300 derniers messages, tous fils confondus */
+let MATERIEL=[];
+let COURANT=null;   /* projet ouvert dans le panneau */
+let PHOTO=null;     /* fichier joint en attente */
+let VUE='accueil';
+let PHOTOS_URL={};  /* chemin de stockage → lien signé (1 h) */
+
+const estBureau=()=>!!ME&&['president','tresorier','bureau'].includes(ME.role);
+const estComptoir=p=>!!(p&&p.data&&p.data.type==='comptoir');
+const peutEditer=p=>!!ME&&!!p&&(p.owner_id===ME.id||estBureau());
+const feat=k=>{try{const v=(ASSO&&ASSO.features||{})[k];return v===true||v==='on';}catch(e){return false;}};
+const partsDe=id=>PARTS.filter(x=>x.project_id===id);
+const jeParticipe=id=>PARTS.some(x=>x.project_id===id&&x.user_id===(ME&&ME.id));
+
+const STATUTS={actif:'🟢 En cours',termine:'🏁 Terminé',archive:'📦 Archivé'};
+
+/* ─── Dates ───────────────────────────────────────────────────────────── */
+function d2(n){return String(n).padStart(2,'0');}
+function dateCourte(iso){const d=new Date(iso);if(isNaN(d))return '';return d2(d.getDate())+'/'+d2(d.getMonth()+1)+'/'+d.getFullYear();}
+function dateHeure(iso){const d=new Date(iso);if(isNaN(d))return '';return dateCourte(iso)+' à '+d2(d.getHours())+'h'+d2(d.getMinutes());}
+function ilYA(iso){
+  const d=new Date(iso); if(isNaN(d)) return '';
+  const s=Math.floor((Date.now()-d.getTime())/1000);
+  if(s<60)return "à l'instant";
+  if(s<3600)return 'il y a '+Math.floor(s/60)+' min';
+  if(s<86400)return 'il y a '+Math.floor(s/3600)+' h';
+  if(s<604800){const j=Math.floor(s/86400);return 'il y a '+j+' jour'+(j>1?'s':'');}
+  return 'le '+dateCourte(iso);
+}
+const JOURS=['dimanche','lundi','mardi','mercredi','jeudi','vendredi','samedi'];
+const MOIS=['janvier','février','mars','avril','mai','juin','juillet','août','septembre','octobre','novembre','décembre'];
+/* Toujours avec l'année : une date sans année devient fausse au 1er janvier. */
+function dateLongue(d){ return JOURS[d.getDay()]+' '+d.getDate()+' '+MOIS[d.getMonth()]+' '+d.getFullYear(); }
+function initiales(n){
+  return String(n||'?').trim().split(/\s+/).slice(0,2).map(x=>x[0]||'').join('').toUpperCase()||'?';
+}
+
+/* ─── « Du neuf » ─────────────────────────────────────────────────────────
+   Mémorisé sur CET appareil (pas d'infrastructure, pas de table). On garde les
+   clés `bob_vu_<id>` de la version précédente : l'historique de lecture des
+   adhérents n'est pas perdu au passage sur ce nouvel écran. */
+const vuGet=id=>{try{return localStorage.getItem('bob_vu_'+id)||'';}catch(e){return '';}};
+const vuSet=id=>{try{localStorage.setItem('bob_vu_'+id,new Date().toISOString());}catch(e){}};
+function nonLus(projectId){
+  const v=vuGet(projectId);
+  return POSTS.filter(m=>m.project_id===projectId
+    && m.author_id!==(ME&&ME.id)
+    && (!v||new Date(m.created_at).getTime()>new Date(v).getTime()));
+}
+const aDuNeuf=id=>nonLus(id).length>0;
+function toutLeNeuf(){
+  const ids={};(PROJETS.concat(COMPTOIR?[COMPTOIR]:[])).forEach(p=>ids[p.id]=p);
+  return POSTS.filter(m=>ids[m.project_id]).filter(m=>{
+    const v=vuGet(m.project_id);
+    return m.author_id!==(ME&&ME.id)&&(!v||new Date(m.created_at).getTime()>new Date(v).getTime());
+  }).sort((a,b)=>new Date(b.created_at)-new Date(a.created_at));
+}
+
+/* ─── Navigation ──────────────────────────────────────────────────────── */
+/* Chaque section déclare la condition qui l'allume. Une section n'apparaît
+   jamais « parce que c'est ce client » : elle apparaît parce qu'une DONNÉE
+   de l'asso l'autorise. */
+const SECTIONS=[
+  {k:'accueil', ic:'🏠', lb:'Accueil',   court:'Accueil', ouvert:()=>true},
+  {k:'projets', ic:'🎬', lb:'Projets',   court:'Projets', ouvert:()=>feat('projets_adherents')},
+  {k:'comptoir',ic:'🗣️', lb:'Le comptoir',court:'Comptoir',ouvert:()=>feat('projets_adherents')&&!!COMPTOIR},
+  {k:'galerie', ic:'📸', lb:'Galerie',   court:'Photos',  ouvert:()=>feat('projets_adherents')},
+  {k:'materiel',ic:'🧰', lb:'Matériel',  court:'Matériel',ouvert:()=>feat('materiel')},
+  {k:'fiches',  ic:'📚', lb:'Fiches techniques',court:'Fiches',ouvert:()=>feat('fiches_techniques')},
+  {k:'bureau',  ic:'🏛️', lb:'Le bureau', court:'Bureau',  ouvert:()=>estBureau()}
+];
+const sectionsOuvertes=()=>SECTIONS.filter(s=>{try{return s.ouvert();}catch(e){return false;}});
+
+function badgeDe(k){
+  if(k==='accueil')return toutLeNeuf().length;
+  if(k==='projets')return PROJETS.filter(p=>aDuNeuf(p.id)).length;
+  if(k==='comptoir')return COMPTOIR?nonLus(COMPTOIR.id).length:0;
+  return 0;
+}
+function renderNav(){
+  const list=sectionsOuvertes();
+  $('#nav').innerHTML=list.map(s=>{
+    const n=badgeDe(s.k);
+    return '<button class="navbtn" data-vue="'+s.k+'"'+(VUE===s.k?' aria-current="page"':'')+'>'
+      +'<span class="ic" aria-hidden="true">'+s.ic+'</span><span class="lb">'+esc(s.lb)+'</span>'
+      +(n?'<span class="cpt">'+n+'</span>':'')+'</button>';
+  }).join('');
+  /* La barre du bas ne tient pas 7 entrées : on garde les 5 premières ouvertes. */
+  $('#dock').innerHTML=list.slice(0,5).map(s=>{
+    const n=badgeDe(s.k);
+    return '<button data-vue="'+s.k+'"'+(VUE===s.k?' aria-current="page"':'')+'>'
+      +'<span class="ic" aria-hidden="true">'+s.ic+'</span><span class="lb">'+esc(s.court)+'</span>'
+      +(n?'<span class="pt" aria-label="du nouveau"></span>':'')+'</button>';
+  }).join('');
+}
+function aller(k){
+  if(!sectionsOuvertes().some(s=>s.k===k)) k='accueil';
+  VUE=k;
+  try{history.replaceState(null,'','#'+k);}catch(e){}
+  renderNav();
+  const rendus={accueil:vueAccueil,projets:vueProjets,comptoir:vueComptoir,
+                galerie:vueGalerie,materiel:vueMateriel,fiches:vueFiches,bureau:vueBureau};
+  $('#main').innerHTML='<div class="vue on" id="v"></div>';
+  (rendus[k]||vueAccueil)($('#v'));
+  window.scrollTo({top:0,behavior:'instant'});
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   VUE · ACCUEIL — « ce qui se passe »
+   L'écran qui n'existait pas. Il répond à trois questions qu'un adhérent se
+   pose en arrivant : qu'est-ce qui a bougé ? qu'est-ce qu'on attend de moi ?
+   où en est l'asso ?
+   ══════════════════════════════════════════════════════════════════════════ */
+function salutation(){
+  const h=new Date().getHours();
+  return h<5?'Bonne nuit':h<12?'Bonjour':h<18?'Bonjour':'Bonsoir';
+}
+function vueAccueil(el){
+  const neuf=toutLeNeuf();
+  const miens=PROJETS.filter(p=>p.owner_id===ME.id);
+  const jeSuisDedans=PROJETS.filter(p=>jeParticipe(p.id)&&p.owner_id!==ME.id);
+  /* Ce qui m'attend : des étapes à moi restées non cochées. */
+  const aFaire=[];
+  miens.forEach(p=>{
+    const js=Array.isArray(p.data&&p.data.jalons)?p.data.jalons:[];
+    const reste=js.filter(j=>!j.done);
+    if(reste.length) aFaire.push({projet:p,etape:reste[0].t,reste:reste.length});
+  });
+  const publies=PROJETS.filter(p=>p.data&&p.data.publie_le)
+                       .sort((a,b)=>new Date(a.data.publie_le)-new Date(b.data.publie_le));
+
+  let h='';
+  /* La signature de l'asso est déjà sous le logo : la répéter ici en sur-titre
+     la disait deux fois sur le même écran (flagrant sur téléphone). On met à la
+     place ce que ce sur-titre peut apporter d'utile — la date du jour. */
+  h+='<p class="eyebrow">'+esc(dateLongue(new Date()))+'</p>';
+  h+='<h1>'+salutation()+' '+esc(ME.name)+'</h1>';
+  h+='<p class="chapeau">'+(neuf.length
+      ? 'Il s\'est passé <b>'+neuf.length+' chose'+(neuf.length>1?'s':'')+'</b> depuis ton dernier passage.'
+      : 'Rien de nouveau depuis ton dernier passage — tout est à jour.')+'</p>';
+
+  /* Le pouls : uniquement des chiffres que la base sait vraiment produire. */
+  const actifs=PROJETS.filter(p=>((p.data&&p.data.statut)||'actif')==='actif').length;
+  const mois=POSTS.filter(m=>new Date(m.created_at)>new Date(Date.now()-30*864e5)).length;
+  const photos=POSTS.filter(m=>m.photo_path).length;
+  h+='<div class="pouls">'
+   + kpi(actifs,'projet'+(actifs>1?'s':'')+' en cours')
+   + kpi(mois,'message'+(mois>1?'s':'')+' ce mois-ci')
+   + kpi(photos,'photo'+(photos>1?'s':'')+' partagée'+(photos>1?'s':''))
+   + kpi(miens.length+jeSuisDedans.length,'tes engagements')
+   + '</div>';
+
+  /* ① Ce qui a bougé — la réponse au « comment je sais qu'il y a du neuf ». */
+  h+='<div class="carte"><h2><span class="em">⚡</span>Ce qui a bougé</h2>'
+   + '<p class="sous">Les derniers messages, tous fils confondus. Clique pour ouvrir le fil.</p>';
+  if(neuf.length){
+    h+=neuf.slice(0,6).map(m=>msgLigne(m,true)).join('');
+    if(neuf.length>6) h+='<p class="sous" style="margin:12px 0 0">…et '+(neuf.length-6)+' de plus.</p>';
+  }else{
+    const recents=POSTS.slice(0,4);
+    h+= recents.length
+      ? '<p class="sous" style="margin:-6px 0 12px">Rien de neuf pour toi — voici les derniers échanges.</p>'
+        + recents.map(m=>msgLigne(m,true)).join('')
+      : vide('💬','Le fil est encore vide',
+             'Personne n\'a écrit pour l\'instant. Ouvre le comptoir et lance la discussion — c\'est comme ça que ça démarre.',
+             COMPTOIR?'<button class="b p" data-aller="comptoir">Ouvrir le comptoir</button>':'');
+  }
+  h+='</div>';
+
+  /* ② Ce qui t'attend */
+  h+='<div class="carte"><h2><span class="em">✅</span>Ce qui t\'attend</h2>';
+  if(aFaire.length){
+    h+='<p class="sous">Tes prochaines étapes sur les projets que tu portes.</p>';
+    h+=aFaire.slice(0,5).map(x=>
+      '<div class="msg" style="cursor:pointer" data-projet="'+esc(x.projet.id)+'">'
+      +'<span class="av">→</span><div class="co">'
+      +'<span class="qui">'+esc(x.etape)+'</span>'
+      +'<p class="tx" style="color:var(--muted);font-size:13px">'+esc(x.projet.name)+' · '+x.reste+' étape'+(x.reste>1?'s':'')+' restante'+(x.reste>1?'s':'')+'</p>'
+      +'</div></div>').join('');
+  }else if(miens.length){
+    h+=videOk('🎉','Aucune étape en attente sur tes projets. Bien joué.');
+  }else{
+    h+=vide('🎬','Tu ne portes pas encore de projet',
+      'Une idée de tournage, de portrait, de captation ? Ouvre-la ici : tu décris, tu découpes en étapes, et l\'équipe peut t\'aider.',
+      feat('projets_adherents')?'<button class="b p" data-nouveau="1">Créer mon premier projet</button>':'');
+  }
+  h+='</div>';
+
+  /* ③ L'horloge des publications — ce que regarde un financeur de média.
+     Une publication datée est la seule preuve d'antériorité d'un média. */
+  if(feat('projets_adherents')){
+    h+='<div class="carte"><h2><span class="em">🎞️</span>Ce qui est sorti</h2>'
+     + '<p class="sous">Les projets que l\'association a publiés, et depuis quand. C\'est la première chose que regarde un financeur de média.</p>';
+    if(publies.length){
+      const prem=publies[0];
+      const jours=Math.floor((Date.now()-new Date(prem.data.publie_le).getTime())/864e5);
+      h+='<div class="bandeau"><span style="font-size:19px">⏱️</span><div>'
+       + '<b>Première publication le '+esc(dateCourte(prem.data.publie_le))+'</b> — il y a '+jours+' jour'+(jours>1?'s':'')+'.'
+       + '<br><span style="color:var(--muted)">C\'est cette date qui fait l\'antériorité de l\'association comme média.</span></div></div>';
+      h+='<div class="pgrille">'+publies.slice().reverse().map(carteProjet).join('')+'</div>';
+    }else{
+      h+=vide('📡','Rien n\'est encore sorti',
+        'Aucun projet n\'est marqué comme publié. Dès qu\'une vidéo, un portrait ou un reportage est en ligne, ouvre sa fiche et note la date de sortie : c\'est elle qui prouve l\'ancienneté du média.');
+    }
+    h+='</div>';
+  }
+  el.innerHTML=h;
+}
+function kpi(n,l){return '<div class="kpi"><div class="n">'+n+'</div><div class="l">'+esc(l)+'</div></div>';}
+/* Deux poids d'état vide. Le grand appelle à agir (première fois, rien à faire) ;
+   le compact dit simplement « tout va bien » — une bonne nouvelle n'a pas besoin
+   d'occuper un demi-écran, ça donne l'impression que la page est cassée. */
+function vide(ic,titre,texte,bouton){
+  return '<div class="vide"><span class="ic" aria-hidden="true">'+ic+'</span><h3>'+esc(titre)+'</h3>'
+       + '<p>'+esc(texte)+'</p>'+(bouton||'')+'</div>';
+}
+function videOk(ic,texte){
+  return '<p class="vide-ok"><span class="em" aria-hidden="true">'+ic+'</span>'+esc(texte)+'</p>';
+}
+function msgLigne(m,avecFil){
+  const p=(COMPTOIR&&COMPTOIR.id===m.project_id)?COMPTOIR:PROJETS.find(x=>x.id===m.project_id);
+  const corps=(m.body||'').trim();
+  return '<div class="msg" style="cursor:pointer" data-projet="'+esc(m.project_id)+'">'
+    +'<span class="av">'+esc(initiales(m.author_name))+'</span><div class="co">'
+    +'<span class="qui">'+esc(m.author_name||'Un adhérent')+'</span><span class="qd">'+esc(ilYA(m.created_at))+'</span>'
+    +(avecFil&&p?'<span class="qd">· '+esc(p.name)+'</span>':'')
+    /* `white-space:pre-wrap` est hérité ici : un aperçu tronqué garderait les
+       sauts de ligne du message et casserait l'alignement de la liste. */
+    +'<p class="tx" style="font-size:14px;white-space:normal">'
+    +(corps?esc(corps.length>170?corps.slice(0,170)+'…':corps).replace(/\s+/g,' ')
+        :'<span style="color:var(--muted)"><span class="em">📸</span>a partagé une photo</span>')+'</p>'
+    +'</div></div>';
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   VUE · PROJETS
+   ══════════════════════════════════════════════════════════════════════════ */
+function avancement(p){
+  const js=Array.isArray(p.data&&p.data.jalons)?p.data.jalons:[];
+  if(!js.length) return null;
+  const f=js.filter(j=>j.done).length;
+  return {faits:f,total:js.length,pct:Math.round(f/js.length*100)};
+}
+function carteProjet(p){
+  const d=p.data||{};
+  const mien=p.owner_id===ME.id;
+  const av=avancement(p);
+  const n=partsDe(p.id).length;
+  const nl=nonLus(p.id).length;
+  return '<button class="proj" data-projet="'+esc(p.id)+'">'
+    +'<h3>'+esc(p.name||'Sans nom')+'</h3>'
+    +'<p class="pitch">'+esc(d.pitch||'Pas encore de description.')+'</p>'
+    +'<div class="meta">'
+      +'<span class="p'+(mien?' mien':'')+'">'+(mien?'⭐ Mon projet':'👤 '+esc(d.porteur_nom||'Un adhérent'))+'</span>'
+      +'<span class="p">'+esc(STATUTS[d.statut||'actif']||STATUTS.actif)+'</span>'
+      +(d.publie_le?'<span class="p fait"><span class="em">🎞️</span>Publié le '+esc(dateCourte(d.publie_le))+'</span>':'')
+      +(nl?'<span class="p neuf">'+nl+' nouveau'+(nl>1?'x':'')+'</span>':'')
+      +(n?'<span class="p'+(jeParticipe(p.id)?' fait':'')+'">👥 '+n+'</span>':'')
+    +'</div>'
+    +(av?'<div class="jauge"><i style="width:'+av.pct+'%"></i></div>'
+        +'<div class="jauge-lb"><span>'+av.faits+' / '+av.total+' étapes</span><span>'+av.pct+'%</span></div>':'')
+    +'</button>';
+}
+/* Filtre courant de la liste des projets (mémoire de session, pas de réglage). */
+let FILTRE='tous';
+function vueProjets(el){
+  /* ⚠️ UNE SEULE LISTE, et elle contient TOUJOURS mes projets.
+     Deux listes (« ce que je porte » puis « tous ») affichaient la même carte
+     deux fois sur le même écran — ça se lit comme un bug. Mais on ne peut pas
+     non plus retirer les miens de la liste commune : un adhérent avait cru que
+     son projet n'était pas enregistré parce qu'il ne le voyait pas là où tout le
+     monde regarde (retour de terrain, 04/08/2026). La liste unique triée
+     « les miens d'abord » tient les deux exigences. */
+  const miens=PROJETS.filter(p=>p.owner_id===ME.id);
+  const avecMoi=PROJETS.filter(p=>jeParticipe(p.id)||p.owner_id===ME.id);
+  const FILTRES={
+    tous:{lb:'Tous',       liste:PROJETS.slice().sort((a,b)=>(b.owner_id===ME.id)-(a.owner_id===ME.id))},
+    miens:{lb:'Les miens', liste:miens},
+    moi:{lb:'J\'y participe', liste:avecMoi}
+  };
+  const cur=FILTRES[FILTRE]||FILTRES.tous;
+
+  let h='<p class="eyebrow">L\'établi</p><h1>Les projets</h1>'
+   +'<p class="chapeau">Chacun porte le sien. Tout le monde peut suivre, commenter et donner un coup de main.</p>'
+   +'<div class="barre">'
+   +'<button class="b p" data-nouveau="1"><span class="em">➕</span>Nouveau projet</button>'
+   +'<span style="flex:1"></span>'
+   +Object.keys(FILTRES).map(k=>'<button class="b '+(FILTRE===k?'p':'g')+' sm" data-filtre="'+k+'">'
+      +esc(FILTRES[k].lb)+' <span class="p" style="background:transparent;border:none;padding:0 0 0 2px;font-size:12px">'
+      +FILTRES[k].liste.length+'</span></button>').join('')
+   +'</div>';
+
+  if(!PROJETS.length){
+    h+='<div class="carte">'+vide('🎬','Aucun projet pour l\'instant',
+      'Décris ton idée en deux phrases — tu compléteras après. Choisis « sortie photo / vidéo » et les dix étapes du terrain sont déjà prêtes.',
+      '<button class="b p" data-nouveau="1">Créer le premier projet</button>')+'</div>';
+  }else if(!cur.liste.length){
+    h+='<div class="carte">'+vide('🔍','Rien dans ce filtre',
+      FILTRE==='miens'?'Tu ne portes encore aucun projet — lance le tien.':'Tu ne participes à aucun projet pour l\'instant.',
+      '<button class="b g" data-filtre="tous">Voir tous les projets</button>')+'</div>';
+  }else{
+    h+='<div class="pgrille">'+cur.liste.map(carteProjet).join('')+'</div>';
+  }
+  el.innerHTML=h;
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   VUE · COMPTOIR — le fil général, plein écran
+   ══════════════════════════════════════════════════════════════════════════ */
+function vueComptoir(el){
+  if(!COMPTOIR){el.innerHTML='<div class="carte">'+vide('🗣️','Pas de comptoir','Le bureau ne l\'a pas encore ouvert.')+'</div>';return;}
+  el.innerHTML='<p class="eyebrow">Entre nous</p><h1>'+esc(COMPTOIR.name)+'</h1>'
+   +'<p class="chapeau">'+esc((COMPTOIR.data&&COMPTOIR.data.pitch)||'La discussion générale de l\'association.')+'</p>'
+   +'<div class="carte"><div id="fil"><p class="chargement">Chargement du fil…</p></div>'
+   +redacteurHtml()+'</div>';
+  COURANT=COMPTOIR;
+  chargerFil(COMPTOIR.id,'#fil');
+  vuSet(COMPTOIR.id);
+}
+function redacteurHtml(){
+  return '<div class="redac">'
+    +'<textarea id="txtPost" placeholder="Écris quelque chose…" aria-label="Ton message"></textarea>'
+    +'<div class="ln">'
+      +'<input type="file" id="fPhoto" accept="image/*" class="sr">'
+      +'<button class="b g sm" data-photo="1"><span class="em">📸</span>Joindre une photo</button>'
+      +'<span id="tagPhoto" style="font-size:12.5px;color:var(--muted)"></span>'
+      +'<span style="flex:1"></span>'
+      +'<button class="b p sm" data-envoyer="1" id="btnEnvoyer">Envoyer</button>'
+    +'</div></div>';
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   VUE · GALERIE
+   Demandée par un adhérent le 06/08/2026 (« peut-être des vidéos, photos »).
+   Aucune table nouvelle : les photos EXISTENT déjà, postées dans les fils —
+   elles étaient simplement introuvables sans ouvrir chaque projet.
+   ══════════════════════════════════════════════════════════════════════════ */
+async function vueGalerie(el){
+  const avec=POSTS.filter(m=>m.photo_path);
+  if(!avec.length){
+    el.innerHTML='<p class="eyebrow">Les images</p><h1>La galerie</h1>'
+      +'<p class="chapeau">Toutes les photos partagées dans les fils de l\'association, au même endroit.</p>'
+      +'<div class="carte">'+vide('📸','Aucune photo pour l\'instant',
+        'Dès qu\'une photo est jointe à un message — dans un projet ou au comptoir — elle apparaît ici automatiquement. Rien à ranger.')+'</div>';
+    return;
+  }
+  el.innerHTML='<p class="eyebrow">Les images</p><h1>La galerie</h1>'
+    +'<p class="chapeau">'+avec.length+' photo'+(avec.length>1?'s':'')+' partagée'+(avec.length>1?'s':'')
+    +' dans les fils de l\'association. Les images restent privées : chaque affichage passe par un lien temporaire.</p>'
+    +'<div id="gal"><p class="chargement">Ouverture des images…</p></div>';
+  await signer(avec.map(m=>m.photo_path));
+  const g=$('#gal'); if(!g) return;
+  const vus=avec.filter(m=>PHOTOS_URL[m.photo_path]);
+  if(!vus.length){
+    g.innerHTML='<div class="carte">'+vide('🔒','Images momentanément illisibles',
+      'Les photos sont bien là, mais le coffre n\'a pas répondu. Recharge la page dans un instant.')+'</div>';
+    return;
+  }
+  /* Regroupées par fil : une photo isolée ne dit rien, une planche par projet
+     raconte une sortie. Les fils sans photo n'apparaissent pas. */
+  const parProjet=new Map();
+  vus.forEach(m=>{ if(!parProjet.has(m.project_id)) parProjet.set(m.project_id,[]); parProjet.get(m.project_id).push(m); });
+  g.innerHTML=Array.from(parProjet.entries()).map(([pid,lot])=>{
+    const p=(COMPTOIR&&COMPTOIR.id===pid)?COMPTOIR:PROJETS.find(x=>x.id===pid);
+    return '<section style="margin-bottom:30px">'
+      +'<h2 style="font-size:15.5px;margin:0 0 3px">'+esc((p&&p.name)||'Fil supprimé')+'</h2>'
+      +'<p class="sous" style="margin:0 0 12px">'+lot.length+' photo'+(lot.length>1?'s':'')
+      +' · la plus récente '+esc(ilYA(lot[0].created_at))+'</p>'
+      +'<div class="gal">'+lot.map(m=>
+        '<figure data-photo="'+esc(PHOTOS_URL[m.photo_path])+'" tabindex="0">'
+        +'<img src="'+esc(PHOTOS_URL[m.photo_path])+'" alt="Photo partagée par '
+        +esc(m.author_name||'un adhérent')+'" loading="lazy">'
+        +'<figcaption>'+esc(m.author_name||'')+' · '+esc(ilYA(m.created_at))+'</figcaption></figure>').join('')
+      +'</div></section>';
+  }).join('');
+}
+async function signer(chemins){
+  const manquants=chemins.filter(c=>c&&!PHOTOS_URL[c]);
+  if(!manquants.length) return;
+  const {data,error}=await sb.storage.from('projets').createSignedUrls(manquants,3600);
+  if(error||!data) return;
+  data.forEach(s=>{if(s&&s.path&&s.signedUrl)PHOTOS_URL[s.path]=s.signedUrl;});
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   VUE · MATÉRIEL
+   ══════════════════════════════════════════════════════════════════════════ */
+const CATS={camera:'📷 Caméra / photo',son:'🎙️ Son',lumiere:'💡 Lumière',info:'💻 Informatique',autre:'🧰 Autre'};
+const ETATS={bon:'🟢 Bon état',moyen:'🟠 Fatigué',hs:'🔴 En panne'};
+function proprio(m){
+  if(m.proprietaire_type==='asso')return '🏛️ '+((ASSO&&ASSO.name)||'l\'association');
+  if(m.proprietaire_type==='mise_a_dispo')return '🤝 Mise à disposition';
+  return '🎒 '+(m.proprietaire_nom||'Un adhérent');
+}
+function vueMateriel(el){
+  let h='<p class="eyebrow">Le registre</p><h1>Le matériel</h1>'
+   +'<p class="chapeau">Qui possède quoi, en quel état, et entre quelles mains ça se trouve. '
+   +'Ton matériel reste le tien : le registre ne fait que le dire.</p>'
+   +'<div style="margin-bottom:24px"><button class="b p" data-matnouveau="1"><span class="em">➕</span>Déclarer du matériel</button></div>';
+  if(!MATERIEL.length){
+    h+='<div class="carte">'+vide('🧰','Le registre est vide',
+      'Déclare ton appareil, un objectif, un micro : l\'équipe saura sur quoi elle peut compter avant une sortie — et à qui le rendre.',
+      '<button class="b p" data-matnouveau="1">Déclarer mon matériel</button>')+'</div>';
+    el.innerHTML=h; return;
+  }
+  const parCat={};
+  MATERIEL.forEach(m=>{(parCat[m.categorie||'autre']=parCat[m.categorie||'autre']||[]).push(m);});
+  h+=Object.keys(CATS).filter(c=>parCat[c]).map(c=>
+    '<div class="carte"><h2>'+CATS[c]+'</h2><div class="sous">'+parCat[c].length+' élément'+(parCat[c].length>1?'s':'')+'</div>'
+    +parCat[c].map(m=>
+      '<div class="msg"><span class="av">'+(CATS[m.categorie]||'🧰').slice(0,2)+'</span><div class="co">'
+      +'<span class="qui">'+esc(m.nom)+'</span>'
+      +'<div class="meta" style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px">'
+        +'<span class="p">'+esc(proprio(m))+'</span><span class="p">'+esc(ETATS[m.etat]||'')+'</span>'
+        +(m.detenu_par_nom?'<span class="p"><span class="em">🤲</span>chez '+esc(m.detenu_par_nom)+'</span>':'')
+        +((m.proprietaire_id===ME.id||estBureau())?'<button class="b nu sm" data-matedit="'+esc(m.id)+'"><span class="em">✏️</span>Modifier</button>':'')
+      +'</div>'
+      +(m.notes?'<p class="tx" style="color:var(--muted);font-size:13.5px">'+esc(m.notes)+'</p>':'')
+      +'</div></div>').join('')
+    +'</div>').join('');
+  el.innerHTML=h;
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   VUE · FICHES TECHNIQUES
+   S'allume par la fonctionnalité `fiches_techniques` de l'asso — plus par un
+   test sur son nom, comme c'était le cas jusqu'au 07/08/2026.
+   ══════════════════════════════════════════════════════════════════════════ */
+const FICHES=[
+  {ic:'⚙️',href:'fiche-technique-appareil.html',t:'Comprendre ton appareil',
+   d:'Ouverture, vitesse, ISO : ce que fait chaque réglage, et lequel toucher quand ça ne rend pas ce que tu voulais.',
+   pts:['Le fond flou (f/2.8) et le piège des photos de groupe','Pourquoi une photo est floue — et ce que ça n\'est jamais',
+        'Les modes A / S / M : lequel, quand','5 pannes classiques et leur cause réelle','Et au téléphone : l\'appui long qui change tout']},
+  {ic:'📸',href:'fiche-technique-photo.html',t:'Photo — la fiche terrain',
+   d:'À relire le matin d\'un shooting : la lumière selon l\'heure, le cadrage, l\'attitude en kartié.',
+   pts:['L\'heure dorée, le piège de midi, le contre-jour','La règle des tiers et la hauteur du regard',
+        'Le tableau des réglages selon la situation','Demander avant de photographier quelqu\'un','La double sauvegarde du soir même']},
+  {ic:'🎬',href:'fiche-technique-video.html',t:'Vidéo — la fiche terrain',
+   d:'Le son d\'abord, puis les plans qu\'il faut ramener pour que le montage tienne debout.',
+   pts:['Le son se répare mal : la règle n°1','Les 5 plans à ramener systématiquement','Interviewer sans que ça sonne faux',
+        'Lumière et stabilité sans matériel lourd','Le rangement des rushes en rentrant']}
+];
+const PAPIERS=[
+  {t:'📝 Autorisation image — adulte',href:'bokaf-autorisation-image-adulte.html'},
+  {t:'📝 Autorisation image — mineur',href:'bokaf-autorisation-image-mineur.html'}
+];
+function vueFiches(el){
+  el.innerHTML='<p class="eyebrow">Le savoir-faire</p><h1>Les fiches techniques</h1>'
+   +'<p class="chapeau">Des aide-mémoire, pas un cours. On les ouvre <b>avant</b> de partir, ou <b>sur place</b> quand un réglage résiste. '
+   +'Pas besoin d\'être photographe pour sortir avec l\'association.</p>'
+   +'<div class="pgrille">'+FICHES.map(f=>
+      '<a class="proj" style="display:block" target="_blank" rel="noopener" href="'+esc(f.href)+'">'
+      +'<h3>'+f.ic+' '+esc(f.t)+'</h3><p class="pitch" style="-webkit-line-clamp:3">'+esc(f.d)+'</p>'
+      +'<ul style="margin:12px 0 14px;padding-left:17px;color:var(--muted)">'
+      +f.pts.map(p=>'<li style="font-size:13.5px;margin-bottom:4px">'+esc(p)+'</li>').join('')+'</ul>'
+      +'<span class="b p sm">Ouvrir la fiche →</span></a>').join('')+'</div>'
+   +'<div class="carte" style="margin-top:16px"><h2><span class="em">📝</span>Les papiers du terrain</h2>'
+   +'<p class="sous">Dès qu\'on filme ou photographie <b>quelqu\'un</b>, il faut son autorisation. '
+   +'À imprimer avant de partir — ou à faire signer au doigt depuis la fiche du projet.</p>'
+   +'<div style="display:flex;gap:9px;flex-wrap:wrap">'
+   +PAPIERS.map(x=>'<a class="b g sm" target="_blank" rel="noopener" href="'+esc(x.href)+'">'+esc(x.t)+'</a>').join('')
+   +'</div></div>'
+   +'<div class="carte"><h2><span class="em">💡</span>Il manque une fiche ?</h2>'
+   +'<p class="sous" style="margin:0">Une question qui revient sur le terrain, un réglage qui bloque tout le monde : '
+   +'dis-le au comptoir, on en fait une fiche. C\'est fait pour grandir avec l\'association.</p></div>';
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   VUE · BUREAU
+   Réservée à ceux qui peuvent écrire. On n'affiche QUE ce que la RLS autorise
+   vraiment à lire : la liste des membres n'est visible que du président et du
+   trésorier — un adhérent n'aurait vu qu'une carte vide.
+   ══════════════════════════════════════════════════════════════════════════ */
+let MEMBRES=[];
+async function vueBureau(el){
+  el.innerHTML='<p class="eyebrow">Gouvernance</p><h1>Le bureau</h1>'
+   +'<p class="chapeau">L\'essentiel côté association. La gestion complète — comptabilité, adhésions, documents officiels — vit dans l\'outil de gestion.</p>'
+   +'<div id="bur"><p class="chargement">Lecture des accès…</p></div>';
+  const {data,error}=await sb.from('profiles').select('id,full_name,email,role,statut,created_at').order('created_at',{ascending:true});
+  const b=$('#bur'); if(!b) return;
+  if(error){
+    b.innerHTML='<div class="carte">'+vide('🔒','Liste des membres illisible',
+      'Ton rôle ne donne pas accès à la liste des comptes ('+error.message+').')+'</div>';
+    return;
+  }
+  MEMBRES=data||[];
+  const attente=MEMBRES.filter(m=>m.statut!=='actif');
+  const actifs=MEMBRES.filter(m=>m.statut==='actif');
+  let h='';
+  h+='<div class="pouls">'+kpi(actifs.length,'membre'+(actifs.length>1?'s':'')+' actif'+(actifs.length>1?'s':''))
+    +kpi(attente.length,'en attente')+kpi(PROJETS.length,'projet'+(PROJETS.length>1?'s':''))
+    +kpi(POSTS.length,'message'+(POSTS.length>1?'s':'')+' échangés')+'</div>';
+
+  h+='<div class="carte"><h2>⏳ Demandes en attente</h2>'
+   +'<p class="sous">Un compte créé mais jamais validé ne voit rien et ne peut rien dire : il attend un geste du bureau.</p>';
+  h+= attente.length
+    ? attente.map(m=>'<div class="msg"><span class="av">'+esc(initiales(m.full_name||m.email))+'</span><div class="co">'
+        +'<span class="qui">'+esc(m.full_name||m.email||'(sans nom)')+'</span>'
+        +'<span class="qd">demandé '+esc(ilYA(m.created_at))+'</span>'
+        +'<p class="tx" style="font-size:13.5px;color:var(--muted)">'+esc(m.email||'')+' · statut « '+esc(m.statut||'?')+' »</p>'
+        +'<div class="meta" style="margin-top:8px"><a class="b g sm" href="app.html">Traiter dans la gestion →</a></div>'
+        +'</div></div>').join('')
+    : videOk('✅','Aucune demande en attente — tous les comptes créés ont été traités.');
+  h+='</div>';
+
+  h+='<div class="carte"><h2><span class="em">👥</span>Les membres</h2><p class="sous">'+actifs.length+' compte'+(actifs.length>1?'s':'')+' actif'+(actifs.length>1?'s':'')+'.</p>'
+   +'<div style="display:flex;gap:8px;flex-wrap:wrap">'
+   +actifs.map(m=>'<span class="p'+(['president','tresorier','bureau'].includes(m.role)?' mien':'')+'">'
+      +(m.role==='president'?'👑 ':m.role==='tresorier'?'🛡️ ':'👤 ')+esc(m.full_name||m.email||'?')+'</span>').join('')
+   +'</div></div>';
+
+  h+='<div class="carte"><h2><span class="em">🧭</span>Aller plus loin</h2><p class="sous">Ce que cet espace ne fait pas — et où ça se fait.</p>'
+   +'<div style="display:flex;gap:9px;flex-wrap:wrap">'
+   +'<a class="b p sm" href="app.html"><span class="em">🤖</span>Ouvrir la gestion</a>'
+   +(ID.site?'<a class="b g sm" href="'+esc(ID.site)+'"><span class="em">↗</span>Le site public</a>':'')
+   +'</div></div>';
+  b.innerHTML=h;
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   PANNEAU · FICHE PROJET
+   ══════════════════════════════════════════════════════════════════════════ */
+function ouvrirPanneau(html){
+  $('#panneau').innerHTML=html;
+  $('#voile').classList.add('on');
+  document.body.style.overflow='hidden';
+}
+function fermerPanneau(){
+  $('#voile').classList.remove('on');
+  document.body.style.overflow='';
+  COURANT=null; PHOTO=null;
+}
+async function ouvrirProjet(id){
+  const p=(COMPTOIR&&COMPTOIR.id===id)?COMPTOIR:PROJETS.find(x=>x.id===id);
+  if(!p){toast('Projet introuvable.');return;}
+  if(estComptoir(p)){aller('comptoir');return;}
+  COURANT=p; PHOTO=null;
+  const d=p.data||{}, mien=p.owner_id===ME.id, edit=peutEditer(p), av=avancement(p);
+  const parts=partsDe(p.id);
+
+  let h='<div class="ptete"><h2 id="pmTitre">'+esc(p.name||'Sans nom')+'</h2>'
+      +'<button class="x" data-fermer="1" aria-label="Fermer">✕</button></div>'
+   +'<div class="meta" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:4px">'
+     +'<span class="p'+(mien?' mien':'')+'">'+(mien?'⭐ Porté par toi':'👤 '+esc(d.porteur_nom||'Un adhérent'))+'</span>'
+     +'<span class="p">'+esc(STATUTS[d.statut||'actif']||STATUTS.actif)+'</span>'
+     +'<span class="p"><span class="em">📅</span>ouvert le '+esc(dateCourte(p.created_at))+'</span>'
+     +(d.publie_le?'<span class="p fait"><span class="em">🎞️</span>publié le '+esc(dateCourte(d.publie_le))+'</span>':'')
+   +'</div>';
+
+  h+='<div class="bloc"><h3><span class="em">🎯</span>Le projet</h3>'
+   +'<p style="white-space:pre-wrap;margin:0;font-size:14.5px">'+esc(d.pitch||'(pas encore de description)')+'</p></div>';
+
+  h+='<div class="bloc"><h3><span class="em">✅</span>Les étapes'+(av?' <span class="p" style="margin-left:6px">'+av.faits+'/'+av.total+'</span>':'')+'</h3>'
+   +'<p class="sous">Coche au fur et à mesure — c\'est le porteur qui gère ses étapes.</p>'
+   +(av?'<div class="jauge" style="margin:0 0 12px"><i style="width:'+av.pct+'%"></i></div>':'')
+   +'<div id="etapes"></div>'
+   +(edit?'<div class="ln" style="display:flex;gap:8px;margin-top:11px">'
+      +'<input id="nvEtape" placeholder="Nouvelle étape… (ex : repérage du lieu)" style="flex:1">'
+      +'<button class="b g sm" data-addetape="1">Ajouter</button></div>':'')
+   +'</div>';
+
+  h+='<div class="bloc"><h3><span class="em">🧰</span>Les besoins</h3><div id="besoins"></div></div>';
+
+  h+='<div class="bloc"><h3><span class="em">👥</span>L\'équipe</h3>'
+   +'<p class="sous">Qui donne un coup de main. Chacun s\'inscrit — ou se retire — tout seul.</p>'
+   +'<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:11px">'
+     +'<span class="p mien">⭐ '+esc(d.porteur_nom||'le porteur')+'</span>'
+     +(parts.length?parts.map(x=>'<span class="p">'+esc(x.nom||'Un adhérent')+'</span>').join('')
+                   :'<span style="color:var(--muted);font-size:13px;align-self:center">Personne d\'autre pour l\'instant.</span>')
+   +'</div>'
+   +'<button class="b '+(jeParticipe(p.id)?'g':'p')+' sm" data-participer="1">'
+   +(jeParticipe(p.id)?'↩️ Je me retire':'✋ Je participe')+'</button></div>';
+
+  /* Publication : l'horloge d'antériorité. Le porteur pose la date de sortie —
+     c'est cette date qu'un financeur de média regardera. */
+  if(edit){
+    h+='<div class="bloc"><h3><span class="em">🎞️</span>La sortie</h3>'
+     +'<p class="sous">Quand ce projet est en ligne, note la date : c\'est elle qui prouve l\'ancienneté de l\'association comme média.</p>'
+     +'<div style="display:flex;gap:9px;flex-wrap:wrap;align-items:flex-end">'
+     +'<div class="champ" style="flex:1;min-width:150px;margin:0"><label for="pubDate">Date de publication</label>'
+     +'<input type="date" id="pubDate" value="'+esc(d.publie_le||'')+'"></div>'
+     +'<div class="champ" style="flex:2;min-width:190px;margin:0"><label for="pubLien">Lien (facultatif)</label>'
+     +'<input type="url" id="pubLien" placeholder="https://…" value="'+esc(d.publie_lien||'')+'"></div>'
+     +'<button class="b g sm" data-pub="1">Enregistrer</button></div></div>';
+  }else if(d.publie_le){
+    h+='<div class="bloc"><h3><span class="em">🎞️</span>La sortie</h3><p style="margin:0;font-size:14.5px">Publié le <b>'+esc(dateCourte(d.publie_le))+'</b>'
+     +(d.publie_lien?' — <a href="'+esc(d.publie_lien)+'" target="_blank" rel="noopener">voir en ligne ↗</a>':'')+'</p></div>';
+  }
+
+  if(edit){
+    h+='<div class="bloc"><h3><span class="em">✏️</span>Je mets à jour</h3>'
+     +'<div class="champ"><label for="edNom">Nom du projet</label><input id="edNom" value="'+esc(p.name||'')+'"></div>'
+     +'<div class="champ"><label for="edPitch">Description</label><textarea id="edPitch">'+esc(d.pitch||'')+'</textarea></div>'
+     +'<div class="champ"><label for="edStatut">Où en est-il ?</label><select id="edStatut">'
+     +Object.keys(STATUTS).map(k=>'<option value="'+k+'"'+((d.statut||'actif')===k?' selected':'')+'>'+STATUTS[k]+'</option>').join('')
+     +'</select></div><button class="b p sm" data-sauver="1">Enregistrer</button></div>';
+  }
+
+  h+='<div class="bloc"><h3><span class="em">💬</span>Le fil du projet</h3>'
+   +'<p class="sous">Questions, avancées, photos : tout se raconte ici.</p>'
+   +'<div id="fil"><p class="chargement">Chargement du fil…</p></div>'+redacteurHtml()+'</div>';
+
+  ouvrirPanneau(h);
+  rendreEtapes(); rendreBesoins();
+  await chargerFil(p.id,'#fil');
+  vuSet(p.id); renderNav();
+}
+function rendreEtapes(){
+  const box=$('#etapes'); if(!box||!COURANT) return;
+  const js=Array.isArray(COURANT.data&&COURANT.data.jalons)?COURANT.data.jalons:[];
+  const edit=peutEditer(COURANT);
+  if(!js.length){
+    box.innerHTML='<p style="color:var(--muted);font-size:13.5px;margin:0">Pas encore d\'étape.'
+      +(edit?' Ajoute la première ci-dessous.':'')+'</p>';
+    return;
+  }
+  box.innerHTML=js.map((j,i)=>'<div class="etape'+(j.done?' ok':'')+'">'
+    +'<input type="checkbox" data-etape="'+i+'"'+(j.done?' checked':'')+(edit?'':' disabled')
+    +' aria-label="'+esc(j.t||'')+'">'
+    +'<span class="tx">'+esc(j.t||'')+'</span>'
+    +(edit?'<button class="sup" data-supetape="'+i+'" aria-label="Retirer cette étape">✕</button>':'')
+    +'</div>').join('');
+}
+function rendreBesoins(){
+  const box=$('#besoins'); if(!box||!COURANT) return;
+  const b=(COURANT.data&&COURANT.data.besoins)||'';
+  if(peutEditer(COURANT)){
+    box.innerHTML='<div class="champ" style="margin-bottom:9px">'
+      +'<textarea id="edBesoins" placeholder="Matériel, coups de main, contacts…">'+esc(b)+'</textarea></div>'
+      +'<button class="b g sm" data-besoins="1">Enregistrer les besoins</button>';
+  }else{
+    box.innerHTML='<p style="white-space:pre-wrap;margin:0;font-size:14.5px">'
+      +(b?esc(b):'<span style="color:var(--muted)">(rien de déclaré pour l\'instant)</span>')+'</p>';
+  }
+}
+
+/* ─── Fil ─────────────────────────────────────────────────────────────── */
+async function chargerFil(projectId,sel){
+  const box=$(sel); if(!box) return;
+  const {data,error}=await sb.from('project_posts')
+    .select('id,project_id,author_id,author_name,body,photo_path,created_at')
+    .eq('project_id',projectId).order('created_at',{ascending:true});
+  if(error){box.innerHTML='<p class="chargement">Fil illisible pour l\'instant ('+esc(error.message)+').</p>';return;}
+  if(!data||!data.length){
+    box.innerHTML=vide('💬','Personne n\'a encore écrit','Lance la discussion — une question, une idée, une photo.');
+    return;
+  }
+  await signer(data.filter(m=>m.photo_path).map(m=>m.photo_path));
+  box.innerHTML=data.map(m=>'<div class="msg">'
+    +'<span class="av">'+esc(initiales(m.author_name))+'</span><div class="co">'
+    +'<span class="qui">'+esc(m.author_name||'Un adhérent')+'</span>'
+    +'<span class="qd" title="'+esc(dateHeure(m.created_at))+'">'+esc(ilYA(m.created_at))+'</span>'
+    +(m.body?'<p class="tx">'+esc(m.body)+'</p>':'')
+    +(m.photo_path&&PHOTOS_URL[m.photo_path]
+       ?'<img src="'+esc(PHOTOS_URL[m.photo_path])+'" alt="Photo partagée par '+esc(m.author_name||'un adhérent')+'" loading="lazy">':'')
+    +'</div></div>').join('');
+}
+const nomFichier=n=>String(n||'photo').toLowerCase().replace(/[^a-z0-9.]+/g,'-').replace(/^-+|-+$/g,'').slice(-60)||'photo.jpg';
+async function envoyer(){
+  if(!COURANT) return;
+  const ta=$('#txtPost'); if(!ta) return;
+  const corps=ta.value.trim();
+  if(!corps&&!PHOTO){toast('Écris un message ou joins une photo.');return;}
+  const btn=$('#btnEnvoyer'); btn.disabled=true; btn.textContent='Envoi…';
+  try{
+    let chemin=null;
+    if(PHOTO){
+      if(PHOTO.size>8*1024*1024){toast('Photo trop lourde (8 Mo maximum).');return;}
+      chemin=ME.asso+'/'+COURANT.id+'/'+Date.now()+'-'+nomFichier(PHOTO.name);
+      const {error:ue}=await sb.storage.from('projets').upload(chemin,PHOTO,{contentType:PHOTO.type||'image/jpeg'});
+      if(ue){toast('Photo refusée : '+ue.message);return;}
+    }
+    const {error}=await sb.from('project_posts').insert({asso_id:ME.asso,project_id:COURANT.id,
+      author_id:ME.id,author_name:ME.name,body:corps||null,photo_path:chemin});
+    if(error){toast('Message refusé : '+error.message);return;}
+    ta.value=''; PHOTO=null;
+    const tp=$('#tagPhoto'); if(tp) tp.textContent='';
+    const fp=$('#fPhoto'); if(fp) fp.value='';
+    await chargerFil(COURANT.id,'#fil');
+    vuSet(COURANT.id);
+    /* Remonter le projet dans la liste : silencieux si la RLS refuse (non-porteur). */
+    await sb.from('projects').update({updated_at:new Date().toISOString()}).eq('id',COURANT.id);
+    await chargerPosts(); renderNav();
+  } finally { btn.disabled=false; btn.textContent='Envoyer'; }
+}
+
+/* ─── Écritures projet ────────────────────────────────────────────────── */
+async function majData(patch,message){
+  if(!COURANT||!peutEditer(COURANT)) return false;
+  const d=Object.assign({},COURANT.data||{},patch);
+  const {error}=await sb.from('projects').update({data:d,updated_at:new Date().toISOString()}).eq('id',COURANT.id);
+  if(error){toast('Enregistrement impossible : '+error.message);return false;}
+  COURANT.data=d;
+  const p=PROJETS.find(x=>x.id===COURANT.id); if(p) p.data=d;
+  if(message) toast(message);
+  return true;
+}
+async function sauverProjet(){
+  if(!COURANT||!peutEditer(COURANT)) return;
+  const nom=$('#edNom').value.trim()||'Sans nom';
+  const d=Object.assign({},COURANT.data||{},{pitch:$('#edPitch').value.trim(),statut:$('#edStatut').value});
+  const {error}=await sb.from('projects').update({name:nom,data:d,updated_at:new Date().toISOString()}).eq('id',COURANT.id);
+  if(error){toast('Enregistrement impossible : '+error.message);return;}
+  COURANT.name=nom; COURANT.data=d;
+  const p=PROJETS.find(x=>x.id===COURANT.id); if(p){p.name=nom;p.data=d;}
+  toast('Projet mis à jour ✓');
+  const t=$('#pmTitre'); if(t) t.textContent=nom;
+}
+async function basculerEtape(i,done){
+  const js=(Array.isArray(COURANT.data&&COURANT.data.jalons)?COURANT.data.jalons:[]).slice();
+  if(!js[i]) return;
+  js[i]=Object.assign({},js[i],{done:!!done});
+  if(await majData({jalons:js})) rendreEtapes();
+}
+async function supEtape(i){
+  const js=(Array.isArray(COURANT.data&&COURANT.data.jalons)?COURANT.data.jalons:[]).slice();
+  js.splice(i,1);
+  if(await majData({jalons:js})) rendreEtapes();
+}
+async function addEtape(){
+  const inp=$('#nvEtape'); const t=inp.value.trim(); if(!t) return;
+  const js=(Array.isArray(COURANT.data&&COURANT.data.jalons)?COURANT.data.jalons:[]).slice();
+  js.push({t:t,done:false});
+  if(await majData({jalons:js})){inp.value='';rendreEtapes();}
+}
+async function sauverPublication(){
+  const dt=$('#pubDate').value.trim(), ln=$('#pubLien').value.trim();
+  if(ln&&!/^https?:\/\//i.test(ln)){toast('Le lien doit commencer par http:// ou https://');return;}
+  if(await majData({publie_le:dt||null,publie_lien:ln||null},dt?'Date de sortie enregistrée ✓':'Date de sortie retirée')){
+    /* La date change ce que montre l'accueil : on le laisse se recalculer au retour. */
+  }
+}
+async function basculerParticipation(){
+  if(!COURANT||estComptoir(COURANT)) return;
+  if(jeParticipe(COURANT.id)){
+    const {error}=await sb.from('projet_participants').delete().eq('project_id',COURANT.id).eq('user_id',ME.id);
+    if(error){toast('Impossible de se retirer : '+error.message);return;}
+    toast('Tu t\'es retiré du projet.');
+  }else{
+    const {error}=await sb.from('projet_participants').insert({asso_id:ME.asso,project_id:COURANT.id,user_id:ME.id,nom:ME.name});
+    if(error){toast('Inscription impossible : '+error.message);return;}
+    /* Le porteur doit VOIR que quelqu'un l'a rejoint : une ligne dans le fil,
+       pas une notification muette que personne ne lit. */
+    await sb.from('project_posts').insert({asso_id:ME.asso,project_id:COURANT.id,
+      author_id:ME.id,author_name:ME.name,body:'✋ '+ME.name+' a rejoint le projet.'});
+    toast('Tu participes à ce projet ✓');
+  }
+  const {data}=await sb.from('projet_participants').select('project_id,user_id,nom');
+  PARTS=data||[];
+  await chargerPosts();
+  ouvrirProjet(COURANT.id);
+}
+
+/* ─── Nouveau projet (brouillon local, écriture à la validation) ───────── */
+const ETAPES_SORTIE=[
+  '📋 Définir le sujet et les personnes à photographier/filmer',
+  '📍 Repérage du lieu et de la lumière',
+  '📝 Autorisations droit à l\'image signées (adulte / mineur)',
+  '🎒 Vérifier le matériel : batteries, cartes vides, sauvegarde',
+  '🥤 Prévoir eau & manger pour l\'équipe',
+  '👕 Tenues & consignes données aux participants',
+  '📸 Le jour J — shooting / tournage',
+  '💾 Sauvegarder en DOUBLE le soir même',
+  '🎞️ Tri et retouche / dérushage',
+  '📤 Livrer aux modèles + diffuser'
+];
+function panneauNouveau(){
+  ouvrirPanneau(
+    '<div class="ptete"><h2 id="pmTitre"><span class="em">➕</span>Mon nouveau projet</h2>'
+    +'<button class="x" data-fermer="1" aria-label="Fermer">✕</button></div>'
+    +'<p class="sous" style="margin:0 0 16px">Décris ton idée simplement — tu pourras tout compléter après. Rien n\'est enregistré tant que tu ne cliques pas sur Créer.</p>'
+    +'<div class="champ"><label for="npType">Type de projet</label><select id="npType">'
+    +'<option value="libre">🧩 Projet libre</option>'
+    +'<option value="sortie">📸 Sortie photo / vidéo — les 10 étapes du terrain sont pré-remplies</option></select></div>'
+    +'<div class="champ"><label for="npNom">Le nom du projet</label>'
+    +'<input id="npNom" placeholder="Ex : Portrait de Mme Payet, la couturière du quartier"></div>'
+    +'<div class="champ"><label for="npPitch">En quelques phrases, c\'est quoi ?</label>'
+    +'<textarea id="npPitch" placeholder="Ce qu\'on veut faire, pour qui, et pourquoi ça compte."></textarea></div>'
+    +'<div class="champ"><label for="npBesoins">De quoi as-tu besoin ? (facultatif)</label>'
+    +'<textarea id="npBesoins" placeholder="Matériel, coups de main, contacts…" style="min-height:56px"></textarea></div>'
+    +'<button class="b p" data-creer="1" id="btnCreer" style="width:100%;justify-content:center">Créer mon projet</button>');
+  setTimeout(()=>{const i=$('#npNom');if(i)i.focus();},60);
+}
+async function creerProjet(){
+  const nom=$('#npNom').value.trim();
+  if(!nom){toast('Donne un nom à ton projet.');return;}
+  const btn=$('#btnCreer'); btn.disabled=true; btn.textContent='Création…';
+  try{
+    const type=$('#npType').value;
+    let bes=$('#npBesoins').value.trim();
+    if(type==='sortie'&&!bes) bes='Manger / boire : \nTenues : \nTransport : \nMatériel à emprunter : \nDivers : ';
+    const d={pitch:$('#npPitch').value.trim(),besoins:bes,statut:'actif',
+      jalons:(type==='sortie'?ETAPES_SORTIE.map(t=>({t:t,done:false})):[]),gabarit:type,porteur_nom:ME.name};
+    const {data,error}=await sb.from('projects')
+      .insert({asso_id:ME.asso,owner_id:ME.id,name:nom,data:d}).select('id').maybeSingle();
+    if(error){toast('Création impossible : '+error.message);return;}
+    toast('Projet créé ✓ — à toi de jouer !');
+    await chargerProjets();
+    aller('projets');
+    if(data&&data.id) ouvrirProjet(data.id);
+  } finally { btn.disabled=false; btn.textContent='Créer mon projet'; }
+}
+
+/* ─── Matériel (brouillon local, écriture à la validation) ─────────────── */
+let MAT_EDIT=null;
+function panneauMateriel(m){
+  MAT_EDIT=m||null;
+  const v=m||{categorie:'autre',etat:'bon',proprietaire_type:'adherent'};
+  ouvrirPanneau(
+    '<div class="ptete"><h2 id="pmTitre">'+(m?'✏️ Modifier le matériel':'🧰 Déclarer du matériel')+'</h2>'
+    +'<button class="x" data-fermer="1" aria-label="Fermer">✕</button></div>'
+    +'<p class="sous" style="margin:0 0 16px">Ton matériel reste le tien — le registre dit juste qui possède quoi, et entre quelles mains ça se trouve.</p>'
+    +'<div class="champ"><label for="mNom">C\'est quoi ?</label>'
+    +'<input id="mNom" placeholder="Ex : Canon R6 + objectif 24-70" value="'+esc(v.nom||'')+'"></div>'
+    +'<div class="champ"><label for="mCat">Catégorie</label><select id="mCat">'
+    +Object.keys(CATS).map(k=>'<option value="'+k+'"'+(v.categorie===k?' selected':'')+'>'+CATS[k]+'</option>').join('')+'</select></div>'
+    +(estBureau()?'<div class="champ"><label for="mProprio">À qui appartient-il ?</label><select id="mProprio">'
+      +'<option value="adherent"'+(v.proprietaire_type==='adherent'?' selected':'')+'>🎒 À moi</option>'
+      +'<option value="asso"'+(v.proprietaire_type==='asso'?' selected':'')+'>🏛️ À l\'association</option>'
+      +'<option value="mise_a_dispo"'+(v.proprietaire_type==='mise_a_dispo'?' selected':'')+'>🤝 Mise à disposition</option>'
+      +'</select></div>':'')
+    +'<div class="champ"><label for="mEtat">État</label><select id="mEtat">'
+    +Object.keys(ETATS).map(k=>'<option value="'+k+'"'+(v.etat===k?' selected':'')+'>'+ETATS[k]+'</option>').join('')+'</select></div>'
+    +'<div class="champ"><label for="mNotes">Notes (facultatif)</label>'
+    +'<textarea id="mNotes" placeholder="Accessoires, particularités, précautions…" style="min-height:56px">'+esc(v.notes||'')+'</textarea></div>'
+    +'<button class="b p" data-matsauver="1" id="btnMat" style="width:100%;justify-content:center">'
+    +(m?'Enregistrer':'Déclarer')+'</button>');
+}
+async function sauverMateriel(){
+  const nom=$('#mNom').value.trim();
+  if(!nom){toast('Dis au moins ce que c\'est.');return;}
+  const btn=$('#btnMat'); btn.disabled=true;
+  try{
+    const p={nom:nom,categorie:$('#mCat').value,etat:$('#mEtat').value,notes:$('#mNotes').value.trim()||null};
+    const pr=$('#mProprio'); if(pr) p.proprietaire_type=pr.value;
+    let error;
+    if(MAT_EDIT){ ({error}=await sb.from('materiel').update(p).eq('id',MAT_EDIT.id)); }
+    else{
+      p.asso_id=ME.asso; p.proprietaire_id=ME.id; p.proprietaire_nom=ME.name;
+      if(!p.proprietaire_type) p.proprietaire_type='adherent';
+      ({error}=await sb.from('materiel').insert(p));
+    }
+    if(error){toast('Enregistrement impossible : '+error.message);return;}
+    toast(MAT_EDIT?'Matériel mis à jour ✓':'Matériel déclaré ✓');
+    fermerPanneau();
+    await chargerMateriel(); aller('materiel');
+  } finally { btn.disabled=false; }
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   CHARGEMENT DES DONNÉES
+   ══════════════════════════════════════════════════════════════════════════ */
+async function chargerProjets(){
+  const {data,error}=await sb.from('projects').select('id,name,owner_id,data,created_at,updated_at')
+    .order('updated_at',{ascending:false});
+  if(error){toast('Lecture des projets impossible : '+error.message);PROJETS=[];return;}
+  const tous=data||[];
+  COMPTOIR=tous.find(estComptoir)||null;
+  PROJETS=tous.filter(p=>!estComptoir(p))
+    .filter(p=>((p.data&&p.data.statut)||'actif')!=='archive'||p.owner_id===ME.id);
+}
+async function chargerPosts(){
+  const {data,error}=await sb.from('project_posts')
+    .select('id,project_id,author_id,author_name,body,photo_path,created_at')
+    .order('created_at',{ascending:false}).limit(300);
+  POSTS=(error||!data)?[]:data;
+}
+async function chargerParts(){
+  const {data,error}=await sb.from('projet_participants').select('project_id,user_id,nom');
+  PARTS=(error||!data)?[]:data;
+}
+async function chargerMateriel(){
+  const {data,error}=await sb.from('materiel').select('*').order('created_at',{ascending:false});
+  MATERIEL=(error||!data)?[]:data;
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   DÉMARRAGE
+   ══════════════════════════════════════════════════════════════════════════ */
+function ecranMessage(ic,titre,texte,bouton){
+  $('#main').innerHTML='<div class="vue on" style="display:grid;place-items:center;min-height:70dvh">'
+    +'<div class="carte" style="max-width:460px;width:100%">'+vide(ic,titre,texte,bouton||'')+'</div></div>';
+}
+async function demarrer(){
+  /* 1. Qui es-tu ? */
+  let session=null;
+  try{ session=(await sb.auth.getSession()).data.session; }catch(e){}
+  if(!session){
+    ecranMessage('👋','Connecte-toi d\'abord',
+      'Cet espace est réservé aux membres de l\'association. Connecte-toi — ou demande à rejoindre — et reviens ici.',
+      '<a class="b p" href="connexion.html">Me connecter →</a>');
+    return;
+  }
+  const {data:p,error:pe}=await sb.from('profiles')
+    .select('id,full_name,email,role,statut,asso_id').eq('id',session.user.id).maybeSingle();
+  if(pe||!p){
+    ecranMessage('😕','Ton profil ne se lit pas',
+      'Réessaie dans un instant, ou reconnecte-toi depuis la page de connexion.',
+      '<a class="b g" href="connexion.html">Retour à la connexion</a>');
+    return;
+  }
+  ME={id:p.id,name:(p.full_name||p.email||'').split('@')[0],role:p.role,statut:p.statut,asso:p.asso_id};
+
+  /* 2. Quelle association ? Un compte sans association ne doit JAMAIS se
+     rabattre sur une autre : il attend, et on le dit clairement. */
+  if(!ME.asso){
+    ecranMessage('⏳','Compte à rattacher',
+      'Ton compte n\'est encore rattaché à aucune association. Le bureau doit le faire depuis son espace — préviens-le, il ne le voit pas tout seul.');
+    return;
+  }
+  const {data:a}=await sb.from('associations').select('id,name,slug,features').eq('id',ME.asso).maybeSingle();
+  ASSO=a||{id:ME.asso,name:'Mon association',slug:null,features:{}};
+
+  /* 3. L'habillage, résolu depuis les données. `lireCharte` n'est tenté que
+     pour ceux qui ont le droit de lire fiches_marque — sinon c'est un appel
+     refusé à chaque ouverture, pour rien. */
+  ID=await window.BobIdentite.resoudre(sb,ASSO,{lireCharte:estBureau()});
+  const applique=window.BobIdentite.appliquer(ID,document);
+  document.title='Mon espace — '+ID.nom;
+  try{ localStorage.setItem('bob_asso',ASSO.slug==='case-bdn'?'case':(ASSO.slug||'')); }catch(e){}
+  if(console&&console.info) console.info('[Bob] habillage « '+ID.nom+' » (source : '+ID._source+')',applique.contraste);
+
+  $('#marque').innerHTML=window.BobIdentite.marqueHtml(ID,36)
+    +'<div style="min-width:0"><span class="n">'+esc(ID.nom_court||ID.nom)+'</span>'
+    +(ID.tagline?'<span class="t">'+esc(ID.tagline)+'</span>':'')+'</div>';
+  $('#moi').innerHTML='<span class="av">'+esc(initiales(ME.name))+'</span>'
+    +'<div style="min-width:0"><div class="nm">'+esc(ME.name)+'</div>'
+    +'<div class="rl">'+esc(ME.role==='president'?'Président':ME.role==='tresorier'?'Trésorier':
+       ME.role==='bureau'?'Bureau':'Adhérent')+'</div></div>';
+  if(ID.site){ const l=$('#lienSite'); l.href=ID.site; l.style.display=''; }
+
+  /* 4. Le compte est-il ouvert ? */
+  if(ME.statut!=='actif'){
+    ecranMessage('⏳','Ton compte attend une validation',
+      'Le bureau de l\'association doit valider ton accès avant que tu puisses entrer. Reviens bientôt !');
+    return;
+  }
+  if(!feat('projets_adherents')&&!feat('materiel')){
+    ecranMessage('🔒','Espace pas encore ouvert',
+      'Aucun module n\'est activé pour ton association. Parles-en au bureau : c\'est un réglage, pas un développement.');
+    return;
+  }
+
+  /* 5. Les données. */
+  await Promise.all([chargerProjets(),chargerPosts(),chargerParts()]);
+  if(feat('materiel')) await chargerMateriel();
+
+  const dep=(location.hash||'').replace('#','');
+  aller(sectionsOuvertes().some(s=>s.k===dep)?dep:'accueil');
+}
+
+/* ─── Un seul écouteur pour toute la page ─────────────────────────────── */
+document.addEventListener('click',async e=>{
+  const c=s=>e.target.closest(s);
+  let t;
+  if((t=c('[data-vue]'))){ aller(t.dataset.vue); return; }
+  if((t=c('[data-aller]'))){ aller(t.dataset.aller); return; }
+  if((t=c('[data-fermer]'))||e.target.id==='voile'){ fermerPanneau(); return; }
+  if((t=c('[data-filtre]'))){ FILTRE=t.dataset.filtre; aller('projets'); return; }
+  if((t=c('[data-nouveau]'))){ panneauNouveau(); return; }
+  if((t=c('[data-creer]'))){ await creerProjet(); return; }
+  if((t=c('[data-projet]'))){ await ouvrirProjet(t.dataset.projet); return; }
+  if((t=c('[data-sauver]'))){ await sauverProjet(); return; }
+  if((t=c('[data-besoins]'))){ await majData({besoins:$('#edBesoins').value.trim()},'Besoins enregistrés ✓'); return; }
+  if((t=c('[data-addetape]'))){ await addEtape(); return; }
+  if((t=c('[data-supetape]'))){ await supEtape(+t.dataset.supetape); return; }
+  if((t=c('[data-participer]'))){ await basculerParticipation(); return; }
+  if((t=c('[data-pub]'))){ await sauverPublication(); return; }
+  if((t=c('[data-photo]'))){ $('#fPhoto').click(); return; }
+  if((t=c('[data-envoyer]'))){ await envoyer(); return; }
+  if((t=c('[data-matnouveau]'))){ panneauMateriel(null); return; }
+  if((t=c('[data-matedit]'))){ panneauMateriel(MATERIEL.find(x=>x.id===t.dataset.matedit)); return; }
+  if((t=c('[data-matsauver]'))){ await sauverMateriel(); return; }
+  if((t=c('[data-photo-voir]'))||(t=c('figure[data-photo]'))){ window.open(t.dataset.photo,'_blank','noopener'); return; }
+  if((t=c('#moi'))){   /* sur téléphone, l'avatar EST le menu du compte */
+    const m=$('#menuCompte'), ouvert=m.classList.toggle('on');
+    t.setAttribute('aria-expanded',ouvert?'true':'false');
+    return;
+  }
+  if(e.target.id==='sortir'){
+    e.preventDefault();
+    await sb.auth.signOut();
+    location.href='connexion.html';
+    return;
+  }
+  /* Un clic ailleurs referme le menu (il ne doit pas rester ouvert sous le doigt). */
+  const m=$('#menuCompte');
+  if(m&&m.classList.contains('on')&&!e.target.closest('#menuCompte')){
+    m.classList.remove('on'); $('#moi').setAttribute('aria-expanded','false');
+  }
+});
+document.addEventListener('change',async e=>{
+  if(e.target.matches('[data-etape]')){ await basculerEtape(+e.target.dataset.etape,e.target.checked); return; }
+  if(e.target.id==='fPhoto'){
+    PHOTO=e.target.files&&e.target.files[0]||null;
+    const tg=$('#tagPhoto');
+    if(tg) tg.textContent=PHOTO?('📎 '+PHOTO.name.slice(0,28)+(PHOTO.name.length>28?'…':'')):'';
+  }
+});
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape'&&$('#voile').classList.contains('on')) fermerPanneau();
+});
+window.addEventListener('hashchange',()=>{
+  const k=(location.hash||'').replace('#','');
+  if(k&&k!==VUE&&sectionsOuvertes().some(s=>s.k===k)) aller(k);
+});
+
+demarrer();
+</script>
+</body>
+</html>
