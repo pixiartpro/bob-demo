@@ -1997,9 +1997,18 @@ async function calcLoadTarifs(){
     if(data&&data.data&&Array.isArray(data.data.tranches)&&data.data.tranches.length){ PUBTARIF=data.data; if(typeof window.calcRun==='function') window.calcRun(); if(typeof window.acmCalcRun==='function') window.acmCalcRun(); }
   }catch(e){ /* repli silencieux sur la grille en dur */ }
 }
+// Le libellé d'une tranche est FABRIQUÉ à partir des bornes publiées, jamais recopié d'une liste en dur :
+// si le CA déplace une borne, l'écran des familles doit annoncer la NOUVELLE, pas l'ancienne.
+function calcNb(n,d){ return n.toLocaleString('fr-FR',{minimumFractionDigits:(d||0),maximumFractionDigits:(d||0)}); }
+function calcLabelTranche(i,a){
+  const haut=(a[i].max==null?null:a[i].max);
+  const bas=(i===0?0:Math.floor(a[i-1].max)+1);
+  if(haut==null) return 'Tranche '+(i+1)+' ('+calcNb(bas)+' € et +)';
+  return 'Tranche '+(i+1)+' (QF '+calcNb(bas)+'–'+calcNb(haut,2)+' €)';
+}
 function calcGrille(){
   if(PUBTARIF){ return {
-    tranches: PUBTARIF.tranches.map((t,i)=>({max:(t.max==null?Infinity:t.max), jour:t.jour, lab:(CALC_TR[i]&&CALC_TR[i].lab)||('Tranche '+(i+1))})),
+    tranches: PUBTARIF.tranches.map((t,i,a)=>({max:(t.max==null?Infinity:t.max), jour:t.jour, lab:calcLabelTranche(i,a)})),
     supp:(PUBTARIF.suppMatin!=null?PUBTARIF.suppMatin:CALC_SUPP), rem:(PUBTARIF.remise!=null?PUBTARIF.remise:CALC_REM),
     jours:(PUBTARIF.jours!=null?PUBTARIF.jours:CALC_JOURS), hors:(PUBTARIF.horsCommune!=null?PUBTARIF.horsCommune:CALC_HORS) };
   }
@@ -2024,7 +2033,7 @@ function calcInit(){
     +'<label style="font-weight:700"><input type="checkbox" id="calc_hors" onchange="calcRun()"> Hors commune</label>'
     +'</div>'
     +'<div id="calc_res" style="margin-top:12px"></div>'
-    +'<p class="sub" style="margin:10px 0 0;font-size:12.5px">Estimation indicative (grille au quotient familial, ≈ 16 jours/mois, −5 % par enfant supplémentaire). Le tarif définitif est calculé avec le bureau d\'après votre attestation CAF.</p>';
+    +'<p class="sub" style="margin:10px 0 0;font-size:12.5px"><b>Estimation indicative pour un mois moyen.</b> Le montant réellement facturé = tarif jour × <b>nombre de jours d\'accueil ouverts dans le mois</b>, qui change d\'un mois à l\'autre avec le calendrier scolaire (7 jours en août, 18 en septembre…). Remise de 5 % par enfant supplémentaire. Le tarif définitif est calculé avec le bureau d\'après votre attestation CAF.</p>';
   calcRun(); calcLoadTarifs();
 }
 window.calcRun=function(){
@@ -2073,7 +2082,7 @@ function acmCalcInit(){
     +'<label style="font-weight:700"><input type="checkbox" id="acmcalc_hors" onchange="acmCalcRun()"> Hors commune</label>'
     +'</div>'
     +'<div id="acmcalc_res" style="margin-top:12px"></div>'
-    +'<p class="sub" style="margin:10px 0 0;font-size:12.5px">Forfait <b>5 jours / semaine</b> (grille officielle Saint-Denis 2026-2027). L\'<b>ACM d\'été = grandes vacances</b>. Si une semaine comporte un jour férié, le CASE recalcule. Le tarif définitif est confirmé avec le bureau d\'après votre attestation CAF.</p>';
+    +'<p class="sub" style="margin:10px 0 0;font-size:12.5px">Forfait <b>5 jours / semaine</b> (grille officielle Saint-Denis 2026-2027). L\'<b>ACM d\'été = grandes vacances</b>. <b>Une semaine commencée est due en entier</b>, jour férié compris. Le tarif définitif est confirmé avec le bureau d\'après votre attestation CAF.</p>';
   acmCalcRun(); calcLoadTarifs();
 }
 window.acmCalcRun=function(){
@@ -2085,7 +2094,21 @@ window.acmCalcRun=function(){
   const sem=Math.max(1,parseInt((gv('acmcalc_sem')||{}).value)||1);
   let semaine, lab;
   if(hors){ semaine=G.hors; lab='Hors commune'; }
-  else { let idx=CALC_TR.findIndex(t=>qf<=t.max); if(idx<0) idx=CALC_TR.length-1; semaine=(type==='petites'?G.petites:G.grandes)[idx]; lab=CALC_TR[idx].lab; }
+  else {
+    // Les bornes de QF de l'ACM sont les MÊMES que celles du périscolaire : on les lit dans la grille PUBLIÉE
+    // (calcGrille()), jamais dans la copie en dur — sinon un vote qui déplace les bornes ferait annoncer
+    // un tarif faux aux familles sans que rien ne le signale.
+    const TR=calcGrille().tranches;
+    let idx=TR.findIndex(t=>qf<=t.max); if(idx<0) idx=TR.length-1;
+    const tab=(type==='petites'?G.petites:G.grandes);
+    if(!tab || idx>=tab.length || tab[idx]==null){
+      // grille des tranches et grille ACM désaccordées : on n'annonce AUCUN montant plutôt qu'un faux.
+      res.innerHTML='<div style="background:#fff8e6;border:1px solid #d0a83a;border-radius:12px;padding:12px 14px;font-weight:700">'
+        +'Tarif à confirmer avec le bureau — la grille ACM et les tranches de quotient ne concordent pas.</div>';
+      return;
+    }
+    semaine=tab[idx]; lab=TR[idx].lab;
+  }
   const total=semaine*sem;
   const typeLab=(type==='petites'?'petites vacances':'grandes vacances (été)');
   res.innerHTML='<div style="background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px 14px">'
