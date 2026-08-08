@@ -30,7 +30,10 @@ if(/(^|\.)casebdn\.re$|(^|\.)github\.io$/.test(location.hostname)) location.repl
   header.nav{position:sticky;top:0;z-index:50;background:rgba(13,13,17,.82);backdrop-filter:saturate(140%) blur(10px);border-bottom:1px solid var(--line)}
   header.nav .in{display:flex;align-items:center;gap:14px;max-width:1080px;margin:0 auto;padding:11px 22px}
   .brand{display:flex;align-items:center;gap:11px;font-weight:800;letter-spacing:.5px}
-  .brand img{width:38px;height:38px;border-radius:10px;object-fit:cover}
+  /* 08/08/2026 — le logo est désormais DÉTOURÉ (fond transparent) : plus de tuile,
+     donc plus de rayon ni d'ombre, qui se dessineraient autour du vide. `contain`
+     pour ne jamais rogner un logotype horizontal. */
+  .brand img{width:38px;height:38px;object-fit:contain}
   header.nav nav{margin-left:auto;display:flex;gap:6px;align-items:center}
   header.nav nav a{padding:8px 13px;border-radius:999px;font-size:14px;font-weight:600;color:var(--muted)}
   header.nav nav a:hover{color:var(--ink);background:#ffffff10}
@@ -49,7 +52,7 @@ if(/(^|\.)casebdn\.re$|(^|\.)github\.io$/.test(location.hostname)) location.repl
   .hero .bgimg{position:absolute;inset:0;background:#000 center/cover no-repeat;opacity:.20;filter:saturate(120%)}
   .hero .veil{position:absolute;inset:0;background:radial-gradient(1100px 460px at 50% -10%,#ffffff14,transparent 60%),linear-gradient(180deg,#0d0d1166,#0d0d11 92%)}
   .hero .in{position:relative;text-align:center;padding:74px 22px 64px}
-  .hero img.logo{width:118px;height:118px;border-radius:24px;object-fit:cover;box-shadow:var(--shadow);margin-bottom:22px}
+  .hero img.logo{width:auto;height:82px;max-width:min(78vw,320px);object-fit:contain;margin-bottom:22px}
   .hero h1{font-size:clamp(30px,6vw,52px);margin:0 0 6px;font-weight:900;letter-spacing:-.5px}
   .hero .tag{font-size:13.5px;font-weight:800;letter-spacing:3px;margin:0 0 16px}
   .hero p.lead{max-width:620px;margin:0 auto 26px;color:#d7dae2;font-size:17px}
