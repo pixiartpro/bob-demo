@@ -12713,20 +12713,36 @@ renderAll();
       rh:{        nom:'Roro',  role:'Le RH',         img:'bob-roro-w.png'}
     }
   };
-  /* Mascotte d'AIDE selon l'asso : le CASE a Zanana 🍍, tout le reste a Bob 🤖.
-     `window.bobMasc('point'|'wave')` donne le bon fichier ; les <img> déjà dans le HTML sont
-     repatchées au démarrage par applyAssoIdentity (elles sont écrites avant que l'asso soit connue). */
-  const MASC_CASE={ point:'zanana-point.png', wave:'zanana-wave.png' };
-  const MASC_BOB ={ point:'bob-think.png',    wave:'bob-wave.png'    };
-  function mascSet(){ try{ return (typeof myAsso!=='undefined' && myAsso==='d617489c-b18b-499b-ab17-c31656d0f08a') ? MASC_CASE : MASC_BOB; }catch(e){ return MASC_BOB; } }
-  window.bobMasc=function(k){ return (mascSet()[k])||MASC_BOB[k]||''; };
-  /* 08/08/2026 — l'IMAGE de la mascotte suivait déjà l'asso (repatch plus bas), mais son NOM
-     restait « Zanana » dans l'onglet Aide : chez une autre association, le robot Bob s'affichait
-     donc sous le nom de la mascotte du CASE. Même défaut que « 🍍 Zanana t'explique cette page »
-     corrigé le 04/08 — il n'avait été traité que pour l'aide contextuelle. Une seule source pour
-     le nom ET l'image ; le genre suit, sinon « il/elle » se contredit dans la phrase. */
-  window.bobMascNom=function(){ return (mascSet()===MASC_CASE) ? 'Zanana' : 'Bob'; };
-  window.bobMascElle=function(){ return mascSet()===MASC_CASE; };
+  /* ===== La mascotte d'AIDE appartient au TENANT, et vient de ses DONNÉES ==================
+     09/08/2026. Étape précédente (08/08) : j'avais écrit `estLeCase ? 'Zanana' : 'Bob'` — un
+     `if` sur un client nommé, exactement la dette que la doctrine SaaS interdit : la 4e asso
+     qui a sa mascotte aurait obligé à rouvrir ce fichier. Le nom, le genre, l'emblème et les
+     deux images viennent désormais de `identite.gestion.assistant` (posé en base pour le CASE
+     le 09/08 : Zanana 🍍, genre f). Sans donnée → la mascotte du PRODUIT, Bob 🤖.
+     Le test qui tranche est passé : une asso arrive avec SA mascotte sans toucher au code.
+     ⚠️ `associations` est modifiable par le président : un nom de fichier d'image est donc
+     VALIDÉ (fichier local simple), jamais pris tel quel — sinon un président poserait une URL
+     externe et un pixel de pistage avec (aucune CSP sur GitHub Pages). */
+  const MASC_BOB ={ point:'bob-think.png', wave:'bob-wave.png', nom:'Bob', elle:false, embleme:'🤖' };
+  function mascAsso(){
+    try{
+      const g=(window.__bobFeatures&&window.__bobFeatures.identite&&window.__bobFeatures.identite.gestion)||null;
+      const a=(g&&typeof g.assistant==='object'&&g.assistant)?g.assistant:null;
+      if(!a) return MASC_BOB;
+      const fichier=v=>/^[A-Za-z0-9._-]{1,60}\.(png|jpg|jpeg|webp|svg)$/.test(String(v||''))?String(v):'';
+      return {
+        nom:     String(a.nom||'').trim().slice(0,40) || MASC_BOB.nom,
+        elle:    String(a.genre||'')==='f',
+        embleme: String(a.embleme||'').trim().slice(0,4) || MASC_BOB.embleme,
+        point:   fichier(a.img_point) || MASC_BOB.point,
+        wave:    fichier(a.img_wave)  || MASC_BOB.wave
+      };
+    }catch(e){ return MASC_BOB; }
+  }
+  function mascSet(){ return mascAsso(); }
+  window.bobMasc=function(k){ return (mascAsso()[k])||MASC_BOB[k]||''; };
+  window.bobMascNom=function(){ return mascAsso().nom; };
+  window.bobMascElle=function(){ return mascAsso().elle; };
   /* 04/08/2026 — EN-TÊTE DES DOCUMENTS OFFICIELS (PV, relevés de décisions, émargement, budget signé).
      Il était écrit EN DUR au nom du CASE dans 5 fonctions d'impression : un PV de BOKAF sortait donc
      avec l'adresse ET le SIREN d'une autre association — document inopposable. Une seule source
@@ -12853,20 +12869,15 @@ renderAll();
     /* 03/08/2026 — le nom de l'org devient lisible PARTOUT (impressions, exports, mails) via window.bobOrgName */
     try{ window.bobOrgName=id.orgName||null; }catch(e){}
     try{ window.bobLegal=id.legal||null; }catch(e){}  /* 04/08 : sert l'en-tête des documents officiels */
-    /* 04/08/2026 — le NOM de la mascotte suivait encore le CASE alors que son IMAGE était déjà dynamique
-       (« 🍍 Zanana t'explique cette page » à côté du robot Bob). On aligne les deux. */
+    /* 09/08/2026 — TOUTE la mascotte d'aide (nom, genre, emblème, images) vient maintenant de
+       `identite.gestion.assistant`. Les trois blocs qui suivent testaient l'UUID du CASE ; ils
+       lisent désormais la donnée du tenant, donc le CASE garde Zanana 🍍 parce que c'est ÉCRIT
+       en base, plus parce que c'est écrit dans le code. Sans donnée : Bob 🤖. */
     try{
+      const M=(typeof mascAsso==='function')?mascAsso():{nom:'Bob',elle:false,embleme:'🤖',point:'bob-think.png',wave:'bob-wave.png'};
+      const N=M.nom, pron=M.elle?'elle':'il';
       const t=document.getElementById('pageHelpTitre');
-      if(t) t.textContent = (assoId==='d617489c-b18b-499b-ab17-c31656d0f08a')
-        ? "🍍 Zanana t'explique cette page" : "🤖 Bob t'explique cette page";
-    }catch(e){}
-    /* 08/08/2026 — l'onglet ❓ Aide avait été oublié par le correctif du 04/08 : son image était
-       repatchée vers Bob, mais les trois textes disaient toujours « Zanana ». On les aligne, en
-       accordant le genre (Zanana : elle ; Bob : il). Calculé sur `assoId` — le paramètre reçu —
-       et non sur bobMascNom(), qui lit `myAsso` : au premier habillage il peut ne pas être posé. */
-    try{
-      const zan=(assoId==='d617489c-b18b-499b-ab17-c31656d0f08a');
-      const N=zan?'Zanana':'Bob', pron=zan?'elle':'il';
+      if(t) t.textContent = M.embleme+' '+N+" t'explique cette page";
       const tt=document.getElementById('aideMascTitre');
       if(tt) tt.textContent='❓ Demande à '+N;
       const hh=document.getElementById('aideMascHint');
@@ -12875,17 +12886,13 @@ renderAll();
         +"ta question est transmise pour qu'on y réponde.";
       const cc=document.getElementById('aideMascCarte');
       if(cc) cc.textContent='« Demande à '+N+' » (questions / réponses) · « Quoi de neuf » (les nouveautés au fil du temps)';
-    }catch(e){}
-    /* 03/08/2026 — mascotte d'aide : les <img zanana-*> écrites en dur dans le HTML sont repatchées vers
-       Bob 🤖 dès qu'on N'EST PAS le CASE (l'ananas reste l'emblème du CASE seul). */
-    try{
-      if(assoId!=='d617489c-b18b-499b-ab17-c31656d0f08a'){
-        document.querySelectorAll('img[src*="zanana-"]').forEach(function(im){
-          const s=im.getAttribute('src')||'';
-          if(s.indexOf('wave')>=0) im.setAttribute('src','bob-wave.png');
-          else im.setAttribute('src','bob-think.png');
-        });
-      }
+      /* Les <img zanana-*> sont écrites en dur dans le HTML (avant que l'asso soit connue) :
+         on les repointe TOUJOURS vers les images de l'assistant du tenant — pour le CASE elles
+         valent zanana-*, donc rien ne bouge chez lui, et il n'y a plus de test sur son UUID. */
+      document.querySelectorAll('img[src*="zanana-"]').forEach(function(im){
+        const s=im.getAttribute('src')||'';
+        im.setAttribute('src', s.indexOf('wave')>=0 ? M.wave : M.point);
+      });
     }catch(e){}
     /* 08/08/2026 — on MÉMORISE le titre de l'asso : la messagerie le réécrit à chaque
        relevé de messages (compteur « (3) 💬 … ») et l'écrasait par un « Bob — CASE » en dur.
