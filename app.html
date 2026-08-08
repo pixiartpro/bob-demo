@@ -535,9 +535,11 @@
       <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:0 0 12px">
         <label style="font-weight:700;font-size:14px">Salle :</label>
         <select id="salleSelect" onchange="if(window.loadCreneaux)loadCreneaux()" style="font:inherit;padding:8px 12px;border:1.5px solid var(--line,#e7efe9);border-radius:10px;background:#fff">
-          <option value="danse">💃 Salle de danse</option>
-          <option value="musique">🎵 Salle de musique</option>
-          <option value="reunion">🏢 Salle de réunion (bureau)</option>
+          <!-- 09/08/2026 — les 3 salles du CASE étaient écrites ICI, en dur : toute asso ayant
+               f_metier_acm voyait les locaux d'une autre (PIX-I-ART, qui l'a à true, les voyait).
+               Elles viennent maintenant de `associations.features.salles`, remplies par
+               remplirSalles() au démarrage. Vide par défaut : une asso sans salles déclarées
+               n'en invente pas. -->
         </select>
         <button class="ghost btn" onclick="if(window.loadCreneaux)loadCreneaux()">↻ Rafraîchir</button>
       </div>
@@ -5923,14 +5925,33 @@ function renderZoneCards(){
      → le lien suit désormais le site de l'asso connectée ; l'affiche reste réservée au CASE tant
      qu'elle n'est pas paramétrable (cf. audit du 03/08/2026). */
   if(box){
-    const SITES={'d617489c-b18b-499b-ab17-c31656d0f08a':{url:'https://casebdn.re/',lib:'Voir le site public du CASE'},
-                 '30cab5ff-fb7d-4734-8f2d-bac3100841ed':{url:'https://bokaf.bob.re/',lib:'Voir le site public de BOKAF'}};
+    /* 09/08/2026 — c'était un dictionnaire de DEUX UUID clients en dur : la 3e asso n'avait pas
+       de lien vers son site, et la 4e obligeait à rouvrir ce fichier. L'information existe déjà
+       en base : `identite.site` (page servie sur le domaine courant) et `identite.nom_court`.
+       On garde un lien RELATIF quand c'est une page du dépôt — il suit alors le domaine sur
+       lequel l'asso est servie (casebdn.re pour le CASE, bokaf.bob.re pour BOKAF), sans qu'on
+       ait à connaître ce domaine. Une URL absolue déclarée en base n'est acceptée qu'en https,
+       jamais un javascript: ou un data: (associations est modifiable par le président). */
+    const SITES=(function(){
+      try{
+        const it=(window.__bobFeatures&&window.__bobFeatures.identite)||null; if(!it) return null;
+        const brut=String(it.site||'').trim(); if(!brut) return null;
+        const relative=/^[A-Za-z0-9._-]{1,80}\.html$/.test(brut);
+        const absolue=/^https:\/\/[A-Za-z0-9.-]+(\/[^\s"'<>]*)?$/.test(brut);
+        if(!relative && !absolue) return null;
+        const nom=String(it.nom_court||it.nom||'').trim();
+        return { url:brut, lib:'Voir le site public'+(nom?' de '+nom:'') };
+      }catch(e){ return null; }
+    })();
     /* ⚠️ 04/08/2026 — page blanche : `myAsso` est un `let` de l'IIFE du bloc <script> connexion (l.8337),
        donc HORS DE PORTÉE ici (bloc moteur) → ReferenceError NON avalée dans renderZoneCards, qui tue
        renderAll() puis boot() avant la ligne qui rend le document visible. Même motif que l'incident du
        11/07 (commit b6f0b01). On lit le global exposé, comme estLeCase() juste au-dessus. */
-    const s=SITES[(window.bobMe&&window.bobMe.asso)||''];
-    box.innerHTML=(s?('<a href="'+s.url+'" target="_blank" rel="noopener" style="display:inline-block;margin:2px 0;font-size:13px;color:var(--muted);text-decoration:none">🌐 '+s.lib+' ↗</a>'):'')
+    const s=SITES;
+    /* ⚠️ 09/08/2026 — url et libellé viennent maintenant de la BASE, modifiable par le président :
+       ils sont échappés avant d'entrer dans innerHTML (même famille que les XSS `embleme` et
+       `bobOrgName` corrigés le 08/08). L'URL est déjà validée à la construction ci-dessus. */
+    box.innerHTML=(s?('<a href="'+esc(s.url)+'" target="_blank" rel="noopener" style="display:inline-block;margin:2px 0;font-size:13px;color:var(--muted);text-decoration:none">🌐 '+esc(s.lib)+' ↗</a>'):'')
       +(estLeCase()?'<button onclick="afficheQR()" style="margin-left:14px;border:none;background:transparent;padding:2px 0;font-size:13px;font-weight:600;color:var(--brand);cursor:pointer">📣 Affiche à partager (QR code)</button>':'');
   }
 
@@ -12199,8 +12220,34 @@ renderAll();
   function resaCreneau(r){ const a=(r.heure_debut||'').trim(), b=(r.heure_fin||'').trim(); return (a&&b)?(a+'–'+b):(a||b||'horaire non précisé'); }
   function resaMinutes(t){ t=(t||'').trim(); const x=t.split(':'); return x.length>=2?(parseInt(x[0],10)*60+parseInt(x[1],10)):NaN; }
   function resaOverlap(a1,a2,b1,b2){ const s1=resaMinutes(a1),e1=resaMinutes(a2),s2=resaMinutes(b1),e2=resaMinutes(b2); if([s1,e1,s2,e2].some(isNaN)) return false; return s1<e2 && s2<e1; }
+  /* 09/08/2026 — les salles d'une asso sont une DONNÉE (`features.salles`), plus trois <option>
+     écrites dans le HTML. Chaque entrée : {cle, nom} — la `cle` est celle stockée dans
+     `creneaux.salle` (danse / musique / reunion pour le CASE), elle ne se renomme donc jamais ;
+     seul le `nom` affiché peut bouger. Le nom est posé via textContent, jamais innerHTML :
+     `associations` est modifiable par le président. */
+  window.remplirSalles=function(){
+    const sel=document.getElementById('salleSelect'); if(!sel) return 0;
+    let L=[]; try{ const f=window.__bobFeatures; if(f&&Array.isArray(f.salles)) L=f.salles; }catch(e){}
+    L=L.filter(s=>s&&typeof s==='object'&&String(s.cle||'').trim());
+    const avant=sel.value;
+    sel.innerHTML='';
+    L.forEach(function(s){
+      const o=document.createElement('option');
+      o.value=String(s.cle).trim().slice(0,40);
+      o.textContent=String(s.nom||s.cle).trim().slice(0,60);
+      sel.appendChild(o);
+    });
+    if(avant && L.some(s=>String(s.cle).trim()===avant)) sel.value=avant;
+    return L.length;
+  };
   window.loadCreneaux=async function(){
     const box=document.getElementById('planningSalles'); if(!box) return;
+    /* Aucune salle déclarée : on le DIT, au lieu d'afficher le planning d'une salle inventée. */
+    if(!remplirSalles()){
+      box.innerHTML='<p class="hint">Aucune salle déclarée pour cette association. '
+        +'Les salles se règlent dans les données de l\'asso — demande à Bob de les ajouter.</p>';
+      return;
+    }
     if(!document.getElementById('cwStyle')){
       const st=document.createElement('style'); st.id='cwStyle';
       st.textContent='.cw-scroll{overflow-x:auto;border:1px solid var(--line,#e7efe9);border-radius:14px;background:#fff}'
@@ -12220,7 +12267,9 @@ renderAll();
         +'.cw-ev.orph{background:#fdeceb;border-left-color:#e24b4a}';
       document.head.appendChild(st);
     }
-    const sel=(document.getElementById('salleSelect')||{}).value||'danse';
+    /* le repli était 'danse' — la salle du CASE. Il n'y a plus de salle par défaut : on prend
+       celle qui est sélectionnée, et remplirSalles() a garanti qu'il y en a au moins une. */
+    const sel=(document.getElementById('salleSelect')||{}).value||'';
     box.innerHTML='<p class="hint">Chargement…</p>';
     const {data,error}=await sbc.from('creneaux').select('*').eq('salle',sel).order('jour',{ascending:true}).order('debut',{ascending:true});
     if(error){ box.innerHTML='<p class="hint" style="color:#c0392b">Impossible de charger le planning.</p>'; return; }

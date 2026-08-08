@@ -526,7 +526,11 @@ const AT_PAGE='https://pixiartpro.github.io/bob-demo/#ateliers';
 let _atForm={};
 async function loadAteliersPublics(){
   const grid=document.getElementById('atGrid'); if(!grid) return;
-  const {data,error}=await _sbPart.from('ateliers').select('*').eq('publie',true).neq('statut','archive').order('created_at',{ascending:false});
+  /* 09/08/2026 — il manquait le filtre d'association : la policy `at_sel_public` autorise la
+     lecture de TOUT atelier publié (c'est son rôle, pour les sites publics), donc dès qu'une
+     autre asso hébergée dans Bob publiera un atelier, il se serait affiché sur le site du CASE.
+     Toutes les autres requêtes de cette page filtrent déjà sur _CASE_ASSO_ID ; celle-ci l'oubliait. */
+  const {data,error}=await _sbPart.from('ateliers').select('*').eq('asso_id',_CASE_ASSO_ID).eq('publie',true).neq('statut','archive').order('created_at',{ascending:false});
   if(error){ grid.innerHTML='<p style="grid-column:1/-1;text-align:center;color:#c0392b">Impossible de charger les ateliers pour le moment.</p>'; return; }
   if(!data||!data.length){ grid.innerHTML='<p style="grid-column:1/-1;text-align:center;color:var(--muted)">Pas d\'atelier en préparation pour le moment — proposez le vôtre juste en dessous ! 👇</p>'; return; }
   const escA=s=>String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
