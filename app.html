@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>Bob — secrétaire-directeur du CASE du Bois de Nèfles</title>
+<title>Bob — secrétaire-directeur du CASE du Bois de Nèfles</title> <!-- saas-ok: valeur par defaut du HTML, reecrite au demarrage par applyAssoIdentity depuis identite.gestion -->
 <meta name="theme-color" content="#127a51">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -266,7 +266,7 @@
   <div class="logo">🤖</div>
   <div>
     <h1>Bob <span style="font-weight:500;opacity:.85">· secrétaire-directeur du CASE</span></h1>
-    <p>La Bible du CASE du Bois de Nèfles : adhésions, comptabilité, subventions, répertoire</p>
+    <p>La Bible du CASE du Bois de Nèfles : adhésions, comptabilité, subventions, répertoire</p> <!-- saas-ok: valeur par defaut du HTML, reecrite au demarrage par applyAssoIdentity depuis identite.gestion -->
   </div>
 </header>
 
@@ -441,8 +441,8 @@
     <div style="background:#fff;max-width:640px;width:100%;border-radius:16px;padding:18px 20px 20px;box-shadow:0 12px 44px rgba(0,0,0,.3)">
       <div class="row" style="justify-content:space-between;align-items:center;gap:10px">
         <div class="row" style="align-items:center;gap:10px">
-          <img src="zanana-point.png" alt="" onerror="this.style.display='none'" style="height:42px">
-          <h3 style="margin:0" id="pageHelpTitre">🍍 Zanana t'explique cette page</h3>
+          <img src="zanana-point.png" alt="" onerror="this.style.display='none'" style="height:42px"> <!-- saas-ok: valeur par defaut du HTML, reecrite au demarrage par applyAssoIdentity depuis identite.gestion -->
+          <h3 style="margin:0" id="pageHelpTitre">🍍 Zanana t'explique cette page</h3> <!-- saas-ok: valeur par defaut du HTML, reecrite au demarrage par applyAssoIdentity depuis identite.gestion -->
         </div>
         <button class="ghost btn" onclick="pageHelpClose()">✕</button>
       </div>
@@ -3556,14 +3556,14 @@ function askZanana(live){
   if(q.length<3){ out.innerHTML=''; return; }
   const res=faqScore(q);
   if(res.length && res[0].sc>=2){
-    let html='<div style="display:flex;gap:10px;align-items:flex-start"><img src="'+((window.bobMasc&&window.bobMasc('point'))||'zanana-point.png')+'" style="width:34px;height:34px;object-fit:contain;flex:0 0 auto" onerror="this.style.display=\'none\'"><div style="flex:1"><b>Voici ce que je te propose :</b></div></div>';
+    let html='<div style="display:flex;gap:10px;align-items:flex-start"><img src="'+((window.bobMasc&&window.bobMasc('point'))||'bob-think.png')+'" style="width:34px;height:34px;object-fit:contain;flex:0 0 auto" onerror="this.style.display=\'none\'"><div style="flex:1"><b>Voici ce que je te propose :</b></div></div>';
     html+=faqCard(res[0].item,true);
     const autres=res.slice(1,3).filter(x=>x.sc>=2);
     if(autres.length){ html+='<p class="hint" style="margin:10px 0 2px">Ça peut aussi t\'aider :</p>'+autres.map(x=>faqCard(x.item,false)).join(''); }
     out.innerHTML=html;
   } else {
     out.innerHTML='<div class="panel" style="background:#fff8ec;border:1px solid #f0d9a8">'
-      +'<div style="display:flex;gap:10px;align-items:flex-start"><img src="'+((window.bobMasc&&window.bobMasc('point'))||'zanana-point.png')+'" style="width:34px;height:34px;object-fit:contain;flex:0 0 auto" onerror="this.style.display=\'none\'">'
+      +'<div style="display:flex;gap:10px;align-items:flex-start"><img src="'+((window.bobMasc&&window.bobMasc('point'))||'bob-think.png')+'" style="width:34px;height:34px;object-fit:contain;flex:0 0 auto" onerror="this.style.display=\'none\'">'
       +'<div style="flex:1"><b>Je n\'ai pas encore la réponse à ça.</b><p class="hint" style="margin:6px 0 10px">Transmets ta question : on y répondra et elle sera ajoutée à l\'aide.</p>'
       +'<button class="btn" onclick="faqAskHelp()">📨 Transmettre ma question</button> <span id="faqSent" class="muted" style="font-size:13px"></span></div></div></div>';
   }
@@ -4050,7 +4050,7 @@ function renderVentilation(){
    ⚠️ Dernier tableau d'identité par UUID encore dans le code (ASSO_IDENTITY, lui, est parti en base
    le 08/08/2026) : candidat au même déménagement quand les listes métier deviendront un réglage. ===== */
 const ORG_LISTS={
-  'd617489c-b18b-499b-ab17-c31656d0f08a':{ // CASE — listes historiques, INCHANGÉES
+  'd617489c-b18b-499b-ab17-c31656d0f08a':{ // CASE — listes historiques, INCHANGÉES // saas-ok: listes historiques du CASE, gardees par estLeCase() — donnees de ce client, jamais servies aux autres
     sites:["C.A.S.E Bois de Nèfles","Local des Bringelliers"],
     actions:["Périscolaire","Accueil de loisirs (ACM)","VEPI","Secteur ados / Kaz Zados","Danse","Musique","Permanence du samedi","Jeudi info population","Sport & santé","Accompagnement à la parentalité","Animation de quartier","Fêt nout kartyé","Ôté Kartié","Fonctionnement"],
     cats:["Cotisations","Subvention","Dons","Événement","Matériel","Frais"],
@@ -5096,7 +5096,7 @@ function renderDashboard(){
     var role=RL[myProfile&&myProfile.role]||'';
     var dj=''; try{ dj=new Date().toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long',year:'numeric'}); }catch(e){}
     var dw=$('dashWelcome');
-    if(dw) dw.innerHTML='<div class="dashwelcome"><div class="dwav">👋</div><div><h2>Bonjour '+(esc(pre)||'à toi')+'</h2><p>'+(role?('Rôle <b>'+esc(role)+'</b> · '):'')+esc(window.bobOrgName||'CASE du Bois de Nèfles')+(dj?(' · '+esc(dj)):'')+'</p></div></div>';
+    if(dw) dw.innerHTML='<div class="dashwelcome"><div class="dwav">👋</div><div><h2>Bonjour '+(esc(pre)||'à toi')+'</h2><p>'+(role?('Rôle <b>'+esc(role)+'</b> · '):'')+esc(window.bobOrgName||'Association')+(dj?(' · '+esc(dj)):'')+'</p></div></div>';
   }catch(e){}
   const upToDate = db.members.filter(m=>m.paid).length;
   $('kpis').innerHTML =
@@ -5177,7 +5177,7 @@ function printBilan(){
   const tbl=(rows,tot,head='Catégorie')=>`<table><thead><tr><th>${head}</th><th class="num">Montant</th></tr></thead><tbody>`
     + rows.map(([k,v])=>`<tr><td>${esc(k)}</td><td class="num">${euro(v)}</td></tr>`).join('')
     + `<tr><td><strong>Total</strong></td><td class="num"><strong>${euro(tot)}</strong></td></tr></tbody></table>`;
-  printHTML(`<h1 style="margin:0">${esc(window.bobOrgName||'CASE du Bois de Nèfles')}</h1>
+  printHTML(`<h1 style="margin:0">${esc(window.bobOrgName||'Association')}</h1>
     <p style="margin:2px 0 0">Association loi 1901 — La Réunion</p>
     <h2>Compte de résultat — exercice ${y}</h2>
     <h3 style="margin-bottom:0">Recettes par catégorie</h3>${tbl(d.rec,d.tIn)}
@@ -5197,7 +5197,7 @@ function exportPrevisionnelCSV(){
   const M=E.MOIS, r2=v=>Math.round((v||0)*100)/100, yTot=a=>{let s=0;for(let m=1;m<=12;m++)s+=a[m];return s;};
   const head=['Code comptable'].concat(M.map((mo,i)=>mo+(i+1>E.refM?' (projeté)':''))).concat(['Total an']);
   const line=(code,a)=>csvRow([code].concat([...Array(12)].map((_,i)=>r2(a[i+1]))).concat([r2(yTot(a))]));
-  const rows=[csvRow(['Budget prévisionnel '+E.Y+' — '+(window.bobOrgName||'CASE du Bois de Nèfles')]), csvRow(['']), csvRow(head), csvRow(['RECETTES'])];
+  const rows=[csvRow(['Budget prévisionnel '+E.Y+' — '+(window.bobOrgName||'Association')]), csvRow(['']), csvRow(head), csvRow(['RECETTES'])];
   E.recSeries.forEach(r=>rows.push(line(r.code,r.a)));
   if(E.fluxRelance>0.005) rows.push(csvRow(['Accordé non versé — à relancer (NON COMPTÉ dans les totaux)'].concat([...Array(12)].map(()=>'')).concat([r2(E.fluxRelance)])));
   if(E.fluxAttente>0.005) rows.push(csvRow(['En attente de vote (NON COMPTÉ dans les totaux)'].concat([...Array(12)].map(()=>'')).concat([r2(E.fluxAttente)])));
@@ -5246,7 +5246,7 @@ function printPrevisionnel(){
 
 /* ---- Relances de cotisation ---- */
 function mailtoRelance(m){
-  const subj=encodeURIComponent('Rappel — cotisation '+(window.bobOrgName||'CASE du Bois de Nèfles'));
+  const subj=encodeURIComponent('Rappel — cotisation '+(window.bobOrgName||'Association'));
   const body=encodeURIComponent(`Bonjour ${m.name},\n\nNous n'avons pas encore enregistré votre cotisation (${euro(m.amount)}) pour l'association CASE du Bois de Nèfles.\nNous vous remercions de bien vouloir la régulariser dès que possible.\n\nBien cordialement,\nLe bureau du CASE du Bois de Nèfles`);
   return 'mailto:'+(m.email||'')+'?subject='+subj+'&body='+body;
 }
@@ -5269,7 +5269,7 @@ function renderRelances(){
 function memberReceipt(id){
   const m=db.members.find(x=>x.id===id); if(!m) return;
   const y=(m.date||today()).slice(0,4);
-  printHTML(`<h1 style="margin:0">${esc(window.bobOrgName||'CASE du Bois de Nèfles')}</h1>
+  printHTML(`<h1 style="margin:0">${esc(window.bobOrgName||'Association')}</h1>
     <p style="margin:2px 0 0">Association loi 1901 — La Réunion</p>
     <h2>Reçu de cotisation — année ${y}</h2>
     <p>L'association atteste que <strong>${esc(m.name)}</strong>${m.addr?', demeurant '+esc(m.addr)+' '+esc(m.cp||'')+' '+esc(m.city||''):''} est adhérent(e) pour l'année ${y}.</p>
@@ -5898,7 +5898,7 @@ const MODELS={
 function fillModel(){ $('cr_corps').value = MODELS[$('cr_model').value]||''; }
 function printCourrier(){
   const objet=$('cr_objet').value.trim(), dest=$('cr_dest').value.trim(), corps=$('cr_corps').value;
-  printHTML(`<h1 style="margin:0">${esc(window.bobOrgName||'CASE du Bois de Nèfles')}</h1>
+  printHTML(`<h1 style="margin:0">${esc(window.bobOrgName||'Association')}</h1>
     <p style="margin:2px 0 0">Association loi 1901 — La Réunion</p>
     <p style="text-align:right;margin-top:24px">Saint-Denis, le ${fmtDate(today())}</p>
     ${dest?`<p style="margin-top:10px"><strong>${esc(dest)}</strong></p>`:''}
@@ -5999,7 +5999,7 @@ function afficheQR(){
       +'<p style="margin:16px 0 4px;font-weight:600;font-size:15px">📱 Ouvrez l\'appareil photo du téléphone,<br>visez le code… et c\'est parti&nbsp;!</p>'
       +'<p style="margin:0 0 16px;color:#62756b;font-size:13.5px">ou tapez&nbsp;: <b style="color:#16302a">casebdn.re</b></p>'
       +'<div style="border-top:1px solid #e7efe9;padding-top:12px;display:flex;align-items:center;justify-content:center;gap:10px">'
-        +'<img src="'+((window.bobMasc&&window.bobMasc('wave'))||'zanana-wave.png')+'" alt="" onerror="this.style.display=\'none\'" style="height:44px">'
+        +'<img src="'+((window.bobMasc&&window.bobMasc('wave'))||'bob-wave.png')+'" alt="" onerror="this.style.display=\'none\'" style="height:44px">'
         +'<span style="font-size:12.5px;color:#62756b;text-align:left">CASE du Bois de Nèfles<br>132 Place de la Fraternité, 97490 Sainte-Clotilde</span>'
       +'</div>'
     +'</div>';
