@@ -416,6 +416,17 @@
         </div>
       </div>
     </div>
+
+    <!-- 💬 09/08/2026 — « j'ai l'impression que j'ai pas mal d'infos que les adhérents ils ont »
+         (Guillaume). Le bureau ne voyait RIEN de ce qui se dit dans l'espace membre : les
+         canaux de discussion vivent dans `project_posts`, table que la gestion n'ouvrait jamais.
+         Ici, ce qui s'est dit récemment, tous canaux et tous projets confondus. Lecture seule :
+         on répond depuis l'espace membre, là où la conversation a lieu. -->
+    <div class="panel" id="vieDiscussionsPanel" style="display:none">
+      <h2 style="margin:0 0 4px">💬 Ce qui se dit dans l'espace membre</h2>
+      <p class="hint">Les derniers messages des canaux et des projets. Pour répondre, ouvre l'espace membre : la conversation appartient à ceux qui l'ont commencée.</p>
+      <div id="vieDiscussionsListe"></div>
+    </div>
   </section>
 
   <section id="dashboard" class="page active">
@@ -1654,6 +1665,15 @@
       </div>
       <div id="reunionList" style="margin-top:14px"></div>
     </div>
+
+    <!-- 🧰 09/08/2026 — le matériel déclaré par les adhérents dans leur espace. Le bureau ne le
+         voyait pas : il ne pouvait donc pas savoir sur quoi l'association peut compter avant une
+         sortie, ni qui détient quoi. Lecture seule — chacun reste maître de ce qu'il a déclaré. -->
+    <div class="panel" id="vieMaterielPanel" style="display:none">
+      <h2 style="margin:0 0 4px">🧰 Le matériel de l'association</h2>
+      <p class="hint">Ce que les adhérents ont déclaré : ce sur quoi on peut compter, et qui l'a en ce moment.</p>
+      <div id="vieMaterielListe"></div>
+    </div>
   </section>
 
   <!-- INCIDENTS / ÉVÉNEMENTS INDÉSIRABLES -->
@@ -1690,6 +1710,16 @@
         border-radius:999px;text-decoration:none;color:inherit;font-weight:600;font-size:14px;background:#fff}
       #presPortes .pp-lien:hover{border-color:var(--brand);color:var(--brand)}
       #presPortes .pp-portes{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}</style>
+
+    <!-- 📸 09/08/2026 — les photos partagées par les adhérents dans leurs projets. Elles
+         existaient déjà (bucket privé `projets`, liens signés) mais le bureau ne les voyait
+         pas : c'est pourtant la matière de sa communication, prise sur le terrain par ceux qui
+         y étaient. Lecture seule — l'auteur reste maître de sa photo. -->
+    <div class="panel" id="vieGaleriePanel" style="display:none">
+      <h2 style="margin:0 0 4px">📸 Les photos des adhérents</h2>
+      <p class="hint">Prises sur le terrain et partagées dans les projets. Demande l'accord de la personne avant d'en publier une — et vérifie l'autorisation à l'image.</p>
+      <div id="vieGalerieListe"></div>
+    </div>
 
     <div class="panel" id="presPortes" style="border-left:4px solid var(--brand)">
       <h2 style="margin:0 0 4px">🍍 Présenter le CASE en un lien</h2>
@@ -11770,6 +11800,86 @@ renderAll();
      texte. La liste du coffre, au-dessus, n'est pas touchée.
      ⚠️ Filtré sur asso_id : les policies le font déjà, mais on ne s'en remet pas à elles seules
      pour un écran de gestion (cf. les ateliers, corrigés le même jour). */
+  /* ---- 🪟 LA VIE DE L'ESPACE MEMBRE, VUE DU BUREAU ----------------------------------------
+     09/08/2026, Guillaume : « j'ai l'impression que j'ai pas mal d'infos que les adhérents ils
+     ont ». C'était vrai, et systématique : tout ce que les adhérents produisent vit dans des
+     tables que la gestion n'ouvrait jamais (`project_posts`, `materiel`). Trois écrans en
+     découlaient — ce qui se dit, les photos, le matériel — et aucun n'existait côté bureau.
+     Une seule lecture les alimente tous les trois : on ne fait pas trois fois le même voyage.
+     LECTURE SEULE partout : on répond, on publie et on prête depuis l'espace membre, là où la
+     personne qui a écrit, photographié ou prêté reste maîtresse de son geste. */
+  window.loadVieMembre=async function(){
+    const pD=document.getElementById('vieDiscussionsPanel'), pG=document.getElementById('vieGaleriePanel'),
+          pM=document.getElementById('vieMaterielPanel');
+    const f=(window.bobFeatures&&window.bobFeatures())||{};
+    const on=k=>f[k]===true||f[k]==='on';
+    if(!on('projets_adherents')){ [pD,pG,pM].forEach(p=>{ if(p) p.style.display='none'; }); return; }
+
+    const [rP,rF,rM]=await Promise.all([
+      sbc.from('project_posts').select('id,project_id,author_name,body,photo_path,created_at')
+         .eq('asso_id',myAsso).order('created_at',{ascending:false}).limit(60),
+      sbc.from('projects').select('id,name,data').eq('asso_id',myAsso),
+      on('materiel') ? sbc.from('materiel').select('nom,categorie,etat,proprietaire_nom,detenu_par_nom')
+         .eq('asso_id',myAsso).order('categorie',{ascending:true}) : Promise.resolve({data:[],error:null})
+    ]);
+    const nomFil={}; (rF.data||[]).forEach(p=>{ nomFil[p.id]=p.name; });
+    const quand=d=>d?new Date(d).toLocaleDateString('fr-FR',{day:'2-digit',month:'2-digit'}):'';
+
+    /* ── ce qui se dit ─────────────────────────────────────────────────────────────── */
+    if(pD){
+      pD.style.display='';
+      const box=document.getElementById('vieDiscussionsListe');
+      if(rP.error){ box.innerHTML='<p class="hint" style="color:var(--red)">Lecture impossible : '+esc(rP.error.message)+'</p>'; }
+      else{
+        const li=(rP.data||[]).filter(m=>m.body&&m.body.trim()).slice(0,12);
+        box.innerHTML=li.length
+          ? li.map(m=>'<div style="border-top:1px solid var(--line);padding:9px 0">'
+              +'<div style="font-size:12.5px;color:var(--muted)"><b>'+esc(m.author_name||'un adhérent')+'</b>'
+              +' · '+esc(nomFil[m.project_id]||'un fil')+' · '+esc(quand(m.created_at))+'</div>'
+              +esc(m.body.slice(0,220))+(m.body.length>220?'…':'')+'</div>').join('')
+          : '<p class="hint">Personne n\'a encore écrit dans l\'espace membre.</p>';
+      }
+    }
+    /* ── les photos ────────────────────────────────────────────────────────────────── */
+    if(pG){
+      pG.style.display='';
+      const box=document.getElementById('vieGalerieListe');
+      const avecPhoto=(rP.data||[]).filter(m=>m.photo_path).slice(0,12);
+      if(!avecPhoto.length){ box.innerHTML='<p class="hint">Aucune photo partagée pour le moment.</p>'; }
+      else{
+        /* bucket privé : on demande des liens signés, valables une heure */
+        const su=await sbc.storage.from('projets').createSignedUrls(avecPhoto.map(m=>m.photo_path),3600);
+        const url={}; (su.data||[]).forEach(x=>{ if(x.signedUrl) url[x.path]=x.signedUrl; });
+        box.innerHTML='<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px">'
+          +avecPhoto.map(m=>url[m.photo_path]
+              ? '<a href="'+esc(url[m.photo_path])+'" target="_blank" rel="noopener" title="'+esc((m.author_name||'')+' — '+(nomFil[m.project_id]||''))+'">'
+                +'<img src="'+esc(url[m.photo_path])+'" alt="Photo partagée par '+esc(m.author_name||'un adhérent')+'"'
+                +' loading="lazy" style="width:100%;aspect-ratio:1;object-fit:cover;border-radius:10px;border:1px solid var(--line)"></a>'
+              : '').join('')+'</div>';
+      }
+    }
+    /* ── le matériel ───────────────────────────────────────────────────────────────── */
+    if(pM){
+      if(!on('materiel')){ pM.style.display='none'; }
+      else{
+        pM.style.display='';
+        const box=document.getElementById('vieMaterielListe');
+        if(rM.error){ box.innerHTML='<p class="hint" style="color:var(--red)">Lecture impossible : '+esc(rM.error.message)+'</p>'; }
+        else{
+          const li=rM.data||[];
+          box.innerHTML=li.length
+            ? '<div style="overflow-x:auto"><table style="min-width:560px"><thead><tr>'
+              +'<th>Matériel</th><th>Catégorie</th><th>État</th><th>À qui</th><th>Détenu par</th></tr></thead><tbody>'
+              +li.map(m=>'<tr><td>'+esc(m.nom||'—')+'</td><td>'+esc(m.categorie||'—')+'</td>'
+                +'<td>'+esc(m.etat||'—')+'</td><td>'+esc(m.proprietaire_nom||'l\'association')+'</td>'
+                +'<td>'+esc(m.detenu_par_nom||'—')+'</td></tr>').join('')
+              +'</tbody></table></div>'
+            : '<p class="hint">Personne n\'a encore déclaré de matériel. Chacun le fait depuis son espace : « Déclarer mon matériel ».</p>';
+        }
+      }
+    }
+  };
+
   /* ---- 👤 Les comptes de l'espace membre (table `profiles`) ------------------------------
      09/08/2026, signalé par Guillaume : « je vois pas les adhérents ». L'onglet Adhérents lit le
      coffre (db.members), saisi à la main ; les gens inscrits EN LIGNE vivent dans `profiles`.
@@ -13851,6 +13961,13 @@ renderAll();
     /* 09/08/2026 — les comptes de l'espace membre, dans l'onglet Adhérents. */
     const mbb=document.querySelector('nav.tabs button[data-tab="members"]'); if(mbb) mbb.addEventListener('click',()=>{ if(window.loadComptesEspace) loadComptesEspace(); });
     if(window.loadComptesEspace) loadComptesEspace();
+    /* 09/08/2026 — la vie de l'espace membre : trois panneaux, une seule lecture, rechargée
+       quand on ouvre l'un des trois onglets qui les portent. */
+    ['messages','communication','secretariat'].forEach(function(t){
+      const b=document.querySelector('nav.tabs button[data-tab="'+t+'"]');
+      if(b) b.addEventListener('click',()=>{ if(window.loadVieMembre) loadVieMembre(); });
+    });
+    if(window.loadVieMembre) loadVieMembre();
     const cb=document.querySelector('nav.tabs button[data-tab="activites"]'); if(cb) cb.addEventListener('click',()=>{ if(window.loadActivitesGestion) loadActivitesGestion(); });
     const rb=document.querySelector('nav.tabs button[data-tab="rdv"]'); if(rb) rb.addEventListener('click',()=>{ if(window.loadRdvAdmin) loadRdvAdmin(); });
     const lgb=document.querySelector('nav.tabs button[data-tab="lieux"]'); if(lgb) lgb.addEventListener('click',()=>{ if(window.loadLieuxGestion) loadLieuxGestion(); });
