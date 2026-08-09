@@ -144,7 +144,7 @@
   .newsbar .nb-x:hover{background:rgba(255,255,255,.4)}
   .newsbar.hidden{display:none}
   /* Bandeau inscriptions prioritaires (familles) — se remplit tout seul depuis la gestion,
-     onglet 🎟️ Activités (catégorie « Péri & extrascolaire » + publié). Invisible si vide. */
+     onglet  Activités (catégorie « Péri & extrascolaire » + publié). Invisible si vide. */
   .insbar{display:flex;align-items:center;justify-content:center;gap:8px 10px;flex-wrap:wrap;
           background:#fff3da;border-bottom:1px solid #f1e2ad;padding:16px 14px;font-size:14px}
   .insbar .ib-tag{color:#8a5300;font-weight:900;font-size:12px;letter-spacing:.08em;text-transform:uppercase;white-space:nowrap}
@@ -188,7 +188,7 @@
   /* Nos activités — liste compacte + inscription */
   .actlist{display:flex;flex-direction:column;gap:10px;max-width:780px;margin:0 auto}
   .actrow{display:flex;flex-wrap:wrap;align-items:center;gap:14px;background:#fff;border:1px solid var(--line);border-radius:16px;padding:12px 14px 12px 16px;box-shadow:var(--shadow);transition:.15s}
-  /* Le dépliant « 🗓️ Jours & horaires » (07/08/2026) prend toute la largeur et
+  /* Le dépliant «  Jours & horaires » (07/08/2026) prend toute la largeur et
      passe SOUS la ligne : sans ça il entre dans la rangée flex et écrase la description. */
   .actrow>details{flex:0 0 100%;margin-top:2px}
   .actrow .abody{min-width:180px}
@@ -243,11 +243,11 @@
       <a href="#ados">Ados</a>
       <a href="#temps-forts">Temps forts</a>
       <a href="#lieux">Nos lieux</a>
-      <a href="#ateliers">💡 Ateliers</a>
-      <a href="#partenaires">🤝 Partenaires</a>
+      <a href="#ateliers"> Ateliers</a>
+      <a href="#partenaires"> Partenaires</a>
       <a href="#contact">Contact</a>
       <span class="nav-sep"></span>
-      <a href="connexion.html" class="navpill">🍍 Mon espace</a>
+      <a href="connexion.html" class="navpill"> Mon espace</a>
       <a href="#adhesion" class="btn primary">Devenir adhérent</a>
     </nav>
   </div>
@@ -255,8 +255,8 @@
 
 <!-- ===== BANDEAU ACTUALITÉ — POUR CHANGER L'ACTU : modifier data-news (un identifiant unique), le texte et le lien ci-dessous ===== -->
 <div class="newsbar" id="newsbar" data-news="2026-07-reouverture-13-juillet">
-  <span class="nb-tag">Réouverture</span>
-  <span class="nb-txt">🍍 <b>Nou lé paré !</b> Le CASE rouvre ses portes <b>lundi 13 juillet</b> après les travaux. À très vite ! 🎉</span>
+  <span class="nb-tag">Rentrée 2026</span>
+  <span class="nb-txt"><b>Nou lé paré pou la rentrée !</b> Nouvelle organisation dès le <b>mardi 18 août</b> — inscriptions ouvertes.</span>
   <a class="nb-link" href="#contact">Nous contacter →</a>
   <button class="nb-x" onclick="closeNews()" aria-label="Fermer l'annonce">✕</button>
 </div>
@@ -266,11 +266,11 @@
 <!-- HERO -->
 <section class="hero" id="accueil">
   <div class="wrap hero-wrap">
-    <img class="hero-img" src="hero-bandeau-2026.jpg" alt="Zanana en skate dans le quartier — le CASE fait peau neuve, réouverture 2026">
+    <img class="hero-img" src="hero-bandeau-2026.jpg" alt="Zanana en skate dans le quartier — le CASE fait peau neuve">
     <div class="hero-text">
-      <span class="badge">Réouverture 2026</span>
-      <h1>NOU LÉ PARÉ ! 🍍</h1>
-      <p class="lead">Un nouveau CASE pour le kartié.<br>Travaux terminés : réouverture <b>lundi 13 juillet</b>.</p>
+      <span class="badge">Rentrée 2026</span>
+      <h1>NOU LÉ PARÉ !</h1>
+      <p class="lead">Un nouveau CASE pour le kartié.<br>La maison est ouverte — nouvelle organisation dès le <b>mardi 18 août</b>.</p>
       <p class="site-line">Retrouv' a nou en ligne : <b>casebdn.re</b></p>
       <div class="cta">
         <a href="connexion.html?role=famille" class="btn primary">S'inscrire en ligne</a>
@@ -287,12 +287,12 @@
 <section class="block" id="inscription-peri" style="background:linear-gradient(135deg,#fff3da,#ffe7c4)">
   <div class="wrap">
     <p class="eyebrow">Rentrée d'août</p>
-    <h2 class="title">🎒 Inscrivez vos enfants au périscolaire <span class="y">matin &amp; soir</span></h2>
-    <p style="text-align:center;margin:2px 0 0"><span class="badge" style="background:#e3f6ec;color:#0f6b46;border-color:#bfe6d0">✨ Nouveau — le périscolaire du matin dès la rentrée</span></p>
+    <h2 class="title"> Inscrivez vos enfants au périscolaire <span class="y">matin &amp; soir</span></h2>
+    <p style="text-align:center;margin:2px 0 0"><span class="badge" style="background:#e3f6ec;color:#0f6b46;border-color:#bfe6d0"> Nouveau — le périscolaire du matin dès la rentrée</span></p>
     <p class="sub" style="max-width:720px">La rentrée, c'est le <b>lundi 18 août</b> — et les inscriptions sont déjà ouvertes. Le dépôt du dossier se fait dans votre <b>espace famille</b> : adhérez / connectez-vous, puis déposez vos pièces — vous pouvez les scanner directement depuis votre téléphone.</p>
     <div style="display:flex;gap:18px;flex-wrap:wrap;align-items:flex-start;margin-top:6px">
       <div style="flex:1;min-width:260px;background:#fff;border:1px solid #f1e2ad;border-radius:16px;padding:16px 18px">
-        <b style="color:var(--vert-fonce)">📋 Pièces à fournir</b>
+        <b style="color:var(--vert-fonce)"> Pièces à fournir</b>
         <ul style="margin:8px 0 0;padding-left:18px;line-height:1.9;color:#5b4a2a">
           <li><b>Attestation CAF</b> (quotient familial, <b>moins de 3 mois</b>)</li>
           <li>Avis d'imposition</li>
@@ -305,7 +305,7 @@
       <div style="flex:1;min-width:240px">
         <p style="margin:0 0 12px;color:#5b4a2a"><b>Comment faire ?</b><br>1. J'adhère / je me connecte à mon espace.<br>2. Je renseigne mes enfants (matin / soir).<br>3. Je dépose mes pièces. C'est tout !</p>
         <div class="cta">
-          <a href="connexion.html?role=famille" class="btn primary">🎒 Déposer mon dossier</a>
+          <a href="connexion.html?role=famille" class="btn primary"> Déposer mon dossier</a>
           <a href="#adhesion" class="btn ghost">Adhérer au CASE</a>
         </div>
       </div>
@@ -340,14 +340,14 @@
 <section class="block bg-g" id="activites">
   <div class="wrap">
     <p class="eyebrow">Nos activités</p>
-    <h2 class="title">Il y en a pour tout le monde 🎉</h2>
-    <p class="sub">Nos activités tournent déjà ! La page détaillée (horaires &amp; inscription en ligne) arrive bientôt — en attendant, <b>appelez-nous</b> pour vous inscrire, connaître les horaires ou passer nous voir. 🍍</p>
+    <h2 class="title">Il y en a pour tout le monde </h2>
+    <p class="sub">Nos activités tournent déjà ! La page détaillée (horaires &amp; inscription en ligne) arrive bientôt — en attendant, <b>appelez-nous</b> pour vous inscrire, connaître les horaires ou passer nous voir. </p>
     <div class="qgrid" id="actQuartiers"></div>
     <div style="max-width:780px;margin:18px auto 0;text-align:left;background:#fff;border:1px solid var(--line);border-radius:16px;padding:18px 20px;box-shadow:var(--shadow);font-size:15px">
       <b style="color:var(--vert-fonce);display:block;text-align:center;font-size:16px;margin-bottom:12px">Envie de rejoindre une activité&nbsp;?</b>
-      <p style="margin:0 0 8px">📎 <b>Périscolaire, ACM, sorties</b> — tout se fait en ligne dans <b>Mon espace famille</b> : créez votre compte en 2 minutes, puis <b>déposez vos pièces</b> (vous pouvez les scanner directement depuis votre téléphone).</p>
-      <div style="text-align:center;margin:10px 0 14px"><a href="connexion.html?role=famille" class="btn primary" style="text-decoration:none">🎒 Déposer mon dossier</a></div>
-      <p style="margin:0">📞 <b>Autres activités</b> — la page d'inscription en ligne arrive bientôt. En attendant, appelez <b>Kathy Maillot</b> au <a href="tel:+262692013834" style="color:var(--vert-fonce);font-weight:700">0692&nbsp;01&nbsp;38&nbsp;34</a> (ou le CASE au <a href="tel:+262262293790" style="color:var(--vert-fonce);font-weight:700">0262&nbsp;29&nbsp;37&nbsp;90</a>) — on vous inscrit. Et si c'est plus simple, <b>passez au CASE</b>, on le fait avec vous.</p>
+      <p style="margin:0 0 8px"> <b>Périscolaire, ACM, sorties</b> — tout se fait en ligne dans <b>Mon espace famille</b> : créez votre compte en 2 minutes, puis <b>déposez vos pièces</b> (vous pouvez les scanner directement depuis votre téléphone).</p>
+      <div style="text-align:center;margin:10px 0 14px"><a href="connexion.html?role=famille" class="btn primary" style="text-decoration:none"> Déposer mon dossier</a></div>
+      <p style="margin:0"> <b>Autres activités</b> — la page d'inscription en ligne arrive bientôt. En attendant, appelez <b>Kathy Maillot</b> au <a href="tel:+262692013834" style="color:var(--vert-fonce);font-weight:700">0692&nbsp;01&nbsp;38&nbsp;34</a> (ou le CASE au <a href="tel:+262262293790" style="color:var(--vert-fonce);font-weight:700">0262&nbsp;29&nbsp;37&nbsp;90</a>) — on vous inscrit. Et si c'est plus simple, <b>passez au CASE</b>, on le fait avec vous.</p>
     </div>
   </div>
 </section>
@@ -356,16 +356,16 @@
 <section class="block bg-w" id="ados">
   <div class="wrap">
     <p class="eyebrow">Espace jeunes · 11–17 ans</p>
-    <h2 class="title">La jeunesse aux commandes 🛹</h2>
+    <h2 class="title">La jeunesse aux commandes </h2>
     <p class="sub">Un secteur ados où les jeunes deviennent <strong>acteurs</strong> : accueil de loisirs les mercredis, samedis et vacances — et bien plus.</p>
     <div class="qgrid">
-      <div class="card" style="border-top:4px solid var(--vert)"><div class="ico">🏠</div><h3>La Kaz Zados</h3><p>Un lieu à eux, géré par eux : leurs projets, leur autonomie.</p></div>
-      <div class="card" style="border-top:4px solid var(--ananas)"><div class="ico">🎤</div><h3>Ôté Kartié</h3><p>Le projet phare des jeunes pour faire bouger le quartier.</p></div>
-      <div class="card" style="border-top:4px solid #d2602f"><div class="ico">💃</div><h3>Danse &amp; créations</h3><p>Danse, expression et activités menées avec les ados.</p></div>
-      <div class="card" style="border-top:4px solid #3a9bd9"><div class="ico">📅</div><h3>Mercredi, samedi &amp; vacances</h3><p>Un accueil régulier pour les 11–17 ans toute l'année.</p></div>
+      <div class="card" style="border-top:4px solid var(--vert)"><h3>La Kaz Zados</h3><p>Un lieu à eux, géré par eux : leurs projets, leur autonomie.</p></div>
+      <div class="card" style="border-top:4px solid var(--ananas)"><h3>Ôté Kartié</h3><p>Le projet phare des jeunes pour faire bouger le quartier.</p></div>
+      <div class="card" style="border-top:4px solid #d2602f"><h3>Danse &amp; créations</h3><p>Danse, expression et activités menées avec les ados.</p></div>
+      <div class="card" style="border-top:4px solid #3a9bd9"><h3>Mercredi, samedi &amp; vacances</h3><p>Un accueil régulier pour les 11–17 ans toute l'année.</p></div>
     </div>
     <div style="text-align:center;margin-top:20px">
-      <a class="btn primary" style="text-decoration:none" href="connexion.html?role=famille">🌴 Réserver une place (ACM, sorties) → Mon espace famille</a>
+      <a class="btn primary" style="text-decoration:none" href="connexion.html?role=famille"> Réserver une place (ACM, sorties) → Mon espace famille</a>
       <p class="sub" style="margin:10px 0 0">Connectez-vous ou créez votre espace famille en 2 minutes. <b>Un parent adhérent</b> (10 €/an, du 1ᵉʳ août au 31 juillet) = <b>tous vos enfants</b> ont droit.</p>
     </div>
   </div>
@@ -375,12 +375,12 @@
 <section class="block bg-g" id="temps-forts">
   <div class="wrap">
     <p class="eyebrow">Temps forts 2026</p>
-    <h2 class="title">Les grands rendez-vous 🎉</h2>
+    <h2 class="title">Les grands rendez-vous </h2>
     <p class="sub">Les prochains rendez-vous du quartier. Cliquez pour le programme et pour vous inscrire.</p>
     <div class="actlist" id="agendaList"></div>
-    <div style="text-align:center;margin-top:22px"><button class="btn ghost" onclick="toggleForm('tfForm')">💡 Proposer un temps fort</button></div>
+    <div style="text-align:center;margin-top:22px"><button class="btn ghost" onclick="toggleForm('tfForm')"> Proposer un temps fort</button></div>
     <div id="tfForm" class="panel" style="display:none;max-width:640px;margin:16px auto 0;box-shadow:var(--shadow)">
-      <h3 style="margin:0 0 6px">💡 Une idée de temps fort ?</h3>
+      <h3 style="margin:0 0 6px"> Une idée de temps fort ?</h3>
       <p style="margin:0 0 12px;color:var(--muted);font-size:14px">Proposez votre idée : le CASE l'étudie, et si elle est retenue elle rejoindra l'agenda.</p>
       <div class="field"><label>Votre idée *</label><input id="tf_titre" placeholder="Ex. Marché nocturne, tournoi de dominos…"></div>
       <div class="field"><label>En quelques mots</label><input id="tf_desc" placeholder="Pour qui, quand, comment…"></div>
@@ -396,7 +396,7 @@
 <section class="block bg-w" id="lieux">
   <div class="wrap">
     <p class="eyebrow">Nos lieux</p>
-    <h2 class="title">Où nous trouver 🏠</h2>
+    <h2 class="title">Où nous trouver </h2>
     <p class="sub">Nos locaux, leur état, et ce qui s'y passe. Passez nous voir !</p>
     <div class="grid" id="lieuxList"></div>
   </div>
@@ -406,7 +406,7 @@
 <section class="block bg-g" id="plan">
   <div class="wrap">
     <p class="eyebrow">Le projet du CASE</p>
-    <h2 class="title">Ce qui arrive 🚧</h2>
+    <h2 class="title">Ce qui arrive </h2>
     <p class="sub">Les nouveautés qu'on prépare pour le quartier. Cliquez pour en savoir plus — et retrouvez tout ce qui tourne déjà dans <a href="#activites" style="color:var(--vert-fonce);font-weight:800">Nos activités</a>.</p>
     <div class="ppanel arrive" id="panelArrive" style="max-width:640px;margin:0 auto"></div>
   </div>
@@ -416,19 +416,19 @@
 <section class="block bg-sun" id="adhesion">
   <div class="wrap">
     <p class="eyebrow">Adhésion & inscriptions</p>
-    <h2 class="title">Rejoignez le CASE en 2 minutes ✏️</h2>
+    <h2 class="title">Rejoignez le CASE en 2 minutes </h2>
     <p class="sub">Adhérez en ligne et inscrivez-vous à une activité. Simple, rapide, sécurisé.</p>
     <div class="zguide">
       <img class="zg-img" src="zanana-card.png" onerror="this.src='mascotte-hero.png'" alt="Zanana">
-      <span class="zg-bulle">Adhère en ligne en 2 minutes, je te montre ! ✏️</span>
+      <span class="zg-bulle">Adhère en ligne en 2 minutes, je te montre ! </span>
     </div>
     <div class="panel">
       <p style="margin:0 0 16px;color:var(--muted);font-size:15px">L'adhésion (<b>10 €</b>, valable du <b>1ᵉʳ août au 31 juillet</b>) ouvre l'accès aux activités — et <b>un seul parent adhérent suffit pour tous les enfants</b>. Créez votre <b>espace famille</b> : vous pourrez déposer votre dossier périscolaire, réserver vos activités et <b>payer votre adhésion en ligne</b> — ou la régulariser avec le bureau.</p>
       <div style="display:flex;flex-direction:column;gap:10px">
-        <a class="btn primary" style="text-decoration:none;text-align:center" href="connexion.html?role=famille">🪪 Payer mon adhésion — 10 €</a>
-        <a class="btn primary" style="text-decoration:none;text-align:center" href="connexion.html?role=famille">🎒 Inscrire mon enfant au périscolaire</a>
-        <a class="btn primary" style="text-decoration:none;text-align:center" href="connexion.html?role=famille">🌴 Réserver une activité / l'ACM</a>
-        <a class="btn ghost" style="text-decoration:none;text-align:center" href="connexion.html?role=famille">👨‍👩‍👧 Accéder à Mon espace famille</a>
+        <a class="btn primary" style="text-decoration:none;text-align:center" href="connexion.html?role=famille"> Payer mon adhésion — 10 €</a>
+        <a class="btn primary" style="text-decoration:none;text-align:center" href="connexion.html?role=famille"> Inscrire mon enfant au périscolaire</a>
+        <a class="btn primary" style="text-decoration:none;text-align:center" href="connexion.html?role=famille"> Réserver une activité / l'ACM</a>
+        <a class="btn ghost" style="text-decoration:none;text-align:center" href="connexion.html?role=famille">‍‍ Accéder à Mon espace famille</a>
       </div>
       <p class="note">Tout se passe dans votre espace famille. <b>Paiement de l'adhésion en ligne</b> via HelloAsso — <b>sans frais pour vous</b> (la contribution HelloAsso est facultative, modifiable à <b>0 €</b>) ; possible aussi avec le bureau.</p>
     </div>
@@ -439,16 +439,16 @@
 <section class="block bg-g" id="contact">
   <div class="wrap">
     <p class="eyebrow">Nous contacter</p>
-    <h2 class="title">Une question ? Écrivez-nous 📬</h2>
+    <h2 class="title">Une question ? Écrivez-nous </h2>
     <div class="zguide">
       <img class="zg-img" src="zanana-wave.png" onerror="this.src='mascotte-hero.png'" alt="Zanana">
-      <span class="zg-bulle">Une question ? Écris-nous, on répond vite 👋</span>
+      <span class="zg-bulle">Une question ? Écris-nous, on répond vite </span>
     </div>
     <div class="contact-grid">
       <div>
-        <div class="info-line"><span class="i">📍</span><div><b>Adresse</b><br>C.A.S.E du Bois de Nèfles<br>132 Route des Ananas, 97490 Sainte-Clotilde<br><span style="font-size:13px;color:var(--muted)">+ Local des Bringelliers</span></div></div>
-        <div class="info-line"><span class="i">📞</span><div><b>Téléphone</b><br><a href="tel:+262262293790" style="text-decoration:none">0262 29 37 90</a> · <span style="font-size:13px;color:var(--muted)">CASE</span><br><a href="tel:+262692691811" style="text-decoration:none">0692 69 18 11</a> · <span style="font-size:13px;color:var(--muted)">ligne directe</span></div></div>
-        <div class="info-line"><span class="i">✉️</span><div><b>Email</b><br><a href="mailto:contact@casebdn.re" style="text-decoration:none">contact@casebdn.re</a></div></div>
+        <div class="info-line"><span class="i"></span><div><b>Adresse</b><br>C.A.S.E du Bois de Nèfles<br>132 Route des Ananas, 97490 Sainte-Clotilde<br><span style="font-size:13px;color:var(--muted)">+ Local des Bringelliers</span></div></div>
+        <div class="info-line"><span class="i"></span><div><b>Téléphone</b><br><a href="tel:+262262293790" style="text-decoration:none">0262 29 37 90</a> · <span style="font-size:13px;color:var(--muted)">CASE</span><br><a href="tel:+262692691811" style="text-decoration:none">0692 69 18 11</a> · <span style="font-size:13px;color:var(--muted)">ligne directe</span></div></div>
+        <div class="info-line"><span class="i"></span><div><b>Email</b><br><a href="mailto:contact@casebdn.re" style="text-decoration:none">contact@casebdn.re</a></div></div>
         <!-- Réseaux sociaux : à remettre dès que Guillaume fournit les liens FB/Insta/TikTok/WhatsApp -->
       </div>
       <div class="panel" style="box-shadow:var(--shadow)">
@@ -463,13 +463,13 @@
 <section class="block bg-w" id="partenaires">
   <div class="wrap">
     <p class="eyebrow">Commerçants & partenaires</p>
-    <h2 class="title">Soutenez le quartier 🤝</h2>
-    <p style="max-width:640px;margin:0 auto 22px;text-align:center;color:var(--muted);font-size:16px">Vous êtes un commerce ou un acteur du quartier et vous souhaitez soutenir le CASE — offrir un avantage à nos adhérents, parrainer une action, ou simplement nous rencontrer ? Laissez-nous vos coordonnées, on vous recontacte. 🍍</p>
+    <h2 class="title">Soutenez le quartier </h2>
+    <p style="max-width:640px;margin:0 auto 22px;text-align:center;color:var(--muted);font-size:16px">Vous êtes un commerce ou un acteur du quartier et vous souhaitez soutenir le CASE — offrir un avantage à nos adhérents, parrainer une action, ou simplement nous rencontrer ? Laissez-nous vos coordonnées, on vous recontacte. </p>
     <div class="zguide">
       <img class="zg-img" src="zanana-thumb.png" onerror="this.src='mascotte-hero.png'" alt="Zanana">
-      <span class="zg-bulle">Commerçant du quartier ? On fait équipe ! 👍</span>
+      <span class="zg-bulle">Commerçant du quartier ? On fait équipe ! </span>
     </div>
-    <div style="text-align:center;margin-top:22px"><button class="btn sun" onclick="toggleForm('paForm')">🤝 Devenir partenaire</button></div>
+    <div style="text-align:center;margin-top:22px"><button class="btn sun" onclick="toggleForm('paForm')"> Devenir partenaire</button></div>
     <div id="paForm" class="panel" style="display:none;max-width:640px;margin:16px auto 0;box-shadow:var(--shadow)">
       <div class="field"><label>Nom du commerce / structure *</label><input id="pa_commerce" placeholder="Ex. Boulangerie du Moufia"></div>
       <div class="field"><label>Votre nom *</label><input id="pa_contact" placeholder="Prénom Nom"></div>
@@ -487,12 +487,12 @@
 <section class="block bg-g" id="ateliers">
   <div class="wrap">
     <p class="eyebrow">Ateliers participatifs</p>
-    <h2 class="title">Et si on l'ouvrait ensemble ? 💡</h2>
+    <h2 class="title">Et si on l'ouvrait ensemble ? </h2>
     <p style="max-width:640px;margin:0 auto 22px;text-align:center;color:var(--muted);font-size:16px">Ces ateliers ouvriront dès qu'il y aura <b>assez d'inscrits</b> — et parfois, on cherche aussi <b>la personne qui saura les animer</b>. Que vous soyez simplement intéressé·e ou que vous ayez le talent pour animer : dites-le nous, ça compte !</p>
     <div class="grid" id="atGrid"><p style="grid-column:1/-1;text-align:center;color:var(--muted)">Chargement des ateliers…</p></div>
-    <div style="text-align:center;margin-top:22px"><button class="btn ghost" onclick="toggleForm('aiForm')">💡 Proposer un atelier</button></div>
+    <div style="text-align:center;margin-top:22px"><button class="btn ghost" onclick="toggleForm('aiForm')"> Proposer un atelier</button></div>
     <div id="aiForm" class="panel" style="display:none;max-width:640px;margin:16px auto 0;box-shadow:var(--shadow)">
-      <h3 style="margin:0 0 6px">💡 Vous avez une idée d'atelier ?</h3>
+      <h3 style="margin:0 0 6px"> Vous avez une idée d'atelier ?</h3>
       <p style="margin:0 0 12px;color:var(--muted);font-size:14px">Proposez-la : le CASE l'étudie, et si elle est retenue elle apparaîtra ici pour recueillir les inscriptions.</p>
       <div class="field"><label>Votre idée d'atelier *</label><input id="ai_titre" placeholder="Ex. couture, échecs, danse classique..."></div>
       <div class="field"><label>En quelques mots</label><input id="ai_desc" placeholder="Pour qui, quoi, à quelle fréquence..."></div>
@@ -510,10 +510,10 @@
 </div>
 
 <footer>
-  <div class="pine">🍍</div>
+  <div class="pine"></div>
   <p style="margin:6px 0 2px;font-weight:800;font-size:18px">CASE du Bois de Nèfles</p>
   <p style="margin:0;opacity:.85">Centre social associatif · Sainte-Clotilde, Saint-Denis · La Réunion</p>
-  <p style="margin:10px 0 0;font-size:13px;opacity:.7">Ce site vous est confié par <a href="https://bob.re" target="_blank" rel="nofollow noopener" style="color:#fff;text-decoration:underline">Bob</a> 🤖</p>
+  <p style="margin:10px 0 0;font-size:13px;opacity:.7">Ce site vous est confié par <a href="https://bob.re" target="_blank" rel="nofollow noopener" style="color:#fff;text-decoration:underline">Bob</a> </p>
 </footer>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -537,7 +537,7 @@ async function submitPartner(){
   });
   btn.disabled=false; btn.textContent='Envoyer ma demande de partenariat';
   if(error){ info.style.color='#c0392b'; info.textContent='Oups, une erreur est survenue. Réessayez dans un instant.'; return; }
-  info.style.color='#1f9d6b'; info.textContent='✅ Merci ! Votre demande est envoyée — le CASE vous recontactera.';
+  info.style.color='#1f9d6b'; info.textContent=' Merci ! Votre demande est envoyée — le CASE vous recontactera.';
   ['pa_commerce','pa_contact','pa_email','pa_phone','pa_type','pa_message'].forEach(id=>g(id).value='');
 }
 /* ===== Ateliers participatifs : liste publique + inscriptions + idées ===== */
@@ -550,19 +550,19 @@ async function loadAteliersPublics(){
      tout atelier publié lisible, c'est voulu pour les sites publics). */
   const {data,error}=await _sbPart.from('ateliers').select('*').eq('asso_id',_CASE_ASSO_ID).eq('publie',true).neq('statut','archive').order('created_at',{ascending:false});
   if(error){ grid.innerHTML='<p style="grid-column:1/-1;text-align:center;color:#c0392b">Impossible de charger les ateliers pour le moment.</p>'; return; }
-  if(!data||!data.length){ grid.innerHTML='<p style="grid-column:1/-1;text-align:center;color:var(--muted)">Pas d\'atelier en préparation pour le moment — proposez le vôtre juste en dessous ! 👇</p>'; return; }
+  if(!data||!data.length){ grid.innerHTML='<p style="grid-column:1/-1;text-align:center;color:var(--muted)">Pas d\'atelier en préparation pour le moment — proposez le vôtre juste en dessous ! </p>'; return; }
   const escA=s=>String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   grid.innerHTML=data.map(a=>{
     const nbI=a.nb_interesses||0, seuil=a.seuil||1, nbC=a.nb_competents||0;
     const pct=Math.min(100,Math.round(100*nbI/seuil));
     const ouvert=a.statut==='ouvert';
     const cherche=a.cherche_animateur&&!nbC;
-    const share=encodeURIComponent('💡 Le CASE du Bois de Nèfles cherche quelqu\'un pour animer l\'atelier « '+(a.titre||'')+' » — ça vous dit ? '+AT_PAGE);
+    const share=encodeURIComponent(' Le CASE du Bois de Nèfles cherche quelqu\'un pour animer l\'atelier « '+(a.titre||'')+' » — ça vous dit ? '+AT_PAGE);
     return '<div class="card">'
-      +'<div class="ico">'+(ouvert?'🎉':'💡')+'</div>'
+      +'<div class="ico">'+(ouvert?'':'')+'</div>'
       +'<h3>'+escA(a.titre)+'</h3>'
-      +(ouvert?'<p style="margin:0;color:var(--vert-fonce);font-weight:800">✅ Ça y est, l\'atelier ouvre ! Vous pouvez encore vous inscrire.</p>':'')
-      +(cherche?'<p style="margin:0;color:#b23a23;font-weight:700;font-size:13.5px">🔍 On cherche un animateur / une animatrice !</p>':'')
+      +(ouvert?'<p style="margin:0;color:var(--vert-fonce);font-weight:800"> Ça y est, l\'atelier ouvre ! Vous pouvez encore vous inscrire.</p>':'')
+      +(cherche?'<p style="margin:0;color:#b23a23;font-weight:700;font-size:13.5px"> On cherche un animateur / une animatrice !</p>':'')
       +(a.description?'<p style="margin:8px 0 0;color:var(--muted);font-size:14px">'+escA(a.description)+'</p>':'')
       +'<div style="margin:12px 0 6px;background:#eef3ef;border-radius:999px;height:10px;overflow:hidden"><div style="width:'+pct+'%;height:100%;background:var(--vert)"></div></div>'
       +'<p style="margin:0;font-size:13px;font-weight:700;color:var(--muted)">'+nbI+' / '+seuil+' intéressé·e·s'+(nbC?' · '+nbC+' prêt·e·s à animer':'')+'</p>'
@@ -573,14 +573,14 @@ async function loadAteliersPublics(){
       +'</div>'
       +'<p id="ati_'+a.id+'" style="margin:0;font-size:13px;font-weight:700;text-align:center"></p>'
       +'<div class="foot" style="display:flex;gap:6px;flex-wrap:wrap;margin-top:10px">'
-        +'<button class="btn ghost" onclick="atJoin(\''+a.id+'\',\'interesse\')">🙋 Ça m\'intéresse</button>'
-        +'<button class="btn sun" onclick="atJoin(\''+a.id+'\',\'competent\')">🧑‍🏫 Je peux animer</button>'
+        +'<button class="btn ghost" onclick="atJoin(\''+a.id+'\',\'interesse\')"> Ça m\'intéresse</button>'
+        +'<button class="btn sun" onclick="atJoin(\''+a.id+'\',\'competent\')">‍ Je peux animer</button>'
       +'</div>'
       +(cherche?('<div style="display:flex;gap:10px;justify-content:center;margin-top:4px;font-size:13px;flex-wrap:wrap">'
         +'<span style="color:var(--muted);font-weight:700">Faites passer :</span>'
-        +'<a target="_blank" rel="noopener" href="https://www.facebook.com/sharer/sharer.php?u='+encodeURIComponent(AT_PAGE)+'">📘 Facebook</a>'
-        +'<a target="_blank" rel="noopener" href="https://wa.me/?text='+share+'">💬 WhatsApp</a>'
-        +'<a target="_blank" rel="noopener" href="https://www.linkedin.com/sharing/share-offsite/?url='+encodeURIComponent(AT_PAGE)+'">💼 LinkedIn</a>'
+        +'<a target="_blank" rel="noopener" href="https://www.facebook.com/sharer/sharer.php?u='+encodeURIComponent(AT_PAGE)+'"> Facebook</a>'
+        +'<a target="_blank" rel="noopener" href="https://wa.me/?text='+share+'"> WhatsApp</a>'
+        +'<a target="_blank" rel="noopener" href="https://www.linkedin.com/sharing/share-offsite/?url='+encodeURIComponent(AT_PAGE)+'"> LinkedIn</a>'
       +'</div>'):'')
       +'</div>';
   }).join('');
@@ -590,7 +590,7 @@ function atJoin(id,type){
   document.getElementById('atf_'+id).style.display='block';
   const i=document.getElementById('ati_'+id);
   i.style.color='var(--vert-fonce)';
-  i.textContent=type==='competent'?'Super, un grand merci ! Dites-nous qui vous êtes 👇':'Top ! Dites-nous qui vous êtes 👇';
+  i.textContent=type==='competent'?'Super, un grand merci ! Dites-nous qui vous êtes ':'Top ! Dites-nous qui vous êtes ';
   document.getElementById('atn_'+id).focus();
 }
 async function atSend(id){
@@ -601,11 +601,11 @@ async function atSend(id){
   const {error}=await _sbPart.from('atelier_inscriptions').insert({asso_id:_CASE_ASSO_ID, atelier_id:id, nom, contact, type:_atForm[id]||'interesse'});
   if(error){
     info.style.color='#c0392b';
-    info.textContent=(error.code==='23505')?'Vous êtes déjà inscrit·e à cet atelier 😉':'Oups, une erreur est survenue. Réessayez dans un instant.';
+    info.textContent=(error.code==='23505')?'Vous êtes déjà inscrit·e à cet atelier ':'Oups, une erreur est survenue. Réessayez dans un instant.';
     return;
   }
   document.getElementById('atf_'+id).style.display='none';
-  info.style.color='var(--vert-fonce)'; info.textContent='✅ C\'est noté, merci ! Le CASE vous tiendra au courant.';
+  info.style.color='var(--vert-fonce)'; info.textContent=' C\'est noté, merci ! Le CASE vous tiendra au courant.';
   setTimeout(loadAteliersPublics, 2500);
 }
 async function submitAtelierIdee(){
@@ -616,7 +616,7 @@ async function submitAtelierIdee(){
   const {error}=await _sbPart.from('ateliers').insert({titre, description:g('ai_desc').value.trim(), proposeur:nom, contact_proposeur:g('ai_contact').value.trim()});
   btn.disabled=false; btn.textContent='Envoyer ma proposition';
   if(error){ info.style.color='#c0392b'; info.textContent='Oups, une erreur est survenue. Réessayez dans un instant.'; return; }
-  info.style.color='var(--vert-fonce)'; info.textContent='✅ Merci ! Votre idée est transmise au CASE, qui l\'étudie.';
+  info.style.color='var(--vert-fonce)'; info.textContent=' Merci ! Votre idée est transmise au CASE, qui l\'étudie.';
   ['ai_titre','ai_desc','ai_nom','ai_contact'].forEach(id=>g(id).value='');
 }
 /* ===== Proposer un temps fort (public) → événement non publié, modéré par le bureau ===== */
@@ -631,58 +631,58 @@ async function submitTempsFort(){
      policies publiques sont toutes du meme motif « publie = true » sans borne d'association :
      des qu'une autre asso hebergee publie une activite ou un lieu, ils apparaissaient ici. */
   const {error}=await _sbPart.from('activites').insert({ nom:titre, type:'evenement', categorie:'Temps forts', publie:false, statut:'bientot',
-    programme:(g('tf_desc').value||'').trim(), description:'💡 Proposé par '+nom+(contact?' ('+contact+')':'') });
+    programme:(g('tf_desc').value||'').trim(), description:' Proposé par '+nom+(contact?' ('+contact+')':'') });
   btn.disabled=false; btn.textContent='Envoyer ma proposition';
   if(error){ info.style.color='#c0392b'; info.textContent='Oups, une erreur est survenue. Réessayez dans un instant.'; return; }
-  info.style.color='var(--vert-fonce)'; info.textContent='✅ Merci ! Votre idée est transmise au CASE, qui l\'étudie.';
+  info.style.color='var(--vert-fonce)'; info.textContent=' Merci ! Votre idée est transmise au CASE, qui l\'étudie.';
   ['tf_titre','tf_desc','tf_nom','tf_contact'].forEach(id=>g(id).value='');
 }
 /* ===== Plan « ce qui tourne / ce qui arrive » =====
    POUR METTRE À JOUR : modifier la liste PLAN ci-dessous.
-   statut  = 'actif' (🟢 ça tourne) · 'travaux' (🟠 en préparation) · 'bientot' (🔵 à l'étude)
+   statut  = 'actif' ( ça tourne) · 'travaux' ( en préparation) · 'bientot' ( à l'étude)
    famille = le regroupement affiché dans la colonne « ce qui tourne » (ex. "Culture & loisirs").
    Chaque activité : emoji, nom, statut, famille, public, horaires, lieu, desc (détail au clic). */
 const PLAN=[
-  {emoji:'📚', nom:'Périscolaire — après-midi', statut:'actif', famille:'Péri & extrascolaire',
+  {emoji:'', nom:'Périscolaire — après-midi', statut:'actif', famille:'Péri & extrascolaire',
    inscriptible:true, insOption:'Périscolaire', court:"Après l'école : devoirs, goûter, activités",
    public:"Enfants scolarisés", horaires:"Lun → Ven, ~15h30–18h", lieu:"CASE Bois de Nèfles / école du Piton",
    desc:"Le périscolaire de l'après-midi fonctionne aujourd'hui : aide aux devoirs, goûter et activités encadrées jusqu'au retour des familles."},
-  {emoji:'🏕️', nom:'Accueil de loisirs (ACM)', statut:'actif', famille:'Péri & extrascolaire',
+  {emoji:'', nom:'Accueil de loisirs (ACM)', statut:'actif', famille:'Péri & extrascolaire',
    inscriptible:true, insOption:'Accueil de loisirs (ACM)', court:"Vacances scolaires : sorties & activités",
    public:"Enfants & ados", horaires:"Vacances scolaires", lieu:"CASE Bois de Nèfles",
    desc:"Accueil collectif de mineurs pendant les vacances : sorties, activités et projets collectifs."},
-  {emoji:'🧒', nom:'VEPI', statut:'actif', famille:'Péri & extrascolaire',
+  {emoji:'', nom:'VEPI', statut:'actif', famille:'Péri & extrascolaire',
    inscriptible:true, insOption:'VEPI', court:"Accueil extrascolaire",
    public:"Enfants", horaires:"Hors temps scolaire", lieu:"CASE Bois de Nèfles",
    desc:"Accueil extrascolaire proposé par le CASE (VEPI)."},
-  {emoji:'💃', nom:'Danse', statut:'actif', famille:'Culture & loisirs',
+  {emoji:'', nom:'Danse', statut:'actif', famille:'Culture & loisirs',
    inscriptible:true, insOption:'Danse', court:"Éveil, hip-hop, classique, salsa…",
    public:"Petits et grands", horaires:"En semaine (voir planning)", lieu:"CASE Bois de Nèfles",
    desc:"Plusieurs cours de danse pour tous les âges, avec des galas en juin et en décembre."},
-  {emoji:'🎵', nom:'Musique', statut:'actif', famille:'Culture & loisirs',
+  {emoji:'', nom:'Musique', statut:'actif', famille:'Culture & loisirs',
    inscriptible:true, insOption:'Musique', court:"Groupe variété & ateliers adultes",
    public:"Adultes", horaires:"En semaine", lieu:"CASE Bois de Nèfles",
    desc:"Atelier musique et groupe variété pour les adultes du quartier."},
-  {emoji:'🛹', nom:'Secteur ados — accueil', statut:'actif', famille:'Jeunesse · 11–17 ans',
+  {emoji:'', nom:'Secteur ados — accueil', statut:'actif', famille:'Jeunesse · 11–17 ans',
    inscriptible:true, insOption:'Secteur ados (11–17 ans)', court:"11–17 ans · mercredi, samedi, vacances",
    public:"11–17 ans", horaires:"Mercredi, samedi & vacances", lieu:"CASE Bois de Nèfles",
    desc:"Un accueil régulier pour les jeunes : activités, sorties et projets menés avec eux."},
-  {emoji:'☕', nom:'Permanence du samedi', statut:'actif', famille:'Vie de quartier',
+  {emoji:'', nom:'Permanence du samedi', statut:'actif', famille:'Vie de quartier',
    public:"Tous les habitants", horaires:"Samedi matin", lieu:"CASE Bois de Nèfles",
    desc:"Un moment convivial ouvert à tous les habitants du quartier, café offert."},
-  {emoji:'⚖️', nom:'Jeudi info population', statut:'actif', famille:'Vie de quartier',
+  {emoji:'', nom:'Jeudi info population', statut:'actif', famille:'Vie de quartier',
    public:"Tous publics", horaires:"Le jeudi", lieu:"CASE Bois de Nèfles",
    desc:"Accompagnement vers l'accès aux droits et aux ressources (CRIJ, France Services…)."},
-  {emoji:'🌅', nom:'Périscolaire — le matin', statut:'actif', famille:'Péri & extrascolaire',
+  {emoji:'', nom:'Périscolaire — le matin', statut:'actif', famille:'Péri & extrascolaire',
    public:"Enfants scolarisés", horaires:"~1h le matin · dès la rentrée du lundi 18 août 2026", lieu:"CASE Bois de Nèfles",
    desc:"En préparation pour la rentrée du lundi 18 août : un accueil d'environ 1h le matin, en plus de l'après-midi. La grille tarifaire (selon le quotient familial) est en cours de réévaluation."},
-  {emoji:'🏠', nom:'La Kaz Zados — espace dédié', statut:'travaux', famille:'Jeunesse · 11–17 ans',
+  {emoji:'', nom:'La Kaz Zados — espace dédié', statut:'travaux', famille:'Jeunesse · 11–17 ans',
    public:"11–17 ans", horaires:"En montage", lieu:"CASE Bois de Nèfles",
    desc:"Le projet pédagogique du secteur ados (2026-2030) : un espace géré par et pour les jeunes, en cours de montage avec les partenaires."},
-  {emoji:'🤸', nom:'Sport & santé', statut:'bientot', famille:'Bien-être',
+  {emoji:'', nom:'Sport & santé', statut:'bientot', famille:'Bien-être',
    public:"Tous publics", horaires:"À venir", lieu:"CASE Bois de Nèfles",
    desc:"Une offre sport & santé est à l'étude pour les prochaines saisons."},
-  {emoji:'👨‍👩‍👧', nom:'Accompagnement à la parentalité', statut:'bientot', famille:'Familles',
+  {emoji:'‍‍', nom:'Accompagnement à la parentalité', statut:'bientot', famille:'Familles',
    public:"Familles", horaires:"À venir", lieu:"CASE Bois de Nèfles",
    desc:"Des temps d'échange et de soutien pour les parents, en préparation."}
 ];
@@ -745,7 +745,7 @@ function planHtmlV(actId){
     }).join('<br>');
     return '<div style="display:flex;gap:9px;margin-top:4px"><b style="flex:0 0 32px;color:var(--vert)">'+(PLAN_JOURS_V[j]||'')+'</b><span>'+items+'</span></div>';
   }).join('');
-  return '<details><summary style="cursor:pointer;font-weight:800;font-size:13px;color:var(--vert)">🗓️ Jours &amp; horaires</summary>'
+  return '<details><summary style="cursor:pointer;font-weight:800;font-size:13px;color:var(--vert)"> Jours &amp; horaires</summary>'
     +'<div style="font-size:12.5px;line-height:1.45;margin-top:2px">'+lignes+'</div></details>';
 }
 
@@ -760,7 +760,7 @@ function actRowHtml(a){
       +'<span class="aico">'+(a.emoji||'•')+'</span>'
       +'<div class="abody"><b>'+escP(a.nom)+'</b><span>'+escP(a.description||'')+'</span></div>'
       +badge
-      +(bientot?'':'<a class="btn primary" style="text-decoration:none;white-space:nowrap" href="tel:+262262293790">📞 Appeler</a>')
+      +(bientot?'':'<a class="btn primary" style="text-decoration:none;white-space:nowrap" href="tel:+262262293790"> Appeler</a>')
       +planHtmlV(a.id)
     +'</div>';
   }
@@ -778,12 +778,12 @@ function actRowHtml(a){
     +'</div>';
 }
 const QFAM=[
-  {key:'Péri & extrascolaire', emoji:'🎒', color:'var(--vert)'},
-  {key:'Culture & loisirs', emoji:'🎨', color:'var(--ananas)'},
-  {key:'Sport & bien-être', emoji:'🤸', color:'#d2602f'},
-  {key:'__vie__', label:'Vie de quartier', emoji:'☕', color:'#3a9bd9'}
+  {key:'Péri & extrascolaire', emoji:'', color:'var(--vert)'},
+  {key:'Culture & loisirs', emoji:'', color:'var(--ananas)'},
+  {key:'Sport & bien-être', emoji:'', color:'#d2602f'},
+  {key:'__vie__', label:'Vie de quartier', emoji:'', color:'#3a9bd9'}
 ];
-function collapseAcm(list){var out=[],seen=false;(list||[]).forEach(function(a){var nm=a.nom||'';if(nm.indexOf('ACM')>-1&&nm.indexOf('semaine')>-1){if(!seen){seen=true;out.push({nom:'ACM Ados — Été 2026',emoji:'🏕️',categorie:a.categorie,statut:'ouvert',capacite:1,nb_inscrits:0,quand:'27 juil → 7 août',description:'Du 27 juillet au 7 août · 2 semaines au choix (dans ton espace famille) · 11–17 ans'});}}else{out.push(a);}});return out;}
+function collapseAcm(list){var out=[],seen=false;(list||[]).forEach(function(a){var nm=a.nom||'';if(nm.indexOf('ACM')>-1&&nm.indexOf('semaine')>-1){if(!seen){seen=true;out.push({nom:'ACM Ados — Été 2026',emoji:'',categorie:a.categorie,statut:'ouvert',capacite:1,nb_inscrits:0,quand:'27 juil → 7 août',description:'Du 27 juillet au 7 août · 2 semaines au choix (dans ton espace famille) · 11–17 ans'});}}else{out.push(a);}});return out;}
 let _actByCat={};
 async function loadActivitesPubliques(){
   const box=document.getElementById('actQuartiers'); if(!box) return;
@@ -810,10 +810,10 @@ function openActCat(idx){
   const box=document.getElementById('pmodalBox'); if(!box) return;
   let inner='<button class="px" onclick="closePlan()" aria-label="Fermer">✕</button>';
   if(f.key==='__vie__'){
-    inner+='<div class="pico">☕</div><h3>Vie de quartier</h3>'
+    inner+='<div class="pico"></div><h3>Vie de quartier</h3>'
       +'<p style="color:var(--muted);margin:0 0 6px">En accès libre, sans inscription :</p>'
-      +'<div class="pmd-line"><span class="i">☕</span><div><b>Permanence du samedi</b><br>Un moment convivial, café offert.</div></div>'
-      +'<div class="pmd-line"><span class="i">⚖️</span><div><b>Jeudi info population</b><br>Accès aux droits et aux ressources.</div></div>';
+      +'<div class="pmd-line"><span class="i"></span><div><b>Permanence du samedi</b><br>Un moment convivial, café offert.</div></div>'
+      +'<div class="pmd-line"><span class="i"></span><div><b>Jeudi info population</b><br>Accès aux droits et aux ressources.</div></div>';
   } else {
     const list=_actByCat[f.key]||[];
     inner+='<div class="pico">'+f.emoji+'</div><h3>'+escP(f.key)+'</h3>'
@@ -831,7 +831,7 @@ async function actSend(id){
   const {error}=await _sbPart.from('inscriptions_activite').insert({ asso_id:_CASE_ASSO_ID, activite_id:id, nom, responsable:g('actr'), contact:g('actc') });
   if(error){
     info.style.color='#c0392b';
-    if(error.code==='23505'){ info.textContent='Déjà inscrit·e 😉'; return; }
+    if(error.code==='23505'){ info.textContent='Déjà inscrit·e '; return; }
     // Pause technique (02/08/2026) : le refus peut venir du gel de maintenance,
     // désormais appliqué DANS la règle de sécurité. On ne pose la question
     // qu'en cas de refus — le parcours normal ne fait pas d'appel en plus.
@@ -839,18 +839,18 @@ async function actSend(id){
       const p=await _sbPart.rpc('asso_en_pause',{p_asso_id:_CASE_ASSO_ID});
       if(!p.error && p.data===true){
         info.style.color='#8a6400';
-        info.textContent='🛠️ Les inscriptions sont en pause quelques minutes, le temps d\'une mise à jour. Réessayez tout à l\'heure — rien n\'est perdu.';
+        info.textContent=' Les inscriptions sont en pause quelques minutes, le temps d\'une mise à jour. Réessayez tout à l\'heure — rien n\'est perdu.';
         return;
       }
     }catch(e){}
     info.textContent="Oups : plus de place disponible, ou une erreur. Réessaie.";
     return;
   }
-  info.style.color='var(--vert-fonce)'; info.textContent='✅ C\'est noté, merci ! Le CASE vous recontacte.';
+  info.style.color='var(--vert-fonce)'; info.textContent=' C\'est noté, merci ! Le CASE vous recontacte.';
   setTimeout(()=>{ loadActivitesPubliques(); loadEvenements(); }, 1800);
 }
 /* ===== Bandeau inscriptions prioritaires (familles) =====
-   Piloté par la gestion (onglet 🎟️ Activités) : catégorie « Péri & extrascolaire » + publié.
+   Piloté par la gestion (onglet  Activités) : catégorie « Péri & extrascolaire » + publié.
    Le statut fait le libellé ; 3 chips max ; le bandeau reste caché s'il n'y a rien. */
 async function loadInsBar(){
   const bar=document.getElementById('insbar'); if(!bar) return;
@@ -858,7 +858,7 @@ async function loadInsBar(){
     .eq('publie',true).eq('type','activite').eq('categorie','Péri & extrascolaire')
     .neq('statut','archive').order('ordre',{ascending:true}).limit(4);
   if(error||!data||!data.length) return;               // rien → pas de bandeau
-  bar.innerHTML='<span class="ib-tag">📣 Inscriptions</span>'+collapseAcm(data).map(a=>{
+  bar.innerHTML='<span class="ib-tag"> Inscriptions</span>'+collapseAcm(data).map(a=>{
     const places=Math.max(0,(a.capacite||0)-(a.nb_inscrits||0));
     const bientot=a.statut==='bientot', complet=!bientot&&places<=0;
     const dot=bientot?'#2a5aa0':(complet?'#b23a23':'var(--vert)');
@@ -877,7 +877,7 @@ let _evById={};
 function evCardHtml(e){
   const dt = e.date_event ? escP(formatDateFr(e.date_event)) : 'À venir';
   return `<button class="qtile" style="border-top-color:var(--jaune)" onclick="openEvent('${e.id}')">`
-    + `<span class="qi">${e.emoji||'📅'}</span>`
+    + `<span class="qi">${e.emoji||''}</span>`
     + `<h3>${escP(e.nom)}</h3>`
     + `<p class="qlist">${escP(e.quand||'')||'&nbsp;'}</p>`
     + `<span class="qgo">${dt} →</span>`
@@ -888,11 +888,11 @@ function openEvent(id){
   const box=document.getElementById('pmodalBox'); if(!box) return;
   const dateTxt = e.date_event ? formatDateFr(e.date_event) : 'Date à venir';
   box.innerHTML = `<button class="px" onclick="closePlan()" aria-label="Fermer">✕</button>`
-    + `<div class="pico">${e.emoji||'📅'}</div>`
+    + `<div class="pico">${e.emoji||''}</div>`
     + `<span class="pill work"><i class="dot work"></i>${escP(dateTxt)}</span>`
     + `<h3>${escP(e.nom)}</h3>`
     + (e.programme?`<p style="color:var(--muted);margin:8px 0 0;white-space:pre-line">${escP(e.programme)}</p>`:``)
-    + (e.lieu?`<p style="margin:8px 0 0;font-size:13.5px;color:var(--muted)">📍 ${escP(e.lieu)}</p>`:``)
+    + (e.lieu?`<p style="margin:8px 0 0;font-size:13.5px;color:var(--muted)"> ${escP(e.lieu)}</p>`:``)
     + `<div style="margin-top:14px">`
     +   `<input id="actn_${e.id}" placeholder="Votre nom *" style="width:100%;margin:4px 0;padding:10px 12px;border:1px solid var(--line);border-radius:10px;font:inherit">`
     +   `<input id="actc_${e.id}" placeholder="Téléphone ou email" style="width:100%;margin:4px 0;padding:10px 12px;border:1px solid var(--line);border-radius:10px;font:inherit">`
@@ -911,7 +911,7 @@ async function loadEvenements(){
   const undated=(data||[]).filter(e=>!e.date_event);
   const all=dated.concat(undated);
   _evById={}; all.forEach(function(e){_evById[e.id]=e;});
-  if(!all.length){ box.innerHTML=`<p style="grid-column:1/-1;text-align:center;color:var(--muted)">Les prochains rendez-vous arrivent bientôt. 🍍</p>`; return; }
+  if(!all.length){ box.innerHTML=`<p style="grid-column:1/-1;text-align:center;color:var(--muted)">Les prochains rendez-vous arrivent bientôt. </p>`; return; }
   box.innerHTML=all.map(evCardHtml).join('');
 }
 /* ===== Nos lieux : fiches des locaux + liaison vers leurs activités ===== */
@@ -921,18 +921,18 @@ async function loadLieux(){
     _sbPart.from('lieux').select('*').eq('asso_id',_CASE_ASSO_ID).eq('publie',true).order('ordre',{ascending:true}),
     _sbPart.from('activites').select('nom,emoji,lieu').eq('asso_id',_CASE_ASSO_ID).eq('publie',true).eq('type','activite')
   ]);
-  if(rl.error||!rl.data||!rl.data.length){ box.innerHTML='<p style="grid-column:1/-1;text-align:center;color:var(--muted)">Nos lieux arrivent bientôt. 🍍</p>'; return; }
+  if(rl.error||!rl.data||!rl.data.length){ box.innerHTML='<p style="grid-column:1/-1;text-align:center;color:var(--muted)">Nos lieux arrivent bientôt. </p>'; return; }
   const acts=ra.data||[];
   box.innerHTML=rl.data.map(L=>{
     const mine=acts.filter(a=>(a.lieu||'')===L.nom);
     const etatCls = /r[ée]nov|travaux/i.test(L.etat||'') ? 'work' : 'on';
     return '<div class="card">'
       +(L.photo_url?'<img src="'+escP(L.photo_url)+'" alt="" style="width:100%;height:150px;object-fit:cover;border-radius:12px;margin-bottom:10px">':'')
-      +'<h3 style="margin:0 0 4px">🏠 '+escP(L.nom)+'</h3>'
+      +'<h3 style="margin:0 0 4px"> '+escP(L.nom)+'</h3>'
       +(L.etat?'<span class="ptag '+etatCls+'">'+escP(L.etat)+'</span>':'')
       +(L.description?'<p style="margin:8px 0 0;color:var(--muted);font-size:14.5px">'+escP(L.description)+'</p>':'')
-      +(L.adresse?'<p style="margin:8px 0 0;font-size:13.5px">📍 '+escP(L.adresse)+'</p>':'')
-      +(L.horaires?'<p style="margin:4px 0 0;font-size:13.5px;color:var(--muted)">🕒 '+escP(L.horaires)+'</p>':'')
+      +(L.adresse?'<p style="margin:8px 0 0;font-size:13.5px"> '+escP(L.adresse)+'</p>':'')
+      +(L.horaires?'<p style="margin:4px 0 0;font-size:13.5px;color:var(--muted)"> '+escP(L.horaires)+'</p>':'')
       +(mine.length?'<p style="margin:10px 0 0;font-size:13.5px"><b>On y propose :</b> '+mine.map(a=>escP((a.emoji?a.emoji+' ':'')+a.nom)).join(' · ')+'</p>':'')
       +'</div>';
   }).join('');
@@ -941,7 +941,7 @@ async function loadLieux(){
 function envoyerContact(){
   const nom=(document.getElementById('ct_nom').value||'').trim();
   const msg=(document.getElementById('ct_msg').value||'').trim();
-  if(!msg){ alert('Écris ton message avant d\'envoyer 🙂'); return; }
+  if(!msg){ alert('Écris ton message avant d\'envoyer '); return; }
   const subject=encodeURIComponent('Message du site — '+(nom||'Visiteur'));
   const body=encodeURIComponent(msg+'\n\n— '+(nom||'')+' (envoyé depuis le site du CASE)');
   window.location.href='mailto:contact@casebdn.re?subject='+subject+'&body='+body;
@@ -954,10 +954,10 @@ function openPlan(i){
     +'<span class="pill '+PLAN_CLS[p.statut]+'"><i class="dot '+PLAN_CLS[p.statut]+'"></i>'+PLAN_LABEL[p.statut]+'</span>'
     +'<h3>'+escP(p.nom)+'</h3>'
     +'<p style="color:var(--muted);margin:0">'+escP(p.desc)+'</p>'
-    +(p.public?'<div class="pmd-line"><span class="i">👥</span><div><b>Pour qui</b><br>'+escP(p.public)+'</div></div>':'')
-    +(p.horaires?'<div class="pmd-line"><span class="i">🕒</span><div><b>Quand</b><br>'+escP(p.horaires)+'</div></div>':'')
-    +(p.lieu?'<div class="pmd-line"><span class="i">📍</span><div><b>Où</b><br>'+escP(p.lieu)+'</div></div>':'')
-    +'<div class="pmd-line"><span class="i">✉️</span><div><b>Infos &amp; inscriptions</b><br><a href="#contact" onclick="closePlan()">Nous contacter</a></div></div>';
+    +(p.public?'<div class="pmd-line"><span class="i"></span><div><b>Pour qui</b><br>'+escP(p.public)+'</div></div>':'')
+    +(p.horaires?'<div class="pmd-line"><span class="i"></span><div><b>Quand</b><br>'+escP(p.horaires)+'</div></div>':'')
+    +(p.lieu?'<div class="pmd-line"><span class="i"></span><div><b>Où</b><br>'+escP(p.lieu)+'</div></div>':'')
+    +'<div class="pmd-line"><span class="i"></span><div><b>Infos &amp; inscriptions</b><br><a href="#contact" onclick="closePlan()">Nous contacter</a></div></div>';
   document.getElementById('pmodal').classList.add('open');
 }
 function closePlan(){ document.getElementById('pmodal').classList.remove('open'); }
