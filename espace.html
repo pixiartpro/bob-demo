@@ -117,6 +117,8 @@
   /* le trait qui sépare les canaux permanents des fils de projet */
   .canal-sep{width:1px;align-self:stretch;background:var(--line-2);margin:2px 4px}
   .canal-plus{border-style:dashed;color:var(--muted-2)}
+  /* les réponses d'un vote : des pastilles, pas une liste — on choisit d'un doigt */
+  .vote-choix{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
   .carte + .carte{margin-top:14px}
   .carte h2{font-size:16.5px;margin:0 0 3px;font-weight:700}
   .carte .sous{color:var(--muted);font-size:13.5px;margin:0 0 14px}
@@ -550,6 +552,11 @@ function vueAccueil(el){
    + kpi(miens.length+jeSuisDedans.length,'tes engagements')
    + '</div>';
 
+  /* 🗳️ 09/08/2026 — les votes ouverts, EN TÊTE de l'accueil : une décision qui attend la voix
+     de quelqu'un passe avant les nouvelles. Le conteneur est rempli après coup (il faut lire la
+     base) — vide, il ne prend aucune place. */
+  h+='<div id="zoneVotes"></div>';
+
   /* ① Ce qui a bougé — la réponse au « comment je sais qu'il y a du neuf ». */
   h+='<div class="carte"><h2><span class="em">⚡</span>Ce qui a bougé</h2>'
    + '<p class="sous">Les derniers messages, tous fils confondus. Clique pour ouvrir le fil.</p>';
@@ -605,6 +612,107 @@ function vueAccueil(el){
     h+='</div>';
   }
   el.innerHTML=h;
+  chargerVotes();
+}
+
+/* ═══ 🗳️ LES VOTES ═══════════════════════════════════════════════════════════════════════════
+   09/08/2026, Guillaume : « une sorte de petit vote, une décision, tout le monde vote, et quand
+   tout le monde a voté ça valide » — avec des propositions ET une option « Autre » où l'on écrit
+   son propre mot. Le bureau pose la question, chacun répond une fois.
+
+   Deux verrous sont EN BASE, pas ici : une personne = une voix (contrainte unique), et on ne
+   vote ni à la place d'un autre ni après la clôture (policies, prouvées par impersonation).
+   L'écran ne fait que rendre honnêtement ce que la base autorise.
+
+   ⚠️ « Combien sont attendus » vient de `vote_avancement()` : un adhérent ne lit pas `profiles`
+   au-delà de lui-même, il compterait 1 attendu et croirait le vote terminé après sa voix. */
+async function chargerVotes(){
+  const zone=$('#zoneVotes'); if(!zone||!ME) return;
+  const rv=await sb.from('votes').select('id,question,options,autre_permis,statut,created_at')
+                   .eq('statut','ouvert').order('created_at',{ascending:false});
+  /* Le bureau peut toujours en lancer un — même quand il n'y a aucun vote en cours, sinon
+     personne ne découvre que la fonction existe. */
+  const lancer = estBureau()
+    ? '<p class="sous" style="margin:10px 0 0"><button class="b nu sm" data-votenouveau="1">🗳️ Lancer un vote</button></p>'
+    : '';
+  if(rv.error||!(rv.data||[]).length){
+    zone.innerHTML = lancer ? '<div class="carte" style="padding:14px 18px">'+lancer+'</div>' : '';
+    return;
+  }
+  const mien=await sb.from('vote_voix').select('vote_id,choix').eq('user_id',ME.id);
+  const maVoix={}; (mien.data||[]).forEach(v=>{ maVoix[v.vote_id]=v.choix; });
+
+  const blocs=await Promise.all((rv.data||[]).map(async v=>{
+    const [av,res]=await Promise.all([
+      sb.rpc('vote_avancement',{p_vote:v.id}),
+      maVoix[v.id] ? sb.rpc('vote_resultat',{p_vote:v.id}) : Promise.resolve({data:[]})
+    ]);
+    const a=(av.data&&av.data[0])||{votants:0,attendus:0,complet:false};
+    const opts=Array.isArray(v.options)?v.options:[];
+    const dejaVote=!!maVoix[v.id];
+
+    let h='<div class="carte" style="border-left:3px solid var(--brand)">'
+      +'<h2><span class="em" aria-hidden="true">🗳️</span>'+esc(v.question)+'</h2>';
+
+    if(!dejaVote){
+      h+='<p class="sous">Choisis une réponse. Tu pourras en changer tant que le vote est ouvert.</p>'
+        +'<div class="vote-choix" role="group" aria-label="Les réponses possibles">'
+        + opts.map(o=>'<button class="b g sm" data-vote="'+esc(v.id)+'" data-choix="'+esc(o)+'">'+esc(o)+'</button>').join('')
+        + '</div>'
+        + (v.autre_permis
+            ? '<div class="ln" style="margin-top:10px">'
+              +'<input class="champ" id="vAutre-'+esc(v.id)+'" placeholder="Autre — écris ton idée" maxlength="60" style="flex:1">'
+              +'<button class="b p sm" data-voteautre="'+esc(v.id)+'">Proposer</button></div>'
+            : '');
+    } else {
+      h+='<p class="sous">Ta réponse : <b>'+esc(maVoix[v.id])+'</b> — '
+        +'<button class="b nu sm" data-votechanger="'+esc(v.id)+'">changer</button></p>';
+      const li=(res.data||[]);
+      if(li.length) h+='<div style="margin-top:6px">'+li.map(r=>
+          '<div style="display:flex;align-items:center;gap:8px;margin:5px 0;font-size:13.5px">'
+          +'<span style="flex:0 0 130px">'+esc(r.choix)+'</span>'
+          +'<span style="flex:1;height:8px;border-radius:99px;background:var(--line-2);overflow:hidden">'
+          +'<span style="display:block;height:100%;width:'+Number(r.part)+'%;background:var(--brand-fill)"></span></span>'
+          +'<span style="flex:0 0 62px;text-align:right;color:var(--muted)">'+r.voix+' voix</span></div>').join('')+'</div>';
+    }
+    h+='<p class="sous" style="margin-top:10px">'
+      + (a.complet
+          ? '✅ <b>Tout le monde a voté.</b> Le bureau peut clore et acter la décision.'
+          : '👥 '+a.votants+' voix sur '+a.attendus+' membre'+(a.attendus>1?'s':'')+' — il en manque '+Math.max(0,a.attendus-a.votants)+'.')
+      +'</p></div>';
+    return h;
+  }));
+  zone.innerHTML=blocs.join('')+(lancer?'<p class="sous" style="margin:2px 0 14px">'+lancer.replace(/<\/?p[^>]*>/g,'')+'</p>':'');
+}
+/* Lancer un vote — réservé au bureau (policy `ins_votes` : can_write()). Volontairement en trois
+   questions, pas un écran de plus : la question, les réponses possibles, et c'est parti. */
+async function nouveauVote(){
+  const q=(prompt('La question posée à tout le monde ?\n\nPar exemple : « Comment on appelle une proposition d\'activité ? »')||'').trim();
+  if(!q) return;
+  const brut=(prompt('Les réponses possibles, séparées par des virgules.\n\nPar exemple : Envies, Propositions, Ça se monte')||'').trim();
+  const opts=brut.split(',').map(x=>x.trim()).filter(Boolean).slice(0,10);
+  if(!opts.length){ toast('Il faut au moins une réponse possible'); return; }
+  const autre=confirm('Autoriser « Autre » (chacun peut écrire sa propre réponse) ?\n\nOK = oui   ·   Annuler = non');
+  const r=await sb.from('votes').insert({ asso_id:ME.asso, question:q.slice(0,300), options:opts,
+    autre_permis:autre, cree_par:ME.id, cree_par_nom:ME.name });
+  if(r.error){ toast('Impossible : '+r.error.message); return; }
+  toast('🗳️ Vote lancé');
+  chargerVotes();
+}
+async function voter(voteId, choix){
+  if(!ME||ME.statut!=='actif'){ toast('Ton compte doit être validé pour voter'); return; }
+  choix=String(choix||'').trim().slice(0,60);
+  if(!choix){ toast('Écris ou choisis une réponse'); return; }
+  /* on tente la mise à jour d'abord : si la personne change d'avis, l'insertion buterait sur
+     la contrainte « une voix par personne » — le message serait juste, mais incompréhensible. */
+  const maj=await sb.from('vote_voix').update({choix:choix}).eq('vote_id',voteId).eq('user_id',ME.id).select('id');
+  if(maj.error){ toast('Vote impossible : '+maj.error.message); return; }
+  if(!(maj.data||[]).length){
+    const ins=await sb.from('vote_voix').insert({asso_id:ME.asso, vote_id:voteId, user_id:ME.id, nom:ME.name, choix:choix});
+    if(ins.error){ toast('Vote impossible : '+ins.error.message); return; }
+  }
+  toast('✅ Ta voix est enregistrée');
+  chargerVotes();
 }
 function kpi(n,l){return '<div class="kpi"><div class="n">'+n+'</div><div class="l">'+esc(l)+'</div></div>';}
 /* Deux poids d'état vide. Le grand appelle à agir (première fois, rien à faire) ;
@@ -1483,6 +1591,11 @@ async function demarrer(){
 document.addEventListener('click',async e=>{
   const c=s=>e.target.closest(s);
   let t;
+  if((t=c('[data-votenouveau]'))){ nouveauVote(); return; }
+  if((t=c('[data-vote]'))){ voter(t.dataset.vote, t.dataset.choix); return; }
+  if((t=c('[data-voteautre]'))){ const i=$('#vAutre-'+t.dataset.voteautre); voter(t.dataset.voteautre, i?i.value:''); return; }
+  if((t=c('[data-votechanger]'))){ const v=t.dataset.votechanger;
+    sb.from('vote_voix').delete().eq('vote_id',v).eq('user_id',ME.id).then(()=>chargerVotes()); return; }
   if((t=c('[data-canalarchives]'))){ VOIR_ARCHIVES=!VOIR_ARCHIVES; aller('comptoir'); return; }
   if((t=c('[data-canalranger]'))){ rangerCanal(true); return; }
   if((t=c('[data-canalrouvrir]'))){ rangerCanal(false); return; }
