@@ -516,6 +516,20 @@
       <div style="overflow-x:auto;-webkit-overflow-scrolling:touch"><table style="min-width:720px"><thead><tr><th>Nom</th><th>Contact</th><th>Adresse</th><th>Adhésion</th><th class="num">Cotisation</th><th>Statut</th><th></th></tr></thead>
         <tbody id="memberRows"></tbody></table></div>
     </div>
+
+    <!-- 👤 09/08/2026 — signalé par Guillaume depuis BOKAF : « je vois pas les adhérents ».
+         Le registre ci-dessus est le coffre, saisi à la main. Les gens qui se sont inscrits EN
+         LIGNE vivent dans `profiles` — 5 comptes actifs chez BOKAF, 0 ligne dans le registre :
+         le bureau ne voyait donc personne, alors que cinq personnes utilisaient l'application.
+         Même défaut que les projets, même remède : on AJOUTE la vue des comptes réels, sans
+         toucher au registre (qui porte l'adhésion, l'adresse, le paiement). -->
+    <div class="panel" id="comptesEspacePanel" style="display:none">
+      <h2 style="margin:0 0 4px">👤 Les comptes de l'espace membre</h2>
+      <p class="hint" id="comptesEspaceIntro">Les personnes qui ont créé leur compte et utilisent l'application —
+        <b>qu'elles aient réglé leur adhésion ou non</b>. C'est la liste des gens qui sont là ; le registre ci-dessus,
+        lui, porte l'adhésion et les coordonnées.</p>
+      <div id="comptesEspaceListe"></div>
+    </div>
   </section>
 
   <!-- RÉSERVER UNE SALLE (guichet de demandes — bureau : valider/refuser + occupation) -->
@@ -11741,6 +11755,48 @@ renderAll();
      texte. La liste du coffre, au-dessus, n'est pas touchée.
      ⚠️ Filtré sur asso_id : les policies le font déjà, mais on ne s'en remet pas à elles seules
      pour un écran de gestion (cf. les ateliers, corrigés le même jour). */
+  /* ---- 👤 Les comptes de l'espace membre (table `profiles`) ------------------------------
+     09/08/2026, signalé par Guillaume : « je vois pas les adhérents ». L'onglet Adhérents lit le
+     coffre (db.members), saisi à la main ; les gens inscrits EN LIGNE vivent dans `profiles`.
+     Chez BOKAF : 5 comptes actifs, 0 ligne au registre — le bureau ne voyait personne. On lit
+     donc la même table que l'espace membre, en LECTURE seule (créer/valider un compte se fait
+     depuis connexion.html, qui porte déjà toute la mécanique de validation).
+     Le rapprochement avec le registre se fait sur l'e-mail, à défaut sur le nom — il sert juste
+     à dire « déjà au registre » ou non, jamais à modifier quoi que ce soit. */
+  const ROLES_FR={president:'Président', tresorier:'Trésorier', bureau:'Bureau',
+                  personnel:'Salarié', adherent:'Adhérent'};
+  const STATUTS_FR={actif:'✅ actif', en_attente:'⏳ en attente', bloque:'⛔ bloqué', inactif:'💤 inactif'};
+  window.loadComptesEspace=async function(){
+    const panel=document.getElementById('comptesEspacePanel'), box=document.getElementById('comptesEspaceListe');
+    if(!panel||!box) return;
+    panel.style.display=''; box.innerHTML='<p class="hint">Chargement…</p>';
+    const r=await sbc.from('profiles').select('id,full_name,email,role,statut,created_at')
+                     .eq('asso_id',myAsso).order('created_at',{ascending:true});
+    if(r.error){ box.innerHTML='<p class="hint" style="color:var(--red)">Lecture impossible : '+esc(r.error.message)+'</p>'; return; }
+    const li=r.data||[];
+    if(!li.length){ box.innerHTML='<p class="hint">Personne n\'a encore créé de compte.</p>'; return; }
+    /* le registre, pour dire qui y est déjà — comparaison insensible à la casse */
+    const auRegistre=new Set();
+    (db.members||[]).forEach(m=>{ if(m.email) auRegistre.add(String(m.email).trim().toLowerCase());
+                                  if(m.name)  auRegistre.add(String(m.name).trim().toLowerCase()); });
+    const connu=p=>auRegistre.has(String(p.email||'').trim().toLowerCase())
+                 || auRegistre.has(String(p.full_name||'').trim().toLowerCase());
+    const manquants=li.filter(p=>!connu(p)).length;
+    box.innerHTML=(manquants?('<p class="hint" style="margin:0 0 10px">📌 <b>'+manquants+'</b> '
+        +(manquants>1?'personnes utilisent l\'application sans figurer au registre ci-dessus — à les ajouter si elles doivent adhérer.'
+                     :'personne utilise l\'application sans figurer au registre ci-dessus — à l\'ajouter si elle doit adhérer.')
+        +'</p>'):'')
+      +'<div style="overflow-x:auto"><table style="min-width:640px"><thead><tr>'
+      +'<th>Nom</th><th>Contact</th><th>Rôle</th><th>Compte</th><th>Au registre</th></tr></thead><tbody>'
+      +li.map(p=>'<tr>'
+        +'<td>'+esc(p.full_name||'—')+'</td>'
+        +'<td>'+esc(p.email||'—')+'</td>'
+        +'<td>'+esc(ROLES_FR[p.role]||p.role||'—')+'</td>'
+        +'<td>'+esc(STATUTS_FR[p.statut]||p.statut||'—')+'</td>'
+        +'<td>'+(connu(p)?'oui':'<b>non</b>')+'</td>'
+      +'</tr>').join('')+'</tbody></table></div>';
+  };
+
   /* 09/08/2026 (audit adverse) — la pastille affichait la CLÉ technique (« actif », « archive »)
      alors que l'espace membre montre « 🟢 En cours » / « 📦 Archivé » aux mêmes adhérents. Deux
      écrans qui nomment différemment la même chose, c'est précisément ce que le titrage des deux
@@ -13777,6 +13833,9 @@ renderAll();
     /* 08/08/2026 — même motif pour les projets d'adhérents : au clic sur l'onglet et au boot. */
     const pjb=document.querySelector('nav.tabs button[data-tab="projects"]'); if(pjb) pjb.addEventListener('click',()=>{ if(window.loadProjetsAdherents) loadProjetsAdherents(); });
     if(window.loadProjetsAdherents) loadProjetsAdherents();
+    /* 09/08/2026 — les comptes de l'espace membre, dans l'onglet Adhérents. */
+    const mbb=document.querySelector('nav.tabs button[data-tab="members"]'); if(mbb) mbb.addEventListener('click',()=>{ if(window.loadComptesEspace) loadComptesEspace(); });
+    if(window.loadComptesEspace) loadComptesEspace();
     const cb=document.querySelector('nav.tabs button[data-tab="activites"]'); if(cb) cb.addEventListener('click',()=>{ if(window.loadActivitesGestion) loadActivitesGestion(); });
     const rb=document.querySelector('nav.tabs button[data-tab="rdv"]'); if(rb) rb.addEventListener('click',()=>{ if(window.loadRdvAdmin) loadRdvAdmin(); });
     const lgb=document.querySelector('nav.tabs button[data-tab="lieux"]'); if(lgb) lgb.addEventListener('click',()=>{ if(window.loadLieuxGestion) loadLieuxGestion(); });
