@@ -308,6 +308,10 @@
     <button class="moi" id="moi" aria-haspopup="true" aria-expanded="false" aria-controls="menuCompte"></button>
     <div class="bas" id="menuCompte">
       <a class="lien-bas" id="lienSite" href="#" style="display:none"><span class="em">↗</span>Le site public</a>
+      <!-- 09/08/2026 — le commutateur d'espaces, côté membre : on ne montre que ce à quoi la
+           personne a VRAIMENT accès, sinon on offre une porte qui se refermera sur elle. -->
+      <a class="lien-bas" id="lienGestion" href="app.html" style="display:none"><span class="em">🛠️</span>La gestion</a>
+      <a class="lien-bas" id="lienFamille" href="espace-adherent.html" style="display:none"><span class="em">👨‍👩‍👧</span>L'espace famille</a>
       <!-- 09/08/2026 — demandé par Guillaume : « donner à tout le monde, directement sur le site,
            un truc à faire : y mettre un raccourci sur l'écran de téléphone ». Le manifeste
            existant ne servait QUE la gestion, et il était au nom du CASE. -->
@@ -1311,6 +1315,14 @@ async function demarrer(){
     +'<div class="rl">'+esc(ME.role==='president'?'Président':ME.role==='tresorier'?'Trésorier':
        ME.role==='bureau'?'Bureau':'Adhérent')+'</div></div>';
   if(ID.site){ const l=$('#lienSite'); l.href=ID.site; l.style.display=''; }
+  /* 09/08/2026 — le commutateur d'espaces. La gestion n'apparaît que pour qui peut y entrer
+     (elle refuse les autres au boot : offrir le lien à un adhérent, c'est l'envoyer vers une
+     porte fermée). L'espace famille suit le module Animation de l'asso. */
+  try{
+    const chef=['president','tresorier','bureau','personnel'].indexOf(ME.role)>=0;
+    if(chef){ const g=$('#lienGestion'); if(g) g.style.display=''; }
+    if(feat('f_metier_acm')){ const f=$('#lienFamille'); if(f) f.style.display=''; }
+  }catch(e){}
 
   /* 4. Le compte est-il ouvert ? */
   if(ME.statut!=='actif'){

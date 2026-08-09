@@ -8488,7 +8488,22 @@ renderAll();
       +(canWrite?'':'<span style="background:#f6b400;color:#5b4300;padding:2px 9px;border-radius:999px">Lecture seule</span>')
       +'<span style="margin-left:auto;display:flex;gap:8px">'
       +'<button onclick="cloudRefresh()" style="cursor:pointer;border:none;border-radius:999px;padding:6px 12px;font:inherit;background:rgba(255,255,255,.2);color:#fff">↻ Rafraîchir</button>'
-      +'<a href="connexion.html" style="text-decoration:none;border-radius:999px;padding:6px 12px;background:rgba(255,255,255,.2);color:#fff">Espace bureau</a>'
+      /* 09/08/2026 — signalé par Guillaume : « je suis branché sur la boîte du président, il doit
+         pouvoir choisir soit d'aller sur le site officiel, soit sur sa gestion, soit sur son
+         espace adhérent — il est aussi adhérent ». Il n'existait AUCUN commutateur : depuis la
+         gestion on ne pouvait pas rejoindre son propre espace membre, et « Espace bureau »
+         menait en réalité à la page de connexion. Les entrées suivent ce que l'asso a ouvert,
+         jamais son nom. */
+      +(function(){
+         const f=(window.bobFeatures&&window.bobFeatures())||{};
+         const on=k=>f[k]===true||f[k]==='on';
+         const lien=(href,txt)=>'<a href="'+href+'" style="text-decoration:none;border-radius:999px;padding:6px 12px;background:rgba(255,255,255,.2);color:#fff">'+txt+'</a>';
+         let h='';
+         if(on('projets_adherents')) h+=lien('espace.html','👤 Mon espace');
+         if(on('f_metier_acm'))      h+=lien('espace-adherent.html','👨‍👩‍👧 Espace famille');
+         return h;
+       })()
+      +'<a href="connexion.html" style="text-decoration:none;border-radius:999px;padding:6px 12px;background:rgba(255,255,255,.2);color:#fff">Mon compte</a>'
       +'<button onclick="cloudLogout()" style="cursor:pointer;border:none;border-radius:999px;padding:6px 12px;font:inherit;background:#fff;color:var(--brand)">Déconnexion</button>'
       +'</span>';
     document.body.insertBefore(bar, document.body.firstChild);
