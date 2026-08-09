@@ -310,7 +310,7 @@
       </span>
       <span class="subgrp"><i class="subttl">Ce qu'on propose</i>
         <button data-tab="activites">🎟️ Activités</button>
-        <button data-tab="ateliers">💡 Ateliers</button>
+        <button data-tab="ateliers"><span id="motOngletAteliers">💡 Ateliers</span></button>
         <button data-tab="projects" data-moved title="A déménagé ici (avant : Vie associative, renommée 🧭 Direction)">📁 Projets</button>
       </span>
       <span class="subgrp"><i class="subttl">Où</i>
@@ -1923,7 +1923,7 @@
   <!-- ATELIERS PARTICIPATIFS -->
   <section id="ateliers" class="page">
     <div class="panel">
-      <h2>💡 Créer un atelier</h2>
+      <h2 id="motCreerAtelier">💡 Créer un atelier</h2>
       <p class="hint">Un atelier <strong>publié</strong> apparaît sur le site public : les habitants s'inscrivent comme <strong>intéressés</strong> ou <strong>compétents pour l'animer</strong>. Quand le nombre d'intéressés atteint le <strong>seuil</strong>, Bob te propose de l'ouvrir. Les idées envoyées depuis le site arrivent ici en « proposition à étudier ».</p>
       <div class="row">
         <div class="field" style="flex:2"><label>Titre de l'atelier *</label><input id="at_titre" placeholder="Ex. Danse classique, couture, échecs…"></div>
@@ -1940,7 +1940,7 @@
     </div>
     <div class="panel">
       <div class="toolbar">
-        <h2 style="margin:0">📋 Ateliers &amp; inscriptions</h2>
+        <h2 style="margin:0" id="motListeAteliers">📋 Ateliers &amp; inscriptions</h2>
         <button class="ghost btn" onclick="if(window.loadAteliers)loadAteliers()">↻ Rafraîchir</button>
       </div>
       <div id="atList"><p class="hint">Chargement…</p></div>
@@ -13012,6 +13012,24 @@ renderAll();
   function mascSet(){ return mascAsso(); }
   window.bobMasc=function(k){ return (mascAsso()[k])||MASC_BOB[k]||''; };
   window.bobMascNom=function(){ return mascAsso().nom; };
+  /* ═══ LES MOTS DE L'ASSOCIATION ═══════════════════════════════════════════════════════════
+     09/08/2026, Guillaume : « est-ce qu'on appelle vraiment ça atelier ou pas ? ». Le mot vient
+     du CASE (danse, couture, échecs — une activité récurrente à animer). Le mécanisme réel est
+     « quelqu'un propose, on compte les intéressés, on cherche qui anime, ça s'ouvre au seuil » :
+     une asso de production dirait plutôt « envie » ou « proposition ».
+     Le mot devient donc une DONNÉE (`features.mots`), comme les salles et la mascotte.
+     ⚠️ Seuls les LIBELLÉS bougent. La clé technique — la table `ateliers`, les identifiants, les
+     noms de fonctions — ne se renomme JAMAIS : c'est la règle déjà tenue pour les salles, et elle
+     évite qu'un renommage d'affichage casse des données. */
+  const MOTS_DEFAUT={ atelier:'atelier', ateliers:'Ateliers', un_atelier:'un atelier' };
+  window.bobMot=function(cle){
+    try{
+      const m=(window.__bobFeatures&&window.__bobFeatures.mots)||null;
+      const v=m&&typeof m==='object'?m[cle]:null;
+      if(typeof v==='string'&&v.trim()) return v.trim().slice(0,40);
+    }catch(e){}
+    return MOTS_DEFAUT[cle]||cle;
+  };
   window.bobMascElle=function(){ return mascAsso().elle; };
   /* 04/08/2026 — EN-TÊTE DES DOCUMENTS OFFICIELS (PV, relevés de décisions, émargement, budget signé).
      Il était écrit EN DUR au nom du CASE dans 5 fonctions d'impression : un PV de BOKAF sortait donc
@@ -13168,6 +13186,15 @@ renderAll();
        relevé de messages (compteur « (3) 💬 … ») et l'écrasait par un « Bob — CASE » en dur.
        Vécu sur bokaf.bob.re : l'en-tête disait « association BOKAF », l'onglet du navigateur
        disait « CASE ». La base était bonne — c'était le code qui repassait derrière. */
+    /* 09/08/2026 — le mot de l'asso s'applique aux libellés visibles. La clé technique ne bouge
+       pas : l'onglet reste `data-tab="ateliers"`, la table reste `ateliers`. */
+    try{
+      const M=window.bobMot?window.bobMot('ateliers'):'Ateliers';
+      const U=window.bobMot?window.bobMot('un_atelier'):'un atelier';
+      const o=document.getElementById('motOngletAteliers');   if(o) o.textContent='💡 '+M;
+      const c=document.getElementById('motCreerAtelier');     if(c) c.textContent='💡 Créer '+U;
+      const l=document.getElementById('motListeAteliers');    if(l) l.textContent='📋 '+M+' & inscriptions';
+    }catch(e){}
     try{ window.bobTitre = id.title; }catch(e){}
     try{ document.title=id.title; }catch(e){}
     try{ const m=document.querySelector('meta[name="apple-mobile-web-app-title"]'); if(m) m.setAttribute('content',id.appTitle); }catch(e){}
