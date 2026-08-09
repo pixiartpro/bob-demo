@@ -308,6 +308,10 @@
     <button class="moi" id="moi" aria-haspopup="true" aria-expanded="false" aria-controls="menuCompte"></button>
     <div class="bas" id="menuCompte">
       <a class="lien-bas" id="lienSite" href="#" style="display:none"><span class="em">↗</span>Le site public</a>
+      <!-- 09/08/2026 — demandé par Guillaume : « donner à tout le monde, directement sur le site,
+           un truc à faire : y mettre un raccourci sur l'écran de téléphone ». Le manifeste
+           existant ne servait QUE la gestion, et il était au nom du CASE. -->
+      <button class="lien-bas" id="btnRaccourci" type="button" style="background:none;border:0;width:100%;text-align:left;font:inherit;cursor:pointer"><span class="em">📲</span>Mettre sur mon téléphone</button>
       <a class="lien-bas" href="connexion.html"><span class="em">🪪</span>Mon compte</a>
       <a class="lien-bas" href="#" id="sortir"><span class="em">⏻</span>Me déconnecter</a>
     </div>
@@ -1385,6 +1389,67 @@ window.addEventListener('hashchange',()=>{
 });
 
 demarrer();
+
+/* ═══ 📲 LE RACCOURCI SUR L'ÉCRAN DU TÉLÉPHONE ════════════════════════════════════════════
+   09/08/2026. L'espace membre n'avait AUCUN manifeste : impossible d'en faire une icône. Le
+   seul qui existait servait la gestion et portait « Bob — CASE du Bois de Nèfles » avec le vert
+   du CASE — une autre asso qui l'aurait installé aurait eu le raccourci d'un autre client.
+   Ici le manifeste est FABRIQUÉ à la volée depuis l'identité du tenant (nom, couleurs, logo).
+   ⚠️ iOS ne lit pas le manifeste pour « Sur l'écran d'accueil » : il prend `apple-touch-icon` et
+   `apple-mobile-web-app-title`, qu'on pose donc aussi — et comme Safari n'offre aucune invite
+   automatique, on explique le geste au lieu d'attendre un prompt qui ne viendra jamais. */
+(function(){
+  function poser(){
+    if(!ID) return;
+    const nom=String(ID.nom||'Mon espace'), court=String(ID.nom_court||ID.nom||'Espace');
+    try{
+      let t=document.querySelector('meta[name="apple-mobile-web-app-title"]');
+      if(!t){ t=document.createElement('meta'); t.name='apple-mobile-web-app-title'; document.head.appendChild(t); }
+      t.content=court;
+      let c=document.querySelector('meta[name="apple-mobile-web-app-capable"]');
+      if(!c){ c=document.createElement('meta'); c.name='apple-mobile-web-app-capable'; c.content='yes'; document.head.appendChild(c); }
+      /* le logo du tenant sert d'icône quand il en a un (nom de fichier local validé) */
+      if(/^[A-Za-z0-9._-]{1,80}\.(png|jpg|jpeg|webp)$/.test(String(ID.logo||''))){
+        let a=document.querySelector('link[rel="apple-touch-icon"]');
+        if(!a){ a=document.createElement('link'); a.rel='apple-touch-icon'; document.head.appendChild(a); }
+        a.href=ID.logo;
+      }
+      const icone=/^[A-Za-z0-9._-]{1,80}\.(png|jpg|jpeg|webp)$/.test(String(ID.logo||''))?ID.logo:'icon-192.png';
+      const m={ name:'Mon espace — '+nom, short_name:court, start_url:'espace.html', scope:'.',
+                display:'standalone', background_color:'#0a0910',
+                theme_color:(/^#[0-9a-fA-F]{3,8}$/.test(String(ID.accent||''))?ID.accent:'#0a0910'),
+                icons:[{src:icone,sizes:'192x192',type:'image/png',purpose:'any'},
+                       {src:icone,sizes:'512x512',type:'image/png',purpose:'any'}] };
+      let l=document.querySelector('link[rel="manifest"]');
+      if(!l){ l=document.createElement('link'); l.rel='manifest'; document.head.appendChild(l); }
+      l.href=URL.createObjectURL(new Blob([JSON.stringify(m)],{type:'application/manifest+json'}));
+    }catch(e){}
+  }
+  /* l'identité arrive après la connexion : on pose dès qu'elle est là */
+  const t=setInterval(()=>{ if(window.ID||typeof ID!=='undefined'&&ID){ clearInterval(t); poser(); } }, 400);
+  setTimeout(()=>clearInterval(t), 20000);
+
+  /* Android/Chrome propose une vraie invite : on la garde sous le coude pour notre bouton. */
+  let invite=null;
+  window.addEventListener('beforeinstallprompt', e=>{ e.preventDefault(); invite=e; });
+
+  const btn=document.getElementById('btnRaccourci');
+  if(btn) btn.addEventListener('click', async ()=>{
+    if(invite){ invite.prompt(); invite=null; return; }
+    const ios=/iPad|iPhone|iPod/.test(navigator.userAgent)
+           || (navigator.platform==='MacIntel' && navigator.maxTouchPoints>1);
+    const nom=(ID&&(ID.nom_court||ID.nom))||'ton espace';
+    alert(ios
+      ? '📲 Mettre '+nom+' sur ton écran d\'accueil\n\n'
+        +'1. Touche le bouton Partager (le carré avec la flèche, en bas)\n'
+        +'2. Fais défiler et choisis « Sur l\'écran d\'accueil »\n'
+        +'3. Touche « Ajouter »\n\n'
+        +'Tu auras une icône comme une vraie application.'
+      : '📲 Mettre '+nom+' sur ton écran d\'accueil\n\n'
+        +'Ouvre le menu de ton navigateur (les trois points), puis choisis\n'
+        +'« Installer l\'application » ou « Ajouter à l\'écran d\'accueil ».');
+  });
+})();
 
 /* ═══ 💡 LA BOÎTE À IDÉES ══════════════════════════════════════════════════════════════════
    09/08/2026, demandé par Guillaume : « est-ce qu'ils ont bien accès à la petite ampoule pour
