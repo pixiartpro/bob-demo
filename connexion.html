@@ -277,16 +277,26 @@ window.BOB_PORTES = {
   .pill.ok{background:var(--ok-soft);color:var(--ok-ink)} .pill.wait{background:var(--attention-soft);color:var(--attention-ink)} .pill.boss{background:var(--info-soft);color:var(--info-ink)} .pill.off{background:var(--neutre-soft);color:var(--neutre-ink)}
   .kv{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:11px 0;border-bottom:1px dashed var(--line)}
   /* Accès validés : groupes par rôle (accordéons) + lignes dépliables */
-  .grp{border:1px solid var(--line);border-radius:12px;margin:10px 0;overflow:hidden}
-  .grp>summary{cursor:pointer;list-style:none;padding:12px 14px;font-weight:800;display:flex;justify-content:space-between;align-items:center;background:var(--neutre-soft)}
+  .grp{border:1px solid var(--line);border-radius:12px;margin:12px 0;overflow:hidden;background:#fff}
+  .grp>summary{cursor:pointer;list-style:none;padding:13px 14px;font-weight:800;font-size:16px;display:flex;justify-content:space-between;align-items:center;background:var(--neutre-soft)}
   .grp>summary::-webkit-details-marker{display:none}
+  .grp>summary .chev{display:inline-block;margin-right:9px;font-size:13px;transition:transform .15s;color:#8a978f}
+  .grp[open]>summary .chev{transform:rotate(90deg)}
   .grp .grp-body{padding:0 14px 8px}
   .urow{border-bottom:1px dashed var(--line)}
   .urow:last-child{border-bottom:none}
-  .urow>summary{cursor:pointer;list-style:none;padding:11px 0;display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap}
+  .urow>summary{cursor:pointer;list-style:none;padding:12px 0;display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap}
   .urow>summary::-webkit-details-marker{display:none}
+  .urow>summary .fauxbtn{flex:none;border:1px solid var(--line);border-radius:10px;padding:7px 12px;font-weight:700;font-size:13.5px;background:#fff;white-space:nowrap}
+  .urow[open]>summary .fauxbtn{background:var(--neutre-soft)}
   .urow .uact{display:flex;gap:6px;align-items:center;flex-wrap:wrap;padding:0 0 12px}
+  .urow .uact select{flex:1;min-width:170px;max-width:340px}
   .badges{display:flex;gap:5px;flex-wrap:wrap;margin-top:4px}
+  /* Demandes en attente : un bloc par personne, actions dessous */
+  .preq{padding:12px 0;border-bottom:1px dashed var(--line)}
+  .preq:last-child{border-bottom:none}
+  .preq-act{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:9px}
+  .preq-act select{flex:1;min-width:170px;max-width:340px}
   .kv:last-child{border-bottom:none}
   .role-pill{font-size:11.5px}
   .danger{border:1px solid var(--line-2);background:var(--alerte-soft);border-radius:14px;padding:16px;margin-top:6px}
@@ -886,15 +896,25 @@ async function fillAdmin(){
   adminProfiles=profiles||[];
   /* Contexte pour décider (badges) : adhésion payée + foyer relié. Un échec de lecture
      (RLS, réseau) fait juste disparaître les badges — jamais bloquant pour la validation. */
-  const payes={}, foyerDe={};
+  const payes={}, foyerDe={}, dossierDe={};
   try{ const {data}=await sb.from('paiements').select('user_id,objet').eq('statut','paye');
        (data||[]).forEach(x=>{ if(x.objet==='adhesion') payes[x.user_id]=true; }); }catch(e){}
-  try{ const {data}=await sb.from('personnes').select('auth_user_id,foyers(nom)').not('auth_user_id','is',null);
-       (data||[]).forEach(x=>{ if(x.auth_user_id) foyerDe[x.auth_user_id]=(x.foyers&&x.foyers.nom)||'foyer relié'; }); }catch(e){}
+  try{ const {data}=await sb.from('personnes').select('auth_user_id,foyer_id,foyers(nom)').not('auth_user_id','is',null);
+       (data||[]).forEach(x=>{ if(x.auth_user_id) foyerDe[x.auth_user_id]={nom:(x.foyers&&x.foyers.nom)||'foyer relié',fid:x.foyer_id}; }); }catch(e){}
+  /* Dernier dossier famille par foyer (saison la plus récente) : l'état « validé / déposé /
+     incomplet » que le bureau veut voir sans ouvrir chaque fiche. */
+  try{ const {data}=await sb.from('dossiers').select('foyer_id,saison,statut').order('saison',{ascending:false});
+       (data||[]).forEach(x=>{ if(!(x.foyer_id in dossierDe)) dossierDe[x.foyer_id]=x.statut; }); }catch(e){}
   const badges=u=>{
     let b='';
-    if(payes[u.id]) b+='<span class="pill ok">💶 adhésion payée</span>';
-    if(foyerDe[u.id]) b+='<span class="pill boss">👨‍👩‍👧 '+esc(foyerDe[u.id])+'</span>';
+    if(payes[u.id]) b+='<span class="pill ok">€ adhésion payée</span>';
+    if(foyerDe[u.id]){
+      b+='<span class="pill boss">🏠 '+esc(foyerDe[u.id].nom)+'</span>';
+      const ds=dossierDe[foyerDe[u.id].fid];
+      if(ds==='valide') b+='<span class="pill ok">📄 dossier validé</span>';
+      else if(ds==='depose') b+='<span class="pill boss">📄 dossier déposé</span>';
+      else if(ds) b+='<span class="pill wait">📄 dossier '+esc(ds)+'</span>';
+    }
     if(!u.full_name) b+='<span class="pill wait">⚠️ sans nom</span>';
     else if(u.role==='adherent'&&u.statut==='actif'&&!foyerDe[u.id]) b+='<span class="pill off">sans foyer relié</span>';
     return b?'<span class="badges">'+b+'</span>':'';
@@ -908,22 +928,22 @@ async function fillAdmin(){
 
   $('#adminPending').innerHTML=`<h2>🕒 Demandes en attente (${pend.length})</h2>
     <p class="h">Choisis le rôle puis valide, ou refuse (suspend). Les badges disent ce qu'on sait déjà de la personne.</p>`+
-    (pend.length?pend.map(u=>`<div class="kv">
-      <span><b>${esc(u.full_name||'(sans nom)')}</b><br><span class="muted small">${esc(u.email||'')}</span>${badges(u)}</span>
-      <span style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
+    (pend.length?pend.map(u=>`<div class="preq">
+      <b>${esc(u.full_name||'(sans nom)')}</b> · <span class="muted small">${esc(u.email||'')}</span>${badges(u)}
+      <div class="preq-act">
         <select id="role_${u.id}">${roleOpts('adherent')}</select>
         <button class="btn p" onclick="validateUser('${u.id}')">Valider</button>
         <button class="btn d" onclick="rejectUser('${u.id}')">Refuser</button>
-      </span></div>`).join(''):'<p class="muted small">Aucune demande en attente.</p>');
+      </div></div>`).join(''):'<p class="muted small">Aucune demande en attente.</p>');
 
   /* Accès validés : groupés par rôle (Bureau → Salariés → Intervenants → Familles),
      familles repliées avec recherche. Les actions (rôle, rubriques, retrait) n'apparaissent
      qu'en dépliant la personne : pas de sélecteur armé sur chaque ligne d'une longue liste. */
   const GROUPES=[
-    ['🧑‍💼 Bureau',['president','tresorier','bureau'],true],
-    ['🧑‍🏫 Salariés',['personnel'],true],
+    ['💼 Bureau',['president','tresorier','bureau'],true],
+    ['🧰 Salariés',['personnel'],true],
     ['🎤 Intervenants',['intervenant'],true],
-    ['👨‍👩‍👧 Familles & adhérents',['adherent'],false]
+    ['🏠 Familles & adhérents',['adherent'],false]
   ];
   const norm=s=>(s||'').toLocaleLowerCase('fr').normalize('NFD').replace(/[\u0300-\u036f]/g,'');
   const tri=(a,b)=>norm(a.full_name||a.email).localeCompare(norm(b.full_name||b.email),'fr');
@@ -936,24 +956,24 @@ async function fillAdmin(){
       : `<span class="pill ${(ROLES[a.role]||ROLES.adherent).pill} role-pill">${(ROLES[a.role]||ROLES.adherent).label}</span>
          <button class="btn g" onclick="openPerms('${a.id}')" title="Choisir les rubriques visibles/modifiables">🔧 Rubriques</button>`;
     return `<details class="urow" data-search="${esc(norm((a.full_name||'')+' '+(a.email||'')))}">
-      <summary><span><b>${esc(a.full_name||'(sans nom)')}</b>${moi?' <span class="muted small">(toi)</span>':''}<br><span class="muted small">${esc(a.email||'')}</span>${badges(a)}</span><span class="muted small">▾</span></summary>
+      <summary><span><b>${esc(a.full_name||'(sans nom)')}</b>${moi?' <span class="muted small">(toi)</span>':''}<br><span class="muted small">${esc(a.email||'')}</span>${badges(a)}</span><span class="fauxbtn">⚙️ Gérer</span></summary>
       <div class="uact">${acts}</div></details>`;
   };
   $('#adminActive').innerHTML=`<h2>👥 Accès validés (${act.length})</h2>
-    <p class="h">${isPres?'Déplie une personne pour changer son rôle, ses rubriques ou retirer son accès.':'Tu vois les accès (seul le Président modifie les rôles et supprime).'}</p>`+
+    <p class="h">${isPres?'Ouvre un groupe, puis clique « ⚙️ Gérer » sur une personne pour changer son rôle, ses rubriques ou retirer son accès.':'Tu vois les accès (seul le Président modifie les rôles et supprime).'}</p>`+
     GROUPES.map(([titre,rolesG,ouvert])=>{
       const gens=act.filter(a=>rolesG.includes(a.role)).sort(tri);
       if(!gens.length) return '';
       const recherche=rolesG.includes('adherent')&&gens.length>8
         ? `<input type="search" placeholder="🔎 Chercher un nom ou un email…" oninput="admFilter(this.value)" style="width:100%;margin:10px 0 2px;padding:9px 12px;border:1px solid var(--line);border-radius:10px;font-size:14px">`
         : '';
-      return `<details class="grp"${ouvert?' open':''}><summary><span>${titre}</span><span class="pill off">${gens.length}</span></summary>
+      return `<details class="grp${rolesG.includes('adherent')?' grp-fam':''}"${ouvert?' open':''}><summary><span><span class="chev">▶</span>${titre}</span><span class="pill off">${gens.length}</span></summary>
         <div class="grp-body">${recherche}${gens.map(ligne).join('')}</div></details>`;
     }).join('');
 }
 function admFilter(q){
   q=(q||'').toLocaleLowerCase('fr').normalize('NFD').replace(/[\u0300-\u036f]/g,'');
-  document.querySelectorAll('#adminActive .urow').forEach(r=>{ r.style.display=(r.dataset.search||'').includes(q)?'':'none'; });
+  document.querySelectorAll('#adminActive .grp-fam .urow').forEach(r=>{ r.style.display=(r.dataset.search||'').includes(q)?'':'none'; });
 }
 
 /* ---- Droits par rubrique (module) + sections cloisonnées pour un utilisateur ---- */
