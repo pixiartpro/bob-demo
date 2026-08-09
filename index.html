@@ -317,6 +317,25 @@
 
 <!-- (section « Ce qui arrive » déplacée plus bas) -->
 
+<!-- LA SEMAINE AU CASE -->
+<section class="block bg-w" id="semaine">
+  <div class="wrap">
+    <p class="eyebrow">La semaine au CASE</p>
+    <h2 class="title">Une maison qui vit tous les jours 🗓️</h2>
+    <p class="sub"><b>Nouvelle organisation à partir de la rentrée du mardi 18 août 2026.</b>
+    Certains créneaux s'ajustent encore en ce début d'année — le programme complet est affiché
+    au CASE, et on répond au téléphone avec plaisir. 🍍</p>
+    <div class="qgrid">
+      <div class="card" style="border-top:4px solid var(--vert)"><div class="ico">🎒</div><h3>Du lundi au vendredi</h3><p>Périscolaire à l'école du Piton : accueil du matin dès 7h, et le soir après la classe.</p></div>
+      <div class="card" style="border-top:4px solid var(--rose,#C74F82)"><div class="ico">💃</div><h3>La danse, 4 jours par semaine</h3><p>Lundi soir adultes · mercredi enfants (10h-12h), K-pop (13h45) puis ados (15h) · vendredi soir adultes · samedi matin « Danse pour tous ».</p></div>
+      <div class="card" style="border-top:4px solid var(--vert)"><div class="ico">🧒</div><h3>Le Mercredi Jeunesse</h3><p>En création : la journée du mercredi au local — éveil corporel des 4-5 ans, jeux, ateliers, dehors.</p></div>
+      <div class="card" style="border-top:4px solid var(--jaune)"><div class="ico">🎶</div><h3>La musique</h3><p>Ateliers jeunes le mercredi et le samedi après-midi · les groupes répètent en salle le mercredi et le jeudi soir.</p></div>
+      <div class="card" style="border-top:4px solid var(--vert)"><div class="ico">🤸</div><h3>Sport &amp; bien-être</h3><p>Zumba et renforcement musculaire — créneaux de rentrée en cours de calage, appelez-nous !</p></div>
+      <div class="card" style="border-top:4px solid var(--jaune)"><div class="ico">⭐</div><h3>Le samedi, la maison ouverte</h3><p><b>La grande nouveauté de la rentrée :</b> café-accueil offert dès 8h30, sport du matin, tricot, ateliers l'après-midi. Le 1ᵉʳ samedi du mois, Café des Parents (dès octobre) — et un dimanche par mois en famille dès l'automne.</p></div>
+    </div>
+  </div>
+</section>
+
 <!-- ACTIVITÉS -->
 <section class="block bg-g" id="activites">
   <div class="wrap">
@@ -526,10 +545,9 @@ const AT_PAGE='https://pixiartpro.github.io/bob-demo/#ateliers';
 let _atForm={};
 async function loadAteliersPublics(){
   const grid=document.getElementById('atGrid'); if(!grid) return;
-  /* 09/08/2026 — il manquait le filtre d'association : la policy `at_sel_public` autorise la
-     lecture de TOUT atelier publié (c'est son rôle, pour les sites publics), donc dès qu'une
-     autre asso hébergée dans Bob publiera un atelier, il se serait affiché sur le site du CASE.
-     Toutes les autres requêtes de cette page filtrent déjà sur _CASE_ASSO_ID ; celle-ci l'oubliait. */
+  /* 09/08/2026 — même correctif que index.html : sans filtre d'association, un atelier publié
+     par une autre asso hébergée dans Bob se serait affiché ici (la policy `at_sel_public` rend
+     tout atelier publié lisible, c'est voulu pour les sites publics). */
   const {data,error}=await _sbPart.from('ateliers').select('*').eq('asso_id',_CASE_ASSO_ID).eq('publie',true).neq('statut','archive').order('created_at',{ascending:false});
   if(error){ grid.innerHTML='<p style="grid-column:1/-1;text-align:center;color:#c0392b">Impossible de charger les ateliers pour le moment.</p>'; return; }
   if(!data||!data.length){ grid.innerHTML='<p style="grid-column:1/-1;text-align:center;color:var(--muted)">Pas d\'atelier en préparation pour le moment — proposez le vôtre juste en dessous ! 👇</p>'; return; }
