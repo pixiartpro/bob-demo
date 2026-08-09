@@ -114,6 +114,9 @@
     transition:border-color var(--dur) var(--ease),color var(--dur) var(--ease)}
   .canal:hover{border-color:var(--brand-lisible);color:var(--ink)}
   .canal.actif{background:var(--brand-fill);border-color:var(--brand-fill);color:var(--brand-ink)}
+  /* le trait qui sépare les canaux permanents des fils de projet */
+  .canal-sep{width:1px;align-self:stretch;background:var(--line-2);margin:2px 4px}
+  .canal-plus{border-style:dashed;color:var(--muted-2)}
   .carte + .carte{margin-top:14px}
   .carte h2{font-size:16.5px;margin:0 0 3px;font-weight:700}
   .carte .sous{color:var(--muted);font-size:13.5px;margin:0 0 14px}
@@ -703,16 +706,43 @@ function vueProjets(el){
    VUE · COMPTOIR — le fil général, plein écran
    ══════════════════════════════════════════════════════════════════════════ */
 function vueComptoir(el){
-  if(!COMPTOIR){el.innerHTML='<div class="carte">'+vide('🗣️','Pas de comptoir','Le bureau ne l\'a pas encore ouvert.')+'</div>';return;}
+  /* 09/08/2026 — une asso qui arrive n'a AUCUN canal (vérifié : PIX-I-ART en avait zéro) et
+     tombait sur « le bureau ne l'a pas encore ouvert », sans moyen d'en sortir. Le bureau peut
+     désormais l'ouvrir d'un clic ; pour les autres, le message dit au moins quoi attendre. */
+  if(!COMPTOIR){
+    el.innerHTML='<div class="carte">'+(estBureau()
+      ? vide('🗣️','La discussion n\'est pas encore ouverte',
+             'Ouvre le canal général : c\'est là que tout le monde se parle, pose ses questions et donne des nouvelles.',
+             '<button class="b p" data-canalgeneral="1">Ouvrir la discussion</button>')
+      : vide('🗣️','Pas encore de discussion',
+             'Le bureau ne l\'a pas encore ouverte. Tu peux la demander avec le bouton 💡, en bas.'))
+      +'</div>';
+    return;
+  }
   /* 09/08/2026 — un onglet par canal quand il y en a plusieurs. Un seul canal : on n'affiche
      aucune barre, pour ne pas fabriquer un choix qui n'en est pas un. */
-  const barre = CANAUX.length>1
+  /* 09/08/2026 — la barre réunit TOUS les fils au même endroit, comme un salon de discussion :
+     les canaux permanents (général, bureau, thématiques) puis un canal PAR PROJET EN COURS.
+     Les fils de projet existaient déjà — ils étaient seulement rangés dans « Projets », donc
+     invisibles quand on venait pour discuter. On ne duplique rien : même table, même fil. */
+  const projetsOuverts = PROJETS.filter(p=>((p.data&&p.data.statut)||'actif')==='actif');
+  const onglet = (c,ic) => '<button role="tab" class="canal'+(c.id===COMPTOIR.id?' actif':'')+'"'
+      +' aria-selected="'+(c.id===COMPTOIR.id)+'" data-canal="'+esc(c.id)+'">'
+      + (ic?'<span class="em" aria-hidden="true">'+ic+'</span>':'') + esc(c.name)
+      + ((c.data&&c.data.acces==='bureau')?' <span class="em" title="Réservé au bureau" aria-label="réservé au bureau">🔒</span>':'')
+      +'</button>';
+  const plusieurs = (CANAUX.length + projetsOuverts.length) > 1;
+  const barre = plusieurs
     ? '<div class="canaux" role="tablist" aria-label="Les canaux de discussion">'
-      + CANAUX.map(c=>'<button role="tab" class="canal'+(c.id===COMPTOIR.id?' actif':'')+'"'
-          +' aria-selected="'+(c.id===COMPTOIR.id)+'" data-canal="'+esc(c.id)+'">'
-          + esc(c.name)
-          + ((c.data&&c.data.acces==='bureau')?' <span class="em" title="Réservé au bureau" aria-label="réservé au bureau">🔒</span>':'')
-          +'</button>').join('') + '</div>'
+      + CANAUX.map(c=>onglet(c,'')).join('')
+      + (projetsOuverts.length?'<span class="canal-sep" aria-hidden="true"></span>':'')
+      /* l'emblème vient de l'identité du tenant : un clap chez un média, un ananas au CASE,
+         une trompette chez une harmonie. Jamais l'emoji du métier de celui qu'on a sous les yeux. */
+      + projetsOuverts.map(p=>onglet(p,(ID&&ID.embleme)||'•')).join('')
+      + (estBureau()
+          ? '<button class="canal canal-plus" data-canalnouveau="1">+ Un canal</button>'
+          : '<button class="canal canal-plus" data-canalpropose="1">+ Proposer un canal</button>')
+      + '</div>'
     : '';
   const reserve = !!(COMPTOIR.data&&COMPTOIR.data.acces==='bureau');
   el.innerHTML='<p class="eyebrow">Entre nous</p><h1>'+esc(COMPTOIR.name)+'</h1>'
@@ -725,12 +755,49 @@ function vueComptoir(el){
   chargerFil(COMPTOIR.id,'#fil');
   vuSet(COMPTOIR.id);
 }
-/* changer de canal : on mémorise le choix, le temps de la session */
+/* changer de canal : on mémorise le choix, le temps de la session. Un canal peut être un fil
+   permanent OU un projet — dans les deux cas c'est le même objet et le même fil de messages. */
 function allerCanal(id){
-  const c=CANAUX.find(x=>x.id===id); if(!c) return;
+  const c=CANAUX.find(x=>x.id===id)||PROJETS.find(x=>x.id===id); if(!c) return;
   COMPTOIR=c;
   try{ sessionStorage.setItem('bob_canal', id); }catch(e){}
   aller('comptoir');
+}
+/* Le canal général d'une asso qui n'en a aucun. Nommé avec le nom de l'asso, jamais en dur. */
+async function ouvrirCanalGeneral(){
+  const r=await sb.from('projects').insert({
+    asso_id:ME.asso, name:'Le comptoir'+((ID&&ID.nom_court)?' '+ID.nom_court:''), owner_id:ME.id,
+    data:{ type:'comptoir', acces:'tous', ordre:1,
+           pitch:"La discussion générale de l'association : questions, idées, entraide, annonces." }
+  }).select('id').maybeSingle();
+  if(r.error){ toast('Ouverture impossible : '+r.error.message); return; }
+  await chargerProjets(); aller('comptoir');
+}
+/* 09/08/2026 — créer un canal (bureau) ou en proposer un (adhérent). Volontairement sobre :
+   le nom, et une question sur l'accès. Pas de formulaire, pas d'écran de plus — la demande
+   était « sans pour autant alourdir le truc ». */
+async function nouveauCanal(){
+  const nom=(prompt('Le nom du canal ? (par exemple : Sorties, Matériel, Entraide)')||'').trim();
+  if(!nom) return;
+  const reserve=confirm('Réservé au bureau ?\n\nOK = seuls le bureau et les salariés le verront.\nAnnuler = tout le monde y a accès.');
+  const r=await sb.from('projects').insert({
+    asso_id:ME.asso, name:nom.slice(0,60), owner_id:ME.id,
+    data:{ type:'comptoir', acces:(reserve?'bureau':'tous'), ordre:90,
+           pitch:(reserve?'Entre membres du bureau.':'Un canal de discussion de l\'association.') }
+  }).select('id').maybeSingle();
+  if(r.error){ toast('Création impossible : '+r.error.message); return; }
+  await chargerProjets();
+  if(r.data&&r.data.id) allerCanal(r.data.id); else aller('comptoir');
+}
+/* Un adhérent ne crée pas de canal (sinon la liste enfle et personne ne range) : il le PROPOSE,
+   par le même chemin que les autres idées — le bureau tranche. */
+async function proposerCanal(){
+  const nom=(prompt('Quel canal manque ? Dis-le en quelques mots, le bureau décidera.')||'').trim();
+  if(!nom) return;
+  const r=await sb.from('suggestions').insert({ asso_id:ME.asso, author_id:ME.id,
+    author_name:ME.name, body:'Proposition de canal : '+nom, context:'Espace membre — comptoir' });
+  if(r.error){ toast('Envoi impossible : '+r.error.message); return; }
+  toast('✅ Proposition envoyée au bureau');
 }
 function redacteurHtml(){
   return '<div class="redac">'
@@ -1385,6 +1452,9 @@ async function demarrer(){
 document.addEventListener('click',async e=>{
   const c=s=>e.target.closest(s);
   let t;
+  if((t=c('[data-canalgeneral]'))){ ouvrirCanalGeneral(); return; }
+  if((t=c('[data-canalnouveau]'))){ nouveauCanal(); return; }
+  if((t=c('[data-canalpropose]'))){ proposerCanal(); return; }
   if((t=c('[data-canal]'))){ allerCanal(t.dataset.canal); return; }
   if((t=c('[data-vue]'))){ aller(t.dataset.vue); return; }
   if((t=c('[data-aller]'))){ aller(t.dataset.aller); return; }
