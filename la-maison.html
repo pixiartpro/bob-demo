@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>CASE du Bois de Nèfles — Bienvenue</title>
+<title>La maison &amp; le projet — CASE du Bois de Nèfles</title>
 <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
 <link rel="icon" type="image/png" sizes="16x16" href="favicon-16.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
@@ -277,217 +277,101 @@
 </style>
 </head>
 <body>
-<div class="newsbar" id="newsbar" data-news="2026-07-reouverture-13-juillet">
-  <span class="nb-tag">Rentrée 2026</span>
-  <span class="nb-txt"><b>Nou lé paré pou la rentrée !</b> Nouvelle organisation dès le <b>mardi 18 août</b> — inscriptions ouvertes.</span>
-  <a class="nb-link" href="#contact">Nous contacter →</a>
-  <button class="nb-x" onclick="closeNews()" aria-label="Fermer l'annonce">✕</button>
-</div>
 
-<div class="lay">
-<aside class="sidebar">
-  <img class="slogo" src="logo.png" alt="">
-  <div class="snom"><b>CASE</b><span>Bois de Nèfles</span></div>
-  <a class="sitem" href="#accueil">Accueil</a>
-  <a class="sitem" href="#semaine">La semaine</a>
-  <a class="sitem" href="#inscription-peri">S'inscrire</a>
-  <a class="sitem" href="#activites">Nos activités</a>
-  <a class="sitem" href="#temps-forts">Les rendez-vous</a>
-  <a class="sitem" href="la-maison.html">La maison &amp; le projet</a>
-  <a class="sitem" href="#contact">Contact</a>
-  <div class="sbas">
-    <a class="btn primary" href="#adhesion">Devenir adhérent</a>
-    <a class="btn ghost" href="connexion.html">Mon espace</a>
-    <span class="stel">0262 29 37 90 · 0692 69 18 11<br>Place de la Fraternité, Ste-Clotilde</span>
-  </div>
-</aside>
-<div class="laycol">
 <header>
   <div class="bar">
-    <a href="#accueil" class="logo"><img src="logo.png" alt="CASE Bois de Nèfles" style="height:40px;width:auto;display:block"> <span><b>CASE</b> <span>Bois de Nèfles</span></span></a>
+    <a href="index.html" class="logo"><img src="logo.png" alt="CASE Bois de Nèfles" style="height:40px;width:auto;display:block"> <span><b>CASE</b> <span>Bois de Nèfles</span></span></a>
     <button class="burger" aria-label="Menu" onclick="document.querySelector('nav.main').classList.toggle('open')">☰</button>
     <nav class="main" onclick="if(event.target.tagName==='A')this.classList.remove('open')">
-      <a href="#semaine">La semaine</a>
-      <a href="#inscription-peri">S'inscrire</a>
-      <a href="#activites">Nos activités</a>
-      <a href="#temps-forts">Les rendez-vous</a>
-      <a href="la-maison.html">La maison &amp; le projet</a>
-      <a href="#contact">Contact</a>
+      <a href="index.html">← Accueil</a>
+      <a href="#plan">Le projet</a>
+      <a href="#ados">Ados</a>
+      <a href="#lieux">Nos lieux</a>
+      <a href="#partenaires">Partenaires</a>
+      <a href="#ateliers">Ateliers</a>
       <span class="nav-sep"></span>
       <a href="connexion.html" class="navpill">Mon espace</a>
-      <a href="#adhesion" class="btn primary">Devenir adhérent</a>
     </nav>
   </div>
 </header>
-<section class="hero2" id="accueil">
-  <div class="wrap hrow">
-    <div class="htxt">
-      <span class="badge">Rentrée 2026</span>
-      <h1>La maison est ouverte.</h1>
-      <p class="lead">Nouvelle organisation dès le <b>mardi 18 août</b> — et pour la première fois, le CASE ouvre <b>le samedi</b>. Retrouv' a nou en ligne&nbsp;: <b>casebdn.re</b></p>
-      <div class="cta">
-        <a href="connexion.html?role=famille" class="btn primary">S'inscrire en ligne</a>
-        <a href="#semaine" class="btn ghost">Voir la semaine</a>
-      </div>
-    </div>
-    <img class="hmasc" src="zanana-thumb.png" alt="">
+<section class="block bg-w" id="haut">
+  <div class="wrap">
+    <p class="eyebrow">La maison &amp; le projet</p>
+    <h2 class="title">Le CASE, au-delà de la semaine</h2>
+    <p class="sub">Le projet de la maison, ses lieux, sa jeunesse — et toutes les façons d'en faire partie&nbsp;: partenaires, ateliers participatifs, idées d'habitants.</p>
   </div>
 </section>
-<div class="insbar" id="insbar" hidden></div>
-<!-- LA SEMAINE AU CASE — agenda jour par jour -->
-<section class="block bg-w" id="semaine">
+<section class="block bg-g" id="plan">
   <div class="wrap">
-    <p class="eyebrow">La semaine au CASE</p>
-    <h2 class="title">Une maison qui vit tous les jours</h2>
-    <p class="sub"><b>Nouvelle organisation à partir de la rentrée du mardi 18 août 2026.</b> Touchez un jour pour le détail — certains créneaux s'ajustent encore en ce début d'année.</p>
-    <div class="agenda">
-      <details class="jour" open>
-        <summary><span class="j">Lundi</span><span class="apercu">Périscolaire · danse adultes le soir</span><span class="fleche">→</span></summary>
-        <div class="ligne" style="--pc:var(--vert)"><span class="h">7h-8h</span><span class="pt"></span><span class="quoi"><b>Accueil du matin</b><span class="ou">École du Piton</span></span></div>
-        <div class="ligne" style="--pc:var(--vert)"><span class="h">après la classe</span><span class="pt"></span><span class="quoi"><b>Périscolaire du soir</b><span class="ou">École du Piton</span></span></div>
-        <div class="ligne" style="--pc:#C74F82"><span class="h">18h-20h</span><span class="pt"></span><span class="quoi"><b>Danse adultes</b> — ladies &amp; latines<span class="ou">Salle de danse, Fraternité</span></span></div>
-      </details>
-      <details class="jour">
-        <summary><span class="j">Mardi</span><span class="apercu">Périscolaire · renfo musculaire</span><span class="fleche">→</span></summary>
-        <div class="ligne" style="--pc:var(--vert)"><span class="h">7h-8h</span><span class="pt"></span><span class="quoi"><b>Accueil du matin</b><span class="ou">École du Piton</span></span></div>
-        <div class="ligne" style="--pc:var(--vert)"><span class="h">après la classe</span><span class="pt"></span><span class="quoi"><b>Périscolaire du soir</b><span class="ou">École du Piton</span></span></div>
-        <div class="ligne" style="--pc:#3a9bd9"><span class="h">soir</span><span class="pt"></span><span class="quoi"><b>Renforcement musculaire</b> — créneau en cours de calage<span class="ou">Salle polyvalente</span></span></div>
-      </details>
-      <details class="jour">
-        <summary><span class="j">Mercredi</span><span class="apercu">Le grand jour des enfants</span><span class="fleche">→</span></summary>
-        <div class="ligne" style="--pc:var(--vert)"><span class="h">9h-12h</span><span class="pt"></span><span class="quoi"><b>Mercredi Jeunesse</b> <span class="tag-new">en création</span> — dont éveil corporel 4-5 ans à 9h<span class="ou">Local CASE</span></span></div>
-        <div class="ligne" style="--pc:#C74F82"><span class="h">10h-12h</span><span class="pt"></span><span class="quoi"><b>Danse enfants</b> — débutants puis avancés<span class="ou">Salle de danse</span></span></div>
-        <div class="ligne" style="--pc:#C74F82"><span class="h">13h45</span><span class="pt"></span><span class="quoi"><b>K-pop enfants</b>, puis <b>ados</b> à 15h<span class="ou">Salle de danse</span></span></div>
-        <div class="ligne" style="--pc:#8a7a21"><span class="h">13h-18h</span><span class="pt"></span><span class="quoi"><b>Ateliers musique jeunes</b><span class="ou">Salle de musique</span></span></div>
-      </details>
-      <details class="jour">
-        <summary><span class="j">Jeudi</span><span class="apercu">Périscolaire · groupes musique</span><span class="fleche">→</span></summary>
-        <div class="ligne" style="--pc:var(--vert)"><span class="h">7h-8h</span><span class="pt"></span><span class="quoi"><b>Accueil du matin</b><span class="ou">École du Piton</span></span></div>
-        <div class="ligne" style="--pc:var(--vert)"><span class="h">après la classe</span><span class="pt"></span><span class="quoi"><b>Périscolaire du soir</b><span class="ou">École du Piton</span></span></div>
-        <div class="ligne" style="--pc:#8a7a21"><span class="h">soir</span><span class="pt"></span><span class="quoi"><b>Groupes musique</b> — répétition en salle<span class="ou">Salle de musique</span></span></div>
-      </details>
-      <details class="jour">
-        <summary><span class="j">Vendredi</span><span class="apercu">Périscolaire · zumba · danse le soir</span><span class="fleche">→</span></summary>
-        <div class="ligne" style="--pc:var(--vert)"><span class="h">7h-8h</span><span class="pt"></span><span class="quoi"><b>Accueil du matin</b><span class="ou">École du Piton</span></span></div>
-        <div class="ligne" style="--pc:#3a9bd9"><span class="h">17h30</span><span class="pt"></span><span class="quoi"><b>Zumba</b> — créneau en confirmation<span class="ou">Salle polyvalente</span></span></div>
-        <div class="ligne" style="--pc:#C74F82"><span class="h">18h-20h</span><span class="pt"></span><span class="quoi"><b>Danse adultes</b> — dont le nouveau cours heels<span class="ou">Salle de danse</span></span></div>
-      </details>
-      <details class="jour star" open>
-        <summary><span class="j">Samedi</span><span class="apercu">La maison ouverte — la nouveauté</span><span class="fleche">→</span></summary>
-        <div class="ligne" style="--pc:var(--jaune)"><span class="h">8h30-12h</span><span class="pt"></span><span class="quoi"><b>Café-accueil offert</b>, sport du matin, tricot<span class="ou">Local CASE</span></span></div>
-        <div class="ligne" style="--pc:#C74F82"><span class="h">matin</span><span class="pt"></span><span class="quoi"><b>« Danse pour tous »</b> + cours ados<span class="ou">Salle de danse</span></span></div>
-        <div class="ligne" style="--pc:var(--jaune)"><span class="h">13h-18h</span><span class="pt"></span><span class="quoi"><b>Ateliers ouverts</b> et temps thématiques<span class="ou">Local CASE</span></span></div>
-        <div class="ligne" style="--pc:#C74F82"><span class="h">1ᵉʳ du mois</span><span class="pt"></span><span class="quoi"><b>Café des Parents</b> 9h-11h30 — dès octobre<span class="ou">Local CASE</span></span></div>
-      </details>
-      <details class="jour">
-        <summary><span class="j">Dimanche</span><span class="apercu">Un dimanche par mois en famille — dès l'automne</span><span class="fleche">→</span></summary>
-        <div class="ligne" style="--pc:#C74F82"><span class="h">1×/mois</span><span class="pt"></span><span class="quoi"><b>Dimanche en famille</b> — grillades, olympiades, jardin<span class="ou">Programme à l'automne</span></span></div>
-      </details>
+    <p class="eyebrow">Le projet du CASE</p>
+    <h2 class="title">Ce qui arrive </h2>
+    <p class="sub">Les nouveautés qu'on prépare pour le quartier. Cliquez pour en savoir plus — et retrouvez tout ce qui tourne déjà dans <a href="#activites" style="color:var(--vert-fonce);font-weight:800">Nos activités</a>.</p>
+    <div class="ppanel arrive" id="panelArrive" style="max-width:640px;margin:0 auto"></div>
+  </div>
+</section>
+<section class="block bg-w" id="ados">
+  <div class="wrap">
+    <p class="eyebrow">Espace jeunes · 11–17 ans</p>
+    <h2 class="title">La jeunesse aux commandes </h2>
+    <p class="sub">Un secteur ados où les jeunes deviennent <strong>acteurs</strong> : accueil de loisirs les mercredis, samedis et vacances — et bien plus.</p>
+    <div class="qgrid">
+      <div class="card" style="border-top:4px solid var(--vert)"><h3>La Kaz Zados</h3><p>Un lieu à eux, géré par eux : leurs projets, leur autonomie.</p></div>
+      <div class="card" style="border-top:4px solid var(--ananas)"><h3>Ôté Kartié</h3><p>Le projet phare des jeunes pour faire bouger le quartier.</p></div>
+      <div class="card" style="border-top:4px solid #d2602f"><h3>Danse &amp; créations</h3><p>Danse, expression et activités menées avec les ados.</p></div>
+      <div class="card" style="border-top:4px solid #3a9bd9"><h3>Mercredi, samedi &amp; vacances</h3><p>Un accueil régulier pour les 11–17 ans toute l'année.</p></div>
+    </div>
+    <div style="text-align:center;margin-top:20px">
+      <a class="btn primary" style="text-decoration:none" href="connexion.html?role=famille"> Réserver une place (ACM, sorties) → Mon espace famille</a>
+      <p class="sub" style="margin:10px 0 0">Connectez-vous ou créez votre espace famille en 2 minutes. <b>Un parent adhérent</b> (10 €/an, du 1ᵉʳ août au 31 juillet) = <b>tous vos enfants</b> ont droit.</p>
     </div>
   </div>
 </section>
-<section class="block" id="inscription-peri" style="background:linear-gradient(135deg,#fff3da,#ffe7c4)">
+<section class="block bg-w" id="lieux">
   <div class="wrap">
-    <p class="eyebrow">Rentrée d'août</p>
-    <h2 class="title"> Inscrivez vos enfants au périscolaire <span class="y">matin &amp; soir</span></h2>
-    <p style="text-align:center;margin:2px 0 0"><span class="badge" style="background:#e3f6ec;color:#0f6b46;border-color:#bfe6d0"> Nouveau — le périscolaire du matin dès la rentrée</span></p>
-    <p class="sub" style="max-width:720px">La rentrée, c'est le <b>lundi 18 août</b> — et les inscriptions sont déjà ouvertes. Le dépôt du dossier se fait dans votre <b>espace famille</b> : adhérez / connectez-vous, puis déposez vos pièces — vous pouvez les scanner directement depuis votre téléphone.</p>
-    <div style="display:flex;gap:18px;flex-wrap:wrap;align-items:flex-start;margin-top:6px">
-      <div style="flex:1;min-width:260px;background:#fff;border:1px solid #f1e2ad;border-radius:16px;padding:16px 18px">
-        <b style="color:var(--vert-fonce)"> Pièces à fournir</b>
-        <ul style="margin:8px 0 0;padding-left:18px;line-height:1.9;color:#5b4a2a">
-          <li><b>Attestation CAF</b> (quotient familial, <b>moins de 3 mois</b>)</li>
-          <li>Avis d'imposition</li>
-          <li>Justificatif de domicile</li>
-          <li>Attestation d'assurance (extrascolaire)</li>
-          <li>Vaccins à jour (photo du carnet)</li>
-          <li>Livret de famille</li>
-        </ul>
-      </div>
-      <div style="flex:1;min-width:240px">
-        <p style="margin:0 0 12px;color:#5b4a2a"><b>Comment faire ?</b><br>1. J'adhère / je me connecte à mon espace.<br>2. Je renseigne mes enfants (matin / soir).<br>3. Je dépose mes pièces. C'est tout !</p>
-        <div class="cta">
-          <a href="connexion.html?role=famille" class="btn primary"> Déposer mon dossier</a>
-          <a href="#adhesion" class="btn ghost">Adhérer au CASE</a>
-        </div>
-      </div>
-    </div>
+    <p class="eyebrow">Nos lieux</p>
+    <h2 class="title">Où nous trouver </h2>
+    <p class="sub">Nos locaux, leur état, et ce qui s'y passe. Passez nous voir !</p>
+    <div class="grid" id="lieuxList"></div>
   </div>
 </section>
-<section class="block bg-g" id="activites">
+<section class="block bg-w" id="partenaires">
   <div class="wrap">
-    <p class="eyebrow">Nos activités</p>
-    <h2 class="title">Il y en a pour tout le monde </h2>
-    <p class="sub">Nos activités tournent déjà ! La page détaillée (horaires &amp; inscription en ligne) arrive bientôt — en attendant, <b>appelez-nous</b> pour vous inscrire, connaître les horaires ou passer nous voir. </p>
-    <div class="qgrid" id="actQuartiers"></div>
-    <div style="max-width:780px;margin:18px auto 0;text-align:left;background:#fff;border:1px solid var(--line);border-radius:16px;padding:18px 20px;box-shadow:var(--shadow);font-size:15px">
-      <b style="color:var(--vert-fonce);display:block;text-align:center;font-size:16px;margin-bottom:12px">Envie de rejoindre une activité&nbsp;?</b>
-      <p style="margin:0 0 8px"> <b>Périscolaire, ACM, sorties</b> — tout se fait en ligne dans <b>Mon espace famille</b> : créez votre compte en 2 minutes, puis <b>déposez vos pièces</b> (vous pouvez les scanner directement depuis votre téléphone).</p>
-      <div style="text-align:center;margin:10px 0 14px"><a href="connexion.html?role=famille" class="btn primary" style="text-decoration:none"> Déposer mon dossier</a></div>
-      <p style="margin:0"> <b>Autres activités</b> — la page d'inscription en ligne arrive bientôt. En attendant, appelez <b>Kathy Maillot</b> au <a href="tel:+262692013834" style="color:var(--vert-fonce);font-weight:700">0692&nbsp;01&nbsp;38&nbsp;34</a> (ou le CASE au <a href="tel:+262262293790" style="color:var(--vert-fonce);font-weight:700">0262&nbsp;29&nbsp;37&nbsp;90</a>) — on vous inscrit. Et si c'est plus simple, <b>passez au CASE</b>, on le fait avec vous.</p>
-    </div>
-  </div>
-</section>
-<section class="block bg-g" id="temps-forts">
-  <div class="wrap">
-    <p class="eyebrow">Temps forts 2026</p>
-    <h2 class="title">Les prochains rendez-vous</h2>
-    <p class="sub">Les prochains rendez-vous du quartier. Cliquez pour le programme et pour vous inscrire.</p>
-    <div class="actlist" id="agendaList"></div>
-    <div style="text-align:center;margin-top:22px"><button class="btn ghost" onclick="toggleForm('tfForm')"> Proposer un temps fort</button></div>
-    <div id="tfForm" class="panel" style="display:none;max-width:640px;margin:16px auto 0;box-shadow:var(--shadow)">
-      <h3 style="margin:0 0 6px"> Une idée de temps fort ?</h3>
-      <p style="margin:0 0 12px;color:var(--muted);font-size:14px">Proposez votre idée : le CASE l'étudie, et si elle est retenue elle rejoindra l'agenda.</p>
-      <div class="field"><label>Votre idée *</label><input id="tf_titre" placeholder="Ex. Marché nocturne, tournoi de dominos…"></div>
-      <div class="field"><label>En quelques mots</label><input id="tf_desc" placeholder="Pour qui, quand, comment…"></div>
-      <div class="field"><label>Votre nom *</label><input id="tf_nom" placeholder="Prénom Nom"></div>
-      <div class="field"><label>Email ou téléphone</label><input id="tf_contact" placeholder="Pour vous recontacter"></div>
-      <button id="tf_btn" class="btn primary" style="width:100%" onclick="submitTempsFort()">Envoyer ma proposition</button>
-      <p id="tf_info" style="margin:10px 0 0;font-size:13.5px;text-align:center;font-weight:700"></p>
-    </div>
-  </div>
-</section>
-<section class="block bg-sun" id="adhesion">
-  <div class="wrap">
-    <p class="eyebrow">Adhésion & inscriptions</p>
-    <h2 class="title">Rejoignez le CASE en 2 minutes </h2>
-    <p class="sub">Adhérez en ligne et inscrivez-vous à une activité. Simple, rapide, sécurisé.</p>
+    <p class="eyebrow">Commerçants & partenaires</p>
+    <h2 class="title">Soutenez le quartier </h2>
+    <p style="max-width:640px;margin:0 auto 22px;text-align:center;color:var(--muted);font-size:16px">Vous êtes un commerce ou un acteur du quartier et vous souhaitez soutenir le CASE — offrir un avantage à nos adhérents, parrainer une action, ou simplement nous rencontrer ? Laissez-nous vos coordonnées, on vous recontacte. </p>
     <div class="zguide">
-      <img class="zg-img" src="zanana-card.png" onerror="this.src='mascotte-hero.png'" alt="Zanana">
-      <span class="zg-bulle">Adhère en ligne en 2 minutes, je te montre ! </span>
+      <img class="zg-img" src="zanana-thumb.png" onerror="this.src='mascotte-hero.png'" alt="Zanana">
+      <span class="zg-bulle">Commerçant du quartier ? On fait équipe ! </span>
     </div>
-    <div class="panel">
-      <p style="margin:0 0 16px;color:var(--muted);font-size:15px">L'adhésion (<b>10 €</b>, valable du <b>1ᵉʳ août au 31 juillet</b>) ouvre l'accès aux activités — et <b>un seul parent adhérent suffit pour tous les enfants</b>. Créez votre <b>espace famille</b> : vous pourrez déposer votre dossier périscolaire, réserver vos activités et <b>payer votre adhésion en ligne</b> — ou la régulariser avec le bureau.</p>
-      <div style="display:flex;flex-direction:column;gap:10px">
-        <a class="btn primary" style="text-decoration:none;text-align:center" href="connexion.html?role=famille"> Payer mon adhésion — 10 €</a>
-        <a class="btn primary" style="text-decoration:none;text-align:center" href="connexion.html?role=famille"> Inscrire mon enfant au périscolaire</a>
-        <a class="btn primary" style="text-decoration:none;text-align:center" href="connexion.html?role=famille"> Réserver une activité / l'ACM</a>
-        <a class="btn ghost" style="text-decoration:none;text-align:center" href="connexion.html?role=famille">‍‍ Accéder à Mon espace famille</a>
-      </div>
-      <p class="note">Tout se passe dans votre espace famille. <b>Paiement de l'adhésion en ligne</b> via HelloAsso — <b>sans frais pour vous</b> (la contribution HelloAsso est facultative, modifiable à <b>0 €</b>) ; possible aussi avec le bureau.</p>
+    <div style="text-align:center;margin-top:22px"><button class="btn sun" onclick="toggleForm('paForm')"> Devenir partenaire</button></div>
+    <div id="paForm" class="panel" style="display:none;max-width:640px;margin:16px auto 0;box-shadow:var(--shadow)">
+      <div class="field"><label>Nom du commerce / structure *</label><input id="pa_commerce" placeholder="Ex. Boulangerie du Moufia"></div>
+      <div class="field"><label>Votre nom *</label><input id="pa_contact" placeholder="Prénom Nom"></div>
+      <div class="field"><label>Email</label><input id="pa_email" type="email" placeholder="vous@exemple.re"></div>
+      <div class="field"><label>Téléphone</label><input id="pa_phone" placeholder="0692 ..."></div>
+      <div class="field"><label>Votre activité</label><input id="pa_type" placeholder="Ex. boulangerie, coiffeur, association..."></div>
+      <div class="field"><label>Votre message / ce que vous proposez</label><input id="pa_message" placeholder="Ex. réduction pour les adhérents, coup de main sur un événement..."></div>
+      <button id="pa_btn" class="btn sun" style="width:100%" onclick="submitPartner()">Envoyer ma demande de partenariat</button>
+      <p id="pa_info" style="margin:10px 0 0;font-size:13.5px;text-align:center;font-weight:700"></p>
     </div>
   </div>
 </section>
-<section class="block bg-g" id="contact">
+<section class="block bg-g" id="ateliers">
   <div class="wrap">
-    <p class="eyebrow">Nous contacter</p>
-    <h2 class="title">Une question ? Écrivez-nous </h2>
-    <div class="zguide">
-      <img class="zg-img" src="zanana-wave.png" onerror="this.src='mascotte-hero.png'" alt="Zanana">
-      <span class="zg-bulle">Une question ? Écris-nous, on répond vite </span>
-    </div>
-    <div class="contact-grid">
-      <div>
-        <div class="info-line"><span class="i"></span><div><b>Adresse</b><br>C.A.S.E du Bois de Nèfles<br>132 Route des Ananas, 97490 Sainte-Clotilde<br><span style="font-size:13px;color:var(--muted)">+ Local des Bringelliers</span></div></div>
-        <div class="info-line"><span class="i"></span><div><b>Téléphone</b><br><a href="tel:+262262293790" style="text-decoration:none">0262 29 37 90</a> · <span style="font-size:13px;color:var(--muted)">CASE</span><br><a href="tel:+262692691811" style="text-decoration:none">0692 69 18 11</a> · <span style="font-size:13px;color:var(--muted)">ligne directe</span></div></div>
-        <div class="info-line"><span class="i"></span><div><b>Email</b><br><a href="mailto:contact@casebdn.re" style="text-decoration:none">contact@casebdn.re</a></div></div>
-        <!-- Réseaux sociaux : à remettre dès que Guillaume fournit les liens FB/Insta/TikTok/WhatsApp -->
-      </div>
-      <div class="panel" style="box-shadow:var(--shadow)">
-        <div class="field"><label>Votre nom</label><input id="ct_nom" placeholder="Nom"></div>
-        <div class="field"><label>Votre message</label><input id="ct_msg" placeholder="Bonjour..."></div>
-        <button class="btn sun" style="width:100%" onclick="envoyerContact()">Envoyer le message</button>
-      </div>
+    <p class="eyebrow">Ateliers participatifs</p>
+    <h2 class="title">Et si on l'ouvrait ensemble ? </h2>
+    <p style="max-width:640px;margin:0 auto 22px;text-align:center;color:var(--muted);font-size:16px">Ces ateliers ouvriront dès qu'il y aura <b>assez d'inscrits</b> — et parfois, on cherche aussi <b>la personne qui saura les animer</b>. Que vous soyez simplement intéressé·e ou que vous ayez le talent pour animer : dites-le nous, ça compte !</p>
+    <div class="grid" id="atGrid"><p style="grid-column:1/-1;text-align:center;color:var(--muted)">Chargement des ateliers…</p></div>
+    <div style="text-align:center;margin-top:22px"><button class="btn ghost" onclick="toggleForm('aiForm')"> Proposer un atelier</button></div>
+    <div id="aiForm" class="panel" style="display:none;max-width:640px;margin:16px auto 0;box-shadow:var(--shadow)">
+      <h3 style="margin:0 0 6px"> Vous avez une idée d'atelier ?</h3>
+      <p style="margin:0 0 12px;color:var(--muted);font-size:14px">Proposez-la : le CASE l'étudie, et si elle est retenue elle apparaîtra ici pour recueillir les inscriptions.</p>
+      <div class="field"><label>Votre idée d'atelier *</label><input id="ai_titre" placeholder="Ex. couture, échecs, danse classique..."></div>
+      <div class="field"><label>En quelques mots</label><input id="ai_desc" placeholder="Pour qui, quoi, à quelle fréquence..."></div>
+      <div class="field"><label>Votre nom *</label><input id="ai_nom" placeholder="Prénom Nom"></div>
+      <div class="field"><label>Email ou téléphone</label><input id="ai_contact" placeholder="Pour vous recontacter"></div>
+      <button id="ai_btn" class="btn primary" style="width:100%" onclick="submitAtelierIdee()">Envoyer ma proposition</button>
+      <p id="ai_info" style="margin:10px 0 0;font-size:13.5px;text-align:center;font-weight:700"></p>
     </div>
   </div>
 </section>
@@ -496,9 +380,7 @@
   <p style="margin:6px 0 2px;font-weight:800;font-size:18px">CASE du Bois de Nèfles</p>
   <p style="margin:0;opacity:.85">Centre social associatif · Sainte-Clotilde, Saint-Denis · La Réunion</p>
   <p style="margin:10px 0 0;font-size:13px;opacity:.7">Ce site vous est confié par <a href="https://bob.re" target="_blank" rel="nofollow noopener" style="color:#fff;text-decoration:underline">Bob</a> </p>
-<p style="margin:12px 0 0;font-size:14px"><a href="la-maison.html" style="font-weight:800">La maison &amp; le projet</a> · <a href="la-maison.html#partenaires" style="font-weight:800">Partenaires</a> · <a href="la-maison.html#ateliers" style="font-weight:800">Ateliers participatifs</a></p></footer>
-</div>
-</div>
+<p style="margin:12px 0 0;font-size:14px"><a href="index.html" style="font-weight:800">← Revenir à l'accueil</a></p></footer>
 <div class="pmodal" id="pmodal" onclick="if(event.target===this)closePlan()">
   <div class="pmodal-box" id="pmodalBox"></div>
 </div>
