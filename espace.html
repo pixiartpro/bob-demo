@@ -387,6 +387,8 @@ let ID=null;        /* identité résolue (bob-identite.js) */
 let PROJETS=[];     /* projets hors comptoir */
 let COMPTOIR=null;  /* le canal affiché : un projet data.type='comptoir' */
 let CANAUX=[];      /* tous les canaux visibles par cette personne (la RLS a déjà retiré les réservés) */
+let CANAUX_ARCHIVES=[]; /* rangés : hors de la barre, mais jamais supprimés */
+let VOIR_ARCHIVES=false;
 let PARTS=[];       /* qui participe à quoi */
 let POSTS=[];       /* les 300 derniers messages, tous fils confondus */
 let MATERIEL=[];
@@ -739,6 +741,11 @@ function vueComptoir(el){
       /* l'emblème vient de l'identité du tenant : un clap chez un média, un ananas au CASE,
          une trompette chez une harmonie. Jamais l'emoji du métier de celui qu'on a sous les yeux. */
       + projetsOuverts.map(p=>onglet(p,(ID&&ID.embleme)||'•')).join('')
+      + (VOIR_ARCHIVES ? CANAUX_ARCHIVES.map(c=>onglet(c,'🗄️')).join('') : '')
+      + (CANAUX_ARCHIVES.length
+          ? '<button class="canal canal-plus" data-canalarchives="1">'
+            + (VOIR_ARCHIVES?'Masquer les rangés':'🗄️ '+CANAUX_ARCHIVES.length+' rangé'+(CANAUX_ARCHIVES.length>1?'s':''))
+            + '</button>' : '')
       + (estBureau()
           ? '<button class="canal canal-plus" data-canalnouveau="1">+ Un canal</button>'
           : '<button class="canal canal-plus" data-canalpropose="1">+ Proposer un canal</button>')
@@ -749,6 +756,15 @@ function vueComptoir(el){
    +'<p class="chapeau">'+esc((COMPTOIR.data&&COMPTOIR.data.pitch)||'La discussion générale de l\'association.')+'</p>'
    +barre
    +(reserve?'<p class="hint" style="margin:0 0 10px">🔒 Ce canal ne sort pas du bureau : les adhérents ne le voient pas.</p>':'')
+   /* Ranger un canal : réservé au bureau, et seulement sur un CANAL (jamais sur un fil de projet,
+      qui se range depuis sa fiche) — et jamais sur le dernier ouvert, sinon plus de discussion. */
+   +((estBureau()&&estComptoir(COMPTOIR))
+      ? ((((COMPTOIR.data&&COMPTOIR.data.statut)||'actif')==='archive')
+          ? '<p class="hint" style="margin:0 0 10px">🗄️ Ce canal est rangé. <button class="b nu sm" data-canalrouvrir="1">Le rouvrir</button></p>'
+          : (CANAUX.length>1
+              ? '<p class="hint" style="margin:0 0 10px"><button class="b nu sm" data-canalranger="1">🗄️ Ranger ce canal</button> — il sort de la barre, rien n\'est supprimé.</p>'
+              : ''))
+      : '')
    +'<div class="carte"><div id="fil"><p class="chargement">Chargement du fil…</p></div>'
    +redacteurHtml()+'</div>';
   COURANT=COMPTOIR;
@@ -758,10 +774,21 @@ function vueComptoir(el){
 /* changer de canal : on mémorise le choix, le temps de la session. Un canal peut être un fil
    permanent OU un projet — dans les deux cas c'est le même objet et le même fil de messages. */
 function allerCanal(id){
-  const c=CANAUX.find(x=>x.id===id)||PROJETS.find(x=>x.id===id); if(!c) return;
+  const c=CANAUX.find(x=>x.id===id)||CANAUX_ARCHIVES.find(x=>x.id===id)||PROJETS.find(x=>x.id===id);
+  if(!c) return;
   COMPTOIR=c;
   try{ sessionStorage.setItem('bob_canal', id); }catch(e){}
   aller('comptoir');
+}
+/* Ranger / rouvrir un canal. On ne SUPPRIME jamais une conversation : les messages d'une
+   association sont sa mémoire, et personne ne peut décider seul de l'effacer. */
+async function rangerCanal(archive){
+  if(!COMPTOIR) return;
+  const d=Object.assign({},COMPTOIR.data||{},{statut:archive?'archive':'actif'});
+  const r=await sb.from('projects').update({data:d}).eq('id',COMPTOIR.id);
+  if(r.error){ toast('Impossible : '+r.error.message); return; }
+  try{ sessionStorage.removeItem('bob_canal'); }catch(e){}
+  await chargerProjets(); aller('comptoir');
 }
 /* Le canal général d'une asso qui n'en a aucun. Nommé avec le nom de l'asso, jamais en dur. */
 async function ouvrirCanalGeneral(){
@@ -1342,7 +1369,11 @@ async function chargerProjets(){
      nouvelle. Les fils réservés (`data.acces = 'bureau'`) ne remontent même pas ici pour un
      adhérent — c'est la RLS qui les retire, pas un filtre d'écran (verrou posé en base le
      09/08 et prouvé par impersonation). L'ordre suit `data.ordre` puis le nom. */
-  CANAUX=tous.filter(estComptoir).sort((a,b)=>
+  /* 09/08/2026 — un canal se RANGE quand il a fait son temps (demandé par Guillaume : « il faut
+     un système où les conversations s'archivent »). Rien n'est supprimé : on le sort de la barre
+     et il reste consultable. Même mécanique que les projets (`data.statut = 'archive'`). */
+  CANAUX_ARCHIVES=tous.filter(p=>estComptoir(p)&&((p.data&&p.data.statut)||'actif')==='archive');
+  CANAUX=tous.filter(p=>estComptoir(p)&&((p.data&&p.data.statut)||'actif')!=='archive').sort((a,b)=>
     ((a.data&&a.data.ordre)||0)-((b.data&&b.data.ordre)||0) || String(a.name).localeCompare(String(b.name)));
   /* on retrouve le canal choisi juste avant, s'il est toujours visible pour cette personne */
   let choisi=null; try{ choisi=sessionStorage.getItem('bob_canal'); }catch(e){}
@@ -1452,6 +1483,9 @@ async function demarrer(){
 document.addEventListener('click',async e=>{
   const c=s=>e.target.closest(s);
   let t;
+  if((t=c('[data-canalarchives]'))){ VOIR_ARCHIVES=!VOIR_ARCHIVES; aller('comptoir'); return; }
+  if((t=c('[data-canalranger]'))){ rangerCanal(true); return; }
+  if((t=c('[data-canalrouvrir]'))){ rangerCanal(false); return; }
   if((t=c('[data-canalgeneral]'))){ ouvrirCanalGeneral(); return; }
   if((t=c('[data-canalnouveau]'))){ nouveauCanal(); return; }
   if((t=c('[data-canalpropose]'))){ proposerCanal(); return; }
