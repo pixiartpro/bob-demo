@@ -107,6 +107,13 @@
 
   /* ─── Cartes ─────────────────────────────────────────────────────── */
   .carte{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:20px 22px}
+  /* 09/08/2026 — les onglets des canaux de discussion */
+  .canaux{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 14px}
+  .canal{border:1.5px solid var(--line-2);background:transparent;color:var(--muted);cursor:pointer;
+    font:inherit;font-size:13.5px;font-weight:600;padding:7px 14px;border-radius:var(--radius-pill);
+    transition:border-color var(--dur) var(--ease),color var(--dur) var(--ease)}
+  .canal:hover{border-color:var(--brand-lisible);color:var(--ink)}
+  .canal.actif{background:var(--brand-fill);border-color:var(--brand-fill);color:var(--brand-ink)}
   .carte + .carte{margin-top:14px}
   .carte h2{font-size:16.5px;margin:0 0 3px;font-weight:700}
   .carte .sous{color:var(--muted);font-size:13.5px;margin:0 0 14px}
@@ -375,7 +382,8 @@ let ME=null;        /* {id,name,role,statut,asso} */
 let ASSO=null;      /* ligne `associations` */
 let ID=null;        /* identité résolue (bob-identite.js) */
 let PROJETS=[];     /* projets hors comptoir */
-let COMPTOIR=null;  /* le fil général : un projet data.type='comptoir' */
+let COMPTOIR=null;  /* le canal affiché : un projet data.type='comptoir' */
+let CANAUX=[];      /* tous les canaux visibles par cette personne (la RLS a déjà retiré les réservés) */
 let PARTS=[];       /* qui participe à quoi */
 let POSTS=[];       /* les 300 derniers messages, tous fils confondus */
 let MATERIEL=[];
@@ -696,13 +704,33 @@ function vueProjets(el){
    ══════════════════════════════════════════════════════════════════════════ */
 function vueComptoir(el){
   if(!COMPTOIR){el.innerHTML='<div class="carte">'+vide('🗣️','Pas de comptoir','Le bureau ne l\'a pas encore ouvert.')+'</div>';return;}
+  /* 09/08/2026 — un onglet par canal quand il y en a plusieurs. Un seul canal : on n'affiche
+     aucune barre, pour ne pas fabriquer un choix qui n'en est pas un. */
+  const barre = CANAUX.length>1
+    ? '<div class="canaux" role="tablist" aria-label="Les canaux de discussion">'
+      + CANAUX.map(c=>'<button role="tab" class="canal'+(c.id===COMPTOIR.id?' actif':'')+'"'
+          +' aria-selected="'+(c.id===COMPTOIR.id)+'" data-canal="'+esc(c.id)+'">'
+          + esc(c.name)
+          + ((c.data&&c.data.acces==='bureau')?' <span class="em" title="Réservé au bureau" aria-label="réservé au bureau">🔒</span>':'')
+          +'</button>').join('') + '</div>'
+    : '';
+  const reserve = !!(COMPTOIR.data&&COMPTOIR.data.acces==='bureau');
   el.innerHTML='<p class="eyebrow">Entre nous</p><h1>'+esc(COMPTOIR.name)+'</h1>'
    +'<p class="chapeau">'+esc((COMPTOIR.data&&COMPTOIR.data.pitch)||'La discussion générale de l\'association.')+'</p>'
+   +barre
+   +(reserve?'<p class="hint" style="margin:0 0 10px">🔒 Ce canal ne sort pas du bureau : les adhérents ne le voient pas.</p>':'')
    +'<div class="carte"><div id="fil"><p class="chargement">Chargement du fil…</p></div>'
    +redacteurHtml()+'</div>';
   COURANT=COMPTOIR;
   chargerFil(COMPTOIR.id,'#fil');
   vuSet(COMPTOIR.id);
+}
+/* changer de canal : on mémorise le choix, le temps de la session */
+function allerCanal(id){
+  const c=CANAUX.find(x=>x.id===id); if(!c) return;
+  COMPTOIR=c;
+  try{ sessionStorage.setItem('bob_canal', id); }catch(e){}
+  aller('comptoir');
 }
 function redacteurHtml(){
   return '<div class="redac">'
@@ -1242,7 +1270,16 @@ async function chargerProjets(){
     .order('updated_at',{ascending:false});
   if(error){toast('Lecture des projets impossible : '+error.message);PROJETS=[];return;}
   const tous=data||[];
-  COMPTOIR=tous.find(estComptoir)||null;
+  /* 09/08/2026 — plusieurs CANAUX de discussion, demandés par Guillaume (« le chat bureau, le
+     chat général, le chat adhérent »). Un canal EST un fil de type `comptoir` : aucune table
+     nouvelle. Les fils réservés (`data.acces = 'bureau'`) ne remontent même pas ici pour un
+     adhérent — c'est la RLS qui les retire, pas un filtre d'écran (verrou posé en base le
+     09/08 et prouvé par impersonation). L'ordre suit `data.ordre` puis le nom. */
+  CANAUX=tous.filter(estComptoir).sort((a,b)=>
+    ((a.data&&a.data.ordre)||0)-((b.data&&b.data.ordre)||0) || String(a.name).localeCompare(String(b.name)));
+  /* on retrouve le canal choisi juste avant, s'il est toujours visible pour cette personne */
+  let choisi=null; try{ choisi=sessionStorage.getItem('bob_canal'); }catch(e){}
+  COMPTOIR=(choisi&&CANAUX.find(c=>c.id===choisi))||CANAUX[0]||null;
   PROJETS=tous.filter(p=>!estComptoir(p))
     .filter(p=>((p.data&&p.data.statut)||'actif')!=='archive'||p.owner_id===ME.id);
 }
@@ -1348,6 +1385,7 @@ async function demarrer(){
 document.addEventListener('click',async e=>{
   const c=s=>e.target.closest(s);
   let t;
+  if((t=c('[data-canal]'))){ allerCanal(t.dataset.canal); return; }
   if((t=c('[data-vue]'))){ aller(t.dataset.vue); return; }
   if((t=c('[data-aller]'))){ aller(t.dataset.aller); return; }
   if((t=c('[data-fermer]'))||e.target.id==='voile'){ fermerPanneau(); return; }
