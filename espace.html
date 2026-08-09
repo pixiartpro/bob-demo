@@ -1385,6 +1385,82 @@ window.addEventListener('hashchange',()=>{
 });
 
 demarrer();
+
+/* ═══ 💡 LA BOÎTE À IDÉES ══════════════════════════════════════════════════════════════════
+   09/08/2026, demandé par Guillaume : « est-ce qu'ils ont bien accès à la petite ampoule pour
+   faire les demandes de changement ou de modification ? » — NON. Le bureau (app.html) et les
+   familles du CASE (espace-adherent.html) l'avaient ; les adhérents de l'espace membre, non.
+   Même table `suggestions` et même mécanique que l'espace famille : chacun voit SES envois
+   (policy sur author_id), le bureau les lit tous dans son onglet Réglages.
+   Le `context` dit d'où vient l'idée, pour que le bureau sache quel écran est visé. */
+(function(){
+  const st=document.createElement('style');
+  st.textContent=
+   '.idee-fab{position:fixed;right:18px;bottom:18px;z-index:60;width:54px;height:54px;border-radius:50%;'
+  +'border:none;cursor:pointer;background:var(--brand-fill);color:var(--brand-ink);font-size:23px;'
+  +'box-shadow:var(--shadow-lg);display:grid;place-items:center}'
+  +'.idee-fab:hover{background:var(--brand-hover)}'
+  +'.idee-panneau{position:fixed;right:18px;bottom:82px;z-index:60;width:min(92vw,380px);display:none;'
+  +'background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);'
+  +'box-shadow:var(--shadow-lg);padding:16px}'
+  +'.idee-panneau.ouvert{display:block}'
+  +'.idee-item{border-top:1px solid var(--line);padding:9px 0;font-size:13px}'
+  +'.idee-item:first-child{border-top:0}'
+  +'.idee-quand{color:var(--muted-2);font-size:11.5px}'
+  +'@media(max-width:640px){.idee-fab{bottom:calc(var(--barH,64px) + 14px)}'
+  +'.idee-panneau{bottom:calc(var(--barH,64px) + 78px)}}';
+  document.head.appendChild(st);
+
+  const fab=document.createElement('button');
+  fab.className='idee-fab'; fab.type='button';
+  fab.setAttribute('aria-label','Proposer une idée ou signaler un problème');
+  fab.setAttribute('aria-expanded','false');
+  fab.innerHTML='<span aria-hidden="true">💡</span>';
+
+  const pan=document.createElement('div');
+  pan.className='idee-panneau'; pan.id='ideePanneau';
+  pan.innerHTML='<h2 style="margin:0 0 4px;font-size:16px">💡 Une idée, un souci ?</h2>'
+   +'<p class="chapeau" style="margin:0 0 10px;font-size:13px">Dis-le avec tes mots : ce qui te manque, '
+   +'ce qui ne marche pas, ce qu\'on pourrait faire autrement. Ça part au bureau.</p>'
+   +'<textarea id="ideeTexte" class="champ" rows="3" style="width:100%" '
+   +'placeholder="Par exemple : « on devrait pouvoir… »"></textarea>'
+   +'<div style="display:flex;gap:8px;margin-top:9px"><button class="b p" id="ideeEnvoyer" type="button">Envoyer</button></div>'
+   +'<div id="ideeListe" style="margin-top:12px"></div>';
+
+  document.body.appendChild(fab); document.body.appendChild(pan);
+
+  const STAT={nouvelle:'🆕 reçu', vue:'👀 vu', faite:'✅ fait', rejetee:'✖️ écarté'};
+  async function mesIdees(){
+    const box=document.getElementById('ideeListe'); if(!box||!ME) return;
+    const r=await sb.from('suggestions').select('body,statut,created_at')
+                    .eq('author_id',ME.id).order('created_at',{ascending:false}).limit(20);
+    if(r.error){ box.innerHTML='<p class="idee-quand">Impossible de relire tes envois.</p>'; return; }
+    const l=r.data||[];
+    box.innerHTML=l.length
+      ? l.map(s=>'<div class="idee-item"><div class="idee-quand">'
+          +esc(new Date(s.created_at).toLocaleDateString('fr-FR',{day:'2-digit',month:'2-digit'}))
+          +' · '+esc(STAT[s.statut]||s.statut||'reçu')+'</div>'+esc(s.body)+'</div>').join('')
+      : '<p class="idee-quand">Tes idées apparaîtront ici, avec ce que le bureau en a fait.</p>';
+  }
+  fab.addEventListener('click',()=>{
+    const ouvert=!pan.classList.contains('ouvert');
+    pan.classList.toggle('ouvert',ouvert);
+    fab.setAttribute('aria-expanded',String(ouvert));
+    if(ouvert){ mesIdees(); const t=document.getElementById('ideeTexte'); if(t) t.focus(); }
+  });
+  document.getElementById('ideeEnvoyer').addEventListener('click',async()=>{
+    const t=document.getElementById('ideeTexte'); const corps=(t.value||'').trim();
+    if(!corps){ t.focus(); return; }
+    if(!ME||ME.statut!=='actif'){ alert('Ton compte doit être validé par le bureau avant d\'envoyer.'); return; }
+    const btn=document.getElementById('ideeEnvoyer'); btn.disabled=true;
+    const r=await sb.from('suggestions').insert({ asso_id:ME.asso, author_id:ME.id,
+      author_name:ME.name, body:corps, context:'Espace membre — '+VUE });
+    btn.disabled=false;
+    /* ⚠️ supabase-js ne lève pas : on lit .error */
+    if(r.error){ alert('Envoi impossible : '+r.error.message); return; }
+    t.value=''; mesIdees();
+  });
+})();
 </script>
 </body>
 </html>
