@@ -3666,6 +3666,20 @@ function renderMembers(){
     return;
   }
   const foyerById={}; A.foyers.forEach(f=>{ foyerById[f.id]=f; });
+  const persById={}; (A.personnes||[]).forEach(p=>{ persById[p.id]=p; });
+  /* Nom affiché d'une ligne du registre. Depuis la 63, une ligne = une PERSONNE.
+     Ordre : son nom → à défaut le foyer → à défaut, on dit franchement ce qui manque.
+     ⚠️ « (foyer non lisible) » était trompeur sur une fiche coquille : le foyer n'est
+     pas illisible, il n'existe pas encore — la personne a payé et ne s'est pas nommée. */
+  const nomLigne=function(a,f){
+    const p=a.personne_id?persById[a.personne_id]:null;
+    if(p){
+      const n=((p.prenom||'')+' '+(p.nom||'')).trim();
+      if(n) return n;
+      if(p.fiche_a_completer) return '⚠️ Fiche à compléter — a payé, ne s’est pas encore nommé';
+    }
+    return f.nom || '⚠️ Ni personne ni foyer rattaché';
+  };
   const usedMid={}; // ids du livre déjà représentés par une ligne de l'arbre
   const rows=[];
   let nbDiv=0, nbDel=0; // compteurs d'écart calculés sur TOUT (jamais sous le filtre de recherche)
@@ -3688,8 +3702,8 @@ function renderMembers(){
     const divDate    = m && String(m.date||'')!==String(a.date_adhesion||'');
     if(m && (divPaye||divMontant||divDate)) nbDiv++;
     if(retiree) nbDel++;
-    const nom=f.nom||'(foyer non lisible)';
-    const hay=(nom+' '+(m?(m.name+' '+(m.email||'')):'')).toLowerCase();
+    const nom=nomLigne(a,f);
+    const hay=(nom+' '+(f.nom||'')+' '+(m?(m.name+' '+(m.email||'')):'')).toLowerCase();
     if(q && hay.indexOf(q)===-1) return;
     let statutTd;
     if(m){
@@ -3711,6 +3725,12 @@ function renderMembers(){
     }
     rows.push('<tr>'
       +'<td><strong>'+esc(nom)+'</strong>'
+      /* Depuis la 63, une ligne à 0 € n'est PAS une cotisation impayée : c'est un enfant,
+         adhérent porté par le paiement de son parent (barème 2026-2027 : enfant gratuit).
+         Sans cette pastille, le bureau lit « 0,00 € » et croit à un défaut de paiement. */
+      +(a.categorie==='enfant'?' <span class="pill" style="background:#fff3da;color:#8a5a00;font-size:10px" title="Adhérent porté par le paiement du parent — gratuit pour la saison en cours (barème)">👶 enfant · porté</span>':'')
+      +(a.categorie==='adulte'?' <span class="pill" style="background:#eef4ff;color:#23344d;font-size:10px" title="Adhérent qui a réglé sa propre cotisation">🧑 a payé sa cotisation</span>':'')
+      +((a.personne_id&&persById[a.personne_id]&&persById[a.personne_id].fiche_a_completer)?' <span class="pill" style="background:#fdeeee;color:#b03a2e;font-size:10px" title="Cette personne a payé mais n\'a pas encore renseigné son identité — le bureau doit lui créer un dossier et lui remettre un code famille">📝 fiche vide</span>':'')
       +(m&&m.typeAdh?' <span class="pill" style="background:#eef2fb;color:#1f4fc4;font-size:11px">'+esc(m.typeAdh)+'</span>':'')
       +' <span class="pill" style="background:#e7f5ee;color:#127a51;font-size:10px" title="Ligne lue depuis l\'arbre famille (le registre de l\'onglet 👨‍👩‍👧 Foyers)">🌳 arbre</span>'
       +(retiree?' <span class="pill" style="background:#fdeeee;color:#b03a2e;font-size:10px" title="Cette adhésion existe dans l\'arbre mais son entrée du livre a été supprimée — l\'arbre, lui, ne s\'efface pas d\'ici (voir l\'onglet 👨‍👩‍👧 Foyers)">⚠️ retirée du livre</span>':'')
@@ -9872,14 +9892,20 @@ renderAll();
   window.loadMembersArbre=async function(){
     if(typeof sbc==='undefined'||!sbc||!myAsso){ window.__maData=null; if(typeof renderMembers==='function')renderMembers(); return; }
     try{
-      const [ra,rf]=await Promise.all([
+      const [ra,rf,rp]=await Promise.all([
         // colonnes explicites + borne asso (la RLS cloisonne déjà, mais un bureau membre
         // de DEUX assos verrait sinon les deux mélangées dans le même écran)
-        sbc.from('adhesions').select('foyer_id,saison,date_adhesion,montant_cents,paye,legacy_key').eq('asso_id',myAsso),
-        sbc.from('foyers').select('id,nom,tel,adresse,cp,ville,legacy_key').eq('asso_id',myAsso)
+        // 🔴 13/08/2026 — on lit aussi personne_id et categorie : depuis la migration 63,
+        // l'adhérent est une PERSONNE, plus un foyer. Un foyer porte donc autant de lignes
+        // que de personnes adhérentes (le parent à 10 €, chaque enfant à 0 €). Sans le nom
+        // de la personne, la liste affichait « Famille X » trois fois de suite avec des
+        // montants différents — illisible.
+        sbc.from('adhesions').select('foyer_id,personne_id,categorie,saison,date_adhesion,montant_cents,paye,legacy_key').eq('asso_id',myAsso),
+        sbc.from('foyers').select('id,nom,tel,adresse,cp,ville,legacy_key').eq('asso_id',myAsso),
+        sbc.from('personnes').select('id,prenom,nom,role_foyer,fiche_a_completer').eq('asso_id',myAsso)
       ]);
-      const err=ra.error||rf.error;
-      window.__maData = err ? {err:err.message} : {adhesions:ra.data||[], foyers:rf.data||[]};
+      const err=ra.error||rf.error||(rp&&rp.error);
+      window.__maData = err ? {err:err.message} : {adhesions:ra.data||[], foyers:rf.data||[], personnes:(rp&&rp.data)||[]};
     }catch(e){ window.__maData={err:(e&&e.message)||'erreur réseau'}; }
     if(typeof renderMembers==='function') renderMembers();
   };
