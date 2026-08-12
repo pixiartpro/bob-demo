@@ -513,9 +513,12 @@
       <div class="toolbar">
         <h2 style="margin:0">💳 Adhésions payées en ligne <small style="font-weight:400;color:#5c7468;font-size:13px">— via HelloAsso, argent direct sur le compte de l'association</small></h2>
         <button class="ghost btn" onclick="if(window.loadAdhesionsEnLigne)loadAdhesionsEnLigne()">↻ Rafraîchir</button>
+        <button class="ghost btn" id="btnVerifHA" onclick="if(window.verifierPaiementsEnAttente)verifierPaiementsEnAttente()" title="Repose la question à HelloAsso pour les paiements restés en route">🔍 Vérifier chez HelloAsso</button>
       </div>
       <p class="hint">Les familles qui ont réglé leur adhésion (10 €) en ligne depuis leur espace. Rien à re-saisir ici.</p>
       <div id="adhOnlineBox"><p class="hint">Ouvre cet onglet pour charger…</p></div>
+      <div id="adhAttenteBox"></div>
+      <div id="adhVerifBox"></div>
     </div>
     <div class="panel">
       <div class="toolbar">
@@ -9900,6 +9903,85 @@ renderAll();
         +'</tbody></table></div>';
     }catch(e){ box.innerHTML='<p class="hint" style="color:#c0392b">Impossible de charger les paiements en ligne : '+esc((e&&e.message)||'erreur')+'</p>'; }
   };
+  // --- Les paiements PARTIS chez HelloAsso et jamais revenus -----------------
+  // 🔴 Mesuré le 13/08/2026 : 5 adhésions bloquées en « en_attente » depuis 19 à 36 jours,
+  // toutes parties chez HelloAsso (lien de paiement généré). Elles n'apparaissaient NULLE PART
+  // dans Bob — non par oubli, mais parce que le tableau ci-dessus filtre volontairement sur
+  // « payé / à vérifier ». Une famille pouvait donc croire avoir adhéré sans que personne
+  // ne puisse le savoir. Ce bloc les rend visibles ; le bouton 🔍 va demander à HelloAsso.
+  window.loadAdhesionsEnAttente=async function(){
+    const box=document.getElementById('adhAttenteBox'); if(!box) return;
+    if(typeof sbc==='undefined'||!sbc){ box.innerHTML=''; return; }
+    try{
+      const {data:pays,error}=await sbc.from('paiements')
+        .select('id,user_id,montant_cents,statut,created_at,ha_checkout_intent_id')
+        .eq('objet','adhesion').eq('statut','en_attente')
+        .order('created_at',{ascending:true});
+      if(error) throw error;
+      const rows=(pays||[]).filter(function(p){ return !!p.ha_checkout_intent_id; });
+      if(!rows.length){ box.innerHTML=''; return; }   // rien à signaler = rien à afficher
+      const uids=[...new Set(rows.map(function(p){return p.user_id;}).filter(Boolean))];
+      const nameById={};
+      if(uids.length){ const {data:profs}=await sbc.from('profiles').select('id,full_name,email').in('id',uids); (profs||[]).forEach(function(p){ nameById[p.id]={nom:p.full_name||'',email:p.email||''}; }); }
+      const jours=function(ts){ try{ return Math.floor((Date.now()-new Date(ts).getTime())/86400000); }catch(e){ return 0; } };
+      const fmtd=function(ts){ try{ return new Date(ts).toLocaleDateString('fr-FR',{day:'2-digit',month:'2-digit',year:'numeric'}); }catch(e){ return ''; } };
+      box.innerHTML='<div style="margin-top:14px;padding:12px;border-radius:10px;background:#fff8e6;border:1px solid #f0d9a0">'
+        +'<div style="font-weight:700;color:#8a5a00;margin-bottom:4px">⏳ '+rows.length+' adhésion'+(rows.length>1?'s':'')+' partie'+(rows.length>1?'s':'')+' chez HelloAsso, jamais revenue'+(rows.length>1?'s':'')+'</div>'
+        +'<p class="hint" style="margin:0 0 8px">La famille a cliqué « adhérer » et a été envoyée vers le paiement. On ne sait pas si elle est allée au bout : soit elle a renoncé, soit elle a payé et la confirmation s\'est perdue. <b>Clique « 🔍 Vérifier chez HelloAsso » pour savoir</b> — rien ne sera modifié sans ton accord.</p>'
+        +'<div style="overflow-x:auto;-webkit-overflow-scrolling:touch"><table style="min-width:520px"><thead><tr><th>Famille</th><th>Partie le</th><th class="num">Depuis</th><th class="num">Montant</th></tr></thead><tbody>'
+        +rows.map(function(p){ const who=nameById[p.user_id]||{}; const j=jours(p.created_at);
+            return '<tr><td>'+esc(who.nom||who.email||'(compte famille)')+'</td><td>'+fmtd(p.created_at)+'</td><td class="num"><b>'+j+' j</b></td><td class="num">'+euro((p.montant_cents||0)/100)+'</td></tr>'; }).join('')
+        +'</tbody></table></div></div>';
+    }catch(e){ box.innerHTML='<p class="hint" style="color:#c0392b">Impossible de lire les paiements en attente : '+esc((e&&e.message)||'erreur')+'</p>'; }
+  };
+
+  // Demande à HelloAsso ce qu'il est advenu de chaque paiement resté en route.
+  // 🔒 Deux temps VOLONTAIRES : on regarde d'abord (simulation), on régularise ensuite,
+  //    et seulement après un « oui » explicite. La fonction serveur ne peut QUE confirmer
+  //    un paiement — jamais en inventer un, jamais en défaire un.
+  window.verifierPaiementsEnAttente=async function(appliquer){
+    const box=document.getElementById('adhVerifBox'); if(!box) return;
+    const btn=document.getElementById('btnVerifHA');
+    if(typeof sbc==='undefined'||!sbc){ box.innerHTML='<p class="hint">Connecte-toi d\'abord.</p>'; return; }
+    if(appliquer===true && !confirm('Régulariser les paiements que HelloAsso confirme comme payés ?\n\nLes familles concernées deviendront adhérentes. Rien d\'autre ne sera touché.')) return;
+    if(btn){ btn.disabled=true; btn.textContent='⏳ Je demande à HelloAsso…'; }
+    box.innerHTML='<p class="hint">Interrogation de HelloAsso, un instant…</p>';
+    try{
+      // ⚠️ supabase-js ne LÈVE PAS sur erreur : il faut lire `error` explicitement,
+      //    sinon un échec passe pour un succès vide (cf. mémoire supabase-js-erreur-ne-leve-pas).
+      const {data,error}=await sbc.functions.invoke('helloasso-reverifier',{body:{appliquer:appliquer===true}});
+      if(error) throw error;
+      if(data&&data.error) throw new Error(data.error+(data.detail?' — '+data.detail:''));
+      const r=(data&&data.resume)||{}, lignes=(data&&data.lignes)||[];
+      if(!lignes.length){ box.innerHTML='<p class="hint" style="margin-top:10px">✅ Aucun paiement en attente à vérifier.</p>'; return; }
+      const etiq={PAYE_non_enregistre:'<span style="color:#127a51;font-weight:700">✅ a bien payé</span>',
+                  ecart_de_montant:'<span style="color:#8a5a00;font-weight:700">⚠️ écart de montant</span>',
+                  jamais_paye:'<span style="color:#8a9a90;font-weight:700">— jamais payé</span>',
+                  illisible:'<span style="color:#c0392b;font-weight:700">? illisible</span>'};
+      let html='<div style="margin-top:14px;padding:12px;border-radius:10px;background:#eef4ff;border:1px solid #c9d8f0">'
+        +'<div style="font-weight:700;margin-bottom:6px">🔍 Réponse de HelloAsso — '+esc(String((data&&data.mode)||''))+'</div>'
+        +'<div style="overflow-x:auto"><table style="min-width:560px"><thead><tr><th>Verdict</th><th class="num">Depuis</th><th class="num">Dû</th><th>Ce que ça veut dire</th></tr></thead><tbody>'
+        +lignes.map(function(l){ return '<tr><td>'+(etiq[l.verdict]||esc(l.verdict||''))+'</td><td class="num">'+(l.jours||0)+' j</td><td class="num">'+euro((l.montant_du_cents||0)/100)+'</td><td style="font-size:13px">'+esc(l.explication||'')+'</td></tr>'; }).join('')
+        +'</tbody></table></div>';
+      const aRegulariser=Number(r.payes_non_enregistres||0);
+      if(appliquer===true){
+        html+='<p class="hint" style="margin:8px 0 0"><b>✅ Régularisé.</b> '+aRegulariser+' paiement'+(aRegulariser>1?'s':'')+' confirmé'+(aRegulariser>1?'s':'')+' — les adhérents correspondants ont été créés automatiquement.</p>';
+      } else if(aRegulariser>0){
+        html+='<p class="hint" style="margin:8px 0"><b>'+aRegulariser+' famille'+(aRegulariser>1?'s ont':' a')+' bien payé</b> et n\'apparaî'+(aRegulariser>1?'ssent':'t')+' pas au registre. Rien n\'a encore été modifié.</p>'
+             +'<button class="btn" onclick="verifierPaiementsEnAttente(true)">✅ Régulariser ces '+aRegulariser+' adhésion'+(aRegulariser>1?'s':'')+'</button>';
+      } else {
+        html+='<p class="hint" style="margin:8px 0 0">Aucun paiement à régulariser : ces familles ne sont pas allées au bout. <b>À relancer</b>, mais il n\'y a pas d\'argent en attente.</p>';
+      }
+      box.innerHTML=html+'</div>';
+      if(appliquer===true){ if(window.loadAdhesionsEnLigne) loadAdhesionsEnLigne(); if(window.loadAdhesionsEnAttente) loadAdhesionsEnAttente(); }
+    }catch(e){
+      const m=(e&&e.message)||'erreur';
+      box.innerHTML='<p class="hint" style="color:#c0392b;margin-top:10px">Impossible d\'interroger HelloAsso : '+esc(m)+(m.indexOf('reserve_au_bureau')>=0?' — cette vérification est réservée au bureau.':'')+'</p>';
+    } finally {
+      if(btn){ btn.disabled=false; btn.textContent='🔍 Vérifier chez HelloAsso'; }
+    }
+  };
+
   // --- Encaissement au comptoir (chèque / espèces…) : bureau + accueil. Écrit dans `paiements` via RPC ;
   //     ne touche PAS la compta (Phase 2). Annulation = ligne négative (bureau), jamais de suppression. ---
   window.periEncaisser=async function(id){
@@ -14020,8 +14102,9 @@ renderAll();
     const vepb=document.querySelector('nav.tabs button[data-tab="vepi"]'); if(vepb) vepb.addEventListener('click',()=>{ if(window.acmLoadEditionsData) acmLoadEditionsData(); });
     const enfb=document.querySelector('nav.tabs button[data-tab="enfants"]'); if(enfb) enfb.addEventListener('click',()=>{ if(window.loadEnfantsHub) loadEnfantsHub(); });
     if(window.loadDossiersPeri) loadDossiersPeri();
-    const meb=document.querySelector('nav.tabs button[data-tab="members"]'); if(meb) meb.addEventListener('click',()=>{ if(window.loadAdhesionsEnLigne) loadAdhesionsEnLigne(); if(window.loadMembersArbre) loadMembersArbre(); });
+    const meb=document.querySelector('nav.tabs button[data-tab="members"]'); if(meb) meb.addEventListener('click',()=>{ if(window.loadAdhesionsEnLigne) loadAdhesionsEnLigne(); if(window.loadAdhesionsEnAttente) loadAdhesionsEnAttente(); if(window.loadMembersArbre) loadMembersArbre(); });
     if(window.loadAdhesionsEnLigne) loadAdhesionsEnLigne();
+    if(window.loadAdhesionsEnAttente) loadAdhesionsEnAttente();
     if(window.loadMembersArbre) loadMembersArbre();
     const perb=document.querySelector('nav.tabs button[data-tab="personnel"]'); if(perb) perb.addEventListener('click',()=>{ if(window.loadPersonnel) loadPersonnel(); });
     const jab=document.querySelector('nav.tabs button[data-tab="journal"]'); if(jab) jab.addEventListener('click',()=>{ if(window.loadJournalActions) loadJournalActions(); });
