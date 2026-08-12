@@ -206,6 +206,17 @@ document.addEventListener('DOMContentLoaded', function(){ try{ showTab('accueil'
 <!-- CODE FAMILLE (02/08/2026) — relier son compte au dossier de son foyer.
      Le comptoir « Nouveau foyer » imprime le code sur le récépissé depuis le 27/07 ;
      jusqu'ici rien ne le consommait. -->
+<!-- 🪪 MA FICHE — la personne écrit elle-même qui elle est (migration 64) -->
+<section class="block" data-tab="compte" id="maFicheSection" style="padding:22px 0 0">
+  <div class="wrap">
+    <div class="card" style="border-left:5px solid var(--vert)">
+      <h2 class="title" style="font-size:19px">🪪 Ma fiche</h2>
+      <p class="sub" style="margin:2px 0 12px">Vos informations, que vous seul renseignez. Elles servent au CASE à vous reconnaître et à vous joindre — <b>elles ne sont visibles que par vous et par le bureau</b>.</p>
+      <div id="maFicheBody"><p class="sub">Chargement…</p></div>
+    </div>
+  </div>
+</section>
+
 <section class="block" data-tab="compte" id="lienFoyerSection" style="padding:22px 0 0">
   <div class="wrap">
     <div class="card" style="border-left:5px solid #2b6cb0;background:#eef4fb">
@@ -2248,6 +2259,96 @@ async function lienGo(){
   if((d.adultes||[]).length>1){ lienChoix(b,code,naiss,d); return; }
   await lienRattacher(code,naiss,null);
 }
+/* ═══ 🪪 MA FICHE — la personne écrit elle-même qui elle est ═══════════════════
+   L'écriture passe UNIQUEMENT par la fonction `personne_maj_ma_fiche` (migration 64) :
+   la table `personnes` reste fermée en écriture aux familles, et la fonction n'ouvre
+   que cinq champs — jamais le foyer, le rôle ni l'association.
+   ⚠️ L'adresse de CONNEXION n'est pas modifiable ici : elle appartient au compte.
+   Les autres adresses servent à RECONNAÎTRE la personne quand elle paie depuis un
+   second compte — c'est ce qui évite de lui fabriquer une deuxième adhésion, donc
+   une deuxième voix à l'assemblée générale.                                        */
+let _maFiche=null;
+function ficheLigneEmail(v,i){
+  return '<div style="display:flex;gap:6px;margin-bottom:6px"><input type="email" class="fiche_mail" value="'+periEsc(v||'')+'" placeholder="autre.adresse@exemple.fr" autocomplete="email" style="flex:1;padding:10px 12px;border:1px solid var(--line);border-radius:10px;font:inherit"></div>';
+}
+function ficheAjouterEmail(){
+  const z=document.getElementById('fiche_mails'); if(!z) return;
+  if(z.querySelectorAll('.fiche_mail').length>=5){ alert('5 adresses au maximum.'); return; }
+  z.insertAdjacentHTML('beforeend',ficheLigneEmail('',0));
+}
+async function ficheBoot(){
+  const b=document.getElementById('maFicheBody'); if(!b) return;
+  let session=null; try{ session=(await _sbAt.auth.getSession()).data.session; }catch(e){}
+  if(!session){
+    b.innerHTML='<p class="sub" style="margin:0">Connectez-vous pour voir et compléter votre fiche. <a href="connexion.html" style="color:#2b6cb0;font-weight:800">Se connecter →</a></p>';
+    return;
+  }
+  let p=null;
+  try{
+    const r=await _sbAt.from('personnes').select('id,prenom,nom,naissance,tel,emails_contact,fiche_a_completer').eq('auth_user_id',session.user.id).limit(1);
+    if(r.error) throw r.error;                       // supabase-js ne lève pas : on teste .error
+    p=(r.data&&r.data[0])||null;
+  }catch(e){
+    b.innerHTML='<p class="sub" style="color:#a12626;margin:0">Impossible de lire votre fiche : '+periEsc((e&&e.message)||'erreur')+'</p>';
+    return;
+  }
+  if(!p){
+    b.innerHTML='<p class="sub" style="margin:0">Votre compte n’est pas encore rattaché à une fiche. Réglez votre adhésion ou reliez votre dossier ci-dessous, et votre fiche apparaîtra ici.</p>';
+    return;
+  }
+  _maFiche=p;
+  const mails=(p.emails_contact&&p.emails_contact.length)?p.emails_contact:[''];
+  b.innerHTML=
+    (p.fiche_a_completer?'<div style="background:#fff8e6;border:1px solid #f0d9a0;color:#7a5200;border-radius:12px;padding:10px 12px;margin-bottom:12px;font-weight:700">Il nous manque votre nom — merci de le renseigner ci-dessous.</div>':'')
+    +'<div style="display:flex;gap:10px;flex-wrap:wrap">'
+    +'<div style="flex:1;min-width:150px"><label for="fiche_prenom" style="font-weight:700;font-size:14px;display:block;margin-bottom:4px">Prénom</label><input id="fiche_prenom" value="'+periEsc(p.prenom||'')+'" autocomplete="given-name" style="width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:10px;font:inherit"></div>'
+    +'<div style="flex:1;min-width:150px"><label for="fiche_nom" style="font-weight:700;font-size:14px;display:block;margin-bottom:4px">Nom</label><input id="fiche_nom" value="'+periEsc(p.nom||'')+'" autocomplete="family-name" style="width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:10px;font:inherit"></div>'
+    +'</div>'
+    +'<div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:10px">'
+    +'<div style="flex:1;min-width:150px"><label for="fiche_naiss" style="font-weight:700;font-size:14px;display:block;margin-bottom:4px">Date de naissance</label><input id="fiche_naiss" type="date" value="'+periEsc(p.naissance||'')+'" style="width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:10px;font:inherit"></div>'
+    +'<div style="flex:1;min-width:150px"><label for="fiche_tel" style="font-weight:700;font-size:14px;display:block;margin-bottom:4px">Téléphone</label><input id="fiche_tel" type="tel" value="'+periEsc(p.tel||'')+'" autocomplete="tel" style="width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:10px;font:inherit"></div>'
+    +'</div>'
+    +'<div style="margin-top:14px;padding:12px;border-radius:12px;background:#f4f8f6;border:1px solid var(--line)">'
+    +'<div style="font-weight:800;font-size:14px;margin-bottom:2px">📧 Mon adresse de connexion</div>'
+    +'<div style="font-family:ui-monospace,monospace;font-size:14px;margin-bottom:4px">'+periEsc(session.user.email||'')+'</div>'
+    +'<p class="sub" style="margin:0;font-size:12.5px">C’est avec celle-ci que vous vous connectez. Elle ne se change pas ici.</p>'
+    +'</div>'
+    +'<div style="margin-top:12px"><label style="font-weight:700;font-size:14px;display:block;margin-bottom:4px">Mes autres adresses</label>'
+    +'<p class="sub" style="margin:0 0 8px;font-size:12.5px">Si vous utilisez parfois une autre adresse, déclarez-la : le CASE vous reconnaîtra au lieu de créer un second dossier à votre nom.</p>'
+    +'<div id="fiche_mails">'+mails.map(ficheLigneEmail).join('')+'</div>'
+    +'<button type="button" class="btn" onclick="ficheAjouterEmail()" style="background:#eef4fb;color:#2b6cb0;border:1px solid #cfe0f3;border-radius:10px;padding:8px 12px;font-weight:700;font-size:13px;cursor:pointer">+ ajouter une adresse</button>'
+    +'</div>'
+    +'<div style="margin-top:14px;display:flex;gap:10px;align-items:center;flex-wrap:wrap">'
+    +'<button id="fiche_go" type="button" class="btn win" onclick="ficheEnregistrer()">💾 Enregistrer ma fiche</button>'
+    +'<span id="fiche_msg" class="sub" style="margin:0"></span></div>';
+}
+async function ficheEnregistrer(){
+  const msg=document.getElementById('fiche_msg'), go=document.getElementById('fiche_go');
+  const val=id=>{ const e=document.getElementById(id); return e?String(e.value||'').trim():''; };
+  const mails=[].slice.call(document.querySelectorAll('#fiche_mails .fiche_mail')).map(i=>String(i.value||'').trim()).filter(Boolean);
+  if(go){ go.disabled=true; }
+  if(msg){ msg.style.color=''; msg.textContent='Enregistrement…'; }
+  try{
+    // ⚠️ .rpc() DOIT être attendu, et son .error lu : sans await la requête ne part
+    //    jamais, et supabase-js ne lève pas d'exception quand elle échoue.
+    const r=await _sbAt.rpc('personne_maj_ma_fiche',{
+      p_prenom:val('fiche_prenom')||null, p_nom:val('fiche_nom')||null,
+      p_naissance:val('fiche_naiss')||null, p_tel:val('fiche_tel')||null,
+      p_emails:mails
+    });
+    if(r.error) throw r.error;
+    if(msg){ msg.style.color='#127a51'; msg.textContent='✅ Enregistré, merci !'; }
+    await ficheBoot();
+    if(window.lienBoot) lienBoot();     // le bandeau « fiche à compléter » doit disparaître
+  }catch(e){
+    let m=(e&&e.message)||'erreur';
+    if(m.indexOf('deja declaree')>=0) m='Cette adresse est déjà déclarée par une autre personne — voyez avec le bureau.';
+    else if(m.indexOf('5 adresses')>=0) m='5 adresses de contact au maximum.';
+    else if(m.indexOf('aucune fiche')>=0) m='Aucune fiche n’est encore rattachée à ce compte.';
+    if(msg){ msg.style.color='#a12626'; msg.textContent='⚠️ '+m; }
+  } finally { if(go) go.disabled=false; }
+}
+
 async function lienBoot(){
   const b=document.getElementById('lienFoyerBody'); if(!b) return;
   let session=null; try{ session=(await _sbAt.auth.getSession()).data.session; }catch(e){}
@@ -2279,7 +2380,7 @@ async function lienBoot(){
 // (features.f_maintenance). FAIL-OPEN : toute erreur de lecture (non connecté, réseau)
 // laisse l'espace s'ouvrir normalement — jamais l'inverse.
 let _bobPause=false;
-_sbAt.auth.onAuthStateChange((event)=>{ if(_bobPause) return; if(event==='SIGNED_IN'||event==='SIGNED_OUT'){ periBoot(); adhBoot(); lienBoot(); } });
+_sbAt.auth.onAuthStateChange((event)=>{ if(_bobPause) return; if(event==='SIGNED_IN'||event==='SIGNED_OUT'){ periBoot(); adhBoot(); lienBoot(); ficheBoot(); } });
 (async function(){
   try{
     const rM=await _sbAt.rpc('my_asso_features');
@@ -2310,7 +2411,7 @@ _sbAt.auth.onAuthStateChange((event)=>{ if(_bobPause) return; if(event==='SIGNED
       return;
     }
   }catch(e){}
-  periBoot(); adhBoot(); lienBoot();
+  periBoot(); adhBoot(); lienBoot(); ficheBoot();
 })();
 </script>
 
