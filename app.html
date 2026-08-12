@@ -10138,12 +10138,22 @@ renderAll();
       const encBtn=canPeri?('<button class="btn" onclick="var b=document.getElementById(\'encbox_'+d.id+'\');if(b)b.style.display=(b.style.display===\'none\'?\'\':\'none\')">💵 Encaisser (chèque / espèces…)</button>'):'';
       let chiffrage='';
       if(canWrite){
-        if(du&&d.pay_token){
-          const url=new URL('payer.html',location.href).href+'?t='+d.pay_token;
+        if(du){
+          // 🔑 12/08/2026 — cette branche testait `du && d.pay_token`, où `d` est le
+          // CLASSEUR. La migration 62 déménage le jeton de paiement sur le DOSSIER et
+          // cesse d'alimenter celui du classeur : la condition serait devenue fausse
+          // pour TOUT dossier chiffré, et comme la branche `else if(!du)` l'est aussi,
+          // le bloc entier disparaissait — emportant « ✏️ Modifier le montant » et son
+          // panneau. Un montant saisi de travers serait devenu incorrigible dans
+          // l'appli. Le bouton n'a aucune raison de dépendre du jeton : il en sort.
+          const url=d.pay_token?(new URL('payer.html',location.href).href+'?t='+d.pay_token):'';
           // 💤 Paiement EN LIGNE en pause (drapeau features.f_paiement_ligne, 07/08/2026) :
           // les règlements se font en liquide et en chèque. Le jeton n'est pas supprimé,
           // seul le bouton disparaît — remettre le drapeau à true le fait revenir.
-          const payLigneOn = !(window.__bobFeatures && window.__bobFeatures.f_paiement_ligne === false);
+          // ⚠️ Après la 62, `d.pay_token` (le classeur) est vide pour toujours : ce
+          // bouton ne reviendra qu'avec le rallumage du canal, qui devra lire le jeton
+          // sur le dossier. Tracé dans 62-banc-qa-12-08-2026.md.
+          const payLigneOn = !(window.__bobFeatures && window.__bobFeatures.f_paiement_ligne === false) && !!d.pay_token;
           chiffrage='<div class="row" style="gap:8px;flex-wrap:wrap;align-items:center;margin-top:2px">'
             +(payLigneOn?('<button class="ghost btn" onclick="periCopyLien(\''+esc(url)+'\')">🔗 Lien de paiement en ligne</button>'):'')
             +'<button class="ghost btn" onclick="periEditMontant(\''+d.id+'\')">✏️ Modifier le montant</button></div>'
