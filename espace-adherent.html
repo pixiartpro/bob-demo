@@ -2188,6 +2188,23 @@ function lienForm(b,msg){
   const ci=document.getElementById('lien_code');
   if(ci) ci.addEventListener('keydown',function(e){ if(e.key==='Enter') lienGo(); });
 }
+// Fiche COQUILLE : la personne a payé son adhésion mais le CASE ne sait pas qui elle est.
+// ⚠️ On n'affiche VOLONTAIREMENT aucun champ « nom / prénom / adresse » ici : la règle de
+// sécurité n'autorise une famille qu'à LIRE sa fiche, jamais à l'écrire (seul le bureau
+// écrit dans `personnes`). Un formulaire de saisie afficherait « enregistré » et ne
+// sauvegarderait rien — supabase-js ne lève pas d'erreur quand une écriture ne touche
+// aucune ligne. Mieux vaut une porte honnête qu'un faux bouton.
+function lienIncomplet(b){
+  b.innerHTML='<div style="background:var(--ok-soft);border:1px solid var(--line);color:var(--ok-ink);border-radius:12px;padding:12px 14px;font-weight:600;margin-bottom:12px">✅ Votre adhésion est bien enregistrée — merci !</div>'
+    +'<div style="background:#fff8e6;border:1px solid #f0d9a0;color:#7a5200;border-radius:12px;padding:12px 14px;margin-bottom:14px">'
+    +'<p style="margin:0 0 6px;font-weight:800">Il nous manque encore vos informations</p>'
+    +'<p class="sub" style="margin:0;color:#7a5200;line-height:1.6">Votre paiement est bien arrivé, mais votre dossier famille n’est pas encore relié à votre compte. Sans lui, nous ne pouvons pas inscrire vos enfants ni vous envoyer vos documents.</p>'
+    +'</div>'
+    +'<p class="sub" style="margin:0 0 10px"><b>Vous avez un code famille&nbsp;?</b> Saisissez-le ci-dessous. <b>Vous n’en avez pas&nbsp;?</b> Contactez le CASE : le bureau crée votre dossier et vous remet un code.</p>'
+    +'<div id="lienIncompletForm"></div>';
+  const zone=document.getElementById('lienIncompletForm');
+  if(zone) lienForm(zone,'');
+}
 function lienOk(b,nom){
   b.innerHTML='<div style="background:var(--ok-soft);border:1px solid var(--line);color:var(--ok-ink);border-radius:12px;padding:12px 14px;font-weight:600">✅ Votre compte est relié'+(nom?' au dossier <b>'+periEsc(nom)+'</b>':'')+'.</div>'
     +'<p class="sub" style="font-size:12.5px;margin:10px 0 0">Ce n’est pas le bon dossier ? Contactez le CASE : le bureau peut corriger le rattachement.</p>';
@@ -2239,10 +2256,19 @@ async function lienBoot(){
     return;
   }
   try{
-    const r=await _sbAt.from('personnes').select('id,foyer_id').eq('auth_user_id',session.user.id).limit(1);
+    const r=await _sbAt.from('personnes').select('id,foyer_id,fiche_a_completer').eq('auth_user_id',session.user.id).limit(1);
     if(!r.error && r.data && r.data.length){
+      const moi=r.data[0];
+      // 🔴 13/08/2026 — NE PAS DIRE « relié » SUR UNE FICHE COQUILLE.
+      // La migration 63 crée une fiche pour tout payeur inconnu de l'arbre (il a payé,
+      // il doit exister quelque part) — mais VIDE, et sans foyer, car on n'invente
+      // jamais son nom. Or ce test ne regardait que « une ligne existe-t-elle ? » :
+      // ces 2 personnes lisaient donc « ✅ Votre compte est relié », un message
+      // rassurant et FAUX, à la place du formulaire qui leur était destiné.
+      // Régression introduite par la 63, corrigée ici le jour même.
+      if(moi.fiche_a_completer===true || !moi.foyer_id){ lienIncomplet(b); return; }
       let nom='';
-      try{ const rf=await _sbAt.from('foyers').select('nom').eq('id',r.data[0].foyer_id).limit(1);
+      try{ const rf=await _sbAt.from('foyers').select('nom').eq('id',moi.foyer_id).limit(1);
            if(!rf.error && rf.data && rf.data.length) nom=rf.data[0].nom||''; }catch(e){}
       lienOk(b,nom); return;
     }
