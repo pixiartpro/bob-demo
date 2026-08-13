@@ -162,7 +162,7 @@ async function boot(){
   // rôle personnel : fiche RH facultative (la partie gestion ne dépend pas d'elle)
   const {data:fiche}=await sb.from('personnel').select('*').eq('user_id',session.user.id).maybeSingle();
   ME.fiche=fiche||null;
-  const jobs=[loadActs(), loadProtocoles(), loadPhotos(), loadFamilles(), loadAcm(), loadPeriDocsSal(), loadSections(), loadMessages()];
+  const jobs=[loadActs(), loadProtocoles(), loadPhotos(), loadFamilles(), loadAcm(), loadPeriDocsSal(), loadSections(), loadMessages(), loadMesSignalements()];
   if(fiche){ jobs.push(loadConges(), loadDocs()); }
   await Promise.all(jobs);
   renderAll();
@@ -219,6 +219,7 @@ function renderView(){
   else if(ME.view==='procedures'){ vp.innerHTML=backBar('📋 Procédures du CASE')+proceduresHTML(); }
   else if(ME.view==='messages'){ vp.innerHTML=backBar('💬 Messages des familles')+messagesHTML(); renderMessages(); }
   else if(ME.view==='acm'){ vp.innerHTML=backBar('🌴 Mon ACM')+acmBlockHTML(); acmMountForm(); }
+  else if(ME.view==='encaisser'){ vp.innerHTML=backBar('💵 Encaisser une adhésion')+encaisserHTML(); encMount(); }
   else if(ME.view==='vepi'){ vp.innerHTML=backBar('📌 Mon VEPI')+vepiBlockHTML(); }
   else if(ME.view==='peridocs'){ vp.innerHTML=backBar('📎 Docs périscolaire')+periDocsBlockHTML(); }
   else if(ME.view==='tarif'){ vp.innerHTML=backBar('🧮 Calculer un tarif')+tarifHTML(); }
@@ -411,6 +412,8 @@ function hubHTML(){
         +'<div class="hubname">Dossiers familles'+famHubBadge()+'</div><div class="hubsub">'+esc(famHubSub())+'</div><div class="hubgo">Entrer →</div></button>'
       +'<button class="hubcard" onclick="spView(\'tarif\')"><div class="hubico">🧮</div>'
         +'<div class="hubname">Calculer un tarif</div><div class="hubsub">Une famille au comptoir demande combien ça coûte ? Périscolaire au mois, vacances à la semaine.</div><div class="hubgo">Entrer →</div></button>'
+      +'<button class="hubcard" onclick="spView(\'encaisser\')"><div class="hubico">💵</div>'
+        +'<div class="hubname">Encaisser une adhésion'+encHubBadge()+'</div><div class="hubsub">Une famille te donne ses 10 € au comptoir ? Signale-le : le bureau valide, et son accès se rouvre.</div><div class="hubgo">Entrer →</div></button>'
       +'<button class="hubcard" onclick="spView(\'rh\')"><div class="hubico">🧑‍💼</div>'
         +'<div class="hubname">Mon RH'+rhBadge+'</div><div class="hubsub">'+esc(rhSub)+'</div><div class="hubgo">Entrer →</div></button>'
       +'<button class="hubcard" onclick="spView(\'messages\')"><div class="hubico">💬</div>'
@@ -420,6 +423,134 @@ function hubHTML(){
       +'<a class="hubcard" href="https://mail.hostinger.com" target="_blank" rel="noopener" style="text-decoration:none"><div class="hubico">📧</div>'
         +'<div class="hubname">Ma boîte mail</div><div class="hubsub">Ta messagerie pro @casebdn.re — s\'ouvre dans un nouvel onglet</div><div class="hubgo">Ouvrir ↗</div></a>'
     +'</div></section>';
+}
+
+/* ===== 💵 ENCAISSER UNE ADHÉSION AU COMPTOIR (migration 66) ==================
+   L'accueil prend les 10 € en main propre et le SIGNALE ; le bureau valide.
+   🔴 Elle n'écrit RIEN dans les paiements ni les adhésions : elle appelle
+   `encaissement_signaler`, qui écrit pour elle. Doctrine argent tenue —
+   bureau tout · famille le sien · personnel RIEN. Et elle ne voit que SES
+   propres signalements (la règle de lecture s'en charge, pas l'écran).       */
+function encHubBadge(){
+  const n=(ME.mesSignalements||[]).filter(function(s){return s.statut==='a_valider';}).length;
+  return n?' <span class="badge b-demande">'+n+' en attente</span>':'';
+}
+async function loadMesSignalements(){
+  try{
+    const {data,error}=await sb.from('encaissements_signales')
+      .select('id,personne_id,montant_cents,mode,statut,signale_le,motif_refus')
+      .order('signale_le',{ascending:false}).limit(30);
+    if(error){ console.warn('signalements',error); ME.sigOK=false; return; }  // l'erreur arrive ICI
+    ME.mesSignalements=data||[]; ME.sigOK=true;
+    const ids=[...new Set(ME.mesSignalements.map(function(s){return s.personne_id;}))];
+    ME.sigNoms={};
+    if(ids.length){ const r=await sb.from('personnes').select('id,prenom,nom').in('id',ids);
+      ((r&&r.data)||[]).forEach(function(p){ ME.sigNoms[p.id]=((p.prenom||'')+' '+(p.nom||'')).trim()||'(sans nom)'; }); }
+  }catch(e){ console.warn('signalements (réseau)',e); ME.sigOK=false; }
+}
+function encaisserHTML(){
+  return '<section class="block">'
+    +'<div class="card" style="border-left:5px solid var(--vert,#1f5c44)">'
+    +'<h2 class="title" style="font-size:19px">💵 Une famille vient de payer son adhésion</h2>'
+    +'<p class="sub" style="margin:2px 0 12px">Cherche la personne, indique combien et comment elle a payé. <b>Le bureau valide ensuite</b> — c\'est lui qui enregistre l\'adhésion. Toi, tu fais en sorte que le billet ne se perde pas.</p>'
+    +'<label for="enc_q" style="font-weight:700;font-size:14px;display:block;margin-bottom:4px">Qui a payé ?</label>'
+    +'<input id="enc_q" type="search" placeholder="Tape un nom…" autocomplete="off" style="width:100%;padding:11px 12px;border:1px solid var(--line,#dbe5df);border-radius:10px;font:inherit">'
+    +'<div id="enc_res" style="margin-top:6px"></div>'
+    +'<div id="enc_form" style="display:none;margin-top:12px;padding:12px;border-radius:12px;background:#f4f8f6;border:1px solid var(--line,#dbe5df)">'
+      +'<div id="enc_qui" style="font-weight:800;margin-bottom:8px"></div>'
+      +'<div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end">'
+      /* ⚠️ Le « € » vit dans le LIBELLÉ, pas à côté du champ : en colonne étroite
+         (téléphone) il passait à la ligne tout seul et décalait le libellé voisin. */
+      +'<div style="flex:1;min-width:120px"><label for="enc_montant" style="font-weight:700;font-size:14px;display:block;margin-bottom:4px">Montant reçu (€)</label>'
+      +'<input id="enc_montant" type="number" inputmode="decimal" step="0.5" min="0.5" value="10" style="width:100%;padding:10px 12px;border:1px solid var(--line,#dbe5df);border-radius:10px;font:inherit"></div>'
+      +'<div style="flex:1;min-width:140px"><label for="enc_mode" style="font-weight:700;font-size:14px;display:block;margin-bottom:4px">Comment ?</label>'
+      +'<select id="enc_mode" style="width:100%;padding:10px 12px;border:1px solid var(--line,#dbe5df);border-radius:10px;font:inherit">'
+      +'<option value="especes">💵 Espèces</option><option value="cheque">🧾 Chèque</option><option value="virement">🏦 Virement</option><option value="autre">Autre</option></select></div>'
+      +'</div>'
+      +'<label for="enc_note" style="font-weight:700;font-size:14px;display:block;margin:10px 0 4px">Une précision ? (facultatif)</label>'
+      +'<input id="enc_note" placeholder="ex. n° de chèque, « pour ses deux enfants »…" style="width:100%;padding:10px 12px;border:1px solid var(--line,#dbe5df);border-radius:10px;font:inherit">'
+      +'<div style="margin-top:12px;display:flex;gap:10px;align-items:center;flex-wrap:wrap">'
+      +'<button id="enc_go" class="btn win" type="button" onclick="encSignaler()">📨 Signaler au bureau</button>'
+      +'<button class="btn" type="button" onclick="encAnnuler()" style="background:#eef2f0;border:1px solid var(--line,#dbe5df)">Annuler</button>'
+      +'<span id="enc_msg" class="sub" style="margin:0"></span></div>'
+    +'</div></div>'
+    +'<div class="card" style="margin-top:14px"><h2 class="title" style="font-size:17px">📨 Ce que j\'ai signalé</h2><div id="enc_mes"></div></div>'
+    +'</section>';
+}
+window.encAnnuler=function(){ ME.encQui=null; const f=$('#enc_form'); if(f) f.style.display='none'; const q=$('#enc_q'); if(q){ q.value=''; } const r=$('#enc_res'); if(r) r.innerHTML=''; };
+function encMount(){
+  const q=$('#enc_q'); if(q){ q.addEventListener('input', encChercher); q.focus(); }
+  encRenderMes();
+}
+let _encT=null;
+function encChercher(){
+  clearTimeout(_encT);
+  _encT=setTimeout(async function(){
+    const q=$('#enc_q'), res=$('#enc_res'); if(!q||!res) return;
+    const s=String(q.value||'').trim();
+    if(s.length<2){ res.innerHTML=''; return; }
+    const {data,error}=await sb.from('personnes')
+      .select('id,prenom,nom,role_foyer,foyer_id')
+      .or('prenom.ilike.%'+s+'%,nom.ilike.%'+s+'%').limit(8);
+    if(error){ res.innerHTML='<p class="sub" style="color:#a12626;margin:6px 0 0">Recherche impossible : '+esc(error.message)+'</p>'; return; }
+    const rows=(data||[]).filter(function(p){ return p.role_foyer!=='enfant'; });   // c'est un ADULTE qui adhère
+    if(!rows.length){ res.innerHTML='<p class="sub" style="margin:6px 0 0">Personne trouvée. Si la famille est nouvelle, le bureau doit d\'abord créer son dossier.</p>'; return; }
+    res.innerHTML=rows.map(function(p){
+      const n=((p.prenom||'')+' '+(p.nom||'')).trim()||'(sans nom)';
+      return '<button type="button" class="btn" onclick="encChoisir(\''+p.id+'\',\''+n.replace(/'/g,"\\'")+'\')" style="display:block;width:100%;text-align:left;margin-top:5px;background:#fff;border:1px solid var(--line,#dbe5df);border-radius:10px;padding:10px 12px;font:inherit;cursor:pointer">'+esc(n)+'</button>';
+    }).join('');
+  },220);
+}
+window.encChoisir=function(id,nom){
+  ME.encQui={id:id,nom:nom};
+  const f=$('#enc_form'); if(f) f.style.display='';
+  const w=$('#enc_qui'); if(w) w.textContent='💵 '+nom;
+  const r=$('#enc_res'); if(r) r.innerHTML='';
+  const m=$('#enc_montant'); if(m) m.focus();
+};
+window.encSignaler=async function(){
+  if(!ME.encQui) return;
+  const msg=$('#enc_msg'), go=$('#enc_go');
+  const euros=parseFloat(String(($('#enc_montant')||{}).value||'').replace(',','.'));
+  if(!(euros>0)){ if(msg){ msg.style.color='#a12626'; msg.textContent='⚠️ Indique le montant reçu.'; } return; }
+  if(go) go.disabled=true;
+  if(msg){ msg.style.color=''; msg.textContent='Envoi…'; }
+  try{
+    // ⚠️ .rpc() attendu ET .error lu — sinon la requête ne part pas et l'échec passe
+    //    pour un succès (mémoire supabase-rpc-non-attendu / supabase-js-erreur-ne-leve-pas).
+    const {error}=await sb.rpc('encaissement_signaler',{
+      p_personne_id:ME.encQui.id, p_montant_cents:Math.round(euros*100),
+      p_mode:(($('#enc_mode')||{}).value)||'especes',
+      p_note:(($('#enc_note')||{}).value||'').trim()||null});
+    if(error) throw error;
+    if(msg){ msg.style.color='#127a51'; msg.textContent='✅ Signalé — le bureau va valider.'; }
+    encAnnuler();
+    await loadMesSignalements(); encRenderMes(); renderAll();
+  }catch(e){
+    let m=(e&&e.message)||'erreur';
+    if(m.indexOf('reserve a l')>=0) m='Ce geste est réservé à l\'équipe du CASE.';
+    if(msg){ msg.style.color='#a12626'; msg.textContent='⚠️ '+m; }
+  } finally { if(go) go.disabled=false; }
+};
+function encRenderMes(){
+  const box=$('#enc_mes'); if(!box) return;
+  // 🔴 Trois états distincts, jamais confondus (cicatrice du 20/07/2026, cf. loadSections) :
+  //    lecture KO ≠ « rien signalé ». On ne dit « rien » que si on a VRAIMENT pu lire.
+  if(ME.sigOK!==true){ box.innerHTML='<p class="sub" style="color:#a12626;margin:0">Impossible de relire tes signalements — recharge la page avant de conclure que rien n\'est parti.</p>'; return; }
+  const rows=ME.mesSignalements||[];
+  if(!rows.length){ box.innerHTML='<p class="sub" style="margin:0">Tu n\'as encore rien signalé.</p>'; return; }
+  const lib={especes:'espèces',cheque:'chèque',virement:'virement',autre:'autre'};
+  const et={a_valider:'<span class="badge b-demande">⏳ en attente du bureau</span>',
+            valide:'<span class="badge b-valide">✅ validé</span>',
+            refuse:'<span class="badge" style="background:#fdeeee;color:#a12626">✕ refusé</span>'};
+  box.innerHTML=rows.map(function(s){
+    const d=(function(){ try{ return new Date(s.signale_le).toLocaleDateString('fr-FR',{day:'2-digit',month:'2-digit'})+' '+new Date(s.signale_le).toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'}); }catch(e){ return ''; } })();
+    return '<div style="padding:9px 0;border-bottom:1px solid var(--line,#eef2f0)">'
+      +'<strong>'+esc((ME.sigNoms||{})[s.personne_id]||'(personne)')+'</strong> — '
+      +((s.montant_cents||0)/100).toFixed(2).replace('.',',')+' € ('+esc(lib[s.mode]||s.mode||'')+') '
+      +(et[s.statut]||esc(s.statut||''))
+      +'<br><span class="sub" style="font-size:12px">'+d+(s.motif_refus?' · motif : '+esc(s.motif_refus):'')+'</span></div>';
+  }).join('');
 }
 
 // ===== 🧮 Calculateur de tarif périscolaire (accueil) =====
