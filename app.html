@@ -10556,7 +10556,7 @@ renderAll();
   window.loadFoyers=async function(){
     const box=document.getElementById('foyersList'); if(!box) return;
     if(typeof sbc==='undefined'||!sbc||!myAsso){ box.innerHTML='<p class="hint">Connecte-toi pour voir les foyers.</p>'; return; }
-    const [rf,rp,ra,ri,rq,rc]=await Promise.all([
+    const [rf,rp,ra,ri,rq,rc,rr]=await Promise.all([
       sbc.from('foyers').select('*').order('nom',{ascending:true}),
       sbc.from('personnes').select('*'),
       sbc.from('adhesions').select('*'),
@@ -10566,14 +10566,25 @@ renderAll();
       sbc.from('foyer_qf').select('*').order('valable_du',{ascending:false}),
       // Attestation CAF déjà déposée par la famille : permet de lire le quotient et de le saisir
       // sans quitter cet écran. Bureau seul (la fonction renvoie 0 ligne aux autres).
-      sbc.rpc('foyer_attestation_caf')
+      sbc.rpc('foyer_attestation_caf'),
+      /* 🔴 LE VOYANT VIENT DU SERVEUR, PAS D'UN CALCUL ICI. `v_foyers_a_regulariser`
+         (migration 65) applique exactement la même définition que la PORTE. Recalculer
+         « à jour » en JavaScript, c'est prendre le risque que l'écran affiche vert
+         pendant que la porte refuse — la famille ne comprendrait rien, et le bureau
+         non plus. Une seule source, pour l'affichage comme pour le blocage. */
+      sbc.from('v_foyers_a_regulariser').select('foyer_id,saison')
     ]);
     const fyErr=rf.error||rp.error||ra.error||ri.error; // une SEULE lecture en erreur = on n'affiche RIEN de partiel (sinon « pas d'adhésion » mentirait)
     if(fyErr){ box.innerHTML='<p class="hint" style="color:#c0392b">Erreur de lecture ('+esc(fyErr.message)+') — recharge (↻) avant de te fier aux cartes.</p>'; return; }
     // Même principe pour le QF : si SA lecture échoue, on ne montre pas « pas de QF » (ce serait un mensonge) — on se tait.
     window.__fyData={foyers:rf.data||[], personnes:rp.data||[], adhesions:ra.data||[], inscriptions:ri.data||[],
                      qf:(rq&&!rq.error)?(rq.data||[]):[], qfOk:!!(rq&&!rq.error),
-                     caf:(rc&&!rc.error)?(rc.data||[]):[]};
+                     caf:(rc&&!rc.error)?(rc.data||[]):[],
+                     /* Set des foyers À RÉGULARISER, tel que le SERVEUR les voit.
+                        regOK distingue « lu, aucun retard » de « pas pu lire » : sans lui,
+                        une lecture en échec afficherait tout le monde en règle. */
+                     regul:new Set(((rr&&!rr.error)?(rr.data||[]):[]).map(function(x){return x.foyer_id;})),
+                     regOK:!!(rr&&!rr.error)};
     renderFoyers();
   };
   window.renderFoyers=function(){
@@ -10611,14 +10622,35 @@ renderAll();
       const st={incomplet:['#fff5da','#8a6400','à compléter'],depose:['#eef4ff','#23448a','déposé'],valide:['#dff5e9','#127a51','validé'],annule:['#eef0f3','#667','annulé'],deplace:['#eef0f3','#667','déplacé']}[i.statut]||['#eef0f3','#667',esc(i.statut)];
       return '<span class="pill" style="background:'+st[0]+';color:'+st[1]+';font-size:10.5px">🎒 '+[i.matin?'matin':null,i.soir?'soir':null].filter(Boolean).join('+')+' · '+st[2]+'</span>';
     };
-    box.innerHTML=list.map(f=>{
+    /* Compte en tête : sans lui il faut faire défiler tous les foyers pour savoir
+       combien sont en retard. Silencieux quand il n'y en a aucun, et muet aussi quand
+       la lecture a échoué — on ne montre jamais « 0 en retard » sans l'avoir vérifié. */
+    const nbReg = (D.regOK===true && D.regul) ? list.filter(function(f){return D.regul.has(f.id);}).length : -1;
+    const barreReg = nbReg>0
+      ? '<div style="margin:2px 0 10px;padding:9px 12px;border-radius:10px;background:#fff3da;border:1px solid #f0d9a0;color:#7a5200;font-size:13.5px"><b>⚠️ '+nbReg+' foyer'+(nbReg>1?'s':'')+' sans adhésion pour la saison en cours.</b> '+(nbReg>1?'Ils ne peuvent plus':'Il ne peut plus')+' ajouter d\'enfant ni s\'inscrire — le bouton « 💵 Adhésion payée » rouvre l\'accès dès qu\''+(nbReg>1?'ils règlent':'il règle')+'.</div>'
+      : '';
+    box.innerHTML=barreReg+list.map(f=>{
       const pers=(persByFoyer[f.id]||[]);
       const adults=pers.filter(p=>p.role_foyer!=='enfant');
       const kids=pers.filter(p=>p.role_foyer==='enfant').slice().sort((a,b)=>String(a.naissance||'').localeCompare(String(b.naissance||'')));
       const adhs=(adhByFoyer[f.id]||[]).slice().sort((a,b)=>String(b.saison).localeCompare(String(a.saison)));
-      const adhBadge=adhs.length
-        ? adhs.map(a=>'<span class="pill" style="background:'+(a.paye?'#dff5e9':'#fff5da')+';color:'+(a.paye?'#127a51':'#8a6400')+';font-size:11px">'+(a.paye?'✓ ':'')+'adhésion '+esc(a.saison)+'</span>').join(' ')
-        : '<span class="pill" style="background:#eef0f3;color:#667;font-size:11px">pas d\'adhésion</span>';
+      /* ⚠️ VOYANT « à régulariser » — lu du serveur (v_foyers_a_regulariser), donc
+         toujours d'accord avec la porte. Trois états, jamais deux : à jour → on se TAIT
+         (pas de pastille verte, sinon 6 foyers sur 21 crient pour rien) · en retard →
+         pastille ambre + le geste à faire · lecture KO → on ne dit RIEN plutôt que de
+         laisser croire que tout le monde est en règle. */
+      const regBadge = (D.regOK!==true) ? ''
+        : (D.regul && D.regul.has(f.id))
+          ? ' <span class="pill" style="background:#fff3da;color:#8a5a00;font-weight:700;font-size:11px" title="Pas d\'adhésion payée pour la saison en cours : cette famille ne peut plus ajouter d\'enfant ni s\'inscrire. Bouton « 💵 Adhésion payée » ci-dessous dès qu\'elle règle.">⚠️ adhésion à régulariser</span>'
+          : '';
+      const adhsAff=adhs.filter(function(a){return a.categorie!=='enfant';});
+      const adhBadge=adhsAff.length
+        ? adhsAff.map(a=>'<span class="pill" style="background:'+(a.paye?'#dff5e9':'#fff5da')+';color:'+(a.paye?'#127a51':'#8a6400')+';font-size:11px">'+(a.paye?'✓ ':'')+'adhésion '+esc(a.saison)+'</span>').join(' ')
+        /* Le repli « pas d'adhésion » ne s'affiche QUE si le voyant ne le dit pas déjà :
+           vu à l'écran, la carte annonçait deux fois la même chose (« à régulariser »
+           puis « pas d'adhésion »). Deux pastilles pour une seule information, c'est
+           une de trop — et c'est la plus faible qui part. */
+        : (regBadge ? '' : '<span class="pill" style="background:#eef0f3;color:#667;font-size:11px">pas d\'adhésion</span>');
       const adultHtml=adults.length?adults.map(a=>'<span style="font-size:13px">👤 <b>'+esc((((a.prenom||'')+' '+(a.nom||'')).trim())||'(à compléter)')+'</b>'
         +(a.auth_user_id?' <span class="pill" style="background:#e7f5ee;color:#127a51;font-size:10px" title="Un compte en ligne est relié à cette personne">🔗 compte</span>'+(canWrite?' <button class="ghost btn" style="padding:1px 7px;font-size:11px" onclick="fyDetacher(\''+a.id+'\')" title="Détacher le compte en ligne de cette fiche (mauvais rattachement, homonymie). La fiche, elle, est conservée.">🔓</button>':''):'')
         +(canWrite?' <button class="ghost btn" style="padding:1px 7px;font-size:11px" onclick="fyEditPersonne(\''+a.id+'\')" title="Corriger le nom">✏️</button>':'')
@@ -10637,6 +10669,7 @@ renderAll();
         +'<div class="toolbar" style="align-items:flex-start"><div>'
         +'<strong style="font-size:15px">'+esc(f.nom)+'</strong> '
         +(f.code_famille?'<span class="pill" style="background:#e7f5ee;color:#127a51;font-weight:700;font-size:11px" title="Code famille — la famille entre ce code dans son espace en ligne pour relier son compte à ce dossier. Il ne vaut que pour UN rattachement : il est remplacé ensuite.">🔑 '+esc(f.code_famille)+'</span> ':'')
+        +regBadge
         +adhBadge
         /* QF : bureau seul, et seulement si sa lecture a réussi (sinon on se tait plutôt que de dire « pas de QF ») */
         +((canWrite&&D.qfOk)?(function(){ const q=window.__fyQfCourant(f.id);
