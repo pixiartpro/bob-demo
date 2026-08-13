@@ -22,3 +22,16 @@
 # GitHub Pages, et .nojekyll fait que même les dossiers en « _ » sont servis).
 # Ces documents restent locaux ; l'état du projet vit dans Notion.
 _interne/
+
+# 🔴 13/08/2026 — TOUT fichier de travail préfixé « _ » reste LOCAL.
+# Trouvé ce jour à la racine : `_seed-capture.html`, laissé par une session
+# parallèle pour ouvrir un écran derrière le login. Il contenait un **jeton de
+# session Supabase** (compte de démonstration, valable 1 h) écrit en clair.
+# Il n'était couvert par AUCUNE règle : un « git add . » l'aurait publié sur
+# casebdn.re, où n'importe qui pouvait le lire — le préfixe « _ » ne protège de
+# rien ici, c'est même l'inverse (.nojekyll les sert).
+# La règle vaut pour la classe entière, pas pour ce fichier-là : la prochaine
+# maquette de débogage portera un autre nom.
+_*.html
+_*.json
+_*.txt

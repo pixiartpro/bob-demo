@@ -509,6 +509,16 @@
       <p class="hint">Les adhérents qui n'ont pas réglé leur cotisation. Clique sur « Relancer » pour ouvrir un email pré-rempli.</p>
       <div id="relanceBox"></div>
     </div>
+    <!-- 💵 Ce que l'accueil a encaissé et signalé — en attente du bureau (migration 66) -->
+    <div class="panel" id="encSignalPanel" style="display:none">
+      <div class="toolbar">
+        <h2 style="margin:0">💵 Encaissements signalés par l'accueil <small style="font-weight:400;color:#5c7468;font-size:13px">— à valider</small></h2>
+        <button class="ghost btn" onclick="if(window.loadEncaissementsSignales)loadEncaissementsSignales()">↻</button>
+      </div>
+      <p class="hint">L'accueil a pris l'argent en main propre et l'a signalé. <b>Rien n'entre au registre tant que tu n'as pas validé.</b> Valider crée l'adhésion, inscrit les enfants du foyer et rouvre l'accès à la famille.</p>
+      <div id="encSignalBox"></div>
+    </div>
+
     <div class="panel">
       <div class="toolbar">
         <h2 style="margin:0">💳 Adhésions payées en ligne <small style="font-weight:400;color:#5c7468;font-size:13px">— via HelloAsso, argent direct sur le compte de l'association</small></h2>
@@ -9929,6 +9939,67 @@ renderAll();
         +'</tbody></table></div>';
     }catch(e){ box.innerHTML='<p class="hint" style="color:#c0392b">Impossible de charger les paiements en ligne : '+esc((e&&e.message)||'erreur')+'</p>'; }
   };
+  /* --- 💵 Ce que l'accueil a encaissé et signalé (migration 66) ---------------
+     L'animatrice prend l'argent en main propre et le signale ; le bureau valide.
+     🔴 Le panneau reste CACHÉ tant qu'il n'y a rien à traiter : un écran qui affiche
+     « aucun signalement » en permanence finit par ne plus être lu du tout. */
+  window.loadEncaissementsSignales=async function(){
+    const panel=document.getElementById('encSignalPanel'), box=document.getElementById('encSignalBox');
+    if(!panel||!box) return;
+    if(typeof sbc==='undefined'||!sbc||!canWrite){ panel.style.display='none'; return; }
+    try{
+      const r=await sbc.from('encaissements_signales')
+        .select('id,personne_id,montant_cents,mode,note,statut,signale_le,signale_par')
+        .eq('statut','a_valider').order('signale_le',{ascending:true});
+      if(r.error) throw r.error;
+      const rows=r.data||[];
+      if(!rows.length){ panel.style.display='none'; box.innerHTML=''; return; }
+      panel.style.display='';
+      const ids=[...new Set(rows.map(x=>x.personne_id))];
+      const nomById={};
+      if(ids.length){ const rp=await sbc.from('personnes').select('id,prenom,nom').in('id',ids);
+        ((rp&&rp.data)||[]).forEach(p=>{ nomById[p.id]=((p.prenom||'')+' '+(p.nom||'')).trim()||'(sans nom)'; }); }
+      const qui=[...new Set(rows.map(x=>x.signale_par).filter(Boolean))];
+      const parQui={};
+      if(qui.length){ const rq=await sbc.from('profiles').select('id,full_name,email').in('id',qui);
+        ((rq&&rq.data)||[]).forEach(p=>{ parQui[p.id]=p.full_name||p.email||''; }); }
+      const modeLib={especes:'💵 espèces',cheque:'🧾 chèque',virement:'🏦 virement',autre:'autre'};
+      const fmtd=ts=>{ try{ return new Date(ts).toLocaleDateString('fr-FR',{day:'2-digit',month:'2-digit'})+' '+new Date(ts).toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'}); }catch(e){ return ''; } };
+      box.innerHTML='<div style="overflow-x:auto"><table style="min-width:640px"><thead><tr><th>Qui a payé</th><th class="num">Montant</th><th>Mode</th><th>Signalé par</th><th></th></tr></thead><tbody>'
+        +rows.map(function(x){ return '<tr><td><strong>'+esc(nomById[x.personne_id]||'(personne inconnue)')+'</strong>'
+            +(x.note?'<br><span class="muted" style="font-size:12px">📝 '+esc(x.note)+'</span>':'')+'</td>'
+            +'<td class="num">'+euro((x.montant_cents||0)/100)+'</td>'
+            +'<td>'+esc(modeLib[x.mode]||x.mode||'')+'</td>'
+            +'<td><span style="font-size:12.5px">'+esc(parQui[x.signale_par]||'—')+'</span><br><span class="muted" style="font-size:11.5px">'+fmtd(x.signale_le)+'</span></td>'
+            +'<td style="white-space:nowrap"><button class="btn" style="padding:4px 10px;font-size:12.5px" onclick="encValider(\''+x.id+'\')">✅ Valider</button> '
+            +'<button class="ghost btn" style="padding:4px 9px;font-size:12.5px" onclick="encRefuser(\''+x.id+'\')">✕</button></td></tr>'; }).join('')
+        +'</tbody></table></div>';
+    }catch(e){
+      panel.style.display='';
+      box.innerHTML='<p class="hint" style="color:#c0392b">Impossible de lire les signalements : '+esc((e&&e.message)||'erreur')+'</p>';
+    }
+  };
+  window.encValider=async function(id){
+    if(!confirm('Valider cet encaissement ?\n\nL\'adhésion sera créée, les enfants du foyer inscrits, et la famille pourra de nouveau inscrire et ajouter un enfant.')) return;
+    const r=await sbc.rpc('encaissement_valider',{p_id:id});   // .rpc attendu ET .error lu
+    if(r.error){ alert('Erreur : '+r.error.message); return; }
+    const d=r.data||{};
+    if(typeof setSync==='function') setSync('✓ adhésion créée — saison '+(d.saison||''),'#dff5e9');
+    loadEncaissementsSignales();
+    if(window.loadMembersArbre) loadMembersArbre();
+    if(window.loadFoyers) loadFoyers();
+  };
+  window.encRefuser=async function(id){
+    // Le motif est EXIGÉ côté serveur : un refus sans raison est illisible six mois plus tard.
+    const motif=prompt('Refuser ce signalement — pourquoi ?\n(ex. « doublon », « somme erronée », « déjà encaissé en ligne »)');
+    if(motif===null) return;
+    if(!String(motif).trim()){ alert('Un motif est obligatoire.'); return; }
+    const r=await sbc.rpc('encaissement_refuser',{p_id:id,p_motif:motif});
+    if(r.error){ alert('Erreur : '+r.error.message); return; }
+    if(typeof setSync==='function') setSync('✓ signalement refusé','#fdeeee');
+    loadEncaissementsSignales();
+  };
+
   // --- Les paiements PARTIS chez HelloAsso et jamais revenus -----------------
   // 🔴 Mesuré le 13/08/2026 : 5 adhésions bloquées en « en_attente » depuis 19 à 36 jours,
   // toutes parties chez HelloAsso (lien de paiement généré). Elles n'apparaissaient NULLE PART
@@ -10579,7 +10650,7 @@ renderAll();
         +'</div></div>'
         +'<div style="margin-top:6px">'+adultHtml+'</div>'
         +(kidHtml?'<div style="margin-top:6px;display:flex;flex-wrap:wrap">'+kidHtml+'</div>':'')
-        +(canWrite?'<div style="margin-top:7px"><button class="ghost btn" style="padding:2px 8px;font-size:11px" onclick="fyAddPersonne(\''+f.id+'\',\'parent\')">+ adulte</button> <button class="ghost btn" style="padding:2px 8px;font-size:11px" onclick="fyAddPersonne(\''+f.id+'\',\'enfant\')">+ enfant</button> <button class="ghost btn" style="padding:2px 8px;font-size:11px" onclick="fyAddAdhesion(\''+f.id+'\')">+ adhésion</button> '+((canWrite&&window.__fyCaf&&window.__fyCaf(f.id))?('<button class="ghost btn" style="padding:2px 8px;font-size:11px" onclick="fyVoirCaf(\''+f.id+'\')" title="Ouvrir l\'attestation CAF déposée par la famille — pour y lire le quotient">📄 Attestation CAF</button> '):'')+'<button class="ghost btn" style="padding:2px 8px;font-size:11px" onclick="fySetQf(\''+f.id+'\')" title="Quotient familial (attestation CAF) — sert au calcul automatique du tarif">💶 QF</button> <button class="ghost btn" style="padding:2px 8px;font-size:11px" onclick="fyTarif(\''+f.id+'\')" title="Calculer le tarif périscolaire du foyer">🧮 Tarif</button> <button class="ghost btn" style="padding:2px 8px;font-size:11px" onclick="fyNouveauCode(\''+f.id+'\')" title="Générer un nouveau code famille (le précédent a servi, un 2e parent doit relier son compte, ou le récépissé est perdu)">🔁 Nouveau code</button></div>':'')
+        +(canWrite?'<div style="margin-top:7px"><button class="ghost btn" style="padding:2px 8px;font-size:11px" onclick="fyAddPersonne(\''+f.id+'\',\'parent\')">+ adulte</button> <button class="ghost btn" style="padding:2px 8px;font-size:11px" onclick="fyAddPersonne(\''+f.id+'\',\'enfant\')">+ enfant</button> <button class="ghost btn" style="padding:2px 8px;font-size:11px;background:#e7f5ee;color:#127a51;font-weight:700" onclick="fyComptoir(\''+f.id+'\')" title="La famille vient de payer en espèces, chèque ou virement : enregistre son adhésion, inscrit ses enfants et rouvre l\'accès">💵 Adhésion payée</button> '+((canWrite&&window.__fyCaf&&window.__fyCaf(f.id))?('<button class="ghost btn" style="padding:2px 8px;font-size:11px" onclick="fyVoirCaf(\''+f.id+'\')" title="Ouvrir l\'attestation CAF déposée par la famille — pour y lire le quotient">📄 Attestation CAF</button> '):'')+'<button class="ghost btn" style="padding:2px 8px;font-size:11px" onclick="fySetQf(\''+f.id+'\')" title="Quotient familial (attestation CAF) — sert au calcul automatique du tarif">💶 QF</button> <button class="ghost btn" style="padding:2px 8px;font-size:11px" onclick="fyTarif(\''+f.id+'\')" title="Calculer le tarif périscolaire du foyer">🧮 Tarif</button> <button class="ghost btn" style="padding:2px 8px;font-size:11px" onclick="fyNouveauCode(\''+f.id+'\')" title="Générer un nouveau code famille (le précédent a servi, un 2e parent doit relier son compte, ou le récépissé est perdu)">🔁 Nouveau code</button></div>':'')
         +'</div>';
     }).join('');
   };
@@ -10725,16 +10796,42 @@ renderAll();
     alert('Nouveau code famille : '+r.data+'\n\nÀ remettre à la famille — le bouton 🧾 Récépissé l\'imprime.');
     loadFoyers();
   };
-  window.fyAddAdhesion=async function(fid){
-    if(!canWrite) return;
-    const saison=prompt('Saison de l\'adhésion (ex. '+fySaisonDefaut()+') :', fySaisonDefaut()); if(saison===null) return;
-    if(!saison.trim()){ alert('Indique la saison.'); return; }
-    const montantStr=prompt('Montant de la cotisation, en euros (laisse vide si à définir plus tard) :', ''); if(montantStr===null) return;
-    const montant=parseFloat((montantStr||'').replace(',','.'))||0;
-    const paye=montantStr?confirm('La cotisation est-elle déjà réglée ?\nOK = oui, déjà payée.\nAnnuler = pas encore.'):false;
-    const r=await sbc.from('adhesions').insert({asso_id:myAsso, foyer_id:fid, saison:saison.trim(), montant_cents:Math.round(montant*100), paye:paye, date_adhesion:paye?today():null});
-    if(r.error){ alert('Erreur : '+r.error.message+(r.error.code==='23505'?'\n(Une adhésion existe déjà pour ce foyer et cette saison.)':'')); return; }
+  /* 💵 ADHÉSION PAYÉE AU COMPTOIR (migration 66).
+     Remplace l'ancien « + adhésion », qui faisait TAPER la saison à la main — une
+     faute de frappe et la porte restait fermée sans explication —, attachait
+     l'adhésion au FOYER et non à une personne, et n'inscrivait PAS les enfants.
+     Ici la saison est calculée côté serveur, l'adhésion porte la PERSONNE, et les
+     enfants du foyer entrent au registre dans la foulée, au tarif du barème. */
+  window.fyComptoir=async function(fid){
+    if(!canWrite){ alert('Réservé au bureau.'); return; }
+    const D=window.__fyData||{};
+    const f=(D.foyers||[]).find(x=>x.id===fid)||{};
+    const adultes=(D.personnes||[]).filter(p=>p.foyer_id===fid && p.role_foyer!=='enfant');
+    if(!adultes.length){ alert('Ce foyer n\'a aucun adulte enregistré.\n\nAjoute d\'abord « + adulte » : c\'est LA PERSONNE qui adhère, pas le foyer.'); return; }
+    const nomDe=p=>((p.prenom||'')+' '+(p.nom||'')).trim()||'(sans nom)';
+    let qui=adultes[0];
+    if(adultes.length>1){
+      const choix=prompt('Qui a payé ?\n\n'+adultes.map((p,i)=>(i+1)+'. '+nomDe(p)).join('\n')+'\n\nTape le numéro :','1');
+      if(choix===null) return;
+      const i=parseInt(choix,10);
+      if(!(i>=1 && i<=adultes.length)){ alert('Numéro invalide.'); return; }
+      qui=adultes[i-1];
+    }
+    const modes={'1':'especes','2':'cheque','3':'virement'};
+    const m=prompt('Adhésion de '+nomDe(qui)+' — comment a-t-elle payé ?\n\n1. Espèces\n2. Chèque\n3. Virement\n\nTape le numéro :','1');
+    if(m===null) return;
+    const mode=modes[String(m).trim()];
+    if(!mode){ alert('Choisis 1, 2 ou 3.'); return; }
+    if(!confirm('Enregistrer l\'adhésion de '+nomDe(qui)+' ('+f.nom+') ?\n\nLes enfants du foyer seront inscrits automatiquement, et la famille pourra de nouveau inscrire et ajouter un enfant.')) return;
+    // ⚠️ .rpc() attendu ET .error lu : sans ça la requête ne part pas, et supabase-js
+    //    ne lève rien quand elle échoue (cf. mémoire supabase-rpc-non-attendu).
+    const r=await sbc.rpc('adhesion_enregistrer_comptoir',{p_personne_id:qui.id, p_montant_cents:null, p_mode:mode, p_date:null});
+    if(r.error){ alert('Erreur : '+r.error.message); return; }
+    const d=r.data||{};
+    if(typeof setSync==='function') setSync('✓ adhésion enregistrée — '+(d.lignes_creees||1)+' ligne(s)','#dff5e9');
+    alert('✅ Adhésion enregistrée pour '+nomDe(qui)+'\n\nSaison '+(d.saison||'')+' · '+((d.lignes_creees||1)-1)+' enfant(s) inscrit(s) au passage.');
     loadFoyers();
+    if(window.loadMembersArbre) loadMembersArbre();
   };
   // Veille d'une date ISO — pattern sûr côté fuseau (UTC pur des deux côtés, cf. piège 974) :
   // jamais new Date(iso) local + toISOString().
@@ -14128,9 +14225,10 @@ renderAll();
     const vepb=document.querySelector('nav.tabs button[data-tab="vepi"]'); if(vepb) vepb.addEventListener('click',()=>{ if(window.acmLoadEditionsData) acmLoadEditionsData(); });
     const enfb=document.querySelector('nav.tabs button[data-tab="enfants"]'); if(enfb) enfb.addEventListener('click',()=>{ if(window.loadEnfantsHub) loadEnfantsHub(); });
     if(window.loadDossiersPeri) loadDossiersPeri();
-    const meb=document.querySelector('nav.tabs button[data-tab="members"]'); if(meb) meb.addEventListener('click',()=>{ if(window.loadAdhesionsEnLigne) loadAdhesionsEnLigne(); if(window.loadAdhesionsEnAttente) loadAdhesionsEnAttente(); if(window.loadMembersArbre) loadMembersArbre(); });
+    const meb=document.querySelector('nav.tabs button[data-tab="members"]'); if(meb) meb.addEventListener('click',()=>{ if(window.loadAdhesionsEnLigne) loadAdhesionsEnLigne(); if(window.loadAdhesionsEnAttente) loadAdhesionsEnAttente(); if(window.loadEncaissementsSignales) loadEncaissementsSignales(); if(window.loadMembersArbre) loadMembersArbre(); });
     if(window.loadAdhesionsEnLigne) loadAdhesionsEnLigne();
     if(window.loadAdhesionsEnAttente) loadAdhesionsEnAttente();
+    if(window.loadEncaissementsSignales) loadEncaissementsSignales();
     if(window.loadMembersArbre) loadMembersArbre();
     const perb=document.querySelector('nav.tabs button[data-tab="personnel"]'); if(perb) perb.addEventListener('click',()=>{ if(window.loadPersonnel) loadPersonnel(); });
     const jab=document.querySelector('nav.tabs button[data-tab="journal"]'); if(jab) jab.addEventListener('click',()=>{ if(window.loadJournalActions) loadJournalActions(); });
