@@ -1160,10 +1160,9 @@
         <h2 style="margin:0 0 4px">💶 Grille tarifaire (tarif par jour, selon le quotient familial)</h2>
         <p class="hint">Le tarif est <strong>par jour de présence</strong> : la facture du mois = tarif jour × nombre de jours dans le mois (≈ 16 en moyenne). Modifie une case puis clique 💾.</p>
         <div id="periGrilleLockBar" class="row" style="gap:8px;align-items:center;flex-wrap:wrap;margin:0 0 10px;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:#eef3ef"></div>
-        <table><thead><tr><th>Tranche</th><th>Quotient familial</th><th class="num">Après-midi / jour</th></tr></thead>
+        <table><thead><tr><th>Tranche</th><th>Quotient familial</th><th class="num">Soir / jour</th><th class="num">Matin / jour</th></tr></thead>
           <tbody id="periGrilleRows"></tbody></table>
         <div class="toolbar" style="flex-wrap:wrap;gap:10px;margin-top:12px">
-          <div class="field" style="min-width:210px"><label>Supplément matin (€ / jour) — dès août</label><input type="number" id="peri_suppMatin" min="0" step="0.1"></div>
           <div class="field" style="min-width:210px"><label>Remise par enfant supplémentaire (%)</label><input type="number" id="peri_remise" min="0" max="100" step="1"></div>
           <div class="field" style="min-width:170px"><label>Jours / mois (moyenne)</label><input type="number" id="peri_jours" min="1" max="26" step="1"></div>
         </div>
@@ -6959,26 +6958,42 @@ function saveSimuGarderie(){
 /* ---- Périscolaire : grille par quotient familial + enfants + facturation ---- */
 const PERI_DEFAUT={
   tranches:[
-    {label:'Tranche 1', qf:'0 – 350,99 €', jour:3.14},
-    {label:'Tranche 2', qf:'351 – 450,99 €', jour:3.58},
-    {label:'Tranche 3', qf:'451 – 600,99 €', jour:4.13},
-    {label:'Tranche 4', qf:'601 – 800,99 €', jour:4.40},
-    {label:'Tranche 5', qf:'801 – 1 000,99 €', jour:4.95},
-    {label:'Tranche 6', qf:'1 001 – 1 250,99 €', jour:5.50},
-    {label:'Tranche 7', qf:'1 251 – 1 500,99 €', jour:6.05},
-    {label:'Tranche 8', qf:'1 501 – 2 000,99 €', jour:6.60},
-    {label:'Tranche 9', qf:'2 001 € et +', jour:7.43},
-    {label:'Hors commune', qf:'—', jour:8.25}
+    {label:'Tranche 1', qf:'0 – 350,99 €', jour:3.14, matin:1.55},
+    {label:'Tranche 2', qf:'351 – 450,99 €', jour:3.58, matin:1.80},
+    {label:'Tranche 3', qf:'451 – 600,99 €', jour:4.13, matin:2.05},
+    {label:'Tranche 4', qf:'601 – 800,99 €', jour:4.40, matin:2.20},
+    {label:'Tranche 5', qf:'801 – 1 000,99 €', jour:4.95, matin:2.50},
+    {label:'Tranche 6', qf:'1 001 – 1 250,99 €', jour:5.50, matin:2.75},
+    {label:'Tranche 7', qf:'1 251 – 1 500,99 €', jour:6.05, matin:3.00},
+    {label:'Tranche 8', qf:'1 501 – 2 000,99 €', jour:6.60, matin:3.30},
+    {label:'Tranche 9', qf:'2 001 € et +', jour:7.43, matin:3.70},
+    {label:'Hors commune', qf:'—', jour:8.25, matin:4.10}
   ],
-  suppMatin:1.5, remise:5, jours:16
+  /* 🔴 Le supplément matin est une COLONNE, pas une valeur. Grille votée au CA du
+     11/08/2026 : 1,55 € (T1) → 3,70 € (T9), hors commune 4,10 €. Un scalaire unique
+     (l'ancien `suppMatin:1.5`) faisait annoncer la MOITIÉ du prix en tranche 7, et
+     l'écart grandissait avec le quotient. La remise fratrie, elle, a été SUPPRIMÉE
+     par le même CA (« la situation financière ne permet pas de maintenir les
+     remises ») — d'où `remise:0`. */
+  remise:0, jours:16
 };
 function periDB(){
   if(!db.periscolaire) db.periscolaire={};
   const p=db.periscolaire;
   if(!p.grille) p.grille=JSON.parse(JSON.stringify(PERI_DEFAUT));
   if(!Array.isArray(p.enfants)) p.enfants=[];
-  if(p.grille.suppMatin==null) p.grille.suppMatin=1.5;
-  if(p.grille.remise==null) p.grille.remise=5;
+  /* 🔴 RATTRAPAGE DES GRILLES DÉJÀ ENREGISTRÉES. Le coffre de l'asso contient la
+     grille d'avant le vote : sans tranche `matin`, et avec `remise:5`. On la remet
+     d'aplomb à la lecture, en reprenant les valeurs votées au CA du 11/08/2026 —
+     sinon l'écran continuerait d'afficher l'ancienne, et « publier » la renverrait
+     telle quelle en base. On ne touche PAS aux tarifs du soir, qui étaient justes. */
+  if(p.grille.tranches && p.grille.tranches.some(function(x){ return x && x.matin==null; })){
+    var MAT=[1.55,1.80,2.05,2.20,2.50,2.75,3.00,3.30,3.70,4.10];
+    p.grille.tranches.forEach(function(x,i){ if(x && x.matin==null && MAT[i]!=null) x.matin=MAT[i]; });
+    delete p.grille.suppMatin;
+    p.grille.remise=0;
+  }
+  if(p.grille.remise==null) p.grille.remise=0;
   if(p.grille.jours==null) p.grille.jours=16;
   return p;
 }
@@ -6986,7 +7001,10 @@ function periFacture(e){
   const g=periDB().grille;
   const t=g.tranches[e.trancheIdx]||g.tranches[0]||{jour:0};
   const jours=(e.jours||g.jours||16);
-  const base=((e.aprem?(t.jour||0):0)+(e.matin?(g.suppMatin||0):0))*jours;
+  /* 🔴 Le matin se lit dans la MÊME ligne que le soir (grille votée 11/08/2026).
+     `g.suppMatin` — un montant unique — est mort : il annonçait 1,50 € à tout le
+     monde alors que la grille module de 1,55 € à 3,70 €. */
+  const base=((e.aprem?(t.jour||0):0)+(e.matin?(t.matin||0):0))*jours;
   const remisePct=(g.remise||0)*Math.max(0,(e.rang||1)-1);
   return { tarifJour:t.jour||0, jours, remisePct, total: base*(1-Math.min(remisePct,90)/100) };
 }
@@ -6995,9 +7013,9 @@ function renderPeriscolaire(){
   const p=periDB(), g=p.grille;
   const disG=window.__periGrilleUnlocked?'':'disabled ';
   $('periGrilleRows').innerHTML=g.tranches.map((t,i)=>
-    `<tr><td>${esc(t.label)}</td><td>${esc(t.qf)}</td><td class="num"><input type="number" ${disG}min="0" step="0.01" value="${t.jour}" style="width:88px;text-align:right" oninput="periSetJour(${i},this.value)"> €</td></tr>`
+    `<tr><td>${esc(t.label)}</td><td>${esc(t.qf)}</td><td class="num"><input type="number" ${disG}min="0" step="0.01" value="${t.jour}" style="width:88px;text-align:right" oninput="periSetJour(${i},this.value)"> €</td><td class="num"><input type="number" ${disG}min="0" step="0.01" value="${t.matin!=null?t.matin:''}" style="width:88px;text-align:right" oninput="periSetMatin(${i},this.value)" title="Supplément matin de CETTE tranche — voté au CA du 11/08/2026"> €</td></tr>`
   ).join('');
-  $('peri_suppMatin').value=g.suppMatin; $('peri_remise').value=g.remise; $('peri_jours').value=g.jours;
+  $('peri_remise').value=g.remise; $('peri_jours').value=g.jours;
   renderPeriGrilleLock();
   const sel=$('pe_tranche'); if(sel && sel.options.length!==g.tranches.length){ sel.innerHTML=g.tranches.map((t,i)=>`<option value="${i}">${esc(t.label)}</option>`).join(''); }
   const rows=p.enfants.map(e=>{ const f=periFacture(e); const t=g.tranches[e.trancheIdx]||{};
@@ -7019,11 +7037,17 @@ function renderPeriscolaire(){
     + kpi("Sur l'année scolaire",euro(totMois*10),'green','estimation ~10 mois');
 }
 function periSetJour(i,v){ if(!window.__periGrilleUnlocked) return; periDB().grille.tranches[i].jour=parseFloat(v)||0; }
+/* Jumeau de periSetJour pour la colonne matin (grille votee au CA du 11/08/2026).
+   Une valeur vide met null — et publishTarifs REFUSE alors de publier, plutot que
+   d'envoyer une grille sans matin que le serveur rejetterait a chaque calcul. */
+function periSetMatin(i,v){ const g=periDB().grille; if(!g.tranches[i]) return;
+  const n=parseFloat(String(v).replace(',','.'));
+  g.tranches[i].matin=isNaN(n)?null:n; save(); }
 // 🔒 Verrou anti-erreur de la grille périscolaire. Déverrouillage RÉSERVÉ AU BUREAU (l'onglet Périscolaire est visible par le personnel, contrairement à l'onglet Vacances).
 function renderPeriGrilleLock(){
   const bar=$('periGrilleLockBar'); if(!bar) return;
   const unlocked=!!window.__periGrilleUnlocked;
-  ['peri_suppMatin','peri_remise','peri_jours'].forEach(id=>{ const el=$(id); if(el) el.disabled=!unlocked; });
+  ['peri_remise','peri_jours'].forEach(id=>{ const el=$(id); if(el) el.disabled=!unlocked; });
   const sb=$('periSaveGrilleBtn'); if(sb) sb.disabled=!unlocked;
   const isBureau=!!(window.bobMe&&window.bobMe.canWrite); // canWrite hors de portée dans ce bloc → lire le global window.bobMe (cf. 9912)
   if(unlocked){
@@ -7054,10 +7078,24 @@ async function publishTarifs(){
   try{
     if(!myAsso||!canWrite||!sbc) return;
     const g=periDB().grille;
-    const tr=PERI_THRESHOLDS.map((max,i)=>({max:max, jour:(g.tranches[i]&&g.tranches[i].jour)||0}));
+    /* 🔴 CHAQUE TRANCHE PUBLIE SON MATIN. Avant, on envoyait un scalaire `suppMatin` :
+       la fonction serveur le lisait hors de la recherche de tranche, et annonçait le
+       même montant à tous les quotients. Depuis la migration 67, le serveur lit
+       `matin` DANS la tranche — republier l'ancien format lui ferait REFUSER de
+       chiffrer les matins (fail-closed voulu), ce qui casserait l'accueil. */
+    const tr=PERI_THRESHOLDS.map((max,i)=>({max:max,
+      jour:(g.tranches[i]&&g.tranches[i].jour)||0,
+      matin:(g.tranches[i]&&g.tranches[i].matin!=null)?g.tranches[i].matin:null}));
     const hc=g.tranches.find(t=>/hors/i.test(t.label||''));
     const at=acmTarifDB();
-    const payload={ tranches:tr, horsCommune:(hc?hc.jour:8.25), suppMatin:(g.suppMatin||0), remise:(g.remise||0), jours:(g.jours||16),
+    if(tr.some(function(x){ return x.matin==null; })){
+      alert('Publication annulée : la grille n\'a pas de supplément matin sur toutes les tranches.\n\nElle date d\'avant le vote du 11/08/2026. Recharge la page, vérifie la colonne « matin », puis republie.');
+      return;
+    }
+    const payload={ tranches:tr, horsCommune:(hc?hc.jour:8.25),
+      horsCommuneMatin:(hc&&hc.matin!=null?hc.matin:4.10),
+      remise:(g.remise||0), jours:(g.jours||16),
+      voteeLe:'2026-08-11', source:'CA du 11/08/2026, point 4', chargeeDansBobLe:'2026-08-13',
       acm:{ petites:(at.petites||[]).slice(), grandes:(at.grandes||[]).slice(), horsCommune:(at.horsCommune!=null?at.horsCommune:145) } };
     await sbc.from('tarifs_publics').upsert({asso_id:myAsso, data:payload, updated_at:new Date().toISOString()});
   }catch(e){ console.warn('publishTarifs', e); }
@@ -7082,7 +7120,6 @@ async function syncProtocolesPublies(){
 function savePeriGrille(){
   if(!window.__periGrilleUnlocked){ alert('Déverrouille d\'abord la grille (bouton 🔓 Déverrouiller).'); return; }
   const g=periDB().grille;
-  g.suppMatin=parseFloat($('peri_suppMatin').value)||0;
   g.remise=parseFloat($('peri_remise').value)||0;
   g.jours=parseInt($('peri_jours').value)||16;
   save(); publishTarifs();
