@@ -1010,9 +1010,9 @@
       <h2 style="margin:0 0 4px">📊 Compte de résultat prévisionnel</h2>
       <p class="hint">Coche « récurrent » pour les lignes qui reviennent chaque mois (loyer, charges…) : elles sont projetées jusqu'à décembre. Les lignes non cochées (cotisations, dons, subventions ponctuelles) sont comptées une seule fois, telles que saisies. Les subventions à venir sont estimées automatiquement (ligne « auto »).</p>
       <h3 style="margin:14px 0 6px;font-size:15px;color:var(--brand)">Recettes</h3>
-      <table><thead><tr><th>Catégorie</th><th class="num">Réel à ce jour</th><th style="text-align:center">Récurrent&nbsp;?</th><th class="num">Projeté</th></tr></thead><tbody id="prevRecRows"></tbody></table>
+      <div style="overflow-x:auto;-webkit-overflow-scrolling:touch"><table style="min-width:560px"><thead><tr><th>Catégorie</th><th class="num">Réel à ce jour</th><th style="text-align:center">Récurrent&nbsp;?</th><th class="num">Projeté</th></tr></thead><tbody id="prevRecRows"></tbody></table></div>
       <h3 style="margin:18px 0 6px;font-size:15px;color:#c0392b">Dépenses</h3>
-      <table><thead><tr><th>Catégorie</th><th class="num">Réel à ce jour</th><th style="text-align:center">Récurrent&nbsp;?</th><th class="num">Projeté</th></tr></thead><tbody id="prevDepRows"></tbody></table>
+      <div style="overflow-x:auto;-webkit-overflow-scrolling:touch"><table style="min-width:560px"><thead><tr><th>Catégorie</th><th class="num">Réel à ce jour</th><th style="text-align:center">Récurrent&nbsp;?</th><th class="num">Projeté</th></tr></thead><tbody id="prevDepRows"></tbody></table></div>
     </div>
 
     <div class="panel">
@@ -1383,8 +1383,8 @@
       <summary style="cursor:pointer;font-weight:700;font-size:16px">💶 Tarif ACM <span class="hint" style="font-weight:400">— au quotient familial, par semaine (grille officielle Saint-Denis 2026-2027)</span></summary>
       <p class="hint" style="margin:8px 0 10px">Forfait <strong>5 jours / semaine</strong> : la facture d'une famille = <strong>prix de la semaine × nombre de semaines</strong> choisi. <strong>L'ACM d'été = grandes vacances.</strong> Recalculé si une semaine comporte un jour férié. Modifie une case puis clique 💾 — les familles voient aussitôt le bon tarif dans leur espace.</p>
       <div id="acmLockBar" class="row" style="gap:8px;align-items:center;flex-wrap:wrap;margin:0 0 10px;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:#eef3ef"></div>
-      <table><thead><tr><th>Tranche</th><th>Quotient familial</th><th class="num">Petites vac. (€/sem)</th><th class="num">Grandes vac. (€/sem)</th></tr></thead>
-        <tbody id="acmTarifRows"></tbody></table>
+      <div style="overflow-x:auto;-webkit-overflow-scrolling:touch"><table style="min-width:560px"><thead><tr><th>Tranche</th><th>Quotient familial</th><th class="num">Petites vac. (€/sem)</th><th class="num">Grandes vac. (€/sem)</th></tr></thead>
+        <tbody id="acmTarifRows"></tbody></table></div>
       <div class="toolbar" style="flex-wrap:wrap;gap:10px;margin-top:12px">
         <button class="ghost btn" id="acmMirrorBtn" onclick="acmGrandesFromPetites()" title="Recalcule la colonne Grandes vacances à −15 % des Petites vacances (hors commune inchangé)">↺ Grandes = Petites −15 %</button>
       </div>
@@ -3381,6 +3381,8 @@ function pageHelpGotoAide(){ pageHelpClose(); const b=document.querySelector('na
 
 /* ---- ✨ Quoi de neuf (nouveautés + notice chronologique) ---- */
 const NEWS=[
+  {id:'2026-08-14-mobile-respire',date:'2026-08-14',tab:'🛟 Le reste',titre:"📱 Sur téléphone, l'écran ne déborde plus",
+   desc:"Jusqu'ici, <b>tous les écrans</b> dépassaient un peu du bord droit sur téléphone (il fallait faire glisser la page de côté, et le bouton « Déconnexion » était coupé). C'est réparé : la barre du haut se replie proprement. Et quatre tableaux larges — <b>tarifs Vacances</b>, <b>Prévisionnel</b>, <b>Subventions (reste dû)</b> et l'<b>Historique</b> — coulissent maintenant <b>du doigt, à l'intérieur du tableau</b>, comme le journal de la Comptabilité, au lieu de pousser toute la page."},
   {id:'2026-08-14-telephone-adherents',date:'2026-08-14',tab:'👥 Adhérents',titre:"📞 Pas d'adhérent sans téléphone — au livre comme au comptoir Foyers",
    desc:"Même règle que pour les dossiers : <b>on ne peut plus ajouter un adhérent sans numéro de téléphone valide</b> (formulaire 👥 Adhérents ET comptoir 👨‍👩‍👧 Foyers — la famille est en face, c'est le moment de le demander ; format vérifié : 0692… ou +262…). Pour le stock existant : la liste marque en rouge <b>📵 pas de numéro</b> chaque adhérent injoignable, un compteur en haut de la liste dit combien il en reste, et le <b>✏️ Modifier</b> de la ligne suffit pour ajouter le numéro dès que tu l'obtiens. Les adhésions payées <b>en ligne</b> ne sont pas bloquées (on ne refuse pas un paiement) — elles arrivent marquées 📵 pour que tu réclames le numéro à la validation."},
   {id:'2026-08-14-telephone-obligatoire',date:'2026-08-14',tab:'📨 Dossiers familles',titre:"📞 Le téléphone devient obligatoire pour déposer un dossier — et Bob chasse les dossiers muets",
@@ -5492,9 +5494,9 @@ function renderGuySoldes(){
       +g.lignes.length+' dossier'+(g.lignes.length>1?'s':'')+'.<br>'
       +phrases.join('<br>')
     +'</p>'
-    +'<table><thead><tr><th>Subvention</th><th class="num">Accordé</th><th class="num">Versé</th>'
+    +'<div style="overflow-x:auto;-webkit-overflow-scrolling:touch"><table style="min-width:560px"><thead><tr><th>Subvention</th><th class="num">Accordé</th><th class="num">Versé</th>'
       +'<th style="text-align:center">Taux</th><th class="num">Reste dû</th></tr></thead>'
-    +'<tbody>'+g.lignes.map(ligne).join('')+'</tbody></table>'
+    +'<tbody>'+g.lignes.map(ligne).join('')+'</tbody></table></div>'
     +'<p class="hint" style="margin-top:10px;font-size:12px">'
       +'Je ne relance personne et je n\'écris aucune recette : je te montre où est l\'argent, tu décides quoi en faire. '
       +'Une recette n\'est comptée que le jour où tu saisis le montant <strong>versé</strong>.'
@@ -8617,7 +8619,9 @@ renderAll();
     bar.innerHTML='<span>🟢 En ligne — <b>'+esc(myProfile.full_name||myProfile.email||'')+'</b> · '+(ROLE_LABEL[myProfile.role]||myProfile.role)+'</span>'
       +'<span id="cloudSync" style="opacity:.9">✓ synchronisé</span>'
       +(canWrite?'':'<span style="background:#f6b400;color:#5b4300;padding:2px 9px;border-radius:999px">Lecture seule</span>')
-      +'<span style="margin-left:auto;display:flex;gap:8px">'
+      /* Lot 1 lifting 14/08/2026 : sans flex-wrap, ce span imposait ~418px de large → les 48 écrans débordaient à 375 */
+      +'<span style="margin-left:auto;display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end;min-width:0">'
+
       +'<button onclick="cloudRefresh()" style="cursor:pointer;border:none;border-radius:999px;padding:6px 12px;font:inherit;background:rgba(255,255,255,.2);color:#fff">↻ Rafraîchir</button>'
       /* 09/08/2026 — signalé par Guillaume : « je suis branché sur la boîte du président, il doit
          pouvoir choisir soit d'aller sur le site officiel, soit sur sa gestion, soit sur son
@@ -12752,13 +12756,13 @@ renderAll();
     let rows=JA_ROWS;
     if(qn){ rows=rows.filter(r=>((r.user_email||'')+' '+(r.user_role||'')+' '+(JA_TABLES[r.table_cible]||r.table_cible||'')+' '+(JA_ACTS[r.action]||r.action||'')).toLowerCase().includes(qn)); }
     if(!rows.length){ box.innerHTML='<p class="hint">Aucune action enregistrée'+(qn?' pour ce filtre':' pour l\'instant')+'.</p>'; return; }
-    box.innerHTML='<table><thead><tr><th>Quand</th><th>Qui</th><th>Action</th><th>Rubrique</th></tr></thead><tbody>'
+    box.innerHTML='<div style="overflow-x:auto;-webkit-overflow-scrolling:touch"><table style="min-width:560px"><thead><tr><th>Quand</th><th>Qui</th><th>Action</th><th>Rubrique</th></tr></thead><tbody>'
       +rows.map(function(r){
         let when=''; try{ const d=new Date(r.created_at); when=d.toLocaleDateString('fr-FR')+' '+d.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'}); }catch(e){ when=(r.created_at||'').slice(0,16); }
         const who=esc(r.user_email||'—')+(r.user_role?' <span class="pill" style="font-size:10px;background:#eef3ef;color:#555">'+esc(r.user_role)+'</span>':'');
         return '<tr><td style="white-space:nowrap">'+esc(when)+'</td><td>'+who+'</td><td>'+esc(JA_ACTS[r.action]||r.action||'')+'</td><td>'+esc(JA_TABLES[r.table_cible]||r.table_cible||'')+'</td></tr>';
       }).join('')
-      +'</tbody></table>';
+      +'</tbody></table></div>';
   };
   const RDV_JOURS_ADM=['','Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi','Dimanche'];
   window.loadRdvAdmin=async function(){
