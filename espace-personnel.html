@@ -222,6 +222,7 @@ function renderView(){
   else if(ME.view==='encaisser'){ vp.innerHTML=backBar('💵 Encaisser une adhésion')+encaisserHTML(); encMount(); }
   else if(ME.view==='vepi'){ vp.innerHTML=backBar('📌 Mon VEPI')+vepiBlockHTML(); }
   else if(ME.view==='peridocs'){ vp.innerHTML=backBar('📎 Docs périscolaire')+periDocsBlockHTML(); }
+  else if(ME.view==='perienfants'){ vp.innerHTML=backBar('🎒 Périscolaire')+periEnfantsHTML(); renderPeriEnfants(); }
   else if(ME.view==='tarif'){ vp.innerHTML=backBar('🧮 Calculer un tarif')+tarifHTML(); }
   else { vp.innerHTML=hubHTML(); }
 }
@@ -323,6 +324,122 @@ function hubPeriDocsCardHTML(sub){
     +'<div class="hubname">Docs périscolaire 🔒</div><div class="hubsub">'+esc(motif)+'</div>'
     +'<div class="hubgo" style="color:var(--muted)">Fermé pour l\'instant</div></div>';
 }
+/* ===== 🎒 Périscolaire — LES ENFANTS DE LA GARDERIE (écran salarié, 14/08/2026) ==============
+   Pourquoi cet écran existe : Kathy a écrit dans la boîte à idées « dans ma partie activité je
+   vois 1 seul inscrit pour le périscolaire ». Elle avait raison de s'étonner, et l'écran ne
+   mentait pas non plus : « Mes activités » lit la table `activites`, où la garderie n'avait
+   qu'une coquille (le doublon, désormais écarté dans loadActs). La garderie vit dans les
+   DOSSIERS, un enfant à la fois, avec ses créneaux matin/soir. C'est ça qu'on affiche ici.
+   ⚠️ ZÉRO requête ajoutée : tout vient de ME.famDoss, déjà chargé par loadFamilles() au
+   démarrage. La RLS `peri_sel` autorise déjà l'équipe périscolaire à lire ces dossiers.
+   ⚠️ Un DOSSIER n'est PAS un ENFANT : les 6 pièces étant mutualisées avec l'ACM, une famille qui
+   ne fait QUE de l'ACM a elle aussi un dossier « périscolaire » — validé, mais sans aucun enfant
+   à la garderie (3 cas au 14/08/2026). On compte donc les ENFANTS, jamais les dossiers. */
+const PERI_KID_SL={brouillon:['📝 Brouillon','b-demande'],depose:['📨 Déposé','b-demande'],incomplet:['⚠️ Dossier incomplet','b-refuse'],valide:['✅ Dossier validé','b-valide'],refuse:['✖️ Refusé','b-refuse']};
+// Les enfants réellement à la garderie, à plat : un objet par enfant + son dossier d'origine.
+function periKids(){
+  const out=[];
+  (ME.famDoss||[]).forEach(function(d){
+    const arr=(d&&Array.isArray(d.enfants))?d.enfants:[];
+    arr.forEach(function(e){
+      if(!e) return;
+      const nom=(String(e.prenom||'').trim()+' '+String(e.nom||'').trim()).trim();
+      if(!nom) return;  // une ligne sans identité n'a rien à faire sur une liste d'appel
+      out.push({nom:nom, classe:String(e.classe||'').trim(), ecole:String(e.ecole||'').trim(),
+        matin:!!e.matin, soir:!!e.soir, d:d});
+    });
+  });
+  out.sort(function(a,b){ return famNorm(a.nom).localeCompare(famNorm(b.nom)); });
+  return out;
+}
+function hubPeriEnfantsCardHTML(){
+  if(ME.secOK===true && (ME.sections||[]).includes('periscolaire')){
+    const k=periKids(), m=k.filter(function(x){return x.matin;}).length, s=k.filter(function(x){return x.soir;}).length;
+    const sub=k.length?(k.length+' enfant'+(k.length>1?'s':'')+' · ☀️ '+m+' le matin · 🌙 '+s+' le soir')
+                      :'Aucun enfant inscrit à la garderie pour l\'instant';
+    return '<button class="hubcard" onclick="spView(\'perienfants\')"><div class="hubico">🎒</div>'
+      +'<div class="hubname">Périscolaire</div><div class="hubsub">'+esc(sub)+'</div><div class="hubgo">Entrer →</div></button>';
+  }
+  const motif=(ME.secOK===true)
+    ? 'Réservé à l\'équipe périscolaire. Le bureau ne t\'y a pas encore rattaché·e — demande-lui.'
+    : 'On n\'a pas pu vérifier tes accès. Recharge la page : si tu es au périscolaire, cette carte s\'ouvrira.';
+  return '<div class="hubcard off"><div class="hubico">🎒</div>'
+    +'<div class="hubname">Périscolaire 🔒</div><div class="hubsub">'+esc(motif)+'</div>'
+    +'<div class="hubgo" style="color:var(--muted)">Fermé pour l\'instant</div></div>';
+}
+function periEnfantsHTML(){
+  return '<section class="block">'
+    +'<p class="sub">Les enfants inscrits à la <b>garderie</b>, rangés par moment de la journée — c\'est ta liste d\'appel. Elle vient des <b>dossiers déposés par les familles</b> : dès qu\'une famille s\'inscrit ou que le bureau corrige un créneau, elle se met à jour toute seule.</p>'
+    +'<div class="card" style="margin-bottom:14px"><div class="row">'
+      +'<div style="flex:2"><input id="pk_q" placeholder="🔎 Chercher un enfant…" style="width:100%" oninput="renderPeriEnfants()"></div>'
+    +'</div><div id="pkStats" class="sub" style="margin:8px 0 0"></div></div>'
+    +'<div id="pkList"></div>'
+  +'</section>';
+}
+function periKidCardHtml(k, bloc){
+  const st=PERI_KID_SL[k.d.statut]||[esc(k.d.statut||'—'),'b-demande'];
+  // Dans la liste du matin, redire « ☀️ Matin » sur chaque carte n'apprend rien. Ce qui compte,
+  // c'est l'AUTRE bout de la journée : cet enfant revient-il le soir ? (et inversement).
+  let cren='';
+  if(bloc==='matin') cren=k.soir?'<span class="badge" style="background:#e8eaff;color:#3a51e8">🌙 aussi le soir</span>':'';
+  else if(bloc==='soir') cren=k.matin?'<span class="badge" style="background:#fff4e0;color:#b9770e">☀️ aussi le matin</span>':'';
+  else cren=(k.matin?'<span class="badge" style="background:#fff4e0;color:#b9770e">☀️ Matin</span> ':'')
+           +(k.soir?'<span class="badge" style="background:#e8eaff;color:#3a51e8">🌙 Soir</span>':'');
+  const ligne2=[k.classe,k.ecole].filter(Boolean).join(' · ');
+  // Contact : ce que le dossier porte déjà (responsable, téléphone, mail). On ne va rien chercher
+  // ailleurs — joindre vite un parent ne doit pas élargir les droits de lecture du salarié.
+  const bits=[], tels=famPhones(k.d.tel);
+  if(k.d.foyer) bits.push('<b>👤 '+esc(k.d.foyer)+'</b>');
+  tels.forEach(function(t){ bits.push('📞 <a href="tel:'+esc(t.replace(/[^\d+]/g,''))+'" style="color:#3a51e8;font-weight:600">'+esc(t)+'</a>'); });
+  if(k.d.email&&String(k.d.email).indexOf('@')>=0) bits.push('📧 <a href="mailto:'+esc(k.d.email)+'" style="color:#3a51e8;font-weight:600">'+esc(k.d.email)+'</a>');
+  // 🔴 Un e-mail ne remplace PAS un numéro : à 17h, enfant malade, on appelle — on n'écrit pas.
+  // Une famille sans téléphone doit donc être signalée MÊME si elle a une adresse mail (cas vécu :
+  // Katarzyna Papiez, 2 enfants à la garderie, aucun numéro). Même constat que le bureau, qui a
+  // rendu le téléphone obligatoire au dépôt le 14/08/2026 — ici on montre le stock déjà en base.
+  let contact=bits.length?bits.join(' &nbsp;·&nbsp; ')
+    :'<span style="color:#b23a23;font-weight:600">📵 Aucune coordonnée au dossier — signale-le au bureau</span>';
+  if(bits.length&&!tels.length) contact+='<br><span style="color:#b23a23;font-weight:600">📵 Pas de numéro de téléphone — demande-le à la famille et signale-le au bureau</span>';
+  return '<div class="card" style="margin-bottom:10px">'
+    +'<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px;flex-wrap:wrap">'
+      +'<div><b style="font-size:16px">👧 '+esc(k.nom)+'</b> '+cren
+        +(ligne2?'<div class="sub" style="margin-top:3px">'+esc(ligne2)+'</div>':'')
+      +'</div>'
+      +'<span class="badge '+st[1]+'">'+st[0]+'</span>'
+    +'</div>'
+    +'<div class="sub" style="margin-top:8px;padding-top:8px;border-top:1px dashed var(--line)">'+contact+'</div>'
+    +(k.d.besoin_aide?'<div class="sub" style="margin-top:6px;background:#fff4e0;border:1px solid #f0dcb4;color:#8a6100;border-radius:10px;padding:6px 10px">🙋 Cette famille a demandé de l\'aide pour son dossier.</div>':'')
+  +'</div>';
+}
+function renderPeriEnfants(){
+  const box=$('#pkList'), st=$('#pkStats'); if(!box) return;
+  const all=periKids();
+  if(!all.length){
+    if(st) st.textContent='';
+    box.innerHTML=accesNoteHTML()||'<div class="card"><p class="empty">Aucun enfant inscrit à la garderie pour l\'instant. La liste se remplit dès qu\'une famille dépose son dossier avec un créneau matin ou soir.</p></div>';
+    return;
+  }
+  const nbM=all.filter(function(k){return k.matin;}).length, nbS=all.filter(function(k){return k.soir;}).length;
+  const nbAcompleter=all.filter(function(k){return k.d.statut!=='valide';}).length;
+  if(st) st.innerHTML='🧒 <b>'+all.length+'</b> enfant'+(all.length>1?'s':'')+' à la garderie · ☀️ <b>'+nbM+'</b> le matin · 🌙 <b>'+nbS+'</b> le soir'
+    +(nbAcompleter?' · ⚠️ '+nbAcompleter+' dossier'+(nbAcompleter>1?'s':'')+' à compléter':'');
+  const q=famNorm((($('#pk_q')||{}).value)||'');
+  const list=q?all.filter(function(k){ return famNorm(k.nom).indexOf(q)>=0; }):all;
+  if(!list.length){ box.innerHTML='<div class="card"><p class="empty">Aucun enfant ne correspond à la recherche.</p></div>'; return; }
+  // Un enfant matin ET soir apparaît dans les DEUX listes : c'est voulu, chaque liste doit être
+  // complète toute seule — on ne relit pas l'autre bloc à 6h50 pour savoir qui manque.
+  const blocs=[
+    {k:'matin', t:'☀️ Le matin', s:'Avant l\'école', f:function(k){return k.matin;}},
+    {k:'soir', t:'🌙 Le soir', s:'Après l\'école', f:function(k){return k.soir;}},
+    {k:'sans', t:'⚠️ Sans créneau', s:'Au dossier mais ni matin ni soir — à vérifier avec le bureau', f:function(k){return !k.matin&&!k.soir;}}
+  ];
+  box.innerHTML=blocs.map(function(b){
+    const rows=list.filter(b.f);
+    if(!rows.length) return '';
+    return '<div style="margin:14px 0 6px"><h2 class="title" style="margin:0;font-size:18px">'+b.t+' <span class="sub" style="font-weight:400;font-size:14px">· '+rows.length+'</span></h2>'
+      +'<p class="sub" style="margin:2px 0 8px">'+esc(b.s)+'</p></div>'
+      +rows.map(function(k){ return periKidCardHtml(k, b.k); }).join('');
+  }).join('')||'<div class="card"><p class="empty">Aucun enfant ne correspond à la recherche.</p></div>';
+}
 function periDocsBlockHTML(){
   const list=ME.periDocs||[];
   const val=list.filter(function(d){return d.statut==='valide';});
@@ -401,8 +518,9 @@ function hubHTML(){
     +'<p class="sub" style="margin:-4px 0 14px">Choisis un espace — tu pourras toujours revenir ici.</p>'
     +accesNoteHTML()
     +'<div class="hubgrid">'
-      +'<button class="hubcard" onclick="spView(\'activites\')"><div class="hubico">🎒</div>'
+      +'<button class="hubcard" onclick="spView(\'activites\')"><div class="hubico">🎟️</div>'
         +'<div class="hubname">Mes activités</div><div class="hubsub">'+esc(actSub)+'</div><div class="hubgo">Entrer →</div></button>'
+      +hubPeriEnfantsCardHTML()
       +hubAcmCardHTML(acmBadge, acmSub)
       +hubVepiCardHTML(vepiSub)
       +hubPeriDocsCardHTML(periSub)
@@ -1136,6 +1254,7 @@ window.acmPropDel=async function(id){
 function activitesHTML(){
   return '<section class="block">'
       +'<p class="sub">Crée et gère tes activités (ACM, VEPI, ateliers…) et les enfants inscrits. <b>Tu prépares</b> ; le bureau publie sur le site public et s\'occupe de l\'argent. Chaque action est enregistrée.</p>'
+      +'<p class="sub" style="margin:-6px 0 12px;background:#eef7f2;border:1px solid #cfe6da;border-radius:10px;padding:8px 12px">🎒 <b>La garderie périscolaire n\'est pas ici</b> — elle a sa propre carte <b>🎒 Périscolaire</b> sur l\'accueil, avec la liste des enfants du matin et du soir. Ici, ce sont les activités auxquelles on inscrit enfant par enfant.</p>'
       +'<div class="card" style="margin-bottom:14px"><h3 id="naTitle" style="margin:0 0 10px">➕ Nouvelle activité</h3>'
         +'<div class="row" style="margin-bottom:8px">'
           +'<div style="flex:2"><label>Nom</label><input id="na_nom" style="width:100%" placeholder="ex. Sortie plage, Atelier cuisine…"></div>'
@@ -1198,7 +1317,13 @@ async function loadActs(){
       sb.from('activites').select('*').order('created_at',{ascending:true}),
       sb.from('inscriptions_activite').select('*').order('created_at',{ascending:true})
     ]);
-    ME.acts=ra.data||[]; ME.ins=(ri.data||[]).filter(i=>i.statut!=='deplace'&&i.statut!=='annule'); // Coup 3 : ignorer les inscriptions déplacées/annulées
+    // 🎒 Le doublon « Périscolaire — matin & soir » est écarté ICI, à la source. La garderie ne vit
+    // PAS dans `activites` : elle vit dans les DOSSIERS (carte 🎒 Périscolaire). Le laisser affichait
+    // « 1 inscrit » — 3 de ses 4 lignes étant annulées — alors que 10 enfants sont à la garderie
+    // (signalé par Kathy le 14/08/2026). Le bureau applique déjà la même règle dans app.html.
+    ME.acts=(ra.data||[]).filter(function(a){ return !(a && /p[eé]riscolaire/i.test(a.nom||'')); });
+    const actKeep={}; ME.acts.forEach(function(a){ if(a) actKeep[a.id]=true; });
+    ME.ins=(ri.data||[]).filter(i=>i.statut!=='deplace'&&i.statut!=='annule'&&actKeep[i.activite_id]); // Coup 3 : ignorer les inscriptions déplacées/annulées
   }catch(e){ ME.acts=[]; ME.ins=[]; }
 }
 // Regroupement des activités en 3 blocs de lecture (la catégorie est un champ LIBRE côté bureau
