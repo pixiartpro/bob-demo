@@ -526,7 +526,7 @@ const AQ=[
   {cat:'📜 Mon espace',q:"J'ai un code famille sur mon récépissé : comment relier mon compte à mon dossier ?",kw:"code famille recepisse bdn relier lier rattacher rattachement compte dossier foyer comptoir accueil papier retrouver mes enfants inscriptions date de naissance",
    a:"Allez dans l'onglet <b>🪪 Mon compte</b> : le bloc <b>🔑 Relier mon compte à mon dossier</b> vous demande deux choses — le <b>code famille</b> de votre récépissé (il commence par <b>BDN-</b>) et la <b>date de naissance d'un de vos enfants</b>. Validez : votre compte est aussitôt relié, et vous retrouvez vos enfants et vos inscriptions.<br><br>Pourquoi la date de naissance en plus du code ? Parce qu'un dossier contient les informations de <b>tous vos enfants</b> : nous préférons deux vérifications plutôt qu'une.<br><br><b>Le code ne fonctionne qu'une seule fois.</b> Si le deuxième parent veut relier son compte à son tour, ou si vous avez égaré le récépissé, demandez simplement un nouveau code au CASE. 🍍"},
   {cat:'🎒 Inscriptions',q:"Où et comment je dépose mes documents (dossier périscolaire) ?",kw:"deposer depose documents document demandes demande demander demandees reclamees pieces piece dossier periscolaire ou comment envoyer joindre televerser scanner fichier photo caf imposition domicile assurance vaccins livret mettre en ligne ajouter mes papiers",
-   a:"Dans votre espace : onglet <b>👨‍👩‍👧 Ma famille</b> → tuile <b>🎒 Périscolaire</b> → bloc <b>📎 Mes pièces</b>. Pour chaque pièce (attestation CAF de <b>moins de 3 mois</b>, avis d'imposition, justificatif de domicile, assurance, vaccins, livret de famille), touchez <b>« 📷 Scanner / choisir un fichier »</b> — vous pouvez prendre la photo avec votre téléphone. Vous pouvez déposer <b>même s'il vous manque une pièce</b> et enregistrer en brouillon pour finir plus tard. Le plus simple : le bouton <b>« 📎 Déposer mes documents »</b> sur l'écran <b>🪪 Mon compte</b> vous y amène directement. 🍍"},
+   a:"Dans votre espace : onglet <b>👨‍👩‍👧 Ma famille</b> → tuile <b>🎒 Périscolaire</b> → bloc <b>📎 Mes pièces</b>. Pour chaque pièce (attestation CAF de <b>moins de 3 mois</b>, avis d'imposition, justificatif de domicile, assurance, vaccins, livret de famille), touchez <b>« 📷 Scanner / choisir un fichier »</b> — vous pouvez prendre la photo avec votre téléphone. Vous pouvez déposer <b>même s'il vous manque une pièce</b> et enregistrer en brouillon pour finir plus tard. ⚠️ Une seule chose est <b>obligatoire pour déposer : votre numéro de téléphone</b> — c'est lui qui permet à l'accueil de vous joindre en urgence (enfant malade, sortie). Le plus simple : le bouton <b>« 📎 Déposer mes documents »</b> sur l'écran <b>🪪 Mon compte</b> vous y amène directement. 🍍"},
   {cat:'🎒 Inscriptions',q:"Comment savoir quelles inscriptions sont ouvertes en ce moment ?",kw:"inscriptions ouvertes bandeau haut site periscolaire acm vepi vacances moment annonce quand ouvre",
    a:"Regarde le <b>bandeau « 📣 Inscriptions »</b> tout en haut du site du CASE : il affiche les inscriptions du moment (périscolaire, ACM, VEPI…) avec leur état — <b>ouvert</b>, <b>bientôt</b> ou <b>complet</b>. Un clic sur une pastille t'amène directement au bon endroit pour t'inscrire. S'il n'y a pas de bandeau, c'est qu'il n'y a rien à annoncer pour l'instant. 🍍"},
   {cat:'🎒 Inscriptions',q:"Pas à l'aise avec le téléphone ou l'ordinateur ? L'accueil peut déposer vos papiers pour vous",kw:"aide accueil deposer papiers pieces documents scanner difficulte internet numerique telephone ordinateur arrive pas salariee secretaire aider place",
@@ -822,7 +822,7 @@ function periRenderForm(){
     +'</div>'
     +'<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px">'
     +'<input id="peri_email" value="'+periEsc(r.email||(PERI.profile&&PERI.profile.email)||'')+'" placeholder="Email" style="flex:1;min-width:150px;padding:10px 12px;border:1px solid var(--line);border-radius:10px;font:inherit">'
-    +'<input id="peri_tel" value="'+periEsc(r.tel||'')+'" placeholder="Téléphone" style="flex:1;min-width:130px;padding:10px 12px;border:1px solid var(--line);border-radius:10px;font:inherit">'
+    +'<input id="peri_tel" type="tel" autocomplete="tel" value="'+periEsc(r.tel||'')+'" placeholder="Téléphone * (obligatoire)" style="flex:1;min-width:130px;padding:10px 12px;border:1px solid var(--line);border-radius:10px;font:inherit">'
     +'</div>'
     +'<h3 style="margin:0 0 4px;font-size:16px">👧 Enfants au périscolaire</h3>'
     +'<p class="sub" style="margin:0 0 8px;font-size:13px">Cochez les enfants concernés et leur formule. L\'identité, les allergies et la santé se gèrent dans <b>👧 Mes enfants</b> (plus bas) — pas besoin de les retaper.</p>'
@@ -1065,6 +1065,11 @@ window.periSave=async function(depose){
   const payload={annee:PERI.ANNEE, foyer:periField('peri_foyer'), email:periField('peri_email'), tel:periField('peri_tel'), enfants:periReadChildren(), pieces:PERI.row.pieces||{}};
   let missLabels=[];
   if(depose){
+    // 📞 Téléphone OBLIGATOIRE au dépôt (14/08/2026) : sans numéro, l'accueil ne peut pas joindre la
+    // famille (enfant malade, urgence, sortie) — le brouillon reste libre, seul le DÉPÔT exige le numéro.
+    const telv=(payload.tel||'').trim();
+    if(!telv){ if(saved){saved.style.color='#b23a23'; saved.textContent='📞 Indiquez un numéro de téléphone (obligatoire) — c\'est lui qui permet de vous joindre en urgence (enfant malade, sortie…).';} return; }
+    if(!phoneValid(telv)){ if(saved){saved.style.color='#b23a23'; saved.textContent='📞 Numéro invalide : « '+telv+' ». Format attendu : 0692… ou +262…';} return; }
     const coches=payload.enfants.filter(e=>e.matin||e.soir);
     if(!coches.length){ if(saved){saved.style.color='#b23a23'; saved.textContent='Cochez au moins un enfant avec le matin et/ou le soir.';} return; }
     const sansNom=coches.filter(e=>!(e.prenom||'').trim());

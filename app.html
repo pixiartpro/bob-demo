@@ -3102,6 +3102,8 @@ const FAQ=[
    a:"Onglet <b>🎒 Périscolaire</b>, panneau <b>📎 Documents du périscolaire</b> (réservé au bureau). Dépose ici les documents de <b>service</b> de l'accueil (règlement intérieur, projet pédagogique, notes de service, consignes…) : l'<b>équipe périscolaire</b> les voit aussitôt en lecture dans son espace (carte <b>📎 Docs périscolaire</b>). Dans l'autre sens, une salariée peut te <b>proposer</b> un document (un émargement scanné, une info) : il arrive dans ce panneau <b>📥 à valider</b> — tu cliques <b>✅ Valider</b> (il devient visible par tous) ou <b>✖️ Refuser</b>. ⚠️ C'est un coffre <b>distinct des dossiers des familles</b> : on n'y met jamais de pièce personnelle de famille."},
   {cat:'📨 Dossiers familles',q:"Un dossier affiche « aucun enfant saisi » / l'enfant n'apparaît pas — comment le rattacher moi-même ?",kw:"aucun enfant saisi rattacher rattache enfant dossier inscription periscolaire famille parent bloque brouillon matin soir completer a la place accompagner cathie salarie personnel accueil bureau manquant absent liste deroulante ajouter retirer",
    a:"Ça arrive quand la famille a déposé ses pièces mais n'a pas fini l'étape « enfant » : la fiche de l'enfant existe bien, mais elle n'a pas été reliée au dossier (qui reste en brouillon). Tu peux le faire pour elle : onglet <b>📨 Dossiers familles</b> (groupe 👨‍👩‍👧 Familles) → sur la carte de la famille, ligne <b>« ➕ Rattacher un enfant »</b> : choisis l'enfant dans la liste (ce sont les fiches que la famille a déjà créées), coche <b>matin</b> et/ou <b>soir</b>, puis <b>Ajouter</b>. L'enfant apparaît aussitôt et tu peux chiffrer puis valider. Le menu <b>« vers »</b> te laisse aussi l'inscrire à <b>VEPI</b> ou à une <b>semaine d'ACM ados</b> (l'ACM s'inscrit à la semaine) au lieu du périscolaire ; ses activités s'affichent alors sur la carte. Le <b>✕</b> à côté d'un enfant le retire du dossier (sa fiche n'est pas supprimée). <b>Le bureau ET l'accueil</b> (rôle personnel) peuvent le faire. ⚠️ On ne rattache que l'enfant + matin/soir : le <b>droit à l'image</b>, l'<b>autorisation de partir seul</b> et la <b>fiche sanitaire</b> restent à confirmer par le parent."},
+  {cat:'📨 Dossiers familles',q:"Une famille n'a pas de numéro de téléphone dans son dossier — comment faire ?",kw:"telephone numero portable joindre injoignable urgence enfant malade sans tel manquant obligatoire reclamer ajouter famille contact coordonnees",
+   a:"Depuis le <b>14/08/2026</b>, une famille ne peut plus <b>déposer</b> son dossier sans donner un <b>numéro de téléphone valide</b> — c'est lui qui permet de la joindre en urgence (enfant malade, sortie). Pour les dossiers <b>déjà déposés sans numéro</b> : la pastille <b>📵 N sans téléphone</b> en haut du panneau te dit combien il en reste, chaque carte concernée porte la mention <b>📵 Pas de numéro</b>, et le bouton <b>« ➕ Ajouter le n° »</b> te laisse l'enregistrer dès que tu l'obtiens (au comptoir, à la sortie de la garderie…). <b>Le bureau ET l'accueil</b> peuvent l'ajouter ; le format est vérifié (0692… ou +262…)."},
   {cat:'📨 Dossiers familles',q:"Un parent a coché « matin » (ou « soir ») à tort — comment corriger les créneaux d'un enfant ?",kw:"corriger correction erreur trompe trompee matin soir creneau creneaux coche cochee a tort changer modifier garderie enfant rattache crayon editer stylo forfait recalculer arbre comptoir",
    a:"Clique le <b>✏️</b> à côté de l'enfant — sur sa carte du panneau <b>📨 Dossiers familles</b>, ou sur sa chip 🎒 dans <b>👶 Enfants</b> — coche les bons créneaux puis <b>✓ Corriger</b>. <b>Pas besoin de retirer puis re-rattacher l'enfant.</b> Bob met à jour le dossier (la vérité qui sert au forfait), aligne la coche « comptoir » de l'<b>arbre famille</b> si elle existe (geste réservé au bureau — l'accueil est prévenu quand il reste une coche à aligner), et rafraîchit d'un coup les deux écrans. ⚠️ Si le <b>forfait du mois est déjà chiffré</b>, il ne se recalcule pas tout seul : Bob te le rappelle — re-chiffre avec <b>« 🧮 Proposer le tarif »</b>. <b>Le bureau ET l'accueil</b> (rôle personnel) peuvent corriger."},
   {cat:'🧰 Secrétariat',q:"Où sont les informations de l'assurance (MAIF) pour se connecter ?",kw:"assurance maif raqvam contrat sociétaire societaire cotisation garantie connexion identifiant mot de passe attestation sinistre responsabilite civile rc secretariat",
@@ -3378,6 +3380,8 @@ function pageHelpGotoAide(){ pageHelpClose(); const b=document.querySelector('na
 
 /* ---- ✨ Quoi de neuf (nouveautés + notice chronologique) ---- */
 const NEWS=[
+  {id:'2026-08-14-telephone-obligatoire',date:'2026-08-14',tab:'📨 Dossiers familles',titre:"📞 Le téléphone devient obligatoire pour déposer un dossier — et Bob chasse les dossiers muets",
+   desc:"Constat du bureau : des familles sans numéro de téléphone au dossier — <b>injoignables</b> le jour où un enfant est malade ou au moment d'une sortie. Trois verrous d'un coup. <b>① Côté famille :</b> impossible de <b>déposer</b> un dossier sans un numéro <b>valide</b> (le brouillon reste libre, et le format est vérifié : 0692… ou +262…). <b>② Côté bureau :</b> dans 📨 Dossiers familles, une pastille <b>📵 N sans téléphone</b> compte les dossiers muets du stock existant, et chaque carte concernée l'affiche en rouge. <b>③ Le rattrapage :</b> un bouton <b>« ➕ Ajouter le n° »</b> sur ces cartes — tu obtiens le numéro au comptoir ou à la sortie, tu l'enregistres en 5 secondes, bureau comme accueil."},
   {id:'2026-08-14-dossiers-familles-onglet',date:'2026-08-14',tab:'📨 Dossiers familles',titre:"📨 Les dossiers familles ont leur onglet — dans 👨‍👩‍👧 Familles — et le ✏️ corrige matin/soir",
    desc:"Deux nouveautés nées d'une question du bureau. <b>① L'onglet.</b> Le panneau des dossiers déposés par les familles vivait dans 🎒 Périscolaire — un héritage de plomberie, plus un choix : ces pièces valent pour <b>tous les accueils</b> (périscolaire, ACM, VEPI). Il devient un onglet à part entière : <b>👨‍👩‍👧 Familles → 📨 Dossiers familles</b>. La pastille rouge « à traiter », les raccourcis depuis les fiches adhérents et les droits de chacun ont déménagé avec lui — <b>personne ne gagne ni ne perd un accès</b>. 🎒 Périscolaire garde le quotidien de la garderie (grille tarifaire, documents, classeur). <b>② Le crayon.</b> Un parent avait coché <b>matin</b> à tort ? Jusqu'ici, il fallait retirer l'enfant puis le re-rattacher. Maintenant : clique le <b>✏️</b> à côté de l'enfant (sur sa carte de dossier, ou sur sa chip 🎒 dans 👶 Enfants), coche les bons créneaux, <b>✓ Corriger</b>. Bob aligne aussi la coche « comptoir » de l'arbre famille (bureau), rafraîchit les deux écrans d'un coup, et te prévient si un forfait déjà chiffré est à revoir."},
   {id:'2026-08-09-acces-groupes',date:'2026-08-09',tab:'🔐 Accès',titre:"🗂️ L'écran des accès rangé par groupes",desc:"Dans l'espace bureau (page de connexion), les accès validés sont désormais rangés par groupes — <b>Bureau, Salariés, Intervenants, Familles</b> — avec un compteur par groupe, une <b>recherche</b> dans les familles et des <b>badges</b> qui disent ce qu'on sait déjà (€ adhésion payée, 🏠 foyer relié, 📄 état du dossier, ⚠️ fiche sans nom). Les actions sensibles (changer un rôle, retirer un accès) n'apparaissent qu'en <b>dépliant la personne</b> : fini les fausses manipulations en faisant défiler la longue liste."},
@@ -9947,6 +9951,21 @@ renderAll();
     const ms=document.getElementById('peri_ms_'+id);
     if(ms) ms.style.display=(destEl&&destEl.value==='PERI')?'':'none';
   };
+  /* 📞 Le bureau/l'accueil ajoute le numéro obtenu de vive voix (14/08/2026) — le dépôt famille
+     l'exige désormais, mais les dossiers DÉJÀ déposés sans numéro se complètent ici. Même format
+     accepté que côté famille (0692… / +262… / 00…). */
+  window.periSetTel=async function(id){
+    const cur=await sbc.from('inscriptions_periscolaire').select('tel,foyer').eq('id',id).single();
+    if(cur.error){ alert('Erreur : '+cur.error.message); return; }
+    const t=prompt('📞 Numéro de téléphone de la famille'+((cur.data&&cur.data.foyer)?(' ('+cur.data.foyer+')'):'')+' :',(cur.data&&cur.data.tel)||'');
+    if(t===null) return;
+    const c=String(t).replace(/[\s.\-()\/]/g,'');
+    if(!/^(0\d{9}|\+\d{8,14}|00\d{8,14})$/.test(c)){ alert('Numéro invalide : « '+t+' ». Format attendu : 0692… ou +262…'); return; }
+    const {error}=await sbc.from('inscriptions_periscolaire').update({tel:String(t).trim()}).eq('id',id);
+    if(error){ alert('Erreur : '+error.message); return; }
+    if(typeof setSync==='function')setSync('✓ téléphone enregistré','#dff5e9');
+    if(window.loadDossiersPeri)loadDossiersPeri();
+  };
   // Rafraîchit LES DEUX écrans qui affichent le même jsonb enfants[] (📨 Dossiers familles et 👶 Enfants) :
   // avant le 14/08/2026, chacun ne rechargeait que lui-même et l'autre restait périmé à l'écran, sans alerte.
   window.periRefreshSurfaces=function(){
@@ -10372,10 +10391,12 @@ renderAll();
     data.sort(function(a,b){ return rang(a)-rang(b); });
     const nbTodo=data.filter(isTodo).length;
     const nbImp=data.filter(d=>(d.montant_du_cents||0)>0 && ((d.montant_du_cents||0)-paidSumOf(d.id))>0).length;
+    const nbSansTel=data.filter(d=>!(d.tel&&String(d.tel).trim())).length; // 📵 dossiers injoignables (14/08/2026) — le dépôt famille exige désormais le numéro, ce compteur chasse le stock existant
     const todoOnly=!!window.__periDosTodoOnly;
     const hdr='<div class="row" style="align-items:center;gap:10px;margin-bottom:8px;flex-wrap:wrap">'
       +'<span class="pill" style="background:'+(nbTodo?'#fbecea':'#dff5e9')+';color:'+(nbTodo?'#b23a23':'#127a51')+';font-weight:600">'+(nbTodo?('🔴 '+nbTodo+' dossier'+(nbTodo>1?'s':'')+' à traiter'):'✅ Tous les dossiers sont traités')+'</span>'
       +(nbImp?'<span class="pill" style="background:#fff5da;color:#8a6400;font-weight:600">💰 '+nbImp+' à encaisser</span>':'')
+      +(nbSansTel?'<span class="pill" style="background:#fbecea;color:#b23a23;font-weight:600" title="Dossiers sans numéro de téléphone — indispensable pour joindre la famille (urgence, enfant malade). Réclame-le et ajoute-le avec « ➕ Ajouter le n° » sur la carte.">📵 '+nbSansTel+' sans téléphone</span>':'')
       +((canWrite&&aVerser.length)?'<button class="btn" style="padding:4px 10px;font-size:12px" onclick="periVerserCompta()">💶 Verser en compta ('+aVerser.length+')</button>':'')
       +'<label style="font-size:12px;display:flex;align-items:center;gap:5px;cursor:pointer"><input type="checkbox" '+(todoOnly?'checked':'')+' onchange="periDosToggle(this.checked)"> à traiter seulement</label>'
       +'</div>';
@@ -10603,6 +10624,7 @@ renderAll();
         +' <button class="ghost btn" style="font-size:11px;padding:1px 8px" onclick="bobGoFicheFamille(\''+d.id+'\')" title="Ouvrir la fiche de cette famille (👨‍👩‍👧 Familles → 👥 Adhérents)">👥 Fiche famille</button>'
         +(d.besoin_aide?' <span class="pill" style="background:#fff5da;color:#8a6400;font-size:11px">🙋 Aide demandée (RDV)</span>':'')
         +((d.email||d.tel)?'<br><span class="muted" style="font-size:13px">'+esc(d.email||'')+((d.email&&d.tel)?' · ':'')+esc(d.tel||'')+'</span>':'')
+        +((d.tel&&String(d.tel).trim())?'':('<br><span style="color:#b23a23;font-size:12.5px;font-weight:600">📵 Pas de numéro de téléphone — indispensable pour joindre la famille</span>'+(canPeri?' <button class="ghost btn" style="font-size:11px;padding:1px 8px" onclick="periSetTel(\''+d.id+'\')">➕ Ajouter le n°</button>':'')))
         +'</div><span class="muted" style="font-size:12px">'+esc((d.updated_at||'').slice(0,10))+'</span></div>'
         +'<div style="margin-top:6px;display:flex;gap:5px;flex-wrap:wrap">'+enfHtml+'</div>'
         +actChipsBlock
