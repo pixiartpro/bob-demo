@@ -536,6 +536,7 @@
         <h2 style="margin:0">Liste des adhérents</h2>
         <button class="ghost btn" onclick="if(window.loadMembersArbre)loadMembersArbre()" title="Relire l'arbre famille">↻</button>
         <input id="m_search" placeholder="🔎 Rechercher..." oninput="renderMembers()" style="max-width:240px">
+        <span id="membersTelWarn" class="pill" style="display:none;background:#fbecea;color:#b23a23;font-weight:600"></span>
       </div>
       <div id="membersArbreBar"></div>
       <div style="overflow-x:auto;-webkit-overflow-scrolling:touch"><table style="min-width:720px"><thead><tr><th>Nom</th><th>Contact</th><th>Adresse</th><th>Adhésion</th><th class="num">Cotisation</th><th>Statut</th><th></th></tr></thead>
@@ -1099,7 +1100,7 @@
       <p class="hint">Pour une famille qui se présente <strong>sans compte en ligne</strong> (et même sans email). Le dossier peut être <strong>incomplet</strong> : on l'accepte, on note ce qui manque, et on remet le <strong>code famille imprimé</strong> — il servira à relier son compte en ligne à ce dossier quand l'espace famille le proposera.</p>
       <div class="row" style="flex-wrap:wrap;gap:10px">
         <div class="field" style="min-width:200px"><label>Nom du foyer *</label><input id="fy_nom" placeholder="Famille Payet"></div>
-        <div class="field" style="min-width:140px;flex:0"><label>Téléphone</label><input id="fy_tel" placeholder="0692…"></div>
+        <div class="field" style="min-width:140px;flex:0"><label>Téléphone *</label><input id="fy_tel" type="tel" placeholder="0692… (obligatoire)"></div>
         <div class="field" style="min-width:200px"><label>Adulte responsable</label><input id="fy_adulte" placeholder="Nom complet"></div>
         <div class="field" style="min-width:130px;flex:0"><label>Saison</label><select id="fy_saison"></select></div>
       </div>
@@ -3022,7 +3023,7 @@ document.querySelectorAll('nav.tabs button').forEach(b=>{
 const FAQ=[
   {cat:'👨‍👩‍👧 Foyers', q:"Comment une famille relie-t-elle son compte en ligne à son dossier (code famille) ?", kw:"code famille rattacher rattachement relier lier compte en ligne recepisse bdn detacher detache nouveau code deuxieme parent second parent usage unique date de naissance", a:"Sur son espace en ligne, onglet <b>Mon compte</b>, la famille entre le <b>code famille</b> de son récépissé (il commence par <b>BDN-</b>) et la <b>date de naissance d'un de ses enfants</b>. Son compte est aussitôt relié au dossier : elle y retrouve ses enfants et ses inscriptions.<br><br><b>Le code ne sert qu'une fois</b> : dès qu'il a servi, Bob le remplace — un récépissé qui traîne ne reste pas une clé. Si un <b>deuxième parent</b> doit relier son compte, ou si le récépissé est perdu, clique sur <b>🔁 Nouveau code</b> sur la carte du foyer et redonne-le.<br><br>La <b>date de naissance</b> est demandée en plus du code parce que se relier à un foyer donne accès à <b>toute la fratrie</b> : le code seul ne suffit pas. Et si un compte s'est relié à la mauvaise fiche, le bouton <b>🔓</b> posé à côté de « 🔗 compte » le <b>détache</b> — la fiche et le dossier, eux, sont conservés."},
   {cat:'👨‍👩‍👧 Foyers', q:"C'est quoi l'onglet Foyers, et comment inscrire une famille au comptoir sans compte ?", kw:"foyer foyers famille familles registre arbre comptoir nouveau creer inscrire sans compte sans email papier code recepisse imprimer adulte enfants adhesion incomplet pieces manquantes", a:"L'onglet <b>👨‍👩‍👧 Foyers</b> (tiroir Familles) est le <b>registre des familles</b> : chaque foyer réunit ses adultes, ses enfants, son adhésion et ses inscriptions — l'arbre complet d'un coup d'œil. Le bouton <b>➕ Nouveau foyer (comptoir)</b> permet d'inscrire une famille qui se présente <b>sans compte en ligne</b> (et même sans email) : tu saisis le foyer, l'adulte, les enfants, tu coches 🎒 matin/soir si besoin — le dossier est accepté <b>même incomplet</b> (statut « à compléter »), et Bob imprime un <b>récépissé</b> avec le <b>code famille</b> à remettre (la famille l'entre dans son espace en ligne pour <b>relier son compte</b> à ce dossier). <b>Réservé au bureau.</b> ⚠️ <b>Pendant la construction de l'arbre</b>, les onglets 👥 Adhérents · 👶 Enfants · 🎒 Périscolaire restent la référence : une inscription cochée ici est <b>à reporter AUSSI dans 🎒 Périscolaire</b> (c'est lui qui calcule le forfait) — l'onglet Foyers les rejoindra pleinement à la bascule."},
-  {cat:'👥 Adhérents', q:"Comment passer de la fiche d'une famille à son dossier périscolaire (et revenir) ?", kw:"famille fiche dossier periscolaire raccourci pont passer aller voir bouton retour adherent livre navigation relier", a:"Sur la ligne d'une famille (👨‍👩‍👧 Familles → 👥 Adhérents), le bouton <b>📨 Périscolaire</b> t'emmène droit sur <b>son dossier périscolaire</b> (onglet 🎒 Périscolaire), mis en évidence quelques secondes. Dans l'autre sens, chaque dossier porte un bouton <b>👥 Fiche famille</b> qui rouvre sa ligne dans le livre des adhérents. Bob relie les deux par l'<b>email</b>, sinon par le <b>nom</b> : si une famille a déposé son dossier avec une autre adresse que celle de sa fiche, Bob te le dit au lieu de deviner. 💵 L'<b>encaissement</b>, lui, ne bouge pas : il reste sur le dossier famille, et « Verser en compta » reste le pont vers les Finances."},
+  {cat:'👥 Adhérents', q:"Comment passer de la fiche d'une famille à son dossier périscolaire (et revenir) ?", kw:"famille fiche dossier periscolaire raccourci pont passer aller voir bouton retour adherent livre navigation relier", a:"Sur la ligne d'une famille (👨‍👩‍👧 Familles → 👥 Adhérents), le bouton <b>📨 Dossier famille</b> t'emmène droit sur <b>son dossier</b> (onglet 👨‍👩‍👧 Familles → 📨 Dossiers familles), mis en évidence quelques secondes. Dans l'autre sens, chaque dossier porte un bouton <b>👥 Fiche famille</b> qui rouvre sa ligne dans le livre des adhérents. Bob relie les deux par l'<b>email</b>, sinon par le <b>nom</b> : si une famille a déposé son dossier avec une autre adresse que celle de sa fiche, Bob te le dit au lieu de deviner. 💵 L'<b>encaissement</b>, lui, ne bouge pas : il reste sur le dossier famille, et « Verser en compta » reste le pont vers les Finances."},
   {cat:'📒 Paie', q:"Où je range les fiches de paie, les cotisations et la DSN chaque mois ?", kw:"paie salaire salaires fiche fiches bulletin bulletins cotisation cotisations dsn declaration sociale nominative classeur social mensuel coffre depot deposer cabinet comptable expert president tresorier", a:"Onglet <b>🧑‍💼 Équipe &amp; Paie → 📒 Paie</b> (grappe « Obligations &amp; paie »). Tu crées <b>un dossier par mois</b> (« ➕ Nouveau mois »), puis tu déposes les <b>fiches de paie (une par salarié)</b>, le <b>détail des cotisations</b> et la <b>DSN</b>. Tout va dans un <b>coffre privé</b> <b>réservé au président et au trésorier</b> — invisible pour le reste de l'équipe et jamais publié sur le site. Le bouton <b>« 📦 Classeur du mois »</b> te ressort toutes les pièces d'un coup pour le cabinet comptable. ⚠️ C'est ta copie de travail centralisée : elle ne remplace pas l'obligation légale de conservation des bulletins."},
   {cat:'👥 Dossiers salariés', q:"Une salariée me dit que son espace est vide — que faire ?", kw:"espace vide salarie salariee rien ne s affiche vide ecran blanc section sections rattachement equipe acm periscolaire vepi acces droits animateur animatrice cloisonnement rubriques", a:"C'est presque toujours la même cause : <b>la personne n'est rattachée à aucune équipe</b> (ACM, Périscolaire ou VEPI). Bob cloisonne les données par équipe — sans rattachement, elle ne voit ni les enfants, ni les activités, ni les messages, <b>et c'est normal</b>. Depuis le 20/07/2026, son écran le lui <b>dit</b> : un bandeau 🍍 en haut de son accueil annonce « Il te manque un rattachement à une équipe ». Pour corriger : <b>connexion.html → 🔐 Accès → 🔧 Rubriques</b> sur son compte, coche son ou ses équipes, Enregistrer. Elle recharge sa page, tout apparaît. <b>⚠️ Avant de cocher, vérifie que c'est bien la bonne personne</b> : deux comptes peuvent porter le même prénom (un parent et une salariée). Regarde l'<b>email</b>, et vérifie qu'une <b>fiche salarié</b> lui est bien liée dans 👥 Dossiers salariés — un parent n'en a pas."},
   {cat:'👥 Dossiers salariés', q:"Quelle différence entre « il te manque un rattachement » et « on n'a pas pu vérifier tes accès » ?", kw:"bandeau message erreur reseau connexion coupee recharger acces non verifies difference panne rattachement distinguer orange rouge", a:"Ce sont <b>deux problèmes opposés</b>, et l'écran ne les confond plus. Le bandeau <b>🍍 orange</b> (« il te manque un rattachement ») veut dire que Bob a bien vérifié : le compte est actif, mais <b>aucune équipe</b> ne lui a été attribuée → c'est au <b>bureau</b> d'agir, en cochant ses équipes. Le bandeau <b>📡 rouge</b> (« on n'a pas pu vérifier tes accès ») veut dire que Bob <b>n'a pas réussi à joindre le serveur</b> : il ne sait pas, et des écrans peuvent sembler vides <b>alors qu'ils ne le sont pas</b> → c'est à la <b>salariée</b> de recharger la page. Avant le 20/07/2026, ces deux cas produisaient <b>rigoureusement le même écran vide et muet</b> — une animatrice a travaillé quatre jours sans comprendre."},
@@ -3208,7 +3209,7 @@ const FAQ=[
   {cat:'👥 Adhérents',q:"Pourquoi la liste des adhérents affiche « 🌳 arbre », et d'où viennent ces lignes ?",kw:"arbre pastille verte liste adherents lecture branchee source foyers registre pas dans arbre ecart livre difference bandeau reconcilier",
    a:"Depuis le <b>02/08/2026</b>, la liste de l'onglet <b>👥 Adhérents</b> est lue depuis l'<b>arbre famille</b> (le même registre que l'onglet 👨‍👩‍👧 Foyers) : chaque ligne marquée <b>🌳 arbre</b> vient de là. <b>Rien ne change pour tes gestes</b> : Ajouter, modifier (✏️), changer le statut, supprimer — tout écrit toujours dans le <b>livre des adhérents</b>, comme avant. Si une entrée du livre n'existe pas encore dans l'arbre, elle reste affichée avec la marque <b>⚠️ pas dans l'arbre</b> et le bandeau du haut te la compte : rien n'est perdu, c'est un écart à réconcilier (il ne se résorbe pas tout seul). Et si l'arbre ne se lit pas (souci de réseau…), Bob raffiche le livre et te le dit — jamais une liste à moitié vraie."},
   {cat:'👥 Adhérents',q:"Comment j'ajoute un adhérent ?",kw:"ajouter adherent membre nouveau inscrire cotisation creer enregistrer",
-   a:"Onglet <b>👥 Adhérents</b> : remplis le nom (et ce que tu veux : email, téléphone, cotisation…) en haut, puis clique sur <b>« Ajouter »</b>. L'adhérent apparaît dans la liste juste en dessous."},
+   a:"Onglet <b>👥 Adhérents</b> : remplis le <b>nom</b> et le <b>numéro de téléphone</b> — <b>tous deux obligatoires</b> depuis le 14/08/2026 : sans numéro, impossible de joindre la famille (urgence, relance) — plus ce que tu veux (email, cotisation…), puis clique sur <b>« Ajouter »</b>. L'adhérent apparaît dans la liste juste en dessous. La liste marque <b>📵 pas de numéro</b> les anciens adhérents sans téléphone (compteur en haut) : clique ✏️ sur leur ligne pour l'ajouter dès que tu l'obtiens. Même règle au comptoir 👨‍👩‍👧 Foyers."},
   {cat:'👥 Adhérents',q:"Comment je modifie la fiche d'un adhérent ?",kw:"modifier corriger changer adherent membre fiche editer mettre a jour",
    a:"Dans la liste des adhérents, clique sur le crayon <b>✏️</b> de la ligne concernée. Change ce qu'il faut dans la fenêtre, puis <b>« Enregistrer »</b>."},
   {cat:'👥 Adhérents',q:"À quoi servent les champs « Type d'adhésion » et « Site » ?",kw:"type adhesion site membre danse periscolaire vepi acm bringelliers categorie classer",
@@ -3380,6 +3381,8 @@ function pageHelpGotoAide(){ pageHelpClose(); const b=document.querySelector('na
 
 /* ---- ✨ Quoi de neuf (nouveautés + notice chronologique) ---- */
 const NEWS=[
+  {id:'2026-08-14-telephone-adherents',date:'2026-08-14',tab:'👥 Adhérents',titre:"📞 Pas d'adhérent sans téléphone — au livre comme au comptoir Foyers",
+   desc:"Même règle que pour les dossiers : <b>on ne peut plus ajouter un adhérent sans numéro de téléphone valide</b> (formulaire 👥 Adhérents ET comptoir 👨‍👩‍👧 Foyers — la famille est en face, c'est le moment de le demander ; format vérifié : 0692… ou +262…). Pour le stock existant : la liste marque en rouge <b>📵 pas de numéro</b> chaque adhérent injoignable, un compteur en haut de la liste dit combien il en reste, et le <b>✏️ Modifier</b> de la ligne suffit pour ajouter le numéro dès que tu l'obtiens. Les adhésions payées <b>en ligne</b> ne sont pas bloquées (on ne refuse pas un paiement) — elles arrivent marquées 📵 pour que tu réclames le numéro à la validation."},
   {id:'2026-08-14-telephone-obligatoire',date:'2026-08-14',tab:'📨 Dossiers familles',titre:"📞 Le téléphone devient obligatoire pour déposer un dossier — et Bob chasse les dossiers muets",
    desc:"Constat du bureau : des familles sans numéro de téléphone au dossier — <b>injoignables</b> le jour où un enfant est malade ou au moment d'une sortie. Trois verrous d'un coup. <b>① Côté famille :</b> impossible de <b>déposer</b> un dossier sans un numéro <b>valide</b> (le brouillon reste libre, et le format est vérifié : 0692… ou +262…). <b>② Côté bureau :</b> dans 📨 Dossiers familles, une pastille <b>📵 N sans téléphone</b> compte les dossiers muets du stock existant, et chaque carte concernée l'affiche en rouge. <b>③ Le rattrapage :</b> un bouton <b>« ➕ Ajouter le n° »</b> sur ces cartes — tu obtiens le numéro au comptoir ou à la sortie, tu l'enregistres en 5 secondes, bureau comme accueil."},
   {id:'2026-08-14-dossiers-familles-onglet',date:'2026-08-14',tab:'📨 Dossiers familles',titre:"📨 Les dossiers familles ont leur onglet — dans 👨‍👩‍👧 Familles — et le ✏️ corrige matin/soir",
@@ -3640,9 +3643,15 @@ async function faqAskHelp(){
 }
 
 /* ---- Members ---- */
+/* 📞 Règle du 14/08/2026 : pas d'adhérent sans téléphone — sans numéro, impossible de joindre
+   la famille (urgence, relance). Même format que côté famille (0692… / +262… / 00…). */
+window.bobTelOk=function(t){ const c=String(t||'').replace(/[\s.\-()\/]/g,''); return /^(0\d{9}|\+\d{8,14}|00\d{8,14})$/.test(c); };
 function addMember(){
   const name = $('m_name').value.trim();
   if(!name){ alert('Indique au moins le nom de l\'adhérent.'); return; }
+  const phone=$('m_phone').value.trim();
+  if(!phone){ alert('📞 Le numéro de téléphone est obligatoire pour adhérer — c\'est lui qui permet de joindre la famille (urgence, relance).'); return; }
+  if(!bobTelOk(phone)){ alert('📞 Numéro invalide : « '+phone+' ». Format attendu : 0692… ou +262…'); return; }
   db.members.push({id:uid(), name, typeAdh:$('m_typeAdh').value.trim(), site:$('m_site').value.trim(), email:$('m_email').value.trim(), phone:$('m_phone').value.trim(),
     addr:$('m_addr').value.trim(), cp:$('m_cp').value.trim(), city:$('m_city').value.trim(),
     amount:parseFloat($('m_amount').value)||0, date:$('m_date').value||today(), paid:$('m_paid').value==='1', mode:$('m_mode').value});
@@ -3658,6 +3667,8 @@ function renderMembers(){
   /* `canWrite` est un `let` de l'IIFE connexion — hors de portée ici (cf. incident portée 11/07) */
   const canW = !!(window.bobMe&&window.bobMe.canWrite);
   const mems = db.members||[];
+  // 📵 compteur des adhérents injoignables (14/08/2026) — l'ajout exige désormais le numéro, ceci chasse le stock
+  try{ const tw=document.getElementById('membersTelWarn'); if(tw){ const n=mems.filter(x=>!(x.phone&&String(x.phone).trim())).length; tw.style.display=n?'':'none'; tw.textContent=n?('📵 '+n+' sans téléphone'):''; tw.title='Adhérents sans numéro de téléphone — clique ✏️ Modifier sur leur ligne pour l\'ajouter dès que tu l\'obtiens'; } }catch(e){}
   /* Statut du livre : cliquable UNIQUEMENT avec droit d'écriture (applyPerms masque les
      <button> en niveau lecture, mais pas un <span onclick> — on ferme ce trou ici). */
   const statutLivre = m => canW
@@ -3666,7 +3677,7 @@ function renderMembers(){
   /* Ligne « livre » (db.members, coffre) — le rendu historique */
   const rowLivre = (m, pill) => `<tr>
     <td><strong>${esc(m.name)}</strong>${m.typeAdh?' <span class="pill" style="background:#eef2fb;color:#1f4fc4;font-size:11px">'+esc(m.typeAdh)+'</span>':''}${pill||''}<br><span class="muted" style="font-size:12px">${m.site?esc(m.site)+' · ':''}Depuis le ${fmtDate(m.date)}</span></td>
-    <td style="font-size:13px">${esc(m.email||'—')}<br><span class="muted">${esc(m.phone||'')}</span></td>
+    <td style="font-size:13px">${esc(m.email||'—')}<br>${(m.phone&&String(m.phone).trim())?('<span class="muted">'+esc(m.phone)+'</span>'):'<span style="color:#b23a23;font-size:12px;font-weight:600" title="Sans numéro, la famille est injoignable — clique ✏️ pour l\'ajouter">📵 pas de numéro</span>'}</td>
     <td style="font-size:13px">${esc(m.addr||'—')}<br><span class="muted">${esc(((m.cp||'')+' '+(m.city||'')).trim())}</span></td>
     <td>${fmtDate(m.date)}</td>
     <td class="num">${euro(m.amount)}${m.mode?'<br><span class="muted" style="font-size:11px">'+esc(modeLabel(m.mode))+'</span>':''}</td>
@@ -3763,7 +3774,7 @@ function renderMembers(){
       +' <span class="pill" style="background:#e7f5ee;color:#127a51;font-size:10px" title="Ligne lue depuis l\'arbre famille (le registre de l\'onglet 👨‍👩‍👧 Foyers)">🌳 arbre</span>'
       +(retiree?' <span class="pill" style="background:#fdeeee;color:#b03a2e;font-size:10px" title="Cette adhésion existe dans l\'arbre mais son entrée du livre a été supprimée — l\'arbre, lui, ne s\'efface pas d\'ici (voir l\'onglet 👨‍👩‍👧 Foyers)">⚠️ retirée du livre</span>':'')
       +'<br><span class="muted" style="font-size:12px">Saison '+esc(a.saison||'—')+'</span></td>'
-      +'<td style="font-size:13px">'+esc((m&&m.email)||'—')+'<br><span class="muted">'+esc(f.tel||(m&&m.phone)||'')+'</span></td>'
+      +'<td style="font-size:13px">'+esc((m&&m.email)||'—')+'<br>'+((f.tel||(m&&m.phone))?('<span class="muted">'+esc(f.tel||(m&&m.phone))+'</span>'):'<span style="color:#b23a23;font-size:12px;font-weight:600" title="Sans numéro, la famille est injoignable — ✏️ sur la ligne (livre) ou fiche du foyer">📵 pas de numéro</span>')+'</td>'
       +'<td style="font-size:13px">'+esc(f.adresse||(m&&m.addr)||'—')+'<br><span class="muted">'+esc(((f.cp||(m&&m.cp)||'')+' '+(f.ville||(m&&m.city)||'')).trim())+'</span></td>'
       +'<td>'+(a.date_adhesion?fmtDate(a.date_adhesion):'—')
         +(divDate?'<br><span class="pill" style="background:#fdeeee;color:#b03a2e;font-size:10px" title="Le livre dit une autre date — le 🧾 Reçu imprime celle du livre">🧾 livre : '+fmtDate(m.date)+'</span>':'')+'</td>'
@@ -9959,8 +9970,7 @@ renderAll();
     if(cur.error){ alert('Erreur : '+cur.error.message); return; }
     const t=prompt('📞 Numéro de téléphone de la famille'+((cur.data&&cur.data.foyer)?(' ('+cur.data.foyer+')'):'')+' :',(cur.data&&cur.data.tel)||'');
     if(t===null) return;
-    const c=String(t).replace(/[\s.\-()\/]/g,'');
-    if(!/^(0\d{9}|\+\d{8,14}|00\d{8,14})$/.test(c)){ alert('Numéro invalide : « '+t+' ». Format attendu : 0692… ou +262…'); return; }
+    if(!(window.bobTelOk?bobTelOk(t):true)){ alert('Numéro invalide : « '+t+' ». Format attendu : 0692… ou +262…'); return; }
     const {error}=await sbc.from('inscriptions_periscolaire').update({tel:String(t).trim()}).eq('id',id);
     if(error){ alert('Erreur : '+error.message); return; }
     if(typeof setSync==='function')setSync('✓ téléphone enregistré','#dff5e9');
@@ -10859,6 +10869,9 @@ renderAll();
     const nom=((document.getElementById('fy_nom')||{}).value||'').trim();
     if(!nom){ alert('Donne un nom au foyer (ex. « Famille Payet »).'); return; }
     const tel=((document.getElementById('fy_tel')||{}).value||'').trim();
+    // 📞 Règle du 14/08/2026 : pas d'adhésion sans téléphone — le comptoir est en face de la famille, c'est LE moment de le demander
+    if(!tel){ alert('📞 Le téléphone du foyer est obligatoire — c\'est lui qui permet de joindre la famille (urgence, relance). Demande-le au comptoir.'); return; }
+    if(window.bobTelOk&&!bobTelOk(tel)){ alert('📞 Numéro invalide : « '+tel+' ». Format attendu : 0692… ou +262…'); return; }
     const adulte=((document.getElementById('fy_adulte')||{}).value||'').trim();
     const saison=((document.getElementById('fy_saison')||{}).value||fySaisonDefaut());
     const btn=document.getElementById('fyCreateBtn'); if(btn) btn.disabled=true;
