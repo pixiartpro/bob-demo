@@ -3354,9 +3354,9 @@ function siteFold(s){
   return String(s||'').trim().toLowerCase().normalize('NFD')
     .replace(/[̀-ͯ]/g,'').replace(/[^a-z0-9]+/g,' ').trim();
 }
-/* Les sites RÉELLEMENT écrits, pas ceux de la liste de paramétrage : ORG_LISTS propose au CASE
-   « C.A.S.E Bois de Nèfles », qui n'apparaît dans AUCUNE écriture — le proposer fabriquerait un
-   site fantôme de plus dans les états. */
+/* Les sites RÉELLEMENT écrits, pas ceux de la liste de paramétrage : features.listes peut porter
+   un libellé qui n'apparaît dans AUCUNE écriture (vécu : un nom de site « officiel » jamais utilisé) —
+   le proposer fabriquerait un site fantôme de plus dans les états. */
 function sitesVecus(){
   return [...new Set((db.ops||[]).flatMap(o=>getSplits(o).map(s=>String(s.site||'').trim())).filter(Boolean))];
 }
@@ -3764,20 +3764,10 @@ function renderVentilation(){
    Chaque org complète ensuite ses propres listes via db[key] (coffre), inchangé.
    ⚠️ Dernier tableau d'identité par UUID encore dans le code (ASSO_IDENTITY, lui, est parti en base
    le 08/08/2026) : candidat au même déménagement quand les listes métier deviendront un réglage. ===== */
-const ORG_LISTS={
-  'd617489c-b18b-499b-ab17-c31656d0f08a':{ // CASE — listes historiques, INCHANGÉES // saas-ok: listes historiques du CASE, gardees par estLeCase() — donnees de ce client, jamais servies aux autres
-    sites:["C.A.S.E Bois de Nèfles","Local des Bringelliers"], // saas-ok: liste historique du CASE, servie par sa clé UUID uniquement
-    actions:["Périscolaire","Accueil de loisirs (ACM)","VEPI","Secteur ados / Kaz Zados","Danse","Musique","Permanence du samedi","Jeudi info population","Sport & santé","Accompagnement à la parentalité","Animation de quartier","Fêt nout kartyé","Ôté Kartié","Fonctionnement"],
-    cats:["Cotisations","Subvention","Dons","Événement","Matériel","Frais"],
-    typesAdh:["Membre","Danse","Périscolaire","VEPI","ACM","Musique","Famille"],
-    /* 04/08/2026 — listes du 🎯 Budget par action, jusqu'ici EN DUR pour tout le monde */
-    typesAction:["Périscolaire","ACM","VEPI","Événement","Autre"],
-    postesBudget:['Alimentation / goûter','Matériel pédagogique','Transport','Sorties / activités','Prestataires / intervenants','Hébergement / séjour','Communication','Assurance','Autre'],
-    stdCharges:['Alimentation / goûter','Transport','Matériel pédagogique','Prestataires / intervenants','Hébergement / séjour','Assurance'],
-    stdRecettes:['CAF · PS ALSH','Participations familles','Autres produits']
-  }
-};
-// Socle générique pour toute org non listée (ex. PIX-I-ART, BOKAF) : catégories compta universelles, le reste vierge à compléter.
+/* 15/08/2026 — le dernier tableau d'identité par UUID a quitté le fichier (migration 71) :
+   les listes métier d'une asso vivent dans SES données, `associations.features.listes`
+   (celles du CASE y ont été recopiées mot pour mot). Le fichier ne garde que le socle neutre. */
+// Socle générique pour toute org sans listes déclarées : catégories compta universelles, le reste vierge à compléter.
 const ORG_LISTS_DEFAULT={ sites:[], actions:["Fonctionnement"], cats:["Cotisations","Subvention","Dons","Événement","Matériel","Frais"], typesAdh:["Membre"],
   /* socle NEUTRE : ni périscolaire, ni ACM, ni CAF — une asso qui n'accueille pas d'enfants ne doit pas
      se voir proposer « Périscolaire » comme type d'action par DÉFAUT (il finissait gravé dans ses fiches). */
@@ -3785,7 +3775,7 @@ const ORG_LISTS_DEFAULT={ sites:[], actions:["Fonctionnement"], cats:["Cotisatio
   postesBudget:['Matériel','Transport','Prestataires / intervenants','Communication','Assurance','Autre'],
   stdCharges:['Matériel','Transport','Prestataires / intervenants','Communication'],
   stdRecettes:['Subvention','Participations','Autres produits'] };
-function orgLists(){ try{ return (typeof myAsso!=='undefined' && myAsso && ORG_LISTS[myAsso]) || ORG_LISTS_DEFAULT; }catch(e){ return ORG_LISTS_DEFAULT; } }
+function orgLists(){ try{ const L=window.__bobFeatures&&window.__bobFeatures.listes; return (L&&typeof L==='object')?L:ORG_LISTS_DEFAULT; }catch(e){ return ORG_LISTS_DEFAULT; } }
 /* listes paramétrables : standard (par org, ci-dessus) + perso (db[key]) + déjà utilisées */
 const LIST_DEFS={
   sites:{label:"Sites",dl:"sites"},
@@ -7004,16 +6994,20 @@ function avInfo(key){
 }
 function avenantTpl(key){
   const o=avInfo(key);
-  const employeur="L'association C.A.S.E — Centre d'Animation Socio-Éducatif du Bois de Nèfles,"; // saas-ok: modèle d'avenant du chantier ÉCLAT du CASE — à passer sur identite.* si le module s'ouvre à une 2e asso
+  /* L'employeur vient des DONNÉES de l'asso (identite.avenant_employeur, migration 71) —
+     jamais d'un nom en dur : ce fichier sert plusieurs associations. Sans déclaration,
+     des champs [ à compléter ] plutôt que l'identité d'un autre client. */
+  const it=(window.__bobFeatures&&window.__bobFeatures.identite)||{};
+  const employeur=it.avenant_employeur||"L'association [ nom de l'association ],\ndont le siège est situé [ adresse du siège ],\nidentifiée sous le n° RNA [ ______ ], SIRET [ ______________ ],\nreprésentée par [ Prénom NOM ], en sa qualité de [ qualité ],";
+  const motif=it.avenant_motif||"[ Exposé des motifs : convention collective appliquée jusqu'ici, activité réelle de la structure, convention réellement applicable, référence de la confirmation de branche. ]";
+  const signataire=it.avenant_signataire||"[ Prénom NOM, qualité ]";
+  const lieu=it.avenant_lieu||"[ ville ]";
   return `AVENANT N° ____ AU CONTRAT DE TRAVAIL
 Changement de convention collective applicable — maintien de la rémunération
 
 ENTRE LES SOUSSIGNÉS
 
 ${employeur}
-dont le siège est situé 132 place de la Fraternité, Route des Ananas, 97490 Sainte-Clotilde,
-identifiée sous le n° RNA W9R1001361, SIRET [ ______________ ],
-représentée par M. Guillaume BOULEVART, en sa qualité de Président,
 ci-après dénommée « l'employeur »,
 
 D'UNE PART,
@@ -7029,15 +7023,7 @@ D'AUTRE PART,
 
 PRÉAMBULE
 
-L'association a appliqué jusqu'à ce jour la convention collective nationale des
-acteurs du lien social et familial (ALISFA / ÉLISFA — IDCC 1261). La convention
-collective applicable est déterminée par l'activité réelle de la structure.
-L'activité du C.A.S.E (animation socioculturelle, périscolaire, accueil collectif
-de mineurs) relève de la Convention collective nationale de l'animation — ÉCLAT
-(IDCC 1518), ce qui a été confirmé par la branche professionnelle (Hexopée,
-saisine Q199179). Les parties conviennent en conséquence de régulariser la
-convention collective applicable au contrat de travail, sans aucune diminution
-de la rémunération du / de la salarié(e).
+${motif}
 
 IL A ÉTÉ CONVENU CE QUI SUIT
 
@@ -7071,10 +7057,10 @@ ARTICLE 5 — AUTRES DISPOSITIONS
 Les autres clauses du contrat de travail demeurent inchangées. Le présent avenant
 prend effet à la date de sa signature et ne comporte aucun effet rétroactif.
 
-Fait à Saint-Denis, le ____________________, en deux exemplaires originaux.
+Fait à ${lieu}, le ____________________, en deux exemplaires originaux.
 
   L'employeur                                Le / la salarié(e)
-  M. Guillaume BOULEVART, Président          ${o.name}
+  ${signataire}          ${o.name}
                                              (faire précéder la signature de la
                                               mention « Lu et approuvé »)
 
