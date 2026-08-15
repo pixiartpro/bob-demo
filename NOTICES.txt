@@ -1,0 +1,76 @@
+Composants tiers inclus dans Bob
+================================
+
+Inventaire arrêté au 15 août 2026. Bob est un logiciel propriétaire édité par
+PIX-I-ART. Les composants ci-dessous sont des logiciels tiers, chacun régi par
+sa propre licence, reproduite ou référencée ici.
+
+Aucun de ces composants n'impose la publication du code source de Bob.
+
+
+1. @supabase/supabase-js — version 2 (2.112.x)
+----------------------------------------------
+Licence : MIT — Copyright (c) 2020 Supabase
+Usage   : accès à la base de données et à l'authentification, dans les pages
+          de l'application et dans les fonctions serveur (Edge Functions).
+Inclut, sous la même licence MIT :
+  @supabase/auth-js, @supabase/functions-js, @supabase/postgrest-js,
+  @supabase/realtime-js, @supabase/storage-js
+  @supabase/phoenix — Copyright (c) 2014 Chris McCord
+  iceberg-js — Copyright (c) 2025 Supabase
+Inclut également :
+  tslib — Licence 0BSD — Copyright (c) Microsoft Corporation
+          (cette licence n'exige aucune attribution ; mention faite par
+           transparence)
+
+
+2. JSZip — version 3.10.1
+--------------------------
+Licence : ce composant est diffusé au choix sous licence MIT ou sous licence
+          GPL-3.0-or-later. PIX-I-ART retient la licence MIT et n'exerce
+          aucun droit au titre de la GPL. Aucune obligation issue de la GPL
+          ne s'applique donc à Bob.
+Copyright (c) 2009-2016 Stuart Knightley et les contributeurs de JSZip
+Usage   : lecture des fichiers compressés lors de l'aperçu d'un document.
+Inclut :
+  pako — Licences MIT et Zlib — Copyright (c) 2014-2017 Vitaly Puzrin
+         et Andrei Tuputcyn
+  lie, setimmediate, readable-stream — Licence MIT
+
+
+3. docx-preview — version 0.3.5
+--------------------------------
+Licence : Apache License 2.0
+Usage   : affichage d'un document Word directement dans l'application.
+Le texte intégral de la licence Apache 2.0 est joint au présent fichier
+(voir APACHE-2.0.txt) conformément à son article 4.
+
+
+4. Polices de caractères — Inter, Poppins, Sora
+------------------------------------------------
+Licence : SIL Open Font License 1.1.
+Le texte intégral et les notices de copyright figurent dans fonts/OFL.txt.
+Ces polices restent régies par leur propre licence et ne sont pas couvertes
+par les droits cédés sur Bob.
+
+
+Texte de la licence MIT
+=======================
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.

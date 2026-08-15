@@ -13,8 +13,12 @@
 <link rel="apple-touch-icon" href="icon.png">
 <link rel="manifest" href="manifest.webmanifest">
 <script>if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js').catch(function(){});}</script>
-<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet"><!-- 30/06 : typo maison « signer Bob » — fallback système si hors-ligne -->
+<style>
+  @font-face{font-family:'Poppins';src:url('fonts/poppins-600.woff2') format('woff2');font-weight:600;font-display:swap}
+  @font-face{font-family:'Poppins';src:url('fonts/poppins-700.woff2') format('woff2');font-weight:700;font-display:swap}
+  @font-face{font-family:'Poppins';src:url('fonts/poppins-800.woff2') format('woff2');font-weight:800;font-display:swap}
+  @font-face{font-family:'Inter';src:url('fonts/inter-variable.woff2') format('woff2');font-weight:100 900;font-display:swap}
+</style><!-- 30/06 : typo maison « signer Bob » — fallback système si hors-ligne -->
 <style>
   :root{
     --bg:#f6f8f5; --card:#ffffff; --ink:#16302a; --muted:#62756b;
