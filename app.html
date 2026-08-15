@@ -2755,7 +2755,7 @@ Deux locaux complémentaires — le Bois de Nèfles (« le haut » : jeunesse, a
     </div>
     <div class="panel">
       <h3 style="margin:0 0 4px">📖 Toutes les questions fréquentes</h3>
-      <p class="hint" style="margin:0 0 10px">Clique sur une question pour voir la réponse. Tu peux aussi filtrer ci-dessus.</p>
+      <p class="hint" style="margin:0 0 10px">Les questions sont rangées par écran : ouvre l'écran qui t'intéresse, puis clique ta question. Pour aller au plus court, pose ta question à Zanana tout en haut — elle cherche dans tout d'un coup.</p>
       <div id="faqList"></div>
     </div>
 
@@ -3257,16 +3257,31 @@ function faqScore(query){
     return {item,sc};
   }).filter(x=>x.sc>0).sort((a,b)=>b.sc-a.sc);
 }
-function faqCard(item,open){
+function faqCard(item,open,sansCat){   /* sansCat (Lot 8) : dans un tiroir qui porte DÉJÀ le nom de l'écran, la fiche ne le répète pas. Ailleurs (réponse de la mascotte, aide de page) le rappel reste utile. */
   return '<details class="panel" style="margin:8px 0;padding:10px 14px"'+(open?' open':'')+'>'
-    +'<summary style="cursor:pointer;font-weight:600;color:#1d3a2e">'+esc(item.q)+' <span class="muted" style="font-weight:400;font-size:12px">· '+esc(item.cat)+'</span></summary>'
+    +'<summary style="cursor:pointer;font-weight:600;color:#1d3a2e">'+esc(item.q)+(sansCat?'':' <span class="muted" style="font-weight:400;font-size:12px">· '+esc(item.cat)+'</span>')+'</summary>'
     +'<div style="margin-top:8px;line-height:1.5">'+item.a+'</div></details>';
 }
 function renderFaqList(){
   const box=$('faqList'); if(!box) return;
   /* Coffre pas chargé : on le DIT, plutôt qu'une aide vide qui ferait croire qu'elle n'existe pas. */
   if(!FAQ.length){ box.innerHTML='<p class="hint" style="margin:6px 0">Les fiches d\'aide sont rangées dans le coffre, réservé au bureau. Si tu es connecté au bureau et que rien ne s\'affiche, recharge la page.</p>'; return; }
-  box.innerHTML=FAQ.filter(it=>(!it.asso || (window.bobEstLeCase && window.bobEstLeCase())) && (!window.bobTabVisible||window.bobTabVisible(it.cat))).map(it=>faqCard(it,false)).join('');
+  /* Lot 8 (15/08/2026, additif/revertible) : la notice PAR ÉCRAN — ~180 questions à plat devenaient
+     introuvables ; elles se rangent maintenant par onglet (un pli par écran, dans l'ordre du corpus),
+     et la recherche Zanana au-dessus reste le chemin rapide.
+     Revert : remettre  box.innerHTML=<le filter().map(faqCard).join()> d'origine. */
+  const visF=FAQ.filter(it=>(!it.asso || (window.bobEstLeCase && window.bobEstLeCase())) && (!window.bobTabVisible||window.bobTabVisible(it.cat)));
+  const ordre=[], par=Object.create(null);
+  visF.forEach(it=>{ const c=(it.cat||'Autres'); if(!par[c]){ par[c]=[]; ordre.push(c); } par[c].push(it); });
+  const dejaOuverts=new Set([...box.querySelectorAll('details[data-cat][open]')].map(d=>d.getAttribute('data-cat'))); // un save() ne referme pas le tiroir qu'on est en train de lire
+  box.innerHTML=ordre.map(c=>{
+    const n=par[c].length, fiches=par[c].map(it=>faqCard(it,false,true)).join('');
+    /* Une ou deux fiches : un tiroir coûterait un clic pour rien — on les pose à plat sous leur titre. */
+    if(n<=2) return '<div style="margin:8px 0"><p class="muted" style="margin:0 0 2px;font-weight:700;font-size:12.5px">'+esc(c)+'</p>'+fiches+'</div>';
+    return '<details data-cat="'+esc(c)+'"'+(dejaOuverts.has(c)?' open':'')+' style="margin:8px 0;border:1px solid var(--line);border-radius:11px;padding:9px 13px;background:#fbfdfc">'
+      +'<summary style="cursor:pointer;font-weight:700;color:#1d3a2e">'+esc(c)+' <span class="muted" style="font-weight:400;font-size:12px">· '+n+' fiches</span></summary>'
+      +'<div style="margin-top:4px">'+fiches+'</div></details>';
+  }).join('');
 }
 /* ---- Aide contextuelle : « Comment marche cette page » (réutilise la FAQ Zanana, 1 bouton générique pour TOUS les onglets) ---- */
 function pageHelpNorm(s){ return (s||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^a-z0-9]+/g,' ').trim(); }
@@ -3292,7 +3307,7 @@ function pageHelp(){
   const m=$('pageHelpModal'); if(m) m.style.display='flex';
 }
 function pageHelpClose(){ const m=$('pageHelpModal'); if(m) m.style.display='none'; }
-function pageHelpGotoAide(){ pageHelpClose(); const b=document.querySelector('nav.tabs button[data-tab="aide"]'); if(b){ b.click(); const f=$('faqAsk'); if(f) setTimeout(()=>{ try{ f.focus(); }catch(e){} },60); } else { alert('L\'aide complète est dans l\'onglet ❓ Aide.'); } }
+function pageHelpGotoAide(){ pageHelpClose(); const b=document.querySelector('nav.tabs button[data-tab="aide"]'); if(b){ b.click(); const f=$('faqAsk'); if(f) setTimeout(()=>{ try{ f.focus(); }catch(e){} },60); } else { bobAlert('L\'aide complète est dans l\'onglet ❓ Aide.'); } } /* Lot 8 : dernière fenêtre native de l'écran Aide → modale maison (migration au passage, lots 11c+) */
 
 /* ---- ✨ Quoi de neuf (nouveautés + notice chronologique) ---- */
 /* 🔒 15/08/2026 — Les cartes ne vivent PLUS dans ce fichier. app.html est un fichier PUBLIC :
@@ -3308,7 +3323,16 @@ let NEWS=[];
    sans erreur visible. On teste l'existence de la liaison elle-même. (Piège attrapé au banc.) */
 function newsSync(){ NEWS = (typeof db!=='undefined' && db && Array.isArray(db.news)) ? db.news : []; }
 function newsLus(){ try{ return JSON.parse(localStorage.getItem('bob_news_lus')||'[]'); }catch(e){ return []; } }
-function newsMarkRead(){ try{ localStorage.setItem('bob_news_lus',JSON.stringify(NEWS.map(n=>n.id))); }catch(e){} newsBadge(); renderNews(); }
+let NEWS_FRAIS=[]; /* Lot 8 (15/08/2026) : les cartes encore « nouvelles » au moment d'arriver sur l'onglet — figées AVANT que newsMarkRead ne coche, pour qu'une carte jamais vue ne parte pas dans le pli. Union sur la session : un 2e clic sur l'onglet ne replie pas ce qui vient d'apparaître. */
+/* Lot 8 : on ne coche « lu » QUE les cartes réellement affichables (asso + modules allumés). Une carte
+   d'un module éteint reste « nouvelle » : elle s'affichera en tête le jour où le module se rallume —
+   avant, un seul clic sur l'onglet cochait TOUT, y compris ce qui n'avait jamais été à l'écran.
+   Revert : remettre  function newsMarkRead(){ try{ localStorage.setItem('bob_news_lus',JSON.stringify(NEWS.map(n=>n.id))); }catch(e){} newsBadge(); renderNews(); }  */
+function newsMarkRead(){ try{ const lus=newsLus();
+  const visibles=NEWS.filter(n=>(!n.asso || (window.bobEstLeCase && window.bobEstLeCase())) && (!window.bobTabVisible||window.bobTabVisible(n.tab))).map(n=>n.id);
+  NEWS_FRAIS=[...new Set(NEWS_FRAIS.concat(visibles.filter(id=>!lus.includes(id))))];
+  localStorage.setItem('bob_news_lus',JSON.stringify([...new Set(lus.concat(visibles))]));
+}catch(e){} newsBadge(); renderNews(); }
 function newsBadge(){
   const b=document.querySelector('nav.tabs button[data-tab="aide"]'); if(!b) return;
   /* Lot 2 lifting 15/08/2026 : les nouveautés ne sont PLUS une pastille rouge — le rouge est réservé
@@ -3333,10 +3357,32 @@ function renderNews(){
   /* Coffre pas (encore) chargé : on le DIT, plutôt que d'afficher un panneau vide qui ferait
      croire qu'il n'y a rien de neuf. */
   if(!NEWS.length){ el.innerHTML='<p class="hint" style="margin:6px 0">Les nouveautés sont rangées dans le coffre, réservé au bureau. Si tu es connecté au bureau et que rien ne s\'affiche, recharge la page.</p>'; newsBadge(); return; }
-  el.innerHTML=NEWS.filter(n=>(!n.asso || (window.bobEstLeCase && window.bobEstLeCase())) && (!window.bobTabVisible||window.bobTabVisible(n.tab))).map(n=>`<div class="kv" style="align-items:flex-start;padding:8px 0;border-bottom:1px solid #eef3ef">
+  const vis=NEWS.filter(n=>(!n.asso || (window.bobEstLeCase && window.bobEstLeCase())) && (!window.bobTabVisible||window.bobTabVisible(n.tab)));
+  const carte=n=>`<div class="kv" style="align-items:flex-start;padding:8px 0;border-bottom:1px solid #eef3ef">
     <span style="flex:1;min-width:0"><strong>${esc(n.titre)}</strong> <span class="pill ${lus.includes(n.id)?'ok':'no'}">${lus.includes(n.id)?'vu':'nouveau'}</span><br>
       <span class="muted" style="font-size:13px;line-height:1.45">${n.desc}</span></span><!-- desc = contenu MAISON balisé (<b>…) : ne pas échapper, sinon les balises s'affichent en clair -->
-    <span class="muted" style="white-space:nowrap;font-size:12px;text-align:right;margin-left:12px">${fmtDate(n.date)}<br>${esc(n.tab)}</span></div>`).join('');
+    <span class="muted" style="white-space:nowrap;font-size:12px;text-align:right;margin-left:12px">${fmtDate(n.date)}<br>${esc(n.tab)}</span></div>`;
+  /* Lot 8 (15/08/2026, additif/revertible) : la notice d'abord. L'écran affichait les ~174 cartes
+     d'un bloc (~42 000 px de page), reconstruites à CHAQUE save(). Désormais : les 8 récentes, plus
+     toute carte jamais vue OÙ QU'ELLE SOIT dans la liste (partition, pas balayage contigu : une
+     non-lue isolée au 20e rang doit remonter, pas disparaître) ; la suite derrière un pli dont le
+     corps n'est construit qu'à l'ouverture. Le cutoff du compte s'applique comme pour la pastille :
+     un compte neuf ne « doit » pas l'historique, sinon la liste repart à plat le jour de sa création.
+     Revert : remettre  el.innerHTML=vis.map(carte).join('');  seul, supprimer la ligne let NEWS_FRAIS=[]
+     et rendre à newsMarkRead sa version d'origine (donnée au-dessus de sa définition). */
+  const cutoff=(window.bobProfileDate&&window.bobProfileDate())||'';
+  const jamaisVue=n=>NEWS_FRAIS.includes(n.id)||(!lus.includes(n.id)&&(!cutoff||n.date>=cutoff));
+  const tete=[], reste=[];
+  vis.forEach((n,i)=>{ (i<8||jamaisVue(n))?tete.push(n):reste.push(n); });
+  const ouvert=!!($('newsPli')&&$('newsPli').open);   // un save() ne doit pas refermer le pli sous les yeux de qui lit
+  el.innerHTML=tete.map(carte).join('')
+    +(reste.length?'<details id="newsPli" style="margin-top:10px"><summary style="cursor:pointer;font-weight:700;color:var(--brand-dk,#0f6b46)">📜 La suite de la notice <span class="muted" style="font-weight:400;font-size:12.5px">· '+reste.length+' nouveauté'+(reste.length>1?'s':'')+' plus ancienne'+(reste.length>1?'s':'')+' — ouvre-la pour y chercher</span></summary><div id="newsPliBody" style="margin-top:6px"></div></details>':'');
+  const pli=$('newsPli');
+  if(pli){
+    const remplir=()=>{ const b=$('newsPliBody'); if(pli.open&&b&&!b.childElementCount) b.innerHTML=reste.map(carte).join(''); };
+    pli.addEventListener('toggle',remplir);
+    if(ouvert){ pli.open=true; remplir(); }
+  }
   newsBadge();
 }
 let faqTimer=null;
