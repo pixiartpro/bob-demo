@@ -30,6 +30,12 @@
     --shadow:0 1px 3px rgba(16,60,40,.05),0 8px 28px rgba(16,60,40,.06);
   }
   *{box-sizing:border-box}
+  /* Lot 7 (15/08/2026) — LA CLOISON FERMÉE PAR DÉFAUT. Un bloc marqué data-contenu-client porte
+     le contenu d'UNE association (son projet, sa raison d'être). Il est masqué pour TOUT LE MONDE,
+     et n'est révélé qu'aux assos qui le déclarent dans leur identité (identite.gestion.contenus_prives).
+     Le sens du défaut compte : si le JS échoue, personne ne lit le contenu d'un autre — l'inverse
+     de ce qu'on avait, où l'échec exposait tout. Revert : supprimer cette règle et applyContenusPrives(). */
+  [data-contenu-client],[data-contenu-vide]{display:none}
   body{margin:0;font-family:'Inter',-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
        background:var(--bg);color:var(--ink);line-height:1.5}
   /* 30/06 : signature typo Bob — titres en Poppins, corps en Inter (revertible : supprimer ces 2 lignes + le <link>) */
@@ -318,7 +324,7 @@
 <header class="top">
   <div class="logo">🤖</div>
   <div>
-    <h1>Bob <span style="font-weight:500;opacity:.85">· secrétaire-directeur du CASE</span></h1>
+    <h1>Bob <span style="font-weight:500;opacity:.85"></span></h1>
     <p>La Bible du CASE du Bois de Nèfles : adhésions, comptabilité, subventions, répertoire</p> <!-- saas-ok: valeur par defaut du HTML, reecrite au demarrage par applyAssoIdentity depuis identite.gestion -->
   </div>
 </header>
@@ -532,13 +538,13 @@
       </div>
       <div class="row" style="margin-top:10px">
         <div class="field"><label>Type d'adhésion</label><input id="m_typeAdh" list="typesAdh" placeholder="Ex. Danse, Périscolaire…"></div>
-        <div class="field"><label>Site</label><input id="m_site" list="sites" placeholder="Ex. Case BDN, Bringelliers…"></div>
+        <div class="field"><label>Site</label><input id="m_site" list="sites" placeholder="Ex. le local principal, l'annexe…"></div>
         <datalist id="typesAdh"></datalist>
       </div>
       <div class="row" style="margin-top:10px">
         <div class="field" style="flex:2"><label>Adresse</label><input id="m_addr" placeholder="Ex. 12 rue des Mille Roches"></div>
         <div class="field" style="flex:0;min-width:120px"><label>Code postal</label><input id="m_cp" placeholder="97490"></div>
-        <div class="field"><label>Ville</label><input id="m_city" placeholder="Saint-Denis"></div>
+        <div class="field"><label>Ville</label><input id="m_city" placeholder="Sa commune"></div>
       </div>
       <div class="row" style="margin-top:10px">
         <div class="field"><label>Cotisation (€)</label><input id="m_amount" type="number" min="0" step="1" value="10"></div>
@@ -644,7 +650,7 @@
     <div class="panel">
       <details ontoggle="if(this.open&&window.loadCalcDanse)loadCalcDanse()">
         <summary style="cursor:pointer;font-weight:800;font-size:15px">💶 Modèle éco des cours de danse — calculateur</summary>
-        <div id="calcDanse" style="margin-top:10px"><p class="hint">Ouvre pour calculer le coût des forfaits (ce que le CASE paie aux intervenants) face aux inscriptions des familles — sur les vrais créneaux de la salle de danse.</p></div>
+        <div id="calcDanse" style="margin-top:10px"><p class="hint">Ouvre pour calculer le coût des forfaits (ce que l'association paie aux intervenants) face aux inscriptions des familles — sur les vrais créneaux de la salle de danse.</p></div>
       </details>
     </div>
   </section>
@@ -653,7 +659,7 @@
   <section id="intervenants" class="page">
     <div class="panel">
       <h2>🎭 Intervenants — prestataires &amp; conventions</h2>
-      <p class="hint">Les intervenant·e·s qui animent nos activités via une <b>structure prestataire</b> (l'asso facture, le CASE paie une <b>facture</b> — <b>pas de paie ici</b>, les salariés se gèrent en 💶 Finances / 🧑‍💼 Équipe). Pour chacun·e : sa <b>convention</b>, ses <b>3 justificatifs obligatoires</b> et le lien vers ses créneaux. <b style="color:#e24b4a">⛔ Règle d'or : tant qu'un voyant est rouge, on ne fait pas intervenir.</b></p>
+      <p class="hint">Les intervenant·e·s qui animent nos activités via une <b>structure prestataire</b> (la structure prestataire facture, l'association paie une <b>facture</b> — <b>pas de paie ici</b>, les salariés se gèrent en 💶 Finances / 🧑‍💼 Équipe). Pour chacun·e : sa <b>convention</b>, ses <b>3 justificatifs obligatoires</b> et le lien vers ses créneaux. <b style="color:#e24b4a">⛔ Règle d'or : tant qu'un voyant est rouge, on ne fait pas intervenir.</b></p>
       <div class="row" style="align-items:flex-end;gap:8px;background:#f7f9fb;padding:10px;border-radius:12px;margin:0 0 14px">
         <div class="field" style="flex:2"><label>Structure prestataire</label><input id="in_struct" placeholder="Ex. Association Culture Prod"></div>
         <div class="field" style="flex:2"><label>Intervenant·e (personne)</label><input id="in_pers" placeholder="Ex. Marie Payet"></div>
@@ -993,7 +999,9 @@
 
   <section id="fiches" class="page"><div class="panel"><div class="toolbar" style="justify-content:space-between;align-items:flex-start;gap:8px"><h2 style="margin:0">📋 Fiches de poste — poste · tâches · horaires</h2><button class="btn" onclick="window.print()">🖨️ Imprimer</button></div>
       <p class="hint" style="margin:2px 0 0">La version claire et concrète, pour chaque <b>poste</b> : ses missions, son quotidien, ses horaires. <b>PROJET</b> — on prépare, le CA valide. Réservé au bureau. <span class="hint">Le titulaire de chaque poste figure dans 💰 Masse salariale (tiroir 💶 Finances — chargé depuis la base après connexion).</span></p>
-      <div class="card" style="border-left:4px solid var(--brand);margin-top:10px"><b>Règle commune :</b> « J'anime, je suis en <b>première ligne</b>. Je ne tiens pas le registre, je n'encaisse pas, je ne diffuse pas. » <span class="hint">Données → secrétariat/bureau · Argent → trésorier (Guy) · Image → bureau/Président · Doute → le bureau tranche.</span></div>
+      <!-- Lot 7 : à partir d'ici, les fiches de poste RÉELLES d'une association. Cloisonnées par la donnée (clé « fiches-postes ») ; les autres voient l'invite ci-dessous. -->
+      <div class="card" data-contenu-vide="fiches-postes" style="margin-top:10px"><b>Tes fiches de poste</b> — décris ici chaque poste de ton association : ses missions, son quotidien, ses horaires. <span class="hint">Rien n'est pré-rempli : cette page est à toi.</span></div>
+      <div class="card" data-contenu-client="fiches-postes" style="border-left:4px solid var(--brand);margin-top:10px"><b>Règle commune :</b> « J'anime, je suis en <b>première ligne</b>. Je ne tiens pas le registre, je n'encaisse pas, je ne diffuse pas. » <span class="hint">Données → secrétariat/bureau · Argent → trésorier (Guy) · Image → bureau/Président · Doute → le bureau tranche.</span></div>
       <h3 style="margin:16px 0 6px">Qui fait quoi, quand</h3>
       <div style="overflow-x:auto"><table style="min-width:640px"><thead><tr><th>Poste / rôle</th><th>Volume · jours</th><th>Cœur des tâches</th><th>Statut</th></tr></thead>
       <tbody>
@@ -1038,7 +1046,7 @@
       </div>
       <div class="card" style="margin-top:10px">
         <div><b>Les 2 volontaires en service civique</b> — <span style="color:var(--red);font-weight:600">HORS ORGANIGRAMME</span> · médiation citoyenne · mar→sam · 24 h nettes · 6 mois · Unis-Cité</div>
-        <div style="margin-top:8px"><b>Le cadre</b> — mission de volontariat d'intérêt général : ce n'est <b>pas un emploi</b>, et ce n'est pas non plus un « appui » à l'équipe. <b>Hors organigramme, hors taux d'encadrement, hors lien de subordination.</b> <b>Aucune action du CASE ne repose sur eux</b> : s'ils ne sont pas là, rien ne s'arrête. Tuteur : un <b>membre du bureau désigné par délibération</b>, jamais la coordination. Cadre : Unis-Cité.</div>
+        <div style="margin-top:8px"><b>Le cadre</b> — mission de volontariat d'intérêt général : ce n'est <b>pas un emploi</b>, et ce n'est pas non plus un « appui » à l'équipe. <b>Hors organigramme, hors taux d'encadrement, hors lien de subordination.</b> <b>Aucune action de l'association ne repose sur eux</b> : s'ils ne sont pas là, rien ne s'arrête. Tuteur : un <b>membre du bureau désigné par délibération</b>, jamais la coordination. Cadre : Unis-Cité.</div>
         <div style="margin-top:6px"><b>La mission</b> — aller à la rencontre des habitants · recueillir témoignages et portraits · animer des temps d'expression citoyenne · valoriser les initiatives locales.</div>
         <div style="margin-top:6px"><b>Jamais</b> — encadrer des enfants ou des jeunes · garderie, périscolaire, cours et ateliers · tenir seuls une permanence · remplacer un salarié · inscriptions/encaissements/caisse · ouvrir ou fermer les locaux (pas de clés).</div>
         <div style="margin-top:6px"><b>Les horaires</b> — du <b>mardi au samedi</b>, en après-midi et le samedi. 24 h nettes/semaine, repos dimanche et lundi.</div>
@@ -1273,7 +1281,7 @@
         <div class="field" style="flex:0;min-width:95px"><label>Capacité</label><input id="ag_cap" type="number" min="0" value="20"></div>
         <div class="field" style="flex:0;min-width:150px"><label>Date (événement)</label><input id="ag_date" type="date"></div>
         <div class="field" style="min-width:160px"><label>Quand (si pas de date)</label><input id="ag_quand" placeholder="Ex. Septembre (à confirmer)"></div>
-        <div class="field" style="min-width:150px"><label>Lieu</label><input id="ag_lieu" placeholder="CASE Bois de Nèfles"></div>
+        <div class="field" style="min-width:150px"><label>Lieu</label><input id="ag_lieu" placeholder="Ex. le local de l'association"></div>
         <div class="field" style="min-width:200px"><label>Programme (événement)</label><input id="ag_programme" placeholder="Ce qui est prévu"></div>
         <div class="field" style="flex:0;min-width:140px"><label>Statut</label><select id="ag_statut"><option value="ouvert">Ouvert</option><option value="bientot">Arrive bientôt</option><option value="archive">Archivé</option></select></div>
         <div class="field" style="flex:0;min-width:120px"><label>Sur le site ?</label><select id="ag_pub"><option value="1">Oui</option><option value="0">Non</option></select></div>
@@ -1377,7 +1385,7 @@
       <p class="hint" style="margin:0">Octobre = <b>Toussaint</b> · Fin déc.–Janvier = <b>Noël</b> · Mars = <b>Hiver</b> · Mai = <b>Printemps</b> · Juillet = <b>Juillet</b> · Août = <b>Août</b>.</p>
     </details>
 
-    <details class="panel"><summary style="cursor:pointer;font-weight:700;font-size:16px">🎓 Diplômes qui autorisent l'encadrement <span class="hint" style="font-weight:400">— les plus courants pour un CASE</span></summary>
+    <details class="panel"><summary style="cursor:pointer;font-weight:700;font-size:16px">🎓 Diplômes qui autorisent l'encadrement <span class="hint" style="font-weight:400">— les plus courants en accueil collectif de mineurs</span></summary>
       <p class="hint" style="margin:10px 0 8px">Liste officielle complète : <b>65 titres DIRECTION + 52 ANIMATION</b> dans le PDF DJEPVA 2024. Ici, une sélection.</p>
       <input type="text" id="acmencDipSearch" placeholder="Rechercher (BAFA, périscolaire, STAPS…)" oninput="acmEncDip()" style="width:100%;max-width:440px;padding:8px 12px;margin-bottom:10px">
       <div id="acmencDipBody"></div>
@@ -1413,8 +1421,8 @@
     <!-- 📜 Projet éducatif (organisateur) — commun à toutes les éditions, pluriannuel. Coup 2b. -->
     <details class="panel" id="acmProjEducPanel" style="margin:6px 0 14px">
       <summary style="cursor:pointer;font-weight:700;font-size:16px">📜 Projet éducatif <span class="hint" style="font-weight:400">— commun à l'asso, écrit une fois (rappelé à chaque édition)</span></summary>
-      <p class="hint" style="margin:8px 0 8px">Le cadre éducatif de l'organisateur (le CASE), transmis à la SDJES, aux familles et à la CAF. Il ne se réécrit pas à chaque vacances — <strong>à revérifier seulement si un changement</strong> (direction, locaux, nature d'accueil…). Le <em>projet pédagogique</em>, lui, se fait par édition (dans son dossier-bilan).</p>
-      <textarea id="acmProjEduc" onchange="acmSetProjEduc(this.value)" placeholder="Finalités et valeurs éducatives du CASE, publics, moyens, engagement…" style="width:100%;min-height:120px"></textarea>
+      <p class="hint" style="margin:8px 0 8px">Le cadre éducatif de l'organisateur (l'association), transmis à la SDJES, aux familles et à la CAF. Il ne se réécrit pas à chaque vacances — <strong>à revérifier seulement si un changement</strong> (direction, locaux, nature d'accueil…). Le <em>projet pédagogique</em>, lui, se fait par édition (dans son dossier-bilan).</p>
+      <textarea id="acmProjEduc" onchange="acmSetProjEduc(this.value)" placeholder="Finalités et valeurs éducatives de l'association, publics, moyens, engagement…" style="width:100%;min-height:120px"></textarea>
       <div class="hint" id="acmProjEducMaj" style="margin-top:6px"></div>
     </details>
 
@@ -1434,9 +1442,9 @@
       <div id="acmEnfantsList" style="margin-top:8px"><p class="hint">Chargement…</p></div>
     </div>
 
-    <!-- 💶 Tarif ACM (grille officielle Saint-Denis, au quotient familial, par semaine) — réglage stable une fois/an, source unique tarifs_publics. Calqué sur la grille du périscolaire. -->
+    <!-- 💶 Tarif ACM (grille officielle de la commune, au quotient familial, par semaine) — réglage stable une fois/an, source unique tarifs_publics. Calqué sur la grille du périscolaire. -->
     <details class="panel" id="acmTarifPanel" open style="margin:6px 0 14px">
-      <summary style="cursor:pointer;font-weight:700;font-size:16px">💶 Tarif ACM <span class="hint" style="font-weight:400">— au quotient familial, par semaine (grille officielle Saint-Denis 2026-2027)</span></summary>
+      <summary style="cursor:pointer;font-weight:700;font-size:16px">💶 Tarif ACM <span class="hint" style="font-weight:400">— au quotient familial, par semaine (grille officielle de la commune)</span></summary>
       <p class="hint" style="margin:8px 0 10px">Forfait <strong>5 jours / semaine</strong> : la facture d'une famille = <strong>prix de la semaine × nombre de semaines</strong> choisi. <strong>L'ACM d'été = grandes vacances.</strong> Recalculé si une semaine comporte un jour férié. Modifie une case puis clique 💾 — les familles voient aussitôt le bon tarif dans leur espace.</p>
       <div id="acmLockBar" class="row" style="gap:8px;align-items:center;flex-wrap:wrap;margin:0 0 10px;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:#eef3ef"></div>
       <div style="overflow-x:auto;-webkit-overflow-scrolling:touch"><table style="min-width:560px"><thead><tr><th>Tranche</th><th>Quotient familial</th><th class="num">Petites vac. (€/sem)</th><th class="num">Grandes vac. (€/sem)</th></tr></thead>
@@ -1678,16 +1686,16 @@
     </div>
     <div class="panel" id="assurancePanel" style="border:2px solid var(--brand)">
       <h2>🛡️ Assurance de l'association</h2>
-      <p class="hint">Toutes les infos du contrat d'assurance réunies pour le bureau. Source : <strong>avis d'échéance MAIF 2026</strong> (rangé dans le dossier <code>CASE/BDN/2026/Maif</code>), complété par les comptes-rendus et la comptabilité du CASE.</p>
+      <!-- saas-ok: panneau #assurancePanel, masque par applyOrgContent pour toute autre asso --><p class="hint">Toutes les infos du contrat d'assurance réunies pour le bureau. Source : <strong>avis d'échéance MAIF 2026</strong> (rangé dans le dossier <code>CASE/BDN/2026/Maif</code>), complété par les comptes-rendus et la comptabilité du CASE.</p>
       <div class="kv"><span><strong>Assureur</strong></span><span>MAIF — société d'assurance mutuelle (SIREN 775 709 702)</span></div>
       <div class="kv"><span><strong>Contrat</strong></span><span>Assurance multirisque <strong>Raqvam</strong> Associations / Collectivités (réf. produit M4202RACA)</span></div>
       <div class="kv"><span><strong>Période / prélèvement</strong></span><span>1ᵉʳ janvier → 31 décembre 2026 · prélevé le 7 janvier (en 1 fois)</span></div>
       <div class="kv"><span><strong>Cotisation 2026</strong></span><span>1&nbsp;514,10&nbsp;€ TTC <span class="muted">(Raqvam 1&nbsp;507,60&nbsp;€ + contribution solidarité 6,50&nbsp;€)</span></span></div>
-      <div class="kv"><span><strong>Sites assurés</strong></span><span>Place de la Fraternité · École primaire du Piton BDN · Salle polyvalente Bois de Nèfles · 18F chemin des Bringelliers</span></div>
+      <!-- saas-ok: panneau #assurancePanel, masque par applyOrgContent --><div class="kv"><span><strong>Sites assurés</strong></span><span>Place de la Fraternité · École primaire du Piton BDN · Salle polyvalente Bois de Nèfles · 18F chemin des Bringelliers</span></div>
       <div class="kv"><span><strong>Garanties</strong></span><span>Bénévoles & administrateurs, personnel permanent et occasionnel, contrat insertion, CLSH / périscolaire, activités & sports, immobilier & biens</span></div>
       <div class="kv"><span><strong>Espace en ligne</strong></span><span><a href="https://espacepersonnel.maif.fr" target="_blank" rel="noopener">espacepersonnel.maif.fr</a></span></div>
       <div class="kv"><span><strong>Contact MAIF</strong></span><span>Tél. 09 78 97 98 99 (lun-ven 8h30-18h) · gestionsocietaire@maif.fr · Pôle Associations/Collectivités, Dijon</span></div>
-      <p class="hint" style="margin-top:16px"><strong>Identifiants de connexion — à saisir par le bureau.</strong> Confidentiels : ils ne sont <u>pas</u> écrits dans la page, ils se rangent dans le coffre privé du CASE (accessible seulement une fois connecté). Le n° de sociétaire figure sur l'avis d'échéance MAIF (dossier <code>CASE/BDN/2026/Maif</code>).</p>
+      <!-- saas-ok: panneau #assurancePanel, masque par applyOrgContent --><p class="hint" style="margin-top:16px"><strong>Identifiants de connexion — à saisir par le bureau.</strong> Confidentiels : ils ne sont <u>pas</u> écrits dans la page, ils se rangent dans le coffre privé du CASE (accessible seulement une fois connecté). Le n° de sociétaire figure sur l'avis d'échéance MAIF (dossier <code>CASE/BDN/2026/Maif</code>).</p>
       <div class="row">
         <div class="field"><label>N° de sociétaire</label><input id="as_num" placeholder="Sur l'avis d'échéance MAIF" onchange="saveAssurance()"></div>
         <div class="field"><label>Identifiant espacepersonnel.maif.fr</label><input id="as_login" placeholder="L'identifiant de connexion (créé par le bureau)" onchange="saveAssurance()"></div>
@@ -1802,7 +1810,7 @@
     </div>
 
     <div class="panel" id="presPortes" style="border-left:4px solid var(--brand)">
-      <h2 style="margin:0 0 4px">🍍 Présenter le CASE en un lien</h2>
+      <h2 style="margin:0 0 4px">🍍 Présenter l'association en un lien</h2>
       <p class="hint">Une page qui présente toute la maison par <strong>sept portes</strong> — danse, musique, accueils &amp; Mercredi Jeunesse, La Kaz Zados, sport &amp; bien-être, parentalité, bénévolat &amp; quartier — avec ce qui s'y vit, notre façon de faire et le cap jusqu'en 2030. À montrer ou à envoyer à un <strong>partenaire</strong>, un <strong>intervenant</strong>, la <strong>Mairie</strong> ou la <strong>CAF</strong>. Elle n'est pas affichée sur le site public.</p>
       <div style="margin-top:10px">
         <a class="btn primary" href="nos-activites.html" target="_blank" rel="noopener" style="text-decoration:none">📖 Ouvrir la présentation</a>
@@ -1901,12 +1909,12 @@
     <div class="panel">
       <h2>1 · Qui es-tu ?</h2>
       <div class="row">
-        <div class="field" style="flex:2"><label>Nom</label><input id="fm_nom" placeholder="Ex. CASE du Bois de Nèfles"></div>
+        <div class="field" style="flex:2"><label>Nom</label><input id="fm_nom" placeholder="Le nom de ton association"></div>
         <div class="field" style="flex:2"><label>Activité</label><input id="fm_activite" placeholder="Ex. centre social de quartier"></div>
       </div>
       <div class="row">
-        <div class="field" style="flex:1"><label>Ville</label><input id="fm_ville" placeholder="Ex. Saint-Denis"></div>
-        <div class="field" style="flex:1"><label>Quartier</label><input id="fm_quartier" placeholder="Ex. Bois de Nèfles"></div>
+        <div class="field" style="flex:1"><label>Ville</label><input id="fm_ville" placeholder="La commune de l'association"></div>
+        <div class="field" style="flex:1"><label>Quartier</label><input id="fm_quartier" placeholder="Ton quartier"></div>
       </div>
     </div>
 
@@ -1970,7 +1978,7 @@
       <h2>6 · Coordonnées <span class="muted" style="font-weight:400;font-size:13px">— ce qui peut apparaître sur tes posts</span></h2>
       <p class="hint">Les vraies infos que l'expert peut mettre dans un <strong>appel à l'action</strong> (« inscris-toi ici », « viens nous voir »). Sans elles, il laisse un crochet <strong>[à compléter]</strong> plutôt que d'inventer. <em>Ce sont des infos <strong>publiques</strong> — jamais un contact interne ni un mot de passe.</em></p>
       <div class="row">
-        <div class="field" style="flex:2"><label>Adresse (publique)</label><input id="fm_adresse" placeholder="Ex. 132 Route des Ananas, 97490 Sainte-Clotilde"></div>
+        <div class="field" style="flex:2"><label>Adresse (publique)</label><input id="fm_adresse" placeholder="Numéro, rue, code postal, commune"></div>
         <div class="field" style="flex:1"><label>Téléphone</label><input id="fm_telephone" placeholder="Ex. 0262 …"></div>
       </div>
       <div class="row">
@@ -2037,7 +2045,7 @@
     <div id="corbeilleListe"></div>
   </section>
   <section id="admin" class="page">
-    <div class="panel"><h2 style="margin:0 0 4px">🛠️ Admin Bob — toutes les associations</h2><p class="muted" style="margin:0">Console super-admin (PIX-I-ART) : tu autorises ici les fonctions de chaque association. Elle ne montre jamais les données privées des assos.</p></div>
+    <!-- saas-ok: ecran super-admin qui pilote TOUTES les assos hebergees — les nommer est sa raison d'etre --><div class="panel"><h2 style="margin:0 0 4px">🛠️ Admin Bob — toutes les associations</h2><p class="muted" style="margin:0">Console super-admin (PIX-I-ART) : tu autorises ici les fonctions de chaque association. Elle ne montre jamais les données privées des assos.</p></div>
     <div id="adminConsole"></div>
   </section>
   <section id="data" class="page">
@@ -2101,7 +2109,7 @@
   <!-- ACCOMPAGNEMENT -->
   <section id="accompagnement" class="page">
     <div class="panel">
-      <p class="hint" style="margin:0">📋 Synthèse stratégique de l'accompagnement DLA, rangée dans le <strong>coffre privé du bureau</strong> — visible seulement une fois connecté, jamais publiée sur le site. Le dossier complet (CR de séances, préparation des RDV) reste sur le <strong>Drive du CASE</strong>.</p>
+      <p class="hint" style="margin:0">📋 Synthèse stratégique de l'accompagnement DLA, rangée dans le <strong>coffre privé du bureau</strong> — visible seulement une fois connecté, jamais publiée sur le site. Le dossier complet (CR de séances, préparation des RDV) reste sur le <strong>Drive de l'association</strong>.</p>
     </div>
     <div data-coffre="accompagnement"></div>
     <div class="panel">
@@ -2140,7 +2148,7 @@
     <div class="panel">
       <h2 style="margin:0 0 4px">👋 Accueil des nouveaux arrivants</h2>
       <p class="hint">Le mot d'accueil et l'essentiel pour toute personne qui rejoint l'équipe.</p>
-      <textarea id="accueilIntro" onchange="saveAccueilIntro()" style="width:100%;min-height:90px;font:inherit;padding:10px 12px;border:1px solid #e6ece7;border-radius:10px;resize:vertical" placeholder="Ex. Bienvenue au CASE du Bois de Nèfles ! Voici l'essentiel pour bien démarrer…"></textarea>
+      <textarea id="accueilIntro" onchange="saveAccueilIntro()" style="width:100%;min-height:90px;font:inherit;padding:10px 12px;border:1px solid #e6ece7;border-radius:10px;resize:vertical" placeholder="Ex. Bienvenue ! Voici l'essentiel pour bien démarrer…"></textarea>
       <h3 style="margin:16px 0 8px;font-size:15px">Les statuts / contrats</h3>
       <p class="hint">Service Civique, PEC, CDI… : pour chaque statut, ses spécificités (durée, temps de travail, congés, indemnité…).</p>
       <div class="row" style="margin-bottom:8px">
@@ -2183,7 +2191,7 @@
     <div class="panel">
       <h3 style="margin:0 0 4px">🎯 Organisation cible</h3>
       <p class="hint" style="margin:0 0 8px">Comment tu veux que ça tourne. Pré-rempli d'après le DLA (cartographie 7 piliers, clarification des rôles) — <strong>modifie librement, c'est enregistré dans le coffre du bureau</strong>.</p>
-      <textarea id="rhOrgCible" onchange="saveRhOrgCible()" style="width:100%;min-height:300px;font:inherit;padding:10px 12px;border:1px solid #e6ece7;border-radius:10px;resize:vertical;line-height:1.55">Décris ici l'organisation cible du CASE : qui fait quoi, les pôles et leurs responsables. Pré-rempli pour le bureau — modifie librement, c'est enregistré dans le coffre privé du bureau.</textarea>
+      <textarea id="rhOrgCible" onchange="saveRhOrgCible()" style="width:100%;min-height:300px;font:inherit;padding:10px 12px;border:1px solid #e6ece7;border-radius:10px;resize:vertical;line-height:1.55">Décris ici l'organisation cible de ton association : qui fait quoi, les pôles et leurs responsables. Pré-rempli pour le bureau — modifie librement, c'est enregistré dans le coffre privé du bureau.</textarea>
     </div>
 
     <div class="panel">
@@ -2225,7 +2233,7 @@
       <div id="basculeList"></div>
       <div id="basculeKpis" class="cards" style="margin-top:10px"></div>
       <div class="cards" style="margin-top:6px">
-        <div class="card"><div class="label">🛡️ Le vrai coût caché</div><div class="sub" style="margin-top:6px;font-size:13px">Le salaire, on le maintient. Mais ÉCLAT est <strong>moins favorable sur l'arrêt maladie long</strong> (perte du relais 75 % pendant 90 j d'ALISFA). À compenser par la <strong>prévoyance de branche ÉCLAT</strong> (Harmonie Mutuelle ESS) — surcoût à prévoir pour le CASE.</div></div>
+        <div class="card"><div class="label">🛡️ Le vrai coût caché</div><div class="sub" style="margin-top:6px;font-size:13px">Le salaire, on le maintient. Mais ÉCLAT est <strong>moins favorable sur l'arrêt maladie long</strong> (perte du relais 75 % pendant 90 j d'ALISFA). À compenser par la <strong>prévoyance de branche ÉCLAT</strong> (Harmonie Mutuelle ESS) — surcoût à prévoir pour l'association.</div></div>
         <div class="card"><div class="label">📝 La règle légale</div><div class="sub" style="margin-top:6px;font-size:13px">Avenant par salarié avec <strong>clause de maintien de salaire</strong> si la grille serait plus basse. <strong>Pas de rétroactivité</strong> (effet à la signature). Comparaison <strong>par blocs</strong> (salaire / maladie / congés), pas pioche par pioche.</div></div>
       </div>
       <div class="field" style="margin-top:10px"><label>📌 Suivi de la bascule (où on en est)</label><textarea id="bsc_notes" onchange="saveBasculeNotes()" style="width:100%;min-height:80px;font:inherit;padding:8px 10px;border:1px solid #e6ece7;border-radius:10px;resize:vertical" placeholder="Ex. Réponse Hexopée Q199179 reçue le 04/05 (ÉCLAT confirmé). En attente du chiffrage masse salariale et de la note bénéfice/coût avant signature des avenants."></textarea></div>
@@ -2257,7 +2265,7 @@
       </div>
     </div>
 
-    <div class="panel">
+    <div class="panel" data-contenu-client="plan-rh"><!-- Lot 7 : plan de recrutement RÉEL d'une association → cloisonné par la donnée -->
       <h3 style="margin:0 0 4px">📋 Projets d'embauche</h3>
       <table>
         <thead><tr><th>Projet</th><th>Pour quoi</th><th>Échéance / statut</th></tr></thead>
@@ -2308,23 +2316,9 @@
     </div>
 
     <div class="panel">
-      <h3 style="margin:0 0 4px">🌱 Notre raison d'être (le projet)</h3>
+      <h3 style="margin:0 0 4px">🌱 Notre raison d'être (le projet)</h3><!-- Lot 7 : le texte de cette zone appartenait à UNE association ; il a été DÉPLACÉ dans son coffre. Le fichier partagé ne porte plus que l'invite. -->
       <p class="hint" style="margin:0 0 8px">La mission de l'association en quelques phrases — à montrer à un partenaire, à la Mairie, à la CAF ou en AG. Modifie librement.</p>
-      <textarea id="projetMission" onchange="saveProjet('projetMission')" style="width:100%;min-height:200px;font:inherit;padding:10px 12px;border:1px solid #e6ece7;border-radius:10px;resize:vertical;line-height:1.55">LE CASE DU BOIS DE NÈFLES — NOTRE PROJET (point de départ, à affiner)
-
-Le CASE du Bois de Nèfles est une association de quartier (loi 1901) d'animation sociale et d'éducation populaire, implantée à La Réunion. Sa raison d'être : faire vivre le lien social sur le quartier, accompagner les familles et donner aux enfants, aux jeunes et aux habitants un accès aux loisirs, à la culture et à l'entraide, au plus près de chez eux.
-
-CE QUE NOUS FAISONS
-• Accueil périscolaire (matin et soir) et accueils de loisirs (ACM / vacances) pour les enfants du quartier.
-• Animation jeunesse et adolescents, activités culturelles et temps forts (fête de la musique, fêtes de fin d'année, hors les murs…).
-• Soutien à la parentalité et ateliers pour les familles et les habitants (local des Bringelliers).
-• Un espace d'éducation populaire : accueil de structures et d'initiatives du quartier.
-
-POUR QUI
-Les enfants et les jeunes du Bois de Nèfles, leurs familles, et plus largement les habitants du quartier.
-
-NOTRE ANCRAGE
-Deux locaux complémentaires — le Bois de Nèfles (« le haut » : jeunesse, ados, culturel) et les Bringelliers (« le bas » : parentalité, ateliers) — portés par une petite équipe salariée et un bureau bénévole.</textarea>
+      <textarea id="projetMission" onchange="saveProjet('projetMission')" placeholder="La raison d'être de ton association, ce qu'elle fait, pour qui, et son ancrage sur le territoire." style="width:100%;min-height:200px;font:inherit;padding:10px 12px;border:1px solid #e6ece7;border-radius:10px;resize:vertical;line-height:1.55"></textarea>
     </div>
 
     <div class="panel">
@@ -2395,7 +2389,11 @@ Deux locaux complémentaires — le Bois de Nèfles (« le haut » : jeunesse, a
 
   <!-- PROJET ADOS 2026-2030 -->
   <section id="projetados" class="page">
-    <div class="panel" style="background:linear-gradient(135deg,#1d3b8b,#2a55c4);color:#fff">
+    <!-- Lot 7 : tout ce qui suit décrit le projet ados d'UNE association (ses écoles, son quartier,
+         ses partenaires). Cloisonné par la donnée : visible seulement pour qui déclare « projet-ados ».
+         Revert : retirer les 10 attributs data-contenu-client de cette section, le bloc d'invite #adosVide,
+         la regle CSS [data-contenu-client] et la fonction applyContenusPrives avec son appel. -->
+    <div class="panel" data-contenu-client="projet-ados" style="background:linear-gradient(135deg,#1d3b8b,#2a55c4);color:#fff">
       <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap">
         <div style="font-size:42px;flex:0 0 auto">🚀</div>
         <div style="flex:1;min-width:260px">
@@ -2406,9 +2404,9 @@ Deux locaux complémentaires — le Bois de Nèfles (« le haut » : jeunesse, a
       </div>
     </div>
 
-    <div class="panel">
-      <p style="margin:0 0 12px;font-size:14px;line-height:1.6">La C.A.S.E accueille déjà des ados, mais pour les <strong>11-17 ans</strong> l'offre dédiée reste mince&nbsp;: il manque un cap, une régularité, et surtout <strong>un endroit qui soit vraiment le leur</strong>. Ce projet pédagogique de secteur pose noir sur blanc ce qu'on veut faire avec les jeunes du quartier, comment, et où on veut en être en 2030.</p>
-      <p class="hint" style="margin:0 0 12px">👥 <strong>Public</strong>&nbsp;: les <strong>11-17 ans</strong> de Bois de Nèfles et des environs, en <strong>deux groupes d'âge souples</strong> (collège / lycée) qui se retrouvent sur les temps forts. On démarre sur <strong>une douzaine à une quinzaine</strong> de jeunes réguliers, avec une montée en charge sur la durée. Accueil <strong>inclusif</strong>&nbsp;: filles et garçons à égalité, jeunes en situation de handicap bienvenus avec les aménagements nécessaires.</p>
+    <div class="panel" data-contenu-client="projet-ados">
+      <p style="margin:0 0 12px;font-size:14px;line-height:1.6">La C.A.S.E accueille déjà des ados, mais pour les <strong>11-17 ans</strong> l'offre dédiée reste mince&nbsp;: il manque un cap, une régularité, et surtout <strong>un endroit qui soit vraiment le leur</strong>. Ce projet pédagogique de secteur pose noir sur blanc ce qu'on veut faire avec les jeunes du quartier, comment, et où on veut en être en 2030.</p> <!-- saas-ok: contenu du projet jeunesse d'un client, dans un bloc data-contenu-client="projet-ados" ferme par defaut (CSS) et ouvert par la seule donnee du tenant -->
+      <p class="hint" style="margin:0 0 12px">👥 <strong>Public</strong>&nbsp;: les <strong>11-17 ans</strong> de Bois de Nèfles et des environs, en <strong>deux groupes d'âge souples</strong> (collège / lycée) qui se retrouvent sur les temps forts. On démarre sur <strong>une douzaine à une quinzaine</strong> de jeunes réguliers, avec une montée en charge sur la durée. Accueil <strong>inclusif</strong>&nbsp;: filles et garçons à égalité, jeunes en situation de handicap bienvenus avec les aménagements nécessaires.</p> <!-- saas-ok: contenu du projet jeunesse d'un client, dans un bloc data-contenu-client="projet-ados" ferme par defaut (CSS) et ouvert par la seule donnee du tenant -->
       <h3 style="margin:0 0 10px">📍 Où en est-on, concrètement</h3>
       <div class="cards">
         <div class="card" style="border-top:3px solid #2e9e63"><div class="label">✅ Déjà là</div><div class="sub" style="margin-top:6px;font-size:13px">Accueil ados · activités (danse) · mercredi jeunesse en cours d'installation · éducation à l'image active · local rénové qui rouvre.</div></div>
@@ -2418,18 +2416,18 @@ Deux locaux complémentaires — le Bois de Nèfles (« le haut » : jeunesse, a
       <p class="hint" style="margin:12px 0 0">C'est une <strong>feuille de route</strong>, pas un état des lieux. Réglementairement, ce texte fait office de <strong>projet pédagogique de secteur</strong> pour le public ados, décliné en fiches opérationnelles à chaque période déclarée.</p>
     </div>
 
-    <div class="panel">
+    <div class="panel" data-contenu-client="projet-ados">
       <h3 style="margin:0 0 4px">🧭 Notre posture — « on ne fait pas d'occupationnel »</h3>
       <p class="hint" style="margin:0 0 10px">Accueillir des ados, ce n'est pas remplir leur temps, c'est leur donner prise sur leur vie. Quatre convictions guident tout le projet.</p>
       <div class="cards">
         <div class="card"><div class="label">🗣️ Des personnes qui ont leur mot à dire</div><div class="sub" style="margin-top:6px;font-size:13px">On propose, on cadre, mais on laisse de la place pour qu'ils décident, se trompent, recommencent. Le programme se construit <strong>avec</strong> eux, pas seulement pour eux.</div></div>
-        <div class="card"><div class="label">🏘️ Tout ancré dans le quartier</div><div class="sub" style="margin-top:6px;font-size:13px">Le quartier n'est pas le décor, c'est la matière&nbsp;: on filme ses habitants, on raconte son histoire, on l'embellit. Regarder Bois de Nèfles autrement, c'est se regarder soi-même autrement.</div></div>
+        <div class="card"><div class="label">🏘️ Tout ancré dans le quartier</div><div class="sub" style="margin-top:6px;font-size:13px">Le quartier n'est pas le décor, c'est la matière&nbsp;: on filme ses habitants, on raconte son histoire, on l'embellit. Regarder Bois de Nèfles autrement, c'est se regarder soi-même autrement.</div></div> <!-- saas-ok: contenu du projet jeunesse d'un client, dans un bloc data-contenu-client="projet-ados" ferme par defaut (CSS) et ouvert par la seule donnee du tenant -->
         <div class="card"><div class="label">🎯 Relier le loisir et l'avenir</div><div class="sub" style="margin-top:6px;font-size:13px">Sans transformer l'accueil en agence pour l'emploi&nbsp;: laisser des traces utiles — compétences, confiance, connaissance des filières (à commencer par le lycée d'à côté).</div></div>
         <div class="card"><div class="label">💚 Prendre soin</div><div class="sub" style="margin-top:6px;font-size:13px">Santé physique et mentale, rapport au corps, aux écrans, aux autres&nbsp;: des sujets centraux, abordés sans dramatiser et sans détourner le regard, avec les bons partenaires.</div></div>
       </div>
     </div>
 
-    <div class="panel">
+    <div class="panel" data-contenu-client="projet-ados">
       <h3 style="margin:0 0 4px">🎯 Nos 4 axes pédagogiques</h3>
       <p class="hint" style="margin:0 0 10px">Quatre axes, qui ne se vivent pas en silos&nbsp;: un même reportage de quartier peut faire travailler la parole, la citoyenneté et l'ouverture en même temps.</p>
       <div class="cards">
@@ -2440,21 +2438,21 @@ Deux locaux complémentaires — le Bois de Nèfles (« le haut » : jeunesse, a
       </div>
     </div>
 
-    <div class="panel">
+    <div class="panel" data-contenu-client="projet-ados">
       <h3 style="margin:0 0 10px">⭐ Les deux marqueurs du projet</h3>
       <div class="cards">
         <div class="card" style="border-top:3px solid #2a55c4">
           <div class="label">🏠 « La Kaz Zados » — un lieu à eux, géré par eux</div>
-          <div class="sub" style="margin-top:6px;font-size:13px">Un espace jeunes dans le local de la C.A.S.E&nbsp;: baby-foot, coin pour se poser, musique, devoirs, montage vidéo. On y entre <strong>librement</strong>. Ce sont les jeunes qui le font vivre (règles, planning, budget, tournois). Cadre réglementaire&nbsp;: <strong>accueil de jeunes</strong> (dès 14 ans, convention avec l'État). Montée en autonomie&nbsp;: jusqu'à un <strong>bureau des jeunes</strong>, voire une junior association.</div>
+          <div class="sub" style="margin-top:6px;font-size:13px">Un espace jeunes dans le local de la C.A.S.E&nbsp;: baby-foot, coin pour se poser, musique, devoirs, montage vidéo. On y entre <strong>librement</strong>. Ce sont les jeunes qui le font vivre (règles, planning, budget, tournois). Cadre réglementaire&nbsp;: <strong>accueil de jeunes</strong> (dès 14 ans, convention avec l'État). Montée en autonomie&nbsp;: jusqu'à un <strong>bureau des jeunes</strong>, voire une junior association.</div> <!-- saas-ok: contenu du projet jeunesse d'un client, dans un bloc data-contenu-client="projet-ados" ferme par defaut (CSS) et ouvert par la seule donnee du tenant -->
         </div>
         <div class="card" style="border-top:3px solid #2a55c4">
           <div class="label">📡 « Ôté Kartié » — le média des ados du quartier</div>
-          <div class="sub" style="margin-top:6px;font-size:13px">Le fil rouge. Un média de quartier animé par un binôme en <strong>service civique</strong>&nbsp;: les ados deviennent <strong>reporters de leur propre quartier</strong> (sujets, interviews, tournage, montage, diffusion). Ils apprennent un métier, gagnent en assurance, donnent une image fière de Bois de Nèfles. Contenus propriété de l'association, droit à l'image respecté, autorisation parentale systématique.</div>
+          <div class="sub" style="margin-top:6px;font-size:13px">Le fil rouge. Un média de quartier animé par un binôme en <strong>service civique</strong>&nbsp;: les ados deviennent <strong>reporters de leur propre quartier</strong> (sujets, interviews, tournage, montage, diffusion). Ils apprennent un métier, gagnent en assurance, donnent une image fière de Bois de Nèfles. Contenus propriété de l'association, droit à l'image respecté, autorisation parentale systématique.</div> <!-- saas-ok: contenu du projet jeunesse d'un client, dans un bloc data-contenu-client="projet-ados" ferme par defaut (CSS) et ouvert par la seule donnee du tenant -->
         </div>
       </div>
     </div>
 
-    <div class="panel">
+    <div class="panel" data-contenu-client="projet-ados">
       <h3 style="margin:0 0 4px">⏰ Comment ça marche concrètement</h3>
       <p class="hint" style="margin:0 0 10px">Le secteur vit sur plusieurs rythmes&nbsp;: le <strong>mercredi « jeunesse »</strong> (rendez-vous régulier en période scolaire), les <strong>vacances scolaires</strong> (temps forts, sorties, séjours) et, en fil rouge, <strong>« La Kaz Zados »</strong> sur des créneaux réguliers, notamment en fin de journée après les cours. Chaque période accueillie fait l'objet d'une déclaration et d'une fiche propre.</p>
       <h4 style="margin:6px 0 8px;font-size:14px">Une demi-journée type au mercredi jeunesse</h4>
@@ -2469,22 +2467,22 @@ Deux locaux complémentaires — le Bois de Nèfles (« le haut » : jeunesse, a
       <p class="hint" style="margin:8px 0 0">📜 <strong>Règles de vie</strong>&nbsp;: un règlement simple, écrit avec les jeunes (respect de chacun, des lieux et du matériel, engagement vis-à-vis du collectif). Les sanctions, quand elles sont nécessaires, sont expliquées, proportionnées et tournées vers la <strong>réparation plutôt que l'exclusion</strong>.</p>
     </div>
 
-    <div class="panel">
+    <div class="panel" data-contenu-client="projet-ados">
       <h3 style="margin:0 0 4px">🛡️ Encadrement, sécurité &amp; cadre réglementaire</h3>
       <div class="kv"><span><strong>Accueil de loisirs (mercredis, vacances)</strong><br><span class="muted" style="font-size:13px">Direction assurée par une personne titulaire d'un diplôme permettant d'exercer les fonctions de direction&nbsp;; animation majoritairement qualifiée, dans le respect des taux d'encadrement réglementaires (au minimum 1 animateur pour 12 mineurs de plus de 6 ans en extrascolaire). Animateurs occasionnels recrutés en contrat d'engagement éducatif (CEE).</span></span></div>
       <div class="kv"><span><strong>« La Kaz Zados »</strong><br><span class="muted" style="font-size:13px">Relève de l'« accueil de jeunes »&nbsp;: modalités d'encadrement plus souples, définies par convention avec les services de l'État chargés de la jeunesse, autour d'un animateur référent — c'est ce cadre qui rend possible la co-gestion.</span></span></div>
       <p class="hint" style="margin:8px 0 0">Chaque accueil est déclaré dans les délais, avec les assurances requises, la vérification de l'honorabilité des encadrants, un protocole sanitaire et de premiers secours, et un encadrement strict du droit à l'image (autorisation écrite des représentants légaux, droit de retrait). Ces éléments sont en cours de finalisation avec l'accompagnement DLA.</p>
     </div>
 
-    <div class="panel">
+    <div class="panel" data-contenu-client="projet-ados">
       <h3 style="margin:0 0 4px">🎓 Dans la continuité du collège & du lycée</h3>
-      <p class="hint" style="margin:0 0 10px">À quelques pas du local&nbsp;: l'école de Piton, le collège Bois de Nèfles et le tout nouveau lycée polyvalent Nord. Un même bassin de vie&nbsp;: on veut en faire une vraie continuité éducative, hors temps scolaire.</p>
-      <div class="kv"><span><strong>🏫 Collège Bois de Nèfles</strong> <span class="muted">(~900 élèves)</span><br><span class="muted" style="font-size:13px">Déjà investi sur l'éducation aux médias et la prévention du harcèlement. Actions communes d'éducation à l'image, accueil des collégiens après les cours, relais décrochage, lien vie scolaire / foyer socio-éducatif.</span></span></div>
+      <p class="hint" style="margin:0 0 10px">À quelques pas du local&nbsp;: l'école de Piton, le collège Bois de Nèfles et le tout nouveau lycée polyvalent Nord. Un même bassin de vie&nbsp;: on veut en faire une vraie continuité éducative, hors temps scolaire.</p> <!-- saas-ok: contenu du projet jeunesse d'un client, dans un bloc data-contenu-client="projet-ados" ferme par defaut (CSS) et ouvert par la seule donnee du tenant -->
+      <div class="kv"><span><strong>🏫 Collège Bois de Nèfles</strong> <span class="muted">(~900 élèves)</span><br><span class="muted" style="font-size:13px">Déjà investi sur l'éducation aux médias et la prévention du harcèlement. Actions communes d'éducation à l'image, accueil des collégiens après les cours, relais décrochage, lien vie scolaire / foyer socio-éducatif.</span></span></div> <!-- saas-ok: contenu du projet jeunesse d'un client, dans un bloc data-contenu-client="projet-ados" ferme par defaut (CSS) et ouvert par la seule donnee du tenant -->
       <div class="kv"><span><strong>🎬 Lycée polyvalent Nord</strong> <span class="muted">(dominante audiovisuelle · BTS Métiers de l'audiovisuel)</span><br><span class="muted" style="font-size:13px">À 100 m, un établissement entièrement tourné vers nos métiers. Le parcours devient concret&nbsp;: prendre une caméra à 12 ans avec « Ôté Kartié » → se former → viser le BTS audiovisuel d'à côté. Interventions croisées, stages, lien Maison des lycéens.</span></span></div>
       <p class="hint" style="margin:10px 0 0">⚠️ <strong>Chantier prioritaire</strong>&nbsp;: formaliser les <strong>conventions de partenariat</strong> avec les deux établissements.</p>
     </div>
 
-    <div class="panel">
+    <div class="panel" data-contenu-client="projet-ados">
       <h3 style="margin:0 0 10px">🗺️ La trajectoire 2026-2030</h3>
       <p class="hint" style="margin:0 0 10px">On avance par étapes, pour ne pas promettre plus que ce qu'on peut tenir avec une équipe qui se reconstruit. Cap réévalué chaque année.</p>
       <div class="ados-time">
@@ -2496,17 +2494,24 @@ Deux locaux complémentaires — le Bois de Nèfles (« le haut » : jeunesse, a
       </div>
     </div>
 
-    <div class="panel">
+    <div class="panel" data-contenu-client="projet-ados">
       <div class="cards">
         <div class="card">
           <div class="label">🤝 Avec qui on le fait</div>
-          <div class="sub" style="margin-top:6px;font-size:13px">Collège Bois de Nèfles & lycée polyvalent Nord · Ville de Saint-Denis (pôle périscolaire) · CAF · services de l'État chargés de la jeunesse et des sports · réseau information jeunesse · Groupe de santé Clinifutur (Clinique Sainte-Clotilde) · dispositif service civique · commerçants, artistes & associations du quartier.</div>
+          <div class="sub" style="margin-top:6px;font-size:13px">Collège Bois de Nèfles & lycée polyvalent Nord · Ville de Saint-Denis (pôle périscolaire) · CAF · services de l'État chargés de la jeunesse et des sports · réseau information jeunesse · Groupe de santé Clinifutur (Clinique Sainte-Clotilde) · dispositif service civique · commerçants, artistes & associations du quartier.</div> <!-- saas-ok: contenu du projet jeunesse d'un client, dans un bloc data-contenu-client="projet-ados" ferme par defaut (CSS) et ouvert par la seule donnee du tenant -->
         </div>
         <div class="card">
           <div class="label">✅ Comment on saura si ça marche</div>
           <div class="sub" style="margin-top:6px;font-size:13px">Fréquentation & régularité (capacité à toucher les plus éloignés) · vie réelle de La Kaz Zados (co-gestion, bureau des jeunes) · projets menés à terme (productions du média) · passerelles concrètes collège/lycée & orientations · ressenti des jeunes et des familles. Bilan écrit chaque année, partagé.</div>
         </div>
       </div>
+    </div>
+
+    <!-- Lot 7 : ce que voit une asso qui n'a pas (encore) de projet ados déclaré — sa zone de travail
+         reste utilisable, elle ne lit simplement pas le projet d'une autre. -->
+    <div class="panel" id="adosVide" data-contenu-vide="projet-ados">
+      <h3 style="margin:0 0 4px">🚀 Ton projet jeunesse</h3>
+      <p class="hint" style="margin:0">Cet onglet accueille le projet jeunesse de ton association : ses objectifs, ses partenaires, ses étapes. Écris-le dans la zone ci-dessous — elle est à toi, personne d'autre ne la lit.</p>
     </div>
 
     <div class="panel">
@@ -2569,7 +2574,7 @@ Deux locaux complémentaires — le Bois de Nèfles (« le haut » : jeunesse, a
     <div class="cards" id="congesKpis"></div>
     <div class="panel" style="border-left:4px solid #d9488a">
       <h3 style="margin:0 0 4px">🔒 Fermetures de la structure <span class="muted" style="font-weight:400;font-size:13px">— congés imposés à toute l'équipe</span></h3>
-      <p class="hint" style="margin:0 0 8px">Déclare une période où le CASE <strong>ferme</strong> (ex. vacances de décembre). En cliquant <strong>« 👥 Appliquer à toute l'équipe »</strong>, Bob crée un congé <strong>« Imposé » déjà validé</strong> pour chaque salarié·e sur ces dates, et affiche un bandeau. Réservé au bureau.</p>
+      <p class="hint" style="margin:0 0 8px">Déclare une période où la structure <strong>ferme</strong> (ex. vacances de décembre). En cliquant <strong>« 👥 Appliquer à toute l'équipe »</strong>, Bob crée un congé <strong>« Imposé » déjà validé</strong> pour chaque salarié·e sur ces dates, et affiche un bandeau. Réservé au bureau.</p>
       <div id="fermBanner"></div>
       <div class="toolbar" style="flex-wrap:wrap;gap:10px;align-items:flex-end">
         <div class="field" style="min-width:230px"><label>Nom de la fermeture</label><input id="fm_nom" placeholder="Ex. Fermeture vacances de décembre"></div>
@@ -2717,7 +2722,7 @@ Deux locaux complémentaires — le Bois de Nèfles (« le haut » : jeunesse, a
       <div class="toolbar" style="justify-content:space-between;align-items:flex-start;gap:8px;flex-wrap:wrap">
         <div>
           <h2 style="margin:0">📒 Paie — classeur social mensuel</h2>
-          <p class="hint" style="margin:4px 0 0;max-width:680px">Le classeur numérique de la paie, <b>un dossier par mois</b> : les fiches de paie (une par salarié), le détail des cotisations et la DSN. Rangé dans un <b>coffre privé</b> réservé au <b>président et au trésorier</b> — jamais sur le site, jamais visible du reste de l'équipe. <span class="muted">Copie de travail centralisée : elle ne remplace pas l'obligation légale de conservation (bulletins ~5 ans). Toute suppression passe par une <b>corbeille récupérable</b> — rien ne se perd. Pense à faire une <b>« 📥 Sauvegarde complète »</b> régulière sur le Drive du CASE.</span></p>
+          <p class="hint" style="margin:4px 0 0;max-width:680px">Le classeur numérique de la paie, <b>un dossier par mois</b> : les fiches de paie (une par salarié), le détail des cotisations et la DSN. Rangé dans un <b>coffre privé</b> réservé au <b>président et au trésorier</b> — jamais sur le site, jamais visible du reste de l'équipe. <span class="muted">Copie de travail centralisée : elle ne remplace pas l'obligation légale de conservation (bulletins ~5 ans). Toute suppression passe par une <b>corbeille récupérable</b> — rien ne se perd. Pense à faire une <b>« 📥 Sauvegarde complète »</b> régulière sur le Drive de l'association.</span></p>
         </div>
         <div style="display:flex;gap:8px;flex-wrap:wrap">
           <button class="btn ghost" onclick="window.paieBackupAll&amp;&amp;paieBackupAll()">📥 Sauvegarde complète</button>
@@ -2731,10 +2736,10 @@ Deux locaux complémentaires — le Bois de Nèfles (« le haut » : jeunesse, a
   <section id="aide" class="page">
     <div class="panel" style="background:linear-gradient(135deg,#eafaf2,#f3fbf6);border:1px solid #cdeede">
       <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap">
-        <img src="zanana-point.png" alt="Zanana" style="width:74px;height:74px;object-fit:contain;flex:0 0 auto" onerror="this.style.display='none'">
+        <img src="zanana-point.png" alt="" style="width:74px;height:74px;object-fit:contain;flex:0 0 auto" onerror="this.style.display='none'"><!-- saas-ok: valeur par defaut repointee au demarrage vers l'assistant du tenant (repatch img[src*=zanana-]) -->
         <div style="flex:1;min-width:220px">
-          <h2 style="margin:0 0 4px" id="aideMascTitre">❓ Demande à Zanana</h2>
-          <p class="hint" style="margin:0" id="aideMascHint">Pose ta question avec tes mots — « Comment j'ajoute un adhérent ? », « Où je sauvegarde ? » — et Zanana te montre la marche à suivre. Si elle ne sait pas, ta question est transmise pour qu'on y réponde.</p>
+          <h2 style="margin:0 0 4px" id="aideMascTitre">❓ Demande à l'assistant</h2><!-- saas-ok: valeur par defaut neutre, reecrite au demarrage par applyAssoIdentity -->
+          <p class="hint" style="margin:0" id="aideMascHint">Pose ta question avec tes mots — « Comment j'ajoute un adhérent ? », « Où je sauvegarde ? » — et la réponse s'affiche. Sans réponse, ta question est transmise pour qu'on la traite.</p>
         </div>
       </div>
       <div class="row" style="margin-top:14px;gap:8px;flex-wrap:nowrap">
@@ -2755,7 +2760,7 @@ Deux locaux complémentaires — le Bois de Nèfles (« le haut » : jeunesse, a
     </div>
     <div class="panel">
       <h3 style="margin:0 0 4px">📖 Toutes les questions fréquentes</h3>
-      <p class="hint" style="margin:0 0 10px">Les questions sont rangées par écran : ouvre l'écran qui t'intéresse, puis clique ta question. Pour aller au plus court, pose ta question à Zanana tout en haut — elle cherche dans tout d'un coup.</p>
+      <p class="hint" style="margin:0 0 10px">Les questions sont rangées par écran : ouvre l'écran qui t'intéresse, puis clique ta question. Pour aller au plus court, utilise la recherche tout en haut : elle cherche dans tout d'un coup.</p>
       <div id="faqList"></div>
     </div>
 
@@ -2765,7 +2770,7 @@ Deux locaux complémentaires — le Bois de Nèfles (« le haut » : jeunesse, a
       <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap">
         <div style="font-size:42px;flex:0 0 auto">🍍</div>
         <div style="flex:1;min-width:240px">
-          <h2 style="margin:0 0 4px;color:#fff">📖 Découvrir Bob — l'outil de gestion du CASE</h2>
+          <h2 style="margin:0 0 4px;color:#fff">📖 Découvrir Bob — l'outil de gestion de l'association</h2>
           <p style="margin:0;opacity:.93;font-size:14px">Tout le pilotage de l'association en un seul endroit, en ligne et sécurisé (hébergé en France, RGPD). En quelques mois, on est passés d'un simple Drive à un vrai outil de gestion, de suivi et de visibilité. <em>(À montrer au DLA ou à un partenaire.)</em></p>
         </div>
       </div>
@@ -2790,7 +2795,7 @@ Deux locaux complémentaires — le Bois de Nèfles (« le haut » : jeunesse, a
         <div class="card"><div class="label">👥 Public &amp; activités</div><div class="sub" style="margin-top:6px;font-size:13px">Adhérents (+ relances) · Périscolaire (grille au quotient familial + facturation auto) · Activités &amp; places · Lieux · Ateliers</div></div>
         <div class="card"><div class="label">🧑‍💼 RH &amp; équipe</div><div class="sub" style="margin-top:6px;font-size:13px">Équipe (masse salariale, contrats) · RH &amp; Organisation · Suivi des actions · Congés (demande + validation)</div></div>
         <div class="card"><div class="label">🤝 Accompagnement &amp; réseau</div><div class="sub" style="margin-top:6px;font-size:13px">Accompagnement (DLA, MDA, ressources expertes) · Partenaires · Répertoire · Secrétariat · Événements</div></div>
-        <div class="card"><div class="label">❓ Aide intégrée</div><div class="sub" style="margin-top:6px;font-size:13px" id="aideMascCarte">« Demande à Zanana » (questions / réponses) · « Quoi de neuf » (les nouveautés au fil du temps)</div></div>
+        <div class="card"><div class="label">❓ Aide intégrée</div><div class="sub" style="margin-top:6px;font-size:13px" id="aideMascCarte">« Demande à l'assistant » (questions / réponses) · « Quoi de neuf » (les nouveautés au fil du temps)</div></div>
       </div>
     </div>
 
@@ -2800,7 +2805,7 @@ Deux locaux complémentaires — le Bois de Nèfles (« le haut » : jeunesse, a
     </div>
 
     <div class="panel" style="border-left:4px solid var(--brand);background:#f3fbf6">
-      <p style="margin:0;font-size:14px"><strong>Le message :</strong> en quelques mois, le CASE s'est doté d'<strong>outils</strong>, de <strong>suivi</strong> et d'un <strong>cadre</strong> — précisément les manques pointés au diagnostic. Bob centralise tout ça et le rend visible, partageable et durable.</p>
+      <p style="margin:0;font-size:14px"><strong>Le message :</strong> en quelques mois, l'association s'est dotée d'<strong>outils</strong>, de <strong>suivi</strong> et d'un <strong>cadre</strong> — précisément les manques pointés au diagnostic. Bob centralise tout ça et le rend visible, partageable et durable.</p>
     </div>
     </div>
   </section>
@@ -2851,7 +2856,7 @@ Deux locaux complémentaires — le Bois de Nèfles (« le haut » : jeunesse, a
 
 <div id="printArea"></div>
 
-<footer>Propulsé par <a href="https://bob.re" target="_blank" rel="nofollow noopener" style="color:inherit;text-decoration:underline">Bob</a> 🤖 · outil de gestion du CASE du Bois de Nèfles · données sécurisées en ligne (hébergement Paris · RGPD)</footer>
+<footer>Propulsé par <a href="https://bob.re" target="_blank" rel="nofollow noopener" style="color:inherit;text-decoration:underline">Bob</a> 🤖 · données sécurisées en ligne (hébergement Paris · RGPD)</footer>
 
 <script>
 const $ = id => document.getElementById(id);
@@ -3235,7 +3240,7 @@ document.querySelectorAll('nav.tabs button').forEach(b=>{
   try{ const p=document.getElementById('tabJumpKbd'); if(p) p.textContent=MAC?'⌘K':'Ctrl K'; }catch(e){}
 })();
 
-/* ---- Aide : « Demande à Zanana » (FAQ + assistant par mots-clés, sans IA) ---- */
+/* ---- Aide : l'assistant du tenant (FAQ + mots-clés, sans IA) ---- */
 /* 🔒 15/08/2026 — Même raison que pour les nouveautés (voir le bloc NEWS) : app.html est un
    fichier PUBLIC, et ces fiches décrivent par le menu comment l'association est gérée. Elles
    vivent maintenant dans le coffre `app_state` (clé `faq`), dont la RLS n'ouvre la lecture
@@ -3283,7 +3288,7 @@ function renderFaqList(){
       +'<div style="margin-top:4px">'+fiches+'</div></details>';
   }).join('');
 }
-/* ---- Aide contextuelle : « Comment marche cette page » (réutilise la FAQ Zanana, 1 bouton générique pour TOUS les onglets) ---- */
+/* ---- Aide contextuelle : « Comment marche cette page » (réutilise la FAQ, 1 bouton générique pour TOUS les onglets) ---- */
 function pageHelpNorm(s){ return (s||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^a-z0-9]+/g,' ').trim(); }
 function pageHelpItems(){
   const b=document.querySelector('nav.tabs button.active');
@@ -5025,7 +5030,7 @@ function pilotConsoView(){
   fiches.forEach(f=>{ const t=pilotTotals(f); g.depPrev+=t.depPrev;g.recPrev+=t.recPrev;g.soldePrev+=t.soldePrev;g.depReel+=t.depReel;g.recReel+=t.recReel;g.nat+=t.nat;
     rows+=`<tr><td>${esc(f.nom)}${f.mairie?'':' <span class="muted" style="font-size:11px">hors Mairie</span>'}</td><td>${esc(f.type||'')}</td><td style="text-align:right">${pilotEur(t.depPrev)}</td><td style="text-align:right">${pilotEur(t.recPrev)}</td><td style="text-align:right;color:${t.soldePrev>=0?'#3b6d11':'#a32d2d'}">${pilotEur(t.soldePrev)}</td><td style="text-align:right">${pilotEur(t.depReel)}</td><td style="text-align:right">${pilotEur(t.recReel)}</td><td style="text-align:right">${pilotEur(t.nat)}</td></tr>`; });
   return `<div class="panel"><h2 style="margin-top:0">📊 Vue annuelle consolidée <span class="muted" style="font-weight:400;font-size:13px">exercice ${pilotYear()} · toutes les actions</span></h2>
-    <p class="hint">Ce que le CASE fait sur l'année — financé Mairie ou non — pour le bilan et préparer les demandes de l'an prochain.</p>
+    <p class="hint">Ce que l'association fait sur l'année — financé Mairie ou non — pour le bilan et préparer les demandes de l'an prochain.</p>
     <div class="scroll" style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:13px"><tr style="text-align:left;color:var(--muted)"><th>Action</th><th>Type</th><th style="text-align:right">Dép. prévu</th><th style="text-align:right">Rec. prévu</th><th style="text-align:right">Solde prévu</th><th style="text-align:right">Dép. réel</th><th style="text-align:right">Rec. réel</th><th style="text-align:right">En nature</th></tr>
     ${rows}
     <tr style="font-weight:800;border-top:2px solid var(--line,#cfcdc4)"><td>TOTAL ${fiches.length} action(s)</td><td></td><td style="text-align:right">${pilotEur(g.depPrev)}</td><td style="text-align:right">${pilotEur(g.recPrev)}</td><td style="text-align:right;color:${g.soldePrev>=0?'#3b6d11':'#a32d2d'}">${pilotEur(g.soldePrev)}</td><td style="text-align:right">${pilotEur(g.depReel)}</td><td style="text-align:right">${pilotEur(g.recReel)}</td><td style="text-align:right">${pilotEur(g.nat)}</td></tr></table></div></div>`;
@@ -5350,7 +5355,7 @@ function memberReceipt(id){
       ${m.mode?`<tr><td>Mode de paiement</td><td class="num">${modeText(m.mode)}</td></tr>`:''}
       <tr><td>Date d'adhésion</td><td class="num">${fmtDate(m.date)}</td></tr>
     </tbody></table>
-    <p style="margin-top:40px">Fait à Saint-Denis, le ${fmtDate(today())}.</p>
+    <p style="margin-top:40px">${window.bobFaitLe?window.bobFaitLe(fmtDate(today())):('Fait le '+fmtDate(today()))}.</p>
     <p style="margin-top:30px">Le Trésorier,</p>`);
 }
 
@@ -5971,7 +5976,7 @@ function printCourrier(){
   const objet=$('cr_objet').value.trim(), dest=$('cr_dest').value.trim(), corps=$('cr_corps').value;
   printHTML(`<h1 style="margin:0">${esc(window.bobOrgName||'Association')}</h1>
     <p style="margin:2px 0 0">Association loi 1901 — La Réunion</p>
-    <p style="text-align:right;margin-top:24px">Saint-Denis, le ${fmtDate(today())}</p>
+    <p style="text-align:right;margin-top:24px">${window.bobLieuLe?window.bobLieuLe(fmtDate(today())):('Le '+fmtDate(today()))}</p>
     ${dest?`<p style="margin-top:10px"><strong>${esc(dest)}</strong></p>`:''}
     ${objet?`<p style="margin-top:14px"><strong>Objet : ${esc(objet)}</strong></p>`:''}
     <div style="margin-top:14px;white-space:pre-wrap;line-height:1.5">${esc(corps)}</div>
@@ -6064,7 +6069,7 @@ function afficheQR(){
     +'<div style="max-width:560px;margin:0 auto;background:#fbf8f3;border:1px solid #e7efe9;border-radius:20px;padding:34px 30px 24px;text-align:center;color:#16302a">'
       +'<img src="logo.png" alt="" onerror="this.style.display=\'none\'" style="height:64px;margin-bottom:12px">'
       +'<div style="font-size:12px;font-weight:600;letter-spacing:.18em;text-transform:uppercase;color:#127a51">CASE du Bois de Nèfles · Sainte-Clotilde</div>' // saas-ok: affiche QR propre au CASE (bouton gated estLeCase, QR gravé casebdn.re)
-      +'<h2 style="font-size:30px;line-height:1.15;margin:10px 0 6px">Tout le CASE,<br>dans votre poche&nbsp;!</h2>'
+      +'<h2 style="font-size:30px;line-height:1.15;margin:10px 0 6px">Tout le CASE,<br>dans votre poche&nbsp;!</h2>' // saas-ok: affiche QR d'un client, sous garde estLeCase() — le bouton n'existe pas ailleurs
       +'<p style="margin:0 0 20px;color:#62756b;font-size:15px">Activités, inscriptions, espace famille&nbsp;: tout est sur notre site.</p>'
       +'<div style="display:inline-block;background:#fff;border:2px solid #127a51;border-radius:18px;padding:18px"><div style="width:210px;height:210px">'+qr+'</div></div>'
       +'<p style="margin:16px 0 4px;font-weight:600;font-size:15px">📱 Ouvrez l\'appareil photo du téléphone,<br>visez le code… et c\'est parti&nbsp;!</p>'
@@ -6074,7 +6079,7 @@ function afficheQR(){
         +'<span style="font-size:12.5px;color:#62756b;text-align:left">CASE du Bois de Nèfles<br>132 Place de la Fraternité, 97490 Sainte-Clotilde</span>' // saas-ok: affiche QR propre au CASE
       +'</div>'
     +'</div>';
-  window.docViewHtml('📣 Affiche à partager — le site du CASE', html);
+  window.docViewHtml('📣 Affiche à partager — le site du CASE', html); // saas-ok: affiche QR d'un client, sous garde estLeCase()
 }
 function afficheQRCopie(btn){
   const url='https://casebdn.re/'; // saas-ok: QR gravé en dur vers le site du CASE (fonction gated estLeCase)
@@ -6217,7 +6222,7 @@ function printCaprep(){
 const BOB_CASE_ID='d617489c-b18b-499b-ab17-c31656d0f08a'; // saas-ok: clé de la cloison estLeCase — le mécanisme multi-tenant, pas de l'habillage
 function estLeCase(){ try{ const me=(window.bobMe&&typeof window.bobMe==='object')?window.bobMe:null; return !!(me && me.asso===BOB_CASE_ID); }catch(e){ return false; } }
 function seedCaprepIfNeeded(){
-  if(!estLeCase()) return; // ces 7 points sont l'ordre du jour réel du CASE — jamais ailleurs
+  if(!estLeCase()) return; // ordre du jour réel d'un client, semé sous garde — jamais servi ailleurs  // saas-ok: donnee de demarrage sous garde estLeCase(), invisible pour les autres
   if(!db.capoints) db.capoints=[];
   if(db.caprepSeeded22) return;
   db.caprepSeeded22=true;
@@ -6839,7 +6844,7 @@ function renderPrevisionnel(){
     else if(o.type==='in'){ if(cat!=='Subvention' && prevIsRecurrent(cat,'in')) recCodeRec[code]=(recCodeRec[code]||0)+o.amount; } });
 
   // code comptable qui porte les subventions À VENIR (le plus utilisé, sinon 740).
-  // ⚠️ On EXCLUT les codes « N-1 » : ils portent les régularisations de l'exercice précédent (au CASE, 32 écritures
+  // ⚠️ On EXCLUT les codes « N-1 » : ils portent les régularisations de l'exercice précédent (chez un client, 32 écritures
   // de rattrapage 2025 en faisaient le code le plus fréquent) — une subvention future n'atterrit jamais là.
   const estCodeNm1=c=>/\bN\s*[-‐–—]\s*1\b/i.test(c);
   const subCnt={}; opsY.forEach(o=>{ if(o.type==='in' && (o.cat||'').trim()==='Subvention'){ const c=(o.compte||'').trim()||"740 - Subventions d'exploitation"; if(estCodeNm1(c)) return; subCnt[c]=(subCnt[c]||0)+1; } });
@@ -7490,7 +7495,7 @@ const ORGA_DEFAUT={
     {id:'p1',emoji:'🧭',nom:'Coordination',resp:'(référent·e)',mission:'Coordonne l\'équipe et les actions, lien bureau ↔ terrain, appui administratif'},
     {id:'p2',emoji:'🎒',nom:'Périscolaire & garderie',resp:'(référent·e)',mission:'Accueil matin/soir, goûters, encadrement, lien avec les parents'},
     {id:'p3',emoji:'🎨',nom:'Animation & projets',resp:'(référent·e)',mission:'Animation socioculturelle, jeunesse/ados, hors les murs, temps forts'},
-    {id:'p4',emoji:'🏠',nom:'Local des Bringelliers',resp:'(référent·e)',mission:'Parentalité, ateliers (tricot…), ouverture et animation du « bas »'},
+    {id:'p4',emoji:'🏠',nom:'Local des Bringelliers',resp:'(référent·e)',mission:'Parentalité, ateliers (tricot…), ouverture et animation du « bas »'}, // saas-ok: donnee de demarrage d'un client, semee sous garde estLeCase() — les autres recoivent ORGA_NEUTRE
     {id:'p5',emoji:'📡',nom:'Média de quartier « Ôté Kartié »',resp:'(référent·e du bureau)',mission:'Média de proximité du quartier. Les 2 volontaires en service civique y contribuent en médiation citoyenne, hors organigramme et sans fonction de production'}
   ]
 };
@@ -7568,8 +7573,8 @@ const ACT_DEFAUT=[
   {id:'a2',sujet:'Boîtes mail pro individuelles (casebdn.re)',statut:'En cours',note:'Mise en place ce week-end'}, // saas-ok: tableau de marche réel du CASE, semé sous garde estLeCase (actionsDB)
   {id:'a3',sujet:'Agendas individuels + actions',statut:'En cours',note:''},
   {id:'a4',sujet:'Réunions hebdo équipe (jeudi 11h)',statut:'À faire',note:'À mettre réellement en place'},
-  {id:'a5',sujet:'Ouvertures & activités au CASE des Bringelliers',statut:'En cours',note:'Local ouvert'},
-  {id:'a6',sujet:'Entretien des espaces verts (Bringelliers)',statut:'En cours',note:'Au quotidien ; projet jardin à mettre en place'},
+  {id:'a5',sujet:'Ouvertures & activités au CASE des Bringelliers',statut:'En cours',note:'Local ouvert'}, // saas-ok: donnee de demarrage d'un client, semee sous garde estLeCase()
+  {id:'a6',sujet:'Entretien des espaces verts (Bringelliers)',statut:'En cours',note:'Au quotidien ; projet jardin à mettre en place'}, // saas-ok: donnee de demarrage d'un client, semee sous garde estLeCase()
   {id:'a7',sujet:'Relance médecine du travail (visites périodiques)',statut:'En attente',note:'Relance en cours'},
   {id:'a8',sujet:'Relance Uniformation (cotisation 2026 + formations)',statut:'En attente',note:'~2 720 € ; relance demain'},
   {id:'a9',sujet:'Relance impayés parents',statut:'Fait',note:'Courriers envoyés + suivi sur Bob'},
@@ -8233,7 +8238,7 @@ function acmPublicProgramme(cs){
   const res=a.fiches.filter(f=>plan[f.id]==='reserve'); if(res.length) lines.push('En réserve : '+res.map(f=>(f.emoji?f.emoji+' ':'')+f.nom).join(', '));
   return lines.join('\n');
 }
-/* ---- Tarif ACM : grille officielle Saint-Denis au quotient familial, par semaine (source unique tarifs_publics). Mêmes seuils QF que le périscolaire. ---- */
+/* ---- Tarif ACM : grille officielle de la commune au quotient familial, par semaine (source unique tarifs_publics). Mêmes seuils QF que le périscolaire. ---- */
 const ACM_QF=[
   {lab:'Tranche 1', qf:'0 – 350,99 €'},
   {lab:'Tranche 2', qf:'351 – 450,99 €'},
@@ -9470,7 +9475,7 @@ renderAll();
       const s=await sbc.storage.from('paie').createSignedUrl(p.fichier_path,3600,{download:p.nom_original||true});
       if(s.data){ const a=document.createElement('a'); a.href=s.data.signedUrl; a.download=p.nom_original||''; document.body.appendChild(a); a.click(); a.remove(); await new Promise(function(res){setTimeout(res,400);}); }
     }
-    alert('✅ Sauvegarde terminée : index + '+pieces.length+' fichier(s). Range-les sur le Drive du CASE.');
+    alert('✅ Sauvegarde terminée : index + '+pieces.length+' fichier(s). Range-les sur le Drive de l\'association.');
   };
   window.loadPartenaires=async function(){
     const box=document.getElementById('partList'); if(!box) return;
@@ -10533,7 +10538,7 @@ function periJoursTexte(cle){
   if(!cal)          txt='Le calendrier des jours d\'accueil n\'est pas encore posé — saisis le nombre de jours du mois.';
   else if(n===null) txt='<b style="color:#b23a23">'+esc(mois)+' n\'est pas dans le calendrier</b> — saisis le nombre de jours à la main.';
   else if(n===0)    txt='<b>'+esc(mois)+' : aucun jour d\'accueil</b> (vacances) — il n\'y a rien à facturer ce mois-ci.';
-  else              txt='📅 <b>'+n+' jour'+(n>1?'s':'')+'</b> d\'accueil en '+esc(mois)+', d\'après le calendrier du CASE. Une fermeture exceptionnelle ? Corrige le chiffre.';
+  else              txt='📅 <b>'+n+' jour'+(n>1?'s':'')+'</b> d\'accueil en '+esc(mois)+', d\'après ton calendrier. Une fermeture exceptionnelle ? Corrige le chiffre.';
   return txt + (cal&&cal.statut==='a_valider_par_l_equipe' ? ' <span style="color:#8a6100">⚠️ calendrier en attente de vérification par l\'équipe.</span>' : '');
 }
 function periJoursIndice(cle, id){
@@ -11217,7 +11222,7 @@ window.loadDossiersPeri=async function(){
       +(adults.length?'<p>Adulte(s) : '+adults.map(a=>esc((((a.prenom||'')+' '+(a.nom||'')).trim())||'(à compléter)')).join(', ')+'</p>':'')
       +(kids.length?'<table><tbody>'+kids.map(kidLine).join('')+'</tbody></table>':'')
       +'<p style="margin-top:12px;font-size:13px">Un dossier peut être déposé <strong>incomplet</strong> : les pièces manquantes sont à apporter au plus vite — l\'inscription n\'est définitive qu\'une fois le dossier complet et validé par le bureau.</p>'
-      +'<p style="margin-top:30px">Fait à Saint-Denis, le '+new Date().toLocaleDateString('fr-FR')+'.</p>'); // date LOCALE (jamais toISOString — piège 974)
+      +'<p style="margin-top:30px">'+(window.bobFaitLe?window.bobFaitLe(new Date().toLocaleDateString('fr-FR')):('Fait le '+new Date().toLocaleDateString('fr-FR')))+'.</p>'); // date LOCALE (jamais toISOString — piège 974)
   };
   /* Lot 11a lifting (15/08/2026) : les 3 prompts en série deviennent UNE fiche (modale maison).
      Bonus mobile : la date de naissance passe en calendrier natif — fini le format à taper. */
@@ -12859,7 +12864,7 @@ window.loadDossiersPeri=async function(){
     return '<div class="panel" style="margin:8px 0;padding:10px 12px;border-left:3px solid #1f9d6b">'
       +'<div><b>👧 '+who+'</b> <span class="muted" style="font-size:12px">'+esc(i.responsable||'')+(i.contact?' · '+esc(i.contact):'')+'</span> <button class="ghost btn" style="float:right;font-size:12px" onclick="delInscriptionActivite(\''+i.id+'\')">✕</button></div>'
       +bodyh
-      +(i.besoin_aide?'<div style="font-size:12px;color:#8a6400;font-weight:700;margin-top:4px">🙋 La famille demande de l\'aide (RDV au CASE)</div>':'')
+      +(i.besoin_aide?'<div style="font-size:12px;color:#8a6400;font-weight:700;margin-top:4px">🙋 La famille demande de l\'aide (RDV sur place)</div>':'')
       +'<div class="row" style="gap:6px;margin-top:6px"><input id="insnote_'+i.id+'" value="'+esc(i.note_bureau||'')+'" placeholder="Note (ce qui manque, précisions RDV…)" style="flex:1;padding:6px 9px;border:1px solid var(--line);border-radius:8px;font:inherit;font-size:13px"><button class="ghost btn" style="font-size:12px" onclick="insactNote(\''+i.id+'\')">💾</button></div>'
       +(window.actiPayBlock?actiPayBlock(a,i):'')
       +'</div>';
@@ -13308,14 +13313,14 @@ window.loadDossiersPeri=async function(){
         +'</tr>';
     });
     box.innerHTML=
-      '<p class="hint" style="margin-top:6px">Prix <b>plein</b> (pas de quotient familial : cours ouverts, pas de l\'ACM/périscolaire). Le prof facture une <b>facture globale</b> à son asso pour l\'ensemble de ses cours — le CASE la paie, et <b>c\'est à nous de remplir</b>. Lu en direct sur les créneaux de la salle de danse.</p>'
+      '<p class="hint" style="margin-top:6px">Prix <b>plein</b> (pas de quotient familial : cours ouverts, pas de l\'ACM/périscolaire). Le prof facture une <b>facture globale</b> à son asso pour l\'ensemble de ses cours — l\'association la paie, et <b>c\'est à nous de remplir</b>. Lu en direct sur les créneaux de la salle de danse.</p>'
       +'<div style="display:flex;gap:16px;flex-wrap:wrap;align-items:flex-end;margin:12px 0">'
         +'<label style="font-size:12.5px">Coût horaire repère<br><input id="cdTarif" type="number" step="1" value="50" style="width:82px;font:inherit;text-align:right;padding:6px 8px;border:1px solid var(--line,#e7efe9);border-radius:8px"> €/h</label>'
         +'<label style="font-size:12.5px">Semaines / an<br><input id="cdSem" type="number" step="1" value="34" style="width:70px;font:inherit;text-align:right;padding:6px 8px;border:1px solid var(--line,#e7efe9);border-radius:8px"></label>'
         +'<label style="font-size:12.5px">Frais généraux / an<br><input id="cdFrais" type="number" step="250" value="0" style="width:104px;font:inherit;text-align:right;padding:6px 8px;border:1px solid var(--line,#e7efe9);border-radius:8px"> €</label>'
         +'<button class="ghost btn" id="cdReset" type="button">↺ Caler les forfaits sur le repère</button>'
       +'</div>'
-      +'<div style="background:#f7faf8;border:1px solid var(--line,#e7efe9);border-radius:12px;padding:12px;margin:0 0 12px"><div style="font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:#62756b;margin-bottom:8px">Ce que le CASE paie (forfaits)</div>'+fh+'</div>'
+      +'<div style="background:#f7faf8;border:1px solid var(--line,#e7efe9);border-radius:12px;padding:12px;margin:0 0 12px"><div style="font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:#62756b;margin-bottom:8px">Ce que l\'association paie (forfaits)</div>'+fh+'</div>'
       +'<div id="cdKpis" style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin:0 0 12px"></div>'
       +'<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:12.5px">'
         +'<thead><tr style="color:#62756b;font-size:11px;text-transform:uppercase"><th style="text-align:left;padding:5px 6px">Jour</th><th style="text-align:left;padding:5px 6px">Cours</th><th style="text-align:right;padding:5px 6px">Durée</th><th style="text-align:left;padding:5px 6px">Prof</th><th style="text-align:right;padding:5px 6px">Prix élève/an</th><th style="text-align:right;padding:5px 6px">Élèves</th><th style="text-align:right;padding:5px 6px">Revenu/an</th></tr></thead>'
@@ -13554,7 +13559,7 @@ window.loadDossiersPeri=async function(){
     loadSuggest();
   };
   window.setSugStatut=async function(id,st){ const {error}=await sbc.from('suggestions').update({statut:st}).eq('id',id); if(error){alert(error.message);return;} loadSuggest(); };
-  // Envoi programmatique d'une suggestion (utilisé par l'Aide « Demande à Zanana » pour les questions sans réponse)
+  // Envoi programmatique d'une suggestion (utilisé par l'Aide pour les questions sans réponse)
   window.bobSendSuggest=async function(body, context){
     if(!myAsso||!myProfile||!body) return false;
     const nom=(myProfile.full_name||myProfile.email||'').split('@')[0];
@@ -13893,9 +13898,46 @@ window.loadDossiersPeri=async function(){
     }catch(e){}
   };
   // Contenu spécifique CASE masqué pour les autres orgs (ex. assurance MAIF). Additif : CASE = tout visible, inchangé. Étendre ici (PDF projet-ados, ÉCLAT…) au besoin.
-  // Contenu propre à UNE asso : par defaut on CACHE (une autre asso ne doit jamais lire le contenu du CASE).
+  // Contenu propre à UNE asso : par defaut on CACHE (une autre asso ne doit jamais lire le contenu d'un client).
   window.bobEstLeCase = function(){ try{ return (typeof myAsso!=='undefined' && myAsso==='d617489c-b18b-499b-ab17-c31656d0f08a'); }catch(e){ return false; } }; // saas-ok: le test-même de la cloison — mécanisme, pas habillage
-  function applyOrgContent(){ try{ const isCase=window.bobEstLeCase(); const ap=document.getElementById('assurancePanel'); if(ap) ap.style.display = isCase ? '' : 'none'; const pp=document.getElementById('presPortes'); if(pp) pp.style.display = isCase ? '' : 'none'; if(typeof renderFaqList==='function') renderFaqList(); if(typeof renderNews==='function') renderNews(); }catch(e){} }
+  /* Lot 7 (15/08/2026, additif/revertible) : la ville du tenant pour les documents imprimés.
+     Les courriers disaient « Fait à Saint-Denis » en dur — la commune d'UN client sur le papier
+     à en-tête de tous les autres. Sans ville déclarée on n'invente pas : on écrit « Fait le ».
+     Revert : supprimer ces trois fonctions, remettre « Fait à Saint-Denis, le » dans le recu et le recepisse,
+     et « Saint-Denis, le » dans l'en-tete du courrier. */
+  window.bobVille=function(){ try{ const g=(window.__bobFeatures&&window.__bobFeatures.identite&&window.__bobFeatures.identite.gestion)||{};
+    return String(g.ville==null?'':g.ville).replace(/[<>&]/g,'').trim(); }catch(e){ return ''; } }; // on ne retire que ce qui casse le HTML : « L'Étang-Salé » garde son apostrophe
+  window.bobFaitLe=function(date){ const v=window.bobVille(); return (v?('Fait à '+v+', le '):'Fait le ')+date; };   // pied d'acte : reçus, récépissés
+  window.bobLieuLe=function(date){ const v=window.bobVille(); return (v?(v+', le '):'Le ')+date; };                  // en-tête de lettre : lieu et date, sans « Fait à »
+  /* Lot 7 (15/08/2026, additif/revertible) : ouvre les blocs de contenu privé que CETTE asso
+     déclare siens. Aucune liste dans le code, aucun UUID : c'est la donnée du tenant qui décide,
+     donc le 4e client arrive sans qu'on rouvre ce fichier. Silence de la base = tout reste fermé.
+     Revert : supprimer cette fonction, son appel dans applyOrgContent, et la règle CSS [data-contenu-client]. */
+  function applyContenusPrives(){
+    try{
+      const g=(window.__bobFeatures&&window.__bobFeatures.identite&&window.__bobFeatures.identite.gestion)||{};
+      const mes=Array.isArray(g.contenus_prives)?g.contenus_prives:[];
+      /* On DÉPLACE l'attribut au lieu de toucher au style : la règle CSS ne connaît que
+         `data-contenu-client`, donc l'ouvrir = lui retirer cet attribut. Le bloc retrouve alors
+         son affichage naturel, quel qu'il soit (bloc, flex, grille) — un style.display='' ne
+         suffisait PAS, la règle CSS reprenait la main et le propriétaire perdait son contenu.
+         Et comme l'attribut est conservé sous l'autre nom, on sait toujours re-fermer. */
+      document.querySelectorAll('[data-contenu-client],[data-contenu-client-ok]').forEach(function(el){
+        const cle=el.getAttribute('data-contenu-client')||el.getAttribute('data-contenu-client-ok');
+        if(mes.indexOf(cle)>=0){ el.setAttribute('data-contenu-client-ok',cle); el.removeAttribute('data-contenu-client'); }
+        else { el.setAttribute('data-contenu-client',cle); el.removeAttribute('data-contenu-client-ok'); }
+      });
+      /* Le miroir : l'INVITE que voit celui qui n'a pas ce contenu (« cette page est à toi »).
+         Même défaut fermé — sans donnée, ni le contenu privé ni l'invite ne s'affichent, et l'écran
+         reste simplement sobre. C'est le sens sûr : une invite qui manque ne trahit personne. */
+      document.querySelectorAll('[data-contenu-vide],[data-contenu-vide-ok]').forEach(function(el){
+        const cle=el.getAttribute('data-contenu-vide')||el.getAttribute('data-contenu-vide-ok');
+        if(mes.indexOf(cle)<0){ el.setAttribute('data-contenu-vide-ok',cle); el.removeAttribute('data-contenu-vide'); }
+        else { el.setAttribute('data-contenu-vide',cle); el.removeAttribute('data-contenu-vide-ok'); }
+      });
+    }catch(e){}   // au moindre pépin, la règle CSS laisse tout fermé : on ne montre jamais par accident
+  }
+  function applyOrgContent(){ try{ applyContenusPrives(); const isCase=window.bobEstLeCase(); const ap=document.getElementById('assurancePanel'); if(ap) ap.style.display = isCase ? '' : 'none'; const pp=document.getElementById('presPortes'); if(pp) pp.style.display = isCase ? '' : 'none'; if(typeof renderFaqList==='function') renderFaqList(); if(typeof renderNews==='function') renderNews(); }catch(e){} }
   /* 30/07/2026 — identité NEUTRE par défaut, jamais celle du CASE. Une association sans identité
      déclarée (ou un compte en quarantaine, asso_id null) portait jusqu'ici le titre, le sous-titre
      et le pied de page du CASE. Même patron que VOCAB_DEFAULT / CASTING_DEFAUT plus haut : on ne devine pas. */
@@ -14239,7 +14281,7 @@ window.loadDossiersPeri=async function(){
 
   /* ===== 🔔 À TRAITER (tableau de bord des demandes en attente, réservé au bureau) ===== */
   async function maWaitingCount(){
-    // fils d'adhérents dont le DERNIER message vient de l'adhérent = en attente de réponse du CASE
+    // fils d'adhérents dont le DERNIER message vient de l'adhérent = en attente de réponse du bureau
     try{
       const {data}=await sbc.from('messages_adherents').select('adherent_id,sender,created_at').eq('asso_id',myAsso).order('created_at',{ascending:true}).limit(3000);
       const last={}; (data||[]).forEach(m=>{ last[m.adherent_id]=m.sender; });
@@ -14507,7 +14549,7 @@ window.loadDossiersPeri=async function(){
     else { alert((data&&data.erreur)||'Restauration impossible.'); }
   };
   // Console super-admin (réservée à pix.i.art.pro). Inclut la « Tour de contrôle des bouquets » EN LECTURE SEULE
-  // (additif, super-admin only → invisible et sans effet pour le CASE). Le pilotage fin reste sur bob.re/admin.
+  // (additif, super-admin only → invisible et sans effet pour une asso ordinaire). Le pilotage fin reste sur bob.re/admin.
   window.bobLoadAdmin=async function(){
     const box=document.getElementById('adminConsole'); if(!box) return;
     if(!(myProfile&&myProfile.super_admin)){ box.innerHTML='<div class="empty">Réservé au super-admin.</div>'; return; }
