@@ -218,6 +218,11 @@
   #bobDlg .bobDlgErr{display:none;margin:12px 0 0;padding:9px 12px;border-radius:9px;background:#fdeeee;color:var(--red);font-size:13.5px;font-weight:600}
   #bobDlg .bobChoice{display:flex;width:100%;align-items:center;gap:10px;margin-top:8px;padding:12px 14px;min-height:48px;border:1px solid var(--line);border-radius:11px;background:var(--card);color:var(--ink);font:inherit;font-size:14.5px;font-weight:600;cursor:pointer;text-align:left;transition:background .18s ease-out,border-color .18s ease-out}
   #bobDlg .bobChoice:hover{background:#eef4f0;border-color:var(--brand)}
+  /* Choix MULTIPLES (bobCases) : les options sont des cases à cocher, on valide ensuite */
+  #bobDlg .bobChoice .bobTick{width:22px;height:22px;border:2px solid var(--line);border-radius:6px;display:inline-flex;align-items:center;justify-content:center;flex:none;font-size:14px;color:#fff}
+  #bobDlg .bobChoice.on{background:#eef4f0;border-color:var(--brand)}
+  #bobDlg .bobChoice.on .bobTick{background:var(--brand);border-color:var(--brand)}
+  #bobDlg .bobChoice.on .bobTick::before{content:'✓'}
   #bobDlg textarea{font:inherit;padding:9px 11px;border:1px solid var(--line);border-radius:9px;background:#fff;color:var(--ink);resize:vertical;min-height:74px} /* Lot 11b : le style global ne couvre que input,select */
   .kv{display:flex;justify-content:space-between;gap:12px;padding:8px 0;border-bottom:1px dashed var(--line);font-size:14px}
   .kv .k{color:var(--muted)}
@@ -1100,7 +1105,7 @@
         <div class="field" style="min-width:230px"><label>Tarif payé par un nouvel enfant (€ / jour)</label><input type="number" id="sg_tarifnew" min="0" step="0.1" oninput="renderSimuGarderie()"></div>
         <div class="field" style="min-width:190px"><label>Aide CAF / subvention (€ / an)</label><input type="number" id="sg_caf" min="0" step="50" oninput="renderSimuGarderie()"></div>
       </div>
-      <p class="hint" style="margin:6px 0 0">« Tarif nouvel enfant » : s'il ne vient que le matin, mets le tarif matin seul (ex. 1,50–2 €) ; s'il s'inscrit à la journée complète grâce au matin, mets le tarif jour de sa tranche (3,14 € à 7,43 €, moyenne ≈ 4,50 €) + le supplément.</p>
+      <p class="hint" style="margin:6px 0 0">« Tarif nouvel enfant » : s'il ne vient que le matin, mets le tarif matin seul (ex. 1,50–2 €) ; s'il prend aussi le soir grâce au matin, mets le tarif jour de sa tranche (3,14 € à 7,43 €, moyenne ≈ 4,50 €) + le supplément.</p>
 
       <div class="cards" id="sgKpis" style="margin-top:10px"></div>
       <p class="hint" id="sgVerdict" style="margin:10px 0 0;font-size:14px"></p>
@@ -3828,16 +3833,24 @@ function closeModal(){ $('opModal').classList.remove('open'); }
   $('bobDlgClose').addEventListener('click',()=>{ if(cur) close(cur.cancelVal); });
   body.addEventListener('click',e=>{
     const b=e.target.closest('button[data-bobchoix]'); if(!b||!cur) return;
+    if(cur.choixMulti){ b.classList.toggle('on'); b.setAttribute('aria-pressed',b.classList.contains('on')?'true':'false'); return; } // case à cocher : on valide au bouton
     const o=cur.choix[+b.dataset.bobchoix]; if(o) close(o.v);
   });
   box.addEventListener('submit',e=>{
     e.preventDefault(); if(!cur) return;
+    const eBox=$('bobDlgErr');
+    const rate=function(err){ if(eBox){ eBox.textContent=err; eBox.style.display='block'; } };
+    if(cur.choixMulti){
+      const sel=Array.prototype.map.call(body.querySelectorAll('button[data-bobchoix].on'),b=>cur.choix[+b.dataset.bobchoix].v);
+      const err=cur.valider?cur.valider(sel):null;
+      if(err){ rate(err); return; }
+      close(sel); return;
+    }
     if(!cur.champs.length){ close(cur.okVal); return; }
     const vals={};
     cur.champs.forEach((f,i)=>{ vals[f.k||('c'+i)]=($('bobDlgF'+i)||{}).value||''; });
     const err=cur.valider?cur.valider(vals):null;
-    const eBox=$('bobDlgErr');
-    if(err){ if(eBox){ eBox.textContent=err; eBox.style.display='block'; } return; }
+    if(err){ rate(err); return; }
     if(eBox) eBox.style.display='none';
     close(vals);
   });
@@ -3846,7 +3859,7 @@ function closeModal(){ $('opModal').classList.remove('open'); }
     return new Promise(resolve=>{
       if(cur) close(cur.cancelVal); // jamais deux modales : les flux enchaînent par await
       cur={resolve:resolve, cancelVal:('cancelVal' in o)?o.cancelVal:null, okVal:('okVal' in o)?o.okVal:true,
-           champs:o.champs||[], choix:o.choix||[], valider:o.valider||null, prevFocus:document.activeElement};
+           champs:o.champs||[], choix:o.choix||[], choixMulti:!!o.choixMulti, valider:o.valider||null, prevFocus:document.activeElement};
       ttl.textContent=o.titre||'Bob';
       let html=o.corps?'<p class="bobDlgMsg">'+h(o.corps)+'</p>':'';
       cur.champs.forEach((f,i)=>{
@@ -3860,14 +3873,15 @@ function closeModal(){ $('opModal').classList.remove('open'); }
           +(f.hint?'<p class="bobDlgHint">'+h(f.hint)+'</p>':'')+'</div>';
       });
       cur.choix.forEach((c,i)=>{
-        html+='<button type="button" class="bobChoice" data-bobchoix="'+i+'">'+h(c.label||'')
+        html+='<button type="button" class="bobChoice'+(cur.choixMulti&&c.on?' on':'')+'" data-bobchoix="'+i+'"'+(cur.choixMulti?' aria-pressed="'+(c.on?'true':'false')+'"':'')+'>'
+          +(cur.choixMulti?'<span class="bobTick"></span>':'')+h(c.label||'')
           +(c.sub?' <span style="font-weight:400;font-size:12.5px;color:var(--muted)">'+h(c.sub)+'</span>':'')+'</button>';
       });
-      if(cur.champs.length) html+='<p class="bobDlgErr" id="bobDlgErr"></p>';
+      if(cur.champs.length||cur.choixMulti) html+='<p class="bobDlgErr" id="bobDlgErr"></p>';
       body.innerHTML=html;
       let fh='';
       if(o.cancel!==false) fh+='<button type="button" class="ghost btn" id="bobDlgCancel">'+h(typeof o.cancel==='string'?o.cancel:'Annuler')+'</button>';
-      if(!cur.choix.length) fh+='<button type="submit" class="btn"'+(o.danger?' style="background:var(--red)"':'')+'>'+h(o.ok||'Valider')+'</button>';
+      if(!cur.choix.length||cur.choixMulti) fh+='<button type="submit" class="btn"'+(o.danger?' style="background:var(--red)"':'')+'>'+h(o.ok||'Valider')+'</button>';
       foot.innerHTML=fh;
       const bc=$('bobDlgCancel'); if(bc) bc.addEventListener('click',()=>{ if(cur) close(cur.cancelVal); });
       ov.classList.add('open');
@@ -3882,6 +3896,8 @@ function closeModal(){ $('opModal').classList.remove('open'); }
     return bobDialog({titre:opt.titre||'✏️',champs:[{k:'v',label:label,value:val==null?'':val,type:opt.type,hint:opt.hint,placeholder:opt.placeholder}],ok:opt.ok,valider:opt.valider?function(vs){return opt.valider(vs.v);}:null})
       .then(r=>(r&&typeof r==='object')?String(r.v):null); };
   window.bobChoix=function(titre,options,opt){ opt=opt||{}; return bobDialog({titre:titre,corps:opt.corps,choix:options}); };
+  /* Choix MULTIPLES : options cochables (v, label, sub, on) → tableau des v cochés, ou null si annulé */
+  window.bobCases=function(titre,options,opt){ opt=opt||{}; return bobDialog({titre:titre,corps:opt.corps,choix:options,choixMulti:true,ok:opt.ok,valider:opt.valider}); };
   window.bobForm=function(titre,champs,opt){ opt=opt||{}; return bobDialog({titre:titre,corps:opt.intro,champs:champs,ok:opt.ok,danger:opt.danger,valider:opt.valider}); };
 })();
 
@@ -11135,16 +11151,17 @@ window.loadDossiersPeri=async function(){
   // 🧮 Tarif périscolaire du foyer — calculé PAR LA BASE (formule unique, grille publiée).
   window.fyTarif=async function(fid){
     if(!canWrite){ await bobAlert('Réservé au bureau.'); return; }
-    /* Lot 11b lifting (15/08/2026) : les 2 « OK = oui · Annuler = non » deviennent UN choix.
-       Les libellés = les TROIS COLONNES de la grille votée au CA du 11/08/2026
-       (soir / matin / journée complète) — l'écran parle comme le règlement. */
-    const ch=await bobChoix('🧮 Tarif périscolaire',[
-      {v:{matin:false,soir:true},label:'🌇 Soir seul'},
-      {v:{matin:true,soir:false},label:'🌅 Matin seul'},
-      {v:{matin:true,soir:true},label:'🌅🌇 Journée complète (matin + soir)'}
-    ],{corps:'Quelle formule pour cette famille ?'});
-    if(!ch) return;
-    const r=await sbc.rpc('peri_calcul_tarif',{p_foyer_id:fid, p_matin:ch.matin, p_soir:ch.soir});
+    /* Décision de Guillaume (15/08/2026) : il n'existe QUE deux options, le matin et le soir —
+       jamais de « formule » combinée nommée à l'écran (elle n'existe pas en base non plus :
+       la grille n'a que le tarif soir + le supplément matin, le cumul est une addition pure).
+       Donc deux cases à cocher ; une famille qui prend les deux coche les deux. */
+    const sel=await bobCases('🧮 Tarif périscolaire',[
+      {v:'matin',label:'🌅 Le matin'},
+      {v:'soir',label:'🌇 Le soir'}
+    ],{corps:'Coche ce que la famille prend — les deux se cumulent simplement.',ok:'Calculer',
+       valider:function(s){ return s.length?null:'Coche au moins le matin ou le soir.'; }});
+    if(!sel||!sel.length) return;
+    const r=await sbc.rpc('peri_calcul_tarif',{p_foyer_id:fid, p_matin:sel.indexOf('matin')>=0, p_soir:sel.indexOf('soir')>=0});
     if(r.error){ await bobAlert('Calcul impossible : '+r.error.message,{titre:'🧮 Tarif périscolaire'}); return; }
     const d=r.data||{};
     await bobAlert('Tarif du jour : '+euro(d.tarif_jour)+(d.supp_matin?'  ·  supplément matin : '+euro(d.supp_matin):'')+'\n'
