@@ -3345,6 +3345,25 @@ function getSplits(o){
   return [{site:o.site||'', action:o.action||'', amount:o.amount}]; // compat anciennes données
 }
 function getAccount(o){ return o.account||'banque'; }
+/* ---- 🅷 Le compte d'attente HelloAsso (15/08/2026) --------------------------------------
+   HelloAsso encaisse pour le compte de l'association, puis REVERSE en bloc sur le compte
+   bancaire. Écrire chaque adhésion directement « en banque » casserait le rapprochement :
+   il apparie UNE ligne de relevé avec UNE écriture, au centime — huit écritures de 10 €
+   face à un reversement groupé ne s'apparieraient jamais, la ligne resterait « à saisir »,
+   et quelqu'un finirait par la saisir une deuxième fois.
+   Donc : l'adhésion arrive sur `helloasso` (l'argent existe, mais pas encore en banque) ;
+   au reversement, UN virement interne helloasso → banque, qui lui s'apparie 1 pour 1 avec
+   la ligne du relevé. C'est la mécanique « remise en banque » de la caisse, transposée. */
+const ACC_HA='helloasso';
+function accLabel(a){ return a==='caisse'?'💵 Espèces (caisse)':(a===ACC_HA?'🅷 En attente chez HelloAsso':'🏦 Banque'); }
+function accTag(a){ return a==='caisse'?'<span class="tag cash">Espèces</span>':(a===ACC_HA?'<span class="tag" style="background:#efe7fb;color:#5b3aa8">HelloAsso</span>':'<span class="tag bank">Banque</span>'); }
+function soldeCompte(acc){
+  return (db.ops||[]).reduce(function(b,o){
+    if(o.type==='transfer'){ if(o.from===acc) b-=o.amount; if(o.to===acc) b+=o.amount; return b; }
+    if(getAccount(o)===acc) b+=(o.type==='in'?o.amount:-o.amount);
+    return b;
+  },0);
+}
 /* ---- Modes de paiement (espèces / chèque / virement / carte / prélèvement) ----
    Le « mode » dit COMMENT on a payé ; l'« account » (caisse/banque) dit OÙ l'argent atterrit.
    Règle : espèces → caisse ; tout le reste → banque. La mécanique caisse/rapprochement
@@ -3607,7 +3626,7 @@ function renderOps(){
     const detail=sp.map(s=>`${esc(s.site||'—')} / ${esc(s.action||'—')} : ${euro(s.amount)}`).join(' · ');
     const siteCell = multi?`<span class="muted">🔀 Réparti (${sp.length})</span>`:esc(sp[0].site||'—');
     const actCell = multi?`<span class="muted">voir détail</span>`:esc(sp[0].action||'—');
-    const acc = getAccount(o)==='caisse'?'<span class="tag cash">Espèces</span>':'<span class="tag bank">Banque</span>';
+    const acc = accTag(getAccount(o));
     return `<tr class="clickable" onclick="openOpDetail('${o.id}')">
     <td>${fmtDate(o.date)}<br>${acc}</td>
     <td><strong>${esc(o.label)}</strong>${o.photo?' 📎':''}${o.cat?'<br><span class="pill" style="background:#eef2fb;color:#1f4fc4;font-size:11px">'+esc(o.cat)+'</span>':''}</td>
@@ -3632,7 +3651,7 @@ async function openOpDetail(id){
   const _mc=modeFromAccount(o);
   const acc=_mc
     ? modeLabel(_mc)+(_mc==='especes'?' <span class="muted">(caisse)</span>':' <span class="muted">(banque)</span>')
-    : (getAccount(o)==='caisse'?'<span class="tag cash">💵 Espèces (caisse)</span>':'<span class="tag bank">🏦 Banque</span>');
+    : '<span class="tag '+(getAccount(o)==='caisse'?'cash':'bank')+'">'+accLabel(getAccount(o))+'</span>';
   $('md_title').textContent=o.label;
   $('md_body').innerHTML=`
     <div class="kv"><span class="k">Type</span><span class="${o.type==='in'?'green':'red'}"><strong>${o.type==='in'?'Recette ➕':'Dépense ➖'} ${euro(o.amount)}</strong></span></div>
@@ -9610,6 +9629,65 @@ renderAll();
     }catch(e){ window.__maData={err:(e&&e.message)||'erreur réseau'}; }
     if(typeof renderMembers==='function') renderMembers();
   };
+  /* --- 💶 Les adhésions payées EN LIGNE entrent enfin en comptabilité (15/08/2026) ---------
+     Signalé par le trésorier : « je ne retrouve pas les paiements faits en ligne ». Il avait
+     raison, et le trou était total : 8 adhésions encaissées (80 €) n'existaient NULLE PART en
+     comptabilité. Deux verrous se cumulaient — ce panneau n'avait aucun bouton « verser », et
+     les deux mécaniques existantes (périscolaire, activités) ne prennent que les paiements
+     AYANT UN MODE, c'est-à-dire encaissés au comptoir. Un paiement en ligne n'a pas de mode :
+     il passait entre les deux.
+     Chaque écriture porte `paiement_id` → « déjà versé » = une écriture existe pour ce
+     paiement. Même garde-fou anti-double-compte que le périscolaire. */
+  window.adhVerserCompta=async function(){
+    if(!canWrite){ alert('Réservé au bureau.'); return; }
+    const rq=await sbc.from('paiements').select('id,user_id,montant_cents,paid_at,created_at').eq('objet','adhesion').eq('statut','paye');
+    if(rq.error){ alert('Erreur : '+rq.error.message); return; }
+    const versed=new Set((db.ops||[]).map(function(o){return o.paiement_id;}).filter(Boolean));
+    const todo=(rq.data||[]).filter(function(p){ return !versed.has(p.id); });
+    if(!todo.length){ alert('Aucune adhésion à verser : tout est déjà en comptabilité.'); return; }
+    const uids=[...new Set(todo.map(function(p){return p.user_id;}).filter(Boolean))];
+    const nom={};
+    if(uids.length){ const {data:profs}=await sbc.from('profiles').select('id,full_name,email').in('id',uids);
+      (profs||[]).forEach(function(p){ nom[p.id]=p.full_name||p.email||''; }); }
+    const tot=todo.reduce(function(s,p){ return s+(p.montant_cents||0); },0)/100;
+    if(!confirm('Verser '+todo.length+' adhésion(s) en ligne en comptabilité — '+euro(tot)+' ?\n\n'
+      +'Compte 756 - Cotisations · action « Fonctionnement ».\n\n'
+      +'L\'argent est placé « en attente chez HelloAsso » : quand le reversement arrivera sur le\n'
+      +'compte bancaire, tu enregistreras UN virement, qui s\'appariera avec la ligne du relevé.')) return;
+    let n=0;
+    todo.forEach(function(p){
+      if(versed.has(p.id)) return;
+      const euros=(p.montant_cents||0)/100;
+      db.ops.push({id:uid(), paiement_id:p.id, type:'in',
+        label:'Adhésion en ligne — '+(nom[p.user_id]||'compte famille'),
+        cat:'Cotisations', compte:'756 - Cotisations',
+        amount:euros, date:String(p.paid_at||p.created_at||today()).slice(0,10),
+        project:'', mode:'', account:ACC_HA, photo:'',
+        splits:[{site:'', action:'Fonctionnement', amount:euros}]});
+      versed.add(p.id); n++;
+    });
+    save(); if(window.renderAll) renderAll();
+    alert('✅ '+n+' adhésion(s) versée(s).\n\n756 - Cotisations · action Fonctionnement · en attente chez HelloAsso.');
+  };
+  /* Le reversement : UN virement interne helloasso → banque, qui s'apparie 1 pour 1 avec la
+     ligne du relevé. HelloAsso reverse parfois en plusieurs fois : on saisit le montant de
+     CETTE ligne-là, pas forcément tout le solde. */
+  window.adhReversementRecu=async function(){
+    if(!canWrite){ alert('Réservé au bureau.'); return; }
+    const solde=soldeCompte(ACC_HA);
+    if(solde<=0.005){ alert('Rien en attente chez HelloAsso.'); return; }
+    const r=prompt('Montant du reversement reçu sur le compte bancaire (€)\n\nEn attente chez HelloAsso : '+euro(solde)
+      +'\nHelloAsso reverse parfois en plusieurs fois : indique le montant de CETTE ligne de relevé.', solde.toFixed(2));
+    if(r===null) return;
+    const m=parseFloat(String(r).replace(',','.'));
+    if(!(m>0)){ alert('Montant invalide.'); return; }
+    if(m>solde+0.005 && !confirm('Ce montant dépasse ce qui est en attente ('+euro(solde)+').\nContinuer quand même ?')) return;
+    const d=prompt('Date du reversement (AAAA-MM-JJ) :', today()); if(d===null) return;
+    db.ops.push({id:uid(), type:'transfer', label:'Reversement HelloAsso', from:ACC_HA, to:'banque',
+      amount:m, date:String(d||today()).slice(0,10)});
+    save(); if(window.renderAll) renderAll();
+    alert('✅ Virement enregistré.\nIl s\'appariera avec la ligne « HelloAsso » de ton relevé bancaire.');
+  };
   window.loadAdhesionsEnLigne=async function(){
     const box=document.getElementById('adhOnlineBox'); if(!box) return;
     if(typeof sbc==='undefined'||!sbc){ box.innerHTML='<p class="hint">Connecte-toi pour voir les paiements en ligne.</p>'; return; }
@@ -9624,7 +9702,22 @@ renderAll();
       const fmtd=function(ts){ try{ return new Date(ts).toLocaleDateString('fr-FR',{day:'2-digit',month:'2-digit',year:'numeric'}); }catch(e){ return ''; } };
       const nbPaye=rows.filter(function(p){return p.statut==='paye';}).length;
       const totCents=rows.filter(function(p){return p.statut==='paye';}).reduce(function(s,p){return s+(p.montant_cents||0);},0);
-      box.innerHTML='<div class="row" style="gap:8px;margin-bottom:8px;flex-wrap:wrap"><span class="pill" style="background:#dff5e9;color:#127a51;font-weight:600">✅ '+nbPaye+' adhésion'+(nbPaye>1?'s':'')+' en ligne</span><span class="pill" style="background:#eef4ff;color:#23344d;font-weight:600">'+euro(totCents/100)+' encaissés</span></div>'
+      /* Ce qui manque en comptabilité, et ce qui dort encore chez HelloAsso. Affiché ICI,
+         à côté des adhésions : c'est là que le trésorier regarde, pas dans un écran à part. */
+      const _versed=new Set((db.ops||[]).map(function(o){return o.paiement_id;}).filter(Boolean));
+      const _aVerser=rows.filter(function(p){ return p.statut==='paye' && !_versed.has(p.id); });
+      const _pot=soldeCompte(ACC_HA);
+      const _barre=!canWrite ? '' : ('<div class="row" style="gap:8px;margin-bottom:10px;flex-wrap:wrap;align-items:center">'
+        +(_aVerser.length
+          ? '<span class="pill" style="background:#fbecea;color:#b23a23;font-weight:600" title="Encaissées, mais absentes de la comptabilité">🔴 '+_aVerser.length+' pas encore en compta</span>'
+            +'<button class="btn" style="padding:4px 10px;font-size:12px" onclick="adhVerserCompta()">💶 Verser en compta ('+_aVerser.length+')</button>'
+          : '<span class="pill" style="background:#dff5e9;color:#127a51;font-weight:600">✅ tout est en comptabilité</span>')
+        +(_pot>0.005
+          ? '<span class="pill" style="background:#efe7fb;color:#5b3aa8;font-weight:600" title="Encaissé par HelloAsso, pas encore reversé sur le compte bancaire">🅷 '+euro(_pot)+' en attente chez HelloAsso</span>'
+            +'<button class="btn ghost" style="padding:4px 10px;font-size:12px" onclick="adhReversementRecu()">🏦 Reversement reçu</button>'
+          : '')
+        +'</div>');
+      box.innerHTML=_barre+'<div class="row" style="gap:8px;margin-bottom:8px;flex-wrap:wrap"><span class="pill" style="background:#dff5e9;color:#127a51;font-weight:600">✅ '+nbPaye+' adhésion'+(nbPaye>1?'s':'')+' en ligne</span><span class="pill" style="background:#eef4ff;color:#23344d;font-weight:600">'+euro(totCents/100)+' encaissés</span></div>'
         +'<div style="overflow-x:auto;-webkit-overflow-scrolling:touch"><table style="min-width:620px"><thead><tr><th>Famille</th><th>Année</th><th class="num">Montant</th><th>Payé le</th><th>Statut</th></tr></thead><tbody>'
         +rows.map(function(p){ const who=nameById[p.user_id]||{}; const nom=esc(who.nom||who.email||'(compte famille)'); const an=esc((p.metadata&&p.metadata.annee)||''); const st=p.statut==='paye'?'<span style="color:#127a51;font-weight:700">✅ payé</span>':'<span style="color:#8a5a00;font-weight:700">⚠️ à vérifier</span>'; return '<tr><td>'+nom+(who.email&&who.nom?'<br><span style="color:#8a9a90;font-size:12px">'+esc(who.email)+'</span>':'')+'</td><td>'+an+'</td><td class="num">'+euro((p.montant_cents||0)/100)+'</td><td>'+fmtd(p.paid_at||p.created_at)+'</td><td>'+st+'</td></tr>'; }).join('')
         +'</tbody></table></div>';
