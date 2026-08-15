@@ -494,8 +494,8 @@
 
   <!-- étape2 23/06 : section docsperi fusionnée dans 🎒 Périscolaire (panneau #docsPeriPanel) -->
   <section id="members" class="page">
-    <div class="panel">
-      <h2>Ajouter un adhérent</h2>
+    <details class="panel">
+      <summary style="cursor:pointer;font-weight:700;font-size:16px">👤 Ajouter un adhérent</summary>
       <p class="hint">Nom, contact, montant et date de la cotisation. Coche « à jour » si la cotisation est payée.</p>
       <div class="row">
         <div class="field"><label>Nom et prénom</label><input id="m_name" placeholder="Nom et prénom de l'adhérent"></div>
@@ -530,7 +530,7 @@
         </div>
         <div class="field" style="flex:0"><label>&nbsp;</label><button class="btn" onclick="addMember()">Ajouter</button></div>
       </div>
-    </div>
+    </details>
     <div class="panel">
       <h2>📧 Relances de cotisation</h2>
       <p class="hint">Les adhérents qui n'ont pas réglé leur cotisation. Clique sur « Relancer » pour ouvrir un email pré-rempli.</p>
@@ -650,8 +650,10 @@
       <button class="ghost btn" type="button" onclick="document.getElementById('ventilation').scrollIntoView({behavior:'smooth',block:'start'})">📊 Ventilation</button>
       <button class="ghost btn" type="button" onclick="document.getElementById('rapprochement').scrollIntoView({behavior:'smooth',block:'start'})">🏦 Rapprochement bancaire</button>
     </div>
-    <div class="panel" style="border:2px solid var(--brand)">
-      <h2>⚡ Saisie rapide — rentrer beaucoup de factures vite</h2>
+    <!-- Lot 6 lifting 15/08/2026 : consulter avant saisir — les formulaires se plient (motif maison
+         de l'import Excel), le Journal devient le premier grand bloc ouvert de l'écran. -->
+    <details class="panel" style="border:2px solid var(--brand)">
+      <summary style="cursor:pointer;font-weight:800;font-size:17px">⚡ Saisie rapide — rentrer beaucoup de factures vite</summary>
       <p class="hint">Pour le stock de factures : remplis une ligne, appuie sur <strong>Entrée</strong> (ou « Ajouter ») et enchaîne la suivante. La date, le type, le site, l'action et le compte sont conservés d'une ligne à l'autre. Tu pourras toujours ajouter une photo ou répartir le montant ensuite, en cliquant sur l'opération.</p>
       <div class="row">
         <div class="field" style="flex:0;min-width:140px"><label>Date</label><input id="q_date" type="date"></div>
@@ -677,7 +679,7 @@
         <div class="field" style="flex:0"><label>&nbsp;</label><button class="btn" onclick="quickAdd()">＋ Ajouter</button></div>
       </div>
       <p id="q_info" class="hint" style="margin:8px 0 0"></p>
-    </div>
+    </details>
     <details class="panel">
       <summary style="cursor:pointer;font-weight:700;font-size:16px">📥 Importer depuis Excel (le recueil des factures)</summary>
       <p class="hint" style="margin:10px 0">Dans Excel ou Google Sheets, sélectionne tes lignes de factures, copie (Ctrl/Cmd + C), puis colle ci-dessous. Tu indiqueras ensuite à quoi correspond chaque colonne.</p>
@@ -690,8 +692,8 @@
         <span id="imp_info" class="hint" style="margin:0"></span></div>
       <div id="imp_preview" style="margin-top:14px;overflow:auto"></div>
     </details>
-    <div class="panel">
-      <h2>Nouvelle opération</h2>
+    <details class="panel">
+      <summary style="cursor:pointer;font-weight:700;font-size:16px">➕ Nouvelle opération (recette ou dépense, avec photo et répartition)</summary>
       <p class="hint">Une recette (argent qui entre) ou une dépense (argent qui sort). Tu peux la relier à un projet.</p>
       <div class="row">
         <div class="field" style="flex:0;min-width:150px"><label>Type</label>
@@ -738,7 +740,7 @@
         <div class="field" style="flex:0"><button class="btn" id="opBtn" onclick="addOp()">Enregistrer l'opération</button></div>
         <span id="editInfo" class="hint" style="margin:0"></span>
       </div>
-    </div>
+    </details>
     <div class="panel">
       <div class="toolbar">
         <h2 style="margin:0">Journal des opérations</h2>
