@@ -8331,7 +8331,12 @@ function importJSON(e){
       alert('La sauvegarde de sécurité n\'a pas pu être téléchargée ('+((err&&err.message)||err)+').\n\nImport ANNULÉ : rien n\'a été modifié. Vérifie que ton navigateur autorise les téléchargements, puis réessaie.');
       return;
     }
-    db=Object.assign(blank(),d); _jPrev=null; db.journal=(db.journal||[]).concat([jEntry('Données','📥 Sauvegarde importée (remplacement des données)')]).slice(-500); save(); alert('Sauvegarde importée ✅');
+    /* 🔒 Les nouveautés vivent dans le coffre depuis le 15/08/2026. Une sauvegarde faite AVANT
+       cette date ne les contient pas : sans ce filet, l'import les effacerait définitivement,
+       en silence, puisqu'il remplace tout puis enregistre. On les reprend si l'import est muet. */
+    const _newsAvant=(typeof db!=='undefined' && db && Array.isArray(db.news)) ? db.news : null;
+    db=Object.assign(blank(),d); if(!Array.isArray(db.news) && _newsAvant) db.news=_newsAvant; newsSync();
+    _jPrev=null; db.journal=(db.journal||[]).concat([jEntry('Données','📥 Sauvegarde importée (remplacement des données)')]).slice(-500); save(); alert('Sauvegarde importée ✅');
   };
   r.readAsText(f); e.target.value='';
 }
