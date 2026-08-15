@@ -3766,7 +3766,7 @@ function renderVentilation(){
    le 08/08/2026) : candidat au même déménagement quand les listes métier deviendront un réglage. ===== */
 const ORG_LISTS={
   'd617489c-b18b-499b-ab17-c31656d0f08a':{ // CASE — listes historiques, INCHANGÉES // saas-ok: listes historiques du CASE, gardees par estLeCase() — donnees de ce client, jamais servies aux autres
-    sites:["C.A.S.E Bois de Nèfles","Local des Bringelliers"],
+    sites:["C.A.S.E Bois de Nèfles","Local des Bringelliers"], // saas-ok: liste historique du CASE, servie par sa clé UUID uniquement
     actions:["Périscolaire","Accueil de loisirs (ACM)","VEPI","Secteur ados / Kaz Zados","Danse","Musique","Permanence du samedi","Jeudi info population","Sport & santé","Accompagnement à la parentalité","Animation de quartier","Fêt nout kartyé","Ôté Kartié","Fonctionnement"],
     cats:["Cotisations","Subvention","Dons","Événement","Matériel","Frais"],
     typesAdh:["Membre","Danse","Périscolaire","VEPI","ACM","Musique","Famille"],
@@ -5710,21 +5710,21 @@ function afficheQR(){
     +' <button class="btn" style="margin-left:6px;padding:5px 11px" onclick="afficheQRCopie(this)">🔗 Copier le lien du site</button></div>'
     +'<div style="max-width:560px;margin:0 auto;background:#fbf8f3;border:1px solid #e7efe9;border-radius:20px;padding:34px 30px 24px;text-align:center;color:#16302a">'
       +'<img src="logo.png" alt="" onerror="this.style.display=\'none\'" style="height:64px;margin-bottom:12px">'
-      +'<div style="font-size:12px;font-weight:600;letter-spacing:.18em;text-transform:uppercase;color:#127a51">CASE du Bois de Nèfles · Sainte-Clotilde</div>'
+      +'<div style="font-size:12px;font-weight:600;letter-spacing:.18em;text-transform:uppercase;color:#127a51">CASE du Bois de Nèfles · Sainte-Clotilde</div>' // saas-ok: affiche QR propre au CASE (bouton gated estLeCase, QR gravé casebdn.re)
       +'<h2 style="font-size:30px;line-height:1.15;margin:10px 0 6px">Tout le CASE,<br>dans votre poche&nbsp;!</h2>'
       +'<p style="margin:0 0 20px;color:#62756b;font-size:15px">Activités, inscriptions, espace famille&nbsp;: tout est sur notre site.</p>'
       +'<div style="display:inline-block;background:#fff;border:2px solid #127a51;border-radius:18px;padding:18px"><div style="width:210px;height:210px">'+qr+'</div></div>'
       +'<p style="margin:16px 0 4px;font-weight:600;font-size:15px">📱 Ouvrez l\'appareil photo du téléphone,<br>visez le code… et c\'est parti&nbsp;!</p>'
-      +'<p style="margin:0 0 16px;color:#62756b;font-size:13.5px">ou tapez&nbsp;: <b style="color:#16302a">casebdn.re</b></p>'
+      +'<p style="margin:0 0 16px;color:#62756b;font-size:13.5px">ou tapez&nbsp;: <b style="color:#16302a">casebdn.re</b></p>' // saas-ok: affiche QR propre au CASE
       +'<div style="border-top:1px solid #e7efe9;padding-top:12px;display:flex;align-items:center;justify-content:center;gap:10px">'
         +'<img src="'+((window.bobMasc&&window.bobMasc('wave'))||'bob-wave.png')+'" alt="" onerror="this.style.display=\'none\'" style="height:44px">'
-        +'<span style="font-size:12.5px;color:#62756b;text-align:left">CASE du Bois de Nèfles<br>132 Place de la Fraternité, 97490 Sainte-Clotilde</span>'
+        +'<span style="font-size:12.5px;color:#62756b;text-align:left">CASE du Bois de Nèfles<br>132 Place de la Fraternité, 97490 Sainte-Clotilde</span>' // saas-ok: affiche QR propre au CASE
       +'</div>'
     +'</div>';
   window.docViewHtml('📣 Affiche à partager — le site du CASE', html);
 }
 function afficheQRCopie(btn){
-  const url='https://casebdn.re/';
+  const url='https://casebdn.re/'; // saas-ok: QR gravé en dur vers le site du CASE (fonction gated estLeCase)
   const ok=()=>{ btn.textContent='✅ Lien copié !'; setTimeout(()=>{ btn.textContent='🔗 Copier le lien du site'; },2200); };
   if(navigator.clipboard&&navigator.clipboard.writeText){ navigator.clipboard.writeText(url).then(ok).catch(()=>prompt('Copie le lien :',url)); }
   else prompt('Copie le lien :',url);
@@ -5861,7 +5861,7 @@ function printCaprep(){
 /* 29/07/2026 — CLOISON : ce qui suit est le contenu RÉEL du CASE (ordre du jour de CA, organigramme).
    Il ne doit jamais être semé chez une autre association. `myAsso` appartient à l'IIFE du bloc <script>
    suivant : hors de portée ici → on lit l'objet global `window.bobMe` (idiome maison, cf. l.6009). */
-const BOB_CASE_ID='d617489c-b18b-499b-ab17-c31656d0f08a';
+const BOB_CASE_ID='d617489c-b18b-499b-ab17-c31656d0f08a'; // saas-ok: clé de la cloison estLeCase — le mécanisme multi-tenant, pas de l'habillage
 function estLeCase(){ try{ const me=(window.bobMe&&typeof window.bobMe==='object')?window.bobMe:null; return !!(me && me.asso===BOB_CASE_ID); }catch(e){ return false; } }
 function seedCaprepIfNeeded(){
   if(!estLeCase()) return; // ces 7 points sont l'ordre du jour réel du CASE — jamais ailleurs
@@ -5873,7 +5873,7 @@ function seedCaprepIfNeeded(){
     P('Grille tarifaire périscolaire 2026','Grille « légèrement augmentée », à valider puis transmettre à la CAF (convention ALSH).','CA',{type:'onglet',cible:'periscolaire'}),
     P('Règlement intérieur de la garderie','Règlement intérieur téléversé sur le site, à relire et adopter.','CA',{type:'onglet',cible:'periscolaire'}),
     P('Projet éducatif & de développement global 2026-2030','À écrire au-delà du volet ados : gouvernance, RH, socioculturel, éducation populaire, communication, partenariats.','CA',null),
-    P('Convention Ôté Kartié (CASE × BOKAF)','Partenariat audiovisuel pour valoriser le quartier ; convention sans flux financier, à publier sur le site puis valider.','CA',null,[{nom:'Guillaume Boulevart',nature:'président du CASE et de BOKAF, cocontractant'}]),
+    P('Convention Ôté Kartié (CASE × BOKAF)','Partenariat audiovisuel pour valoriser le quartier ; convention sans flux financier, à publier sur le site puis valider.','CA',null,[{nom:'Guillaume Boulevart',nature:'président du CASE et de BOKAF, cocontractant'}]), // saas-ok: ordre du jour réel du CASE, semé sous garde estLeCase (seedCaprepIfNeeded)
     P('Ouverture du compte Qonto + fermeture de la BNP','Accord de principe ; la banque exigera le PV du CA réuni (art.14 : ouverture de compte = délibération du CA).','CA',null),
     P('Signature du PV du CA du 11/06','À relire et signer (télécharger, signer, réuploader).','intendance',null),
     P('Documents d\'inscription CM / périscolaire','Documents téléversés sur le site, à valider pour ouvrir les inscriptions (le plus urgent).','intendance',{type:'onglet',cible:'periscolaire'})
@@ -5921,7 +5921,7 @@ function bumpVote(rid,did,field,delta){
 function setDelibDeport(rid,did){
   const r=(db.reunions||[]).find(x=>x.id===rid); if(!r) return;
   const d=(r.deliberations||[]).find(x=>x.id===did); if(!d) return;
-  const v=prompt('Déport sur cette résolution — qui se retire et pourquoi ?\n(ex. « M. Guillaume BOULEVART — conflit d\'intérêts (frère du président de BOKAF), n\'a pris part ni aux débats ni au vote »)\n\nLaisser vide pour enlever le déport.', d.deport||'');
+  const v=prompt('Déport sur cette résolution — qui se retire et pourquoi ?\n(ex. « Mme Unetelle — conflit d\'intérêts (liée au cocontractant), n\'a pris part ni aux débats ni au vote »)\n\nLaisser vide pour enlever le déport.', d.deport||'');
   if(v===null) return;
   d.deport=v.trim();
   save(); renderReunions();
@@ -7004,12 +7004,13 @@ function avInfo(key){
 }
 function avenantTpl(key){
   const o=avInfo(key);
+  const employeur="L'association C.A.S.E — Centre d'Animation Socio-Éducatif du Bois de Nèfles,"; // saas-ok: modèle d'avenant du chantier ÉCLAT du CASE — à passer sur identite.* si le module s'ouvre à une 2e asso
   return `AVENANT N° ____ AU CONTRAT DE TRAVAIL
 Changement de convention collective applicable — maintien de la rémunération
 
 ENTRE LES SOUSSIGNÉS
 
-L'association C.A.S.E — Centre d'Animation Socio-Éducatif du Bois de Nèfles,
+${employeur}
 dont le siège est situé 132 place de la Fraternité, Route des Ananas, 97490 Sainte-Clotilde,
 identifiée sous le n° RNA W9R1001361, SIRET [ ______________ ],
 représentée par M. Guillaume BOULEVART, en sa qualité de Président,
@@ -7215,7 +7216,7 @@ window.renderQuiFaitQuoi=renderQuiFaitQuoi;
 /* ---- Suivi des actions (checklist DLA + autres) ---- */
 const ACT_DEFAUT=[
   {id:'a1',sujet:'Plannings temporaires validés + diffusés aux salariés (accusé de lecture)',statut:'En cours',note:''},
-  {id:'a2',sujet:'Boîtes mail pro individuelles (casebdn.re)',statut:'En cours',note:'Mise en place ce week-end'},
+  {id:'a2',sujet:'Boîtes mail pro individuelles (casebdn.re)',statut:'En cours',note:'Mise en place ce week-end'}, // saas-ok: tableau de marche réel du CASE, semé sous garde estLeCase (actionsDB)
   {id:'a3',sujet:'Agendas individuels + actions',statut:'En cours',note:''},
   {id:'a4',sujet:'Réunions hebdo équipe (jeudi 11h)',statut:'À faire',note:'À mettre réellement en place'},
   {id:'a5',sujet:'Ouvertures & activités au CASE des Bringelliers',statut:'En cours',note:'Local ouvert'},
@@ -8356,7 +8357,7 @@ renderAll();
     const perms=Object.assign({}, (myProfile.perms&&typeof myProfile.perms==='object')?myProfile.perms:{});
     if(!canWrite && myProfile && myProfile.role==='personnel' && (perms.periscolaire==='gestion'||perms.activites==='gestion') && !perms.enfants) perms.enfants='gestion'; // l'écran 👶 Enfants (métier) est éditable par l'accueil qui gère déjà périscolaire/activités
     if(!perms.dossiers && perms.periscolaire) perms.dossiers=perms.periscolaire; // 📨 Dossiers familles (déménagé de 🎒 Périscolaire le 14/08/2026) : sans réglage propre, l'onglet HÉRITE du réglage périscolaire du profil — personne ne gagne ni ne perd un droit au déménagement (un « caché » reste caché, un « gestion » reste gestion)
-    if(!canWrite) perms.aide='cache'; // l'Aide « Demande à Zanana » est réservée au bureau
+    if(!canWrite) perms.aide='cache'; // l'onglet Aide (l'assistant du tenant) est réservé au bureau
     if(!canWrite) perms.pilotage='cache'; // 🎯 Budget par action : pilotage budgétaire interne → bureau uniquement
     if(!canWrite) perms.foyers='cache'; // 👨‍👩‍👧 Foyers : registre familles + notes internes → bureau uniquement (coup 2 partiel, 27/07/2026)
     if(!canWrite) perms.accompagnement='cache'; // Accompagnement : contenu sensible (RH, gouvernance) → bureau uniquement par défaut
@@ -10688,8 +10689,8 @@ renderAll();
       const ins=(insByPers[k.id]||[]).filter(i=>i.statut!=='annule'&&i.statut!=='deplace').map(i=>(i.type==='periscolaire'?'périscolaire':esc(i.type))+' '+[i.matin?'matin':null,i.soir?'soir':null].filter(Boolean).join(' & ')+' — saison '+esc(i.saison||'')+' ('+(stLbl[i.statut]||esc(i.statut))+')').join(' · ');
       return '<tr><td>'+esc((((k.prenom||'')+' '+(k.nom||'')).trim())||'?')+(k.naissance?' — né(e) le '+fmtDate(k.naissance):'')+'</td><td>'+(ins||'—')+'</td></tr>';
     };
-    printHTML('<h1 style="margin:0">CASE du Bois de Nèfles</h1>'
-      +'<p style="margin:2px 0 0">Association loi 1901 — Saint-Denis (La Réunion)</p>'
+    printHTML('<h1 style="margin:0">'+esc(window.bobOrgName||'Association')+'</h1>'
+      +'<p style="margin:2px 0 0">Association loi 1901</p>'
       +'<h2>Récépissé de dossier famille</h2>'
       +'<p>Foyer : <strong>'+esc(f.nom)+'</strong></p>'
       +(f.code_famille?'<p>Code famille : <strong style="font-size:18px">'+esc(f.code_famille)+'</strong><br><span style="font-size:12px">À conserver précieusement. Sur votre espace en ligne (onglet « Mon compte »), entrez ce code et la date de naissance d\'un de vos enfants : votre compte sera relié à ce dossier. Le code ne sert qu\'une fois.</span></p>':'')
@@ -11129,7 +11130,7 @@ renderAll();
     let h='<div class="panel" style="border:2px solid #1d9e75">';
     h+='<div class="toolbar"><div><h2 style="margin:0">📖 Dossier-bilan — '+esc(ed.nom)+'</h2>'+(per?'<p class="hint" style="margin:2px 0 0">'+esc(per)+(archived&&ed.bilan.closedAt?' · 🗄️ archivée le '+fmtDate(ed.bilan.closedAt):'')+'</p>':'')+'</div><button class="ghost btn" onclick="acmCloseBilanView()">✕ Fermer</button></div>';
     h+='<div class="row" style="gap:8px;align-items:center;flex-wrap:wrap;margin:8px 0 2px;padding:7px 9px;border:1px solid var(--line);border-radius:8px;background:#f6f8f7"><span class="hint">📅 <b>Date de début</b> de l\'édition</span><input type="date" '+(archived?'disabled':'')+' value="'+esc(acmDebutISO(ed))+'" onchange="acmSetDebut(\''+ed.id+'\',this.value)"><span class="hint">→ calcule les échéances (J-8, J-60…)</span></div>';
-    h+='<div class="row" style="gap:8px;align-items:center;flex-wrap:wrap;margin:2px 0 2px;padding:7px 9px;border:1px solid var(--line);border-radius:8px;background:#f6f8f7"><span class="hint">📍 <b>Lieu de l\'accueil</b></span><input type="text" '+(archived?'disabled':'')+' value="'+esc(ed.lieu||'')+'" onchange="acmSetLieu(\''+ed.id+'\',this.value)" placeholder="ex : locaux du CASE, Bois de Nèfles" style="flex:1;min-width:180px"><span class="hint">→ repris dans l\'en-tête du bilan PDF (identité SDJES)</span></div>';
+    h+='<div class="row" style="gap:8px;align-items:center;flex-wrap:wrap;margin:2px 0 2px;padding:7px 9px;border:1px solid var(--line);border-radius:8px;background:#f6f8f7"><span class="hint">📍 <b>Lieu de l\'accueil</b></span><input type="text" '+(archived?'disabled':'')+' value="'+esc(ed.lieu||'')+'" onchange="acmSetLieu(\''+ed.id+'\',this.value)" placeholder="ex : salle polyvalente, locaux de l\'association…" style="flex:1;min-width:180px"><span class="hint">→ repris dans l\'en-tête du bilan PDF (identité SDJES)</span></div>';
     h+='<h3 style="margin:12px 0 4px">👶 Effectif</h3><div id="acmBilanEff"><p class="hint">Chargement…</p></div>';
     h+='<h3 style="margin:14px 0 4px">🧑‍🏫 Encadrement <span class="hint" style="font-weight:400;font-size:12px">— indicateur d\'aide, non opposable</span></h3><div id="acmBilanEncadr"><p class="hint">Chargement…</p></div>';
     h+='<h3 style="margin:14px 0 4px">👥 Équipe affectée <span class="hint" style="font-weight:400;font-size:12px">— composition calculée depuis les diplômes salariés</span></h3><div id="acmBilanEquipe"><p class="hint">Chargement…</p></div>';
@@ -11481,7 +11482,7 @@ renderAll();
     if(!window.__acmData){ try{ await acmLoadEditionsData(); }catch(e){} }
     const per=acmEditionPeriode(ed), archived=ed.statut==='archivee';
     let eff=(archived&&ed.bilan.effectif)?ed.bilan.effectif:acmEffectifFor(ed.activiteIds); eff=eff||{nb:0,roster:[]};
-    const asso=(db&&db.identite&&db.identite.nom)||'CASE du Bois de Nèfles';
+    const asso=(db&&db.identite&&db.identite.nom)||window.bobOrgName||'Association'; // le repli d'un produit, c'est le produit — jamais le nom d'un client
     const E=esc; // esc global : échappe aussi " et ' (robuste même si un champ passe un jour en attribut)
     const D=window.__acmData; const linked=((D&&D.acts)||[]).filter(function(a){return (ed.activiteIds||[]).indexOf(a.id)>=0;});
     const frozenId=archived&&ed.bilan&&ed.bilan.effectif; // archive : on lit l'identité FIGÉE (ce qui était déclaré), pas l'état actuel des activités
@@ -13180,7 +13181,7 @@ renderAll();
     rh:{        nom:'Éva',  role:'Bob RH',         img:'bob-think.png'}
   };
   const ASSO_CASTING={
-    'd617489c-b18b-499b-ab17-c31656d0f08a':{ // CASE du Bois de Nèfles — son équipe historique (ananas 🍍)
+    'd617489c-b18b-499b-ab17-c31656d0f08a':{ // CASE du Bois de Nèfles — son équipe historique (ananas 🍍) · saas-ok: casting propre au client, servi par sa clé UUID
       secretaire:{nom:'Sabine',role:'La Secrétaire', img:'bob-sabine-w.png'},
       tresorier:{ nom:'Trési', role:'La Trésorière', img:'bob-tresi-w.png'},
       animateur:{ nom:'Nono',  role:"L'Animateur",   img:'bob-nono-w.png'},
@@ -13342,7 +13343,7 @@ renderAll();
   };
   // Contenu spécifique CASE masqué pour les autres orgs (ex. assurance MAIF). Additif : CASE = tout visible, inchangé. Étendre ici (PDF projet-ados, ÉCLAT…) au besoin.
   // Contenu propre à UNE asso : par defaut on CACHE (une autre asso ne doit jamais lire le contenu du CASE).
-  window.bobEstLeCase = function(){ try{ return (typeof myAsso!=='undefined' && myAsso==='d617489c-b18b-499b-ab17-c31656d0f08a'); }catch(e){ return false; } };
+  window.bobEstLeCase = function(){ try{ return (typeof myAsso!=='undefined' && myAsso==='d617489c-b18b-499b-ab17-c31656d0f08a'); }catch(e){ return false; } }; // saas-ok: le test-même de la cloison — mécanisme, pas habillage
   function applyOrgContent(){ try{ const isCase=window.bobEstLeCase(); const ap=document.getElementById('assurancePanel'); if(ap) ap.style.display = isCase ? '' : 'none'; const pp=document.getElementById('presPortes'); if(pp) pp.style.display = isCase ? '' : 'none'; if(typeof renderFaqList==='function') renderFaqList(); if(typeof renderNews==='function') renderNews(); }catch(e){} }
   /* 30/07/2026 — identité NEUTRE par défaut, jamais celle du CASE. Une association sans identité
      déclarée (ou un compte en quarantaine, asso_id null) portait jusqu'ici le titre, le sous-titre
@@ -13381,7 +13382,7 @@ renderAll();
       /* Les <img zanana-*> sont écrites en dur dans le HTML (avant que l'asso soit connue) :
          on les repointe TOUJOURS vers les images de l'assistant du tenant — pour le CASE elles
          valent zanana-*, donc rien ne bouge chez lui, et il n'y a plus de test sur son UUID. */
-      document.querySelectorAll('img[src*="zanana-"]').forEach(function(im){
+      document.querySelectorAll('img[src*="zanana-"]').forEach(function(im){ // saas-ok: repatch des images du CASE vers l'assistant du tenant — le mécanisme anti-fuite
         const s=im.getAttribute('src')||'';
         im.setAttribute('src', s.indexOf('wave')>=0 ? M.wave : M.point);
       });
@@ -13960,7 +13961,7 @@ renderAll();
     const box=document.getElementById('adminConsole'); if(!box) return;
     if(!(myProfile&&myProfile.super_admin)){ box.innerHTML='<div class="empty">Réservé au super-admin.</div>'; return; }
     // Catalogue des bouquets (lecture seule) : chaque bouquet → ses onglets. Source de vérité = BOB_TAB_PACK (applyPerms).
-    const CASE_ID='d617489c-b18b-499b-ab17-c31656d0f08a'; // org historique = VERROUILLÉE (jamais d'extinction de brique par accident)
+    const CASE_ID='d617489c-b18b-499b-ab17-c31656d0f08a'; // org historique = VERROUILLÉE (jamais d'extinction de brique par accident) · saas-ok: verrou de l'org historique
     // Catalogue DÉRIVÉ de BOB_TAB_PACK + des libellés réels de la nav (28/07/2026) —
     // plus jamais deux listes qui divergent, et « UN CLIC = UN COMPAGNON » (fiche casting) :
     // Bob Compta allume ses 3 fonctions ENSEMBLE, Bob Animateur ses 2 — jamais de demi-Trésorière.
@@ -14022,7 +14023,7 @@ renderAll();
   };
   // Bascule un bouquet pour une org (super-admin). CASE verrouillé : double garde (ici + UI désactivée). Réservé au super-admin côté base (admin_set_feature).
   window.bobToggleFeature=async function(orgId,key,val){
-    if(orgId==='d617489c-b18b-499b-ab17-c31656d0f08a'){ alert('🔒 Le CASE est verrouillé : on ne modifie pas ses modules ici (sécurité).'); return; }
+    if(orgId==='d617489c-b18b-499b-ab17-c31656d0f08a'){ alert('🔒 Le CASE est verrouillé : on ne modifie pas ses modules ici (sécurité).'); return; } // saas-ok: verrou de l'org historique
     // 28/07/2026 : « un clic = UN COMPAGNON » (fiche casting) — key peut porter PLUSIEURS fonctions
     // séparées par des virgules (Bob Compta = base + analytique + subventions ENSEMBLE, jamais de demi-Trésorière).
     try{
@@ -14046,7 +14047,7 @@ renderAll();
       return '<div style="display:flex;justify-content:space-between;gap:14px;padding:6px 0;border-top:1px dashed #e7efe9"><span class="muted">'+fmtJour(r.jour)+'</span><b>'+(r.nombre||0)+'</b></div>';
     }).join('');
     el.innerHTML='<div style="font-size:34px;font-weight:800;color:#3a51e8;line-height:1.05">'+total+'</div>'
-      +'<div class="muted" style="margin:2px 0 12px">visites au total sur le site public (casebdn.re)</div>'
+      +'<div class="muted" style="margin:2px 0 12px">visites au total sur le site public de l\'association</div>'
       +(rows.length?('<div style="font-size:12px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:#7a8a83;margin-bottom:2px">Par jour (30 derniers)</div>'+derniers):'<div class="empty">Aucune visite encore.</div>');
   };
 
