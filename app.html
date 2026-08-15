@@ -9638,19 +9638,23 @@ renderAll();
      il passait entre les deux.
      Chaque écriture porte `paiement_id` → « déjà versé » = une écriture existe pour ce
      paiement. Même garde-fou anti-double-compte que le périscolaire. */
-  window.adhVerserCompta=async function(){
-    if(!canWrite){ alert('Réservé au bureau.'); return; }
+  /* `auto` = appelé tout seul à l'ouverture de Bob (voir le point de chargement) : pas de
+     question posée, pas de fenêtre bloquante — mais on ANNONCE ce qui vient d'être fait, à
+     l'écran et au journal. Une écriture comptable créée en silence, ce serait pire que le trou
+     qu'on répare. Même code que le bouton : une seule implémentation, donc pas de dérive. */
+  window.adhVerserCompta=async function(auto){
+    if(!canWrite){ if(!auto) alert('Réservé au bureau.'); return 0; }
     const rq=await sbc.from('paiements').select('id,user_id,montant_cents,paid_at,created_at,metadata').eq('objet','adhesion').eq('statut','paye');
-    if(rq.error){ alert('Erreur : '+rq.error.message); return; }
+    if(rq.error){ if(!auto) alert('Erreur : '+rq.error.message); return 0; }
     const versed=new Set((db.ops||[]).map(function(o){return o.paiement_id;}).filter(Boolean));
     const todo=(rq.data||[]).filter(function(p){ return !versed.has(p.id); });
-    if(!todo.length){ alert('Aucune adhésion à verser : tout est déjà en comptabilité.'); return; }
+    if(!todo.length){ if(!auto) alert('Aucune adhésion à verser : tout est déjà en comptabilité.'); return 0; }
     const uids=[...new Set(todo.map(function(p){return p.user_id;}).filter(Boolean))];
     const nom={};
     if(uids.length){ const {data:profs}=await sbc.from('profiles').select('id,full_name,email').in('id',uids);
       (profs||[]).forEach(function(p){ nom[p.id]=p.full_name||p.email||''; }); }
     const tot=todo.reduce(function(s,p){ return s+(p.montant_cents||0); },0)/100;
-    if(!confirm('Verser '+todo.length+' adhésion(s) en ligne en comptabilité — '+euro(tot)+' ?\n\n'
+    if(!auto && !confirm('Verser '+todo.length+' adhésion(s) en ligne en comptabilité — '+euro(tot)+' ?\n\n'
       +'Compte 756 - Cotisations · action « Fonctionnement ».\n\n'
       +'L\'argent est placé « en attente chez HelloAsso » : quand le reversement arrivera sur le\n'
       +'compte bancaire, tu enregistreras UN virement, qui s\'appariera avec la ligne du relevé.')) return;
@@ -9677,8 +9681,13 @@ renderAll();
         splits:[{site:'Case du Bois de Nefles', action:'Fonctionnement', amount:euros}]});
       versed.add(p.id); n++;
     });
+    const dit=n+' adhésion'+(n>1?'s':'')+' en ligne versée'+(n>1?'s':'')+' en comptabilité — '
+      +euro(tot)+' · 756 Cotisations · en attente chez HelloAsso';
+    if(auto){ db.journal=(db.journal||[]).concat([jEntry('Comptabilité','💶 '+dit+' (versement automatique à l\'ouverture)')]).slice(-500); }
     save(); if(window.renderAll) renderAll();
-    alert('✅ '+n+' adhésion(s) versée(s).\n\n756 - Cotisations · action Fonctionnement · en attente chez HelloAsso.');
+    if(auto){ if(window.toast){ try{ window.toast('💶 '+dit); }catch(e){} } }
+    else alert('✅ '+n+' adhésion(s) versée(s).\n\n756 - Cotisations · action Fonctionnement · en attente chez HelloAsso.');
+    return n;
   };
   /* Le reversement : UN virement interne helloasso → banque, qui s'apparie 1 pour 1 avec la
      ligne du relevé. HelloAsso reverse parfois en plusieurs fois : on saisit le montant de
@@ -14026,6 +14035,18 @@ renderAll();
     // remplace l'enregistrement local par l'enregistrement en ligne
     save = function(){ jLog(); try{localStorage.setItem(KEY,JSON.stringify(db));}catch(e){} renderAll(); schedulePush(); };
     try{ if(canWrite && myAsso===BOB_CASE_ID) seedCaprepIfNeeded(); }catch(e){} // 29/07/2026 : double cloison (ici + dans la fonction)
+    /* 💶 Les adhésions payées en ligne entrent en compta TOUTES SEULES, à l'ouverture (15/08/2026).
+       Pourquoi pas un bouton : parce qu'un bouton n'empêche rien. Les 80 € encaissés entre le 03/07
+       et le 12/08 sont restés invisibles six semaines faute d'un geste que personne n'avait de
+       raison de faire. Pourquoi pas un déclencheur en base : parce que la compta vit dans le
+       COFFRE, un bloc réécrit en entier à chaque enregistrement — une écriture posée en
+       arrière-plan serait effacée sans bruit par le prochain enregistrement d'un membre du
+       bureau. Ici c'est l'appli, qui tient déjà son coffre, qui le fait : pas de conflit.
+       Idempotent (garde-fou `paiement_id`), annoncé à l'écran ET au journal, jamais silencieux.
+       ⚠️ Le REVERSEMENT, lui, reste manuel : seul le trésorier sait ce que HelloAsso a viré et
+       quand — c'est ce montant-là qui doit coller à la ligne du relevé. */
+    try{ if(canWrite) Promise.resolve(window.adhVerserCompta(true)).catch(function(e){ console.warn('versement auto', e); }); }
+    catch(e){ console.warn('versement auto', e); }
     addBanner();
     renderAll();
     applyPerms();
