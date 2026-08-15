@@ -3287,6 +3287,17 @@ function renderMembers(){
   const usedMid={}; // ids du livre déjà représentés par une ligne de l'arbre
   const rows=[];
   let nbDiv=0, nbDel=0; // compteurs d'écart calculés sur TOUT (jamais sous le filtre de recherche)
+  /* Lot 9a lifting (15/08/2026) : fini « À jour » ici / « à régulariser » là. Le badge de la
+     saison en cours vient de la MÊME vue serveur que l'onglet Foyers et que la porte des
+     familles (__maData.regul) — mêmes mots, mêmes couleurs, une seule source de vérité.
+     Une fois par foyer (sur sa ligne la plus récente hors enfant), silence si lecture KO. */
+  const regShown={};
+  const regPillDe=function(a){
+    if(!A.regul || a.categorie==='enfant' || !A.regul.has(a.foyer_id) || regShown[a.foyer_id]) return '';
+    regShown[a.foyer_id]=1;
+    const sais=String(A.regul.get(a.foyer_id)||'saison en cours');
+    return '<br><span class="pill" style="background:#fff3da;color:#8a5a00;font-weight:700;font-size:11px" title="Pas d\'adhésion payée pour la saison en cours dans l\'arbre famille — la même règle qui bloque l\'ajout d\'enfant et les inscriptions de la famille (verdict identique à l\'onglet 👨‍👩‍👧 Foyers). Le bouton « 💵 Adhésion payée » du comptoir Foyers rouvre l\'accès.">⚠️ adhésion '+esc(sais)+' à régulariser</span>';
+  };
   const adhs=A.adhesions.slice().sort((x,y)=>
     String(y.saison||'').localeCompare(String(x.saison||'')) ||
     String(y.date_adhesion||'').localeCompare(String(x.date_adhesion||'')) ||
@@ -3316,6 +3327,7 @@ function renderMembers(){
     }else{
       statutTd='<span class="pill '+(a.paye?'ok':'wait')+'">'+(a.paye?'À jour':'En attente')+'</span>';
     }
+    statutTd+=regPillDe(a); // Lot 9a : le verdict « saison en cours » de la vue serveur, même sur une ligne « À jour » d'une saison passée
     let actionsTd;
     if(m){
       actionsTd='<button class="ghost btn" style="padding:4px 9px;font-size:12px" onclick="openEdit(\'members\',\''+m.id+'\')" title="Modifier (écrit dans le livre, comme avant)">✏️</button> '
@@ -3357,13 +3369,16 @@ function renderMembers(){
   });
   if(bar){
     const nbA=A.adhesions.length, nbOrph=orphelins.length;
+    /* Lot 9a lifting (15/08/2026) : le bandeau parle français, plus architecte — « entrée du
+       livre pas encore dans l'arbre » ne disait rien à personne (4 métaphores internes relevées
+       à l'audit design du 14/08). Même contenu, mots du quotidien. */
     const soucis=[];
-    if(nbOrph) soucis.push(nbOrph+' entrée'+(nbOrph>1?'s':'')+' du livre pas encore dans l\'arbre');
-    if(nbDel) soucis.push(nbDel+' adhésion'+(nbDel>1?'s':'')+' de l\'arbre retirée'+(nbDel>1?'s':'')+' du livre');
-    if(nbDiv) soucis.push(nbDiv+' ligne'+(nbDiv>1?'s':'')+' où livre et arbre divergent');
-    bar.innerHTML='<p class="hint" style="margin:6px 0">🌳 Liste branchée en <b>lecture</b> sur l\'arbre famille : <b>'+nbA+'</b> adhésion'+(nbA>1?'s':'')+' (le registre de l\'onglet 👨‍👩‍👧 Foyers)'
-      +(soucis.length?' · <span style="color:#8a5a00;font-weight:600">⚠️ '+soucis.join(' · ')+'</span>':' · livre et arbre d\'accord ✅')
-      +' — tes gestes (✏️, statut, suppr., Ajouter) écrivent toujours dans le livre, comme avant.</p>';
+    if(nbOrph) soucis.push(nbOrph+' adhérent'+(nbOrph>1?'s':'')+' pas encore relié'+(nbOrph>1?'s':'')+' à un foyer (paiement'+(nbOrph>1?'s':'')+' compté'+(nbOrph>1?'s':'')+' quand même)');
+    if(nbDel) soucis.push(nbDel+' adhésion'+(nbDel>1?'s':'')+' dont la ligne d\'ici a été supprimée (le foyer la garde)');
+    if(nbDiv) soucis.push(nbDiv+' ligne'+(nbDiv>1?'s':'')+' où cette liste et le foyer ne disent pas pareil');
+    bar.innerHTML='<p class="hint" style="margin:6px 0">🌳 Liste branchée en <b>lecture</b> sur le registre des familles (onglet 👨‍👩‍👧 Foyers) : <b>'+nbA+'</b> adhésion'+(nbA>1?'s':'')
+      +(soucis.length?' · <span style="color:#8a5a00;font-weight:600">⚠️ '+soucis.join(' · ')+'</span>':' · les deux onglets disent pareil ✅')
+      +' — tes gestes (✏️, statut, suppr., Ajouter) écrivent toujours ici, comme avant.</p>';
   }
   tb.innerHTML = rows.length ? rows.join('') : emptyRow();
 }
@@ -9816,7 +9831,7 @@ renderAll();
   window.loadMembersArbre=async function(){
     if(typeof sbc==='undefined'||!sbc||!myAsso){ window.__maData=null; if(typeof renderMembers==='function')renderMembers(); return; }
     try{
-      const [ra,rf,rp]=await Promise.all([
+      const [ra,rf,rp,rr]=await Promise.all([
         // colonnes explicites + borne asso (la RLS cloisonne déjà, mais un bureau membre
         // de DEUX assos verrait sinon les deux mélangées dans le même écran)
         // 🔴 13/08/2026 — on lit aussi personne_id et categorie : depuis la migration 63,
@@ -9826,10 +9841,17 @@ renderAll();
         // montants différents — illisible.
         sbc.from('adhesions').select('foyer_id,personne_id,categorie,saison,date_adhesion,montant_cents,paye,legacy_key').eq('asso_id',myAsso),
         sbc.from('foyers').select('id,nom,tel,adresse,cp,ville,legacy_key').eq('asso_id',myAsso),
-        sbc.from('personnes').select('id,prenom,nom,role_foyer,fiche_a_completer').eq('asso_id',myAsso)
+        sbc.from('personnes').select('id,prenom,nom,role_foyer,fiche_a_completer').eq('asso_id',myAsso),
+        /* Lot 9a lifting (15/08/2026) : la MÊME vue serveur que l'onglet Foyers et que la
+           porte des familles (v_foyers_a_regulariser, migration 65) — pour que les deux
+           onglets portent le MÊME badge « à régulariser », jamais deux verdicts. */
+        sbc.from('v_foyers_a_regulariser').select('foyer_id,saison')
       ]);
       const err=ra.error||rf.error||(rp&&rp.error);
-      window.__maData = err ? {err:err.message} : {adhesions:ra.data||[], foyers:rf.data||[], personnes:(rp&&rp.data)||[]};
+      window.__maData = err ? {err:err.message} : {adhesions:ra.data||[], foyers:rf.data||[], personnes:(rp&&rp.data)||[],
+        /* regul=null quand la vue n'a pas pu être lue → on se TAIT (même doctrine que Foyers :
+           jamais laisser croire que tout le monde est en règle sur une lecture en échec). */
+        regul:(rr&&!rr.error)?new Map((rr.data||[]).map(function(x){return [x.foyer_id,x.saison];})):null};
     }catch(e){ window.__maData={err:(e&&e.message)||'erreur réseau'}; }
     if(typeof renderMembers==='function') renderMembers();
   };
