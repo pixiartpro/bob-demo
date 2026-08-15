@@ -140,21 +140,27 @@
   .card{background:var(--card);border-radius:14px;padding:18px;box-shadow:var(--shadow)}
   .card .label{font-size:12.5px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.03em}
   .card .value{font-size:26px;font-weight:800;margin-top:6px}
-  .card .sub{font-size:12.5px;color:var(--muted);margin-top:2px}
+  .card .sub{font-size:13.5px;color:var(--muted);margin-top:2px} /* Lot 4 : plancher lisibilité */
   .panel{background:var(--card);border-radius:14px;padding:20px;box-shadow:var(--shadow);margin-bottom:20px}
   .panel h2{margin:0 0 4px;font-size:16px}
-  .panel .hint{color:var(--muted);font-size:13px;margin:0 0 16px}
+  .panel .hint{color:var(--muted);font-size:13.5px;margin:0 0 16px} /* Lot 4 : plancher lisibilité 13,5px — c'est le texte qui explique chaque écran */
   .row{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end}
   .field{display:flex;flex-direction:column;gap:4px;flex:1;min-width:140px}
   .field label{font-size:12.5px;color:var(--muted);font-weight:600}
   input,select{font:inherit;padding:9px 11px;border:1px solid var(--line);border-radius:9px;background:#fff;color:var(--ink)}
   input:focus,select:focus{outline:none;border-color:var(--brand)}
+  /* Lot 4 lifting 15/08/2026 : anneau clavier GLOBAL (0 :focus-visible sur 14 549 lignes avant ça).
+     !important nécessaire : plusieurs règles outline:none plus spécifiques (.orga-card…) l'écraseraient.
+     Ne touche que la navigation clavier — au clic/tap, :focus-visible ne s'allume pas. */
+  :is(button,a,input,select,textarea,[tabindex]):focus-visible{outline:3px solid var(--brand-dk,#0f6b46)!important;outline-offset:2px}
+  #cloudBar :is(button,a):focus-visible{outline-color:#fff!important}
   button.btn{background:var(--brand);color:#fff;border:none;padding:10px 16px;border-radius:9px;
        font-weight:600;font-size:14px;cursor:pointer;transition:.15s}
   button.btn:hover{background:var(--brand-dk)}
   button.ghost{background:#eef4f0;color:var(--brand-dk)}
   button.ghost:hover{background:#e2efe7}
-  button.danger{background:transparent;color:var(--red);border:none;cursor:pointer;font-size:13px;font-weight:600}
+  button.danger{background:transparent;color:var(--red);border:none;cursor:pointer;font-size:13px;font-weight:600;padding:7px 10px;border-radius:8px} /* Lot 4 : le geste destructif n'est plus la plus petite cible (~19px avant) */
+  button.danger:hover{background:#fdeeee}
   table{width:100%;border-collapse:collapse;font-size:14px}
   th,td{text-align:left;padding:10px 12px;border-bottom:1px solid var(--line)}
   th{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.03em}
@@ -197,7 +203,9 @@
     #printArea th,#printArea td{border:1px solid #ccc;padding:6px 10px;text-align:left;font-size:13px}
     #printArea td.num{text-align:right}
   }
-  @media(max-width:600px){.field{min-width:100%}}
+  @media(max-width:600px){.field{min-width:100%}
+    /* Lot 4 : cibles tactiles des rangées de tableaux ≥40px en mobile (les inline padding:4px 9px imposent ~26px, d'où !important) */
+    td button,td .btn{min-height:40px!important;padding:8px 11px!important}}
   /* Organigramme */
   .orga-band{background:linear-gradient(135deg,var(--brand),var(--brand-dk));color:#fff;text-align:center;font-weight:700;padding:10px 14px;border-radius:12px;font-size:14px}
   .orga-link{text-align:center;color:var(--brand);font-size:18px;line-height:1;margin:2px 0}
@@ -3384,6 +3392,8 @@ function pageHelpGotoAide(){ pageHelpClose(); const b=document.querySelector('na
 
 /* ---- ✨ Quoi de neuf (nouveautés + notice chronologique) ---- */
 const NEWS=[
+  {id:'2026-08-15-clavier-et-doigts',date:'2026-08-15',tab:'🛟 Le reste',titre:"⌨️ Navigation au clavier visible, boutons plus faciles à toucher",
+   desc:"Trois confort d'usage : <b>1.</b> En naviguant au clavier (touche Tab), un <b>anneau vert</b> entoure maintenant le champ ou le bouton où tu te trouves — avant, on était perdu. <b>2.</b> Sur téléphone, les <b>petits boutons des tableaux</b> (✏️, Suppr., Reçu…) deviennent assez grands pour le doigt — fini de supprimer quand on visait Modifier. <b>3.</b> Les <b>textes d'explication</b> des écrans et les petites étiquettes d'état sont légèrement agrandis. Rien ne change dans le fonctionnement."},
   {id:'2026-08-15-montants-lisibles',date:'2026-08-15',tab:'💶 Comptabilité',titre:"👓 Les montants et les statuts sont plus lisibles",
    desc:"Les <b>verts et rouges des montants</b> (recettes, dépenses, totaux du bilan), les <b>pastilles de statut</b> (« À jour », « En attente »…) et l'<b>ambre</b> des avertissements passent en teintes plus foncées : mêmes couleurs, mais lisibles par tous — y compris dehors en plein soleil sur téléphone. Et en haut de l'écran, l'état « <b>✓ synchronisé</b> » / « <b>lecture seule</b> » est enfin visible (il était écrit… ton sur ton). Rien d'autre ne change."},
   {id:'2026-08-14-mobile-respire',date:'2026-08-14',tab:'🛟 Le reste',titre:"📱 Sur téléphone, l'écran ne déborde plus",
@@ -3754,7 +3764,7 @@ function renderMembers(){
     let statutTd;
     if(m){
       statutTd=statutLivre(m)
-        +(divPaye?'<br><span class="pill" style="background:#fdeeee;color:#b03a2e;font-size:10px" title="Le livre et l\'arbre ne disent pas pareil — à réconcilier">🌳 arbre : '+(a.paye?'payé':'en attente')+'</span>':'');
+        +(divPaye?'<br><span class="pill" style="background:#fdeeee;color:#b03a2e;font-size:12px" title="Le livre et l\'arbre ne disent pas pareil — à réconcilier">🌳 arbre : '+(a.paye?'payé':'en attente')+'</span>':'');
     }else{
       statutTd='<span class="pill '+(a.paye?'ok':'wait')+'">'+(a.paye?'À jour':'En attente')+'</span>';
     }
@@ -3774,19 +3784,19 @@ function renderMembers(){
       /* Depuis la 63, une ligne à 0 € n'est PAS une cotisation impayée : c'est un enfant,
          adhérent porté par le paiement de son parent (barème 2026-2027 : enfant gratuit).
          Sans cette pastille, le bureau lit « 0,00 € » et croit à un défaut de paiement. */
-      +(a.categorie==='enfant'?' <span class="pill" style="background:#fff3da;color:#8a5a00;font-size:10px" title="Adhérent porté par le paiement du parent — gratuit pour la saison en cours (barème)">👶 enfant · porté</span>':'')
-      +(a.categorie==='adulte'?' <span class="pill" style="background:#eef4ff;color:#23344d;font-size:10px" title="Adhérent qui a réglé sa propre cotisation">🧑 a payé sa cotisation</span>':'')
-      +((a.personne_id&&persById[a.personne_id]&&persById[a.personne_id].fiche_a_completer)?' <span class="pill" style="background:#fdeeee;color:#b03a2e;font-size:10px" title="Cette personne a payé mais n\'a pas encore renseigné son identité — le bureau doit lui créer un dossier et lui remettre un code famille">📝 fiche vide</span>':'')
+      +(a.categorie==='enfant'?' <span class="pill" style="background:#fff3da;color:#8a5a00;font-size:12px" title="Adhérent porté par le paiement du parent — gratuit pour la saison en cours (barème)">👶 enfant · porté</span>':'')
+      +(a.categorie==='adulte'?' <span class="pill" style="background:#eef4ff;color:#23344d;font-size:12px" title="Adhérent qui a réglé sa propre cotisation">🧑 a payé sa cotisation</span>':'')
+      +((a.personne_id&&persById[a.personne_id]&&persById[a.personne_id].fiche_a_completer)?' <span class="pill" style="background:#fdeeee;color:#b03a2e;font-size:12px" title="Cette personne a payé mais n\'a pas encore renseigné son identité — le bureau doit lui créer un dossier et lui remettre un code famille">📝 fiche vide</span>':'')
       +(m&&m.typeAdh?' <span class="pill" style="background:#eef2fb;color:#1f4fc4;font-size:11px">'+esc(m.typeAdh)+'</span>':'')
-      +' <span class="pill" style="background:#e7f5ee;color:#127a51;font-size:10px" title="Ligne lue depuis l\'arbre famille (le registre de l\'onglet 👨‍👩‍👧 Foyers)">🌳 arbre</span>'
-      +(retiree?' <span class="pill" style="background:#fdeeee;color:#b03a2e;font-size:10px" title="Cette adhésion existe dans l\'arbre mais son entrée du livre a été supprimée — l\'arbre, lui, ne s\'efface pas d\'ici (voir l\'onglet 👨‍👩‍👧 Foyers)">⚠️ retirée du livre</span>':'')
+      +' <span class="pill" style="background:#e7f5ee;color:#127a51;font-size:12px" title="Ligne lue depuis l\'arbre famille (le registre de l\'onglet 👨‍👩‍👧 Foyers)">🌳 arbre</span>'
+      +(retiree?' <span class="pill" style="background:#fdeeee;color:#b03a2e;font-size:12px" title="Cette adhésion existe dans l\'arbre mais son entrée du livre a été supprimée — l\'arbre, lui, ne s\'efface pas d\'ici (voir l\'onglet 👨‍👩‍👧 Foyers)">⚠️ retirée du livre</span>':'')
       +'<br><span class="muted" style="font-size:12px">Saison '+esc(a.saison||'—')+'</span></td>'
       +'<td style="font-size:13px">'+esc((m&&m.email)||'—')+'<br>'+((f.tel||(m&&m.phone))?('<span class="muted">'+esc(f.tel||(m&&m.phone))+'</span>'):'<span style="color:#b23a23;font-size:12px;font-weight:600" title="Sans numéro, la famille est injoignable — ✏️ sur la ligne (livre) ou fiche du foyer">📵 pas de numéro</span>')+'</td>'
       +'<td style="font-size:13px">'+esc(f.adresse||(m&&m.addr)||'—')+'<br><span class="muted">'+esc(((f.cp||(m&&m.cp)||'')+' '+(f.ville||(m&&m.city)||'')).trim())+'</span></td>'
       +'<td>'+(a.date_adhesion?fmtDate(a.date_adhesion):'—')
-        +(divDate?'<br><span class="pill" style="background:#fdeeee;color:#b03a2e;font-size:10px" title="Le livre dit une autre date — le 🧾 Reçu imprime celle du livre">🧾 livre : '+fmtDate(m.date)+'</span>':'')+'</td>'
+        +(divDate?'<br><span class="pill" style="background:#fdeeee;color:#b03a2e;font-size:12px" title="Le livre dit une autre date — le 🧾 Reçu imprime celle du livre">🧾 livre : '+fmtDate(m.date)+'</span>':'')+'</td>'
       +'<td class="num">'+euro((a.montant_cents||0)/100)
-        +(divMontant?'<br><span class="pill" style="background:#fdeeee;color:#b03a2e;font-size:10px" title="Le livre dit un autre montant — le 🧾 Reçu imprime celui du livre">🧾 livre : '+euro(m.amount)+'</span>':'')
+        +(divMontant?'<br><span class="pill" style="background:#fdeeee;color:#b03a2e;font-size:12px" title="Le livre dit un autre montant — le 🧾 Reçu imprime celui du livre">🧾 livre : '+euro(m.amount)+'</span>':'')
         +(m&&m.mode?'<br><span class="muted" style="font-size:11px">'+esc(modeLabel(m.mode))+'</span>':'')+'</td>'
       +'<td>'+statutTd+'</td>'
       +'<td style="white-space:nowrap">'+actionsTd+'</td></tr>');
@@ -3795,7 +3805,7 @@ function renderMembers(){
   const orphelins = mems.filter(m=>!usedMid[m.id]);
   orphelins.forEach(m=>{
     if(q && !(m.name.toLowerCase().includes(q)||(m.email||'').toLowerCase().includes(q))) return;
-    rows.push(rowLivre(m,' <span class="pill" style="background:#fff4e0;color:#8a5a00;font-size:10px" title="Cette entrée du livre n\'a pas (encore) d\'adhésion dans l\'arbre famille — le rattachement ne se fait pas tout seul">⚠️ pas dans l\'arbre</span>'));
+    rows.push(rowLivre(m,' <span class="pill" style="background:#fff4e0;color:#8a5a00;font-size:12px" title="Cette entrée du livre n\'a pas (encore) d\'adhésion dans l\'arbre famille — le rattachement ne se fait pas tout seul">⚠️ pas dans l\'arbre</span>'));
   });
   if(bar){
     const nbA=A.adhesions.length, nbOrph=orphelins.length;
@@ -10639,7 +10649,7 @@ renderAll();
       return '<div class="panel" id="peridos_'+d.id+'"'+(d.statut==='depose'?' data-todo="1"':'')+' style="margin:10px 0;border-left:4px solid '+st[1]+(isTodo(d)?';background:#fff8ef':';opacity:.85')+'">'
         +'<div class="toolbar"><div><strong>'+esc(d.foyer||'Famille')+'</strong> '
         +'<span class="pill" style="background:'+st[0]+';color:'+st[1]+';font-size:11px">'+st[2]+'</span>'
-        +((arbreInfo&&!arbreInfo.byId[d.id])?' <span class="pill" style="background:#fff4e0;color:#8a5a00;font-size:10px" title="Ce dossier n\'a pas (encore) de miroir dans l\'arbre famille (registre des foyers) — le balayage arbre_rattraper() le rattrapera">⚠️ pas dans l\'arbre</span>':'')
+        +((arbreInfo&&!arbreInfo.byId[d.id])?' <span class="pill" style="background:#fff4e0;color:#8a5a00;font-size:12px" title="Ce dossier n\'a pas (encore) de miroir dans l\'arbre famille (registre des foyers) — le balayage arbre_rattraper() le rattrapera">⚠️ pas dans l\'arbre</span>':'')
         +' <button class="ghost btn" style="font-size:11px;padding:1px 8px" onclick="bobGoFicheFamille(\''+d.id+'\')" title="Ouvrir la fiche de cette famille (👨‍👩‍👧 Familles → 👥 Adhérents)">👥 Fiche famille</button>'
         +(d.besoin_aide?' <span class="pill" style="background:#fff5da;color:#8a6400;font-size:11px">🙋 Aide demandée (RDV)</span>':'')
         +((d.email||d.tel)?'<br><span class="muted" style="font-size:13px">'+esc(d.email||'')+((d.email&&d.tel)?' · ':'')+esc(d.tel||'')+'</span>':'')
@@ -10807,7 +10817,7 @@ renderAll();
            une de trop — et c'est la plus faible qui part. */
         : (regBadge ? '' : '<span class="pill" style="background:#eef0f3;color:#667;font-size:11px">pas d\'adhésion</span>');
       const adultHtml=adults.length?adults.map(a=>'<span style="font-size:13px">👤 <b>'+esc((((a.prenom||'')+' '+(a.nom||'')).trim())||'(à compléter)')+'</b>'
-        +(a.auth_user_id?' <span class="pill" style="background:#e7f5ee;color:#127a51;font-size:10px" title="Un compte en ligne est relié à cette personne">🔗 compte</span>'+(canWrite?' <button class="ghost btn" style="padding:1px 7px;font-size:11px" onclick="fyDetacher(\''+a.id+'\')" title="Détacher le compte en ligne de cette fiche (mauvais rattachement, homonymie). La fiche, elle, est conservée.">🔓</button>':''):'')
+        +(a.auth_user_id?' <span class="pill" style="background:#e7f5ee;color:#127a51;font-size:12px" title="Un compte en ligne est relié à cette personne">🔗 compte</span>'+(canWrite?' <button class="ghost btn" style="padding:1px 7px;font-size:11px" onclick="fyDetacher(\''+a.id+'\')" title="Détacher le compte en ligne de cette fiche (mauvais rattachement, homonymie). La fiche, elle, est conservée.">🔓</button>':''):'')
         +(canWrite?' <button class="ghost btn" style="padding:1px 7px;font-size:11px" onclick="fyEditPersonne(\''+a.id+'\')" title="Corriger le nom">✏️</button>':'')
         +'</span>').join(' · '):'<span class="hint">aucun adulte saisi</span>';
       const kidHtml=kids.length?kids.map(k=>{
@@ -11958,10 +11968,10 @@ renderAll();
         +'<div id="enffiche_'+eid+'" style="margin-top:6px"></div></div>'):'';
       var histBlk=(m.hist&&m.hist.length)?('<div style="margin-top:4px"><span onclick="var n=this.nextElementSibling;n.style.display=n.style.display===\'none\'?\'\':\'none\'" style="cursor:pointer;font-size:11px;color:#8a8f98">🕘 '+m.hist.length+' mouvement'+(m.hist.length>1?'s':'')+' — historique</span><div style="display:none;margin-top:3px">'+m.hist.map(function(h){return '<div style="font-size:11px;color:#8a8f98">'+(h.statut==='deplace'?'↪ déplacé':'✕ annulé')+' · '+esc(h.name||'')+(h.note?' <span style="color:#a7abb2">— '+esc(h.note)+'</span>':'')+'</div>';}).join('')+'</div></div>'):'';
       var badges='';
-      if(m.arbre||m.arbreSeul) badges+=' <span class="pill" style="background:#e7f5ee;color:#127a51;font-size:10px" title="'+(m.arbreSeul?(m.ficheNonLue?'Cet enfant est relié à une fiche que Bob n\'a pas pu lire (droits ou lecture incomplète) — gestes coupés par prudence':'Enfant saisi au comptoir Foyers — il vit dans l\'arbre famille, sans fiche enfant pour l\'instant'):'Ligne lue depuis l\'arbre famille (le registre de l\'onglet 👨‍👩‍👧 Foyers), reliée à sa fiche enfant')+'">🌳 arbre'+(m.arbreSeul?(m.ficheNonLue?' (fiche non lue)':' seul'):'')+'</span>';
-      if(m.horsArbre) badges+=' <span class="pill" style="background:#fff4e0;color:#8a5a00;font-size:10px" title="Cette fiche enfant n\'a pas (encore) de miroir dans l\'arbre famille — le balayage arbre_rattraper() du bureau la rattrapera">⚠️ pas dans l\'arbre</span>';
-      if(m.doublonProbable) badges+=' <span class="pill" style="background:#fdeeee;color:#b03a2e;font-size:10px" title="Un enfant relié porte le même prénom et nom : probablement la même personne, saisie au comptoir PUIS en fiche — à réconcilier (l\'arbre ne fusionne pas tout seul)">👥 doublon probable</span>';
-      if(m.divId) badges+=' <span class="pill" style="background:#fdeeee;color:#b03a2e;font-size:10px" title="Le prénom/nom/classe de la fiche et celui de l\'arbre ne disent pas pareil — à réconcilier">🌳 ≠ fiche</span>';
+      if(m.arbre||m.arbreSeul) badges+=' <span class="pill" style="background:#e7f5ee;color:#127a51;font-size:12px" title="'+(m.arbreSeul?(m.ficheNonLue?'Cet enfant est relié à une fiche que Bob n\'a pas pu lire (droits ou lecture incomplète) — gestes coupés par prudence':'Enfant saisi au comptoir Foyers — il vit dans l\'arbre famille, sans fiche enfant pour l\'instant'):'Ligne lue depuis l\'arbre famille (le registre de l\'onglet 👨‍👩‍👧 Foyers), reliée à sa fiche enfant')+'">🌳 arbre'+(m.arbreSeul?(m.ficheNonLue?' (fiche non lue)':' seul'):'')+'</span>';
+      if(m.horsArbre) badges+=' <span class="pill" style="background:#fff4e0;color:#8a5a00;font-size:12px" title="Cette fiche enfant n\'a pas (encore) de miroir dans l\'arbre famille — le balayage arbre_rattraper() du bureau la rattrapera">⚠️ pas dans l\'arbre</span>';
+      if(m.doublonProbable) badges+=' <span class="pill" style="background:#fdeeee;color:#b03a2e;font-size:12px" title="Un enfant relié porte le même prénom et nom : probablement la même personne, saisie au comptoir PUIS en fiche — à réconcilier (l\'arbre ne fusionne pas tout seul)">👥 doublon probable</span>';
+      if(m.divId) badges+=' <span class="pill" style="background:#fdeeee;color:#b03a2e;font-size:12px" title="Le prénom/nom/classe de la fiche et celui de l\'arbre ne disent pas pareil — à réconcilier">🌳 ≠ fiche</span>';
       return '<div class="panel" style="margin:8px 0;padding:10px 12px">'
         +'<div><strong>'+esc(((m.k.prenom||'')+' '+(m.k.nom||'')).trim()||'?')+'</strong>'+badges+(m.k.classe?' <span class="muted" style="font-size:12px">· '+esc(m.k.classe)+'</span>':'')+(m.resp?' <span class="muted" style="font-size:12px">· '+esc(m.resp)+'</span>':'')+'</div>'
         +'<div style="margin-top:6px;display:flex;flex-wrap:wrap">'+(chips||'<span class="hint">— aucun accueil</span>')+'</div>'
