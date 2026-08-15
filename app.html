@@ -9640,7 +9640,7 @@ renderAll();
      paiement. Même garde-fou anti-double-compte que le périscolaire. */
   window.adhVerserCompta=async function(){
     if(!canWrite){ alert('Réservé au bureau.'); return; }
-    const rq=await sbc.from('paiements').select('id,user_id,montant_cents,paid_at,created_at').eq('objet','adhesion').eq('statut','paye');
+    const rq=await sbc.from('paiements').select('id,user_id,montant_cents,paid_at,created_at,metadata').eq('objet','adhesion').eq('statut','paye');
     if(rq.error){ alert('Erreur : '+rq.error.message); return; }
     const versed=new Set((db.ops||[]).map(function(o){return o.paiement_id;}).filter(Boolean));
     const todo=(rq.data||[]).filter(function(p){ return !versed.has(p.id); });
@@ -9658,8 +9658,13 @@ renderAll();
     todo.forEach(function(p){
       if(versed.has(p.id)) return;
       const euros=(p.montant_cents||0)/100;
+      /* 🔴 La SAISON dans le libellé. L'exercice comptable est l'année civile, la saison
+         d'adhésion court du 1er août au 31 juillet : sans elle, une adhésion payée en juillet
+         2026 est illisible (2025-2026 ou 2026-2027 ?). Le paiement porte déjà sa saison
+         (`metadata.annee`) — on la reprend telle quelle plutôt que de la deviner de la date. */
+      const sais=(p.metadata&&p.metadata.annee)?String(p.metadata.annee):'';
       db.ops.push({id:uid(), paiement_id:p.id, type:'in',
-        label:'Adhésion en ligne — '+(nom[p.user_id]||'compte famille'),
+        label:'Adhésion'+(sais?' '+sais:'')+' en ligne — '+(nom[p.user_id]||'compte famille'),
         cat:'Cotisations', compte:'756 - Cotisations',
         amount:euros, date:String(p.paid_at||p.created_at||today()).slice(0,10),
         project:'', mode:'', account:ACC_HA, photo:'',
