@@ -10011,7 +10011,7 @@ renderAll();
     const d=(ri&&ri.data)||{};
     const eur2=c=>(c/100).toLocaleString('fr-FR',{minimumFractionDigits:2})+' €';
     const dt=(p.paid_at||p.created_at||'').slice(0,10);
-    const asso='CASE du Bois de Nèfles';
+    const asso=window.bobOrgName||'Association'; // le reçu signe l'asso CONNECTÉE, jamais un nom en dur
     const row=(k,v)=>'<tr><td style="padding:6px 0;color:#5c7468">'+k+'</td><td style="text-align:right"><b>'+v+'</b></td></tr>';
     const html='<div style="font-family:Poppins,system-ui,sans-serif;max-width:520px;margin:20px auto;padding:24px;color:#1c2b22">'
       +'<h2 style="margin:0 0 4px">Reçu de paiement — Périscolaire</h2>'
