@@ -1678,7 +1678,7 @@ function seedDemo(){
   function op(type,label,cat,compte,date,amount,project,account,splits){db.ops.push({id:uid(),type:type,label:label,cat:cat,compte:compte,date:date,amount:amount,project:project||'',account:account||'banque',photo:'',splits:splits||[{site:'',action:'',amount:amount}]});}
   op('in','Subvention CAF','Subvention','740 - Subventions d\'exploitation','2026-01-31',8000,'','banque',[{site:S.bdn,action:A.fonc,amount:8000}]);
   op('in','Subvention Ville de Saint-Denis','Subvention','740 - Subventions d\'exploitation','2026-02-10',5000,'','banque',[{site:S.bdn,action:A.fonc,amount:5000}]);
-  op('in','Cotisations adhérents','Cotisations','756 - Cotisations','2026-01-20',160,'','banque',[{site:'',action:A.fonc,amount:160}]);
+  op('in','Cotisations adhérents','Cotisations','756 - Cotisations','2026-01-20',160,'','banque',[{site:S.bdn,action:A.fonc,amount:160}]);
   op('in','Recette buvette','Événement','707 - Ventes','2026-05-31',180,p1,'caisse',[{site:S.bdn,action:A.fete,amount:180}]);
   op('out','Salaires et charges - janvier','Salaires','641 - Rémunérations','2026-01-31',3200,'','banque',[{site:S.bdn,action:A.scol,amount:1600},{site:S.bru,action:A.alsh,amount:1600}]);
   op('out','Loyer du local','Loyer','613 - Locations','2026-01-05',600,'','banque',[{site:S.bdn,action:A.fonc,amount:600}]);
