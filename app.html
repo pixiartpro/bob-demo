@@ -10403,7 +10403,15 @@ window.loadDossiersPeri=async function(){
       const actionsRow=encBtn?('<div class="row" style="gap:8px;flex-wrap:wrap;align-items:center;margin-top:8px">'+encBtn+'</div>'):'';
       return '<div style="'+bs+'">'+synth+paysHtml+actionsRow+encForm+chiffrage+'</div>';
     };
-    box.innerHTML=arbreHdr+manqHtml+hdr+list.map(d=>{
+    /* 🖐️ LA SAISIE PRIME — même règle que l'écran salarié. Tout re-rendu de la liste
+     (coche « à traiter seulement », téléphone ajouté, rattachement, ↻) reconstruit le
+     HTML et jetait ce que le bureau venait de taper : tarif, jours corrigés, mois
+     choisi. On relève les champs remplis avant de reconstruire, on les repose après. */
+  const saisies={};
+  box.querySelectorAll('input[id^="pjour_"],input[id^="pnb_"],select[id^="pmois_"]').forEach(function(el){
+    if(String(el.value||'').trim()!=='') saisies[el.id]=el.value;
+  });
+  box.innerHTML=arbreHdr+manqHtml+hdr+list.map(d=>{
       const st=PERI_DOS_ST[d.statut]||PERI_DOS_ST.brouillon;
       const enfants=(Array.isArray(d.enfants)?d.enfants:[]);
       const enfHtml=enfants.length?enfants.map(e=>{
@@ -10525,6 +10533,26 @@ window.loadDossiersPeri=async function(){
         +'<div style="margin-top:8px;display:flex;gap:5px;flex-wrap:wrap">'+pieceHtml+'</div>'+perKidPiecesHtml
         +ctrl+periPayBlock(d)+'</div>';
     }).join('');
+  /* Repose des saisies relevées plus haut : la valeur tapée reprend sa place, la phrase
+     du calendrier suit le mois reposé, et le total « = » se recalcule. Un champ resté
+     vide n'est pas reposé : le pré-rempli du calendrier reprend, c'est le comportement
+     attendu. */
+  Object.keys(saisies).forEach(function(id){
+    const el=document.getElementById(id); if(el) el.value=saisies[id];
+  });
+  Object.keys(saisies).forEach(function(id){
+    if(id.indexOf('pmois_')===0){
+      const did=id.slice(6);
+      const ind=document.getElementById('pcal_'+did);
+      if(ind) ind.innerHTML=periJoursTexte(periMoisDuDossier(did));
+    }
+  });
+  Object.keys(saisies).forEach(function(id){
+    if(id.indexOf('pjour_')===0||id.indexOf('pnb_')===0){
+      const did=id.slice(id.indexOf('_')+1);
+      if(window.periCalc) window.periCalc(did);
+    }
+  });
   };
 
   /* === Pont fiche Famille ↔ dossier périscolaire (27/07/2026, raccourci n°1 du tree-test) ===
