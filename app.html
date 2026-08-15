@@ -127,6 +127,17 @@
   .tabjump-res button img.tj-perso{width:18px;height:18px;border-radius:50%;object-fit:cover;object-position:top;flex:0 0 auto}
   /* mobile : cibles tactiles confortables ≥44px */
   @media(max-width:560px){
+    /* Lot 5 lifting 15/08/2026 : la nav et la barre du haut ne COLLENT plus en mobile — elles défilent
+       avec la page (jusqu'à ~790px de chrome permanent sur 812 avant ça : le contenu commençait au 2e écran).
+       !important : la position sticky de #cloudBar est posée en style inline. Revert : supprimer ces 2 lignes. */
+    #cloudBar{position:static!important}
+    .navwrap{position:static}
+    /* Lot 5 : l'info avant le décor — en mobile, À traiter / chiffres / échéances remontent au-dessus
+       des compagnons (qui restent l'entrée principale en desktop). Revert : supprimer ce bloc. */
+    #dashboard{display:flex;flex-direction:column}
+    #dashboard>*{order:0}
+    #dashboard>#dashEquipe{order:1}
+    #dashboard>.panel{order:2}
     nav.famtabs{gap:7px}
     nav.famtabs button{padding:10px 13px;font-size:14px;min-height:44px}
     nav.tabs button{padding:10px 13px;min-height:42px}
@@ -3398,6 +3409,8 @@ function pageHelpGotoAide(){ pageHelpClose(); const b=document.querySelector('na
 
 /* ---- ✨ Quoi de neuf (nouveautés + notice chronologique) ---- */
 const NEWS=[
+  {id:'2026-08-15-mobile-info-avant-decor',date:'2026-08-15',tab:'🛟 Le reste',titre:"📱 Sur téléphone : le menu ne bloque plus l'écran, et l'essentiel remonte en premier",
+   desc:"Deux changements pour le quotidien sur téléphone. <b>1.</b> Le menu (familles + onglets) <b>défile avec la page</b> au lieu de rester collé en haut — sur certains écrans il ne restait que quelques centimètres pour travailler. <b>2.</b> Sur le tableau de bord, <b>⏰ À traiter, les chiffres clés et les échéances remontent en premier</b> ; l'équipe de compagnons passe en petites vignettes 2×2 juste en dessous (sur ordinateur, rien ne change : les compagnons restent l'entrée principale)."},
   {id:'2026-08-15-pastilles-honnetes',date:'2026-08-15',tab:'🛟 Le reste',titre:"🚨 Les pastilles redeviennent honnêtes — et le tableau de bord compte les adhésions en retard",
    desc:"Deux corrections de confiance. <b>1.</b> La pastille des <b>nouveautés</b> (sur 🧰 Réglages et ❓ Aide) n'est plus <b>rouge</b> : le rouge est réservé au vrai travail en attente. Les nouveautés s'affichent en ✨ discret, plafonné à « 9+ » — et un nouveau compte ne « doit » plus les nouveautés parues avant son arrivée. <b>2.</b> Le panneau <b>⏰ À traiter</b> compte désormais les <b>adhésions de foyer à régulariser</b> (les familles bloquées) — avant, il pouvait dire « tout est à jour 🎉 » pendant que des foyers ne pouvaient plus rien faire. Cliquer la ligne mène droit à 👨‍👩‍👧 Foyers."},
   {id:'2026-08-15-peri-liste-salaries',date:'2026-08-15',tab:'📨 Dossiers familles',titre:"🎒 L'équipe périscolaire a enfin la liste des enfants de la garderie",
@@ -8882,7 +8895,7 @@ renderAll();
         +'.eq-dchips{display:flex;gap:6px;flex-wrap:wrap;margin-left:auto}'
         +'.eq-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}'
         +'@media(max-width:900px){.eq-grid{grid-template-columns:repeat(2,1fr)}}'
-        +'@media(max-width:540px){.eq-grid{grid-template-columns:1fr}}'
+        +'@media(max-width:540px){.eq-grid{grid-template-columns:repeat(2,1fr);gap:10px}.eq-card{padding:10px 8px}.eq-card img{height:64px}}' /* Lot 5 : compagnons en vignettes 2x2 en mobile (~400px au lieu de ~1500px empilés) */
         +'.eq-card{position:relative;background:#fff;border:1px solid var(--line,#e7efe9);border-radius:20px;padding:14px 12px;text-align:center;cursor:pointer;transition:.16s;overflow:hidden}'
         +'.eq-card:hover{transform:translateY(-4px);box-shadow:0 14px 30px rgba(16,48,42,.13);border-color:#cfe7d9}'
         +'.eq-card img{height:126px;display:block;margin:0 auto 6px;filter:drop-shadow(0 8px 12px rgba(16,60,40,.16))}'
