@@ -9668,7 +9668,13 @@ renderAll();
         cat:'Cotisations', compte:'756 - Cotisations',
         amount:euros, date:String(p.paid_at||p.created_at||today()).slice(0,10),
         project:'', mode:'', account:ACC_HA, photo:'',
-        splits:[{site:'', action:'Fonctionnement', amount:euros}]});
+        /* 🔴 Le SITE est obligatoire, sinon la ventilation par site (celle que réclament la
+           Mairie et la CAF) perd la ligne. Les 401 splits existants en portent tous un ; une
+           écriture à site vide serait la première, et elle disparaîtrait des états par site
+           sans que personne le voie. L'adhésion n'est pas rattachée à une école : elle va au
+           siège, « Case du Bois de Nefles » — l'orthographe EXACTE des 318 splits existants,
+           accent compris (ou plutôt : sans accent), sinon on crée un deuxième site fantôme. */
+        splits:[{site:'Case du Bois de Nefles', action:'Fonctionnement', amount:euros}]});
       versed.add(p.id); n++;
     });
     save(); if(window.renderAll) renderAll();
