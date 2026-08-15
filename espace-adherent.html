@@ -2022,18 +2022,24 @@ window.ficheDocView=function(id){
 };
 
 /* ===== Calculateur de tarif périscolaire (grille officielle au quotient familial) ===== */
+/* 15/08/2026 — le MATIN est modulé PAR TRANCHE (barème voté au CA du 11/08/2026), plus jamais
+   un montant unique : l'ancien « 1,50 € pour tous » sous-estimait jusqu'à 2,20 € par jour.
+   Cette grille n'est qu'un REPLI si la grille publiée est illisible — colonnes identiques au vote. */
 const CALC_TR=[
-  {max:350.99,jour:3.14,lab:'Tranche 1 (QF 0–350,99 €)'},
-  {max:450.99,jour:3.58,lab:'Tranche 2 (351–450,99 €)'},
-  {max:600.99,jour:4.13,lab:'Tranche 3 (451–600,99 €)'},
-  {max:800.99,jour:4.40,lab:'Tranche 4 (601–800,99 €)'},
-  {max:1000.99,jour:4.95,lab:'Tranche 5 (801–1 000,99 €)'},
-  {max:1250.99,jour:5.50,lab:'Tranche 6 (1 001–1 250,99 €)'},
-  {max:1500.99,jour:6.05,lab:'Tranche 7 (1 251–1 500,99 €)'},
-  {max:2000.99,jour:6.60,lab:'Tranche 8 (1 501–2 000,99 €)'},
-  {max:Infinity,jour:7.43,lab:'Tranche 9 (2 001 € et +)'}
+  {max:350.99,jour:3.14,matin:1.55,lab:'Tranche 1 (QF 0–350,99 €)'},
+  {max:450.99,jour:3.58,matin:1.80,lab:'Tranche 2 (351–450,99 €)'},
+  {max:600.99,jour:4.13,matin:2.05,lab:'Tranche 3 (451–600,99 €)'},
+  {max:800.99,jour:4.40,matin:2.20,lab:'Tranche 4 (601–800,99 €)'},
+  {max:1000.99,jour:4.95,matin:2.50,lab:'Tranche 5 (801–1 000,99 €)'},
+  {max:1250.99,jour:5.50,matin:2.75,lab:'Tranche 6 (1 001–1 250,99 €)'},
+  {max:1500.99,jour:6.05,matin:3.00,lab:'Tranche 7 (1 251–1 500,99 €)'},
+  {max:2000.99,jour:6.60,matin:3.30,lab:'Tranche 8 (1 501–2 000,99 €)'},
+  {max:Infinity,jour:7.43,matin:3.70,lab:'Tranche 9 (2 001 € et +)'}
 ];
-const CALC_SUPP=1.5, CALC_REM=5, CALC_JOURS=16, CALC_HORS=8.25;
+/* CALC_REM=0 : les remises fratrie sont SUPPRIMÉES (CA du 11/08/2026) — l'ancien repli à 5 %
+   promettait une réduction abolie dès que la lecture de la grille publiée échouait, en
+   contradiction avec la note sous le calculateur. CALC_HORS_MATIN = supplément matin hors commune. */
+const CALC_REM=0, CALC_JOURS=16, CALC_HORS=8.25, CALC_HORS_MATIN=4.10;
 // P7 (21/06/2026) — grille à SOURCE UNIQUE : on lit la « vitrine des tarifs » publique (mise à jour par le bureau),
 // avec REPLI sur la grille en dur ci-dessus si la lecture échoue (jamais d'écran vide / jamais de blocage).
 const CALC_ASSO='d617489c-b18b-499b-ab17-c31656d0f08a';
@@ -2055,11 +2061,16 @@ function calcLabelTranche(i,a){
 }
 function calcGrille(){
   if(PUBTARIF){ return {
-    tranches: PUBTARIF.tranches.map((t,i,a)=>({max:(t.max==null?Infinity:t.max), jour:t.jour, lab:calcLabelTranche(i,a)})),
-    supp:(PUBTARIF.suppMatin!=null?PUBTARIF.suppMatin:CALC_SUPP), rem:(PUBTARIF.remise!=null?PUBTARIF.remise:CALC_REM),
-    jours:(PUBTARIF.jours!=null?PUBTARIF.jours:CALC_JOURS), hors:(PUBTARIF.horsCommune!=null?PUBTARIF.horsCommune:CALC_HORS) };
+    /* le matin se lit DANS LA MÊME TRANCHE que le soir (même règle que le calcul du bureau) ;
+       si une grille publiée n'avait pas la colonne, on retombe sur la valeur votée de la même tranche */
+    tranches: PUBTARIF.tranches.map((t,i,a)=>({max:(t.max==null?Infinity:t.max), jour:t.jour,
+      matin:(t.matin!=null?t.matin:CALC_TR[Math.min(i,CALC_TR.length-1)].matin), lab:calcLabelTranche(i,a)})),
+    rem:(PUBTARIF.remise!=null?PUBTARIF.remise:CALC_REM),
+    jours:(PUBTARIF.jours!=null?PUBTARIF.jours:CALC_JOURS),
+    hors:(PUBTARIF.horsCommune!=null?PUBTARIF.horsCommune:CALC_HORS),
+    horsMatin:(PUBTARIF.horsCommuneMatin!=null?PUBTARIF.horsCommuneMatin:CALC_HORS_MATIN) };
   }
-  return { tranches:CALC_TR, supp:CALC_SUPP, rem:CALC_REM, jours:CALC_JOURS, hors:CALC_HORS };
+  return { tranches:CALC_TR, rem:CALC_REM, jours:CALC_JOURS, hors:CALC_HORS, horsMatin:CALC_HORS_MATIN };
 }
 function calcEuro(n){ return n.toLocaleString('fr-FR',{minimumFractionDigits:2,maximumFractionDigits:2})+' €'; }
 window.calcToggle=function(){
@@ -2080,7 +2091,7 @@ function calcInit(){
     +'<label style="font-weight:700"><input type="checkbox" id="calc_hors" onchange="calcRun()"> Hors commune</label>'
     +'</div>'
     +'<div id="calc_res" style="margin-top:12px"></div>'
-    +'<p class="sub" style="margin:10px 0 0;font-size:12.5px"><b>Estimation indicative pour un mois moyen.</b> Le montant réellement facturé = tarif jour × <b>nombre de jours d\'accueil ouverts dans le mois</b>, qui change d\'un mois à l\'autre avec le calendrier scolaire les jours d\'école du mois, hors vacances, fériés et fermetures). Aucune réduction pour fratrie n\'est appliquée. Le tarif définitif est calculé avec le bureau d\'après votre attestation CAF.</p>';
+    +'<p class="sub" style="margin:10px 0 0;font-size:12.5px"><b>Estimation indicative pour un mois moyen.</b> Le montant réellement facturé = tarif jour × <b>nombre de jours d\'accueil ouverts dans le mois</b>, qui change d\'un mois à l\'autre avec le calendrier scolaire (les jours d\'école du mois, hors vacances, fériés et fermetures). Aucune réduction pour fratrie n\'est appliquée. Le tarif définitif est calculé avec le bureau d\'après votre attestation CAF.</p>';
   calcRun(); calcLoadTarifs();
 }
 window.calcRun=function(){
@@ -2091,14 +2102,14 @@ window.calcRun=function(){
   const hors=(gv('calc_hors')||{}).checked, matin=(gv('calc_matin')||{}).checked, soir=(gv('calc_soir')||{}).checked;
   const nb=parseInt((gv('calc_nb')||{}).value)||1;
   if(!matin && !soir){ res.innerHTML='<div style="color:var(--muted);font-weight:700">Cochez au moins « Soir » ou « Matin ».</div>'; return; }
-  let jour, lab;
-  if(hors){ jour=G.hors; lab='Hors commune'; }
-  else { const t=G.tranches.find(t=>qf<=t.max)||G.tranches[G.tranches.length-1]; jour=t.jour; lab=t.lab; }
-  const base=((soir?jour:0)+(matin?G.supp:0))*G.jours;
+  let jour, supp, lab;
+  if(hors){ jour=G.hors; supp=G.horsMatin; lab='Hors commune'; }
+  else { const t=G.tranches.find(t=>qf<=t.max)||G.tranches[G.tranches.length-1]; jour=t.jour; supp=t.matin; lab=t.lab; }
+  const base=((soir?jour:0)+(matin?supp:0))*G.jours;
   let total=0; const parts=[];
   for(let k=1;k<=nb;k++){ const rem=Math.min(G.rem*(k-1),90); const t=base*(1-rem/100); total+=t; parts.push(calcEuro(t)+(rem?' (−'+rem+'%)':'')); }
   res.innerHTML='<div style="background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px 14px">'
-    +'<div style="font-size:13px;color:var(--muted)">'+lab+(soir?' · soir '+calcEuro(jour):'')+(matin?' · matin +'+calcEuro(G.supp):'')+' · '+nb+' enfant'+(nb>1?'s':'')+'</div>'
+    +'<div style="font-size:13px;color:var(--muted)">'+lab+(soir?' · soir '+calcEuro(jour):'')+(matin?' · matin +'+calcEuro(supp):'')+' · '+nb+' enfant'+(nb>1?'s':'')+'</div>'
     +'<div style="font-size:26px;font-weight:900;color:var(--vert-fonce);margin-top:4px">≈ '+calcEuro(total)+' <span style="font-size:15px;font-weight:700;color:var(--muted)">/ mois pour la famille</span></div>'
     +(nb>1?'<div style="font-size:12.5px;color:var(--muted);margin-top:4px">Détail : '+parts.join(' + ')+'</div>':'')
     +'</div>';
