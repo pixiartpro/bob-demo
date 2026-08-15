@@ -4919,7 +4919,7 @@ function exportPrevisionnelCSV(){
   rows.push(line('Total recettes',E.recTotM), csvRow(['DÉPENSES']));
   E.depSeries.forEach(r=>rows.push(line(r.code,r.a)));
   rows.push(line('Total dépenses',E.depTotM), line('Recettes - Dépenses (solde du mois)',E.netM), line('Variation (solde cumulé)',E.cumM));
-  download(new Blob(['﻿'+rows.join('\n')],{type:'text/csv;charset=utf-8'}),'budget-previsionnel-CASE-'+E.Y+'.csv');
+  download(new Blob(['﻿'+rows.join('\n')],{type:'text/csv;charset=utf-8'}),'budget-previsionnel-'+orgFileSlug()+'-'+E.Y+'.csv');
 }
 function printPrevisionnel(){
   if(!window._prevExport) renderPrevisionnel();
@@ -4961,8 +4961,11 @@ function printPrevisionnel(){
 
 /* ---- Relances de cotisation ---- */
 function mailtoRelance(m){
-  const subj=encodeURIComponent('Rappel — cotisation '+(window.bobOrgName||'Association'));
-  const body=encodeURIComponent(`Bonjour ${m.name},\n\nNous n'avons pas encore enregistré votre cotisation (${euro(m.amount)}) pour l'association CASE du Bois de Nèfles.\nNous vous remercions de bien vouloir la régulariser dès que possible.\n\nBien cordialement,\nLe bureau du CASE du Bois de Nèfles`);
+  /* Le corps suit l'asso CONNECTÉE, comme le sujet — un nom en dur ferait signer une autre asso
+     « Le bureau du CASE du Bois de Nèfles ». */
+  const org=window.bobOrgName||'Association';
+  const subj=encodeURIComponent('Rappel — cotisation '+org);
+  const body=encodeURIComponent(`Bonjour ${m.name},\n\nNous n'avons pas encore enregistré votre cotisation (${euro(m.amount)}) pour l'association ${org}.\nNous vous remercions de bien vouloir la régulariser dès que possible.\n\nBien cordialement,\nLe bureau de l'association ${org}`);
   return 'mailto:'+(m.email||'')+'?subject='+subj+'&body='+body;
 }
 function copyEmails(str){
@@ -8140,7 +8143,14 @@ function csvRow(arr){ return arr.map(v=>'"'+String(v==null?'':v).replace(/"/g,'"
 function exportMembersCSV(){
   const rows=[csvRow(['Nom','Email','Téléphone','Adresse','Code postal','Ville','Cotisation','Date adhésion','À jour','Mode de paiement'])]
     .concat(db.members.map(m=>csvRow([m.name,m.email,m.phone,m.addr,m.cp,m.city,m.amount,m.date,m.paid?'Oui':'Non',modeText(m.mode)])));
-  download(new Blob(['﻿'+rows.join('\n')],{type:'text/csv'}),'adherents-CASE.csv');
+  download(new Blob(['﻿'+rows.join('\n')],{type:'text/csv'}),'adherents-'+orgFileSlug()+'.csv');
+}
+/* Nom de fichier d'export : l'asso CONNECTÉE, jamais « CASE » en dur — ce fichier sert
+   plusieurs associations. nom_court d'abord (fichier lisible), sinon le nom complet. */
+function orgFileSlug(){
+  const it=(window.__bobFeatures&&window.__bobFeatures.identite)||{};
+  return String(it.nom_court||window.bobOrgName||'asso').toLowerCase().normalize('NFD')
+    .replace(/[̀-ͯ]/g,'').replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'')||'asso';
 }
 function exportOpsCSV(){
   const fmt=(sp,f)=>sp.length>1?sp.map(s=>(s[f]||'?')+' ('+s.amount+'€)').join(' | '):(sp[0][f]||'');
@@ -8150,7 +8160,7 @@ function exportOpsCSV(){
     .concat(db.ops.filter(o=>!yr||(o.date||'').slice(0,4)===yr).map(o=>{ const sp=getSplits(o); const _m=modeFromAccount(o);
       return csvRow([o.date,tLabel(o),o.label,o.cat,o.compte||'',o.type==='transfer'?'Caisse→Banque':(_m?modeText(_m):'Banque'),
         o.type==='transfer'?'':fmt(sp,'site'),o.type==='transfer'?'':fmt(sp,'action'),projName(o.project),o.amount]); }));
-  download(new Blob(['﻿'+rows.join('\n')],{type:'text/csv'}),'comptabilite-CASE'+(yr?'-'+yr:'')+'.csv');
+  download(new Blob(['﻿'+rows.join('\n')],{type:'text/csv'}),'comptabilite-'+orgFileSlug()+(yr?'-'+yr:'')+'.csv');
 }
 function exportComptaCSV(){
   // journal analytique : une ligne par ventilation (compte / site / action), avec débit (dépense) / crédit (recette)
@@ -8165,7 +8175,7 @@ function exportComptaCSV(){
         o.type==='out'?s.amount:'', o.type==='in'?s.amount:'', moyen]));
     });
   });
-  download(new Blob(['﻿'+rows.join('\n')],{type:'text/csv'}),'journal-comptable-CASE'+(yr?'-'+yr:'')+'.csv');
+  download(new Blob(['﻿'+rows.join('\n')],{type:'text/csv'}),'journal-comptable-'+orgFileSlug()+(yr?'-'+yr:'')+'.csv');
 }
 function exportRapIncoherences(){
   const L=db.releveLignes||[];
@@ -8182,7 +8192,7 @@ function exportRapIncoherences(){
     (l.cand||[]).map(id=>{const o=opById(id);return o?o.label+' ('+o.date+')':'';}).filter(Boolean).join(' OU ')])));
   saisir.forEach(l=>rows.push(csvRow(['Sur le relevé, pas dans Bob', l.date, (l.compte?l.compte+' · ':'')+l.libelle, sensLbl(l.sens), l.montant, ''])));
   orph.forEach(m=>rows.push(csvRow(['Dans Bob, pas sur le relevé', m.o.date, m.o.label, sensLbl(m.o.type==='in'?'in':'out'), m.o.amount, ''])));
-  download(new Blob(['﻿'+rows.join('\n')],{type:'text/csv;charset=utf-8'}),'incoherences-rapprochement-CASE-'+today()+'.csv');
+  download(new Blob(['﻿'+rows.join('\n')],{type:'text/csv;charset=utf-8'}),'incoherences-rapprochement-'+orgFileSlug()+'-'+today()+'.csv');
 }
 function download(blob,name){
   const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=name; a.click(); URL.revokeObjectURL(a.href);
@@ -13087,7 +13097,7 @@ renderAll();
     document.getElementById('maThreadHead').innerHTML='💬 '+esc(nm);
     const body=document.getElementById('maThreadBody');
     const SEC={acm:'🌴 ACM',periscolaire:'🎒 Périscolaire',vepi:'📌 VEPI',bureau:'🏛️ Bureau'};
-    body.innerHTML=arr.map(m=>{ const own=(m.sender==='case'); const who=own?('🍍 '+esc(m.author_name||'CASE')):esc(nm); const sc=(m.section&&SEC[m.section])?' <span style="opacity:.6;font-weight:600">· '+SEC[m.section]+'</span>':''; return '<div class="ma-bb '+(own?'case':'adh')+'"><div class="w">'+who+sc+'</div>'+esc(m.body)+'<div class="t">'+maFmt(m.created_at)+'</div></div>'; }).join('');
+    body.innerHTML=arr.map(m=>{ const own=(m.sender==='case'); const who=own?('🍍 '+esc(m.author_name||window.bobOrgName||'Bureau')):esc(nm); const sc=(m.section&&SEC[m.section])?' <span style="opacity:.6;font-weight:600">· '+SEC[m.section]+'</span>':''; return '<div class="ma-bb '+(own?'case':'adh')+'"><div class="w">'+who+sc+'</div>'+esc(m.body)+'<div class="t">'+maFmt(m.created_at)+'</div></div>'; }).join('');
     document.getElementById('maListView').style.display='none';
     document.getElementById('maThreadView').style.display='';
     body.scrollTop=body.scrollHeight;

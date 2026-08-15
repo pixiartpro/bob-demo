@@ -2276,13 +2276,38 @@ function mountFeedback(){
   }
   if(!document.getElementById('fbFab')){
     const fab=document.createElement('button'); fab.id='fbFab'; fab.title='Une idée, un commentaire ?'; fab.textContent='💡'; fab.onclick=fbToggle;
+    const dot=document.createElement('span'); dot.id='fbDot'; dot.style.cssText='position:absolute;top:5px;right:5px;width:13px;height:13px;border-radius:50%;background:#e5484d;border:2px solid #fff;display:none'; fab.appendChild(dot);
     const p=document.createElement('div'); p.id='fbPanel';
     p.innerHTML='<div id="fbHead"><span>💡 Une idée, un commentaire ?</span><button title="Fermer" onclick="fbToggle()">✕</button></div><div id="fbList"></div><div id="fbBar"><textarea id="fbInput" placeholder="Un truc à améliorer, une idée, un bug à signaler ?…"></textarea><button onclick="fbSend()">Envoyer</button></div>';
     document.body.appendChild(fab); document.body.appendChild(p);
   }
+  fbBadge();
+}
+/* Badge « le bureau t'a répondu » : la liste ne se recharge qu'à l'OUVERTURE du panneau —
+   sans repère sur le bouton, une réponse peut rester invisible des semaines.
+   Clé PAR UTILISATEUR (même motif que case_msg_seen_) : sur un poste partagé, le marqueur de
+   l'un ne doit pas éteindre la pastille de l'autre. Et le marqueur enregistré est l'horodatage
+   SERVEUR de la dernière réponse vue — jamais l'horloge du poste, qui peut avancer. */
+const fbVuKey=()=>'case_sug_repvu_salarie_'+(fbMe().id||'');
+async function fbBadge(){
+  const me=fbMe(); if(!me.id) return;
+  try{
+    const vu=localStorage.getItem(fbVuKey())||'1970-01-01';
+    const r=await sb.from('suggestions').select('id',{count:'exact',head:true}).eq('author_id',me.id).gt('reponse_at',vu);
+    if(!r.error && (r.count||0)>0){ const d=document.getElementById('fbDot'); if(d) d.style.display='block'; const f=document.getElementById('fbFab'); if(f) f.title='📝 Le bureau t\'a répondu !'; }
+  }catch(e){}
+}
+async function fbRepVu(){
+  const d=document.getElementById('fbDot'); if(d) d.style.display='none';
+  const f=document.getElementById('fbFab'); if(f) f.title='Une idée, un commentaire ?';
+  const me=fbMe(); if(!me.id) return;
+  try{
+    const r=await sb.from('suggestions').select('reponse_at').eq('author_id',me.id).not('reponse_at','is',null).order('reponse_at',{ascending:false}).limit(1);
+    if(!r.error && r.data && r.data[0]) localStorage.setItem(fbVuKey(), r.data[0].reponse_at);
+  }catch(e){}
 }
 window.fbDismissWelcome=function(){ try{localStorage.setItem('case_welcome_salarie_v1','1');}catch(e){} const w=document.getElementById('welcomeBar'); if(w) w.remove(); };
-window.fbToggle=function(){ const p=document.getElementById('fbPanel'); if(!p) return; const open=!p.classList.contains('open'); p.classList.toggle('open',open); if(open){ fbLoadMine(); setTimeout(()=>{const i=document.getElementById('fbInput'); if(i)i.focus();},60); } };
+window.fbToggle=function(){ const p=document.getElementById('fbPanel'); if(!p) return; const open=!p.classList.contains('open'); p.classList.toggle('open',open); if(open){ fbRepVu(); fbLoadMine(); setTimeout(()=>{const i=document.getElementById('fbInput'); if(i)i.focus();},60); } };
 async function fbLoadMine(){
   const box=document.getElementById('fbList'); if(!box) return; const me=fbMe();
   if(!me.id){ box.innerHTML='<p class="empty" style="padding:10px">Connecte-toi pour commenter.</p>'; return; }
