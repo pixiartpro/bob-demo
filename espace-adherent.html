@@ -2080,7 +2080,7 @@ function calcInit(){
     +'<label style="font-weight:700"><input type="checkbox" id="calc_hors" onchange="calcRun()"> Hors commune</label>'
     +'</div>'
     +'<div id="calc_res" style="margin-top:12px"></div>'
-    +'<p class="sub" style="margin:10px 0 0;font-size:12.5px"><b>Estimation indicative pour un mois moyen.</b> Le montant réellement facturé = tarif jour × <b>nombre de jours d\'accueil ouverts dans le mois</b>, qui change d\'un mois à l\'autre avec le calendrier scolaire (7 jours en août, 18 en septembre…). Remise de 5 % par enfant supplémentaire. Le tarif définitif est calculé avec le bureau d\'après votre attestation CAF.</p>';
+    +'<p class="sub" style="margin:10px 0 0;font-size:12.5px"><b>Estimation indicative pour un mois moyen.</b> Le montant réellement facturé = tarif jour × <b>nombre de jours d\'accueil ouverts dans le mois</b>, qui change d\'un mois à l\'autre avec le calendrier scolaire les jours d\'école du mois, hors vacances, fériés et fermetures). Aucune réduction pour fratrie n\'est appliquée. Le tarif définitif est calculé avec le bureau d\'après votre attestation CAF.</p>';
   calcRun(); calcLoadTarifs();
 }
 window.calcRun=function(){

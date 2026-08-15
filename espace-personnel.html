@@ -771,7 +771,7 @@ window.spTarifRun=async function(){
   if(r.error){ res.innerHTML='<p class="empty" style="color:#c0392b">Calcul impossible : '+esc(r.error.message)+'</p>'; return; }
   const d=r.data||{};
   const detail=esc(d.libelle||'')+(d.soir?' · soir '+tfEur(d.tarif_jour):'')+(d.matin?' · matin +'+tfEur(d.supp_matin):'');
-  const fratrie=(d.nb_enfants>1?'<div class="sub" style="margin:4px 0 0">'+d.nb_enfants+' enfants · remise fratrie −'+d.remise_par_enfant_pct+' % par enfant supplémentaire</div>':'');
+  const fratrie=(d.nb_enfants>1?'<div class="sub" style="margin:4px 0 0">'+d.nb_enfants+' enfants'+(Number(d.remise_par_enfant_pct)>0?' · remise fratrie −'+d.remise_par_enfant_pct+' % par enfant supplémentaire':' · aucune réduction pour fratrie')+'</div>':'');
   // ⚠️ Le périscolaire chiffre TOUTE la fratrie d'un coup (la remise se calcule sur l'ensemble), alors que
   // la carte Vacances juste en dessous annonce un prix PAR ENFANT. Deux conventions opposées à 20 cm d'écart :
   // celle du périscolaire doit donc être écrite noir sur blanc, sinon on multiplie un total déjà complet.

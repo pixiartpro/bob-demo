@@ -1064,7 +1064,7 @@
 
     <div class="panel" id="simuGarderie">
       <h2 style="margin:0 0 4px">📐 Simulateur de nouvelle activité — périscolaire du matin</h2>
-      <p class="hint">Pour répondre à « est-ce que ça vaut le coup, et à quel tarif ? » : ajuste les chiffres ci-dessous, Bob recalcule tout en direct. <strong>Aucune écriture n'est créée en compta</strong> — c'est une simulation. Rappel de la grille actuelle (2025) : le périscolaire est facturé <strong>par jour selon le quotient familial</strong>, de 3,14 € (tranche 1) à 7,43 € (tranche 10), 8,25 € hors commune, −5 % par enfant supplémentaire. Le « tarif » ci-dessous = le <strong>supplément matin</strong> moyen ajouté à ce tarif jour.</p>
+      <p class="hint">Pour répondre à « est-ce que ça vaut le coup, et à quel tarif ? » : ajuste les chiffres ci-dessous, Bob recalcule tout en direct. <strong>Aucune écriture n'est créée en compta</strong> — c'est une simulation. Rappel de la grille 2026-2027 (votée au CA du 11 août 2026) : le périscolaire est facturé <strong>par jour selon le quotient familial</strong>, de 3,14 € (1<sup>re</sup> tranche) à 7,43 € (dernière tranche), 8,25 € hors commune, sans réduction pour fratrie. Le « tarif » ci-dessous = le <strong>supplément matin</strong> moyen ajouté à ce tarif jour.</p>
 
       <h3 style="margin:14px 0 6px;font-size:15px;color:#c0392b">Ce que ça coûte</h3>
       <div class="toolbar" style="flex-wrap:wrap;gap:10px">
@@ -1170,7 +1170,7 @@
 
     <div class="panel">
       <h2 style="margin:0 0 4px">👧 Enfants inscrits</h2>
-      <p class="hint">Ajoute un enfant : Bob calcule automatiquement ce que la famille doit par mois (tranche, matin/après-midi, remise fratrie).</p>
+      <p class="hint">Ajoute un enfant : Bob calcule automatiquement ce que la famille doit par mois (tranche, matin et/ou soir, nombre de jours du mois).</p>
       <input type="hidden" id="pe_id">
       <div class="toolbar" style="flex-wrap:wrap;gap:10px">
         <div class="field" style="min-width:160px"><label>Nom de l'enfant</label><input id="pe_nom" placeholder="Prénom Nom"></div>
@@ -1198,7 +1198,7 @@
 
       <div class="panel" style="margin-top:0">
         <h2 style="margin:0 0 4px">💶 Grille tarifaire (tarif par jour, selon le quotient familial)</h2>
-        <p class="hint">Le tarif est <strong>par jour de présence</strong> : la facture du mois = tarif jour × nombre de jours dans le mois (≈ 16 en moyenne). Modifie une case puis clique 💾.</p>
+        <p class="hint">Le tarif est <strong>par jour d'ouverture</strong>, pas par jour de présence : la facture du mois = tarif jour × <strong>nombre de jours où l'accueil est ouvert ce mois-là</strong> (les jours d'école : lundi, mardi, jeudi, vendredi — hors vacances, fériés et fermetures). Ce nombre change chaque mois : compte-le sur le calendrier scolaire. ⚠️ Un enfant inscrit qui ne vient pas paie quand même : le prorata ne joue qu'en cas d'inscription ou de départ en cours de mois, ou de fermeture exceptionnelle (règlement, art. 5). Modifie une case puis clique 💾.</p>
         <div id="periGrilleLockBar" class="row" style="gap:8px;align-items:center;flex-wrap:wrap;margin:0 0 10px;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:#eef3ef"></div>
         <table><thead><tr><th>Tranche</th><th>Quotient familial</th><th class="num">Soir / jour</th><th class="num">Matin / jour</th></tr></thead>
           <tbody id="periGrilleRows"></tbody></table>
