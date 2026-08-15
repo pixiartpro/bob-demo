@@ -56,6 +56,18 @@
   .chip{display:inline-block;padding:8px 14px;border-radius:999px;border:1px solid var(--line);background:#fff;font-size:13.5px;font-weight:600;cursor:pointer;margin:0 6px 6px 0;font-family:inherit;color:var(--ink);transition:.12s}
   .chip:hover{border-color:var(--vert)}
   .chip.on{background:var(--vert);border-color:var(--vert);color:#fff}
+  /* ===== 💡 Boîte à idées (même mécanique que l'espace famille) ===== */
+  #fbFab{position:fixed;right:20px;bottom:20px;z-index:150;width:56px;height:56px;border-radius:50%;border:none;cursor:pointer;background:var(--jaune);color:#5b4300;font-size:24px;box-shadow:var(--shadow-lg)}
+  #fbPanel{position:fixed;right:20px;bottom:86px;z-index:150;width:340px;max-width:calc(100vw - 28px);height:440px;max-height:72vh;background:#fff;border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow-lg);display:none;flex-direction:column;overflow:hidden}
+  #fbPanel.open{display:flex}
+  #fbHead{background:var(--jaune);color:#5b4300;padding:12px 14px;font-weight:800;display:flex;align-items:center;justify-content:space-between}
+  #fbHead button{background:rgba(0,0,0,.12);border:none;color:#5b4300;cursor:pointer;border-radius:8px;font-size:15px;width:28px;height:28px}
+  #fbList{flex:1;overflow:auto;padding:8px;background:#fffdf6}
+  .fbItem{background:#fff;border:1px solid var(--line);border-radius:12px;padding:9px 11px;margin:7px 4px}
+  .fbMeta{font-size:11px;color:#8a7d56;font-weight:700;margin-bottom:3px}
+  #fbBar{padding:8px;border-top:1px solid var(--line)}
+  #fbBar textarea{width:100%;font:inherit;padding:9px 11px;border:1px solid var(--line);border-radius:10px;resize:none;height:60px}
+  #fbBar button{margin-top:6px;width:100%;background:var(--jaune);color:#5b4300;border:none;border-radius:10px;padding:10px;font-weight:800;cursor:pointer}
 </style>
 </head>
 <body>
@@ -117,6 +129,62 @@ async function boot(){
   await loadDossier();
   await loadCours();
   render();
+  fbMount(); fbBadge();
+}
+
+/* ===== 💡 Boîte à idées — même table `suggestions` et même mécanique que les trois autres
+   espaces : l'intervenant voit SES envois (policy sur author_id), le bureau les lit tous dans
+   son panneau 💡, et peut y RÉPONDRE — la réponse s'affiche ici, sous l'idée. =====
+   Montée UNIQUEMENT après les gates de boot() : réservée à l'intervenant actif connecté. */
+function fbMount(){
+  if(document.getElementById('fbFab')) return;
+  const fab=document.createElement('button'); fab.id='fbFab'; fab.title='Une idée, un commentaire ?'; fab.textContent='💡'; fab.onclick=fbToggle;
+  const dot=document.createElement('span'); dot.id='fbDot'; dot.style.cssText='position:absolute;top:5px;right:5px;width:13px;height:13px;border-radius:50%;background:#e5484d;border:2px solid #fff;display:none'; fab.appendChild(dot);
+  const p=document.createElement('div'); p.id='fbPanel';
+  p.innerHTML='<div id="fbHead"><span>💡 Une idée, un commentaire ?</span><button title="Fermer" onclick="fbToggle()">✕</button></div><div id="fbList"></div><div id="fbBar"><textarea id="fbInput" placeholder="Un truc à améliorer, une idée, un souci à signaler ?…"></textarea><button onclick="fbSend()">Envoyer</button></div>';
+  document.body.appendChild(fab); document.body.appendChild(p);
+}
+window.fbToggle=function(){ const p=document.getElementById('fbPanel'); if(!p) return; const open=!p.classList.contains('open'); p.classList.toggle('open',open); if(open){ fbRepVu(); fbLoadMine(); setTimeout(()=>{const i=document.getElementById('fbInput'); if(i)i.focus();},60); } };
+/* Le nom affiché au bureau : la PERSONNE (dossier.pers) — profiles.full_name porte la STRUCTURE
+   (« Culture prod »), pas la personne (même règle que le rapprochement du planning). */
+function fbNom(){ return (((ME.dossier&&ME.dossier.pers)||ME.prof.full_name||ME.prof.email||'').split('@')[0]); }
+async function fbLoadMine(){
+  const box=document.getElementById('fbList'); if(!box) return;
+  const {data,error}=await sb.from('suggestions').select('*').eq('author_id',ME.session.user.id).order('created_at',{ascending:false}).limit(50);
+  if(error){ box.innerHTML='<p class="empty" style="padding:10px">Erreur : '+esc(error.message)+'</p>'; return; }
+  if(!data||!data.length){ box.innerHTML='<p class="empty" style="padding:10px">Vos idées et remarques apparaîtront ici, avec la réponse du bureau. Lancez-vous 👇</p>'; return; }
+  const ST={nouvelle:'🆕 reçu',vue:'👀 vu',faite:'✅ fait',rejetee:'✖️ écarté'};
+  box.innerHTML=data.map(s=>'<div class="fbItem"><div class="fbMeta">'+esc(new Date(s.created_at).toLocaleString('fr-FR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}))+' <span style="float:right">'+(ST[s.statut]||'')+'</span></div><div style="white-space:pre-wrap">'+esc(s.body)+'</div>'
+    +(s.reponse?'<div style="margin-top:6px;background:#eef7f1;border-left:3px solid #0f6b46;border-radius:6px;padding:6px 9px;white-space:pre-wrap"><b>📝 Réponse du bureau</b><br>'+esc(s.reponse)+'</div>':'')
+    +'</div>').join('');
+}
+window.fbSend=async function(){
+  const inp=document.getElementById('fbInput'); if(!inp) return; const body=inp.value.trim(); if(!body){ toast('Écrivez votre remarque d\'abord.'); return; }
+  inp.value='';
+  const {error}=await sb.from('suggestions').insert({ asso_id:ME.asso, author_id:ME.session.user.id, author_name:fbNom(), body, context:'🎭 Espace intervenant' });
+  if(error){ toast('Erreur : '+error.message); inp.value=body; return; }
+  toast('✅ Merci, c\'est envoyé au bureau'); fbLoadMine();
+};
+/* Badge « le bureau vous a répondu » : la liste ne se recharge qu'à l'OUVERTURE du panneau —
+   sans repère sur le bouton, une réponse peut rester invisible des semaines.
+   Clé PAR UTILISATEUR ; marqueur = horodatage SERVEUR de la dernière réponse vue. */
+const fbVuKey=()=>'case_sug_repvu_intervenant_'+((ME.session&&ME.session.user&&ME.session.user.id)||'');
+async function fbBadge(){
+  if(!ME.session||!ME.session.user) return;
+  try{
+    const vu=localStorage.getItem(fbVuKey())||'1970-01-01';
+    const r=await sb.from('suggestions').select('id',{count:'exact',head:true}).eq('author_id',ME.session.user.id).gt('reponse_at',vu);
+    if(!r.error && (r.count||0)>0){ const d=document.getElementById('fbDot'); if(d) d.style.display='block'; const f=document.getElementById('fbFab'); if(f) f.title='📝 Le bureau vous a répondu !'; }
+  }catch(e){}
+}
+async function fbRepVu(){
+  const d=document.getElementById('fbDot'); if(d) d.style.display='none';
+  const f=document.getElementById('fbFab'); if(f) f.title='Une idée, un commentaire ?';
+  if(!ME.session||!ME.session.user) return;
+  try{
+    const r=await sb.from('suggestions').select('reponse_at').eq('author_id',ME.session.user.id).not('reponse_at','is',null).order('reponse_at',{ascending:false}).limit(1);
+    if(!r.error && r.data && r.data[0]) localStorage.setItem(fbVuKey(), r.data[0].reponse_at);
+  }catch(e){}
 }
 
 async function loadDossier(){
