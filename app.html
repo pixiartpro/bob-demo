@@ -205,6 +205,19 @@
   .modal .mbody{padding:18px 20px}
   .modal h3{margin:0;font-size:18px}
   .modal .close{background:none;border:none;font-size:22px;cursor:pointer;color:var(--muted);line-height:1}
+  /* Lot 11a lifting (15/08/2026) : la modale maison (bobDlg) — le costume qui remplace peu à peu
+     les prompt/alert/confirm du navigateur. Boutons ≥44px (garde-fou tactile du Lot 4). */
+  #bobDlg{z-index:1400}
+  #bobDlg .modal{max-width:460px}
+  #bobDlg .bobDlgFoot{display:flex;justify-content:flex-end;gap:10px;padding:14px 20px;border-top:1px solid var(--line);flex-wrap:wrap}
+  #bobDlg .bobDlgFoot button{min-height:44px}
+  #bobDlg .bobDlgMsg{margin:0;font-size:14.5px;line-height:1.55;white-space:pre-line}
+  #bobDlg .field{margin-top:12px;min-width:100%}
+  #bobDlg .field label{font-size:13.5px;color:var(--ink)}
+  #bobDlg .bobDlgHint{margin:4px 0 0;font-size:13px;color:var(--muted);line-height:1.5}
+  #bobDlg .bobDlgErr{display:none;margin:12px 0 0;padding:9px 12px;border-radius:9px;background:#fdeeee;color:var(--red);font-size:13.5px;font-weight:600}
+  #bobDlg .bobChoice{display:flex;width:100%;align-items:center;gap:10px;margin-top:8px;padding:12px 14px;min-height:48px;border:1px solid var(--line);border-radius:11px;background:var(--card);color:var(--ink);font:inherit;font-size:14.5px;font-weight:600;cursor:pointer;text-align:left;transition:background .18s ease-out,border-color .18s ease-out}
+  #bobDlg .bobChoice:hover{background:#eef4f0;border-color:var(--brand)}
   .kv{display:flex;justify-content:space-between;gap:12px;padding:8px 0;border-bottom:1px dashed var(--line);font-size:14px}
   .kv .k{color:var(--muted)}
   .photo-thumb{max-width:100%;border-radius:10px;border:1px solid var(--line);margin-top:8px}
@@ -2807,6 +2820,20 @@ Deux locaux complémentaires — le Bois de Nèfles (« le haut » : jeunesse, a
   </div>
 </div>
 
+<!-- Lot 11a lifting (15/08/2026) : LA modale maison — remplace peu à peu les fenêtres natives du
+     navigateur (512 prompt/alert/confirm recensés à l'audit design du 14/08). Ouverte par bobDialog()
+     et ses raccourcis bobAlert/bobConfirm/bobPrompt/bobChoix/bobForm ; jamais deux à la fois. -->
+<div class="overlay" id="bobDlg">
+  <form class="modal" id="bobDlgBox" role="dialog" aria-modal="true" aria-labelledby="bobDlgTitle" novalidate>
+    <div class="mhead">
+      <h3 id="bobDlgTitle">…</h3>
+      <button type="button" class="close" id="bobDlgClose" aria-label="Fermer">✕</button>
+    </div>
+    <div class="mbody" id="bobDlgBody"></div>
+    <div class="bobDlgFoot" id="bobDlgFoot"></div>
+  </form>
+</div>
+
 <div id="printArea"></div>
 
 <footer>Propulsé par <a href="https://bob.re" target="_blank" rel="nofollow noopener" style="color:inherit;text-decoration:underline">Bob</a> 🤖 · outil de gestion du CASE du Bois de Nèfles · données sécurisées en ligne (hébergement Paris · RGPD)</footer>
@@ -3740,6 +3767,105 @@ async function openOpDetail(id){
   $('opModal').classList.add('open');
 }
 function closeModal(){ $('opModal').classList.remove('open'); }
+
+/* ===== Lot 11a lifting (15/08/2026) — LA MODALE MAISON =====
+   Remplace les fenêtres natives du navigateur (prompt/alert/confirm : 512 recensées à l'audit
+   design du 14/08 — bloquantes, non stylables, pénibles au tactile), écran par écran.
+   API à promesses, pensée pour remplacer un appel natif ligne à ligne :
+     await bobAlert(msg[,{titre}])                          → true (toujours)
+     await bobConfirm(msg[,{titre,ok,danger}])              → true / false
+     await bobPrompt(label[,valeur,{titre,type,hint,placeholder,ok,valider}]) → texte / null
+     await bobChoix(titre,[{v,label,sub}][,{corps}])        → v choisi / null
+     await bobForm(titre,[{k,label,value,type,hint,placeholder}][,{intro,ok,danger,valider}]) → {k:valeur} / null
+   Échap ou ✕ = annuler · Entrée = valider · clic hors de la boîte = annuler SEULEMENT s'il n'y a
+   rien à perdre (aucun champ) · le focus revient où il était · Tab reste dans la boîte.
+   Déjà migré : le comptoir Foyers (fiche personne, adhésion payée, quotient familial).
+   Le reste des écrans part en lots 11b+ (famille par famille). */
+(function(){
+  const ov=$('bobDlg'), box=$('bobDlgBox'), ttl=$('bobDlgTitle'), body=$('bobDlgBody'), foot=$('bobDlgFoot');
+  let cur=null; // le dialogue ouvert : {resolve, cancelVal, okVal, champs, choix, valider, prevFocus}
+  const h=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  function close(val){
+    const c=cur; if(!c) return; cur=null;
+    ov.classList.remove('open'); document.removeEventListener('keydown',onKey,true);
+    body.innerHTML=''; foot.innerHTML='';
+    if(c.prevFocus&&document.contains(c.prevFocus)){ try{ c.prevFocus.focus(); }catch(_){} }
+    c.resolve(val);
+  }
+  function onKey(e){
+    if(!cur) return;
+    if(e.key==='Escape'){ e.preventDefault(); e.stopPropagation(); close(cur.cancelVal); return; }
+    if(e.key==='Enter'){ // Entrée dans un champ = valider (la soumission implicite n'est pas fiable partout)
+      const t=e.target;
+      if(t&&t.tagName==='INPUT'&&box.contains(t)){ e.preventDefault(); if(box.requestSubmit) box.requestSubmit(); else box.dispatchEvent(new Event('submit',{cancelable:true})); }
+      return;
+    }
+    if(e.key==='Tab'){ // le focus reste dans la boîte (les 47 onglets attendent derrière)
+      const f=Array.prototype.filter.call(box.querySelectorAll('button,input,select,textarea'),x=>!x.disabled&&x.offsetParent!==null);
+      if(!f.length) return;
+      const i=f.indexOf(document.activeElement);
+      if(e.shiftKey&&i<=0){ e.preventDefault(); f[f.length-1].focus(); }
+      else if(!e.shiftKey&&(i===f.length-1||i<0)){ e.preventDefault(); f[0].focus(); }
+    }
+  }
+  ov.addEventListener('click',e=>{ if(e.target===ov&&cur&&!cur.champs.length) close(cur.cancelVal); });
+  $('bobDlgClose').addEventListener('click',()=>{ if(cur) close(cur.cancelVal); });
+  body.addEventListener('click',e=>{
+    const b=e.target.closest('button[data-bobchoix]'); if(!b||!cur) return;
+    const o=cur.choix[+b.dataset.bobchoix]; if(o) close(o.v);
+  });
+  box.addEventListener('submit',e=>{
+    e.preventDefault(); if(!cur) return;
+    if(!cur.champs.length){ close(cur.okVal); return; }
+    const vals={};
+    cur.champs.forEach((f,i)=>{ vals[f.k||('c'+i)]=($('bobDlgF'+i)||{}).value||''; });
+    const err=cur.valider?cur.valider(vals):null;
+    const eBox=$('bobDlgErr');
+    if(err){ if(eBox){ eBox.textContent=err; eBox.style.display='block'; } return; }
+    if(eBox) eBox.style.display='none';
+    close(vals);
+  });
+  window.bobDialog=function(o){
+    o=o||{};
+    return new Promise(resolve=>{
+      if(cur) close(cur.cancelVal); // jamais deux modales : les flux enchaînent par await
+      cur={resolve:resolve, cancelVal:('cancelVal' in o)?o.cancelVal:null, okVal:('okVal' in o)?o.okVal:true,
+           champs:o.champs||[], choix:o.choix||[], valider:o.valider||null, prevFocus:document.activeElement};
+      ttl.textContent=o.titre||'Bob';
+      let html=o.corps?'<p class="bobDlgMsg">'+h(o.corps)+'</p>':'';
+      cur.champs.forEach((f,i)=>{
+        const t=(f.type==='date'||f.type==='number'||f.type==='tel')?f.type:'text';
+        html+='<div class="field"><label for="bobDlgF'+i+'">'+h(f.label||'')+'</label>'
+          +'<input id="bobDlgF'+i+'" type="'+t+'" value="'+h(f.value)+'"'
+          +(f.placeholder?' placeholder="'+h(f.placeholder)+'"':'')
+          +(t==='number'?' inputmode="numeric" min="0" step="1"':'')+'>'
+          +(f.hint?'<p class="bobDlgHint">'+h(f.hint)+'</p>':'')+'</div>';
+      });
+      cur.choix.forEach((c,i)=>{
+        html+='<button type="button" class="bobChoice" data-bobchoix="'+i+'">'+h(c.label||'')
+          +(c.sub?' <span style="font-weight:400;font-size:12.5px;color:var(--muted)">'+h(c.sub)+'</span>':'')+'</button>';
+      });
+      if(cur.champs.length) html+='<p class="bobDlgErr" id="bobDlgErr"></p>';
+      body.innerHTML=html;
+      let fh='';
+      if(o.cancel!==false) fh+='<button type="button" class="ghost btn" id="bobDlgCancel">'+h(typeof o.cancel==='string'?o.cancel:'Annuler')+'</button>';
+      if(!cur.choix.length) fh+='<button type="submit" class="btn"'+(o.danger?' style="background:var(--red)"':'')+'>'+h(o.ok||'Valider')+'</button>';
+      foot.innerHTML=fh;
+      const bc=$('bobDlgCancel'); if(bc) bc.addEventListener('click',()=>{ if(cur) close(cur.cancelVal); });
+      ov.classList.add('open');
+      document.addEventListener('keydown',onKey,true);
+      const first=cur.champs.length?$('bobDlgF0'):(box.querySelector('.bobChoice')||box.querySelector('button[type=submit]')||$('bobDlgClose'));
+      if(first){ try{ first.focus(); if(cur.champs.length&&first.select&&first.value) first.select(); }catch(_){} }
+    });
+  };
+  window.bobAlert=function(msg,opt){ opt=opt||{}; return bobDialog({titre:opt.titre||'ℹ️',corps:msg,ok:opt.ok||'OK',cancel:false,cancelVal:true}); };
+  window.bobConfirm=function(msg,opt){ opt=opt||{}; return bobDialog({titre:opt.titre||'Confirmer ?',corps:msg,ok:opt.ok||'Confirmer',danger:opt.danger,cancelVal:false}).then(v=>v===true); };
+  window.bobPrompt=function(label,val,opt){ opt=opt||{};
+    return bobDialog({titre:opt.titre||'✏️',champs:[{k:'v',label:label,value:val==null?'':val,type:opt.type,hint:opt.hint,placeholder:opt.placeholder}],ok:opt.ok,valider:opt.valider?function(vs){return opt.valider(vs.v);}:null})
+      .then(r=>(r&&typeof r==='object')?String(r.v):null); };
+  window.bobChoix=function(titre,options,opt){ opt=opt||{}; return bobDialog({titre:titre,corps:opt.corps,choix:options}); };
+  window.bobForm=function(titre,champs,opt){ opt=opt||{}; return bobDialog({titre:titre,corps:opt.intro,champs:champs,ok:opt.ok,danger:opt.danger,valider:opt.valider}); };
+})();
 
 /* ---- Ventilation (totaux dépenses par site / par action) ---- */
 function curExercice(){ const s=$('a_year'); return s?s.value:''; }
@@ -10843,26 +10969,34 @@ window.loadDossiersPeri=async function(){
       +'<p style="margin-top:12px;font-size:13px">Un dossier peut être déposé <strong>incomplet</strong> : les pièces manquantes sont à apporter au plus vite — l\'inscription n\'est définitive qu\'une fois le dossier complet et validé par le bureau.</p>'
       +'<p style="margin-top:30px">Fait à Saint-Denis, le '+new Date().toLocaleDateString('fr-FR')+'.</p>'); // date LOCALE (jamais toISOString — piège 974)
   };
+  /* Lot 11a lifting (15/08/2026) : les 3 prompts en série deviennent UNE fiche (modale maison).
+     Bonus mobile : la date de naissance passe en calendrier natif — fini le format à taper. */
   window.fyAddPersonne=async function(fid, role){
     if(!canWrite) return;
     const isKid=(role==='enfant');
-    const prenom=prompt(isKid?'Prénom de l\'enfant :':'Prénom de l\'adulte (vide si inconnu) :',''); if(prenom===null) return;
-    const nom=prompt('Nom :',''); if(nom===null) return;
-    if(!prenom.trim()&&!nom.trim()){ alert('Il faut au moins un prénom ou un nom.'); return; }
-    let naissance=null;
-    if(isKid){ const d=prompt('Date de naissance (AAAA-MM-JJ, vide si inconnue) :',''); if(d===null) return; naissance=(d||'').trim()||null; }
-    const r=await sbc.from('personnes').insert({asso_id:myAsso, foyer_id:fid, role_foyer:isKid?'enfant':'parent', prenom:prenom.trim()||null, nom:nom.trim()||null, naissance:naissance});
-    if(r.error){ alert('Erreur : '+r.error.message+(naissance?'\n(Si c\'est la date : format attendu AAAA-MM-JJ, ex. 2019-03-12.)':'')); return; }
+    const champs=[
+      {k:'prenom',label:isKid?'Prénom de l\'enfant':'Prénom de l\'adulte (vide si inconnu)'},
+      {k:'nom',label:'Nom'}
+    ];
+    if(isKid) champs.push({k:'naissance',label:'Date de naissance (vide si inconnue)',type:'date'});
+    const v=await bobForm(isKid?'👧 Ajouter un enfant':'👤 Ajouter un adulte',champs,
+      {ok:'+ Ajouter', valider:x=>(!x.prenom.trim()&&!x.nom.trim())?'Il faut au moins un prénom ou un nom.':null});
+    if(!v) return;
+    const naissance=isKid?((v.naissance||'').trim()||null):null;
+    const r=await sbc.from('personnes').insert({asso_id:myAsso, foyer_id:fid, role_foyer:isKid?'enfant':'parent', prenom:v.prenom.trim()||null, nom:v.nom.trim()||null, naissance:naissance});
+    if(r.error){ await bobAlert('Erreur : '+r.error.message,{titre:'⚠️ Pas enregistré'}); return; }
     loadFoyers();
   };
   window.fyEditPersonne=async function(pid){
     if(!canWrite) return;
     const D=window.__fyData||{}; const p=(D.personnes||[]).find(x=>x.id===pid); if(!p) return;
-    const prenom=prompt('Prénom :', p.prenom||''); if(prenom===null) return;
-    const nom=prompt('Nom :', p.nom||''); if(nom===null) return;
-    if(!prenom.trim()&&!nom.trim()){ alert('On ne vide pas complètement une fiche : garde au moins un prénom ou un nom.'); return; }
-    const r=await sbc.from('personnes').update({prenom:prenom.trim()||null, nom:nom.trim()||null}).eq('id',pid);
-    if(r.error){ alert('Erreur : '+r.error.message); return; }
+    const v=await bobForm('✏️ Corriger le nom',[
+      {k:'prenom',label:'Prénom',value:p.prenom||''},
+      {k:'nom',label:'Nom',value:p.nom||''}
+    ],{ok:'Enregistrer', valider:x=>(!x.prenom.trim()&&!x.nom.trim())?'On ne vide pas complètement une fiche : garde au moins un prénom ou un nom.':null});
+    if(!v) return;
+    const r=await sbc.from('personnes').update({prenom:v.prenom.trim()||null, nom:v.nom.trim()||null}).eq('id',pid);
+    if(r.error){ await bobAlert('Erreur : '+r.error.message,{titre:'⚠️ Pas enregistré'}); return; }
     loadFoyers();
   };
   /* Rattachement par code famille (02/08/2026) — le bureau garde la main.
@@ -10896,33 +11030,35 @@ window.loadDossiersPeri=async function(){
      Ici la saison est calculée côté serveur, l'adhésion porte la PERSONNE, et les
      enfants du foyer entrent au registre dans la foulée, au tarif du barème. */
   window.fyComptoir=async function(fid){
-    if(!canWrite){ alert('Réservé au bureau.'); return; }
+    if(!canWrite){ await bobAlert('Réservé au bureau.'); return; }
     const D=window.__fyData||{};
     const f=(D.foyers||[]).find(x=>x.id===fid)||{};
     const adultes=(D.personnes||[]).filter(p=>p.foyer_id===fid && p.role_foyer!=='enfant');
-    if(!adultes.length){ alert('Ce foyer n\'a aucun adulte enregistré.\n\nAjoute d\'abord « + adulte » : c\'est LA PERSONNE qui adhère, pas le foyer.'); return; }
+    if(!adultes.length){ await bobAlert('Ce foyer n\'a aucun adulte enregistré.\n\nAjoute d\'abord « + adulte » : c\'est LA PERSONNE qui adhère, pas le foyer.',{titre:'💵 Adhésion payée'}); return; }
     const nomDe=p=>((p.prenom||'')+' '+(p.nom||'')).trim()||'(sans nom)';
+    /* Lot 11a lifting (15/08/2026) : « tape le numéro » devient un bouton par personne /
+       par moyen de paiement — un tap au comptoir, plus rien à taper. */
     let qui=adultes[0];
     if(adultes.length>1){
-      const choix=prompt('Qui a payé ?\n\n'+adultes.map((p,i)=>(i+1)+'. '+nomDe(p)).join('\n')+'\n\nTape le numéro :','1');
-      if(choix===null) return;
-      const i=parseInt(choix,10);
-      if(!(i>=1 && i<=adultes.length)){ alert('Numéro invalide.'); return; }
-      qui=adultes[i-1];
+      qui=await bobChoix('💵 Qui a payé ?', adultes.map(p=>({v:p,label:'👤 '+nomDe(p)})),
+        {corps:'L\'adhésion porte la personne, pas le foyer — choisis l\'adulte qui a réglé.'});
+      if(!qui) return;
     }
-    const modes={'1':'especes','2':'cheque','3':'virement'};
-    const m=prompt('Adhésion de '+nomDe(qui)+' — comment a-t-elle payé ?\n\n1. Espèces\n2. Chèque\n3. Virement\n\nTape le numéro :','1');
-    if(m===null) return;
-    const mode=modes[String(m).trim()];
-    if(!mode){ alert('Choisis 1, 2 ou 3.'); return; }
-    if(!confirm('Enregistrer l\'adhésion de '+nomDe(qui)+' ('+f.nom+') ?\n\nLes enfants du foyer seront inscrits automatiquement, et la famille pourra de nouveau inscrire et ajouter un enfant.')) return;
+    const mode=await bobChoix('💵 Adhésion de '+nomDe(qui),[
+      {v:'especes',label:'💵 Espèces'},
+      {v:'cheque',label:'🧾 Chèque'},
+      {v:'virement',label:'🏦 Virement'}
+    ],{corps:'Comment a-t-elle payé ?'});
+    if(!mode) return;
+    const ok=await bobConfirm('Enregistrer l\'adhésion de '+nomDe(qui)+' ('+f.nom+') ?\n\nLes enfants du foyer seront inscrits automatiquement, et la famille pourra de nouveau inscrire et ajouter un enfant.',{titre:'💵 Adhésion payée',ok:'Enregistrer'});
+    if(!ok) return;
     // ⚠️ .rpc() attendu ET .error lu : sans ça la requête ne part pas, et supabase-js
     //    ne lève rien quand elle échoue (cf. mémoire supabase-rpc-non-attendu).
     const r=await sbc.rpc('adhesion_enregistrer_comptoir',{p_personne_id:qui.id, p_montant_cents:null, p_mode:mode, p_date:null});
-    if(r.error){ alert('Erreur : '+r.error.message); return; }
+    if(r.error){ await bobAlert('Erreur : '+r.error.message,{titre:'⚠️ Pas enregistré'}); return; }
     const d=r.data||{};
     if(typeof setSync==='function') setSync('✓ adhésion enregistrée — '+(d.lignes_creees||1)+' ligne(s)','#dff5e9');
-    alert('✅ Adhésion enregistrée pour '+nomDe(qui)+'\n\nSaison '+(d.saison||'')+' · '+((d.lignes_creees||1)-1)+' enfant(s) inscrit(s) au passage.');
+    await bobAlert('Saison '+(d.saison||'')+' · '+((d.lignes_creees||1)-1)+' enfant(s) inscrit(s) au passage.',{titre:'✅ Adhésion enregistrée — '+nomDe(qui)});
     loadFoyers();
     if(window.loadMembersArbre) loadMembersArbre();
   };
@@ -10944,22 +11080,29 @@ window.loadDossiersPeri=async function(){
   // 💶 Saisie du quotient familial — BUREAU SEUL (table foyer_qf cloisonnée).
   // Le QF d'un foyer est un revenu de ménage : il ne se lit pas depuis l'accueil.
   window.fySetQf=async function(fid){
-    if(!canWrite){ alert('Le quotient familial est réservé au bureau.'); return; }
+    if(!canWrite){ await bobAlert('Le quotient familial est réservé au bureau.'); return; }
     const cur=window.__fyQfCourant?window.__fyQfCourant(fid):null;
-    const s=prompt('Quotient familial CAF (le nombre de l\'attestation, ex. 700)'+(cur?'\n\nActuel : '+cur.qf+' (depuis le '+cur.valable_du+')':''), cur?String(cur.qf):'');
-    if(s===null) return;
-    const qf=parseInt(String(s).replace(/[^0-9]/g,''),10);
-    if(!Number.isFinite(qf)||qf<0){ alert('Indique un nombre (ex. 700).'); return; }
-    const du=prompt('Valable à partir du (AAAA-MM-JJ) :', today());
-    if(du===null) return;
-    if(!/^\d{4}-\d{2}-\d{2}$/.test(du.trim())){ alert('Date attendue au format AAAA-MM-JJ.'); return; }
+    /* Lot 11a lifting (15/08/2026) : les 2 prompts deviennent UNE fiche — quotient + date de
+       début côte à côte, la date en calendrier natif (fini le AAAA-MM-JJ à taper). */
+    const v=await bobForm('💶 Quotient familial CAF',[
+      {k:'qf',label:'Quotient (le nombre de l\'attestation, ex. 700)',type:'number',value:cur?String(cur.qf):'',hint:cur?('Actuel : '+cur.qf+' (depuis le '+cur.valable_du+')'):''},
+      {k:'du',label:'Valable à partir du',type:'date',value:today()}
+    ],{ok:'Enregistrer', valider:function(x){
+      const q=parseInt(String(x.qf).replace(/[^0-9]/g,''),10);
+      if(!Number.isFinite(q)||q<0) return 'Indique un nombre (ex. 700).';
+      if(!/^\d{4}-\d{2}-\d{2}$/.test((x.du||'').trim())) return 'Indique la date de début de validité.';
+      return null;
+    }});
+    if(!v) return;
+    const qf=parseInt(String(v.qf).replace(/[^0-9]/g,''),10);
+    const du=v.du.trim();
     // On ferme le QF précédent la veille : jamais deux quotients « en cours » sur un même foyer.
     if(cur && !cur.valable_au){
-      const rc=await sbc.from('foyer_qf').update({valable_au:fyVeille(du.trim())}).eq('id',cur.id);
-      if(rc.error){ alert('Impossible de clore le quotient précédent : '+rc.error.message+'\nRien n\'a été enregistré.'); return; }
+      const rc=await sbc.from('foyer_qf').update({valable_au:fyVeille(du)}).eq('id',cur.id);
+      if(rc.error){ await bobAlert('Impossible de clore le quotient précédent : '+rc.error.message+'\nRien n\'a été enregistré.',{titre:'⚠️ Pas enregistré'}); return; }
     }
-    const r=await sbc.from('foyer_qf').insert({asso_id:myAsso, foyer_id:fid, qf:qf, valable_du:du.trim(), source:'attestation_caf'});
-    if(r.error){ alert('Erreur : '+r.error.message); return; }
+    const r=await sbc.from('foyer_qf').insert({asso_id:myAsso, foyer_id:fid, qf:qf, valable_du:du, source:'attestation_caf'});
+    if(r.error){ await bobAlert('Erreur : '+r.error.message,{titre:'⚠️ Pas enregistré'}); return; }
     loadFoyers();
   };
   // 🧮 Tarif périscolaire du foyer — calculé PAR LA BASE (formule unique, grille publiée).
