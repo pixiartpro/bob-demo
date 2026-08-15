@@ -511,10 +511,10 @@ async function submitTempsFort(){
    famille = le regroupement affiché dans la colonne « ce qui tourne » (ex. "Culture & loisirs").
    Chaque activité : emoji, nom, statut, famille, public, horaires, lieu, desc (détail au clic). */
 const PLAN=[
-  {emoji:'', nom:'Périscolaire — après-midi', statut:'actif', famille:'Péri & extrascolaire',
-   inscriptible:true, insOption:'Périscolaire', court:"Après l'école : devoirs, goûter, activités",
-   public:"Enfants scolarisés", horaires:"Lun → Ven, ~15h30–18h", lieu:"CASE Bois de Nèfles / école du Piton",
-   desc:"Le périscolaire de l'après-midi fonctionne aujourd'hui : aide aux devoirs, goûter et activités encadrées jusqu'au retour des familles."},
+  {emoji:'', nom:'Périscolaire — le soir', statut:'actif', famille:'Péri & extrascolaire',
+   inscriptible:true, insOption:'Périscolaire', court:"Après la classe : devoirs, goûter, activités",
+   public:"Enfants scolarisés", horaires:"Lun, mar, jeu, ven · 15h45 – 18h00", lieu:"École du Piton Bois de Nèfles",
+   desc:"Après la classe, de 15h45 à 18h00 : aide aux devoirs, goûter et activités encadrées jusqu'au retour des familles. Un seul dossier famille couvre le matin et le soir."},
   {emoji:'', nom:'Accueil de loisirs (ACM)', statut:'actif', famille:'Péri & extrascolaire',
    inscriptible:true, insOption:'Accueil de loisirs (ACM)', court:"Vacances scolaires : sorties & activités",
    public:"Enfants & ados", horaires:"Vacances scolaires", lieu:"CASE Bois de Nèfles",
@@ -542,8 +542,8 @@ const PLAN=[
    public:"Tous publics", horaires:"Le jeudi", lieu:"CASE Bois de Nèfles",
    desc:"Accompagnement vers l'accès aux droits et aux ressources (CRIJ, France Services…)."},
   {emoji:'', nom:'Périscolaire — le matin', statut:'actif', famille:'Péri & extrascolaire',
-   public:"Enfants scolarisés", horaires:"~1h le matin · dès la rentrée du mardi 18 août 2026", lieu:"CASE Bois de Nèfles",
-   desc:"En préparation pour la rentrée du mardi 18 août : un accueil d'environ 1h le matin, en plus de l'après-midi. La grille tarifaire (selon le quotient familial) est en cours de réévaluation."},
+   public:"Enfants scolarisés", horaires:"Lun, mar, jeu, ven · 7h00 – 8h00 · dès le 18 août", lieu:"École du Piton Bois de Nèfles",
+   desc:"Dès la rentrée du mardi 18 août : un accueil avant la classe, de 7h00 à 8h00. Tarif selon le quotient familial, comme le soir — la grille 2026-2027 est votée. Un seul dossier famille couvre le matin et le soir."},
   {emoji:'', nom:'La Kaz Zados — espace dédié', statut:'travaux', famille:'Jeunesse · 11–17 ans',
    public:"11–17 ans", horaires:"En montage", lieu:"CASE Bois de Nèfles",
    desc:"Le projet pédagogique du secteur ados (2026-2030) : un espace géré par et pour les jeunes, en cours de montage avec les partenaires."},
