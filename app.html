@@ -3398,6 +3398,8 @@ function pageHelpGotoAide(){ pageHelpClose(); const b=document.querySelector('na
 
 /* ---- ✨ Quoi de neuf (nouveautés + notice chronologique) ---- */
 const NEWS=[
+  {id:'2026-08-15-pastilles-honnetes',date:'2026-08-15',tab:'🛟 Le reste',titre:"🚨 Les pastilles redeviennent honnêtes — et le tableau de bord compte les adhésions en retard",
+   desc:"Deux corrections de confiance. <b>1.</b> La pastille des <b>nouveautés</b> (sur 🧰 Réglages et ❓ Aide) n'est plus <b>rouge</b> : le rouge est réservé au vrai travail en attente. Les nouveautés s'affichent en ✨ discret, plafonné à « 9+ » — et un nouveau compte ne « doit » plus les nouveautés parues avant son arrivée. <b>2.</b> Le panneau <b>⏰ À traiter</b> compte désormais les <b>adhésions de foyer à régulariser</b> (les familles bloquées) — avant, il pouvait dire « tout est à jour 🎉 » pendant que des foyers ne pouvaient plus rien faire. Cliquer la ligne mène droit à 👨‍👩‍👧 Foyers."},
   {id:'2026-08-15-peri-liste-salaries',date:'2026-08-15',tab:'📨 Dossiers familles',titre:"🎒 L'équipe périscolaire a enfin la liste des enfants de la garderie",
    desc:"Signalé depuis l'espace salarié : « dans ma partie activité je vois <b>1 seul inscrit</b> pour le périscolaire ». L'écran ne mentait pas — il lisait la liste des <b>activités</b>, où la garderie n'était qu'une <b>coquille vide</b> héritée de la plomberie. Les vrais enfants de la garderie vivent dans les <b>dossiers déposés par les familles</b>, avec leurs créneaux matin/soir : aucun écran de l'équipe ne les montrait.<br><br><b>C'est réparé.</b> Une carte <b>🎒 Périscolaire</b> apparaît sur l'accueil de l'espace salarié — <b>réservée à l'équipe périscolaire</b>, comme 📎 Docs périscolaire. Elle donne la <b>liste d'appel</b> rangée en <b>☀️ Le matin</b> et <b>🌙 Le soir</b>, avec la classe, l'école, l'état du dossier et le <b>contact du responsable en un clic</b> (le numéro appelle directement depuis le téléphone). Un enfant présent matin <i>et</i> soir apparaît dans les deux listes — voulu : chaque liste doit être complète toute seule.<br><br><b>Deux garde-fous.</b> ① Une famille <b>sans numéro de téléphone</b> est signalée en rouge sur chaque carte, même si elle a une adresse mail — à 17h, enfant malade, on appelle, on n'écrit pas. ② Un enfant au dossier <b>sans aucun créneau</b> n'est pas caché : il apparaît dans un bloc « ⚠️ Sans créneau » à vérifier avec le bureau.<br><br>⚠️ <b>Rien à faire de ton côté</b>, la liste se met à jour toute seule dès qu'une famille s'inscrit ou que tu corriges un créneau. Une salariée qui ne voit pas la carte n'est simplement <b>pas rattachée à la section 🎒 Périscolaire</b> — ça se règle dans l'espace bureau."},
   {id:'2026-08-15-clavier-et-doigts',date:'2026-08-15',tab:'🛟 Le reste',titre:"⌨️ Navigation au clavier visible, boutons plus faciles à toucher",
@@ -3622,13 +3624,21 @@ function newsLus(){ try{ return JSON.parse(localStorage.getItem('bob_news_lus')|
 function newsMarkRead(){ try{ localStorage.setItem('bob_news_lus',JSON.stringify(NEWS.map(n=>n.id))); }catch(e){} newsBadge(); renderNews(); }
 function newsBadge(){
   const b=document.querySelector('nav.tabs button[data-tab="aide"]'); if(!b) return;
-  const lus=newsLus(), nb=NEWS.filter(n=>(!n.asso || (window.bobEstLeCase && window.bobEstLeCase())) && !lus.includes(n.id) && (!window.bobTabVisible||window.bobTabVisible(n.tab))).length;
+  /* Lot 2 lifting 15/08/2026 : les nouveautés ne sont PLUS une pastille rouge — le rouge est réservé
+     au travail en attente (doctrine FAQ « les pastilles ne comptent que ce qui demande une action »).
+     Pastille NEUTRE ✨, plafonnée « 9+ », et un compte ne « doit » pas les nouveautés antérieures à sa
+     création (cutoff = profiles.created_at via bobProfileDate, fail-open si indisponible). */
+  const cutoff=(window.bobProfileDate&&window.bobProfileDate())||'';
+  const lus=newsLus(), nb=NEWS.filter(n=>(!n.asso || (window.bobEstLeCase && window.bobEstLeCase())) && !lus.includes(n.id) && (!cutoff || n.date>=cutoff) && (!window.bobTabVisible||window.bobTabVisible(n.tab))).length;
+  const NEWSDOT='display:inline-block;margin-left:6px;background:#eef3ef;color:var(--brand-dk,#0f6b46);border:1px solid #d8e6dd;border-radius:10px;padding:0 7px;font-size:11px;font-weight:700';
+  const NEWSTITLE='Nouveautés de Bob non lues — de l\'information, pas du travail en attente';
   let s=b.querySelector('.newsdot');
-  if(!s){ s=document.createElement('span'); s.className='newsdot'; s.style.cssText='display:inline-block;margin-left:6px;background:var(--red);color:#fff;border-radius:10px;padding:0 7px;font-size:11px;font-weight:700'; b.appendChild(s); }
-  s.style.display=nb?'inline-block':'none'; s.textContent=nb;
+  if(!s){ s=document.createElement('span'); s.className='newsdot'; b.appendChild(s); }
+  s.style.cssText=NEWSDOT; s.title=NEWSTITLE;
+  s.style.display=nb?'inline-block':'none'; s.textContent='✨ '+(nb>9?'9+':nb);
   // report du badge sur la famille « Réglages » (qui contient l'Aide), visible tiroir fermé
   const fb=document.querySelector('nav.famtabs button[data-group="regl"]');
-  if(fb){ let fs=fb.querySelector('.newsdot'); if(!fs){ fs=document.createElement('span'); fs.className='newsdot'; fs.style.cssText='display:inline-block;margin-left:6px;background:var(--red);color:#fff;border-radius:10px;padding:0 7px;font-size:11px;font-weight:700'; fb.appendChild(fs); } fs.style.display=nb?'inline-block':'none'; fs.textContent=nb; }
+  if(fb){ let fs=fb.querySelector('.newsdot'); if(!fs){ fs=document.createElement('span'); fs.className='newsdot'; fb.appendChild(fs); } fs.style.cssText=NEWSDOT; fs.title=NEWSTITLE; fs.style.display=nb?'inline-block':'none'; fs.textContent='✨ '+(nb>9?'9+':nb); }
 }
 function renderNews(){
   const el=$('newsList'); if(!el) return;
@@ -13928,7 +13938,7 @@ renderAll();
   async function loadTodo(){
     const box=$('dashTodo'); if(!box||!sbc||!myAsso) return;
     const q=(tbl,col,val)=>sbc.from(tbl).select('*',{count:'exact',head:true}).eq(col,val).then(r=>r.count||0).catch(()=>0);
-    const [cg,peri,cpt,part,ques,atel,resa,msgw]=await Promise.all([
+    const [cg,peri,cpt,part,ques,atel,resa,msgw,reg]=await Promise.all([
       q('conges','statut','demande'),
       q('inscriptions_periscolaire','statut','depose'),
       q('profiles','statut','en_attente'),
@@ -13936,15 +13946,20 @@ renderAll();
       q('questions_aide','statut','nouvelle'),
       q('ateliers','statut','proposition'),
       q('reservations','statut','demande'),
-      maWaitingCount()
+      maWaitingCount(),
+      /* Lot 2 lifting 15/08/2026 : le fil rouge ignorait les adhésions à régulariser — « tout est à
+         jour 🎉 » pendant que des foyers étaient BLOQUÉS. Même source serveur que l'écran Foyers et
+         que la porte (v_foyers_a_regulariser) : une seule définition du retard, partout. */
+      sbc.from('v_foyers_a_regulariser').select('foyer_id',{count:'exact',head:true}).then(r=>r.count||0).catch(()=>0)
     ]);
-    window.bobTodoByZone={adherents:peri, animation:atel+resa, comm:msgw+part, equipe:cg, finances:0, bureau:0, _total:cg+peri+cpt+part+ques+atel+resa+msgw}; // 27/07/2026 : tiroir lieux dissous → les demandes de salle comptent sur Animation · 14/08/2026 : les dossiers déposés suivent leur onglet 📨 Dossiers familles → tiroir 👨‍👩‍👧 Familles
+    window.bobTodoByZone={adherents:peri+reg, animation:atel+resa, comm:msgw+part, equipe:cg, finances:0, bureau:0, _total:cg+peri+cpt+part+ques+atel+resa+msgw+reg}; // 27/07/2026 : tiroir lieux dissous → les demandes de salle comptent sur Animation · 14/08/2026 : les dossiers déposés suivent leur onglet 📨 Dossiers familles → tiroir 👨‍👩‍👧 Familles
     // 28/07/2026 : compteurs PAR ONGLET — clé = l'onglet où se fait LE GESTE (les congés se valident
     // dans 👥 Dossiers salariés, pas dans 🏖️ Congés). Alimente les pastilles d'onglet, de tiroir et de personnage.
-    window.bobTodoByTab={personnel:cg, dossiers:peri, reserver:resa, messages:msgw, partenaires:part, ateliers:atel, aide:ques};
+    window.bobTodoByTab={personnel:cg, dossiers:peri, reserver:resa, messages:msgw, partenaires:part, ateliers:atel, aide:ques, foyers:reg};
     if(window.renderZoneCards) window.renderZoneCards();
     if(window.renderMonEquipe) window.renderMonEquipe(); // rafraîchit les pastilles des compagnons
     const items=[ // fil rouge (28/07/2026) : bobGoTodo ouvre l'onglet ET fait remonter le panneau concerné
+      {n:reg,emo:'💵',lab:"adhésion(s) de foyer à régulariser (accès bloqué)",act:"bobGoTodo('foyers')"},
       {n:cg,emo:'🏖️',lab:"demande(s) de congé à valider",act:"bobGoTodo('personnel')"},
       {n:peri,emo:'📨',lab:"dossier(s) famille déposé(s) à valider",act:"bobGoTodo('dossiers')"},
       {n:resa,emo:'🛎️',lab:"demande(s) de salle à valider",act:"bobGoTodo('reserver')"},
@@ -13965,6 +13980,7 @@ renderAll();
   function bobGoTab(tab){ const b=document.querySelector('nav.tabs button[data-tab="'+tab+'"]'); if(b) b.click(); }
   window.loadTodo=loadTodo; window.bobGoTab=bobGoTab;
   window.bobMe=function(){ try{ return myProfile?((myProfile.full_name||myProfile.email||'').split('@')[0]):''; }catch(e){ return ''; } };
+  window.bobProfileDate=function(){ try{ return (myProfile&&myProfile.created_at||'').slice(0,10); }catch(e){ return ''; } }; /* Lot 2 : date de création du compte, pour ne pas « devoir » les nouveautés antérieures */
   window.bobFeatures=function(){ return window.__bobFeatures||{}; };
   window.bobIsAdmin=function(){ try{ return !!(myProfile&&myProfile.super_admin); }catch(e){ return false; } };
 
