@@ -3345,6 +3345,74 @@ function getSplits(o){
   return [{site:o.site||'', action:o.action||'', amount:o.amount}]; // compat anciennes données
 }
 function getAccount(o){ return o.account||'banque'; }
+/* ===== Le SITE d'une écriture AUTOMATIQUE : recopié du vécu de l'asso, jamais une constante =====
+   Une écriture sans site ne DISPARAÎT pas : elle tombe dans la ligne « (non précisé) » de
+   🏢 Recettes par site (ventTable) et sort du CSV avec une colonne Site vide. Le total général
+   reste juste — c'est la PART DU SITE qui devient fausse, celle que réclament la Mairie et la CAF.
+   Et un site écrit en dur ici serait faux pour toute autre association servie par ce fichier. */
+function siteFold(s){
+  return String(s||'').trim().toLowerCase().normalize('NFD')
+    .replace(/[̀-ͯ]/g,'').replace(/[^a-z0-9]+/g,' ').trim();
+}
+/* Les sites RÉELLEMENT écrits, pas ceux de la liste de paramétrage : ORG_LISTS propose au CASE
+   « C.A.S.E Bois de Nèfles », qui n'apparaît dans AUCUNE écriture — le proposer fabriquerait un
+   site fantôme de plus dans les états. */
+function sitesVecus(){
+  return [...new Set((db.ops||[]).flatMap(o=>getSplits(o).map(s=>String(s.site||'').trim())).filter(Boolean))];
+}
+/* Décision en DEUX TEMPS, jamais une somme pondérée : ce que dit la MÊME action tranche seul,
+   et le volume global ne sert que s'il n'y a rien sur cette action-là.
+   ⚠️ Une pondération unique (« même action = ×1000 ») paraît équivalente et ne l'est pas : sur une
+   égalité parfaite de l'action, une écriture SANS RAPPORT (une autre action) départageait — Bob
+   écrivait alors, avec assurance, un site choisi par un détail étranger au sujet.
+   sur:false ⇒ on ne devine pas tout seul (aucun historique, ou égalité) : l'appelant demande. */
+function siteProbable(action){
+  const act=siteFold(action);
+  const compter=function(garde){
+    const cnt={};
+    (db.ops||[]).forEach(o=>getSplits(o).forEach(s=>{
+      const k=String(s.site||'').trim(); if(!k) return;
+      if(garde && !garde(s)) return;
+      cnt[k]=(cnt[k]||0)+1;
+    }));
+    return Object.entries(cnt).sort((a,b)=>b[1]-a[1]);
+  };
+  const trancher=function(r){
+    if(!r.length) return null;
+    if(r.length>1 && r[0][1]===r[1][1]) return {site:r[0][0], sur:false}; // égalité : on demandera
+    /* Une SEULE écriture ne fait pas une certitude : une régularisation mal saisie suffirait à
+       aiguiller tout un lot — et le mode auto écrirait alors sans personne devant l'écran. */
+    if(r[0][1]<2) return {site:r[0][0], sur:false};
+    return {site:r[0][0], sur:true};
+  };
+  const parAction=act?trancher(compter(s=>siteFold(s.action)===act)):null;
+  if(parAction) return parAction;
+  return trancher(compter(null))||{site:'', sur:false};
+}
+/* Demande UNE seule fois, AVANT la boucle — jamais une question par paiement.
+   Rend '' si on annule ou si on laisse vide : l'appelant n'écrit alors RIEN. */
+function siteDemander(action, quoi){
+  const p=siteProbable(action);
+  if(p.sur) return p.site;
+  const vecus=sitesVecus(), propos=vecus.length?vecus:listValues('sites');
+  const rep=prompt('Sur quel site faut-il compter '+quoi+' ?\n\n'
+    +(propos.length?('Sites déjà utilisés : '+propos.join(' · ')+'\n\n'):'')
+    +'(Sert aux états par site que réclament la Mairie et la CAF.)', p.site);
+  if(rep===null) return '';
+  const site=String(rep).trim();
+  if(!site){ alert('Sans site, la recette tomberait dans la ligne « (non précisé) » des états par site.\n\nRien n\'a été versé — tu pourras recliquer quand tu sauras.'); return ''; }
+  /* Garde anti-site-fantôme : « piton bois de nefles » et « Piton Bois de Néfles » font DEUX
+     lignes dans les états — ce sont deux chaînes de caractères, rien ne les rapproche tout seul.
+     Annuler = ABANDON (le réflexe standard du bouton) : il n'existe aucun cas légitime où l'on
+     voudrait écrire la variante — elle ne produirait que la ligne fantôme visée par la garde. */
+  const connu=vecus.find(v=>siteFold(v)===siteFold(site));
+  if(connu && connu!==site){
+    if(confirm('Tes écritures utilisent déjà « '+connu+' ».\n\nGarder « '+site+' » créerait une DEUXIÈME ligne dans les états par site.\n\nOK = utiliser « '+connu+' » · Annuler = ne rien verser.')) return connu;
+    alert('Rien n\'a été versé — tu pourras recliquer.');
+    return '';
+  }
+  return site;
+}
 /* ---- 🅷 Le compte d'attente HelloAsso (15/08/2026) --------------------------------------
    HelloAsso encaisse pour le compte de l'association, puis REVERSE en bloc sur le compte
    bancaire. Écrire chaque adhésion directement « en banque » casserait le rapprochement :
@@ -9654,7 +9722,26 @@ renderAll();
     if(uids.length){ const {data:profs}=await sbc.from('profiles').select('id,full_name,email').in('id',uids);
       (profs||[]).forEach(function(p){ nom[p.id]=p.full_name||p.email||''; }); }
     const tot=todo.reduce(function(s,p){ return s+(p.montant_cents||0); },0)/100;
-    if(!auto && !confirm('Verser '+todo.length+' adhésion(s) en ligne en comptabilité — '+euro(tot)+' ?\n\n'
+    /* 🔴 Le SITE vient des DONNÉES de l'asso, jamais d'une constante : ce fichier sert plusieurs
+       associations, et « Case du Bois de Nefles » n'est le siège que d'une seule.
+       Résolu AVANT le confirm, pour que le trésorier VOIE le site retenu — comme au périscolaire.
+       En mode `auto` (versement à l'ouverture) personne n'est devant l'écran : si la déduction
+       n'est pas sûre, on n'écrit RIEN et on le dit au journal — le bouton manuel posera la question. */
+    const _spa=siteProbable('Fonctionnement');
+    let siteAdh=_spa.sur?_spa.site:'';
+    if(!siteAdh && !auto) siteAdh=siteDemander('Fonctionnement','ces adhésions en ligne');
+    if(!siteAdh){
+      if(auto){
+        const _msg='💡 '+todo.length+' adhésion(s) en ligne en attente : Bob ne sait pas encore sur quel site les compter. Ouvre 💶 Comptabilité et clique « Verser en compta » pour le préciser.';
+        const _dern=(db.journal||[])[ (db.journal||[]).length-1 ];
+        if(!_dern || _dern.txt!==_msg){ // sinon chaque ouverture de Bob rajoute la MÊME ligne et repousse le coffre pour rien
+          db.journal=(db.journal||[]).concat([jEntry('Comptabilité',_msg)]).slice(-500);
+          save();
+        }
+      }
+      return 0;
+    }
+    if(!auto && !confirm('Verser '+todo.length+' adhésion(s) en ligne en comptabilité — '+euro(tot)+', sur le site « '+siteAdh+' » ?\n\n'
       +'Compte 756 - Cotisations · action « Fonctionnement ».\n\n'
       +'L\'argent est placé « en attente chez HelloAsso » : quand le reversement arrivera sur le\n'
       +'compte bancaire, tu enregistreras UN virement, qui s\'appariera avec la ligne du relevé.')) return;
@@ -9672,17 +9759,16 @@ renderAll();
         cat:'Cotisations', compte:'756 - Cotisations',
         amount:euros, date:String(p.paid_at||p.created_at||today()).slice(0,10),
         project:'', mode:'', account:ACC_HA, photo:'',
-        /* 🔴 Le SITE est obligatoire, sinon la ventilation par site (celle que réclament la
-           Mairie et la CAF) perd la ligne. Les 401 splits existants en portent tous un ; une
-           écriture à site vide serait la première, et elle disparaîtrait des états par site
-           sans que personne le voie. L'adhésion n'est pas rattachée à une école : elle va au
-           siège, « Case du Bois de Nefles » — l'orthographe EXACTE des 318 splits existants,
-           accent compris (ou plutôt : sans accent), sinon on crée un deuxième site fantôme. */
-        splits:[{site:'Case du Bois de Nefles', action:'Fonctionnement', amount:euros}]});
+        /* 🔴 Le SITE est obligatoire : sans lui, la recette ne disparaît pas des états par site,
+           elle tombe dans la ligne « (non précisé) » — le total général reste juste, mais la part
+           du site devient fausse, et c'est elle que réclament la Mairie et la CAF.
+           Il est RECOPIÉ du vécu de l'asso (siteProbable ci-dessus), avec son orthographe exacte :
+           une variante d'écriture créerait un deuxième site fantôme dans tous les états. */
+        splits:[{site:siteAdh, action:'Fonctionnement', amount:euros}]});
       versed.add(p.id); n++;
     });
     const dit=n+' adhésion'+(n>1?'s':'')+' en ligne versée'+(n>1?'s':'')+' en comptabilité — '
-      +euro(tot)+' · 756 Cotisations · en attente chez HelloAsso';
+      +euro(tot)+' · 756 Cotisations · site « '+siteAdh+' » · en attente chez HelloAsso';
     if(auto){ db.journal=(db.journal||[]).concat([jEntry('Comptabilité','💶 '+dit+' (versement automatique à l\'ouverture)')]).slice(-500); }
     save(); if(window.renderAll) renderAll();
     if(auto){ if(window.toast){ try{ window.toast('💶 '+dit); }catch(e){} } }
@@ -9947,7 +10033,9 @@ renderAll();
     const insIds=[...new Set(todo.map(p=>p.inscription_periscolaire_id).filter(Boolean))];
     const foyerById={};
     if(insIds.length){ const ri=await sbc.from('inscriptions_periscolaire').select('id,foyer').in('id',insIds); ((ri&&ri.data)||[]).forEach(x=>{ foyerById[x.id]=x.foyer||''; }); }
-    if(!confirm('Verser '+todo.length+' encaissement(s) en comptabilité ?\n\nBob crée les recettes correspondantes (taguées « Périscolaire » — espèces en caisse, le reste en banque), sans doublon.')) return;
+    const siteRetenu=siteDemander('Périscolaire','ces encaissements périscolaire');
+    if(!siteRetenu) return;
+    if(!confirm('Verser '+todo.length+' encaissement(s) en comptabilité, sur le site « '+siteRetenu+' » ?\n\nBob crée les recettes correspondantes (taguées « Périscolaire » — espèces en caisse, le reste en banque), sans doublon.')) return;
     let n=0;
     for(const p of todo){
       if(versed.has(p.id)) continue;
@@ -9958,7 +10046,7 @@ renderAll();
         cat:'Participation familles', compte:'706 - Prestations de services',
         amount:euros, date:(p.paid_at||p.created_at||today()).slice(0,10),
         project:'', mode:p.mode, account:accountFromMode(p.mode), photo:'',
-        splits:[{site:'', action:'Périscolaire', amount:euros}]});
+        splits:[{site:siteRetenu, action:'Périscolaire', amount:euros}]});
       versed.add(p.id); n++;
     }
     save();
@@ -12300,7 +12388,19 @@ renderAll();
     const actIds=[...new Set(Object.keys(insMap).map(k=>insMap[k].activite_id).filter(Boolean))];
     const actMap={};
     if(actIds.length){ const ra=await sbc.from('activites').select('id,nom').in('id',actIds); ((ra&&ra.data)||[]).forEach(x=>{ actMap[x.id]=x.nom||''; }); }
-    if(!confirm('Verser '+todo.length+' encaissement(s) d\'activité en comptabilité ?\n\nRecettes taguées sur le nom de l\'activité (ex. « ACM Ados — semaine 1 »), espèces en caisse.')) return;
+    /* Chaque écriture prend le site de SON activité (l'action), déduit de l'historique — un lot
+       qui mélange deux activités de deux sites ne doit pas tout écraser sous la majorité globale.
+       Les activités SANS historique partagent UNE question (jamais une question par paiement). */
+    const _actionsDuLot=[...new Set(todo.map(function(p){ const i=insMap[p.inscription_activite_id]||{}; return actMap[i.activite_id]||'Activité'; }))];
+    const _siteParAction={}, _sansHistorique=[];
+    _actionsDuLot.forEach(function(a){ const p=siteProbable(a); if(p.sur) _siteParAction[a]=p.site; else _sansHistorique.push(a); });
+    let _siteCommun='';
+    if(_sansHistorique.length){
+      _siteCommun=siteDemander('', 'ces encaissements d\'activité ('+_sansHistorique.join(', ')+')');
+      if(!_siteCommun) return;
+    }
+    const _sitesDuLot=[...new Set(_actionsDuLot.map(function(a){ return _siteParAction[a]||_siteCommun; }))];
+    if(!confirm('Verser '+todo.length+' encaissement(s) d\'activité en comptabilité, sur '+(_sitesDuLot.length===1?('le site « '+_sitesDuLot[0]+' »'):('les sites '+_sitesDuLot.map(function(s){return '« '+s+' »';}).join(' · ')))+' ?\n\nRecettes taguées sur le nom de l\'activité (ex. « ACM Ados — semaine 1 »), espèces en caisse.')) return;
     let n=0;
     for(const p of todo){
       if(versed.has(p.id)) continue;
@@ -12311,7 +12411,7 @@ renderAll();
         cat:'Participation familles', compte:'706 - Prestations de services',
         amount:euros, date:(p.paid_at||p.created_at||today()).slice(0,10),
         project:'', mode:p.mode, account:accountFromMode(p.mode), photo:'',
-        splits:[{site:'', action:actNom, amount:euros}]});
+        splits:[{site:(_siteParAction[actNom]||_siteCommun), action:actNom, amount:euros}]});
       versed.add(p.id); n++;
     }
     save();
@@ -12848,6 +12948,7 @@ renderAll();
     const box=document.getElementById('sugList'); if(!box) return;
     const {data,error}=await sbc.from('suggestions').select('*').order('created_at',{ascending:false}).limit(100);
     if(error){ box.innerHTML='<p class="hint" style="padding:10px;color:#c0392b">Erreur : '+esc(error.message)+'</p>'; return; }
+    window.__sugCache=data||[]; // pré-remplit la fenêtre ✍️ Répondre sans relire la base
     if(!data||!data.length){ box.innerHTML='<p class="hint" style="padding:10px">Aucune idée pour l\'instant. Lance-toi : qu\'est-ce qu\'on pourrait améliorer&nbsp;?</p>'; return; }
     let roleById={};
     try{ const ids=[...new Set(data.map(s=>s.author_id).filter(Boolean))];
@@ -12857,7 +12958,9 @@ renderAll();
       return '<div style="margin:7px 4px;background:#fff;border:1px solid #e6ece7;border-radius:12px;padding:9px 11px">'
         +'<div style="font-size:11px;color:#8a7d56;font-weight:700">'+sugRoleBadge(roleById[s.author_id])+esc(s.author_name||'?')+' · '+esc(d)+(s.context?' · '+esc(s.context):'')+' <span style="float:right">'+(SUG_STATUTS[s.statut]||'')+'</span></div>'
         +'<div style="white-space:pre-wrap;margin-top:3px">'+esc(s.body)+'</div>'
+        +(s.reponse?'<div style="margin-top:7px;background:#eef7f1;border-left:3px solid #0f6b46;border-radius:6px;padding:6px 9px;white-space:pre-wrap"><b>📝 Réponse du bureau</b> <span class="muted" style="font-size:11px">'+esc(String(s.reponse_at||'').slice(0,10))+'</span><br>'+esc(s.reponse)+'</div>':'')
         +(canWrite?'<div style="margin-top:7px;display:flex;gap:5px;flex-wrap:wrap">'
+            +'<button onclick="repondreSug(\''+s.id+'\')" style="font-size:12px;border:1px solid #0f6b46;background:#fff;border-radius:8px;padding:3px 8px;cursor:pointer">✍️ '+(s.reponse?'Modifier la réponse':'Répondre')+'</button>'
             +'<button onclick="setSugStatut(\''+s.id+'\',\'vue\')" style="font-size:12px;border:1px solid #e6ece7;background:#fff;border-radius:8px;padding:3px 8px;cursor:pointer">👀 Vue</button>'
             +'<button onclick="setSugStatut(\''+s.id+'\',\'faite\')" style="font-size:12px;border:1px solid #e6ece7;background:#fff;border-radius:8px;padding:3px 8px;cursor:pointer">✅ Faite</button>'
             +'<button onclick="setSugStatut(\''+s.id+'\',\'rejetee\')" style="font-size:12px;border:1px solid #e6ece7;background:#fff;border-radius:8px;padding:3px 8px;cursor:pointer">✖️ Écarter</button>'
@@ -12871,6 +12974,21 @@ renderAll();
     const nom=(myProfile.full_name||myProfile.email||'').split('@')[0];
     const {error}=await sbc.from('suggestions').insert({asso_id:myAsso, author_id:myProfile.id, author_name:nom, body, context:curTabLabel()});
     if(error){ alert(error.message); inp.value=body; return; }
+    loadSuggest();
+  };
+  /* Répondre n'est PAS statuer : on peut dire « on regarde, on te dit » sans trancher.
+     La réponse s'affiche dans l'espace de l'auteur (salarié, famille ou membre), signée et datée
+     PAR LA BASE (trigger suggestions_garde) — le passage nouvelle → vue aussi : une seule mécanique. */
+  window.repondreSug=async function(id){
+    /* Relire la ligne AVANT le prompt : deux membres du bureau peuvent avoir l'écran ouvert, et
+       un prompt pré-rempli depuis un cache périmé écraserait en silence la réponse de l'autre. */
+    let s=(window.__sugCache||[]).find(x=>x.id===id)||{};
+    const rq=await sbc.from('suggestions').select('reponse').eq('id',id).maybeSingle();
+    if(rq && rq.data) s=rq.data;
+    const t=prompt('Ta réponse à cette idée — elle s\'affichera dans l\'espace de la personne qui l\'a envoyée.\n\n(Laisser vide pour retirer une réponse déjà écrite.)', s.reponse||'');
+    if(t===null) return;
+    const {error}=await sbc.from('suggestions').update({reponse:t.trim()||null}).eq('id',id);
+    if(error){ alert(error.message); return; }
     loadSuggest();
   };
   window.setSugStatut=async function(id,st){ const {error}=await sbc.from('suggestions').update({statut:st}).eq('id',id); if(error){alert(error.message);return;} loadSuggest(); };

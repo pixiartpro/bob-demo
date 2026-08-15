@@ -1764,14 +1764,17 @@ demarrer();
   const STAT={nouvelle:'🆕 reçu', vue:'👀 vu', faite:'✅ fait', rejetee:'✖️ écarté'};
   async function mesIdees(){
     const box=document.getElementById('ideeListe'); if(!box||!ME) return;
-    const r=await sb.from('suggestions').select('body,statut,created_at')
+    // ⚠️ select nominatif : sans `reponse` ici, la réponse du bureau n'arriverait jamais — sans erreur
+    const r=await sb.from('suggestions').select('body,statut,created_at,reponse')
                     .eq('author_id',ME.id).order('created_at',{ascending:false}).limit(20);
     if(r.error){ box.innerHTML='<p class="idee-quand">Impossible de relire tes envois.</p>'; return; }
     const l=r.data||[];
     box.innerHTML=l.length
       ? l.map(s=>'<div class="idee-item"><div class="idee-quand">'
           +esc(new Date(s.created_at).toLocaleDateString('fr-FR',{day:'2-digit',month:'2-digit'}))
-          +' · '+esc(STAT[s.statut]||s.statut||'reçu')+'</div>'+esc(s.body)+'</div>').join('')
+          +' · '+esc(STAT[s.statut]||s.statut||'reçu')+'</div>'+esc(s.body)
+          +(s.reponse?'<div style="margin-top:6px;background:#eef7f1;border-left:3px solid #0f6b46;border-radius:6px;padding:6px 9px;white-space:pre-wrap"><b>📝 Réponse du bureau</b><br>'+esc(s.reponse)+'</div>':'')
+          +'</div>').join('')
       : '<p class="idee-quand">Tes idées apparaîtront ici, avec ce que le bureau en a fait.</p>';
   }
   fab.addEventListener('click',()=>{
