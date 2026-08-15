@@ -6662,6 +6662,14 @@ async function publishTarifs(){
       remise:(g.remise||0), jours:(g.jours||16),
       voteeLe:'2026-08-11', source:'CA du 11/08/2026, point 4', chargeeDansBobLe:'2026-08-13',
       acm:{ petites:(at.petites||[]).slice(), grandes:(at.grandes||[]).slice(), horsCommune:(at.horsCommune!=null?at.horsCommune:145) } };
+    /* 🔴 Le calendrier des jours d'accueil (clé `calendrier`) vit dans CE MÊME enregistrement,
+       mais il n'est pas reconstruit ici : republier la grille l'effacerait en silence, et
+       l'équipe périscolaire se retrouverait à recompter les jours à la main sans savoir
+       pourquoi. On le relit et on le reporte tel quel. */
+    try{
+      const {data:tp}=await sbc.from('tarifs_publics').select('data').eq('asso_id',myAsso).maybeSingle();
+      if(tp&&tp.data&&tp.data.calendrier) payload.calendrier=tp.data.calendrier;
+    }catch(e){ console.warn('report du calendrier', e); }
     await sbc.from('tarifs_publics').upsert({asso_id:myAsso, data:payload, updated_at:new Date().toISOString()});
   }catch(e){ console.warn('publishTarifs', e); }
 }

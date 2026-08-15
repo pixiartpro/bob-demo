@@ -226,7 +226,7 @@ function renderView(){
   else if(ME.view==='vepi'){ vp.innerHTML=backBar('📌 Mon VEPI')+vepiBlockHTML(); }
   else if(ME.view==='peridocs'){ vp.innerHTML=backBar('📎 Docs périscolaire')+periDocsBlockHTML(); }
   else if(ME.view==='perienfants'){ vp.innerHTML=backBar('🎒 Périscolaire')+periEnfantsHTML(); renderPeriEnfants(); }
-  else if(ME.view==='tarif'){ vp.innerHTML=backBar('🧮 Calculer un tarif')+tarifHTML(); }
+  else if(ME.view==='tarif'){ vp.innerHTML=backBar('🧮 Calculer un tarif')+tarifHTML(); spCalMonter(); }
   else { vp.innerHTML=hubHTML(); }
 }
 function backBar(t){ return '<div class="backbar"><button class="btn ghost" onclick="spView(\'hub\')">← Retour</button><span class="backttl">'+esc(t)+'</span></div>'; }
@@ -704,8 +704,9 @@ function tarifHTML(){
       +'<div class="row" style="margin-bottom:10px">'
         +'<div style="flex:1;min-width:150px"><label>Quotient familial (CAF)</label><input id="tf_qf" type="number" min="0" step="1" placeholder="ex. 700" oninput="spTarifReset()" style="width:100%"></div>'
         +'<div style="min-width:120px"><label>Nombre d\'enfants</label><input id="tf_nb" type="number" min="1" max="10" step="1" value="1" oninput="spTarifReset()" style="width:100%"></div>'
-        +'<div style="min-width:180px"><label>Jours d\'ouverture ce mois-ci</label><input id="tf_jours" type="number" min="1" max="26" step="1" placeholder="le bureau te le donne" oninput="spTarifReset()" style="width:100%"></div>'
+        +'<div style="min-width:180px"><label>Jours d\'ouverture ce mois-ci</label><input id="tf_jours" type="number" min="0" max="26" step="1" placeholder="proposé par le calendrier" oninput="spTarifReset()" style="width:100%"></div>'
       +'</div>'
+      +'<div id="tf_cal"></div>'
       +'<div class="row" style="margin-bottom:12px;gap:16px;flex-wrap:wrap">'
         +'<label style="display:flex;align-items:center;gap:6px"><input type="checkbox" id="tf_matin" onchange="spTarifReset()"> 🌅 Matin</label>'
         +'<label style="display:flex;align-items:center;gap:6px"><input type="checkbox" id="tf_soir" checked onchange="spTarifReset()"> 🌆 Soir</label>'
@@ -795,6 +796,64 @@ window.spTarifRun=async function(){
   }
 };
 
+/* ===== 📅 Calendrier des jours d'accueil (15/08/2026) ======================================
+   Avant : le nombre de jours d'ouverture du mois se tapait à la main, et son texte d'aide disait
+   « le bureau te le donne ». Trois chiffres différents circulaient pour août 2026 (7, 8, 9) —
+   à 4,40 € la journée, ça fait presque 9 € d'écart par enfant sur un seul mois, dans un sens
+   comme dans l'autre. Le calendrier est désormais posé UNE fois, dans `tarifs_publics`
+   (que l'équipe a le droit de lire), et le champ se pré-remplit.
+   ⚠️ On PRÉ-REMPLIT, on ne verrouille pas : une fermeture exceptionnelle, un jour de grève, et
+   le vrai chiffre n'est plus celui du calendrier. La personne sur le terrain garde la main.
+   ⚠️ Mois local, jamais toISOString() : en 974 (UTC+4) le passage en UTC recule d'un jour et,
+   un 1er du mois, désignerait le mois PRÉCÉDENT. */
+function spMoisCourant(){
+  const d=new Date();
+  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');   // getMonth = heure LOCALE
+}
+function spMoisLisible(cle){
+  const N=['janvier','février','mars','avril','mai','juin','juillet','août','septembre','octobre','novembre','décembre'];
+  const p=String(cle||'').split('-'); if(p.length!==2) return cle;
+  return (N[parseInt(p[1],10)-1]||'')+' '+p[0];
+}
+window.spCalSignaler=async function(cle, propose){
+  const r=prompt('Combien de jours d\'accueil comptes-tu pour '+spMoisLisible(cle)+' ?\n\nLe calendrier du CASE en annonce '+propose+'. Si tu comptes autre chose, dis-le : le bureau vérifiera.','');
+  if(r===null) return;
+  const n=String(r).trim(); if(!n){ toast('Rien envoyé'); return; }
+  const me=fbMe(); if(!me.id){ toast('Connecte-toi'); return; }
+  const body='📅 Calendrier des jours d\'accueil — '+spMoisLisible(cle)+' : le calendrier annonce '
+    +propose+' jour(s), je compte '+n+'. À vérifier.';
+  const {error}=await sb.from('suggestions').insert({ asso_id:me.asso, author_id:me.id, author_name:me.name, body:body, context:'🧑‍💼 Espace salarié' });
+  if(error){ toast('Erreur : '+error.message); return; }
+  toast('✅ Envoyé au bureau, merci');
+};
+window.spCalMonter=async function(){
+  const box=document.getElementById('tf_cal'); if(!box) return;
+  const g=await spGrilleTarifs();
+  const cal=(g&&g.calendrier)||null;
+  if(!cal||!cal.mois){ box.innerHTML='<p class="sub" style="margin:0 0 10px">Le calendrier des jours d\'accueil n\'est pas encore posé — demande le nombre de jours au bureau.</p>'; return; }
+  const cle=spMoisCourant(), n=cal.mois[cle];
+  const champ=document.getElementById('tf_jours');
+  // On ne pré-remplit que si la personne n'a rien tapé : sa saisie prime toujours sur le calendrier.
+  if(champ && !String(champ.value||'').trim() && n!=null) champ.value=n;
+  const lignes=Object.keys(cal.mois).sort().map(function(k){
+    const v=cal.mois[k], ici=(k===cle);
+    return '<tr'+(ici?' style="background:#eef7f2;font-weight:700"':'')+'><td style="padding:3px 8px">'+esc(spMoisLisible(k))+(ici?' — ce mois-ci':'')+'</td>'
+      +'<td style="padding:3px 8px;text-align:right">'+(v===0?'<span style="color:#b23a23">aucun</span>':esc(String(v))+' jour'+(v>1?'s':''))+'</td></tr>';
+  }).join('');
+  const enTete = (n==null)
+    ? '<b style="color:#b23a23">Ce mois-ci n\'est pas dans le calendrier</b> — demande le nombre de jours au bureau.'
+    : (n===0 ? '<b>'+esc(spMoisLisible(cle))+' : aucun jour d\'accueil</b> — vacances scolaires, il n\'y a rien à facturer.'
+             : '📅 <b>'+esc(spMoisLisible(cle))+' : '+n+' jour'+(n>1?'s':'')+' d\'accueil</b>, pré-rempli d\'après le calendrier du CASE.');
+  box.innerHTML='<div class="sub" style="margin:0 0 10px;background:#eef7f2;border:1px solid #cfe6da;border-radius:10px;padding:8px 12px">'
+    +enTete
+    +'<br><span style="font-size:12.5px">Une fermeture exceptionnelle ? Corrige le champ, c\'est toi qui as le dernier mot.</span>'
+    +'<details style="margin-top:6px"><summary style="cursor:pointer;font-size:12.5px">Voir les 12 mois de l\'année scolaire</summary>'
+      +'<table style="width:100%;margin-top:6px;font-size:13px;border-collapse:collapse">'+lignes+'</table>'
+      +'<p style="margin:6px 0 0;font-size:12px;color:var(--muted)">'+esc(cal.source||'')+'</p>'
+      +(cal.statut==='a_valider_par_l_equipe'?'<p style="margin:6px 0 0;font-size:12.5px;color:#8a6100"><b>⚠️ Ce calendrier attend ta vérification.</b> Si un mois te paraît faux, signale-le : c\'est toi qui es sur le terrain.</p>':'')
+      +'<button class="btn ghost" style="margin-top:6px;padding:4px 10px;font-size:12.5px" onclick="spCalSignaler(\''+esc(cle)+'\','+(n==null?'0':n)+')">✋ Ce n\'est pas le bon nombre</button>'
+    +'</details></div>';
+};
 // Grille publiée (tarifs_publics) : relue À CHAQUE calcul, jamais mise en cache.
 // Même source que le calculateur des familles → jamais deux grilles différentes dans la maison.
 // ⚠️ Pas de cache exprès : une grille gardée en mémoire, c'est le scénario « on facture avec une
