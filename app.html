@@ -70,7 +70,15 @@
   .tabjump-res button:hover,.tabjump-res button.sel{background:#eef4f0}
   .tabjump-res button .fam{margin-left:auto;font-size:11px;font-weight:600;color:var(--muted);white-space:nowrap}
   .tabjump-res .empty{padding:9px 11px;color:var(--muted);font-size:13px}
-  @media(max-width:560px){.tabjump{max-width:none}}
+  /* Lot 10 (15/08/2026) — additif, revertible : supprimer ces 5 règles ET retirer
+     « .tabjump .tj-kbd{display:none} » du @media 560px ci-dessous (seule ligne existante retouchée).
+     « via « facture » » = pourquoi cet onglet sort · l'entête des récents · la pastille du raccourci */
+  .tabjump-res button .tj-lbl{flex:1 1 auto;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis} /* le nom de l'onglet reste sur SA ligne : c'est lui qui cède, jamais la rangée */
+  .tabjump-res button .tj-why{font-size:11px;font-weight:600;color:var(--brand);background:#eef4f0;border:1px solid #bfe3d2;border-radius:999px;padding:0 7px;white-space:nowrap;max-width:45%;overflow:hidden;text-overflow:ellipsis} /* la bordure garde la forme visible sur la ligne sélectionnée (même fond #eef4f0) */
+  .tabjump-res .tj-hd{padding:6px 11px 3px;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+  .tabjump .tj-kbd{position:absolute;right:9px;top:50%;transform:translateY(-50%);font-size:11px;font-weight:700;color:#5a6d63;background:#f1f5f3;border:1px solid var(--line);border-radius:6px;padding:1px 6px;pointer-events:none} /* #5a6d63 : 5,0:1 sur ce fond (le --muted passait sous le seuil AA) */
+  .tabjump input:focus~.tj-kbd,.tabjump input:not(:placeholder-shown)~.tj-kbd{display:none}
+  @media(max-width:560px){.tabjump{max-width:none}.tabjump .tj-kbd{display:none}} /* Lot 10 : pas de clavier physique en mobile, la pastille n'y a rien à dire */
   /* === Étape 2 (22/06/2026) : familles colorées + finition clay — additif, revertible (supprimer ce bloc) === */
   nav.famtabs button{border-bottom-width:3px;border-radius:13px;transition:transform .18s ease-out,box-shadow .18s ease-out,background .18s ease-out}
   nav.famtabs button:hover{transform:translateY(-1px)}
@@ -320,6 +328,7 @@
   <div class="tabjump"><!-- 30/06/2026 : recherche d'onglet « Aller à… » — additif, revertible (supprimer ce bloc + le CSS .tabjump + l'IIFE tabJump) -->
     <input id="tabJumpInput" type="search" autocomplete="off" placeholder="🔎 Aller à un onglet…" aria-label="Aller à un onglet" aria-expanded="false">
     <div id="tabJumpResults" class="tabjump-res" role="listbox" aria-label="Onglets correspondants"></div>
+    <span id="tabJumpKbd" class="tj-kbd" aria-hidden="true">Ctrl K</span><!-- Lot 10-B : le raccourci, écrit pour qu'on le découvre (⌘K sur Mac, posé par le JS) -->
   </div>
   <!-- Étape B (10/07/2026) : re-rangement par DOMAINE (7 tiroirs purs). Réversible : restaurer le bloc nav 6-familles du backup app.html.BACKUP-etapeB-*. Les data-group KEYS existantes sont conservées (bureau=Vie associative, equipe=Équipe/RH) pour ne pas casser les références JS ; ajout de animation/lieux/comm. -->
   <nav class="famtabs" aria-label="Familles d'onglets">
@@ -3055,16 +3064,111 @@ document.querySelectorAll('nav.tabs button').forEach(b=>{
       .map(b=>{ const g=b.closest('.tabgroup'); return {tab:b.dataset.tab,label:(b.dataset.lbl||b.textContent).trim(),fam:(g&&FAM[g.dataset.group])||''}; }); // dataset.lbl = libellé sans le compteur du fil rouge
   }
   let cur=[], sel=-1;
+  /* ---- Lot 10-A (15/08/2026, additif/revertible) : la recherche qui TROUVE ------------------
+     Les mots-clés des fiches d'aide du coffre (db.faq) deviennent des SYNONYMES d'onglet :
+     « facture » mène à la Comptabilité, « danse » aux Salles, « quorum » au Secrétariat.
+     Aucun mot n'est écrit ici : ils viennent des données de CHAQUE asso, donc pas une ligne de
+     vocabulaire client dans le code, et chaque asso hérite du sien.
+     Coffre pas chargé, aide vide, profil en lecture seule (la RLS réserve db.faq au bureau) →
+     zéro alias, et la palette redevient EXACTEMENT celle d'avant : la bande de score 80
+     ci-dessous est mot pour mot l'ancien filtre, donc aucun résultat d'hier ne peut disparaître.
+     Revert (A et C palette, INSÉPARABLES — renderRecents vit dans ce bloc) : supprimer d'ici à la
+     fin de renderRecents(), puis dans render() remettre les trois lignes d'origine :
+       if(!q){ close(); return; }
+       cur=items().filter(it=>norm(it.label).includes(q)).slice(0,8);
+     et l'ancien ternaire de box.innerHTML (sans rowsHtml). --------------------------------- */
+  const A_STOP=new Set(('voir valider telecharger televerser imprimer creer ajouter modifier supprimer changer envoyer '
+    +'remplir cliquer ouvrir fermer trouver chercher sans avec dans pour tous tout toute toutes leur leurs cette celui '
+    +'celle apres avant depuis quand alors donc mais aussi meme page pages bouton onglet onglets ecran liste ligne lignes '
+    +'case cases champ colonne colonnes exemple etape faut doit peut fois nouveau nouvelle autre autres bien').split(' '));
+  const norm2=s=>(s||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^a-z0-9]+/g,' ').trim();
+  /* Un mot qui désigne plus de 6 onglets n'est pas un synonyme, c'est du vocabulaire courant.
+     Mesuré sur le corpus réel (179 fiches) : 878 mots ne visent qu'un seul onglet, mais la queue
+     (« fiche » 16, « equipe » 14, « famille » 12) noierait la liste si on la laissait entrer. */
+  const A_MAX=6;
+  let _alFaq=null,_alN=-1,_alMap=null;
+  function aliasMap(list){
+    let faq=[]; try{ faq=(typeof FAQ!=='undefined'&&Array.isArray(FAQ))?FAQ:[]; }catch(e){ faq=[]; } // FAQ est déclaré plus bas : le try couvre la zone morte
+    if(_alMap&&_alFaq===faq&&_alN===list.length) return _alMap;   // recalcul quand le coffre change (faqSync réassigne FAQ) ou quand les droits changent le nombre d'onglets
+    _alFaq=faq; _alN=list.length; _alMap=Object.create(null);
+    try{
+      if(!faq.length||typeof faqTokens!=='function') return _alMap;
+      const tabs=list.map(it=>({tab:it.tab,lab:norm2(it.label)})).filter(t=>t.lab);
+      /* Anti-inversion : un mot qui EST le nom d'un onglet ne devient jamais l'alias d'un AUTRE.
+         Sans ça, taper « vepi » remonterait les dix onglets qui parlent du VEPI au lieu du VEPI. */
+      const motsLib=new Set();
+      tabs.forEach(t=>t.lab.split(' ').forEach(w=>{ if(w.length>2){ motsLib.add(w); motsLib.add(w.replace(/s$/,'')); } }));
+      /* cat → onglet(s). La convention maison veut que le `cat` d'une fiche reprenne le libellé
+         EXACT de l'onglet : on tente l'égalité, puis le libellé retrouvé comme suite de mots dans
+         la cat — ce qui rattrape les cat qui en couvrent deux (« Projets & Subventions »). */
+      const catTabs=new Map();
+      faq.forEach(it=>{ const c=norm2(it&&it.cat); if(!c||catTabs.has(c)) return;
+        let hit=tabs.filter(t=>t.lab===c);
+        if(!hit.length) hit=tabs.filter(t=>(' '+c+' ').indexOf(' '+t.lab+' ')>=0);
+        catTabs.set(c,hit.map(t=>t.tab)); });
+      /* chaque mot → les onglets qu'il désigne, et combien de fiches l'emploient pour chacun */
+      const par=Object.create(null);
+      faq.forEach(it=>{ const c=norm2(it&&it.cat), ts=c?(catTabs.get(c)||[]):[]; if(!ts.length) return;
+        new Set(faqTokens((it&&it.kw)||'')).forEach(w=>{
+          if(w.length<3||A_STOP.has(w)||motsLib.has(w)||motsLib.has(w.replace(/s$/,''))) return; // 3 lettres : on garde les sigles (DSN, RIB, PEC, CAF), que le bureau tape vraiment
+          const e=par[w]||(par[w]=Object.create(null)); ts.forEach(t=>{ e[t]=(e[t]||0)+1; }); }); });
+      Object.keys(par).forEach(w=>{ const e=par[w], ts=Object.keys(e);
+        if(ts.length>A_MAX) return;                       // mot trop courant : ce n'est pas un synonyme
+        ts.forEach(t=>{ (_alMap[t]||(_alMap[t]=[])).push({m:w,n:ts.length,f:e[t]}); }); });
+    }catch(e){ _alMap=Object.create(null); }               // au moindre pépin : pas d'alias, jamais de palette cassée
+    return _alMap;
+  }
+  /* Le classement, en bandes — le LIBELLÉ passe toujours devant l'ALIAS :
+     100 un mot du libellé commence par la saisie · 80 le libellé la contient (= l'ancien filtre) ·
+     puis l'alias, d'autant plus bas qu'il vise plusieurs onglets (60 s'il n'en vise qu'un, 30 pour six). */
+  function scoreItems(q){
+    if(!q) return [];
+    const list=items(), map=aliasMap(list), q2=norm2(q), out=[];
+    list.forEach((it,i)=>{
+      let sc=0;
+      if(q2&&(' '+norm2(it.label)).indexOf(' '+q2)>=0) sc=100;
+      else if(norm(it.label).indexOf(q)>=0) sc=80;
+      if(sc){ out.push({tab:it.tab,label:it.label,fam:it.fam,why:'',sc:sc,f:0,i:i}); return; }
+      let best=0,mot='',fic=0;
+      (map[it.tab]||[]).forEach(a=>{
+        const s=(a.m===q2)?(60-6*(a.n-1)):((q2&&a.m.indexOf(q2)===0)?(45-6*(a.n-1)):0);
+        if(s>best||(s===best&&s>0&&a.f>fic)){ best=s; mot=a.m; fic=a.f; } });
+      if(best>0) out.push({tab:it.tab,label:it.label,fam:it.fam,why:mot,sc:best,f:fic,i:i});
+    });
+    return out.sort((a,b)=>(b.sc-a.sc)||(b.f-a.f)||(a.i-b.i)).slice(0,8);
+  }
+  /* fabrique de lignes, partagée par la recherche et par les récents */
+  function rowsHtml(){
+    return cur.map((it,i)=>'<button type="button" data-go="'+esc(it.tab)+'" class="'+(i===sel?'sel':'')+'">'
+      +((window.__persoByTab&&window.__persoByTab[it.tab])?'<img class="tj-perso" src="'+esc(window.__persoByTab[it.tab])+'" alt="" onerror="this.remove()">':'')
+      +'<span class="tj-lbl">'+esc(it.label)+'</span>'
+      +(it.why?'<span class="tj-why">via&nbsp;« '+esc(it.why)+' »</span>':'')
+      +'<span class="fam">'+esc(it.fam)+'</span></button>').join('');
+  }
+  /* ---- Lot 10-C : les derniers onglets visités, proposés quand le champ est VIDE.
+     Ils repassent par items(), donc par le filtre d'affichage : un onglet rangé, éteint ou
+     interdit au profil ne peut jamais réapparaître ici. L'onglet où l'on est DÉJÀ est retiré —
+     le proposer n'aiderait personne. Revert : remettre  if(!q){ close(); return; }  ---- */
+  function renderRecents(){
+    let ks=[]; try{ ks=(typeof window.bobRecentTabs==='function')?window.bobRecentTabs():[]; }catch(e){ ks=[]; }
+    if(!ks.length){ close(); return; }
+    const btn=document.querySelector('nav.tabs button.active'), ici=btn?btn.dataset.tab:'';
+    const parTab=Object.create(null); items().forEach(it=>{ parTab[it.tab]=it; }); // sans prototype : une clé farfelue en localStorage ne fabrique pas de ligne fantôme
+    cur=[...new Set(ks)].filter(k=>k!==ici).map(k=>parTab[k]).filter(Boolean).slice(0,5)
+          .map(it=>({tab:it.tab,label:it.label,fam:it.fam,why:''}));
+    if(!cur.length){ close(); return; }
+    sel=-1;                                       // rien de pré-choisi : Entrée à vide ne quitte pas l'onglet en cours (les flèches, elles, partent bien de la 1re ligne)
+    box.innerHTML='<div class="tj-hd">Derniers onglets</div>'+rowsHtml();
+    box.classList.add('show'); input.setAttribute('aria-expanded','true');
+  }
   function paint(){ [...box.querySelectorAll('button')].forEach((b,i)=>b.classList.toggle('sel',i===sel)); }
   function close(){ box.classList.remove('show'); box.innerHTML=''; cur=[]; sel=-1; input.setAttribute('aria-expanded','false'); }
   function render(){
     const q=norm(input.value).trim();
-    if(!q){ close(); return; }
-    cur=items().filter(it=>norm(it.label).includes(q)).slice(0,8);
+    if(!q){ renderRecents(); return; }   // Lot 10-C (avant : close(); return;)
+    cur=scoreItems(q);                   // Lot 10-A (avant : cur=items().filter(it=>norm(it.label).includes(q)).slice(0,8);)
     sel=cur.length?0:-1;
-    box.innerHTML = cur.length
-      ? cur.map((it,i)=>'<button type="button" data-go="'+it.tab+'" class="'+(i===sel?'sel':'')+'">'+((window.__persoByTab&&window.__persoByTab[it.tab])?'<img class="tj-perso" src="'+window.__persoByTab[it.tab]+'" alt="" onerror="this.remove()">':'')+'<span>'+it.label+'</span><span class="fam">'+it.fam+'</span></button>').join('')
-      : '<div class="empty">Aucun onglet ne correspond.</div>';
+    box.innerHTML = cur.length ? rowsHtml() : '<div class="empty">Aucun onglet ne correspond.</div>';
     box.classList.add('show'); input.setAttribute('aria-expanded','true');
   }
   function go(tab){ if(!tab) return; if(typeof bobGoTab==='function') bobGoTab(tab); input.value=''; close(); }
@@ -3078,6 +3182,57 @@ document.querySelectorAll('nav.tabs button').forEach(b=>{
   });
   box.addEventListener('click', e=>{ const b=e.target.closest('button[data-go]'); if(b) go(b.getAttribute('data-go')); });
   document.addEventListener('click', e=>{ if(!e.target.closest('.tabjump')) close(); });
+})();
+
+/* ---- Lot 10-B (15/08/2026, additif/revertible) : le raccourci qui ouvre la palette ----------
+   ⌘K sur Mac, Ctrl+K ailleurs — et la touche « / » seule, pour ceux qui n'aiment pas les combos.
+   La touche « / » ne vole jamais la frappe (pas pendant une saisie) ; ⌘K/Ctrl+K passe aussi
+   depuis un champ, comme dans les outils que le bureau connaît. Ni l'un ni l'autre quand une
+   fenêtre est ouverte ou pendant la composition d'un accent. Échap referme (géré par la palette).
+   Revert = supprimer CE bloc entier, PLUS le span #tabJumpKbd (dans le markup .tabjump, en tête
+   de fichier) et les règles CSS .tj-kbd (bloc « Lot 10 » du <style>). ------------------------ */
+(function(){
+  const MAC=/Mac|iPhone|iPad/.test(navigator.platform||navigator.userAgent||'');
+  /* Une fenêtre est-elle ouverte par-dessus ? Les couches maison portent .open (bobDlg, opModal,
+     fiche compagnon) ; les autres se ferment en display:none. getClientRects() est le bon test :
+     ces couches sont en position:fixed, pour lesquelles offsetParent vaut toujours null. */
+  function coucheOuverte(){
+    try{
+      if(document.querySelector('.overlay.open, #eqModal.open, #eqBack.open')) return true;
+      const f=document.querySelectorAll('#pageHelpModal, #docViewer');
+      for(let i=0;i<f.length;i++){ if(f[i].getClientRects().length) return true; }
+      if(typeof window.bobCoucheOuverte==='function'&&window.bobCoucheOuverte()) return true; // crochet : une couche future s'annonce ici
+    }catch(e){}
+    return false;
+  }
+  function enSaisie(t){
+    if(!t||t.nodeType!==1) return false;
+    if(t.isContentEditable) return true;
+    const tag=t.tagName;
+    return tag==='INPUT'||tag==='TEXTAREA'||tag==='SELECT'||tag==='OPTION';
+  }
+  function ouvrir(){
+    const i=document.getElementById('tabJumpInput'); if(!i) return false;
+    try{ const st=getComputedStyle(i); if(st.display==='none'||st.visibility==='hidden') return false; }catch(e){}
+    try{ i.scrollIntoView({block:'center',behavior:'smooth'}); }catch(e){}   // en mobile la barre n'est plus collée en haut
+    try{ i.focus({preventScroll:true}); }catch(e){ try{ i.focus(); }catch(e2){} }
+    try{ i.select(); }catch(e){}
+    try{ i.dispatchEvent(new Event('input',{bubbles:true})); }catch(e){}    // repeint TOUJOURS la liste — focus() seul ne suffit pas quand le champ a déjà le focus (2e ⌘K d'affilée)
+    return true;
+  }
+  document.addEventListener('keydown',function(e){
+    if(e.defaultPrevented||e.repeat) return;
+    if(e.isComposing||e.keyCode===229) return;                              // accent en cours de composition
+    if(e.key==='Dead'||e.key==='Unidentified'||e.key==='Process') return;   // touche morte ^ ¨ ~ ` de l'AZERTY
+    const k=e.key;
+    const combo=(e.metaKey||e.ctrlKey)&&!e.altKey&&(k==='k'||k==='K');
+    const seul=(k==='/')&&!e.metaKey&&!e.ctrlKey&&!e.altKey&&!enSaisie(e.target);
+    if(!combo&&!seul) return;
+    if(coucheOuverte()) return;
+    if(ouvrir()) e.preventDefault();
+  });
+  /* la pastille qui APPREND le raccourci : sans elle, personne ne le découvre */
+  try{ const p=document.getElementById('tabJumpKbd'); if(p) p.textContent=MAC?'⌘K':'Ctrl K'; }catch(e){}
 })();
 
 /* ---- Aide : « Demande à Zanana » (FAQ + assistant par mots-clés, sans IA) ---- */
@@ -8620,6 +8775,14 @@ renderAll();
     if(window.decorPersoNav) window.decorPersoNav();
     if(!window._persoTabW){ window._persoTabW=1;
       document.querySelectorAll('nav.tabs button[data-tab]').forEach(b=>b.addEventListener('click',()=>{ try{ if(myProfile&&myProfile.id) localStorage.setItem('bob_last_tab_'+myProfile.id, b.dataset.tab); }catch(e){} }));
+      /* Lot 10-C (15/08/2026, additif/revertible) : en plus du DERNIER onglet (ligne ci-dessus,
+         INTACTE), on retient les 8 derniers, que la palette propose quand son champ est vide.
+         Même clé PAR PROFIL que la voisine (28/07/2026, fuite tablette), et on n'écrit QUE des
+         clés techniques data-tab : ni libellé, ni horodatage — une préférence d'affichage, pas
+         un journal d'activité. Revert : supprimer ce commentaire et les 3 lignes « // Lot 10-C ». */
+      const recK=()=>(myProfile&&myProfile.id)?('bob_tabs_recents_'+myProfile.id):'';                          // Lot 10-C
+      window.bobRecentTabs=function(){ try{ const a=JSON.parse(localStorage.getItem(recK())||'[]'); return Array.isArray(a)?a.filter(x=>typeof x==='string').slice(0,8):[]; }catch(e){ return []; } }; // Lot 10-C
+      document.querySelectorAll('nav.tabs button[data-tab]').forEach(b=>b.addEventListener('click',()=>{ try{ const k=recK(), t=b.dataset.tab; if(k&&t) localStorage.setItem(k,JSON.stringify([t].concat(window.bobRecentTabs().filter(x=>x!==t)).slice(0,8))); }catch(e){} })); // Lot 10-C
     }
     if(window.renderMonEquipe) window.renderMonEquipe();
     /* 04/08/2026 — l'aide et les nouveautés se filtrent sur bobLibCaches, qui vient d'être
