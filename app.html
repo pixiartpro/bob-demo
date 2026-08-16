@@ -5538,21 +5538,55 @@ function addLien(){
 function delLien(id){ if(confirm('Supprimer ce lien ?')){ db.liens=db.liens.filter(l=>l.id!==id); save(); } }
 /* ---- 🔒 Accès chiffrés : notes confidentielles des liens (identifiants / mots de passe) ----
    Chiffrement côté navigateur (module Coffre). Le « code du coffre » n'est jamais enregistré : tapé à chaque fois. */
+/* 🔴 LE CALCUL DURE — ON RETROUVE LE LIEN DANS LE COFFRE D'APRÈS, PAS CELUI D'AVANT =======
+   16/08/2026. Chiffrer une note, c'est 150 000 itérations PBKDF2 — mesuré à ~60 ms sur un Mac
+   récent, davantage sur un téléphone. La durée exacte n'est pas le sujet : ce qui compte, c'est
+   qu'AUCUNE fenêtre n'est ouverte à l'écran pendant ce calcul. Or le contrôle automatique du
+   coffre (cloudRefresh, toutes les 15 s) ne se retient que devant une fenêtre ouverte : il
+   passe donc librement pendant le calcul, et remplace `db` par la version du serveur.
+   L'objet lu avant le calcul devient alors orphelin. Écrire dedans ne rate pas — ça ne fait
+   RIEN : save() poussait un coffre où l'identifiant CAF, Mairie ou banque était resté
+   EN CLAIR, pendant que Bob affichait « 🔒 Accès protégé ».
+   ⚠️ Donc : on garde la VALEUR (le texte), jamais la référence, et on retrouve le lien juste
+   avant d'écrire. Si sa note a bougé entre-temps, on n'écrase pas — la personne d'en face a
+   peut-être tapé un nouveau mot de passe, et le chiffré qu'on tient est celui de l'ancien.
+   Rend { l, motif } : `l` vaut null quand il ne faut rien écrire, et `motif` dit pourquoi. */
+function lienAEcrire(id, noteAttendue){
+  const l=(db.liens||[]).find(x=>x.id===id);
+  if(!l) return {l:null, motif:'Cet accès vient d\'être supprimé par quelqu\'un d\'autre — rien n\'a changé.'};
+  if(l.note!==noteAttendue) return {l:null, motif:'Cet accès vient d\'être modifié par quelqu\'un d\'autre — rien n\'a changé, pour ne pas écraser sa version.'};
+  return {l:l, motif:''};
+}
 async function protegerLien(id){
   const l=(db.liens||[]).find(x=>x.id===id); if(!l||!l.note) return;
   if(Coffre.estChiffre(l.note)){ alert('Cet accès est déjà protégé.'); return; }
+  const clair=l.note;                       // la VALEUR : elle seule survit au calcul
   const code=prompt('Choisis le CODE DU COFFRE (le même pour tous les accès, à retenir) :'); if(!code) return;
   const code2=prompt('Confirme le code :'); if(code2!==code){ alert("Les deux codes sont différents — rien n'a été protégé."); return; }
-  l.note=await Coffre.chiffrer(l.note, code); save();
+  const chiffre=await Coffre.chiffrer(clair, code);
+  const r=lienAEcrire(id, clair);
+  if(!r.l){ await bobAlert(r.motif, {titre:'Rien n\'a été protégé'}); return; }
+  r.l.note=chiffre; save();
   alert('🔒 Accès protégé. Pour le relire : bouton « Révéler » + ce code.');
 }
 async function protegerTousLiens(){
   const list=(db.liens||[]).filter(l=>l.note && !Coffre.estChiffre(l.note));
   if(!list.length){ alert('Aucune note à protéger.'); return; }
+  const aFaire=list.map(function(l){ return {id:l.id, clair:l.note}; });   // valeurs, pas références
   const code=prompt('Choisis le CODE DU COFFRE (le même pour tous les accès, à retenir) :'); if(!code) return;
   const code2=prompt('Confirme le code :'); if(code2!==code){ alert("Les deux codes sont différents — rien n'a été protégé."); return; }
-  for(const l of list){ l.note=await Coffre.chiffrer(l.note, code); }
-  save(); alert('🔒 '+list.length+' accès protégé(s). Pour les relire : « Révéler » + ce code.');
+  for(const it of aFaire){ it.chiffre=await Coffre.chiffrer(it.clair, code); }
+  let n=0, ignores=0;
+  for(const it of aFaire){
+    const r=lienAEcrire(it.id, it.clair);
+    if(!r.l){ ignores++; continue; }
+    r.l.note=it.chiffre; n++;
+  }
+  if(!n){ await bobAlert('Ces accès viennent d\'être modifiés ou supprimés par quelqu\'un d\'autre — rien n\'a été protégé.', {titre:'Rien n\'a été protégé'}); return; }
+  save();
+  alert('🔒 '+n+' accès protégé(s).'
+    +(ignores?'\n('+ignores+' laissé(s) de côté : modifié(s) par quelqu\'un d\'autre pendant le calcul.)':'')
+    +'\nPour les relire : « Révéler » + ce code.');
 }
 async function revealLien(id){
   const l=(db.liens||[]).find(x=>x.id===id); if(!l) return;
@@ -5565,9 +5599,18 @@ async function revealLien(id){
 }
 async function deprotegerLien(id){
   const l=(db.liens||[]).find(x=>x.id===id); if(!l||!Coffre.estChiffre(l.note)) return;
+  const chiffre=l.note;                     // la VALEUR : c'est elle qu'on retrouvera après le calcul
   const code=prompt('Code du coffre (pour déprotéger et pouvoir modifier) :'); if(!code) return;
-  try{ l.note=await Coffre.dechiffrer(l.note, code); save(); alert('🔓 Note remise en clair. Modifie-la avec ✏️, puis re-protège-la avec 🔒.'); }
-  catch(e){ alert('Code incorrect.'); }
+  let clair;
+  /* Seul le DÉCHIFFREMENT est sous le try. Avant, l'enregistrement et le message d'annonce y
+     étaient aussi : une erreur venue d'eux se serait affichée « Code incorrect » — un message
+     faux, qui aurait envoyé chercher le problème du mauvais côté. */
+  try{ clair=await Coffre.dechiffrer(chiffre, code); }
+  catch(e){ alert('Code incorrect.'); return; }
+  const r=lienAEcrire(id, chiffre);
+  if(!r.l){ await bobAlert(r.motif, {titre:'Rien n\'a changé'}); return; }
+  r.l.note=clair; save();
+  alert('🔓 Note remise en clair. Modifie-la avec ✏️, puis re-protège-la avec 🔒.');
 }
 function renderRepertoire(){
   const cq=($('c_search')?.value||'').toLowerCase();
