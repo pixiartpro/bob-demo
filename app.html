@@ -8453,9 +8453,13 @@ function renderAll(){ renderCoffre(); renderDashboard(); renderZoneCards(); rend
    « Export terminé » : même boîte, même bouton, même gris. Désormais le titre annonce ce qui
    va se passer et le bouton est ROUGE quand c'est définitif. Le mot de passe de la remise à
    zéro, lui, ne s'affiche plus en clair à l'écran.
-   ⚠️ exportJSON reste VOLONTAIREMENT synchrone : l'import s'appuie sur le fait qu'elle jette
-   son erreur tout de suite (filet ③ ci-dessous). La rendre asynchrone ouvrirait ce filet dans
-   le vide et laisserait écraser les données sans sauvegarde. ============================== */
+   ⚠️ RECTIFICATIF DU MÊME JOUR — ce cartouche affirmait qu'exportJSON devait rester synchrone
+   « parce que l'import s'appuie sur le fait qu'elle jette son erreur tout de suite ». C'était
+   FAUX : download() fait un a.click(), et un téléchargement refusé par le navigateur ne lève
+   RIEN. Le filet n'a jamais existé de ce côté-là. Il vit maintenant côté serveur, dans
+   bob_import_asso (migration 74), qui garde TOUJOURS une copie avant de remplacer.
+   La leçon vaut plus que le correctif : un commentaire qui CERTIFIE une garantie dissuade le
+   prochain relecteur d'aller la vérifier. ====================================================== */
 function exportJSON(motif){
   const blob=new Blob([JSON.stringify(db,null,2)],{type:'application/json'});
   /* le nom du fichier suit l'ASSO connectée (window.bobOrgName), plus « CASE » en dur */
@@ -8483,24 +8487,51 @@ function importJSON(e){
     const n=k=>Array.isArray(db[k])?db[k].length:0;
     const perte=[n('members')+' adhérent(s)', n('ops')+' opération(s) comptable(s)', n('subventions')+' subvention(s)',
                  n('projects')+' projet(s)', n('incidents')+' événement(s)'].join('\n  · ');
-    if(!await bobConfirm('Toutes les données en ligne de '+(window.bobOrgName||'l\'association')+' vont être REMPLACÉES par celles du fichier.\n\nCe qui va être écrasé :\n  · '+perte+'\n\nUne sauvegarde de l\'état actuel va d\'abord être téléchargée. Si ce téléchargement échoue, l\'import sera ANNULÉ.', {titre:'⚠️ Remplacer toutes les données ?', ok:'Remplacer', danger:true})){ return; }
-    /* ③ FAIL-CLOSED : l\'erreur de l\'export de sécurité était avalée par un catch vide —
-       téléchargement bloqué par le navigateur = écrasement SANS filet. On arrête net. */
-    try{ exportJSON('avant-import'); }
-    catch(err){
-      await bobAlert('La sauvegarde de sécurité n\'a pas pu être téléchargée ('+((err&&err.message)||err)+').\n\nImport ANNULÉ : rien n\'a été modifié. Vérifie que ton navigateur autorise les téléchargements, puis réessaie.', {titre:'⚠️ Import annulé'});
-      return;
-    }
-    /* 🔒 Les nouveautés vivent dans le coffre depuis le 15/08/2026. Une sauvegarde faite AVANT
-       cette date ne les contient pas : sans ce filet, l'import les effacerait définitivement,
-       en silence, puisqu'il remplace tout puis enregistre. On les reprend si l'import est muet. */
+    if(!await bobConfirm('Toutes les données en ligne de '+(window.bobOrgName||'l\'association')+' vont être REMPLACÉES par celles du fichier.\n\nCe qui va être écrasé :\n  · '+perte+'\n\nUne copie de l\'état actuel sera conservée EN LIGNE avant le remplacement, et une copie sera téléchargée dans tes fichiers.', {titre:'⚠️ Remplacer toutes les données ?', ok:'Remplacer', danger:true})){ return; }
+    /* ③ 16/08/2026 — LE FILET A CHANGÉ DE CÔTÉ, PARCE QUE L'ANCIEN NE POUVAIT PAS TENIR.
+       Ce bloc annonçait « fail-closed » : si le téléchargement de secours échoue, on annule.
+       C'était FAUX, et le message affiché le promettait pourtant à la personne. download() fait
+       un simple a.click() : un téléchargement refusé par le navigateur ne lève aucune erreur,
+       il ne se produit pas, en silence. Le try/catch n'attrapait donc que l'échec de fabrication
+       du fichier (coffre trop gros), jamais le cas décrit.
+       Le vrai filet est maintenant côté SERVEUR : bob_import_asso (migration 74) garde TOUJOURS
+       une copie avant de remplacer — là où l'enregistrement ordinaire n'en gardait qu'une par
+       heure. Le téléchargement reste offert en plus ; on dit honnêtement s'il a eu lieu. */
+    let copieLocale=true;
+    try{ exportJSON('avant-import'); }catch(err){ copieLocale=false; }
+
+    /* 🔒 Les nouveautés et l'aide vivent dans le coffre depuis le 15/08/2026. Une sauvegarde
+       faite AVANT cette date ne les contient pas : on les reprend AVANT d'envoyer, sinon
+       l'import les effacerait pour tout le monde, y compris en ligne. */
     const _newsAvant=(typeof db!=='undefined' && db && Array.isArray(db.news)) ? db.news : null;
     const _faqAvant =(typeof db!=='undefined' && db && Array.isArray(db.faq))  ? db.faq  : null;
-    db=Object.assign(blank(),d);
-    if(!Array.isArray(db.news) && _newsAvant) db.news=_newsAvant;
-    if(!Array.isArray(db.faq)  && _faqAvant)  db.faq =_faqAvant;
-    newsSync(); faqSync();
-    _jPrev=null; db.journal=(db.journal||[]).concat([jEntry('Données','📥 Sauvegarde importée (remplacement des données)')]).slice(-500); save(); await bobAlert('Les données du fichier ont remplacé celles en ligne.', {titre:'✅ Sauvegarde importée'});
+    const aPoser=Object.assign({}, d);
+    if(!Array.isArray(aPoser.news) && _newsAvant) aPoser.news=_newsAvant;
+    if(!Array.isArray(aPoser.faq)  && _faqAvant)  aPoser.faq =_faqAvant;
+    aPoser.journal=(Array.isArray(aPoser.journal)?aPoser.journal:[])
+      .concat([jEntry('Données','📥 Sauvegarde importée (remplacement des données)')]).slice(-500);
+
+    const rep=(typeof window.bobImportRemplace==='function')
+      ? await window.bobImportRemplace(aPoser)
+      : {ok:false, motif:'hors-ligne'};
+    if(!rep.ok){
+      const m=String(rep.motif||'');
+      await bobAlert(
+        m==='hors-ligne'
+          ? 'Bob n\'est pas connecté au serveur — rien n\'a été modifié. Reconnecte-toi, puis réessaie.'
+        : m.indexOf('stale:')===0
+          ? 'Un collègue a enregistré pendant que tu répondais à la question — rien n\'a été modifié.\n\nClique « ↻ Rafraîchir » pour voir sa version, puis relance l\'import si tu veux toujours le faire.'
+        : m.indexOf('Import refusé')>=0
+          ? m
+        : m.indexOf('forbidden')>=0
+          ? 'Seuls le président et le trésorier peuvent remplacer toutes les données par une sauvegarde — rien n\'a été modifié.'
+          : 'L\'import n\'a pas pu être effectué ('+m+').\n\nRien n\'a été modifié.',
+        {titre:'⚠️ Import annulé'});
+      return;
+    }
+    await bobAlert('Les données du fichier ont remplacé celles en ligne. Une copie de l\'état précédent a été conservée en ligne.'
+      +(copieLocale?'' : '\n\n⚠️ En revanche, la copie dans tes fichiers n\'a pas pu être téléchargée — vérifie que ton navigateur autorise les téléchargements.'),
+      {titre:'✅ Sauvegarde importée'});
   };
   r.readAsText(f); e.target.value='';
 }
@@ -9035,6 +9066,30 @@ renderAll();
     _jPrev = jSnap();
     lastSyncTs = st?st.updated_at:lastSyncTs; dirty=false;
     renderAll(); setSync('✓ rechargé depuis le serveur','#dff5e9');
+  };
+
+  /* 16/08/2026 — IMPORTER UNE SAUVEGARDE PASSE MAINTENANT PAR LE SERVEUR (migration 74).
+     Avant, l'écran écrivait les données localement puis laissait partir l'enregistrement
+     ordinaire, 800 ms plus tard. Deux ennuis, tous deux invisibles :
+       · l'enregistrement ordinaire ne garde une copie de secours qu'UNE FOIS PAR HEURE.
+         Si quelqu'un du bureau avait enregistré dans l'heure — le cas courant — un import
+         ne laissait AUCUNE copie en ligne ;
+       · ces 800 ms laissaient le temps à la fenêtre « un collègue a enregistré » de surgir
+         PAR-DESSUS le message de succès, et son bouton conseillé recharge le serveur :
+         il jetait l'import qu'on venait d'annoncer réussi.
+     Maintenant : un seul aller-retour, qui garde TOUJOURS une copie avant de remplacer, et
+     qui refuse net si un collègue a enregistré entre-temps. Rend {ok:true} ou {ok:false,motif}. */
+  window.bobImportRemplace=async function(data){
+    if(!sbc||!myAsso) return {ok:false, motif:'hors-ligne'};
+    clearTimeout(pushTimer);            // rien d'autre ne doit partir en parallèle
+    const r=await sbc.rpc('bob_import_asso',{p_data:data, p_expected:lastSyncTs});
+    if(r.error){ setSync('⚠️ import refusé','#ffd9d0'); return {ok:false, motif:String(r.error.message||'')}; }
+    lastSyncTs=r.data; dirty=false;
+    db=Object.assign(blank(), data);
+    newsSync(); faqSync();
+    _jPrev=jSnap();
+    renderAll(); setSync('✓ sauvegarde importée','#dff5e9');
+    return {ok:true};
   };
 
   // Photos de justificatifs : envoyées dans le coffre fichiers (Storage), pas dans le bloc de données
