@@ -7679,26 +7679,26 @@ function oblVisiteEtat(v){
   if(v.rdv) return {p:'wait',t:'📅 RDV pris'};
   return {p:'wait',t:'🟠 À planifier'};
 }
-function oblAddVisite(){
+async function oblAddVisite(){
   const sal=$('ob_vm_sal').value, type=$('ob_vm_type').value, avant=$('ob_vm_avant').value;
-  if(!sal){ alert('Choisis une personne.'); return; }
+  if(!sal){ await bobAlert('Choisis une personne.'); return; }
   oblDB().visites.push({id:uid(),salarie:sal,type:type,avant:avant,rdv:'',faitLe:'',note:'',creeLe:today()});
   $('ob_vm_avant').value=''; save();
 }
 function oblSetVisite(id,champ,val){ const v=oblDB().visites.find(x=>x.id===id); if(v){ v[champ]=val; save(); } }
-function oblDelVisite(id){ if(confirm('Supprimer cette ligne ?')){ oblDB().visites=oblDB().visites.filter(x=>x.id!==id); save(); } }
-function oblAddCompteur(){
+async function oblDelVisite(id){ if(await bobConfirm('Supprimer cette ligne ?', {titre:'Confirmer', ok:'Confirmer'})) { oblDB().visites=oblDB().visites.filter(x=>x.id!==id); save(); } }
+async function oblAddCompteur(){
   const sal=$('ob_cp_sal').value, h=parseFloat($('ob_cp_h').value||'0'), d=$('ob_cp_date').value;
-  if(!sal){ alert('Choisis une personne.'); return; }
+  if(!sal){ await bobAlert('Choisis une personne.'); return; }
   oblDB().compteurs.push({id:uid(),salarie:sal,heures:h,arreteLe:d||today(),signe:false,apurement:''});
   $('ob_cp_h').value=''; $('ob_cp_date').value=''; save();
 }
 function oblSetCompteur(id,champ,val){ const c=oblDB().compteurs.find(x=>x.id===id); if(c){ c[champ]=(champ==='heures')?parseFloat(val||'0'):val; save(); } }
-function oblDelCompteur(id){ if(confirm('Supprimer ce compteur ?')){ oblDB().compteurs=oblDB().compteurs.filter(x=>x.id!==id); save(); } }
-function oblAddArret(){
+async function oblDelCompteur(id){ if(await bobConfirm('Supprimer ce compteur ?', {titre:'Confirmer', ok:'Confirmer'})) { oblDB().compteurs=oblDB().compteurs.filter(x=>x.id!==id); save(); } }
+async function oblAddArret(){
   const sal=$('ob_ij_sal').value, debut=$('ob_ij_debut').value, fin=$('ob_ij_fin').value;
-  if(!sal){ alert('Choisis une personne.'); return; }
-  if(!debut){ alert('Indique au moins la date de début de l\'arrêt.'); return; }
+  if(!sal){ await bobAlert('Choisis une personne.'); return; }
+  if(!debut){ await bobAlert('Indique au moins la date de début de l\'arrêt.'); return; }
   const a={id:uid(),salarie:sal,nature:($('ob_ij_nature')?$('ob_ij_nature').value:'Maladie (non pro.)'),debut:debut,fin:fin,dsn:false,subrogation:'',ijAttendue:0,ijRecue:0,note:'',creeLe:today()};
   oblDB().arrets.push(a);
   oblSyncReprise(a);
@@ -7712,8 +7712,8 @@ function oblSetArret(id,champ,val){
   if(champ==='debut'||champ==='fin'||champ==='nature') oblSyncReprise(a);
   save();
 }
-function oblDelArret(id){
-  if(!confirm('Supprimer cet arrêt ? (la visite de reprise liée sera aussi retirée)')) return;
+async function oblDelArret(id){
+  if(!await bobConfirm('Supprimer cet arrêt ? (la visite de reprise liée sera aussi retirée)', {titre:'Supprimer ?', ok:'Supprimer', danger:true})) return;
   oblDB().arrets=oblDB().arrets.filter(x=>x.id!==id);
   oblDB().visites=oblDB().visites.filter(v=>v.arretId!==id);
   save();
@@ -7732,28 +7732,28 @@ function oblSyncReprise(a){
 }
 /* --- 🎓 Stagiaires, services civiques & bénévoles encadrants --- */
 const OBL_ST_TYPES=['Stagiaire BAFA','Stagiaire BAFD','Stagiaire école / formation','Service civique','Bénévole encadrant'];
-function oblAddStage(){
+async function oblAddStage(){
   const nom=($('ob_st_nom').value||'').trim();
-  if(!nom){ alert('Indique le nom de la personne.'); return; }
+  if(!nom){ await bobAlert('Indique le nom de la personne.'); return; }
   oblDB().stages.push({id:uid(),nom:nom,type:$('ob_st_type').value,organisme:($('ob_st_org').value||'').trim(),debut:$('ob_st_debut').value,fin:$('ob_st_fin').value,convention:false,tuteur:'',honorabilite:false,assurance:false,gratification:'',creeLe:today()});
   ['ob_st_nom','ob_st_org','ob_st_debut','ob_st_fin'].forEach(i=>{ if($(i)) $(i).value=''; });
   save();
 }
 function oblSetStage(id,champ,val){ const s=oblDB().stages.find(x=>x.id===id); if(s){ s[champ]=val; save(); } }
-function oblDelStage(id){ if(confirm('Supprimer cette personne du suivi ?')){ oblDB().stages=oblDB().stages.filter(x=>x.id!==id); save(); } }
+async function oblDelStage(id){ if(await bobConfirm('Supprimer cette personne du suivi ?', {titre:'Confirmer', ok:'Confirmer'})) { oblDB().stages=oblDB().stages.filter(x=>x.id!==id); save(); } }
 /* un stage de plus de 2 mois (≈ 61 jours calendaires) ouvre droit à gratification obligatoire */
 function oblStageLong(s){ const j=oblDaysBetween(s.debut,s.fin); return (s.type||'').indexOf('Stagiaire')===0 && j>61; }
-function oblAddContact(){
+async function oblAddContact(){
   const org=($('ob_ct_org').value||'').trim();
-  if(!org){ alert('Indique l\'organisme.'); return; }
+  if(!org){ await bobAlert('Indique l\'organisme.'); return; }
   oblDB().contacts.push({id:uid(),organisme:org,contact:($('ob_ct_nom').value||'').trim(),coord:($('ob_ct_coord').value||'').trim(),dossier:'',referent:($('ob_ct_ref').value||'').trim()});
   ['ob_ct_org','ob_ct_nom','ob_ct_coord','ob_ct_ref'].forEach(i=>{ if($(i)) $(i).value=''; });
   save();
 }
 function oblSetContact(id,champ,val){ const c=oblDB().contacts.find(x=>x.id===id); if(c){ c[champ]=val; save(); } }
-function oblDelContact(id){ if(confirm('Supprimer ce contact ?')){ oblDB().contacts=oblDB().contacts.filter(x=>x.id!==id); save(); } }
+async function oblDelContact(id){ if(await bobConfirm('Supprimer ce contact ?', {titre:'Confirmer', ok:'Confirmer'})) { oblDB().contacts=oblDB().contacts.filter(x=>x.id!==id); save(); } }
 /* Zéro saisie : crée les lignes manquantes à partir des salariés + les 3 interlocuteurs types */
-function oblSeed(){
+async function oblSeed(){
   const o=oblDB(); let n=0;
   oblSalaries().forEach(s=>{
     if(!o.compteurs.some(c=>c.salarie===s)){ o.compteurs.push({id:uid(),salarie:s,heures:0,arreteLe:'',signe:false,apurement:''}); n++; }
@@ -7762,8 +7762,8 @@ function oblSeed(){
   ['Santé au travail (Intermetra)','CGSS Réunion','SNP Paie (bulletins)','SDJES (honorabilité)','Unis-Cité (services civiques)'].forEach(org=>{
     if(!o.contacts.some(x=>x.organisme===org)){ o.contacts.push({id:uid(),organisme:org,contact:'',coord:'',dossier:'',referent:''}); n++; }
   });
-  if(!n){ alert('Tout est déjà en place — rien à créer.'); return; }
-  save(); alert(n+' ligne(s) créée(s). Il ne reste plus qu\'à compléter les dates.');
+  if(!n){ await bobAlert('Tout est déjà en place — rien à créer.'); return; }
+  save(); await bobAlert(n+' ligne(s) créée(s). Il ne reste plus qu\'à compléter les dates.');
 }
 function renderObligations(){
   const box=$('oblVisitesRows'); if(!box) return;
@@ -9368,24 +9368,64 @@ renderAll();
         +'</div>';
     }).join('');
   };
+  /* ===== Lot 11c (16/08/2026) — TOUT PAIE & RH QUITTE LES FENÊTRES GRISES ==================
+     38 fenêtres natives remplacées par la modale maison sur tout le domaine : le classeur de
+     la paie (ajouter un mois, déposer, consulter, télécharger, retirer une pièce, mettre un
+     mois à la corbeille, sauvegarder le tout) et les Obligations employeur (visites médicales,
+     compteurs d'heures, arrêts, stagiaires, contacts). Vérifié : plus une seule fenêtre native
+     dans ce domaine. Compteur du fichier : 327 → 287.
+
+     LE GESTE QUI GAGNE — ajouter un mois de paie. Bob demandait l'année, PUIS le « numéro du
+     mois » : deux fenêtres, et un mois à traduire en chiffre de tête. C'est maintenant un seul
+     formulaire, et le mois s'écrit EN TOUTES LETTRES (« septembre », « sept », « août » ou
+     « 9 » — tout est accepté, accents et majuscules compris).
+     🔴 Défaut trouvé au banc et corrigé avant l'envoi : un mois laissé VIDE se transformait en
+     janvier, parce que startsWith('') est vrai pour le premier mois de la liste. Le champ vide
+     est maintenant refusé, des deux côtés (le contrôle du formulaire ET la conversion).
+
+     Les suppressions ont un bouton rouge ; les erreurs venant de la base portent un titre
+     d'avertissement. Onze fonctions des Obligations sont devenues asynchrones ; chacune n'est
+     appelée que par un bouton qui ignore la valeur rendue — vérifié une par une.
+
+     REVERT : dans ce domaine seulement, réécrire les appels à la modale maison en fenêtres
+     natives, redonner à l'ajout d'un mois ses deux questions successives, et retirer le
+     mot-clé asynchrone des onze fonctions. ================================================ */
   window.paieAddMonth=async function(){
-    if(!paieCanAccess()){ alert('Réservé au président et au trésorier.'); return; }
+    if(!paieCanAccess()){ await bobAlert('Réservé au président et au trésorier.'); return; }
     const now=new Date();
-    const ya=prompt('Année du mois de paie ?', String(now.getFullYear())); if(ya===null) return;
-    const mo=prompt('Numéro du mois ? (1 = janvier … 12 = décembre)', String(now.getMonth()+1)); if(mo===null) return;
-    const annee=parseInt(ya,10), mois=parseInt(mo,10);
-    if(isNaN(annee)||annee<2000||annee>2100||isNaN(mois)||mois<1||mois>12){ alert('Année ou mois invalide.'); return; }
+    /* Lot 11c : on demandait l'année, PUIS le « numéro du mois » — deux fenêtres, et un mois à
+       traduire en chiffre de tête. Un seul formulaire, et le mois s'écrit en toutes lettres. */
+    const MOIS=['janvier','février','mars','avril','mai','juin','juillet','août','septembre','octobre','novembre','décembre'];
+    const rep=await bobForm('Ajouter un mois de paie', [
+      {k:'mois',  label:'Mois',  value:String(now.getMonth()+1), type:'text',
+       hint:'Écris le mois (ex. « septembre ») ou son numéro.'},
+      {k:'annee', label:'Année', value:String(now.getFullYear()), type:'number'}
+    ], {ok:'Ajouter le mois', valider:function(v){
+      const a=parseInt(v.annee,10);
+      if(isNaN(a)||a<2000||a>2100) return 'Année attendue entre 2000 et 2100.';
+      const s=String(v.mois||'').trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+      if(!s) return 'Indique le mois.';   /* sans ça, startsWith('') matche le 1er mois : un champ vide devenait janvier */
+      let m=parseInt(s,10);
+      if(isNaN(m)) m=MOIS.findIndex(x=>x.normalize('NFD').replace(/[\u0300-\u036f]/g,'').startsWith(s.slice(0,4)))+1;
+      if(!m||m<1||m>12) return 'Mois non reconnu — écris-le en toutes lettres ou de 1 à 12.';
+    }});
+    if(!rep) return;
+    const annee=parseInt(rep.annee,10);
+    const _s=String(rep.mois||'').trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+    if(!_s) return;                      /* même garde qu'au contrôle : jamais de janvier par défaut */
+    let mois=parseInt(_s,10);
+    if(isNaN(mois)) mois=MOIS.findIndex(x=>x.normalize('NFD').replace(/[\u0300-\u036f]/g,'').startsWith(_s.slice(0,4)))+1;
     const r=await sbc.from('paie_mois').insert({annee:annee,mois:mois}).select().single();
-    if(r.error){ alert(/duplicate|unique/i.test(r.error.message)?'Ce mois existe déjà.':'Erreur : '+r.error.message); return; }
+    if(r.error){ await bobAlert(/duplicate|unique/i.test(r.error.message)?'Ce mois existe déjà.':'Erreur : '+r.error.message, {titre:'⚠️ Erreur'}); return; }
     window.paieLoad();
   };
   window.paieUpload=async function(moisId,type){
-    if(!paieCanAccess()){ alert('Réservé au président et au trésorier.'); return; }
+    if(!paieCanAccess()){ await bobAlert('Réservé au président et au trésorier.'); return; }
     const rmm=await sbc.from('paie_mois').select('annee,mois').eq('id',moisId).single();
-    if(rmm.error||!rmm.data){ alert('Mois introuvable.'); return; }
+    if(rmm.error||!rmm.data){ await bobAlert('Mois introuvable.', {titre:'⚠️ Erreur'}); return; }
     const tag=rmm.data.annee+'-'+String(rmm.data.mois).padStart(2,'0');
     let salarie=null;
-    if(type==='fiche'){ salarie=(prompt('Nom du salarié (pour cette fiche de paie) ?','')||'').trim(); if(!salarie){ alert('Nom du salarié requis pour une fiche.'); return; } }
+    if(type==='fiche'){ salarie=(await bobPrompt('Nom du salarié (pour cette fiche de paie) ?','')||'').trim(); if(!salarie){ await bobAlert('Nom du salarié requis pour une fiche.'); return; } }
     const inp=document.createElement('input'); inp.type='file'; inp.accept='.pdf,image/*'; inp.multiple=(type==='fiche');
     inp.onchange=async function(){
       const files=inp.files?Array.from(inp.files):[]; if(!files.length) return;
@@ -9405,54 +9445,54 @@ renderAll();
   };
   window.paieView=async function(id){
     const r=await sbc.from('paie_piece').select('fichier_path,nom_original').eq('id',id).single();
-    if(r.error||!r.data){ alert('Pièce introuvable.'); return; }
+    if(r.error||!r.data){ await bobAlert('Pièce introuvable.', {titre:'⚠️ Erreur'}); return; }
     const s=await sbc.storage.from('paie').createSignedUrl(r.data.fichier_path,3600);
-    if(s.error||!s.data){ alert('Pièce indisponible.'); return; }
+    if(s.error||!s.data){ await bobAlert('Pièce indisponible.', {titre:'⚠️ Erreur'}); return; }
     if(window.docView) docView(s.data.signedUrl,(r.data.nom_original||'Pièce')); else window.open(s.data.signedUrl,'_blank');
   };
   window.paieDownload=async function(id){
     const r=await sbc.from('paie_piece').select('fichier_path,nom_original').eq('id',id).single();
-    if(r.error||!r.data){ alert('Pièce introuvable.'); return; }
+    if(r.error||!r.data){ await bobAlert('Pièce introuvable.', {titre:'⚠️ Erreur'}); return; }
     const s=await sbc.storage.from('paie').createSignedUrl(r.data.fichier_path,3600,{download:r.data.nom_original||true});
-    if(s.error||!s.data){ alert('Pièce indisponible.'); return; }
+    if(s.error||!s.data){ await bobAlert('Pièce indisponible.', {titre:'⚠️ Erreur'}); return; }
     const a=document.createElement('a'); a.href=s.data.signedUrl; a.download=r.data.nom_original||''; document.body.appendChild(a); a.click(); a.remove();
   };
   window.paieDel=async function(id){
-    if(!paieCanAccess()){ alert('Réservé au président et au trésorier.'); return; }
+    if(!paieCanAccess()){ await bobAlert('Réservé au président et au trésorier.'); return; }
     const r=await sbc.from('paie_piece').select('nom_original,salarie').eq('id',id).single();
-    if(r.error||!r.data){ alert('Pièce introuvable.'); return; }
-    if(!confirm('Retirer « '+((r.data.salarie||r.data.nom_original)||'cette pièce')+' » ? Elle part à la corbeille (récupérable) — le fichier est conservé.')) return;
+    if(r.error||!r.data){ await bobAlert('Pièce introuvable.', {titre:'⚠️ Erreur'}); return; }
+    if(!await bobConfirm('Retirer « '+((r.data.salarie||r.data.nom_original)||'cette pièce')+' » ? Elle part à la corbeille (récupérable) — le fichier est conservé.', {titre:'Retirer ?', ok:'Retirer', danger:true})) return;
     const d=await sbc.from('paie_piece').update({supprime_le:new Date().toISOString(),supprime_par:(myProfile&&myProfile.id)||null}).eq('id',id);
-    if(d.error){ alert('Erreur : '+d.error.message); return; }
+    if(d.error){ await bobAlert('Erreur : '+d.error.message, {titre:'⚠️ Erreur'}); return; }
     window.paieLoad();
   };
   window.paieDelMonth=async function(moisId){
-    if(!paieCanAccess()){ alert('Réservé au président et au trésorier.'); return; }
+    if(!paieCanAccess()){ await bobAlert('Réservé au président et au trésorier.'); return; }
     const rc=await sbc.from('paie_piece').select('id',{count:'exact',head:true}).eq('mois_id',moisId).is('supprime_le',null);
     const n=rc.count||0;
-    if(!confirm(n?('Ce mois contient '+n+' pièce(s). Le mettre à la corbeille ? (récupérable — les fichiers sont conservés)'):'Mettre ce mois à la corbeille ?')) return;
+    if(!await bobConfirm(n?('Ce mois contient '+n+' pièce(s). Le mettre à la corbeille ? (récupérable — les fichiers sont conservés)'):'Mettre ce mois à la corbeille ?', {titre:'Retirer ?', ok:'Retirer', danger:true})) return;
     const ts=new Date().toISOString(), by=(myProfile&&myProfile.id)||null;
     await sbc.from('paie_piece').update({supprime_le:ts,supprime_par:by}).eq('mois_id',moisId).is('supprime_le',null);
     const d=await sbc.from('paie_mois').update({supprime_le:ts,supprime_par:by}).eq('id',moisId);
-    if(d.error){ alert('Erreur : '+d.error.message); return; }
+    if(d.error){ await bobAlert('Erreur : '+d.error.message, {titre:'⚠️ Erreur'}); return; }
     window.paieLoad();
   };
   window.paieClasseur=async function(moisId){
     const rp=await sbc.from('paie_piece').select('*').eq('mois_id',moisId);
-    if(rp.error){ alert('Erreur : '+rp.error.message); return; }
-    const list=rp.data||[]; if(!list.length){ alert('Aucune pièce à télécharger pour ce mois.'); return; }
+    if(rp.error){ await bobAlert('Erreur : '+rp.error.message, {titre:'⚠️ Erreur'}); return; }
+    const list=rp.data||[]; if(!list.length){ await bobAlert('Aucune pièce à télécharger pour ce mois.'); return; }
     for(const p of list){
       const s=await sbc.storage.from('paie').createSignedUrl(p.fichier_path,3600,{download:p.nom_original||true});
       if(s.data){ const a=document.createElement('a'); a.href=s.data.signedUrl; a.download=p.nom_original||''; document.body.appendChild(a); a.click(); a.remove(); await new Promise(function(res){setTimeout(res,400);}); }
     }
   };
   window.paieBackupAll=async function(){
-    if(!paieCanAccess()){ alert('Réservé au président et au trésorier.'); return; }
+    if(!paieCanAccess()){ await bobAlert('Réservé au président et au trésorier.'); return; }
     const rm=await sbc.from('paie_mois').select('*').is('supprime_le',null);
     const rp=await sbc.from('paie_piece').select('*').is('supprime_le',null);
-    if(rm.error||rp.error){ alert('Erreur : '+((rm.error||rp.error).message)); return; }
+    if(rm.error||rp.error){ await bobAlert('Erreur : '+((rm.error||rp.error).message)); return; }
     const mois=rm.data||[], pieces=rp.data||[];
-    if(!pieces.length){ alert('Rien à sauvegarder pour l\'instant.'); return; }
+    if(!pieces.length){ await bobAlert('Rien à sauvegarder pour l\'instant.'); return; }
     const moisById={}; mois.forEach(function(m){ moisById[m.id]=m; });
     const q=function(s){ return '"'+String(s==null?'':s).replace(/"/g,'""')+'"'; };
     const lignes=[['Mois','Type','Salarié','Fichier','Déposé le','Chemin'].map(q).join(';')];
@@ -14223,12 +14263,12 @@ window.loadDossiersPeri=async function(){
   }
   async function congeSet(id,statut){
     const c=PERS.conges.find(x=>x.id===id); if(!c) return; let note='';
-    if(statut==='refuse'){ note=prompt('Motif du refus (facultatif) :','')||''; }
-    const up=await sbc.from('conges').update({statut,note_bureau:note}).eq('id',id); if(up.error){ alert(up.error.message); return; }
+    if(statut==='refuse'){ note=await bobPrompt('Motif du refus (facultatif) :','')||''; }
+    const up=await sbc.from('conges').update({statut,note_bureau:note}).eq('id',id); if(up.error){ await bobAlert(up.error.message, {titre:'⚠️ Erreur'}); return; }
     if(statut==='valide' && c.nb_jours>0 && (c.type==='CP'||c.type==='RTT')){ const f=PERS.list.find(x=>x.id===c.personnel_id); if(f){ const col=(c.type==='RTT')?'solde_rtt':'solde_conges'; const nv=Math.max(0,(f[col]||0)-c.nb_jours); await sbc.from('personnel').update({[col]:nv}).eq('id',f.id); } }
     await loadPersonnel(); if(window.loadTodo) loadTodo();
   }
-  async function congePiece(id){ const c=PERS.conges.find(x=>x.id===id); if(!c||!c.piece||!c.piece.path) return; try{ const {data,error}=await sbc.storage.from('personnel-docs').createSignedUrl(c.piece.path,3600); if(error||!data){ alert('Justificatif indisponible'); return; } docView(data.signedUrl, (c.piece&&c.piece.name)||'Justificatif'); }catch(e){ alert('Justificatif indisponible'); } }
+  async function congePiece(id){ const c=PERS.conges.find(x=>x.id===id); if(!c||!c.piece||!c.piece.path) return; try{ const {data,error}=await sbc.storage.from('personnel-docs').createSignedUrl(c.piece.path,3600); if(error||!data){ await bobAlert('Justificatif indisponible', {titre:'⚠️ Erreur'}); return; } docView(data.signedUrl, (c.piece&&c.piece.name)||'Justificatif'); }catch(e){ await bobAlert('Justificatif indisponible'); } }
   window.congePiece=congePiece;
   async function persDocsOpen(id){
     const f=PERS.list.find(x=>x.id===id); if(!f) return; const p=$('persDocsPanel'); p.style.display='';
