@@ -7056,10 +7056,10 @@ function renderPeriGrilleLock(){
       +(isBureau?'<button class="btn" style="margin-left:auto" onclick="periToggleGrilleLock()">🔓 Déverrouiller pour modifier</button>':'<span class="hint" style="margin-left:auto">Réservé au bureau</span>');
   }
 }
-function periToggleGrilleLock(){
+async function periToggleGrilleLock(){
   if(!window.__periGrilleUnlocked){
-    if(!(window.bobMe&&window.bobMe.canWrite)){ alert('Seul le bureau peut déverrouiller la grille périscolaire.'); return; }
-    if(!confirm('Désactiver la sécurité et autoriser la modification de la grille périscolaire ?\n\nPense à enregistrer (ou reverrouiller) après tes changements.')) return;
+    if(!(window.bobMe&&window.bobMe.canWrite)){ await bobAlert('Seul le bureau peut déverrouiller la grille périscolaire.'); return; }
+    if(!await bobConfirm('Désactiver la sécurité et autoriser la modification de la grille périscolaire ?\n\nPense à enregistrer (ou reverrouiller) après tes changements.', {titre:'Déverrouiller ?', ok:'Déverrouiller', danger:true})) return;
     window.__periGrilleUnlocked=true;
   } else {
     window.__periGrilleUnlocked=false;
@@ -9152,8 +9152,8 @@ renderAll();
     }
     box.innerHTML=h;
   }
-  window.periDocUpload=function(){
-    if(!canWrite){ alert('Réservé au bureau.'); return; }
+  window.periDocUpload=async function(){
+    if(!canWrite){ await bobAlert('Réservé au bureau.'); return; }
     const inp=document.createElement('input'); inp.type='file'; inp.multiple=true; inp.accept='.pdf,image/*,.doc,.docx';
     inp.onchange=async function(){
       const files=inp.files?Array.from(inp.files):[]; if(!files.length) return;
@@ -9171,38 +9171,38 @@ renderAll();
         }catch(e){ skip.push(f.name); }
       }
       await loadPeriDocs();
-      alert('✅ '+ok+' document(s) déposé(s).'+(skip.length?'\n\nNon déposés :\n- '+skip.join('\n- '):''));
+      await bobAlert('✅ '+ok+' document(s) déposé(s).'+(skip.length?'\n\nNon déposés :\n- '+skip.join('\n- '):''));
     };
     inp.click();
   };
   window.periDocView=async function(id){
-    const d=(window.__periDocs||[]).find(function(x){return x.id===id;}); if(!d||!d.path){ alert('Document introuvable.'); return; }
-    try{ const r=await sbc.storage.from('acm-docs').createSignedUrl(d.path,3600); if(r.error||!r.data){ alert('Document indisponible.'); return; } docView(r.data.signedUrl,(d.file||d.label||'Document')); }catch(e){ alert('Document indisponible.'); }
+    const d=(window.__periDocs||[]).find(function(x){return x.id===id;}); if(!d||!d.path){ await bobAlert('Document introuvable.', {titre:'⚠️ Erreur'}); return; }
+    try{ const r=await sbc.storage.from('acm-docs').createSignedUrl(d.path,3600); if(r.error||!r.data){ await bobAlert('Document indisponible.', {titre:'⚠️ Erreur'}); return; } docView(r.data.signedUrl,(d.file||d.label||'Document')); }catch(e){ await bobAlert('Document indisponible.'); }
   };
   window.periDocDownload=async function(id){
-    const d=(window.__periDocs||[]).find(function(x){return x.id===id;}); if(!d||!d.path){ alert('Document introuvable.'); return; }
-    try{ const r=await sbc.storage.from('acm-docs').createSignedUrl(d.path,3600,{download:d.file||true}); if(r.error||!r.data){ alert('Document indisponible.'); return; } const a=document.createElement('a'); a.href=r.data.signedUrl; a.download=d.file||''; document.body.appendChild(a); a.click(); a.remove(); }catch(e){ alert('Document indisponible.'); }
+    const d=(window.__periDocs||[]).find(function(x){return x.id===id;}); if(!d||!d.path){ await bobAlert('Document introuvable.', {titre:'⚠️ Erreur'}); return; }
+    try{ const r=await sbc.storage.from('acm-docs').createSignedUrl(d.path,3600,{download:d.file||true}); if(r.error||!r.data){ await bobAlert('Document indisponible.', {titre:'⚠️ Erreur'}); return; } const a=document.createElement('a'); a.href=r.data.signedUrl; a.download=d.file||''; document.body.appendChild(a); a.click(); a.remove(); }catch(e){ await bobAlert('Document indisponible.'); }
   };
   window.periDocDel=async function(id){
-    if(!canWrite){ alert('Réservé au bureau.'); return; }
+    if(!canWrite){ await bobAlert('Réservé au bureau.'); return; }
     const d=(window.__periDocs||[]).find(function(x){return x.id===id;}); if(!d) return;
-    if(!confirm('Supprimer « '+((d.label||d.file)||'')+' » ? (définitif)')) return;
+    if(!await bobConfirm('Supprimer « '+((d.label||d.file)||'')+' » ? (définitif)', {titre:'Supprimer ?', ok:'Supprimer', danger:true})) return;
     try{ if(d.path) await sbc.storage.from('acm-docs').remove([d.path]); }catch(e){}
-    const up=await sbc.from('peri_docs').delete().eq('id',id); if(up.error){ alert(up.error.message); return; }
+    const up=await sbc.from('peri_docs').delete().eq('id',id); if(up.error){ await bobAlert(up.error.message, {titre:'⚠️ Erreur'}); return; }
     await loadPeriDocs();
   };
   window.periDocAccept=async function(id){
-    if(!canWrite){ alert('Réservé au bureau.'); return; }
-    const up=await sbc.from('peri_docs').update({statut:'valide'}).eq('id',id).eq('statut','en_attente').select('id'); if(up.error){ alert(up.error.message); return; }
-    if(!up.data||!up.data.length){ alert('Déjà traitée.'); }
+    if(!canWrite){ await bobAlert('Réservé au bureau.'); return; }
+    const up=await sbc.from('peri_docs').update({statut:'valide'}).eq('id',id).eq('statut','en_attente').select('id'); if(up.error){ await bobAlert(up.error.message, {titre:'⚠️ Erreur'}); return; }
+    if(!up.data||!up.data.length){ await bobAlert('Déjà traitée.'); }
     await loadPeriDocs();
   };
   window.periDocRefuse=async function(id){
-    if(!canWrite){ alert('Réservé au bureau.'); return; }
+    if(!canWrite){ await bobAlert('Réservé au bureau.'); return; }
     const d=(window.__periDocs||[]).find(function(x){return x.id===id;});
-    const motif=(prompt('Motif du refus (visible par la salariée — facultatif) :')||'').trim();
-    const up=await sbc.from('peri_docs').update({statut:'refuse', motif_refus:motif||null}).eq('id',id).eq('statut','en_attente').select('id'); if(up.error){ alert(up.error.message); return; }
-    if(!up.data||!up.data.length){ alert('Déjà traitée.'); await loadPeriDocs(); return; }
+    const motif=(await bobPrompt('Motif du refus (visible par la salariée — facultatif)','',{titre:'Refuser la pièce'})||'').trim();
+    const up=await sbc.from('peri_docs').update({statut:'refuse', motif_refus:motif||null}).eq('id',id).eq('statut','en_attente').select('id'); if(up.error){ await bobAlert(up.error.message, {titre:'⚠️ Erreur'}); return; }
+    if(!up.data||!up.data.length){ await bobAlert('Déjà traitée.'); await loadPeriDocs(); return; }
     if(d&&d.path){ try{ await sbc.storage.from('acm-docs').remove([d.path]); }catch(e){} } // proposition refusée → on retire le fichier en attente
     await loadPeriDocs();
   };
@@ -9596,8 +9596,8 @@ renderAll();
   window.fmPrefill=async function(){
     const src=document.getElementById('fm_source_url');
     const url=((src&&src.value)||'').trim();
-    if(!url){ alert('Colle d\'abord l\'adresse de ton site ou d\'une page Facebook / Insta.'); return; }
-    if(typeof sbc==='undefined'||!sbc){ alert('Connecte-toi d\'abord.'); return; }
+    if(!url){ await bobAlert('Colle d\'abord l\'adresse de ton site ou d\'une page Facebook / Insta.'); return; }
+    if(typeof sbc==='undefined'||!sbc){ await bobAlert('Connecte-toi d\'abord.'); return; }
     const st=document.getElementById('fm_status');
     if(st){ st.style.color=''; st.textContent='✨ Lecture de la page et remplissage… (quelques secondes)'; }
     try{
@@ -9624,7 +9624,7 @@ renderAll();
     const sujet=(gv('pg_sujet')||'').trim();
     const st=document.getElementById('pg_status'), btn=document.getElementById('pg_go');
     if(!sujet){ if(st){ st.style.color='#c0392b'; st.textContent='Dis d\'abord de quoi parle ce post.'; } return; }
-    if(typeof sbc==='undefined'||!sbc){ alert('Connecte-toi d\'abord.'); return; }
+    if(typeof sbc==='undefined'||!sbc){ await bobAlert('Connecte-toi d\'abord.'); return; }
     if(btn) btn.disabled=true;
     if(st){ st.style.color=''; st.textContent='✨ Rédaction dans ta voix… (quelques secondes)'; }
     try{
@@ -9675,7 +9675,7 @@ renderAll();
     const theme=(gv('pv_theme')||'').trim();
     const st=document.getElementById('pv_status'), btn=document.getElementById('pv_go');
     if(!theme){ if(st){ st.style.color='#c0392b'; st.textContent='Dis d\'abord le thème du visuel.'; } return; }
-    if(typeof sbc==='undefined'||!sbc){ alert('Connecte-toi d\'abord.'); return; }
+    if(typeof sbc==='undefined'||!sbc){ await bobAlert('Connecte-toi d\'abord.'); return; }
     if(btn) btn.disabled=true;
     if(st){ st.style.color=''; st.textContent='🎨 Fabrication du visuel… (10-20 secondes)'; }
     try{
@@ -9715,12 +9715,12 @@ renderAll();
   window.periViewPiece=async function(path){
     if(!path) return;
     const {data,error}=await sbc.storage.from('dossiers-periscolaire').createSignedUrl(path,3600);
-    if(error||!data){ alert('Pièce introuvable : '+(error?error.message:'')); return; }
+    if(error||!data){ await bobAlert('Pièce introuvable : '+(error?error.message:''), {titre:'⚠️ Erreur'}); return; }
     docView(data.signedUrl, path);
   };
   window.setDossierPeri=async function(id,statut){
     const {error}=await sbc.from('inscriptions_periscolaire').update({statut}).eq('id',id);
-    if(error){ alert(error.message); return; }
+    if(error){ await bobAlert(error.message, {titre:'⚠️ Erreur'}); return; }
     if(window.loadTodo) loadTodo(); // fil rouge : les pastilles redescendent tout de suite après le traitement
     loadDossiersPeri();
   };
@@ -9740,10 +9740,10 @@ renderAll();
   window.periValiderMontant=async function(id){
     const j=document.getElementById('pjour_'+id), n=document.getElementById('pnb_'+id); if(!j||!n) return;
     const tarif=parseFloat(String(j.value).replace(',','.'))||0, jours=parseInt(n.value)||0, euros=tarif*jours;
-    if(!(tarif>0)||!(jours>0)){ alert('Indique le tarif par jour ET le nombre de jours du mois.'); return; }
+    if(!(tarif>0)||!(jours>0)){ await bobAlert('Indique le tarif par jour ET le nombre de jours du mois.'); return; }
     const detail={tarif_jour:tarif, jours:jours, total:euros, mode:'forfait', mois:periMoisDuDossier(id)};
     const {error}=await sbc.rpc('peri_valider_montant',{p_inscription_id:id,p_montant_cents:Math.round(euros*100),p_detail:detail});
-    if(error){ alert('Erreur : '+error.message); return; }
+    if(error){ await bobAlert('Erreur : '+error.message, {titre:'⚠️ Erreur'}); return; }
     if(window.loadDossiersPeri) window.loadDossiersPeri();
   };
   // 🧮 Bob PROPOSE le tarif, le bureau VALIDE — jamais l'inverse (c'est l'argent des familles).
@@ -9765,8 +9765,8 @@ renderAll();
             m:document.getElementById('perisim_matin_'+id), s:document.getElementById('perisim_soir_'+id)};
   }
   function periSimEtat(id){ return (window.__periSim[id]=window.__periSim[id]||{seq:0,timer:null,calc:null}); }
-  window.periProposerTarif=function(id){
-    if(!canWrite){ alert('Réservé au bureau.'); return; }
+  window.periProposerTarif=async function(id){
+    if(!canWrite){ await bobAlert('Réservé au bureau.'); return; }
     const e=periSimEls(id); if(!e.box) return;
     e.box.style.display='';
     window.periSimCalc(id); // un clic = le chiffre est là ; le 2e clic le valide
@@ -9852,23 +9852,31 @@ renderAll();
     if(window.loadDossiersPeri) window.loadDossiersPeri();
   };
   // ✏️ Retouche d'un montant déjà verrouillé — même principe : un champ dans la carte, pas une fenêtre de saisie.
-  /* ===== Lot 11c (16/08/2026) — LE COMPTOIR DES ENFANTS QUITTE LES FENÊTRES GRISES =========
-     46 fenêtres natives du navigateur remplacées par la modale maison dans les 12 fonctions que
-     l'accueil touche chaque jour : rattacher un enfant au périscolaire, le déplacer, le retirer,
-     corriger ses créneaux, saisir un téléphone, autoriser une photo.
-     Fonctions concernées : periEditMontant · periCopyLien · setDroitImage · periAddEnfant ·
-     periRemoveEnfant · periRemoveActivite · periSetTel · periEditCreneaux · enfHubAdd ·
-     enfHubMove · enfHubRemovePeri · enfHubRemoveAct.
-     Les suppressions ont un bouton rouge ; les erreurs techniques portent un titre d'avertissement
-     distinct des messages d'information ; periEditMontant est devenue asynchrone pour attendre
-     la réponse.
-     ⚠️ CE QUI N'EST PAS FAIT et se voit sur les mêmes écrans : periValiderMontant (le geste
-     « valider un montant », voisin immédiat) et une poignée d'autres restent en fenêtre native —
-     un même geste peut donc encore ouvrir deux styles de fenêtre selon le bouton. C'est le
-     prochain morceau du chantier, pas un oubli.
-     REVERT : dans ces 12 fonctions seulement, réécrire les appels à la modale maison en fenêtres
-     natives du navigateur (information pour les messages, confirmation pour les questions), puis
-     retirer le mot-clé asynchrone de periEditMontant. Aucune autre ligne du fichier n'est touchée. */
+  /* ===== Lot 11c (16/08/2026) — TOUT LE PÉRISCOLAIRE QUITTE LES FENÊTRES GRISES ===========
+     Le domaine périscolaire entier passe à la modale maison : le dossier de la famille, le
+     comptoir des enfants (rattacher, déplacer, retirer, corriger les créneaux, téléphone,
+     droit à l'image), le tarif (proposer, valider, retoucher), l'argent (encaisser, annuler,
+     verser en comptabilité, reçu) et les documents d'inscription (déposer, voir, télécharger,
+     accepter, refuser, supprimer), plus le verrou de la grille tarifaire.
+     Vérifié après coup : il ne reste AUCUNE fenêtre native dans ce domaine — donc plus de
+     couture visible, où le même geste ouvrait tantôt une belle fenêtre, tantôt une grise.
+     Compteur du fichier sur ce lot : 455 → 369.
+
+     Deux gestes gagnent au change, au-delà du décor :
+     · ANNULER UN ENCAISSEMENT ne demande plus de TAPER « rejet », « remboursement » ou
+       « avoir » : trois boutons, avec l'explication de chacun. L'ancien message d'erreur de
+       frappe (« Motif attendu : … ») a disparu avec la faute qu'il sanctionnait.
+     · Les messages d'ERREUR TECHNIQUE (ceux qui viennent de la base) portent un titre
+       d'avertissement, au lieu de s'afficher sous le même « ℹ️ » qu'une simple information.
+     Les suppressions et le déverrouillage de la grille ont un bouton rouge.
+
+     Quatre fonctions sont devenues asynchrones pour pouvoir attendre la réponse
+     (periEditMontant, periProposerTarif, periDocUpload, periToggleGrilleLock) : chacune n'est
+     appelée que par un bouton qui ignore la valeur rendue — vérifié un par un.
+
+     REVERT : dans ce domaine seulement, réécrire les appels à la modale maison en fenêtres
+     natives du navigateur, remettre la saisie du motif d'annulation et son contrôle de frappe,
+     et retirer le mot-clé asynchrone des quatre fonctions ci-dessus. ====================== */
   window.periEditMontant=async function(id){
     if(!canWrite){ await bobAlert('Réservé au bureau.'); return; }
     const b=document.getElementById('perimod_'+id); if(!b) return;
@@ -10342,26 +10350,30 @@ renderAll();
           refEl=document.getElementById('enc_ref_'+id), dEl=document.getElementById('enc_date_'+id);
     if(!mEl||!modeEl) return;
     const euros=parseFloat(String(mEl.value).replace(',','.'));
-    if(!(euros>0)){ alert('Indique un montant supérieur à 0.'); return; }
+    if(!(euros>0)){ await bobAlert('Indique un montant supérieur à 0.'); return; }
     const {error}=await sbc.rpc('peri_encaisser',{p_inscription_id:id,p_enfant_id:null,p_montant_cents:Math.round(euros*100),p_mode:modeEl.value,p_date:(dEl&&dEl.value)||null,p_ref:(refEl&&refEl.value)||null,p_libelle:null});
-    if(error){ alert('Erreur : '+error.message); return; }
+    if(error){ await bobAlert('Erreur : '+error.message, {titre:'⚠️ Erreur'}); return; }
     if(typeof setSync==='function') setSync('✓ encaissement enregistré','#dff5e9');
     if(window.loadDossiersPeri) window.loadDossiersPeri();
   };
   window.periAnnulerEncaissement=async function(pid){
-    const motif=prompt('Annuler cet encaissement — motif ? Tape : rejet (chèque revenu), remboursement ou avoir.');
-    if(motif===null) return;
-    const m=String(motif).trim().toLowerCase();
-    if(!['rejet','remboursement','avoir'].includes(m)){ alert('Motif attendu : rejet, remboursement ou avoir.'); return; }
+    /* Lot 11c : on ne fait plus TAPER le motif — trois boutons. L'erreur de frappe
+       (« Motif attendu : … ») n'a donc plus de raison d'exister : elle disparaît avec elle. */
+    const m=await bobChoix('Annuler cet encaissement', [
+      {v:'rejet',         label:'Rejet',         sub:'le chèque est revenu impayé'},
+      {v:'remboursement', label:'Remboursement', sub:"on rend l'argent à la famille"},
+      {v:'avoir',         label:'Avoir',         sub:'la somme reste au crédit de la famille'}
+    ], {corps:"Pourquoi cet encaissement est-il annulé ? Bob écrit une ligne négative, rien n'est effacé."});
+    if(!m) return;
     const {error}=await sbc.rpc('peri_annuler_encaissement',{p_paiement_id:pid,p_motif:m});
-    if(error){ alert('Erreur : '+error.message); return; }
+    if(error){ await bobAlert('Erreur : '+error.message, {titre:'⚠️ Erreur'}); return; }
     if(typeof setSync==='function') setSync('✓ encaissement annulé (ligne négative)','#dff5e9');
     if(window.loadDossiersPeri) window.loadDossiersPeri();
     if(window.loadActivitesGestion) window.loadActivitesGestion(); // l'annulation peut venir de l'écran 🎟️ Activités (actiPayBlock) : avant, seul le panneau des dossiers suivait et l'écran appelant restait périmé
   };
   window.periRecu=async function(inscId,paiementId){
     const rp=await sbc.from('paiements').select('montant_cents,mode,ref_piece,paid_at,created_at').eq('id',paiementId).single();
-    if(rp.error||!rp.data){ alert('Reçu indisponible : '+((rp.error&&rp.error.message)||'')); return; }
+    if(rp.error||!rp.data){ await bobAlert('Reçu indisponible : '+((rp.error&&rp.error.message)||''), {titre:'⚠️ Erreur'}); return; }
     const p=rp.data;
     const ri=await sbc.from('inscriptions_periscolaire').select('foyer,annee').eq('id',inscId).single();
     const d=(ri&&ri.data)||{};
@@ -10382,7 +10394,7 @@ renderAll();
       +'<p style="margin-top:20px;font-size:12px;color:#8a9a90">Reçu établi par '+esc(asso)+'. Atteste du règlement ci-dessus.</p>'
       +'<div style="margin-top:16px"><button onclick="window.print()" style="padding:8px 16px;border-radius:8px;border:0;background:#3a51e8;color:#fff;font:inherit;cursor:pointer">🖨️ Imprimer</button></div></div>';
     const w=window.open('','_blank');
-    if(!w){ alert('Autorise les fenêtres pop-up pour afficher le reçu.'); return; }
+    if(!w){ await bobAlert('Autorise les fenêtres pop-up pour afficher le reçu.'); return; }
     w.document.write('<!doctype html><meta charset="utf-8"><title>Reçu périscolaire</title>'+html);
     w.document.close();
   };
@@ -10390,18 +10402,18 @@ renderAll();
   //     Chaque écriture porte `paiement_id` → « déjà versé » = une écriture existe pour ce paiement (anti-double-compte).
   //     Front-only, aucune écriture serveur ; espèces → caisse, reste → banque ; fabriqué comme « versement de subvention ».
   window.periVerserCompta=async function(){
-    if(!canWrite){ alert('Réservé au bureau.'); return; }
+    if(!canWrite){ await bobAlert('Réservé au bureau.'); return; }
     const rq=await sbc.from('paiements').select('id,inscription_periscolaire_id,montant_cents,mode,paid_at,created_at').eq('objet','periscolaire').eq('statut','paye');
-    if(rq.error){ alert('Erreur : '+rq.error.message); return; }
+    if(rq.error){ await bobAlert('Erreur : '+rq.error.message, {titre:'⚠️ Erreur'}); return; }
     const versed=new Set((db.ops||[]).map(o=>o.paiement_id).filter(Boolean));
     const todo=(rq.data||[]).filter(p=>p.mode && !versed.has(p.id));
-    if(!todo.length){ alert('Aucun encaissement à verser : tout est déjà en comptabilité.'); return; }
+    if(!todo.length){ await bobAlert('Aucun encaissement à verser : tout est déjà en comptabilité.'); return; }
     const insIds=[...new Set(todo.map(p=>p.inscription_periscolaire_id).filter(Boolean))];
     const foyerById={};
     if(insIds.length){ const ri=await sbc.from('inscriptions_periscolaire').select('id,foyer').in('id',insIds); ((ri&&ri.data)||[]).forEach(x=>{ foyerById[x.id]=x.foyer||''; }); }
     const siteRetenu=siteDemander('Périscolaire','ces encaissements périscolaire');
     if(!siteRetenu) return;
-    if(!confirm('Verser '+todo.length+' encaissement(s) en comptabilité, sur le site « '+siteRetenu+' » ?\n\nBob crée les recettes correspondantes (taguées « Périscolaire » — espèces en caisse, le reste en banque), sans doublon.')) return;
+    if(!await bobConfirm('Verser '+todo.length+' encaissement(s) en comptabilité, sur le site « '+siteRetenu+' » ?\n\nBob crée les recettes correspondantes (taguées « Périscolaire » — espèces en caisse, le reste en banque), sans doublon.', {titre:'Verser en comptabilité ?', ok:'Verser'})) return;
     let n=0;
     for(const p of todo){
       if(versed.has(p.id)) continue;
@@ -10417,7 +10429,7 @@ renderAll();
     }
     save();
     if(window.loadDossiersPeri) window.loadDossiersPeri();
-    alert('✅ '+n+' encaissement(s) versé(s) en comptabilité.\nRecettes taguées « Périscolaire » — espèces en caisse, le reste en banque.');
+    await bobAlert('✅ '+n+' encaissement(s) versé(s) en comptabilité.\nRecettes taguées « Périscolaire » — espèces en caisse, le reste en banque.');
   };
   /* 📅 LE NOMBRE DE JOURS D'OUVERTURE VIENT DU CALENDRIER, PLUS D'UN 16 EN DUR ==============
    15/08/2026. Le champ « × N jours » du bloc paiement produit la FACTURE réelle
