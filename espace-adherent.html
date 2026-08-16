@@ -1983,7 +1983,11 @@ window.ficheSign=async function(id){
   }
   if(res.error){ if(msg){msg.style.color='#c0392b'; msg.textContent='Échec : '+(res.error.message||res.error);} return; }
   FICHE.byKid[id]={row:res.data, donnees:(res.data&&res.data.donnees)||donnees};
-  if(window.ACM){ ACM.signedByKid=ACM.signedByKid||{}; ACM.signedByKid[id]=true; } if(typeof acmBoot==='function'){ acmBoot(); }
+  /* ACM est un `const` : `window.ACM` valait toujours undefined, donc cette mise à jour
+     immédiate ne se faisait pas. Sans gravité — acmBoot() reconstruit signedByKid depuis le
+     serveur juste après, et rappelle accueilRender() — mais l'accueil pouvait afficher
+     « fiche à signer » le temps de l'aller-retour, et y rester si celui-ci échouait. */
+  if(typeof ACM!=='undefined' && ACM){ ACM.signedByKid=ACM.signedByKid||{}; ACM.signedByKid[id]=true; } if(typeof acmBoot==='function'){ acmBoot(); }
   toast('✅ Fiche sanitaire signée');
   kidsRender();
 };
@@ -2492,7 +2496,11 @@ window.maSend=async function(){
 };
 window.maAdhBadge=async function(){
   try{
-    if(!window.FBME||!FBME.id) return;
+    /* 🔴 FBME est un `const` : il n'est PAS une propriété de window, donc `window.FBME`
+       valait toujours undefined et cette fonction sortait ici, à chaque fois. La pastille
+       « le CASE t'a répondu » n'est donc JAMAIS apparue depuis sa mise en place. On teste
+       la liaison elle-même. Contrôle mécanique : _qa/verif-window-liaisons.mjs */
+    if(!FBME.id) return;
     const {data}=await _sbAt.from('messages_adherents').select('created_at').eq('adherent_id',FBME.id).eq('sender','case').order('created_at',{ascending:false}).limit(1);
     const last=(data&&data[0])?new Date(data[0].created_at).getTime():0;
     let seen=0; try{ seen=parseInt(localStorage.getItem('case_msg_seen_'+FBME.id))||0; }catch(e){}
@@ -2500,7 +2508,11 @@ window.maAdhBadge=async function(){
     if(btn) btn.classList.toggle('has-dot', last>seen);
   }catch(e){}
 };
-(function(){ function t(n){ if(window.FBME&&FBME.id){ maAdhBadge(); } else if(n<25){ setTimeout(function(){t(n+1);},300); } } window.addEventListener('load', function(){ t(0); }); })();
+/* Même piège ici : `window.FBME` étant toujours undefined, la boucle n'appelait jamais le
+   badge — elle réessayait 25 fois en 7,5 s, puis abandonnait sans bruit. Ce délai a bien une
+   raison (la session arrive après le chargement de la page) : on garde le réessai, on
+   corrige seulement le test. */
+(function(){ function t(n){ if(FBME.id){ maAdhBadge(); } else if(n<25){ setTimeout(function(){t(n+1);},300); } } window.addEventListener('load', function(){ t(0); }); })();
 </script>
 </body>
 </html>
