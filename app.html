@@ -3981,7 +3981,8 @@ function closeModal(){ $('opModal').classList.remove('open'); }
    API à promesses, pensée pour remplacer un appel natif ligne à ligne :
      await bobAlert(msg[,{titre}])                          → true (toujours)
      await bobConfirm(msg[,{titre,ok,danger}])              → true / false
-     await bobPrompt(label[,valeur,{titre,type,hint,placeholder,ok,valider}]) → texte / null
+     await bobPrompt(label[,valeur,{titre,type,hint,placeholder,ok,danger,valider}]) → texte / null
+        (type='password' masque la saisie ; danger=true peint le bouton en rouge)
      await bobChoix(titre,[{v,label,sub}][,{corps}])        → v choisi / null
      await bobForm(titre,[{k,label,value,type,hint,placeholder}][,{intro,ok,danger,valider}]) → {k:valeur} / null
    Échap ou ✕ = annuler · Entrée = valider · clic hors de la boîte = annuler SEULEMENT s'il n'y a
@@ -4082,7 +4083,10 @@ function closeModal(){ $('opModal').classList.remove('open'); }
   window.bobAlert=function(msg,opt){ opt=opt||{}; return bobDialog({titre:opt.titre||'ℹ️',corps:msg,ok:opt.ok||'OK',cancel:false,cancelVal:true}); };
   window.bobConfirm=function(msg,opt){ opt=opt||{}; return bobDialog({titre:opt.titre||'Confirmer ?',corps:msg,ok:opt.ok||'Confirmer',danger:opt.danger,cancelVal:false}).then(v=>v===true); };
   window.bobPrompt=function(label,val,opt){ opt=opt||{};
-    return bobDialog({titre:opt.titre||'✏️',champs:[{k:'v',label:label,value:val==null?'':val,type:opt.type,hint:opt.hint,placeholder:opt.placeholder}],ok:opt.ok,valider:opt.valider?function(vs){return opt.valider(vs.v);}:null})
+    /* 16/08/2026 — « danger » manquait ICI seulement : bobConfirm et bobForm le passaient déjà.
+       Une question qui précède un effacement mérite le même bouton rouge que la confirmation
+       qui la suit ; sans ce mot, l'option était écrite dans l'appel et n'arrivait nulle part. */
+    return bobDialog({titre:opt.titre||'✏️',champs:[{k:'v',label:label,value:val==null?'':val,type:opt.type,hint:opt.hint,placeholder:opt.placeholder}],ok:opt.ok,danger:opt.danger,valider:opt.valider?function(vs){return opt.valider(vs.v);}:null})
       .then(r=>(r&&typeof r==='object')?String(r.v):null); };
   window.bobChoix=function(titre,options,opt){ opt=opt||{}; return bobDialog({titre:titre,corps:opt.corps,choix:options}); };
   /* Choix MULTIPLES : options cochables (v, label, sub, on) → tableau des v cochés, ou null si annulé */
@@ -5246,10 +5250,10 @@ function printBilan(){
 function printHTML(html){ window.docViewHtml('Aperçu du document', html); }
 
 /* ---- Prévisionnel : export Excel (CSV) + PDF officiel signé (réflexion bureau 23/06) ---- */
-function exportPrevisionnelCSV(){
+async function exportPrevisionnelCSV(){
   if(!window._prevExport) renderPrevisionnel();
   const E=window._prevExport;
-  if(!E || !E.refM){ alert("Aucune opération saisie pour cette année : il n'y a pas encore de budget à exporter.\nSaisis d'abord des écritures dans la Comptabilité."); return; }
+  if(!E || !E.refM){ await bobAlert("Aucune opération saisie pour cette année : il n'y a pas encore de budget à exporter.\nSaisis d'abord des écritures dans la Comptabilité."); return; }
   const M=E.MOIS, r2=v=>Math.round((v||0)*100)/100, yTot=a=>{let s=0;for(let m=1;m<=12;m++)s+=a[m];return s;};
   const head=['Code comptable'].concat(M.map((mo,i)=>mo+(i+1>E.refM?' (projeté)':''))).concat(['Total an']);
   const line=(code,a)=>csvRow([code].concat([...Array(12)].map((_,i)=>r2(a[i+1]))).concat([r2(yTot(a))]));
@@ -7404,8 +7408,8 @@ la salarié(e), n° d'avenant, groupe et coefficient ÉCLAT, rémunération brut
 nombre d'heures, date d'effet.`;
 }
 function saveAvenant(key){ if(!db.avenants) db.avenants={}; const el=$('av_'+key); if(el){ db.avenants[key]=el.value; save(); } }
-function resetAvenant(key){
-  if(!confirm('Revenir au modèle d\'origine ? Tes modifications de cet avenant seront perdues.')) return;
+async function resetAvenant(key){
+  if(!await bobConfirm('Tes modifications de cet avenant seront perdues.', {titre:'Revenir au modèle d\'origine ?', ok:'Revenir au modèle', danger:true})) return;
   if(!db.avenants) db.avenants={}; delete db.avenants[key]; save();
   const el=$('av_'+key); if(el) el.value=avenantTpl(key);
 }
@@ -8443,6 +8447,15 @@ function renderCoffre(){ try{ document.querySelectorAll('[data-coffre]').forEach
 function renderAll(){ renderCoffre(); renderDashboard(); renderZoneCards(); renderMembers(); renderRelances(); renderOps(); renderCaisse(); renderRapprochement(); renderProjects(); renderSubventions(); renderEcheancier(); renderBilan(); renderPrevisionnel(); renderPilotage(); renderEquipe(); renderRepertoire(); renderSecretariat(); renderDemarches(); renderAssurance(); renderCaMembres(); renderReunions(); renderCaprep(); renderIncidents(); renderDettes(); renderOfficialLinks(); refreshComptes(); renderListParams(); renderJournal(); renderPeriscolaire(); renderFaqList(); renderNews(); renderAccompagnement(); renderRH(); renderProjet(); renderProjetAdos(); renderActions(); renderConges(); renderFermetures(); renderHoraires(); renderObligations(); renderAcmVac(); renderIntervenants(); if(window.renderVepi)window.renderVepi(); if(window.renderDocsPeri)window.renderDocsPeri(); if(window.renderDocsOff)window.renderDocsOff(); }
 
 /* ---- Data import/export ---- */
+/* ===== Lot 11c (16/08/2026) — DONNÉES & ADMIN QUITTENT LES FENÊTRES GRISES ================
+   C'est ici que vivent les deux gestes qui peuvent tout perdre : remplacer le coffre par un
+   fichier, et tout effacer. Les fenêtres du navigateur les habillaient exactement comme un
+   « Export terminé » : même boîte, même bouton, même gris. Désormais le titre annonce ce qui
+   va se passer et le bouton est ROUGE quand c'est définitif. Le mot de passe de la remise à
+   zéro, lui, ne s'affiche plus en clair à l'écran.
+   ⚠️ exportJSON reste VOLONTAIREMENT synchrone : l'import s'appuie sur le fait qu'elle jette
+   son erreur tout de suite (filet ③ ci-dessous). La rendre asynchrone ouvrirait ce filet dans
+   le vide et laisserait écraser les données sans sauvegarde. ============================== */
 function exportJSON(motif){
   const blob=new Blob([JSON.stringify(db,null,2)],{type:'application/json'});
   /* le nom du fichier suit l'ASSO connectée (window.bobOrgName), plus « CASE » en dur */
@@ -8452,27 +8465,30 @@ function exportJSON(motif){
 function importJSON(e){
   const f=e.target.files[0]; if(!f)return;
   const r=new FileReader();
-  r.onload=()=>{
-    let d; try{ d=JSON.parse(r.result); }catch(err){ alert('Fichier illisible — ce n\'est pas une sauvegarde Bob valide.'); return; }
+  /* 16/08/2026 — cette fonction-là doit être « async » (et pas seulement importJSON qui
+     l'entoure) : les questions posées ci-dessous attendent une réponse, et c'est ICI qu'on
+     attend, pas dans la fonction du dessus. Le lecteur de fichier, lui, ne réclame rien en retour. */
+  r.onload=async()=>{
+    let d; try{ d=JSON.parse(r.result); }catch(err){ await bobAlert('Fichier illisible — ce n\'est pas une sauvegarde Bob valide.', {titre:'⚠️ Import impossible'}); return; }
     /* 08/08/2026 — ① le fichier doit RESSEMBLER à une sauvegarde Bob. Sans ce contrôle,
        n\'importe quel JSON (y compris « {} ») passait et vidait le coffre en un clic. */
-    if(!d || typeof d!=='object' || Array.isArray(d)){ alert('Ce fichier n\'est pas une sauvegarde Bob (structure inattendue). Rien n\'a été modifié.'); return; }
+    if(!d || typeof d!=='object' || Array.isArray(d)){ await bobAlert('Ce fichier n\'est pas une sauvegarde Bob (structure inattendue). Rien n\'a été modifié.', {titre:'⚠️ Import impossible'}); return; }
     const attendues=['members','ops','projects','subventions','comptes','contacts','notes','incidents','periscolaire'];
     const reconnues=attendues.filter(k=>Object.prototype.hasOwnProperty.call(d,k));
     if(reconnues.length<3){
-      alert('Ce fichier ne ressemble pas à une sauvegarde Bob : aucune des rubriques attendues n\'y figure (adhérents, comptabilité, projets…).\n\nRien n\'a été modifié.');
+      await bobAlert('Ce fichier ne ressemble pas à une sauvegarde Bob : aucune des rubriques attendues n\'y figure (adhérents, comptabilité, projets…).\n\nRien n\'a été modifié.', {titre:'⚠️ Import impossible'});
       return;
     }
     /* ② la confirmation NOMME ce qui va disparaître — un avertissement générique ne se lit plus */
     const n=k=>Array.isArray(db[k])?db[k].length:0;
     const perte=[n('members')+' adhérent(s)', n('ops')+' opération(s) comptable(s)', n('subventions')+' subvention(s)',
                  n('projects')+' projet(s)', n('incidents')+' événement(s)'].join('\n  · ');
-    if(!confirm('⚠️ REMPLACER toutes les données en ligne de '+(window.bobOrgName||'l\'association')+' par celles du fichier ?\n\nCe qui va être écrasé :\n  · '+perte+'\n\nUne sauvegarde de l\'état actuel va d\'abord être téléchargée. Si ce téléchargement échoue, l\'import sera ANNULÉ.\n\nContinuer ?')){ return; }
+    if(!await bobConfirm('Toutes les données en ligne de '+(window.bobOrgName||'l\'association')+' vont être REMPLACÉES par celles du fichier.\n\nCe qui va être écrasé :\n  · '+perte+'\n\nUne sauvegarde de l\'état actuel va d\'abord être téléchargée. Si ce téléchargement échoue, l\'import sera ANNULÉ.', {titre:'⚠️ Remplacer toutes les données ?', ok:'Remplacer', danger:true})){ return; }
     /* ③ FAIL-CLOSED : l\'erreur de l\'export de sécurité était avalée par un catch vide —
        téléchargement bloqué par le navigateur = écrasement SANS filet. On arrête net. */
     try{ exportJSON('avant-import'); }
     catch(err){
-      alert('La sauvegarde de sécurité n\'a pas pu être téléchargée ('+((err&&err.message)||err)+').\n\nImport ANNULÉ : rien n\'a été modifié. Vérifie que ton navigateur autorise les téléchargements, puis réessaie.');
+      await bobAlert('La sauvegarde de sécurité n\'a pas pu être téléchargée ('+((err&&err.message)||err)+').\n\nImport ANNULÉ : rien n\'a été modifié. Vérifie que ton navigateur autorise les téléchargements, puis réessaie.', {titre:'⚠️ Import annulé'});
       return;
     }
     /* 🔒 Les nouveautés vivent dans le coffre depuis le 15/08/2026. Une sauvegarde faite AVANT
@@ -8484,7 +8500,7 @@ function importJSON(e){
     if(!Array.isArray(db.news) && _newsAvant) db.news=_newsAvant;
     if(!Array.isArray(db.faq)  && _faqAvant)  db.faq =_faqAvant;
     newsSync(); faqSync();
-    _jPrev=null; db.journal=(db.journal||[]).concat([jEntry('Données','📥 Sauvegarde importée (remplacement des données)')]).slice(-500); save(); alert('Sauvegarde importée ✅');
+    _jPrev=null; db.journal=(db.journal||[]).concat([jEntry('Données','📥 Sauvegarde importée (remplacement des données)')]).slice(-500); save(); await bobAlert('Les données du fichier ont remplacé celles en ligne.', {titre:'✅ Sauvegarde importée'});
   };
   r.readAsText(f); e.target.value='';
 }
@@ -8511,11 +8527,11 @@ function exportOpsCSV(){
         o.type==='transfer'?'':fmt(sp,'site'),o.type==='transfer'?'':fmt(sp,'action'),projName(o.project),o.amount]); }));
   download(new Blob(['﻿'+rows.join('\n')],{type:'text/csv'}),'comptabilite-'+orgFileSlug()+(yr?'-'+yr:'')+'.csv');
 }
-function exportComptaCSV(){
+async function exportComptaCSV(){
   // journal analytique : une ligne par ventilation (compte / site / action), avec débit (dépense) / crédit (recette)
   const yr=curExercice();
   const lignes=db.ops.filter(o=>o.type!=='transfer' && (!yr||(o.date||'').slice(0,4)===yr));
-  if(!lignes.length){ alert('Aucune écriture pour '+(yr?('l\'exercice '+yr):'cette sélection')+'.'); return; }
+  if(!lignes.length){ await bobAlert('Aucune écriture pour '+(yr?('l\'exercice '+yr):'cette sélection')+'.'); return; }
   const rows=[csvRow(['Date','Compte comptable','Libellé','Catégorie','Site','Action','Débit (dépense)','Crédit (recette)','Moyen de paiement'])];
   lignes.slice().sort((a,b)=>(a.date||'').localeCompare(b.date||'')).forEach(o=>{
     const _m=modeFromAccount(o); const moyen = _m?modeText(_m):'Banque';
@@ -8526,16 +8542,16 @@ function exportComptaCSV(){
   });
   download(new Blob(['﻿'+rows.join('\n')],{type:'text/csv'}),'journal-comptable-'+orgFileSlug()+(yr?'-'+yr:'')+'.csv');
 }
-function exportRapIncoherences(){
+async function exportRapIncoherences(){
   const L=db.releveLignes||[];
-  if(!L.length){ alert('Aucun relevé importé — importe d\'abord un relevé pour voir les incohérences.'); return; }
+  if(!L.length){ await bobAlert('Aucun relevé importé — importe d\'abord un relevé pour voir les incohérences.'); return; }
   const dates=L.map(l=>l.date).filter(Boolean).sort(); const dmin=dates[0]||'', dmax=dates[dates.length-1]||'';
   const by=s=>L.filter(l=>l.statut===s);
   const valider=by('valider'), saisir=by('saisir');
   const orph=bankMoves().filter(m=>!m.o.rap && m.o.type!=='transfer' && m.o.date>=dmin && m.o.date<=dmax);
   const sensLbl=s=>s==='out'?'dépense':'recette';
   const opById=id=>db.ops.find(o=>o.id===id);
-  if(!valider.length && !saisir.length && !orph.length){ alert('Aucune incohérence à exporter : tout concorde ✅'); return; }
+  if(!valider.length && !saisir.length && !orph.length){ await bobAlert('Aucune incohérence à exporter : tout concorde ✅'); return; }
   const rows=[csvRow(['Catégorie','Date','Libellé','Sens','Montant','Détail / candidats dans Bob'])];
   valider.forEach(l=>rows.push(csvRow(['À valider (plusieurs écritures au même montant)', l.date, l.libelle, '', l.montant,
     (l.cand||[]).map(id=>{const o=opById(id);return o?o.label+' ('+o.date+')':'';}).filter(Boolean).join(' OU ')])));
@@ -8547,20 +8563,31 @@ function download(blob,name){
   const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=name; a.click(); URL.revokeObjectURL(a.href);
 }
 async function resetAll(){
-  if(!confirm('⚠️ Tout effacer et repartir de zéro ?\n\nCela supprime DÉFINITIVEMENT toutes les données de l\'association en ligne (adhérents, comptabilité, subventions…).\n\nPar sécurité, une sauvegarde de l\'état actuel va d\'abord être téléchargée.\n\nÊtes-vous sûr ?')){ return; }
+  /* 16/08/2026 — le geste le plus destructeur de Bob méritait mieux que le titre passe-partout
+     posé par la migration : ici le bouton est ROUGE et nommé, pour qu'on ne clique pas dessus
+     par réflexe en croyant fermer un simple avertissement. */
+  if(!await bobConfirm('Cela supprime DÉFINITIVEMENT toutes les données de l\'association en ligne (adhérents, comptabilité, subventions…).\n\nPar sécurité, une sauvegarde de l\'état actuel va d\'abord être téléchargée.', {titre:'⚠️ Tout effacer et repartir de zéro ?', ok:'Tout effacer', danger:true})) { return; }
   // 🔒 Double sécurité : on exige le mot de passe de connexion de la personne (vérifié en ligne) AVANT d'effacer.
   if(typeof window.bobReauth!=='function'){
-    alert('Sécurité : la vérification du mot de passe n\'est pas disponible (il faut être connecté à Bob). Rien n\'a été effacé.');
+    await bobAlert('La vérification du mot de passe n\'est pas disponible (il faut être connecté à Bob). Rien n\'a été effacé.', {titre:'🔒 Suppression impossible'});
     return;
   }
-  const pw=prompt('🔒 Action irréversible.\n\nPour confirmer la suppression de TOUTES les données de l\'association en ligne, saisis ton mot de passe de connexion Bob :');
+  /* 16/08/2026 — la fenêtre du navigateur affichait ce mot de passe EN CLAIR, à l'écran,
+     devant qui passait. La fenêtre maison le masque (type « password »). */
+  const pw=await bobPrompt('Ton mot de passe de connexion Bob','',{
+    titre:'🔒 Action irréversible',
+    type:'password',
+    ok:'Confirmer la suppression',
+    danger:true,
+    hint:'Pour confirmer la suppression de TOUTES les données de l\'association en ligne.'});
   if(pw===null){ return; }            // annulé
-  if(!pw.trim()){ alert('Aucun mot de passe saisi — rien n\'a été effacé.'); return; }
+  if(!pw.trim()){ await bobAlert('Aucun mot de passe saisi — rien n\'a été effacé.', {titre:'🔒 Suppression annulée'}); return; }
   const chk=await window.bobReauth(pw);
   if(!chk.ok){
-    alert(chk.reason==='noauth'
+    await bobAlert(chk.reason==='noauth'
       ? 'Impossible de vérifier ton mot de passe (connexion requise) — rien n\'a été effacé.'
-      : 'Mot de passe incorrect — rien n\'a été effacé.\n\n(Si tu te connectes par lien magique et n\'as pas de mot de passe, tu peux en définir un via « Mot de passe oublié ? » sur la page de connexion.)');
+      : 'Mot de passe incorrect — rien n\'a été effacé.\n\n(Si tu te connectes par lien magique et n\'as pas de mot de passe, tu peux en définir un via « Mot de passe oublié ? » sur la page de connexion.)',
+      {titre:'🔒 Suppression refusée'});
     return;
   }
   /* 08/08/2026 — l'effacement passe désormais par une fonction SERVEUR réservée au
@@ -8571,17 +8598,18 @@ async function resetAll(){
      Le serveur prend lui-même l'instantané avant d'effacer : le filet ne dépend plus
      d'un téléchargement navigateur, qui peut échouer en silence. */
   const sbc=window.bobSbc;
-  if(!sbc){ alert('Connexion à Bob indisponible — rien n\'a été effacé.'); return; }
+  if(!sbc){ await bobAlert('Connexion à Bob indisponible — rien n\'a été effacé.', {titre:'⚠️ Erreur'}); return; }
   try{ exportJSON('avant-remise-a-zero'); }catch(e){}
   const r=await sbc.rpc('bob_reset_asso',{p_expected:null});
   if(r.error){
-    alert(String(r.error.message||'').indexOf('Remise à zéro refusée')>=0
+    await bobAlert(String(r.error.message||'').indexOf('Remise à zéro refusée')>=0
       ? r.error.message
-      : 'La remise à zéro n\'a pas pu être effectuée ('+(r.error.message||'erreur inconnue')+').\n\nRien n\'a été effacé.');
+      : 'La remise à zéro n\'a pas pu être effectuée ('+(r.error.message||'erreur inconnue')+').\n\nRien n\'a été effacé.',
+      {titre:'⚠️ Remise à zéro impossible'});
     return;
   }
   db=blank(); _jPrev=null; renderAll();
-  alert('✅ Remise à zéro effectuée. Une sauvegarde a été conservée en ligne, et une copie téléchargée dans tes fichiers.');
+  await bobAlert('Une sauvegarde a été conservée en ligne, et une copie téléchargée dans tes fichiers.', {titre:'✅ Remise à zéro effectuée'});
 }
 /* init */
 $('m_date').value=today(); $('a_date').value=today(); $('t_date').value=today(); $('q_date').value=today(); $('r_date').value=today(); $('i_date').value=today(); $('de_date').value=today();
