@@ -9460,7 +9460,21 @@ renderAll();
         const dt=d.ts?('<br><span class="muted" style="font-size:12px">déposé le '+new Date(d.ts).toLocaleDateString('fr-FR')+'</span>'):'';
         const del=canWrite?' <button class="danger" onclick="docsOffDel(\''+d.id+'\')">Suppr.</button>':'';
         const src=d.structureId?(coffreListe('structures').find(function(x){return x.id===d.structureId;})||{}).nom:'';
-        return '<tr><td style="padding:8px;border-top:1px solid #eee"><span class="pill" style="background:#fcf2de;color:#a9742a">'+esc(d.cat||'Document')+'</span></td><td style="padding:8px;border-top:1px solid #eee"><b>'+esc(d.label||d.file||'')+'</b>'+(src?' <span class="muted" style="font-size:12px">· 🏛️ '+esc(src)+'</span>':'')+dt+'</td><td style="padding:8px;border-top:1px solid #eee;text-align:right;white-space:nowrap"><button class="ghost btn" onclick="docsOffView(\''+d.id+'\')">👁️ Visualiser</button> <button class="ghost btn" onclick="docsOffDownload(\''+d.id+'\')">⬇️ Télécharger</button>'+del+'</td></tr>';
+        /* 🔴 16/08/2026 — LE FORMAT S'AFFICHE, SINON DEUX VERSIONS SE RESSEMBLENT TROP.
+           Le libellé est fabriqué en RETIRANT l'extension du nom de fichier, et rien ne la
+           réaffichait ensuite. Une même note déposée en PDF et en HTML donnait donc deux
+           lignes rigoureusement identiques : on croit à un doublon et on en supprime une —
+           peut-être la mauvaise. Le renseignement existait déjà dans la fiche (d.file), il
+           n'était simplement montré nulle part. Vaut au-delà de ce cas : sur 29 pièces, ça
+           distingue d'un coup d'œil un scan d'une note écrite dans Bob. */
+        const _ext=(String(d.file||'').toLowerCase().match(/\.([a-z0-9]+)$/)||[])[1]||'';
+        const _fmt=(_ext==='pdf')?'PDF'
+                 :((_ext==='html'||_ext==='htm')?'HTML'
+                 :((_ext==='doc'||_ext==='docx')?'Word'
+                 :((['png','jpg','jpeg','gif','webp','bmp','heic','heif','avif'].indexOf(_ext)>=0)?'image'
+                 :(_ext?_ext.toUpperCase():''))));
+        const fmt=_fmt?' <span class="pill" style="background:#eef2f0;color:#5b6f66;font-size:11px;font-weight:600;vertical-align:middle">'+esc(_fmt)+'</span>':'';
+        return '<tr><td style="padding:8px;border-top:1px solid #eee"><span class="pill" style="background:#fcf2de;color:#a9742a">'+esc(d.cat||'Document')+'</span></td><td style="padding:8px;border-top:1px solid #eee"><b>'+esc(d.label||d.file||'')+'</b>'+fmt+(src?' <span class="muted" style="font-size:12px">· 🏛️ '+esc(src)+'</span>':'')+dt+'</td><td style="padding:8px;border-top:1px solid #eee;text-align:right;white-space:nowrap"><button class="ghost btn" onclick="docsOffView(\''+d.id+'\')">👁️ Visualiser</button> <button class="ghost btn" onclick="docsOffDownload(\''+d.id+'\')">⬇️ Télécharger</button>'+del+'</td></tr>';
       }).join('')+'</tbody></table></div>';
     }else{
       rows='<p class="empty" style="padding:10px 0">Aucun document officiel déposé pour l\'instant.'+(canWrite?' Clique « Déposer un document » pour ajouter une convention, un PV signé, les statuts…':'')+'</p>';
