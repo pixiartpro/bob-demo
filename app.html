@@ -9851,9 +9851,26 @@ renderAll();
     st.calc=null; st.seq++;
     if(window.loadDossiersPeri) window.loadDossiersPeri();
   };
-  // ✏️ Retouche d'un montant déjà verrouillé — même principe : un champ dans la carte, pas un prompt().
-  window.periEditMontant=function(id){
-    if(!canWrite){ alert('Réservé au bureau.'); return; }
+  // ✏️ Retouche d'un montant déjà verrouillé — même principe : un champ dans la carte, pas une fenêtre de saisie.
+  /* ===== Lot 11c (16/08/2026) — LE COMPTOIR DES ENFANTS QUITTE LES FENÊTRES GRISES =========
+     46 fenêtres natives du navigateur remplacées par la modale maison dans les 12 fonctions que
+     l'accueil touche chaque jour : rattacher un enfant au périscolaire, le déplacer, le retirer,
+     corriger ses créneaux, saisir un téléphone, autoriser une photo.
+     Fonctions concernées : periEditMontant · periCopyLien · setDroitImage · periAddEnfant ·
+     periRemoveEnfant · periRemoveActivite · periSetTel · periEditCreneaux · enfHubAdd ·
+     enfHubMove · enfHubRemovePeri · enfHubRemoveAct.
+     Les suppressions ont un bouton rouge ; les erreurs techniques portent un titre d'avertissement
+     distinct des messages d'information ; periEditMontant est devenue asynchrone pour attendre
+     la réponse.
+     ⚠️ CE QUI N'EST PAS FAIT et se voit sur les mêmes écrans : periValiderMontant (le geste
+     « valider un montant », voisin immédiat) et une poignée d'autres restent en fenêtre native —
+     un même geste peut donc encore ouvrir deux styles de fenêtre selon le bouton. C'est le
+     prochain morceau du chantier, pas un oubli.
+     REVERT : dans ces 12 fonctions seulement, réécrire les appels à la modale maison en fenêtres
+     natives du navigateur (information pour les messages, confirmation pour les questions), puis
+     retirer le mot-clé asynchrone de periEditMontant. Aucune autre ligne du fichier n'est touchée. */
+  window.periEditMontant=async function(id){
+    if(!canWrite){ await bobAlert('Réservé au bureau.'); return; }
     const b=document.getElementById('perimod_'+id); if(!b) return;
     const ouvre=(b.style.display==='none');
     b.style.display=ouvre?'':'none';
@@ -9880,12 +9897,12 @@ renderAll();
     if(window.loadDossiersPeri) window.loadDossiersPeri();
   };
   window.periCopyLien=async function(url){
-    try{ await navigator.clipboard.writeText(url); alert('🔗 Lien de paiement copié !\n\nEnvoyez-le à la famille (mail / SMS). Elle paie sans avoir à se connecter, et Bob passera en « payé » tout seul.'); }
-    catch(e){ prompt('Copiez le lien de paiement :', url); }
+    try{ await navigator.clipboard.writeText(url); await bobAlert('🔗 Lien de paiement copié !\n\nEnvoyez-le à la famille (mail / SMS). Elle paie sans avoir à se connecter, et Bob passera en « payé » tout seul.'); }
+    catch(e){ await bobPrompt('Copiez le lien de paiement :', url); }
   };
   window.setDroitImage=async function(enfantId, val){
     const {error}=await sbc.from('enfants').update({droit_image:val}).eq('id',enfantId);
-    if(error){ alert('Erreur : '+error.message); return; }
+    if(error){ await bobAlert('Erreur : '+error.message, {titre:'⚠️ Erreur'}); return; }
     if(window.loadDossiersPeri) window.loadDossiersPeri();
   };
   // Rattacher / retirer un enfant DÉJÀ créé par la famille sur son dossier périscolaire (métier : bureau + personnel).
@@ -9893,51 +9910,51 @@ renderAll();
   // (droit à l'image, autorisation de partir seul, fiche sanitaire signée), qui restent confirmés par le parent.
   window.periAddEnfant=async function(id){
     const sel=document.getElementById('peri_addsel_'+id);
-    if(!sel||!sel.value){ alert("Choisis d'abord un enfant dans la liste."); return; }
+    if(!sel||!sel.value){ await bobAlert("Choisis d'abord un enfant dans la liste."); return; }
     const enfantId=sel.value;
     const destEl=document.getElementById('peri_adddest_'+id);
     const dest=destEl?destEl.value:'PERI';
     const re=await sbc.from('enfants').select('*').eq('id',enfantId).single();
-    if(re.error||!re.data){ alert('Fiche enfant introuvable : '+((re.error&&re.error.message)||'')); return; }
+    if(re.error||!re.data){ await bobAlert('Fiche enfant introuvable : '+((re.error&&re.error.message)||'')); return; }
     const k=re.data;
     if(dest==='PERI'){
       const matin=!!((document.getElementById('peri_addmatin_'+id)||{}).checked);
       const soir=!!((document.getElementById('peri_addsoir_'+id)||{}).checked);
-      if(!matin&&!soir){ alert("Coche au moins « matin » ou « soir » pour cet enfant."); return; }
+      if(!matin&&!soir){ await bobAlert("Coche au moins « matin » ou « soir » pour cet enfant."); return; }
       const ri=await sbc.from('inscriptions_periscolaire').select('enfants').eq('id',id).single();
-      if(ri.error){ alert('Erreur : '+ri.error.message); return; }
+      if(ri.error){ await bobAlert('Erreur : '+ri.error.message, {titre:'⚠️ Erreur'}); return; }
       const cur=Array.isArray(ri.data&&ri.data.enfants)?ri.data.enfants:[];
-      if(cur.some(x=>x&&x.enfant_id===enfantId)){ alert('Cet enfant est déjà dans le dossier périscolaire.'); if(window.loadDossiersPeri)loadDossiersPeri(); return; }
+      if(cur.some(x=>x&&x.enfant_id===enfantId)){ await bobAlert('Cet enfant est déjà dans le dossier périscolaire.'); if(window.loadDossiersPeri)loadDossiersPeri(); return; }
       const entry={enfant_id:k.id, prenom:k.prenom||'', nom:k.nom||'', ecole:k.ecole||'', classe:k.classe||'', naissance:k.naissance||'', matin:matin, soir:soir};
       const {error}=await sbc.from('inscriptions_periscolaire').update({enfants:cur.concat([entry])}).eq('id',id);
-      if(error){ alert('Erreur : '+error.message); return; }
+      if(error){ await bobAlert('Erreur : '+error.message, {titre:'⚠️ Erreur'}); return; }
       if(typeof setSync==='function')setSync('✓ enfant rattaché au périscolaire','#dff5e9');
     } else if(dest.indexOf('ACT:')===0){
       const aid=dest.slice(4);
       const rc=await sbc.from('inscriptions_activite').select('id,statut').eq('activite_id',aid).eq('enfant_id',enfantId);
-      if(!rc.error&&(rc.data||[]).some(r=>r.statut!=='deplace'&&r.statut!=='annule')){ alert('Cet enfant est déjà inscrit à cette activité.'); if(window.loadDossiersPeri)loadDossiersPeri(); return; }
+      if(!rc.error&&(rc.data||[]).some(r=>r.statut!=='deplace'&&r.statut!=='annule')){ await bobAlert('Cet enfant est déjà inscrit à cette activité.'); if(window.loadDossiersPeri)loadDossiersPeri(); return; }
       const nom=(((k.prenom||'')+' '+(k.nom||'')).trim())||'';
       const {error}=await sbc.from('inscriptions_activite').insert({asso_id:myAsso, activite_id:aid, enfant_id:enfantId, nom:nom, statut:'valide'});
-      if(error){ alert('Erreur : '+error.message); return; }
+      if(error){ await bobAlert('Erreur : '+error.message, {titre:'⚠️ Erreur'}); return; }
       if(typeof setSync==='function')setSync("✓ enfant inscrit à l'activité",'#dff5e9');
-    } else { alert('Destination inconnue.'); return; }
+    } else { await bobAlert('Destination inconnue.'); return; }
     periRefreshSurfaces();
   };
   window.periRemoveEnfant=async function(id,enfantId){
-    if(!confirm("Retirer cet enfant de l'inscription ? (sa fiche enfant n'est PAS supprimée)")) return;
+    if(!await bobConfirm("Retirer cet enfant de l'inscription ? (sa fiche enfant n'est PAS supprimée)", {titre:'Retirer ?', ok:'Retirer', danger:true})) return;
     const ri=await sbc.from('inscriptions_periscolaire').select('enfants').eq('id',id).single();
-    if(ri.error){ alert('Erreur : '+ri.error.message); return; }
+    if(ri.error){ await bobAlert('Erreur : '+ri.error.message, {titre:'⚠️ Erreur'}); return; }
     const cur=Array.isArray(ri.data&&ri.data.enfants)?ri.data.enfants:[];
     const next=cur.filter(x=>x&&x.enfant_id!==enfantId);
     const {error}=await sbc.from('inscriptions_periscolaire').update({enfants:next}).eq('id',id);
-    if(error){ alert('Erreur : '+error.message); return; }
+    if(error){ await bobAlert('Erreur : '+error.message, {titre:'⚠️ Erreur'}); return; }
     if(typeof setSync==='function')setSync('✓ enfant retiré du dossier','#dff5e9');
     periRefreshSurfaces();
   };
   window.periRemoveActivite=async function(insId){
-    if(!confirm("Retirer cette inscription à l'activité ?\n\nRien n'est effacé : elle est marquée « annulée » et reste dans l'historique.")) return;
+    if(!await bobConfirm("Retirer cette inscription à l'activité ?\n\nRien n'est effacé : elle est marquée « annulée » et reste dans l'historique.", {titre:'Retirer ?', ok:'Retirer', danger:true})) return;
     const {error}=await sbc.from('inscriptions_activite').update({statut:'annule'}).eq('id',insId);
-    if(error){ alert('Erreur : '+error.message); return; }
+    if(error){ await bobAlert('Erreur : '+error.message, {titre:'⚠️ Erreur'}); return; }
     if(typeof setSync==='function')setSync("✓ inscription à l'activité annulée (historisée)",'#dff5e9');
     periRefreshSurfaces();
   };
@@ -9951,12 +9968,12 @@ renderAll();
      accepté que côté famille (0692… / +262… / 00…). */
   window.periSetTel=async function(id){
     const cur=await sbc.from('inscriptions_periscolaire').select('tel,foyer').eq('id',id).single();
-    if(cur.error){ alert('Erreur : '+cur.error.message); return; }
-    const t=prompt('📞 Numéro de téléphone de la famille'+((cur.data&&cur.data.foyer)?(' ('+cur.data.foyer+')'):'')+' :',(cur.data&&cur.data.tel)||'');
+    if(cur.error){ await bobAlert('Erreur : '+cur.error.message, {titre:'⚠️ Erreur'}); return; }
+    const t=await bobPrompt('📞 Numéro de téléphone de la famille'+((cur.data&&cur.data.foyer)?(' ('+cur.data.foyer+')'):'')+' :',(cur.data&&cur.data.tel)||'');
     if(t===null) return;
-    if(!(window.bobTelOk?bobTelOk(t):true)){ alert('Numéro invalide : « '+t+' ». Format attendu : 0692… ou +262…'); return; }
+    if(!(window.bobTelOk?bobTelOk(t):true)){ await bobAlert('Numéro invalide : « '+t+' ». Format attendu : 0692… ou +262…'); return; }
     const {error}=await sbc.from('inscriptions_periscolaire').update({tel:String(t).trim()}).eq('id',id);
-    if(error){ alert('Erreur : '+error.message); return; }
+    if(error){ await bobAlert('Erreur : '+error.message, {titre:'⚠️ Erreur'}); return; }
     if(typeof setSync==='function')setSync('✓ téléphone enregistré','#dff5e9');
     if(window.loadDossiersPeri)loadDossiersPeri();
   };
@@ -9972,15 +9989,15 @@ renderAll();
      « comptoir » de l'arbre famille (table inscriptions — RLS : écriture bureau seul, le personnel
      ne peut que la lire) pour que 👨‍👩‍👧 Foyers et le récépissé imprimé disent pareil. */
   window.periEditCreneaux=async function(dossierId,enfantId,matin,soir){
-    if(!matin&&!soir){ alert("Coche au moins « matin » ou « soir ». Pour retirer l'enfant du périscolaire, utilise plutôt le ✕."); return; }
+    if(!matin&&!soir){ await bobAlert("Coche au moins « matin » ou « soir ». Pour retirer l'enfant du périscolaire, utilise plutôt le ✕."); return; }
     const ri=await sbc.from('inscriptions_periscolaire').select('enfants,montant_du_cents').eq('id',dossierId).single();
-    if(ri.error){ alert('Erreur : '+ri.error.message); return; }
+    if(ri.error){ await bobAlert('Erreur : '+ri.error.message, {titre:'⚠️ Erreur'}); return; }
     const cur=Array.isArray(ri.data&&ri.data.enfants)?ri.data.enfants:[];
     let touche=false;
     const next=cur.map(x=>{ if(x&&x.enfant_id===enfantId){ touche=true; return Object.assign({},x,{matin:!!matin,soir:!!soir}); } return x; });
-    if(!touche){ alert('Enfant introuvable dans ce dossier — il a peut-être déjà été retiré.'); periRefreshSurfaces(); return; }
+    if(!touche){ await bobAlert('Enfant introuvable dans ce dossier — il a peut-être déjà été retiré.'); periRefreshSurfaces(); return; }
     const {error}=await sbc.from('inscriptions_periscolaire').update({enfants:next}).eq('id',dossierId);
-    if(error){ alert('Erreur : '+error.message); return; }
+    if(error){ await bobAlert('Erreur : '+error.message, {titre:'⚠️ Erreur'}); return; }
     // Miroir arbre famille : mêmes créneaux sur la ligne « coche comptoir » si elle existe (saison courante).
     let noteArbre='';
     try{
@@ -10005,7 +10022,7 @@ renderAll();
     }catch(e){}
     if(typeof setSync==='function')setSync('✓ créneaux corrigés ('+[matin?'matin':null,soir?'soir':null].filter(Boolean).join(' & ')+')','#dff5e9');
     const du=(ri.data&&ri.data.montant_du_cents)||0;
-    if(du>0||noteArbre) alert((du>0?('Créneaux corrigés ✓\n\n💶 Le forfait de ce dossier est déjà chiffré ('+(du/100).toLocaleString('fr-FR',{minimumFractionDigits:2})+' €) : re-chiffre-le (« 🧮 Proposer le tarif ») si le changement modifie le montant — il ne se recalcule pas tout seul.'):'Créneaux corrigés ✓')+noteArbre);
+    if(du>0||noteArbre) await bobAlert((du>0?('Créneaux corrigés ✓\n\n💶 Le forfait de ce dossier est déjà chiffré ('+(du/100).toLocaleString('fr-FR',{minimumFractionDigits:2})+' €) : re-chiffre-le (« 🧮 Proposer le tarif ») si le changement modifie le montant — il ne se recalcule pas tout seul.'):'Créneaux corrigés ✓')+noteArbre);
     periRefreshSurfaces();
   };
   window.periEditCrToggle=function(px,did,eid){ const b=document.getElementById('pedit_'+px+'_'+did+'_'+eid); if(b) b.style.display=(b.style.display==='none'?'':'none'); };
@@ -12303,44 +12320,44 @@ window.loadDossiersPeri=async function(){
   window.enfHubAdd=async function(eid){
     const d=document.getElementById('enf_dest_'+eid); const dest=d?d.value:'PERI';
     const re=await sbc.from('enfants').select('id,prenom,nom,ecole,classe,naissance,parent_id').eq('id',eid).single();
-    if(re.error||!re.data){ alert('Fiche enfant introuvable.'); return; }
+    if(re.error||!re.data){ await bobAlert('Fiche enfant introuvable.'); return; }
     const k=re.data; const nom=(((k.prenom||'')+' '+(k.nom||'')).trim())||'';
     if(dest==='PERI'){
       const matin=!!((document.getElementById('enf_matin_'+eid)||{}).checked), soir=!!((document.getElementById('enf_soir_'+eid)||{}).checked);
-      if(!matin&&!soir){ alert("Coche au moins « matin » ou « soir »."); return; }
+      if(!matin&&!soir){ await bobAlert("Coche au moins « matin » ou « soir »."); return; }
       const rd=await sbc.from('inscriptions_periscolaire').select('id,enfants').eq('user_id',k.parent_id).limit(1);
-      if(rd.error){ alert('Erreur : '+rd.error.message); return; }
-      if(!rd.data||!rd.data.length){ alert("Cette famille n'a pas encore de dossier périscolaire (pièces / quotient). Il s'ouvre depuis l'espace famille du parent — l'inscription périscolaire se fait là."); return; }
+      if(rd.error){ await bobAlert('Erreur : '+rd.error.message, {titre:'⚠️ Erreur'}); return; }
+      if(!rd.data||!rd.data.length){ await bobAlert("Cette famille n'a pas encore de dossier périscolaire (pièces / quotient). Il s'ouvre depuis l'espace famille du parent — l'inscription périscolaire se fait là."); return; }
       const dossier=rd.data[0]; const cur=Array.isArray(dossier.enfants)?dossier.enfants:[];
-      if(cur.some(x=>x&&x.enfant_id===eid)){ alert('Cet enfant est déjà dans le dossier périscolaire.'); if(window.loadEnfantsHub)loadEnfantsHub(); return; }
+      if(cur.some(x=>x&&x.enfant_id===eid)){ await bobAlert('Cet enfant est déjà dans le dossier périscolaire.'); if(window.loadEnfantsHub)loadEnfantsHub(); return; }
       const entry={enfant_id:k.id,prenom:k.prenom||'',nom:k.nom||'',ecole:k.ecole||'',classe:k.classe||'',naissance:k.naissance||'',matin:matin,soir:soir};
       const {error}=await sbc.from('inscriptions_periscolaire').update({enfants:cur.concat([entry])}).eq('id',dossier.id);
-      if(error){ alert('Erreur : '+error.message); return; }
+      if(error){ await bobAlert('Erreur : '+error.message, {titre:'⚠️ Erreur'}); return; }
       if(typeof setSync==='function')setSync('✓ enfant rattaché au périscolaire','#dff5e9');
     } else if(dest.indexOf('ACT:')===0){
       const aid=dest.slice(4);
       const rc=await sbc.from('inscriptions_activite').select('id,statut').eq('activite_id',aid).eq('enfant_id',eid);
-      if(!rc.error&&(rc.data||[]).some(r=>r.statut!=='deplace'&&r.statut!=='annule')){ alert('Cet enfant est déjà inscrit à cette activité.'); if(window.loadEnfantsHub)loadEnfantsHub(); return; }
+      if(!rc.error&&(rc.data||[]).some(r=>r.statut!=='deplace'&&r.statut!=='annule')){ await bobAlert('Cet enfant est déjà inscrit à cette activité.'); if(window.loadEnfantsHub)loadEnfantsHub(); return; }
       const {error}=await sbc.from('inscriptions_activite').insert({asso_id:myAsso,activite_id:aid,enfant_id:eid,nom:nom,statut:'valide'});
-      if(error){ alert('Erreur : '+error.message); return; }
+      if(error){ await bobAlert('Erreur : '+error.message, {titre:'⚠️ Erreur'}); return; }
       if(typeof setSync==='function')setSync("✓ enfant inscrit à l'activité",'#dff5e9');
     } else { return; }
     periRefreshSurfaces();
   };
   window.enfHubRemoveAct=async function(insId){
-    if(!confirm("Retirer cette inscription ?\n\nRien n'est effacé : elle est marquée « annulée » et reste dans l'historique.")) return;
+    if(!await bobConfirm("Retirer cette inscription ?\n\nRien n'est effacé : elle est marquée « annulée » et reste dans l'historique.", {titre:'Retirer ?', ok:'Retirer', danger:true})) return;
     const {error}=await sbc.from('inscriptions_activite').update({statut:'annule'}).eq('id',insId);
-    if(error){ alert('Erreur : '+error.message); return; }
+    if(error){ await bobAlert('Erreur : '+error.message, {titre:'⚠️ Erreur'}); return; }
     if(typeof setSync==='function')setSync('✓ inscription annulée (historisée)','#dff5e9');
     periRefreshSurfaces();
   };
   window.enfHubRemovePeri=async function(dossierId,eid){
-    if(!confirm("Retirer cet enfant du dossier périscolaire ? (sa fiche n'est pas supprimée)")) return;
+    if(!await bobConfirm("Retirer cet enfant du dossier périscolaire ? (sa fiche n'est pas supprimée)", {titre:'Retirer ?', ok:'Retirer', danger:true})) return;
     const rd=await sbc.from('inscriptions_periscolaire').select('enfants').eq('id',dossierId).single();
-    if(rd.error){ alert('Erreur : '+rd.error.message); return; }
+    if(rd.error){ await bobAlert('Erreur : '+rd.error.message, {titre:'⚠️ Erreur'}); return; }
     const cur=Array.isArray(rd.data&&rd.data.enfants)?rd.data.enfants:[];
     const {error}=await sbc.from('inscriptions_periscolaire').update({enfants:cur.filter(x=>x&&x.enfant_id!==eid)}).eq('id',dossierId);
-    if(error){ alert('Erreur : '+error.message); return; }
+    if(error){ await bobAlert('Erreur : '+error.message, {titre:'⚠️ Erreur'}); return; }
     if(typeof setSync==='function')setSync('✓ enfant retiré du périscolaire','#dff5e9');
     periRefreshSurfaces();
   };
@@ -12348,25 +12365,25 @@ window.loadDossiersPeri=async function(){
   window.enfHubMoveToggle=function(insId){ const b=document.getElementById('enfmovebox_'+insId); if(b) b.style.display=(b.style.display==='none'?'':'none'); };
   window.enfHubMove=async function(insId,eid,srcAid){
     const sel=document.getElementById('enfmove_'+insId); const destAid=sel?sel.value:'';
-    if(!destAid){ alert('Choisis une destination.'); return; }
-    if(destAid===srcAid){ alert("C'est déjà sa place actuelle."); return; }
+    if(!destAid){ await bobAlert('Choisis une destination.'); return; }
+    if(destAid===srcAid){ await bobAlert("C'est déjà sa place actuelle."); return; }
     const destName=(window.__enfHubActName&&window.__enfHubActName[destAid])||'la destination';
-    if(!confirm('Déplacer vers « '+destName+' » ?\n\nL\'inscription actuelle est CONSERVÉE en historique (statut « déplacée »), pas supprimée.')) return;
+    if(!await bobConfirm('Déplacer vers « '+destName+' » ?\n\nL\'inscription actuelle est CONSERVÉE en historique (statut « déplacée »), pas supprimée.', {titre:'Déplacer ?', ok:'Déplacer', danger:false})) return;
     // anti-doublon : déjà une inscription ACTIVE sur la destination ?
     const rc=await sbc.from('inscriptions_activite').select('id,statut').eq('activite_id',destAid).eq('enfant_id',eid);
-    if(!rc.error&&(rc.data||[]).some(r=>r.statut!=='deplace'&&r.statut!=='annule')){ alert('Cet enfant est déjà inscrit sur « '+destName+' ».'); return; }
+    if(!rc.error&&(rc.data||[]).some(r=>r.statut!=='deplace'&&r.statut!=='annule')){ await bobAlert('Cet enfant est déjà inscrit sur « '+destName+' ».'); return; }
     const re=await sbc.from('enfants').select('prenom,nom').eq('id',eid).single();
     const nom=(re&&re.data)?(((re.data.prenom||'')+' '+(re.data.nom||'')).trim()):'';
     // 1) créer la NOUVELLE inscription (on n'écrase jamais)
     const ins=await sbc.from('inscriptions_activite').insert({asso_id:myAsso,activite_id:destAid,enfant_id:eid,nom:nom,statut:'valide'}).select('id');
-    if(ins.error){ alert('Erreur (création de la nouvelle inscription) : '+ins.error.message); return; }
+    if(ins.error){ await bobAlert('Erreur (création de la nouvelle inscription) : '+ins.error.message); return; }
     const newId=(ins.data&&ins.data[0])?ins.data[0].id:null;
     // 2) marquer l'ANCIENNE « déplacée » (jamais de suppression → historique conservé)
     const upd=await sbc.from('inscriptions_activite').update({statut:'deplace',note_bureau:'↪ déplacé vers '+destName+' le '+today()}).eq('id',insId);
     if(upd.error){
       // compensation : annuler la nouvelle inscription pour ne PAS laisser deux inscriptions actives
       if(newId){ try{ await sbc.from('inscriptions_activite').update({statut:'annule'}).eq('id',newId); }catch(e){} }
-      alert('⚠️ Déplacement annulé : l\'ancienne inscription n\'a pas pu être marquée « déplacée » ('+upd.error.message+').\nRien n\'a été modifié — réessaie.');
+      await bobAlert('⚠️ Déplacement annulé : l\'ancienne inscription n\'a pas pu être marquée « déplacée » ('+upd.error.message+').\nRien n\'a été modifié — réessaie.');
       periRefreshSurfaces(); return;
     }
     if(typeof setSync==='function')setSync('✓ enfant déplacé vers « '+destName+' » (ancienne inscription historisée)','#dff5e9');
