@@ -1595,7 +1595,7 @@
     </div>
     <div class="panel" id="docsOffPanel">
       <h2>📁 Documents officiels &amp; conventions</h2>
-      <p class="hint">Les documents officiels de l'association (conventions CAF / Mairie, PV signés, statuts…) déposés dans le <strong>coffre privé</strong> : visibles seulement une fois connecté, jamais sur le site public. PDF, scan ou photo.</p>
+      <p class="hint">Les documents officiels de l'association (conventions CAF / Mairie, PV signés, statuts…) déposés dans le <strong>coffre privé</strong> : visibles seulement une fois connecté, jamais sur le site public. PDF, scan, photo, Word ou note écrite dans Bob.</p>
       <div id="docsOffBox"><p class="hint">Chargement…</p></div>
     </div>
     <div class="panel" id="structuresPanel" style="border:2px solid var(--brand)">
@@ -9453,7 +9453,7 @@ renderAll();
   window.renderDocsOff=function(){
     const box=$('docsOffBox'); if(!box) return;
     const list=coffreListe('docsOff');
-    const up=canWrite?'<div style="margin:0 0 12px"><button class="btn" onclick="docsOffUpload()">⬆️ Déposer un document</button> <span class="muted" style="font-size:12px">— PDF, scan ou photo ; tu peux en choisir plusieurs d\'un coup</span></div>':'';
+    const up=canWrite?'<div style="margin:0 0 12px"><button class="btn" onclick="docsOffUpload()">⬆️ Déposer un document</button> <span class="muted" style="font-size:12px">— PDF, scan, photo, Word ou HTML ; tu peux en choisir plusieurs d\'un coup</span></div>':'';
     let rows;
     if(list.length){
       rows='<div style="overflow-x:auto;-webkit-overflow-scrolling:touch"><table style="width:100%;min-width:520px;border-collapse:collapse"><thead><tr><th style="text-align:left;padding:8px">Type</th><th style="text-align:left;padding:8px">Document</th><th style="padding:8px"></th></tr></thead><tbody>'+list.map(function(d){
@@ -9478,9 +9478,35 @@ renderAll();
       {l:'Dernier PV d\'assemblée',kw:['proces verbal','proces-verbal','assemblee','ago','pv ']}
     ];
     var _hay=list.map(function(d){return _n((d.cat||'')+' '+(d.label||'')+' '+(d.file||''));});
-    var _have=function(kw){return _hay.some(function(h){return kw.some(function(k){return h.indexOf(k)>=0;});});};
-    var _ok=0; var _items=PIECES_SUBV.map(function(p){var has=_have(p.kw); if(has)_ok++; return '<div style="display:flex;align-items:center;gap:6px;padding:2px 0;font-size:13px">'+(has?'✅':'⬜')+' <span'+(has?'':' style="color:#b26a00"')+'>'+esc(p.l)+'</span></div>';}).join('');
-    var checklist='<div class="card" style="border-top:3px solid var(--brand);margin:0 0 14px"><div style="font-weight:700;font-size:14px;margin-bottom:4px">📋 Les 8 pièces de subvention <span class="muted" style="font-weight:400;font-size:12px">('+_ok+'/8 déposées)</span></div><p class="hint" style="margin:0 0 8px">Les pièces que la Ville redemande à <b>chaque</b> campagne. Dépose-les dans le coffre ci-dessous : elles se cochent <b>toutes seules</b> d\'après le nom du fichier — vérifie d\'un œil.</p>'+_items+'</div>';
+    /* 🔴 16/08/2026 — UN BROUILLON NE COCHE PLUS UNE PIÈCE ==================================
+       La coche se pose sur le NOM du fichier. Deux documents de travail décrochaient donc un
+       ✅ : « Budget prévisionnel 2027 — CHARPENTE » (une ébauche) et « PV du CA du 11/06 —
+       PROJET » (un conseil d'administration, pas une assemblée, et un brouillon). L'écran
+       annonçait « 3/8 déposées » alors qu'une seule pièce tenait vraiment.
+       Sur une checklist de dossier de subvention, un faux vert ne se rattrape pas : on part au
+       dépôt en croyant le dossier plus avancé qu'il n'est. La mention « vérifie d'un œil » ne
+       suffit pas — un ✅ se lit comme une affirmation, pas comme une suggestion.
+       On lit donc les marqueurs que les documents portent EUX-MÊMES (le coffre note déjà
+       « (signé) » et « (projet) ») : un brouillon passe en 🟠 « à confirmer » et ne compte pas.
+       Si une pièce a À LA FOIS un brouillon et un document définitif, c'est le définitif qui
+       gagne — d'où la recherche d'au moins un document non marqué. */
+    var BROUILLON=['projet','brouillon','charpente','draft','ebauche','provisoire','non signe','a valider'];
+    var _estBrouillon=function(h){return BROUILLON.some(function(b){return h.indexOf(b)>=0;});};
+    var _etat=function(kw){
+      var trouves=_hay.filter(function(h){return kw.some(function(k){return h.indexOf(k)>=0;});});
+      if(!trouves.length) return 'absent';
+      return trouves.some(function(h){return !_estBrouillon(h);}) ? 'ok' : 'brouillon';
+    };
+    var _ok=0, _aConfirmer=0;
+    var _items=PIECES_SUBV.map(function(p){
+      var e=_etat(p.kw);
+      if(e==='ok') _ok++; else if(e==='brouillon') _aConfirmer++;
+      var puce=(e==='ok')?'✅':((e==='brouillon')?'🟠':'⬜');
+      var couleur=(e==='ok')?'':((e==='brouillon')?' style="color:#a9742a"':' style="color:#b26a00"');
+      var note=(e==='brouillon')?' <span class="muted" style="font-size:11.5px">— un document de travail porte ce nom ; la version définitive reste à déposer</span>':'';
+      return '<div style="display:flex;align-items:flex-start;gap:6px;padding:2px 0;font-size:13px">'+puce+' <span'+couleur+'>'+esc(p.l)+note+'</span></div>';
+    }).join('');
+    var checklist='<div class="card" style="border-top:3px solid var(--brand);margin:0 0 14px"><div style="font-weight:700;font-size:14px;margin-bottom:4px">📋 Les 8 pièces de subvention <span class="muted" style="font-weight:400;font-size:12px">('+_ok+'/8 déposées'+(_aConfirmer?' · '+_aConfirmer+' à confirmer':'')+')</span></div><p class="hint" style="margin:0 0 8px">Les pièces que la Ville redemande à <b>chaque</b> campagne. Dépose-les dans le coffre ci-dessous : elles se cochent <b>toutes seules</b> d\'après le nom du fichier — donc <b>un brouillon ne coche pas</b>, et une pièce cochée mérite quand même un coup d\'œil.</p>'+_items+'</div>';
     box.innerHTML=checklist+up+rows;
   };
   window.docsOffUpload=async function(){
@@ -9495,14 +9521,38 @@ renderAll();
     const inp=document.createElement('input'); inp.type='file'; inp.multiple=true; inp.accept='.pdf,image/*,.doc,.docx,.html,.htm';
     inp.onchange=async function(){
       const files=inp.files?Array.from(inp.files):[]; if(!files.length) return;
-      const cat=(prompt('Type de document ? (Convention, PV, Statuts, Autre)','Convention')||'Document').trim()||'Document';
+      /* 🔴 16/08/2026 — ON CHOISIT, ON NE TAPE PLUS ==========================================
+         Les deux questions se posaient au clavier : le type de document en texte libre, et le
+         financeur par un NUMÉRO à recopier depuis une liste. Deux ennuis, le second pire que
+         le premier :
+           · « Note de cadrage », « note cadrage », « Note de Cadrage » font TROIS familles
+             dans le coffre — ce sont trois chaînes de caractères, rien ne les rapproche. La
+             même garde existe déjà ailleurs pour les sites (siteDemander) ;
+           · taper un numéro, c'est demander à quelqu'un de faire le travail de l'écran.
+         Un bouton par option : rien à écrire, rien à mal écrire. La liste des types reprend le
+         vocabulaire DÉJÀ employé dans le coffre — elle s'enrichit donc toute seule — et
+         « Autre… » reste possible pour un cas non prévu. */
+      const _CATS_BASE=['Convention','Avenant','PV','Statuts','Attestation','Contrat','Facture','Note de cadrage'];
+      const _catsVecues=[...new Set(coffreListe('docsOff').map(function(d){return String(d.cat||'').trim();}).filter(Boolean))];
+      const _cats=_CATS_BASE.concat(_catsVecues.filter(function(c){return _CATS_BASE.indexOf(c)<0;}));
+      let cat=await bobChoix('Quel type de document ?',
+        _cats.map(function(c){ return {v:c, label:c}; }).concat([{v:'__autre', label:'✏️ Autre…', sub:'un type qui n\'est pas dans la liste'}]),
+        {corps:'Sert à ranger la pièce et à cocher les 8 pièces de subvention.'});
+      if(cat===null) return;                       // Annuler = on ne dépose rien
+      if(cat==='__autre'){
+        cat=await bobPrompt('Type de document', '');
+        if(cat===null) return;
+        cat=String(cat).trim()||'Document';
+      }
       let _structureId=null;
       const _structs=coffreListe('structures');
       if(_structs.length){
-        const _menu=_structs.map(function(s,i){return (i+1)+') '+s.nom;}).join('\n');
-        const _pick=prompt('Rattacher à quel financeur / structure ? (pour le retrouver depuis sa fiche 🏛️)\n\n'+_menu+'\n\n→ numéro, ou vide pour aucun','');
-        const _n=parseInt((_pick||'').trim(),10);
-        if(!isNaN(_n) && _structs[_n-1]) _structureId=_structs[_n-1].id;
+        const _pick=await bobChoix('Rattacher à quel financeur ?',
+          _structs.map(function(s){ return {v:s.id, label:s.nom, sub:s.type||''}; })
+                  .concat([{v:'', label:'— Aucun —', sub:'la pièce reste dans le coffre, sans fiche financeur'}]),
+          {corps:'Rattachée, la pièce apparaît aussi dans la fiche 🏛️ de la structure — utile la veille d\'un dépôt.'});
+        if(_pick===null) return;                   // Annuler = on ne dépose rien
+        _structureId=_pick||null;   // bobChoix rend l'identifiant de la structure, plus un numéro à décoder
       }
       let userId; try{ userId=(myProfile&&myProfile.id)||((await sbc.auth.getUser()).data.user.id); }catch(e){ userId='x'; }
       /* 🔴 ON N'ÉCRIT DANS LE COFFRE QU'À LA FIN, EN UNE FOIS ================================
