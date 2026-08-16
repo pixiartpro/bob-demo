@@ -1197,31 +1197,11 @@
     <div class="panel">
       <div class="toolbar"><div>
         <h2 style="margin:0">🎒 Périscolaire</h2>
-        <p class="hint" style="margin:2px 0 0">Grille tarifaire par quotient familial, enfants inscrits et facturation automatique. <strong>Aujourd'hui : après-midi</strong> · <strong>rentrée d'août : + le matin</strong>. La grille est pré-remplie avec les tarifs 2024-2025 — <strong>réévalue-la pour août directement ici</strong>.</p>
+        <p class="hint" style="margin:2px 0 0">Grille tarifaire par quotient familial. Les inscriptions et les forfaits des familles vivent dans 📨 Dossiers familles. <strong>Aujourd'hui : après-midi</strong> · <strong>rentrée d'août : + le matin</strong>. La grille est pré-remplie avec les tarifs 2024-2025 — <strong>réévalue-la pour août directement ici</strong>.</p>
       </div></div>
-      <div class="cards" id="periKpis" style="margin-top:8px"></div>
     </div>
 
     <!-- 💶 Grille tarifaire déplacée dans le dépliant ⚙️ Paramétrage (bas de page) — réglage stable une fois par an -->
-
-    <div class="panel">
-      <h2 style="margin:0 0 4px">👧 Enfants inscrits</h2>
-      <p class="hint">Ajoute un enfant : Bob calcule automatiquement ce que la famille doit par mois (tranche, matin et/ou soir, nombre de jours du mois).</p>
-      <input type="hidden" id="pe_id">
-      <div class="toolbar" style="flex-wrap:wrap;gap:10px">
-        <div class="field" style="min-width:160px"><label>Nom de l'enfant</label><input id="pe_nom" placeholder="Prénom Nom"></div>
-        <div class="field" style="min-width:150px"><label>Responsable</label><input id="pe_resp" placeholder="Parent"></div>
-        <div class="field" style="min-width:160px"><label>Téléphone / email</label><input id="pe_contact" placeholder=""></div>
-        <div class="field" style="min-width:170px"><label>Tranche (quotient)</label><select id="pe_tranche"></select></div>
-        <div class="field" style="min-width:110px"><label>Jours / mois</label><input type="number" id="pe_jours" min="1" max="26" step="1" value="16"></div>
-        <div class="field" style="min-width:120px"><label>Rang fratrie</label><select id="pe_rang"><option value="1">1er enfant</option><option value="2">2e enfant</option><option value="3">3e enfant</option><option value="4">4e enfant</option></select></div>
-        <div class="field" style="min-width:110px"><label>Après-midi ?</label><select id="pe_aprem"><option value="1">Oui</option><option value="0">Non</option></select></div>
-        <div class="field" style="min-width:110px"><label>Matin ?</label><select id="pe_matin"><option value="0">Non</option><option value="1">Oui</option></select></div>
-      </div>
-      <div style="margin-top:8px"><button class="btn" id="pe_btn" onclick="addEnfantPeri()">+ Ajouter l'enfant</button></div>
-      <div style="overflow-x:auto;-webkit-overflow-scrolling:touch"><table style="margin-top:12px;min-width:640px"><thead><tr><th>Enfant</th><th>Responsable</th><th>Tranche</th><th>Formule</th><th class="num">Par mois</th><th></th></tr></thead>
-        <tbody id="periEnfRows"></tbody></table></div>
-    </div>
 
     <div class="panel" style="padding:10px 14px">
       <p class="hint" style="margin:0">📨 Les <strong>dossiers déposés par les familles</strong> (pièces, validation, forfaits, encaissements) ont déménagé dans <strong>👨‍👩‍👧 Familles → 📨 Dossiers familles</strong> — leurs pièces valent pour tous les accueils, pas seulement la garderie. <button class="ghost btn" style="font-size:12px;padding:2px 10px" onclick="bobGoTab('dossiers')">Y aller</button></p>
@@ -2934,7 +2914,7 @@ const J_COLLS={
   protocoles:{lbl:'Protocole',mod:'Équipe',name:x=>x.titre}
 };
 const J_LISTS={comptes:{lbl:'Compte comptable'},sites:{lbl:'Site'},actions:{lbl:'Action',f:1},cats:{lbl:'Catégorie',f:1},typesAdh:{lbl:"Type d'adhésion"}};
-const J_NESTED={'periscolaire.enfants':{lbl:'Enfant (périscolaire)',mod:'Périscolaire',name:x=>x.nom}};
+const J_NESTED={}; /* 16/08/2026 : le panneau « Enfants inscrits » du périscolaire a été retiré (jamais utilisé, doublon des Dossiers familles) — plus rien n'écrit dans periscolaire.enfants */
 function jNestedArr(path){ let o=db; for(const k of path.split('.')){ if(o==null) return []; o=o[k]; } return Array.isArray(o)?o:[]; }
 const jAcc=(f,verbe)=>verbe+(f?'e':'');
 let _jPrev=null;
@@ -7040,17 +7020,7 @@ function periDB(){
   if(p.grille.jours==null) p.grille.jours=16;
   return p;
 }
-function periFacture(e){
-  const g=periDB().grille;
-  const t=g.tranches[e.trancheIdx]||g.tranches[0]||{jour:0};
-  const jours=(e.jours||g.jours||16);
-  /* 🔴 Le matin se lit dans la MÊME ligne que le soir (grille votée 11/08/2026).
-     `g.suppMatin` — un montant unique — est mort : il annonçait 1,50 € à tout le
-     monde alors que la grille module de 1,55 € à 3,70 €. */
-  const base=((e.aprem?(t.jour||0):0)+(e.matin?(t.matin||0):0))*jours;
-  const remisePct=(g.remise||0)*Math.max(0,(e.rang||1)-1);
-  return { tarifJour:t.jour||0, jours, remisePct, total: base*(1-Math.min(remisePct,90)/100) };
-}
+
 function renderPeriscolaire(){
   if(!$('periGrilleRows')) return;
   const p=periDB(), g=p.grille;
@@ -7060,24 +7030,7 @@ function renderPeriscolaire(){
   ).join('');
   $('peri_remise').value=g.remise; $('peri_jours').value=g.jours;
   renderPeriGrilleLock();
-  const sel=$('pe_tranche'); if(sel && sel.options.length!==g.tranches.length){ sel.innerHTML=g.tranches.map((t,i)=>`<option value="${i}">${esc(t.label)}</option>`).join(''); }
-  const rows=p.enfants.map(e=>{ const f=periFacture(e); const t=g.tranches[e.trancheIdx]||{};
-    const formule=[e.aprem?'après-midi':null,e.matin?'matin':null].filter(Boolean).join(' + ')||'—';
-    return `<tr>
-      <td><strong>${esc(e.nom)}</strong></td>
-      <td>${esc(e.responsable||'—')}${e.contact?`<br><span class="muted" style="font-size:12px">${esc(e.contact)}</span>`:''}</td>
-      <td>${esc(t.label||'')}</td>
-      <td>${formule}${f.remisePct>0?` · <span class="muted">−${f.remisePct}% fratrie</span>`:''}</td>
-      <td class="num"><strong>${euro(f.total)}</strong></td>
-      <td style="white-space:nowrap"><button class="ghost btn" onclick="editEnfantPeri('${e.id}')" title="Modifier">✏️</button> <button class="ghost btn" onclick="delEnfantPeri('${e.id}')" title="Retirer">🗑</button></td></tr>`;
-  }).join('');
-  $('periEnfRows').innerHTML=rows||'<tr><td colspan="6" class="empty">Aucun enfant inscrit pour l\'instant. Ajoute le premier ci-dessus.</td></tr>';
-  const nb=p.enfants.length, nbMat=p.enfants.filter(e=>e.matin).length, nbApm=p.enfants.filter(e=>e.aprem).length;
-  const totMois=p.enfants.reduce((s,e)=>s+periFacture(e).total,0);
-  $('periKpis').innerHTML=
-      kpi('Enfants inscrits',nb,'',`${nbApm} après-midi · ${nbMat} matin`)
-    + kpi('Recettes / mois',euro(totMois),'green','selon la grille et les présences saisies')
-    + kpi("Sur l'année scolaire",euro(totMois*10),'green','estimation ~10 mois');
+
 }
 function periSetJour(i,v){ if(!window.__periGrilleUnlocked) return; periDB().grille.tranches[i].jour=parseFloat(v)||0; }
 /* Jumeau de periSetJour pour la colonne matin (grille votee au CA du 11/08/2026).
@@ -7178,30 +7131,6 @@ function savePeriGrille(){
   renderPeriscolaire();
   const el=$('periGrilleSaved'); if(el){ el.textContent='Grille enregistrée ✔ et reverrouillée (familles mises à jour)'; setTimeout(()=>{ el.textContent=''; },4000); }
 }
-function addEnfantPeri(){
-  const nom=($('pe_nom').value||'').trim(); if(!nom){ alert("Indique le nom de l'enfant."); return; }
-  const p=periDB();
-  const e={ id:$('pe_id').value||uid(), nom,
-    responsable:($('pe_resp').value||'').trim(), contact:($('pe_contact').value||'').trim(),
-    trancheIdx:parseInt($('pe_tranche').value)||0, jours:parseInt($('pe_jours').value)||16,
-    rang:parseInt($('pe_rang').value)||1, aprem:$('pe_aprem').value==='1', matin:$('pe_matin').value==='1' };
-  const i=p.enfants.findIndex(x=>x.id===e.id);
-  if(i>=0) p.enfants[i]=e; else p.enfants.push(e);
-  ['pe_id','pe_nom','pe_resp','pe_contact'].forEach(id=>{ const el=$(id); if(el) el.value=''; });
-  $('pe_jours').value=16; $('pe_rang').value='1'; $('pe_aprem').value='1'; $('pe_matin').value='0';
-  $('pe_btn').textContent="+ Ajouter l'enfant";
-  save(); renderPeriscolaire();
-}
-function editEnfantPeri(id){
-  const e=(periDB().enfants).find(x=>x.id===id); if(!e) return;
-  $('pe_id').value=e.id; $('pe_nom').value=e.nom||''; $('pe_resp').value=e.responsable||''; $('pe_contact').value=e.contact||'';
-  $('pe_tranche').value=e.trancheIdx||0; $('pe_jours').value=e.jours||16; $('pe_rang').value=e.rang||1;
-  $('pe_aprem').value=e.aprem?'1':'0'; $('pe_matin').value=e.matin?'1':'0';
-  $('pe_btn').textContent='Enregistrer'; $('pe_nom').focus();
-}
-async function delEnfantPeri(id){ /* Lot 9b : fenêtre maison au lieu de la fenêtre grise du navigateur — revert : remettre la fenêtre native d'origine autour du même corps */
-  if(!await bobConfirm('Retirer cet enfant de la liste ?',{titre:'Retirer',ok:'Retirer',danger:true})) return;
-  const p=periDB(); p.enfants=p.enfants.filter(x=>x.id!==id); save(); renderPeriscolaire(); }
 
 /* ---- Équipe : masse salariale ---- */
 function msCalc(s){
@@ -14986,128 +14915,6 @@ window.loadDossiersPeri=async function(){
   try{ acmEncCompute(); acmEncDip(); }catch(e){}
 })();
 
-/* ===== Lot 9b — DÉBUT (16/08/2026, ADDITIF / REVERTIBLE) ==========================
-   Le panneau « 👧 Enfants inscrits » du périscolaire chiffre un tarif par enfant. Trois
-   défauts mesurés avant d'y toucher — tous silencieux, tous du mauvais côté :
-
-   1. LE PRIX RETOMBAIT SUR LE MOINS CHER. `parseInt(select.value)||0` renvoie 0 quand la
-      tranche est vide ou illisible : 0 = la PREMIÈRE tranche, la moins chère. Et le rendu
-      reconstruit ce select à chaque enregistrement de l'appli (renderAll), ce qui le
-      ramenait sur cette première tranche sans rien dire. Une famille pouvait être chiffrée
-      au tarif le plus bas sans que personne ne le voie.
-   2. LA SAISIE EN COURS. ⚠️ Rectification après relecture adverse : contrairement à ce que
-      cette note affirmait d'abord, le formulaire n'était PAS vidé par un re-rendu avant ce lot
-      (la liste des tranches n'était reconstruite que si leur nombre changeait, ce qui n'arrive
-      jamais). C'est la case vide ajoutée ci-dessous qui fait diverger ce nombre, donc reconstruire
-      la liste à chaque rendu. Le relever/reposer est là pour ça : il protège la saisie d'un effet
-      que ce lot introduit. Doctrine maison appliquée : « 🖐️ LA SAISIE PRIME ».
-   3. RIEN N'EMPÊCHAIT LE DOUBLON. Deux clics = deux lignes = deux fois le même enfant
-      facturé. Le circuit voisin (Dossiers familles) refuse déjà ce doublon ; ici, non.
-
-   Ce bloc EMBALLE les fonctions existantes : il ne modifie AUCUNE ligne du fichier.
-   REVERT : ce lot est encadré par deux bannières de commentaire, en début de ligne, portant
-   son nom suivi de DEBUT et de FIN. Supprimer tout ce qui va de la première à la seconde,
-   bornes comprises (les repérer en début de ligne : cette phrase-ci les décrit sans les écrire,
-   pour qu'une recherche ne tombe pas dessus). Puis rendre à delEnfantPeri sa version d'origine :
-   une fonction NON asynchrone dont le corps entier est enveloppé dans la fenêtre native du
-   navigateur (sa propre note, sur place, le rappelle). C'est la seule ligne existante que ce lot
-   modifie.
-   ⚠️ Ce panneau est un BROUILLON de comptoir : il ne facture rien. La facturation réelle
-   passe par 📨 Dossiers familles, qui calcule le tarif côté serveur à partir du quotient
-   familial enregistré. On ne duplique donc PAS ce calcul ici — on refuse de deviner. */
-(function(){
-  const VIDE='';
-  function $q(id){ return document.getElementById(id); }
-  function norm(s){ return String(s||'').normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase().replace(/\s+/g,' ').trim(); }
-  function estBureau(){ try{ const m=window.bobMe; return !!(m&&typeof m==='object'&&m.canWrite); }catch(e){ return false; } }
-
-  /* Une case vide EN TÊTE du choix de tranche : tant qu'on n'a pas choisi, rien n'est
-     supposé. C'est ce qui remplace le repli muet sur la tranche la moins chère. */
-  function poseCaseVide(){
-    const s=$q('pe_tranche'); if(!s) return;
-    /* on retient si quelqu'un a VRAIMENT choisi : sans ça, on ne peut pas distinguer
-       « tranche 1 choisie » de « tranche 1 posée par défaut par le rendu ». */
-    if(!s.__peLie){ s.__peLie=1; s.addEventListener('change',function(){ s.dataset.peChoisi='1'; }); }
-    if(!s.options.length || s.options[0].value!==VIDE){
-      const o=document.createElement('option');
-      o.value=VIDE; o.textContent='— choisis la tranche —';
-      s.insertBefore(o, s.firstChild);
-    }
-    /* ⚠️ INSÉRER LA CASE VIDE NE SUFFIT PAS : le rendu reconstruit la liste à chaque fois
-       (l'option en plus fait diverger le compte), ce qui re-sélectionne la 1re tranche —
-       la moins chère — et la case vide se retrouvait posée DEVANT une option déjà choisie.
-       Le garde-fou ne se déclenchait alors jamais. Tant que personne n'a choisi, on
-       sélectionne explicitement la case vide. */
-    if(!s.dataset.peChoisi) s.value=VIDE;
-  }
-
-  const _render=window.renderPeriscolaire;
-  if(typeof _render==='function'){
-    window.renderPeriscolaire=function(){
-      /* on relève ce qui est en cours de frappe AVANT que le rendu ne reconstruise */
-      const ids=['pe_nom','pe_resp','pe_contact','pe_tranche','pe_jours','pe_rang','pe_aprem','pe_matin'];
-      const avant={}; ids.forEach(id=>{ const el=$q(id); if(el) avant[id]=el.value; });
-      const r=_render.apply(this,arguments);
-      poseCaseVide();
-      /* … et on le repose. Un champ resté vide n'est pas reposé : le rendu reprend la main. */
-      ids.forEach(id=>{ const el=$q(id); if(el && avant[id]!==undefined && avant[id]!=='') el.value=avant[id]; });
-      return r;
-    };
-  }
-
-  const _add=window.addEnfantPeri;
-  if(typeof _add==='function'){
-    window.addEnfantPeri=async function(){
-      const nom=(($q('pe_nom')||{}).value||'').trim();
-      /* 1) pas de tranche = pas d'enregistrement. On ne devine JAMAIS un prix. */
-      const tr=($q('pe_tranche')||{}).value;
-      if(nom && (tr===VIDE || tr===undefined || tr===null)){
-        await bobAlert("Choisis la tranche de quotient familial avant d'ajouter l'enfant — sinon Bob chiffrerait au tarif le plus bas sans le dire.",{titre:'💶 Tranche manquante'});
-        try{ $q('pe_tranche').focus(); }catch(e){}
-        return;
-      }
-      /* 2) le même enfant deux fois : on demande, on ne refuse pas (un homonyme existe) */
-      try{
-        const enEdition=(($q('pe_id')||{}).value||'');
-        const liste=(periDB().enfants)||[];
-        if(nom && !enEdition && liste.some(x=>x&&norm(x.nom)===norm(nom))){
-          const ok=await bobConfirm('« '+nom+' » est déjà dans la liste. L\'ajouter une seconde fois ?',
-            {titre:'Déjà inscrit',ok:'Ajouter quand même'});
-          if(!ok) return;
-        }
-      }catch(e){}
-      /* 3) hors bureau, l'enregistrement ne part pas dans le coffre partagé : on le DIT
-            (sans ce mot, la ligne s'affiche puis disparaît au rechargement, en silence). */
-      if(nom && !estBureau() && !window.__peLocalDit){   // « nom » exigé : sinon ce clic à vide ouvrirait DEUX fenêtres (celle-ci puis celle du nom manquant) et consommerait l'avertissement pour rien
-        window.__peLocalDit=1;
-        await bobAlert("Tu n'as pas les droits d'enregistrement : ce que tu ajoutes ici reste sur cet appareil et ne sera pas partagé. Demande au bureau.",{titre:'📎 Non partagé'});
-      }
-      let avant=0; try{ avant=((periDB().enfants)||[]).length; }catch(e){}
-      const r=await _add.apply(this,arguments);
-      /* 4) la tranche du PRÉCÉDENT enfant ne doit pas rester cochée pour le suivant : le formulaire
-         se vide de tout le reste, elle restait seule en place et aurait chiffré l'enfant d'après
-         sans que personne ne l'ait choisie. Chaque enfant redemande sa tranche.
-         ⚠️ Seulement si l'ajout a RÉUSSI : effacer après un refus (nom vide) ferait perdre le
-         choix déjà fait et refuserait une seconde fois pour une autre raison. */
-      try{ const apres=((periDB().enfants)||[]).length;
-        const s=$q('pe_tranche'); if(s && apres!==avant){ delete s.dataset.peChoisi; s.value=VIDE; } }catch(e){}
-      return r;
-    };
-  }
-
-  /* ouvrir une ligne avec le crayon pose la tranche de CET enfant : c'est un choix explicite,
-     le rendu suivant ne doit pas le remettre à vide. */
-  const _edit=window.editEnfantPeri;
-  if(typeof _edit==='function'){
-    window.editEnfantPeri=function(id){
-      const r=_edit.apply(this,arguments);
-      try{ const s=$q('pe_tranche'); if(s && s.value!==VIDE) s.dataset.peChoisi='1'; }catch(e){}
-      return r;
-    };
-  }
-  try{ poseCaseVide(); }catch(e){}
-})();
-/* ===== Lot 9b — FIN ============================================================== */
 </script>
 </body>
 </html>
