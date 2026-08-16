@@ -4367,7 +4367,12 @@ window.docView=function(url,name){
     +'</div>';
   ov.style.display='block'; document.body.style.overflow='hidden';
   if(ext==='docx') window.docxRenderLocal(url,'docxLocalBox');
-  if(isHtml) window.docHtmlRenderLocal(url,'docHtmlFrame');
+  /* ⚠️ On teste `ext`, PAS `isHtml` : celui-ci est un const déclaré dans le bloc `else`
+     ci-dessus, donc inconnu ici. Écrit `if(isHtml)`, ça lève une ReferenceError juste après
+     l'ouverture de la fenêtre : le cadre reste blanc, sans le moindre message. Aucun contrôle
+     de syntaxe ne le voit — c'est une erreur d'exécution. La ligne du .docx juste au-dessus
+     teste `ext` pour exactement cette raison. */
+  if(ext==='html'||ext==='htm') window.docHtmlRenderLocal(url,'docHtmlFrame');
 };
 /* Récupère une note HTML du coffre et l'affiche dans le cadre bridé (voir le cartouche de
    docView). On DÉCODE nous-mêmes en UTF-8 : la réponse du coffre-fort n'annonce pas d'encodage
@@ -9639,11 +9644,19 @@ renderAll();
   };
   window.docsOffView=async function(id){
     const d=coffreListe('docsOff').find(function(x){return x.id===id;}); if(!d||!d.path){ await bobAlert('Document introuvable.', {titre:'⚠️ Erreur'}); return; }
-    try{ const r=await sbc.storage.from('gouvernance').createSignedUrl(d.path,3600); if(r.error||!r.data){ await bobAlert('Document indisponible.', {titre:'⚠️ Erreur'}); return; } docView(r.data.signedUrl,(d.file||d.label||'Document')); }catch(e){ await bobAlert('Document indisponible.'); }
+    /* 🔴 16/08/2026 — ON DIT POURQUOI. « Document indisponible » ne se diagnostique pas : le
+       coffre-fort renvoie pourtant un motif précis (jeton expiré, droit refusé, objet absent)
+       et on le jetait. Un message vu une fois en production n'a laissé aucune trace
+       exploitable. Même règle que partout ailleurs : on regarde l'erreur, et on la montre. */
+    try{ const r=await sbc.storage.from('gouvernance').createSignedUrl(d.path,3600); if(r.error||!r.data){ await bobAlert('Ce document n\'a pas pu être ouvert.'+(r.error&&r.error.message?'\n\n('+r.error.message+')':'')+'\n\nRéessaie ; si ça persiste, préviens.', {titre:'⚠️ Document indisponible'}); return; } docView(r.data.signedUrl,(d.file||d.label||'Document')); }catch(e){ await bobAlert('Document indisponible.'); }
   };
   window.docsOffDownload=async function(id){
     const d=coffreListe('docsOff').find(function(x){return x.id===id;}); if(!d||!d.path){ await bobAlert('Document introuvable.', {titre:'⚠️ Erreur'}); return; }
-    try{ const r=await sbc.storage.from('gouvernance').createSignedUrl(d.path,3600,{download:d.file||true}); if(r.error||!r.data){ await bobAlert('Document indisponible.', {titre:'⚠️ Erreur'}); return; } const a=document.createElement('a'); a.href=r.data.signedUrl; a.download=d.file||''; document.body.appendChild(a); a.click(); a.remove(); }catch(e){ await bobAlert('Document indisponible.'); }
+    /* 🔴 16/08/2026 — ON DIT POURQUOI. « Document indisponible » ne se diagnostique pas : le
+       coffre-fort renvoie pourtant un motif précis (jeton expiré, droit refusé, objet absent)
+       et on le jetait. Un message vu une fois en production n'a laissé aucune trace
+       exploitable. Même règle que partout ailleurs : on regarde l'erreur, et on la montre. */
+    try{ const r=await sbc.storage.from('gouvernance').createSignedUrl(d.path,3600,{download:d.file||true}); if(r.error||!r.data){ await bobAlert('Ce document n\'a pas pu être téléchargé.'+(r.error&&r.error.message?'\n\n('+r.error.message+')':'')+'\n\nRéessaie ; si ça persiste, préviens.', {titre:'⚠️ Document indisponible'}); return; } const a=document.createElement('a'); a.href=r.data.signedUrl; a.download=d.file||''; document.body.appendChild(a); a.click(); a.remove(); }catch(e){ await bobAlert('Document indisponible.'); }
   };
   window.docsOffDel=async function(id){
     if(!canWrite){ await bobAlert('Réservé au bureau.'); return; }
