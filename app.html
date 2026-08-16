@@ -3453,7 +3453,7 @@ function renderMembers(){
   /* Ligne « livre » (db.members, coffre) — le rendu historique */
   const rowLivre = (m, pill) => `<tr>
     <td><strong>${esc(m.name)}</strong>${m.typeAdh?' <span class="pill" style="background:#eef2fb;color:#1f4fc4;font-size:11px">'+esc(m.typeAdh)+'</span>':''}${pill||''}<br><span class="muted" style="font-size:12px">${m.site?esc(m.site)+' · ':''}Depuis le ${fmtDate(m.date)}</span></td>
-    <td style="font-size:13px">${esc(m.email||'—')}<br>${(m.phone&&String(m.phone).trim())?('<span class="muted">'+esc(m.phone)+'</span>'):'<span style="color:#b23a23;font-size:12px;font-weight:600" title="Sans numéro, la famille est injoignable — clique ✏️ pour l\'ajouter">📵 pas de numéro</span>'}</td>
+    <td style="font-size:13px">${mailA(m.email||'—')}<br>${(m.phone&&String(m.phone).trim())?('<span class="muted">'+telA(m.phone)+'</span>'):'<span style="color:#b23a23;font-size:12px;font-weight:600" title="Sans numéro, la famille est injoignable — clique ✏️ pour l\'ajouter">📵 pas de numéro</span>'}</td><!-- Lot 9c : contact cliquable -->
     <td style="font-size:13px">${esc(m.addr||'—')}<br><span class="muted">${esc(((m.cp||'')+' '+(m.city||'')).trim())}</span></td>
     <td>${fmtDate(m.date)}</td>
     <td class="num">${euro(m.amount)}${m.mode?'<br><span class="muted" style="font-size:11px">'+esc(modeLabel(m.mode))+'</span>':''}</td>
@@ -3562,7 +3562,7 @@ function renderMembers(){
       +' <span class="pill" style="background:#e7f5ee;color:#127a51;font-size:12px" title="Ligne lue depuis l\'arbre famille (le registre de l\'onglet 👨‍👩‍👧 Foyers)">🌳 arbre</span>'
       +(retiree?' <span class="pill" style="background:#fdeeee;color:#b03a2e;font-size:12px" title="Cette adhésion existe dans l\'arbre mais son entrée du livre a été supprimée — l\'arbre, lui, ne s\'efface pas d\'ici (voir l\'onglet 👨‍👩‍👧 Foyers)">⚠️ retirée du livre</span>':'')
       +'<br><span class="muted" style="font-size:12px">Saison '+esc(a.saison||'—')+'</span></td>'
-      +'<td style="font-size:13px">'+esc((m&&m.email)||'—')+'<br>'+((f.tel||(m&&m.phone))?('<span class="muted">'+esc(f.tel||(m&&m.phone))+'</span>'):'<span style="color:#b23a23;font-size:12px;font-weight:600" title="Sans numéro, la famille est injoignable — ✏️ sur la ligne (livre) ou fiche du foyer">📵 pas de numéro</span>')+'</td>'
+      +'<td style="font-size:13px">'+mailA((m&&m.email)||'—')+'<br>'+((f.tel||(m&&m.phone))?('<span class="muted">'+telA(f.tel||(m&&m.phone))+'</span>') /* Lot 9c : contact cliquable */:'<span style="color:#b23a23;font-size:12px;font-weight:600" title="Sans numéro, la famille est injoignable — ✏️ sur la ligne (livre) ou fiche du foyer">📵 pas de numéro</span>')+'</td>'
       +'<td style="font-size:13px">'+esc(f.adresse||(m&&m.addr)||'—')+'<br><span class="muted">'+esc(((f.cp||(m&&m.cp)||'')+' '+(f.ville||(m&&m.city)||'')).trim())+'</span></td>'
       +'<td>'+(a.date_adhesion?fmtDate(a.date_adhesion):'—')
         +(divDate?'<br><span class="pill" style="background:#fdeeee;color:#b03a2e;font-size:12px" title="Le livre dit une autre date — le 🧾 Reçu imprime celle du livre">🧾 livre : '+fmtDate(m.date)+'</span>':'')+'</td>'
@@ -5727,7 +5727,7 @@ function renderIntervenants(){
     return '<details class="card" style="margin-bottom:10px" open><summary style="cursor:pointer;font-weight:700;font-size:15px">'+esc(f.structure)+(f.domaine?' <span class="pill" style="background:#eef2fb;color:#3a51e8">'+esc(f.domaine)+'</span>':'')+' '+(rouge?'<span class="pill no">⛔ incomplet</span>':'<span class="pill ok">✅ prêt</span>')+'</summary>'
       +'<div style="margin-top:8px">'
       +bandeau
-      +'<p style="margin:0 0 6px">👤 <b>'+esc(f.pers||'—')+'</b>'+(f.email?' · <a href="mailto:'+esc(f.email)+'">'+esc(f.email)+'</a>':'')+(f.tel?' · '+esc(f.tel):'')+'</p>'
+      +'<p style="margin:0 0 6px">👤 <b>'+esc(f.pers||'—')+'</b>'+(f.email?' · '+mailA(f.email):'')+(f.tel?' · '+telA(f.tel):'')+'</p>' /* Lot 9c : contact cliquable */
       +(f.note?'<p class="hint" style="margin:0 0 6px">'+esc(f.note)+'</p>':'')
       +'<div style="font-weight:600;font-size:13px;margin:8px 0 2px">🏢 Identité de la structure <span class="muted" style="font-weight:400">(pour la convention — le prestataire pourra la compléter depuis son espace)</span></div>'
       +'<div class="row" style="gap:8px;align-items:flex-end;background:#fafbfc;padding:8px;border-radius:10px;margin:2px 0 6px">'
@@ -6721,6 +6721,36 @@ function kpi(label,value,cls='',sub=''){
 }
 function esc(s){ return (s==null?'':String(s)).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 
+/* ===== Lot 9c (16/08/2026, ADDITIF / REVERTIBLE) — un contact affiché se TAPE ==========
+   Bob est consulté au téléphone. Jusqu'ici le répertoire (📇) rendait ses numéros
+   cliquables, mais nulle part ailleurs : fiches intervenants, fiches salariés, livre des
+   adhérents, foyers, partenaires affichaient le numéro en texte mort — il fallait le
+   recopier à la main pour appeler, alors que l'email, lui, s'ouvrait d'un clic.
+   `telA` et `mailA` rétablissent la symétrie partout.
+
+   Deux cas réels que `esc()` seul ne sait pas traiter, et que ces fonctions gèrent :
+   - PLUSIEURS numéros sur une fiche, séparés par « / » (Cop'Zin 974 en a deux) → chaque
+     numéro devient son propre lien, au lieu d'un seul lien illisible pour le téléphone.
+   - une MENTION entre parenthèses (« 0692 … (perso) / 0693 … (flyer) ») → le libellé reste
+     affiché tel quel, mais le lien ne compose que les chiffres.
+   Rien n'est cliquable si aucun numéro plausible n'est trouvé (< 6 chiffres) : on retombe
+   sur le texte échappé, jamais sur un lien mort. L'échappement passe toujours par `esc`.
+
+   REVERT : supprimer ce bloc et remettre `esc(...)` aux 9 points d'appel (marqués « Lot 9c ») — compte vérifié le 16/08/2026 : en oublier casserait les écrans restants. */
+function telA(raw){
+  const s=String(raw==null?'':raw).trim(); if(!s) return '';
+  return s.split('/').map(function(part){
+    const label=part.trim(); if(!label) return '';
+    const brut=(label.match(/[0-9+][0-9 .\-]*[0-9]/)||[''])[0];
+    const num=brut.replace(/[ .\-]/g,'');
+    return num.replace(/\D/g,'').length>=6 ? '<a href="tel:'+esc(num)+'">'+esc(label)+'</a>' : esc(label);
+  }).filter(Boolean).join(' · ');
+}
+function mailA(raw){
+  const s=String(raw==null?'':raw).trim();
+  return (s.indexOf('@')>0) ? '<a href="mailto:'+esc(s)+'">'+esc(s)+'</a>' : esc(s);
+}
+
 /* ---- Budget prévisionnel ---- */
 // ⚠️ Calcul en TEXTE, jamais via Date/toISOString : à La Réunion (UTC+4) « le 1er du mois » à minuit local
 // devient le dernier jour du mois PRÉCÉDENT une fois converti en UTC — toutes les tranches de subvention
@@ -7169,7 +7199,9 @@ function editEnfantPeri(id){
   $('pe_aprem').value=e.aprem?'1':'0'; $('pe_matin').value=e.matin?'1':'0';
   $('pe_btn').textContent='Enregistrer'; $('pe_nom').focus();
 }
-function delEnfantPeri(id){ if(confirm('Retirer cet enfant ?')){ const p=periDB(); p.enfants=p.enfants.filter(x=>x.id!==id); save(); renderPeriscolaire(); } }
+async function delEnfantPeri(id){ /* Lot 9b : fenêtre maison au lieu de la fenêtre grise du navigateur — revert : remettre la fenêtre native d'origine autour du même corps */
+  if(!await bobConfirm('Retirer cet enfant de la liste ?',{titre:'Retirer',ok:'Retirer',danger:true})) return;
+  const p=periDB(); p.enfants=p.enfants.filter(x=>x.id!==id); save(); renderPeriscolaire(); }
 
 /* ---- Équipe : masse salariale ---- */
 function msCalc(s){
@@ -7559,7 +7591,7 @@ async function renderQuiFaitQuoi(){
         +'<div class="qfq-role">💼 '+esc(f.poste||'Poste à préciser')+'</div>'
         +'<div class="qfq-nom">'+esc(nom)+'<span class="qfq-tag sal">salarié·e</span>'+(off?'<span class="qfq-tag off">inactif</span>':'')+'</div>'
         +'<div class="qfq-mission">'+esc(f.type_contrat||'')+'</div>'
-        +((f.email||f.tel)?'<div class="qfq-contact">'+(f.tel?'📞 '+esc(f.tel):'')+(f.email?'<a href="mailto:'+esc(f.email)+'">✉️ '+esc(f.email)+'</a>':'')+'</div>':'')
+        +((f.email||f.tel)?'<div class="qfq-contact">'+(f.tel?'📞 '+telA(f.tel):'')+(f.email?'<a href="mailto:'+esc(f.email)+'">✉️ '+esc(f.email)+'</a>':'')+'</div>':'') /* Lot 9c : numéro cliquable */
         +'</div>'; }).join('')
       : '<p class="empty" style="grid-column:1/-1">Aucune fiche salarié pour l\'instant. Crée-les dans 👥 Dossiers salariés (« + Nouvelle fiche » ou « Importer depuis la masse salariale »).</p>';
   }
@@ -9491,7 +9523,7 @@ renderAll();
       <div class="toolbar"><div><strong>${esc(p.commerce||'(sans nom)')}</strong> <span class="pill" style="background:#eef2fb;color:#1f4fc4;font-size:11px">${PART_STATUTS[p.statut]||esc(p.statut||'')}</span><br>
         <span class="muted" style="font-size:13px">${esc(p.contact||'')}${p.type_activite?' · '+esc(p.type_activite):''}</span></div>
         <span class="muted" style="font-size:12px">${esc((p.created_at||'').slice(0,10))}</span></div>
-      ${(p.email||p.phone)?`<div class="kv"><span class="k">Contact</span><span>${p.email?esc(p.email):''}${p.email&&p.phone?' · ':''}${p.phone?esc(p.phone):''}</span></div>`:''}
+      ${(p.email||p.phone)?`<div class="kv"><span class="k">Contact</span><span>${p.email?mailA(p.email):''}${p.email&&p.phone?' · ':''}${p.phone?telA(p.phone):''}</span></div>`:''}<!-- Lot 9c : contact cliquable -->
       ${p.message?`<div class="kv"><span class="k">Message</span><span style="text-align:right;max-width:70%">${esc(p.message)}</span></div>`:''}
       ${canWrite?`<div class="row" style="margin-top:10px;gap:6px;flex-wrap:wrap">
         <button class="ghost btn" onclick="setPartStatut('${p.id}','contacte')">📞 Contacté</button>
@@ -14953,6 +14985,129 @@ window.loadDossiersPeri=async function(){
   };
   try{ acmEncCompute(); acmEncDip(); }catch(e){}
 })();
+
+/* ===== Lot 9b — DÉBUT (16/08/2026, ADDITIF / REVERTIBLE) ==========================
+   Le panneau « 👧 Enfants inscrits » du périscolaire chiffre un tarif par enfant. Trois
+   défauts mesurés avant d'y toucher — tous silencieux, tous du mauvais côté :
+
+   1. LE PRIX RETOMBAIT SUR LE MOINS CHER. `parseInt(select.value)||0` renvoie 0 quand la
+      tranche est vide ou illisible : 0 = la PREMIÈRE tranche, la moins chère. Et le rendu
+      reconstruit ce select à chaque enregistrement de l'appli (renderAll), ce qui le
+      ramenait sur cette première tranche sans rien dire. Une famille pouvait être chiffrée
+      au tarif le plus bas sans que personne ne le voie.
+   2. LA SAISIE EN COURS. ⚠️ Rectification après relecture adverse : contrairement à ce que
+      cette note affirmait d'abord, le formulaire n'était PAS vidé par un re-rendu avant ce lot
+      (la liste des tranches n'était reconstruite que si leur nombre changeait, ce qui n'arrive
+      jamais). C'est la case vide ajoutée ci-dessous qui fait diverger ce nombre, donc reconstruire
+      la liste à chaque rendu. Le relever/reposer est là pour ça : il protège la saisie d'un effet
+      que ce lot introduit. Doctrine maison appliquée : « 🖐️ LA SAISIE PRIME ».
+   3. RIEN N'EMPÊCHAIT LE DOUBLON. Deux clics = deux lignes = deux fois le même enfant
+      facturé. Le circuit voisin (Dossiers familles) refuse déjà ce doublon ; ici, non.
+
+   Ce bloc EMBALLE les fonctions existantes : il ne modifie AUCUNE ligne du fichier.
+   REVERT : ce lot est encadré par deux bannières de commentaire, en début de ligne, portant
+   son nom suivi de DEBUT et de FIN. Supprimer tout ce qui va de la première à la seconde,
+   bornes comprises (les repérer en début de ligne : cette phrase-ci les décrit sans les écrire,
+   pour qu'une recherche ne tombe pas dessus). Puis rendre à delEnfantPeri sa version d'origine :
+   une fonction NON asynchrone dont le corps entier est enveloppé dans la fenêtre native du
+   navigateur (sa propre note, sur place, le rappelle). C'est la seule ligne existante que ce lot
+   modifie.
+   ⚠️ Ce panneau est un BROUILLON de comptoir : il ne facture rien. La facturation réelle
+   passe par 📨 Dossiers familles, qui calcule le tarif côté serveur à partir du quotient
+   familial enregistré. On ne duplique donc PAS ce calcul ici — on refuse de deviner. */
+(function(){
+  const VIDE='';
+  function $q(id){ return document.getElementById(id); }
+  function norm(s){ return String(s||'').normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase().replace(/\s+/g,' ').trim(); }
+  function estBureau(){ try{ const m=window.bobMe; return !!(m&&typeof m==='object'&&m.canWrite); }catch(e){ return false; } }
+
+  /* Une case vide EN TÊTE du choix de tranche : tant qu'on n'a pas choisi, rien n'est
+     supposé. C'est ce qui remplace le repli muet sur la tranche la moins chère. */
+  function poseCaseVide(){
+    const s=$q('pe_tranche'); if(!s) return;
+    /* on retient si quelqu'un a VRAIMENT choisi : sans ça, on ne peut pas distinguer
+       « tranche 1 choisie » de « tranche 1 posée par défaut par le rendu ». */
+    if(!s.__peLie){ s.__peLie=1; s.addEventListener('change',function(){ s.dataset.peChoisi='1'; }); }
+    if(!s.options.length || s.options[0].value!==VIDE){
+      const o=document.createElement('option');
+      o.value=VIDE; o.textContent='— choisis la tranche —';
+      s.insertBefore(o, s.firstChild);
+    }
+    /* ⚠️ INSÉRER LA CASE VIDE NE SUFFIT PAS : le rendu reconstruit la liste à chaque fois
+       (l'option en plus fait diverger le compte), ce qui re-sélectionne la 1re tranche —
+       la moins chère — et la case vide se retrouvait posée DEVANT une option déjà choisie.
+       Le garde-fou ne se déclenchait alors jamais. Tant que personne n'a choisi, on
+       sélectionne explicitement la case vide. */
+    if(!s.dataset.peChoisi) s.value=VIDE;
+  }
+
+  const _render=window.renderPeriscolaire;
+  if(typeof _render==='function'){
+    window.renderPeriscolaire=function(){
+      /* on relève ce qui est en cours de frappe AVANT que le rendu ne reconstruise */
+      const ids=['pe_nom','pe_resp','pe_contact','pe_tranche','pe_jours','pe_rang','pe_aprem','pe_matin'];
+      const avant={}; ids.forEach(id=>{ const el=$q(id); if(el) avant[id]=el.value; });
+      const r=_render.apply(this,arguments);
+      poseCaseVide();
+      /* … et on le repose. Un champ resté vide n'est pas reposé : le rendu reprend la main. */
+      ids.forEach(id=>{ const el=$q(id); if(el && avant[id]!==undefined && avant[id]!=='') el.value=avant[id]; });
+      return r;
+    };
+  }
+
+  const _add=window.addEnfantPeri;
+  if(typeof _add==='function'){
+    window.addEnfantPeri=async function(){
+      const nom=(($q('pe_nom')||{}).value||'').trim();
+      /* 1) pas de tranche = pas d'enregistrement. On ne devine JAMAIS un prix. */
+      const tr=($q('pe_tranche')||{}).value;
+      if(nom && (tr===VIDE || tr===undefined || tr===null)){
+        await bobAlert("Choisis la tranche de quotient familial avant d'ajouter l'enfant — sinon Bob chiffrerait au tarif le plus bas sans le dire.",{titre:'💶 Tranche manquante'});
+        try{ $q('pe_tranche').focus(); }catch(e){}
+        return;
+      }
+      /* 2) le même enfant deux fois : on demande, on ne refuse pas (un homonyme existe) */
+      try{
+        const enEdition=(($q('pe_id')||{}).value||'');
+        const liste=(periDB().enfants)||[];
+        if(nom && !enEdition && liste.some(x=>x&&norm(x.nom)===norm(nom))){
+          const ok=await bobConfirm('« '+nom+' » est déjà dans la liste. L\'ajouter une seconde fois ?',
+            {titre:'Déjà inscrit',ok:'Ajouter quand même'});
+          if(!ok) return;
+        }
+      }catch(e){}
+      /* 3) hors bureau, l'enregistrement ne part pas dans le coffre partagé : on le DIT
+            (sans ce mot, la ligne s'affiche puis disparaît au rechargement, en silence). */
+      if(nom && !estBureau() && !window.__peLocalDit){   // « nom » exigé : sinon ce clic à vide ouvrirait DEUX fenêtres (celle-ci puis celle du nom manquant) et consommerait l'avertissement pour rien
+        window.__peLocalDit=1;
+        await bobAlert("Tu n'as pas les droits d'enregistrement : ce que tu ajoutes ici reste sur cet appareil et ne sera pas partagé. Demande au bureau.",{titre:'📎 Non partagé'});
+      }
+      let avant=0; try{ avant=((periDB().enfants)||[]).length; }catch(e){}
+      const r=await _add.apply(this,arguments);
+      /* 4) la tranche du PRÉCÉDENT enfant ne doit pas rester cochée pour le suivant : le formulaire
+         se vide de tout le reste, elle restait seule en place et aurait chiffré l'enfant d'après
+         sans que personne ne l'ait choisie. Chaque enfant redemande sa tranche.
+         ⚠️ Seulement si l'ajout a RÉUSSI : effacer après un refus (nom vide) ferait perdre le
+         choix déjà fait et refuserait une seconde fois pour une autre raison. */
+      try{ const apres=((periDB().enfants)||[]).length;
+        const s=$q('pe_tranche'); if(s && apres!==avant){ delete s.dataset.peChoisi; s.value=VIDE; } }catch(e){}
+      return r;
+    };
+  }
+
+  /* ouvrir une ligne avec le crayon pose la tranche de CET enfant : c'est un choix explicite,
+     le rendu suivant ne doit pas le remettre à vide. */
+  const _edit=window.editEnfantPeri;
+  if(typeof _edit==='function'){
+    window.editEnfantPeri=function(id){
+      const r=_edit.apply(this,arguments);
+      try{ const s=$q('pe_tranche'); if(s && s.value!==VIDE) s.dataset.peChoisi='1'; }catch(e){}
+      return r;
+    };
+  }
+  try{ poseCaseVide(); }catch(e){}
+})();
+/* ===== Lot 9b — FIN ============================================================== */
 </script>
 </body>
 </html>
