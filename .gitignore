@@ -17,6 +17,9 @@
 
 # Config locale de l'outillage
 .claude/
+# État de liaison du CLI Supabase (project-ref, versions, URL du pooler) : propre à
+# cette machine, régénéré par `supabase link`. Rien à faire dans le dépôt.
+supabase/.temp/
 
 # Notes de chantier et migrations : le dépôt est SERVI PUBLIQUEMENT (Cloudflare →
 # GitHub Pages, et .nojekyll fait que même les dossiers en « _ » sont servis).
