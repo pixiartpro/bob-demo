@@ -3677,6 +3677,19 @@ function modeLabel(c){ const f=PAY_MODES.find(m=>m[0]===c); return f?f[1]:''; } 
 function modeText(c){ return modeLabel(c).replace(/^\S+\s/,''); }                          // sans emoji (CSV/reçu)
 function modeFromAccount(o){ return o.mode || (getAccount(o)==='caisse'?'especes':''); }   // compat anciennes données
 function accountFromMode(mode){ return mode==='especes'?'caisse':'banque'; }
+/* 🔴 « DÉJÀ VERSÉ EN COMPTA » SE RELIT DANS LE COFFRE — ÇA NE SE MÉMORISE PAS ============
+   16/08/2026. Les trois versements (périscolaire, adhésions en ligne, activités) créent une
+   recette qui porte le `paiement_id` de l'encaissement : « déjà versé » = une écriture existe
+   pour ce paiement. C'est le SEUL garde-fou contre le double-compte.
+   Il était calculé une fois, en haut de chaque fonction — donc AVANT l'aller-retour réseau et
+   AVANT la question posée au trésorier. Or `db` est remplacé par le contrôle automatique du
+   coffre (cloudRefresh, toutes les 15 s), et ce contrôle ne se retient QUE si une fenêtre est
+   ouverte à l'écran : une attente réseau, elle, ne l'arrête pas. Un collègue qui versait les
+   mêmes encaissements pendant ce temps-là laissait un ensemble périmé en mémoire, et Bob
+   recréait ses recettes EN DOUBLE en annonçant « ✅ c'est versé ».
+   ⚠️ Cette fonction lit `db` À L'INSTANT où on l'appelle — c'est tout son intérêt. Donc on la
+   RAPPELLE juste avant d'écrire, et on ne garde jamais son résultat en travers d'un `await`. */
+function dejaVerses(){ return new Set((db.ops||[]).map(function(o){ return o.paiement_id; }).filter(Boolean)); }
 /* photo justificatif : compressée avant stockage pour ne pas saturer la mémoire */
 let pendingPhoto=null;
 function handlePhoto(e){
@@ -10290,8 +10303,8 @@ renderAll();
     if(!canWrite){ if(!auto) alert('Réservé au bureau.'); return 0; }
     const rq=await sbc.from('paiements').select('id,user_id,montant_cents,paid_at,created_at,metadata').eq('objet','adhesion').eq('statut','paye');
     if(rq.error){ if(!auto) alert('Erreur : '+rq.error.message); return 0; }
-    const versed=new Set((db.ops||[]).map(function(o){return o.paiement_id;}).filter(Boolean));
-    const todo=(rq.data||[]).filter(function(p){ return !versed.has(p.id); });
+    const dejaVu=dejaVerses();                     // pour PROPOSER : ce qui reste à verser à cette seconde
+    const todo=(rq.data||[]).filter(function(p){ return !dejaVu.has(p.id); });
     if(!todo.length){ if(!auto) alert('Aucune adhésion à verser : tout est déjà en comptabilité.'); return 0; }
     const uids=[...new Set(todo.map(function(p){return p.user_id;}).filter(Boolean))];
     const nom={};
@@ -10321,10 +10334,16 @@ renderAll();
       +'Compte 756 - Cotisations · action « Fonctionnement ».\n\n'
       +'L\'argent est placé « en attente chez HelloAsso » : quand le reversement arrivera sur le\n'
       +'compte bancaire, tu enregistreras UN virement, qui s\'appariera avec la ligne du relevé.')) return;
-    let n=0;
+    /* 🔴 ON RELIT LE COFFRE ICI, APRÈS LA QUESTION — cf. dejaVerses(). Même piège qu'au
+       périscolaire : l'ensemble d'en haut date d'avant la lecture des profils (un aller-retour
+       réseau, que le contrôle automatique du coffre ne retient pas) et d'avant la question.
+       Vaut AUSSI en mode automatique, où il n'y a pas de question mais bien cette attente. */
+    const versed=dejaVerses();
+    let n=0, dejaFait=0, totEcrit=0;
     todo.forEach(function(p){
-      if(versed.has(p.id)) return;
+      if(versed.has(p.id)){ dejaFait++; return; }   // versée par quelqu'un d'autre pendant l'attente
       const euros=(p.montant_cents||0)/100;
+      totEcrit+=euros;
       /* 🔴 La SAISON dans le libellé. L'exercice comptable est l'année civile, la saison
          d'adhésion court du 1er août au 31 juillet : sans elle, une adhésion payée en juillet
          2026 est illisible (2025-2026 ou 2026-2027 ?). Le paiement porte déjà sa saison
@@ -10343,8 +10362,19 @@ renderAll();
         splits:[{site:siteAdh, action:'Fonctionnement', amount:euros}]});
       versed.add(p.id); n++;
     });
+    /* Rien écrit = rien à enregistrer, et rien à annoncer comme un succès (ni à l'écran, ni au
+       journal) : un versement automatique qui raconte 3 adhésions quand il n'en a créé aucune
+       est exactement le genre de ligne qu'on croit sur parole des mois plus tard. */
+    if(!n){
+      if(window.renderAll) renderAll();
+      if(!auto) await bobAlert('Rien de nouveau à verser : ces '+dejaFait+' adhésion(s) viennent d\'être versées par quelqu\'un d\'autre.', {titre:'Déjà fait'});
+      return 0;
+    }
+    /* Le montant annoncé est celui des écritures RÉELLEMENT créées (totEcrit), pas celui du lot
+       proposé (tot) : si un collègue en a versé une partie entre-temps, les deux diffèrent. */
     const dit=n+' adhésion'+(n>1?'s':'')+' en ligne versée'+(n>1?'s':'')+' en comptabilité — '
-      +euro(tot)+' · 756 Cotisations · site « '+siteAdh+' » · en attente chez HelloAsso';
+      +euro(totEcrit)+' · 756 Cotisations · site « '+siteAdh+' » · en attente chez HelloAsso'
+      +(dejaFait?' ('+dejaFait+' déjà versée(s) par quelqu\'un d\'autre — non recréée(s))':'');
     if(auto){ db.journal=(db.journal||[]).concat([jEntry('Comptabilité','💶 '+dit+' (versement automatique à l\'ouverture)')]).slice(-500); }
     save(); if(window.renderAll) renderAll();
     if(auto){ if(window.toast){ try{ window.toast('💶 '+dit); }catch(e){} } }
@@ -10607,8 +10637,8 @@ renderAll();
     if(!canWrite){ await bobAlert('Réservé au bureau.'); return; }
     const rq=await sbc.from('paiements').select('id,inscription_periscolaire_id,montant_cents,mode,paid_at,created_at').eq('objet','periscolaire').eq('statut','paye');
     if(rq.error){ await bobAlert('Erreur : '+rq.error.message, {titre:'⚠️ Erreur'}); return; }
-    const versed=new Set((db.ops||[]).map(o=>o.paiement_id).filter(Boolean));
-    const todo=(rq.data||[]).filter(p=>p.mode && !versed.has(p.id));
+    const dejaVu=dejaVerses();                     // pour PROPOSER : ce qui reste à verser à cette seconde
+    const todo=(rq.data||[]).filter(p=>p.mode && !dejaVu.has(p.id));
     if(!todo.length){ await bobAlert('Aucun encaissement à verser : tout est déjà en comptabilité.'); return; }
     const insIds=[...new Set(todo.map(p=>p.inscription_periscolaire_id).filter(Boolean))];
     const foyerById={};
@@ -10616,9 +10646,13 @@ renderAll();
     const siteRetenu=siteDemander('Périscolaire','ces encaissements périscolaire');
     if(!siteRetenu) return;
     if(!await bobConfirm('Verser '+todo.length+' encaissement(s) en comptabilité, sur le site « '+siteRetenu+' » ?\n\nBob crée les recettes correspondantes (taguées « Périscolaire » — espèces en caisse, le reste en banque), sans doublon.', {titre:'Verser en comptabilité ?', ok:'Verser'})) return;
-    let n=0;
+    /* 🔴 ON RELIT LE COFFRE ICI, APRÈS LA QUESTION — cf. dejaVerses(). L'ensemble d'en haut a
+       été calculé avant l'aller-retour réseau et avant la question ; entre les deux, le coffre
+       a pu être remplacé par la version d'un collègue qui venait de verser les mêmes lignes. */
+    const versed=dejaVerses();
+    let n=0, dejaFait=0;
     for(const p of todo){
-      if(versed.has(p.id)) continue;
+      if(versed.has(p.id)){ dejaFait++; continue; }   // versé par quelqu'un d'autre pendant l'attente
       const euros=(p.montant_cents||0)/100, neg=euros<0;
       const foyer=foyerById[p.inscription_periscolaire_id]||'Famille';
       db.ops.push({id:uid(), paiement_id:p.id, type:'in',
@@ -10629,9 +10663,19 @@ renderAll();
         splits:[{site:siteRetenu, action:'Périscolaire', amount:euros}]});
       versed.add(p.id); n++;
     }
+    /* Rien écrit = rien à enregistrer, et surtout rien à annoncer comme un succès :
+       le message doit dire ce qui s'est VRAIMENT passé, sinon on croit avoir versé deux fois.
+       On recharge quand même la liste : le coffre affiché n'est plus celui d'il y a dix secondes. */
+    if(!n){
+      if(window.loadDossiersPeri) window.loadDossiersPeri();
+      await bobAlert('Rien de nouveau à verser : ces '+dejaFait+' encaissement(s) viennent d\'être versés par quelqu\'un d\'autre.', {titre:'Déjà fait'});
+      return;
+    }
     save();
     if(window.loadDossiersPeri) window.loadDossiersPeri();
-    await bobAlert('✅ '+n+' encaissement(s) versé(s) en comptabilité.\nRecettes taguées « Périscolaire » — espèces en caisse, le reste en banque.');
+    await bobAlert('✅ '+n+' encaissement(s) versé(s) en comptabilité.'
+      +(dejaFait?'\n('+dejaFait+' venaient d\'être versés par quelqu\'un d\'autre — non recréés.)':'')
+      +'\nRecettes taguées « Périscolaire » — espèces en caisse, le reste en banque.');
   };
   /* 📅 LE NOMBRE DE JOURS D'OUVERTURE VIENT DU CALENDRIER, PLUS D'UN 16 EN DUR ==============
    15/08/2026. Le champ « × N jours » du bloc paiement produit la FACTURE réelle
@@ -13138,8 +13182,8 @@ window.loadDossiersPeri=async function(){
     if(!canWrite){ alert('Réservé au bureau.'); return; }
     const rq=await sbc.from('paiements').select('id,inscription_activite_id,montant_cents,mode,paid_at,created_at').eq('objet','activite').eq('statut','paye');
     if(rq.error){ alert('Erreur : '+rq.error.message); return; }
-    const versed=new Set((db.ops||[]).map(o=>o.paiement_id).filter(Boolean));
-    const todo=(rq.data||[]).filter(p=>p.mode && !versed.has(p.id));
+    const dejaVu=dejaVerses();                     // pour PROPOSER : ce qui reste à verser à cette seconde
+    const todo=(rq.data||[]).filter(p=>p.mode && !dejaVu.has(p.id));
     if(!todo.length){ alert('Aucun encaissement activité à verser : tout est déjà en comptabilité.'); return; }
     const insIds=[...new Set(todo.map(p=>p.inscription_activite_id).filter(Boolean))];
     const insMap={};
@@ -13160,9 +13204,12 @@ window.loadDossiersPeri=async function(){
     }
     const _sitesDuLot=[...new Set(_actionsDuLot.map(function(a){ return _siteParAction[a]||_siteCommun; }))];
     if(!confirm('Verser '+todo.length+' encaissement(s) d\'activité en comptabilité, sur '+(_sitesDuLot.length===1?('le site « '+_sitesDuLot[0]+' »'):('les sites '+_sitesDuLot.map(function(s){return '« '+s+' »';}).join(' · ')))+' ?\n\nRecettes taguées sur le nom de l\'activité (ex. « ACM Ados — semaine 1 »), espèces en caisse.')) return;
-    let n=0;
+    /* 🔴 ON RELIT LE COFFRE ICI, APRÈS LA QUESTION — cf. dejaVerses(). Ici l'attente est même
+       double (les inscriptions, puis les activités) avant que la question ne soit posée. */
+    const versed=dejaVerses();
+    let n=0, dejaFait=0;
     for(const p of todo){
-      if(versed.has(p.id)) continue;
+      if(versed.has(p.id)){ dejaFait++; continue; }   // versé par quelqu'un d'autre pendant l'attente
       const ins=insMap[p.inscription_activite_id]||{}, actNom=actMap[ins.activite_id]||'Activité';
       const euros=(p.montant_cents||0)/100, neg=euros<0;
       db.ops.push({id:uid(), paiement_id:p.id, type:'in',
@@ -13173,9 +13220,15 @@ window.loadDossiersPeri=async function(){
         splits:[{site:(_siteParAction[actNom]||_siteCommun), action:actNom, amount:euros}]});
       versed.add(p.id); n++;
     }
+    if(!n){
+      loadActivitesGestion();
+      await bobAlert('Rien de nouveau à verser : ces '+dejaFait+' encaissement(s) viennent d\'être versés par quelqu\'un d\'autre.', {titre:'Déjà fait'});
+      return;
+    }
     save();
     loadActivitesGestion();
-    alert('✅ '+n+' encaissement(s) d\'activité versé(s) en comptabilité.');
+    alert('✅ '+n+' encaissement(s) d\'activité versé(s) en comptabilité.'
+      +(dejaFait?'\n('+dejaFait+' venaient d\'être versés par quelqu\'un d\'autre — non recréés.)':''));
   };
   window.setInsact=async function(id,patch){ const {error}=await sbc.from('inscriptions_activite').update(patch).eq('id',id); if(error){alert(error.message);return;} loadActivitesGestion(); };
   window.setInsactRdv=function(id,kind){ const el=document.getElementById((kind==='recup'?'rdvr_':'rdvd_')+id); const v=el?el.value:''; if(!v){alert('Choisis une date.');return;} setInsact(id, kind==='recup'?{rdv_recup:v,statut:'rdv_recup'}:{rdv_depot:v,statut:'rdv_depot'}); };
