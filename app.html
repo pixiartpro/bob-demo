@@ -4340,7 +4340,18 @@ window.docView=function(url,name){
       +'<div class="hint" style="margin-top:6px;font-size:11px">Aperçu généré directement dans Bob — le document reste dans le coffre, rien ne transite par un service externe.</div>';
     else if(office) body='<iframe src="https://view.officeapps.live.com/op/embed.aspx?src='+encodeURIComponent(url)+'" style="width:100%;height:80vh;border:none;border-radius:10px;background:#fff"></iframe>'
       +'<div class="hint" style="margin-top:6px;font-size:11px">Aperçu Excel/PowerPoint affiché via le visualiseur Microsoft (le fichier, lui, reste stocké dans Bob). S\'il ne s\'affiche pas, utilise le ⬇️ en haut à droite.</div>';
-    else if(isHtml) body='<iframe src="'+url+'" style="width:100%;height:80vh;border:none;border-radius:10px;background:#fff"></iframe>';
+    /* 🔴 16/08/2026 — LE HTML SE REND ICI, PAS PAR LE COFFRE-FORT ==========================
+       Le coffre-fort sert TOUT fichier HTML en TEXTE BRUT, quel que soit le type déclaré au
+       dépôt — mesuré sur deux notes, dont une enregistrée en « text/html; charset=utf-8 ».
+       Résultat : les six notes du coffre s'affichaient en CODE SOURCE, accents cassés par-
+       dessus le marché (« Récolement » lu « RÃ©colement »), et personne ne pouvait les lire
+       sans les télécharger.
+       On va donc chercher le contenu et on le rend soi-même, comme le fait déjà le .docx
+       juste au-dessus. Deux bénéfices : on décode en UTF-8 nous-mêmes (plus de dépendance à
+       ce que le serveur annonce), et le cadre est BRIDÉ (sandbox sans autorisation : ni
+       script, ni formulaire, ni navigation) — une note reste un document, pas une page. */
+    else if(isHtml) body='<iframe id="docHtmlFrame" sandbox style="width:100%;height:80vh;border:none;border-radius:10px;background:#fff"></iframe>'
+      +'<div class="hint" style="margin-top:6px;font-size:11px">Note affichée en lecture seule dans Bob — le fichier, lui, reste dans le coffre.</div>';
     else body='<div style="padding:28px;text-align:center;color:#5c7468">Ce type de fichier ne s\'affiche pas dans le navigateur.<br><a href="'+url+'" target="_blank" rel="noopener" style="display:inline-block;margin-top:12px;background:var(--brand);color:#fff;text-decoration:none;border-radius:999px;padding:9px 16px;font-weight:800">⬇️ Télécharger</a></div>';
   }
   let ov=document.getElementById('docViewer');
@@ -4356,6 +4367,23 @@ window.docView=function(url,name){
     +'</div>';
   ov.style.display='block'; document.body.style.overflow='hidden';
   if(ext==='docx') window.docxRenderLocal(url,'docxLocalBox');
+  if(isHtml) window.docHtmlRenderLocal(url,'docHtmlFrame');
+};
+/* Récupère une note HTML du coffre et l'affiche dans le cadre bridé (voir le cartouche de
+   docView). On DÉCODE nous-mêmes en UTF-8 : la réponse du coffre-fort n'annonce pas d'encodage
+   fiable, et c'est ce qui cassait tous les accents. */
+window.docHtmlRenderLocal=async function(url,cadreId){
+  const f=document.getElementById(cadreId); if(!f) return;
+  try{
+    const r=await fetch(url);
+    if(!r.ok) throw new Error('HTTP '+r.status);
+    f.srcdoc=new TextDecoder('utf-8').decode(await r.arrayBuffer());
+  }catch(e){
+    console.warn('affichage note HTML', e);
+    f.srcdoc='<p style="font:15px -apple-system,Segoe UI,sans-serif;color:#5c7468;padding:22px;line-height:1.6">'
+      +'Impossible d\'afficher cette note ici. Utilise le bouton ⬇️ en haut pour la télécharger : '
+      +'elle s\'ouvrira normalement dans ton navigateur.</p>';
+  }
 };
 // Aperçu Word 100 % local (docx-preview) : le fichier est lu dans le navigateur, rien n'est envoyé à un service externe.
 let __docxLibP=null;
