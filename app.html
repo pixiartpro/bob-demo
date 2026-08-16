@@ -4041,6 +4041,17 @@ function closeModal(){ $('opModal').classList.remove('open'); }
     if(eBox) eBox.style.display='none';
     close(vals);
   });
+  /* 16/08/2026 — LE VERROU DE GESTE, en une ligne et sans compteur.
+     Les fenêtres du navigateur GELAIENT la page : rien ne pouvait tourner pendant qu'elles
+     attendaient. La fenêtre maison, non — et le rechargement automatique du coffre (toutes les
+     15 s, et au retour sur l'onglet) peut donc remplacer les données PENDANT qu'une question
+     attend une réponse. L'écran a lu une donnée avant de demander, il écrit dedans après :
+     l'écriture part alors dans une copie morte, le message dit « c'est fait », et rien n'est
+     enregistré. On a préféré cette fonction à un compteur : un compteur peut rester coincé si
+     on oublie de le décrémenter quelque part, celle-ci lit la VÉRITÉ (la fenêtre est-elle
+     ouverte ?) et ne peut pas se désynchroniser. */
+  window.bobFenetreOuverte=function(){ return !!cur; };
+
   window.bobDialog=function(o){
     o=o||{};
     return new Promise(resolve=>{
@@ -9031,6 +9042,14 @@ renderAll();
   function bobConflict(){
     setSync('⚠️ un collègue a enregistré — choisis','#ffd9d0');
     if(document.getElementById('bobConflictModal')) return;
+    /* 16/08/2026 — CETTE FENÊTRE ATTEND SON TOUR. Elle est en z-index 99999, la fenêtre maison
+       en 1400 : elle se posait donc PAR-DESSUS une question en cours, ou par-dessus un « ✅ c'est
+       déposé », et son bouton conseillé (« recharger la version du collègue ») jetait le travail
+       qu'on venait d'annoncer réussi. Le bandeau rouge, lui, est déjà posé : la personne est
+       prévenue tout de suite, on ne fait que retarder le CHOIX jusqu'à ce qu'elle ait fini. */
+    if(typeof window.bobFenetreOuverte==='function' && window.bobFenetreOuverte()){
+      setTimeout(bobConflict, 700); return;
+    }
     const o=document.createElement('div'); o.id='bobConflictModal';
     o.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:99999;display:flex;align-items:center;justify-content:center;padding:20px';
     o.innerHTML='<div style="background:#fff;max-width:440px;border-radius:16px;padding:22px 24px;box-shadow:0 12px 40px rgba(0,0,0,.3)">'
@@ -9041,7 +9060,9 @@ renderAll();
       +'<button id="bobConfForce" style="background:#fff;color:#c0392b;border:1px solid #e3b4ad;padding:10px 16px;border-radius:999px;font-weight:700;font-size:13px;cursor:pointer">Écraser quand même avec ma version</button>'
       +'</div></div>';
     document.body.appendChild(o);
-    document.getElementById('bobConfReload').onclick=async()=>{ o.remove(); await window.cloudRefresh(); };
+    /* on ne referme la fenêtre que si le rechargement a VRAIMENT eu lieu : sinon la personne
+       se retrouverait sans choix, en croyant avoir repris la version du collègue. */
+    document.getElementById('bobConfReload').onclick=async()=>{ if(await window.cloudRefresh()) o.remove(); };
     document.getElementById('bobConfForce').onclick=async()=>{ o.remove(); await bobForceOverwrite(); };
   }
   async function bobForceOverwrite(){
@@ -9059,13 +9080,32 @@ renderAll();
   window.cloudLogout=async function(){ try{ clearTimeout(pushTimer); if(dirty) await pushNow(); }catch(e){} try{ await sbc.auth.signOut({scope:'local'}); }catch(e){ try{ await sbc.auth.signOut(); }catch(e2){} } location.href='connexion.html'; };
   // P2 — garde-fou fermeture d'onglet : prévient l'utilisateur si une modif n'est pas encore enregistrée
   window.addEventListener('beforeunload',function(e){ if(dirty){ e.preventDefault(); e.returnValue=''; } });
+  /* Recharge le coffre depuis le serveur. Rend true si le remplacement a bien eu lieu.
+     C'est LA porte par laquelle db est remplacé : les trois chemins (le bouton ↻ Rafraîchir,
+     la fenêtre de conflit, et le contrôle automatique toutes les 15 s) passent tous par ici.
+     Les deux refus posés le 16/08/2026 y vivent donc une seule fois, pour tout le monde. */
   window.cloudRefresh=async function(){
-    const {data:st}=await sbc.from('app_state').select('data,updated_at').eq('asso_id',myAsso).maybeSingle();
+    /* REFUS 1 — une question attend une réponse à l'écran. On ne change pas le sol sous les
+       pieds de quelqu'un qui est en train de décider : l'écran a lu ses données AVANT de
+       demander, et il écrira dedans APRÈS. Le prochain contrôle (15 s) rattrapera. */
+    if(typeof window.bobFenetreOuverte==='function' && window.bobFenetreOuverte()) return false;
+    const {data:st, error}=await sbc.from('app_state').select('data,updated_at').eq('asso_id',myAsso).maybeSingle();
+    /* REFUS 2 — LA LECTURE A RATÉ (jeton expiré, coupure, erreur serveur). Avant le 16/08/2026,
+       l'erreur était jetée : « st » valait alors null, et la ligne suivante remplaçait le coffre
+       par un coffre VIDE, en gardant un numéro de version valide et en affichant « ✓ rechargé »
+       EN VERT. Le geste suivant poussait ce vide au serveur sans déclencher le moindre conflit :
+       toute l'association effacée, en silence, sans que personne ait cliqué sur quoi que ce soit.
+       ⚠️ Ne pas confondre avec « aucune ligne » (association neuve) : là, error est nul et le
+       coffre vide est LÉGITIME. C'est l'erreur qu'on regarde, pas l'absence de données. */
+    if(error){ setSync('⚠️ rechargement impossible — tes données restent affichées','#ffd9d0'); return false; }
+    /* et on revérifie : une fenêtre a pu s'ouvrir PENDANT l'aller-retour réseau. */
+    if(typeof window.bobFenetreOuverte==='function' && window.bobFenetreOuverte()) return false;
     db = Object.assign(blank(), (st&&st.data&&typeof st.data==='object')?st.data:{});
     newsSync(); faqSync();   // nouveautés ET fiches d'aide viennent du coffre (blocs NEWS/FAQ)
     _jPrev = jSnap();
     lastSyncTs = st?st.updated_at:lastSyncTs; dirty=false;
     renderAll(); setSync('✓ rechargé depuis le serveur','#dff5e9');
+    return true;
   };
 
   /* 16/08/2026 — IMPORTER UNE SAUVEGARDE PASSE MAINTENANT PAR LE SERVEUR (migration 74).
@@ -15009,7 +15049,11 @@ window.loadDossiersPeri=async function(){
       if(!rem||!rem.updated_at||!lastSyncTs) return;
       if(new Date(rem.updated_at) > new Date(lastSyncTs)){
         if(dirty){ setSync('⚠️ un collègue a modifié — clique ↻ Rafraîchir','#ffd9d0'); }
-        else { await window.cloudRefresh(); setSync('✓ mis à jour par un collègue','#dff5e9'); }
+        /* 16/08/2026 — on n'annonce « mis à jour » QUE si le rechargement a vraiment eu lieu.
+           Il peut être refusé pour deux bonnes raisons : une question attend une réponse à
+           l'écran, ou la lecture a raté. Dans les deux cas cloudRefresh a déjà écrit ce qu'il
+           fallait dans le bandeau — l'écraser par un ✓ vert masquerait le problème. */
+        else if(await window.cloudRefresh()) setSync('✓ mis à jour par un collègue','#dff5e9');
       }
     }
     checkTimer=setInterval(checkRemote, 15000);
