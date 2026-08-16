@@ -3307,6 +3307,21 @@ let NEWS=[];
    window. Tester `window.db` renvoie donc toujours undefined et viderait le panneau à jamais,
    sans erreur visible. On teste l'existence de la liaison elle-même. (Piège attrapé au banc.) */
 function newsSync(){ NEWS = (typeof db!=='undefined' && db && Array.isArray(db.news)) ? db.news : []; }
+/* 🔴 LIRE UNE LISTE DU COFFRE — ET SURTOUT PAS À TRAVERS window =========================
+   16/08/2026. Le cartouche juste au-dessus disait déjà le piège, pour les nouveautés. Dix
+   AUTRES endroits y étaient tombés, et personne ne s'en était aperçu.
+   Écrit en garde — (window.db && db.docsOff) || [] — ça rend une liste VIDE, sans erreur :
+   l'écran a simplement l'air de ne rien contenir. Écrit sans garde, ça jette, et le geste
+   meurt en silence dans un gestionnaire d'événement.
+   Mesuré ce jour : le module « Documents officiels » était mort depuis cinq semaines —
+   24 pièces rangées et invisibles, dépôt impossible, suppression sans effet — et le bloc
+   d'accompagnement (près de 5 000 caractères) était vidé à chaque rafraîchissement.
+   ⚠️ Le plus vicieux : la suppression relisait la liste de la même façon, puis réécrivait
+   db.docsOff avec ce qu'elle avait lu. Réparer une seule des dix lignes aurait donc suffi
+   à REMPLACER les 24 pièces par une liste vide au premier clic sur « Suppr. ».
+   Un contrôle mécanique monte la garde désormais : _qa/verif-window-liaisons.mjs échoue
+   si un window.X vise une liaison let/const. */
+function coffreListe(cle){ return (typeof db!=='undefined' && db && Array.isArray(db[cle])) ? db[cle] : []; }
 function newsLus(){ try{ return JSON.parse(localStorage.getItem('bob_news_lus')||'[]'); }catch(e){ return []; } }
 let NEWS_FRAIS=[]; /* Lot 8 (15/08/2026) : les cartes encore « nouvelles » au moment d'arriver sur l'onglet — figées AVANT que newsMarkRead ne coche, pour qu'une carte jamais vue ne parte pas dans le pli. Union sur la session : un 2e clic sur l'onglet ne replie pas ce qui vient d'apparaître. */
 /* Lot 8 : on ne coche « lu » QUE les cartes réellement affichables (asso + modules allumés). Une carte
@@ -5701,7 +5716,7 @@ function renderStructures(){
   box.innerHTML = db.structures.length ? db.structures.map(function(s){
     const es=(db.echeances||[]).filter(function(e){return e.structureId===s.id;}).sort(function(a,b){return (a.date||'').localeCompare(b.date||'');});
     const rows=es.length? es.map(function(e){return structEchLine(s,e);}).join('') : '<p class="hint" style="margin:4px 0">Aucune échéance. Ajoute un dépôt à rendre ou un versement à recevoir.</p>';
-    const sdocs=((window.db&&db.docsOff)||[]).filter(function(d){return d.structureId===s.id;});
+    const sdocs=coffreListe('docsOff').filter(function(d){return d.structureId===s.id;});
     const sdocRows=sdocs.length? sdocs.map(function(d){return '<div class="kv"><span>📄 '+esc(d.label||d.file||'')+(d.cat?' <span class="pill" style="background:#fcf2de;color:#a9742a;font-size:11px">'+esc(d.cat)+'</span>':'')+'</span><span style="white-space:nowrap"><button class="ghost btn" style="padding:3px 8px;font-size:12px" onclick="docsOffView(\''+d.id+'\')">👁️ Voir</button> <button class="ghost btn" style="padding:3px 8px;font-size:12px" onclick="docsOffDownload(\''+d.id+'\')">⬇️</button></span></div>';}).join('') : '<p class="hint" style="margin:4px 0">Aucun document rattaché. (Dépose-le dans « 📁 Documents officiels » et choisis cette structure.)</p>';
     return '<details class="card" style="margin-bottom:8px"><summary style="cursor:pointer;font-weight:600">'+esc(s.nom)+(s.type?' <span class="pill" style="background:#eef2fb;color:#1f4fc4">'+esc(s.type)+'</span>':'')+' <span class="muted" style="font-weight:400">· '+es.length+' échéance(s) · '+sdocs.length+' doc(s)</span></summary>'
       +'<div style="margin-top:8px">'
@@ -8510,7 +8525,7 @@ async function acmNewSession(type){
 }
 /* acmDelSession retiré (Coup 3) : la suppression d'une édition passe désormais par acmDelEdition (statut-aware). */
 function b64ToUtf8(s){ try{ return new TextDecoder().decode(Uint8Array.from(atob(s),c=>c.charCodeAt(0))); }catch(e){ return ''; } }
-function renderCoffre(){ try{ document.querySelectorAll('[data-coffre]').forEach(function(el){ var k=el.getAttribute('data-coffre'); var v=(window.db&&db.coffreHtml&&db.coffreHtml[k])||''; el.innerHTML = v ? b64ToUtf8(v) : ''; }); }catch(e){} }
+function renderCoffre(){ try{ document.querySelectorAll('[data-coffre]').forEach(function(el){ var k=el.getAttribute('data-coffre'); var v=(typeof db!=='undefined'&&db&&db.coffreHtml&&db.coffreHtml[k])||''; el.innerHTML = v ? b64ToUtf8(v) : ''; }); }catch(e){} }
 function renderAll(){ renderCoffre(); renderDashboard(); renderZoneCards(); renderMembers(); renderRelances(); renderOps(); renderCaisse(); renderRapprochement(); renderProjects(); renderSubventions(); renderEcheancier(); renderBilan(); renderPrevisionnel(); renderPilotage(); renderEquipe(); renderRepertoire(); renderSecretariat(); renderDemarches(); renderAssurance(); renderCaMembres(); renderReunions(); renderCaprep(); renderIncidents(); renderDettes(); renderOfficialLinks(); refreshComptes(); renderListParams(); renderJournal(); renderPeriscolaire(); renderFaqList(); renderNews(); renderAccompagnement(); renderRH(); renderProjet(); renderProjetAdos(); renderActions(); renderConges(); renderFermetures(); renderHoraires(); renderObligations(); renderAcmVac(); renderIntervenants(); if(window.renderVepi)window.renderVepi(); if(window.renderDocsPeri)window.renderDocsPeri(); if(window.renderDocsOff)window.renderDocsOff(); }
 
 /* ---- Data import/export ---- */
@@ -9429,14 +9444,14 @@ renderAll();
   // === Documents officiels & conventions (coffre prive « gouvernance ») ===
   window.renderDocsOff=function(){
     const box=$('docsOffBox'); if(!box) return;
-    const list=(window.db&&db.docsOff)||[];
+    const list=coffreListe('docsOff');
     const up=canWrite?'<div style="margin:0 0 12px"><button class="btn" onclick="docsOffUpload()">⬆️ Déposer un document</button> <span class="muted" style="font-size:12px">— PDF, scan ou photo ; tu peux en choisir plusieurs d\'un coup</span></div>':'';
     let rows;
     if(list.length){
       rows='<div style="overflow-x:auto;-webkit-overflow-scrolling:touch"><table style="width:100%;min-width:520px;border-collapse:collapse"><thead><tr><th style="text-align:left;padding:8px">Type</th><th style="text-align:left;padding:8px">Document</th><th style="padding:8px"></th></tr></thead><tbody>'+list.map(function(d){
         const dt=d.ts?('<br><span class="muted" style="font-size:12px">déposé le '+new Date(d.ts).toLocaleDateString('fr-FR')+'</span>'):'';
         const del=canWrite?' <button class="danger" onclick="docsOffDel(\''+d.id+'\')">Suppr.</button>':'';
-        const src=d.structureId?(((window.db&&db.structures)||[]).find(function(x){return x.id===d.structureId;})||{}).nom:'';
+        const src=d.structureId?(coffreListe('structures').find(function(x){return x.id===d.structureId;})||{}).nom:'';
         return '<tr><td style="padding:8px;border-top:1px solid #eee"><span class="pill" style="background:#fcf2de;color:#a9742a">'+esc(d.cat||'Document')+'</span></td><td style="padding:8px;border-top:1px solid #eee"><b>'+esc(d.label||d.file||'')+'</b>'+(src?' <span class="muted" style="font-size:12px">· 🏛️ '+esc(src)+'</span>':'')+dt+'</td><td style="padding:8px;border-top:1px solid #eee;text-align:right;white-space:nowrap"><button class="ghost btn" onclick="docsOffView(\''+d.id+'\')">👁️ Visualiser</button> <button class="ghost btn" onclick="docsOffDownload(\''+d.id+'\')">⬇️ Télécharger</button>'+del+'</td></tr>';
       }).join('')+'</tbody></table></div>';
     }else{
@@ -9467,7 +9482,7 @@ renderAll();
       const files=inp.files?Array.from(inp.files):[]; if(!files.length) return;
       const cat=(prompt('Type de document ? (Convention, PV, Statuts, Autre)','Convention')||'Document').trim()||'Document';
       let _structureId=null;
-      const _structs=(window.db&&db.structures)||[];
+      const _structs=coffreListe('structures');
       if(_structs.length){
         const _menu=_structs.map(function(s,i){return (i+1)+') '+s.nom;}).join('\n');
         const _pick=prompt('Rattacher à quel financeur / structure ? (pour le retrouver depuis sa fiche 🏛️)\n\n'+_menu+'\n\n→ numéro, ou vide pour aucun','');
@@ -9475,7 +9490,7 @@ renderAll();
         if(!isNaN(_n) && _structs[_n-1]) _structureId=_structs[_n-1].id;
       }
       let userId; try{ userId=(myProfile&&myProfile.id)||((await sbc.auth.getUser()).data.user.id); }catch(e){ userId='x'; }
-      if(!window.db.docsOff) db.docsOff=[];
+      if(!Array.isArray(db.docsOff)) db.docsOff=[];
       let ok=0; const skip=[];
       for(const f of files){
         try{
@@ -9493,19 +9508,19 @@ renderAll();
     inp.click();
   };
   window.docsOffView=async function(id){
-    const d=((window.db&&db.docsOff)||[]).find(function(x){return x.id===id;}); if(!d||!d.path){ await bobAlert('Document introuvable.', {titre:'⚠️ Erreur'}); return; }
+    const d=coffreListe('docsOff').find(function(x){return x.id===id;}); if(!d||!d.path){ await bobAlert('Document introuvable.', {titre:'⚠️ Erreur'}); return; }
     try{ const r=await sbc.storage.from('gouvernance').createSignedUrl(d.path,3600); if(r.error||!r.data){ await bobAlert('Document indisponible.', {titre:'⚠️ Erreur'}); return; } docView(r.data.signedUrl,(d.file||d.label||'Document')); }catch(e){ await bobAlert('Document indisponible.'); }
   };
   window.docsOffDownload=async function(id){
-    const d=((window.db&&db.docsOff)||[]).find(function(x){return x.id===id;}); if(!d||!d.path){ await bobAlert('Document introuvable.', {titre:'⚠️ Erreur'}); return; }
+    const d=coffreListe('docsOff').find(function(x){return x.id===id;}); if(!d||!d.path){ await bobAlert('Document introuvable.', {titre:'⚠️ Erreur'}); return; }
     try{ const r=await sbc.storage.from('gouvernance').createSignedUrl(d.path,3600,{download:d.file||true}); if(r.error||!r.data){ await bobAlert('Document indisponible.', {titre:'⚠️ Erreur'}); return; } const a=document.createElement('a'); a.href=r.data.signedUrl; a.download=d.file||''; document.body.appendChild(a); a.click(); a.remove(); }catch(e){ await bobAlert('Document indisponible.'); }
   };
   window.docsOffDel=async function(id){
     if(!canWrite){ await bobAlert('Réservé au bureau.'); return; }
-    const d=((window.db&&db.docsOff)||[]).find(function(x){return x.id===id;}); if(!d) return;
+    const d=coffreListe('docsOff').find(function(x){return x.id===id;}); if(!d) return;
     if(!await bobConfirm('Supprimer « '+((d.label||d.file)||'')+' » du coffre ? (définitif)', {titre:'Supprimer ?', ok:'Supprimer', danger:true})) return;
     try{ if(d.path) await sbc.storage.from('gouvernance').remove([d.path]); }catch(e){}
-    db.docsOff=((window.db&&db.docsOff)||[]).filter(function(x){return x.id!==id;});
+    db.docsOff=coffreListe('docsOff').filter(function(x){return x.id!==id;});
     save(); schedulePush(); window.renderDocsOff();
   };
   /* ===== 📒 PAIE — classeur social mensuel (coffre privé 'paie' + tables paie_mois/paie_piece ; accès président/trésorier via can_paie côté base) ===== */
