@@ -8256,9 +8256,29 @@ function renderAcmLock(){
       +'<button class="btn" style="margin-left:auto" onclick="acmToggleLock()">🔓 Déverrouiller pour modifier</button>';
   }
 }
-function acmToggleLock(){
+/* ===== Lot 11c (16/08/2026) — TOUT L'ACM / VACANCES QUITTE LES FENÊTRES GRISES ============
+   Après le périscolaire, le second gros métier : les accueils de loisirs. 42 fenêtres natives
+   remplacées par la modale maison sur tout le domaine — le catalogue d'activités, les éditions
+   (créer, clore, rouvrir, supprimer), les tarifs et leur verrou, les documents de l'édition,
+   les propositions des salariées (accepter, refuser), la publication vers le site, le bilan.
+   Vérifié après coup : plus une seule fenêtre native dans ce domaine.
+
+   UN GESTE GAGNE VRAIMENT AU CHANGE — créer une édition. Il fallait répondre à TROIS fenêtres
+   qui s'enchaînaient (le nom, puis la date, puis le nombre de jours), sans pouvoir revenir en
+   arrière ni relire ce qu'on venait de taper. C'est maintenant UN formulaire : les trois champs
+   ensemble, la date dans un vrai sélecteur de date, et un contrôle qui refuse un nom vide en le
+   disant DANS la fenêtre au lieu de tout recommencer.
+
+   Neuf fonctions sont devenues asynchrones pour attendre la réponse ; chacune n'est appelée que
+   par un bouton qui ignore la valeur rendue — vérifié une par une. Trois autres, converties à
+   tort par le script de migration, ont été remises en synchrone : elles n'attendent rien.
+
+   REVERT : dans ce domaine seulement, réécrire les appels à la modale maison en fenêtres natives
+   du navigateur, redonner à la création d'édition ses trois questions successives, et retirer le
+   mot-clé asynchrone des neuf fonctions. ================================================== */
+async function acmToggleLock(){
   if(!window.__acmTarifUnlocked){
-    if(!confirm('Désactiver la sécurité et autoriser la modification des tarifs ACM ?\n\nPense à enregistrer (ou reverrouiller) après tes changements.')) return;
+    if(!await bobConfirm('Désactiver la sécurité et autoriser la modification des tarifs ACM ?\n\nPense à enregistrer (ou reverrouiller) après tes changements.', {titre:'Déverrouiller ?', ok:'Déverrouiller', danger:true})) return;
     window.__acmTarifUnlocked=true;
   } else {
     window.__acmTarifUnlocked=false;
@@ -8270,8 +8290,8 @@ function acmSetTarif(col,i,v){
   const t=acmTarifDB(); const n=parseFloat(v)||0;
   if(col==='horsCommune') t.horsCommune=n; else if(t[col]) t[col][i]=n;
 }
-function acmGrandesFromPetites(){
-  if(!window.__acmTarifUnlocked){ alert('Déverrouille d\'abord les tarifs ACM (bouton 🔓 Déverrouiller).'); return; }
+async function acmGrandesFromPetites(){
+  if(!window.__acmTarifUnlocked){ await bobAlert('Déverrouille d\'abord les tarifs ACM (bouton 🔓 Déverrouiller).'); return; }
   const t=acmTarifDB();
   t.grandes=t.petites.map(p=>Math.round((p||0)*0.85*100)/100);
   save(); renderAcmTarif(); publishTarifs();
@@ -8370,9 +8390,9 @@ function acmRenderForm(editId){
     +'<textarea id="acm_note" placeholder="Note (facultatif)" style="width:100%;margin-top:8px;min-height:46px">'+(e&&e.note?acmEsc(e.note):'')+'</textarea>'
     +'<div class="row" style="margin-top:8px;gap:6px"><button class="btn" onclick="acmSaveFiche(\''+(editId||'')+'\')">'+(e?'Enregistrer':'+ Ajouter au catalogue')+'</button><button class="ghost btn" onclick="acmToggleForm()">Annuler</button></div></div>';
 }
-function acmSaveFiche(editId){
+async function acmSaveFiche(editId){
   const gv=id=>{ const el=$('acm_'+id); return el?(el.value||'').trim():''; };
-  const nom=gv('nom'); if(!nom){ alert('Donne un nom à l\'activité.'); return; }
+  const nom=gv('nom'); if(!nom){ await bobAlert('Donne un nom à l\'activité.'); return; }
   const a=acmDb();
   const rec={ nom, emoji:gv('emoji'), pole:$('acm_pole').value, origine:$('acm_orig').value, statut:$('acm_stat').value, cout:gv('cout'), intervenant:gv('interv'), tel:gv('tel'), lieu:gv('lieu'), note:gv('note') };
   if(editId){ const f=a.fiches.find(x=>x.id===editId); if(f) Object.assign(f,rec); }
@@ -8381,7 +8401,7 @@ function acmSaveFiche(editId){
   save();
 }
 function acmEditFiche(id){ acmRenderForm(id); const f=$('acmForm'); if(f){ f.style.display='block'; f.scrollIntoView({block:'center'}); } }
-function acmDelFiche(id){ if(!confirm('Supprimer cette activité du catalogue ?'))return; const a=acmDb(); a.fiches=a.fiches.filter(f=>f.id!==id); a.sessions.forEach(s=>{ if(s.plan) delete s.plan[id]; }); save(); }
+async function acmDelFiche(id){ if(!await bobConfirm('Supprimer cette activité du catalogue ?', {titre:'Supprimer ?', ok:'Supprimer', danger:true})) return; const a=acmDb(); a.fiches=a.fiches.filter(f=>f.id!==id); a.sessions.forEach(s=>{ if(s.plan) delete s.plan[id]; }); save(); }
 function acmSetJour(id,v){ const cs=acmCurSession(); if(!cs)return; if(!cs.plan)cs.plan={}; cs.plan[id]=v; save(); }
 function acmSelectSession(id){ acmDb().cur=id; save(); }
 function acmGenJours(startStr,nb){
@@ -8392,11 +8412,21 @@ function acmGenJours(startStr,nb){
   else { for(let i=1;i<=nb;i++) out.push('Jour '+i); }
   return out;
 }
-function acmNewSession(type){
+async function acmNewSession(type){
   type=(type==='vepi')?'vepi':'acm'; const isV=type==='vepi';
-  const nom=prompt(isV?'Nom de l\'édition VEPI (ex : VEPI 1er semestre 2026) :':'Nom de l\'édition (ex : Été 2026, Toussaint 2026) :'); if(!nom||!nom.trim())return;
-  const start=prompt('Date du 1er jour (JJ/MM/AAAA) — laisse vide pour « Jour 1, 2, 3… ». Les week-ends sont sautés automatiquement.','');
-  const nb=Math.max(1,Math.min(40,parseInt(prompt('Combien de jours d\'accueil ? (ex : 10)','10'),10)||10));
+  /* Lot 11c : trois questions d'affilée devenaient trois fenêtres à enchaîner, sans pouvoir
+     revenir en arrière ni voir ce qu'on avait déjà répondu. Un seul formulaire les remplace. */
+  const rep=await bobForm(isV?'Nouvelle édition VEPI':'Nouvelle édition', [
+    {k:'nom',   label:"Nom de l'édition", value:'', type:'text',
+     placeholder:isV?'Ex. VEPI 1er semestre 2026':'Ex. Été 2026, Toussaint 2026'},
+    {k:'start', label:'Date du 1er jour', value:'', type:'date',
+     hint:'Laisse vide pour numéroter « Jour 1, 2, 3… ». Les week-ends sont sautés automatiquement.'},
+    {k:'nb',    label:"Combien de jours d'accueil ?", value:'10', type:'number', hint:'Entre 1 et 40.'}
+  ], {ok:"Créer l'édition", valider:function(v){ if(!v.nom||!String(v.nom).trim()) return "Donne un nom à l'édition."; }});
+  if(!rep) return;
+  const nom=String(rep.nom||'');
+  const start=String(rep.start||'');
+  const nb=Math.max(1,Math.min(40,parseInt(rep.nb,10)||10));
   const jours=acmGenJours(start,nb);
   const _dd=acmParseDate(start); const _ddISO=_dd?(_dd.getFullYear()+'-'+String(_dd.getMonth()+1).padStart(2,'0')+'-'+String(_dd.getDate()).padStart(2,'0')):'';
   // VEPI : demSeeded=true → on n'injecte PAS le parcours-type ACM (fiche TAM J-8/J-60…). Coup 2 (héritage ACM auto) EN ATTENTE — à ré-appliquer seulement après feu vert DLA/SDJES (design en mémoire : bob-vepi-coup2-held).
@@ -11712,10 +11742,10 @@ window.loadDossiersPeri=async function(){
     }
     box.innerHTML=up+rows+((canWrite&&list.length&&!archived)?'<p class="hint" style="margin:6px 0 0;font-size:12px">👁️ Les salariées de l\'équipe ACM voient ces documents en lecture dans « Mon ACM » après un clic sur <b>📢 Publier aux salariées</b> (panneau 🔄).</p>':'');
   };
-  window.acmDocUpload=function(edId){
-    if(!canWrite){ alert('Réservé au bureau.'); return; }
+  window.acmDocUpload=async function(edId){
+    if(!canWrite){ await bobAlert('Réservé au bureau.'); return; }
     const ed=acmDb().sessions.find(function(s){return s.id===edId;}); if(!ed) return;
-    if(ed.statut==='archivee'){ alert('Édition archivée — rouvre-la pour modifier ses documents.'); return; }
+    if(ed.statut==='archivee'){ await bobAlert('Édition archivée — rouvre-la pour modifier ses documents.'); return; }
     const inp=document.createElement('input'); inp.type='file'; inp.multiple=true; inp.accept='.pdf,image/*,.doc,.docx';
     inp.onchange=async function(){
       const files=inp.files?Array.from(inp.files):[]; if(!files.length) return;
@@ -11733,25 +11763,25 @@ window.loadDossiersPeri=async function(){
         }catch(e){ skip.push(f.name); }
       }
       save(); schedulePush(); if(window.acmRenderDocs) acmRenderDocs(ed); if(ed.type==='vepi'&&window.syncVepiDocs) syncVepiDocs(ed);
-      alert('✅ '+ok+' document(s) déposé(s).'+(skip.length?'\n\nNon déposés :\n- '+skip.join('\n- '):''));
+      await bobAlert('✅ '+ok+' document(s) déposé(s).'+(skip.length?'\n\nNon déposés :\n- '+skip.join('\n- '):''));
     };
     inp.click();
   };
   window.acmDocView=async function(edId,docId){
     const ed=acmDb().sessions.find(function(s){return s.id===edId;}); if(!ed) return;
-    const d=((ed.bilan&&ed.bilan.docs)||[]).find(function(x){return x.id===docId;}); if(!d||!d.path){ alert('Document introuvable.'); return; }
-    try{ const r=await sbc.storage.from('acm-docs').createSignedUrl(d.path,3600); if(r.error||!r.data){ alert('Document indisponible.'); return; } docView(r.data.signedUrl,(d.file||d.label||'Document')); }catch(e){ alert('Document indisponible.'); }
+    const d=((ed.bilan&&ed.bilan.docs)||[]).find(function(x){return x.id===docId;}); if(!d||!d.path){ await bobAlert('Document introuvable.', {titre:'⚠️ Erreur'}); return; }
+    try{ const r=await sbc.storage.from('acm-docs').createSignedUrl(d.path,3600); if(r.error||!r.data){ await bobAlert('Document indisponible.', {titre:'⚠️ Erreur'}); return; } docView(r.data.signedUrl,(d.file||d.label||'Document')); }catch(e){ await bobAlert('Document indisponible.'); }
   };
   window.acmDocDownload=async function(edId,docId){
     const ed=acmDb().sessions.find(function(s){return s.id===edId;}); if(!ed) return;
-    const d=((ed.bilan&&ed.bilan.docs)||[]).find(function(x){return x.id===docId;}); if(!d||!d.path){ alert('Document introuvable.'); return; }
-    try{ const r=await sbc.storage.from('acm-docs').createSignedUrl(d.path,3600,{download:d.file||true}); if(r.error||!r.data){ alert('Document indisponible.'); return; } const a=document.createElement('a'); a.href=r.data.signedUrl; a.download=d.file||''; document.body.appendChild(a); a.click(); a.remove(); }catch(e){ alert('Document indisponible.'); }
+    const d=((ed.bilan&&ed.bilan.docs)||[]).find(function(x){return x.id===docId;}); if(!d||!d.path){ await bobAlert('Document introuvable.', {titre:'⚠️ Erreur'}); return; }
+    try{ const r=await sbc.storage.from('acm-docs').createSignedUrl(d.path,3600,{download:d.file||true}); if(r.error||!r.data){ await bobAlert('Document indisponible.', {titre:'⚠️ Erreur'}); return; } const a=document.createElement('a'); a.href=r.data.signedUrl; a.download=d.file||''; document.body.appendChild(a); a.click(); a.remove(); }catch(e){ await bobAlert('Document indisponible.'); }
   };
   window.acmDocDel=async function(edId,docId){
-    if(!canWrite){ alert('Réservé au bureau.'); return; }
+    if(!canWrite){ await bobAlert('Réservé au bureau.'); return; }
     const ed=acmDb().sessions.find(function(s){return s.id===edId;}); if(!ed) return;
     const d=((ed.bilan&&ed.bilan.docs)||[]).find(function(x){return x.id===docId;}); if(!d) return;
-    if(!confirm('Supprimer « '+((d.label||d.file)||'')+' » ? (définitif)')) return;
+    if(!await bobConfirm('Supprimer « '+((d.label||d.file)||'')+' » ? (définitif)', {titre:'Supprimer ?', ok:'Supprimer', danger:true})) return;
     try{ if(d.path) await sbc.storage.from('acm-docs').remove([d.path]); }catch(e){}
     ed.bilan.docs=((ed.bilan&&ed.bilan.docs)||[]).filter(function(x){return x.id!==docId;});
     save(); schedulePush(); if(window.acmRenderDocs) acmRenderDocs(ed); if(ed.type==='vepi'&&window.syncVepiDocs) syncVepiDocs(ed);
@@ -11760,8 +11790,8 @@ window.loadDossiersPeri=async function(){
   window.acmBilanCR=function(edId,val){ const ed=acmDb().sessions.find(function(s){return s.id===edId;}); if(!ed)return; ed.bilan.cr=val; save(); };
   function acmDemRefresh(ed){ const b=document.getElementById('acmBilanDem'); if(b) b.innerHTML=acmDemHtml(ed,ed.statut==='archivee'); if(window.renderAcmEditions) renderAcmEditions(); if(window.renderVepi) renderVepi(); }
   window.acmDemCycle=function(edId,i){ const ed=acmDb().sessions.find(function(s){return s.id===edId;}); if(!ed||!ed.bilan.demarches[i])return; const d=ed.bilan.demarches[i]; d.statut=(d.statut==='a_faire'?'fait':(d.statut==='fait'?'na':'a_faire')); save(); acmDemRefresh(ed); };
-  window.acmDemAdd=function(edId,phase){ const ed=acmDb().sessions.find(function(s){return s.id===edId;}); if(!ed)return; const l=prompt('Nouvelle démarche à suivre :'); if(!l||!l.trim())return; ed.bilan.demarches.push({id:uid(),label:l.trim(),phase:phase||'avant',offset:null,statut:'a_faire'}); save(); acmDemRefresh(ed); };
-  window.acmDemDel=function(edId,i){ const ed=acmDb().sessions.find(function(s){return s.id===edId;}); if(!ed||!ed.bilan.demarches[i])return; if(!confirm('Retirer « '+ed.bilan.demarches[i].label+' » ?'))return; ed.bilan.demarches.splice(i,1); save(); acmDemRefresh(ed); };
+  window.acmDemAdd=async function(edId,phase){ const ed=acmDb().sessions.find(function(s){return s.id===edId;}); if(!ed)return; const l=await bobPrompt('Nouvelle démarche à suivre :'); if(!l||!l.trim())return; ed.bilan.demarches.push({id:uid(),label:l.trim(),phase:phase||'avant',offset:null,statut:'a_faire'}); save(); acmDemRefresh(ed); };
+  window.acmDemDel=async function(edId,i){ const ed=acmDb().sessions.find(function(s){return s.id===edId;}); if(!ed||!ed.bilan.demarches[i])return; if(!await bobConfirm('Retirer « '+ed.bilan.demarches[i].label+' » ?', {titre:'Confirmer', ok:'Confirmer'})) return; ed.bilan.demarches.splice(i,1); save(); acmDemRefresh(ed); };
   window.acmSetDebut=function(edId,v){ const ed=acmDb().sessions.find(function(s){return s.id===edId;}); if(!ed)return; ed.dateDebut=v||''; save(); acmDemRefresh(ed); };
   window.acmSetLieu=function(edId,v){ const ed=acmDb().sessions.find(function(s){return s.id===edId;}); if(!ed)return; ed.lieu=v||''; save(); };
   // Coup 2 — indicateur d'encadrement : AIDE au directeur, JAMAIS une preuve de conformité. Ratio selon l'âge ; l'honorabilité n'entre PAS dans le taux mais reste le vrai mur.
@@ -11869,7 +11899,7 @@ window.loadDossiersPeri=async function(){
     }catch(e){ console.warn('syncVepiDocs', e); }
   };
   window.acmDoPublishReflet=async function(){
-    if(!canWrite){ alert('Réservé au bureau.'); return; }
+    if(!canWrite){ await bobAlert('Réservé au bureau.'); return; }
     const el=document.getElementById('acmRefletMaj'); if(el) el.textContent='Publication en cours…';
     const ok=await syncAcmReflet();
     if(el) el.textContent=ok?('✔ Reflet publié le '+fmtDate(today())+' — visible par les salariées dans « Mon ACM ».'):'⚠️ La publication a échoué — vérifie la connexion et réessaie.';
@@ -11894,8 +11924,8 @@ window.loadDossiersPeri=async function(){
   }
   // Aperçu d'un document PROPOSÉ (encore en attente) par une salariée — lien signé, le bureau a le droit de lecture sur acm-docs.
   window.acmInboxDocView=async function(id){
-    const p=(window.__acmInbox||[]).find(function(x){return x.id===id;}); if(!p||!p.contenu||!p.contenu.path){ alert('Fichier introuvable.'); return; }
-    try{ const r=await sbc.storage.from('acm-docs').createSignedUrl(p.contenu.path,3600); if(r.error||!r.data){ alert('Fichier indisponible.'); return; } docView(r.data.signedUrl,(p.contenu.file||p.contenu.label||'Document')); }catch(e){ alert('Fichier indisponible.'); }
+    const p=(window.__acmInbox||[]).find(function(x){return x.id===id;}); if(!p||!p.contenu||!p.contenu.path){ await bobAlert('Fichier introuvable.', {titre:'⚠️ Erreur'}); return; }
+    try{ const r=await sbc.storage.from('acm-docs').createSignedUrl(p.contenu.path,3600); if(r.error||!r.data){ await bobAlert('Fichier indisponible.', {titre:'⚠️ Erreur'}); return; } docView(r.data.signedUrl,(p.contenu.file||p.contenu.label||'Document')); }catch(e){ await bobAlert('Fichier indisponible.'); }
   };
   window.renderAcmInbox=function(){
     const box=document.getElementById('acmInboxBody'); if(!box) return;
@@ -11918,21 +11948,21 @@ window.loadDossiersPeri=async function(){
     }).join('');
   };
   window.acmPropRefuse=async function(id){
-    if(!canWrite){ alert('Réservé au bureau.'); return; }
+    if(!canWrite){ await bobAlert('Réservé au bureau.'); return; }
     const p=(window.__acmInbox||[]).find(function(x){return x.id===id;});
-    const motif=(prompt('Motif du refus (visible par la salariée — facultatif) :')||'').trim();
-    try{ const up=await sbc.from('acm_propositions').update({statut:'refusee', motif_refus:motif||null, traite_par:(myProfile&&myProfile.id)||null, traite_le:new Date().toISOString()}).eq('id',id).eq('statut','en_attente').select('id'); if(up.error) throw up.error; if(!up.data||!up.data.length){ alert('Déjà traitée (ou modifiée) — rien à faire.'); if(window.acmLoadInbox) acmLoadInbox(); return; } }
-    catch(e){ alert('Erreur : '+(e.message||e)); return; }
+    const motif=(await bobPrompt('Motif du refus (visible par la salariée — facultatif) :')||'').trim();
+    try{ const up=await sbc.from('acm_propositions').update({statut:'refusee', motif_refus:motif||null, traite_par:(myProfile&&myProfile.id)||null, traite_le:new Date().toISOString()}).eq('id',id).eq('statut','en_attente').select('id'); if(up.error) throw up.error; if(!up.data||!up.data.length){ await bobAlert('Déjà traitée (ou modifiée) — rien à faire.'); if(window.acmLoadInbox) acmLoadInbox(); return; } }
+    catch(e){ await bobAlert('Erreur : '+(e.message||e)); return; }
     // nettoyage : un document proposé puis refusé → on retire le fichier en attente du coffre (pas d'orphelin)
     if(p && p.type==='document' && p.contenu && p.contenu.path){ try{ await sbc.storage.from('acm-docs').remove([p.contenu.path]); }catch(e){} }
     if(window.acmLoadInbox) acmLoadInbox();
   };
   window.acmPropAccept=async function(id){
-    if(!canWrite){ alert('Réservé au bureau.'); return; }
+    if(!canWrite){ await bobAlert('Réservé au bureau.'); return; }
     const p=(window.__acmInbox||[]).find(function(x){return x.id===id;}); if(!p) return;
     // 1) valider EN BASE d'abord : si l'update échoue (ou 0 ligne = déjà traitée), on ne touche pas au coffre
-    try{ const up=await sbc.from('acm_propositions').update({statut:'acceptee', traite_par:(myProfile&&myProfile.id)||null, traite_le:new Date().toISOString()}).eq('id',id).eq('statut','en_attente').select('id'); if(up.error) throw up.error; if(!up.data||!up.data.length){ alert('Déjà traitée (ou modifiée) — rien à faire.'); if(window.acmLoadInbox) acmLoadInbox(); return; } }
-    catch(e){ alert('Erreur : '+(e.message||e)); return; }
+    try{ const up=await sbc.from('acm_propositions').update({statut:'acceptee', traite_par:(myProfile&&myProfile.id)||null, traite_le:new Date().toISOString()}).eq('id',id).eq('statut','en_attente').select('id'); if(up.error) throw up.error; if(!up.data||!up.data.length){ await bobAlert('Déjà traitée (ou modifiée) — rien à faire.'); if(window.acmLoadInbox) acmLoadInbox(); return; } }
+    catch(e){ await bobAlert('Erreur : '+(e.message||e)); return; }
     // 2) intégration SÛRE et additive dans le coffre (jamais placement/budget en auto : le bureau les reporte à la main)
     const a=acmDb(), c=p.contenu||{}; let integre='';
     if(p.type==='activite'){
@@ -11963,7 +11993,7 @@ window.loadDossiersPeri=async function(){
     try{ await syncAcmReflet(); }catch(e){}
     if(window.acmLoadInbox) acmLoadInbox();
     renderAcmVac();
-    alert('✅ Proposition acceptée — '+integre+'.');
+    await bobAlert('✅ Proposition acceptée — '+integre+'.');
   };
   // Coup 3 — heures-enfants (jours × enfants × amplitude) → estimation PS par année civile. Estimation d'aide, pas la déclaration AFAS.
   function acmHeuresEnfants(ed){
@@ -12006,24 +12036,24 @@ window.loadDossiersPeri=async function(){
   window.acmSetBaremeCAF=function(field,v){ const a=acmDb(); a.baremeCAF=a.baremeCAF||{annee:2026,ados:0.94,peri:0.60,extra:0.64}; a.baremeCAF[field]=parseFloat(v)||0; save(); if(window.renderAcmCaf) renderAcmCaf(); };
   window.acmCloreEdition=async function(edId){
     const ed=acmDb().sessions.find(function(s){return s.id===edId;}); if(!ed)return;
-    if(!confirm('Clôturer l\'édition « '+ed.nom+' » ?\n\nSon effectif du jour sera figé et l\'édition rejoindra les archives (tu pourras toujours la rouvrir).'))return;
+    if(!await bobConfirm('Clôturer l\'édition « '+ed.nom+' » ?\n\nSon effectif du jour sera figé et l\'édition rejoindra les archives (tu pourras toujours la rouvrir).', {titre:'Confirmer', ok:'Confirmer'})) return;
     // Toujours rafraîchir la donnée réelle AVANT de figer → snapshot fidèle (jamais un compte périmé)
     try{ await acmLoadEditionsData(); }catch(e){}
     const eff=acmEffectifFor(ed.activiteIds);
-    if(!eff){ alert('⚠️ Impossible de figer l\'effectif : la connexion aux inscriptions n\'est pas disponible.\n\nReconnecte-toi ou clique « ↻ Rafraîchir », puis réessaie. L\'édition n\'a PAS été clôturée.'); return; }
+    if(!eff){ await bobAlert('⚠️ Impossible de figer l\'effectif : la connexion aux inscriptions n\'est pas disponible.\n\nReconnecte-toi ou clique « ↻ Rafraîchir », puis réessaie. L\'édition n\'a PAS été clôturée.'); return; }
     const _lk=((window.__acmData&&window.__acmData.acts)||[]).filter(function(a){return (ed.activiteIds||[]).indexOf(a.id)>=0;}); // Coup 4 : figer aussi l'identité (capacité + activités) comme l'effectif → snapshot fidèle pour la preuve SDJES
     ed.bilan.capacite=_lk.reduce(function(t,a){ var c=(typeof a.capacite==='number'?a.capacite:parseInt(a.capacite,10)); return t+((c>0)?c:0); },0);
     ed.bilan.activites=_lk.map(function(a){return a.nom||'';}).filter(Boolean);
     ed.bilan.effectif={date:today(),nb:eff.nb,roster:eff.roster,sansFiche:eff.sansFiche}; ed.bilan.closedAt=today(); ed.statut='archivee';
     const a=acmDb(); if(a.cur===edId){ const n=a.sessions.find(function(s){return s.statut!=='archivee';}); a.cur=n?n.id:null; }
     save(); if(window.__acmBilanCur===edId) acmCloseBilanView(); renderAcmVac(); if(window.renderAcmEditions) renderAcmEditions(); if(window.renderVepi) renderVepi();
-    alert('Édition archivée ✅ — son dossier-bilan est dans « 🗄️ Archives ».');
+    await bobAlert('Édition archivée ✅ — son dossier-bilan est dans « 🗄️ Archives ».');
   };
   window.acmRouvrirEdition=function(edId){ const ed=acmDb().sessions.find(function(s){return s.id===edId;}); if(!ed)return; ed.statut='ouverte'; save(); renderAcmVac(); if(window.renderAcmEditions) renderAcmEditions(); if(window.renderVepi) renderVepi(); if(window.__acmBilanCur===edId) acmOpenBilan(edId); };
-  window.acmDelEdition=function(edId){ const a=acmDb(); const ed=a.sessions.find(function(s){return s.id===edId;}); if(!ed)return; if(!confirm('Supprimer définitivement l\'édition « '+ed.nom+' » ? (le catalogue d\'activités est conservé)'))return; a.sessions=a.sessions.filter(function(s){return s.id!==edId;}); if(a.cur===edId){ const n=a.sessions.find(function(s){return s.statut!=='archivee';}); a.cur=n?n.id:null; } save(); if(window.__acmBilanCur===edId) acmCloseBilanView(); renderAcmVac(); if(window.renderAcmEditions) renderAcmEditions(); if(window.renderVepi) renderVepi(); };
+  window.acmDelEdition=async function(edId){ const a=acmDb(); const ed=a.sessions.find(function(s){return s.id===edId;}); if(!ed)return; if(!await bobConfirm('Supprimer définitivement l\'édition « '+ed.nom+' » ? (le catalogue d\'activités est conservé)', {titre:'Supprimer ?', ok:'Supprimer', danger:true})) return; a.sessions=a.sessions.filter(function(s){return s.id!==edId;}); if(a.cur===edId){ const n=a.sessions.find(function(s){return s.statut!=='archivee';}); a.cur=n?n.id:null; } save(); if(window.__acmBilanCur===edId) acmCloseBilanView(); renderAcmVac(); if(window.renderAcmEditions) renderAcmEditions(); if(window.renderVepi) renderVepi(); };
   window.acmBilanPDF=async function(edId){
     const ed=acmDb().sessions.find(function(s){return s.id===edId;}); if(!ed)return;
-    const w=window.open('','_blank'); if(!w){ alert('Autorise les fenêtres pop-up pour générer le PDF.'); return; }
+    const w=window.open('','_blank'); if(!w){ await bobAlert('Autorise les fenêtres pop-up pour générer le PDF.'); return; }
     try{ w.document.open(); w.document.write('<!doctype html><meta charset="utf-8"><body style="font-family:-apple-system,Segoe UI,Roboto,sans-serif"><p style="margin:40px;color:#555">📄 Génération du bilan…</p></body>'); w.document.close(); }catch(e){}
     if(!window.__acmData){ try{ await acmLoadEditionsData(); }catch(e){} }
     const per=acmEditionPeriode(ed), archived=ed.statut==='archivee';
@@ -12699,25 +12729,25 @@ window.loadDossiersPeri=async function(){
   /* ---- Gestion des Activités & places (table activites + inscriptions_activite) ---- */
   const ACT_STATUTS={ouvert:'Ouvert',bientot:'Arrive bientôt',archive:'Archivé'};
   window.acmPushPublic=async function(){
-    if(!canWrite){ alert('Action réservée au bureau.'); return; }
-    const cs=acmCurSession(); if(!cs){ alert('Sélectionne d\'abord une session.'); return; }
+    if(!canWrite){ await bobAlert('Action réservée au bureau.'); return; }
+    const cs=acmCurSession(); if(!cs){ await bobAlert('Sélectionne d\'abord une session.'); return; }
     const prog=acmPublicProgramme(cs);
     const {data,error}=await sbc.from('activites').select('id,nom').eq('type','activite').neq('statut','archive').order('ordre',{ascending:true});
-    if(error){ alert('Impossible de lire les cartes du site : '+error.message); return; }
-    if(!data||!data.length){ alert('Aucune carte « activité » sur le site. Crée-la d\'abord dans l\'onglet 🎟️ Activités.'); return; }
+    if(error){ await bobAlert('Impossible de lire les cartes du site : '+error.message, {titre:'⚠️ Erreur'}); return; }
+    if(!data||!data.length){ await bobAlert('Aucune carte « activité » sur le site. Crée-la d\'abord dans l\'onglet 🎟️ Activités.'); return; }
     let target = cs.publicId ? data.find(x=>x.id===cs.publicId) : null;
     if(!target){
       const menu=data.map((x,i)=>(i+1)+'. '+x.nom).join('\n');
-      const pick=prompt('Sur quelle carte publique pousser le programme ?\n(seuls l\'emoji + le nom des activités sont publiés — jamais les contacts ni les notes)\n\n'+menu+'\n\nTape le numéro :');
+      const pick=await bobPrompt('Sur quelle carte publique pousser le programme ?\n(seuls l\'emoji + le nom des activités sont publiés — jamais les contacts ni les notes)\n\n'+menu+'\n\nTape le numéro :');
       const idx=parseInt(pick,10)-1; if(isNaN(idx)||idx<0||idx>=data.length) return;
       target=data[idx];
     } else {
-      if(!confirm('Mettre à jour le programme de « '+target.nom+' » sur le site public ?')) return;
+      if(!await bobConfirm('Mettre à jour le programme de « '+target.nom+' » sur le site public ?', {titre:'Confirmer', ok:'Confirmer'})) return;
     }
     const {error:e2}=await sbc.from('activites').update({ programme:prog }).eq('id',target.id);
-    if(e2){ alert('Erreur de publication : '+e2.message); return; }
+    if(e2){ await bobAlert('Erreur de publication : '+e2.message); return; }
     cs.publicId=target.id; save();
-    alert('✅ Programme publié sur « '+target.nom+' ». Visible sur le site public.');
+    await bobAlert('✅ Programme publié sur « '+target.nom+' ». Visible sur le site public.');
   };
   window.loadActivitesGestion=async function(){
     const box=document.getElementById('actgList'); if(!box) return;
