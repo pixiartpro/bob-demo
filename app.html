@@ -4049,7 +4049,10 @@ function closeModal(){ $('opModal').classList.remove('open'); }
       ttl.textContent=o.titre||'Bob';
       let html=o.corps?'<p class="bobDlgMsg">'+h(o.corps)+'</p>':'';
       cur.champs.forEach((f,i)=>{
-        const t=(f.type==='date'||f.type==='number'||f.type==='tel')?f.type:'text';
+        /* 16/08/2026 — « password » ajouté à la liste : sans lui, un champ de mot de passe
+           s'affichait en CLAIR dans la page. Il fallait ce mot pour que la remise à zéro
+           puisse quitter la fenêtre native sans rien perdre en sécurité. */
+        const t=(f.type==='date'||f.type==='number'||f.type==='tel'||f.type==='password')?f.type:'text';
         html+='<div class="field"><label for="bobDlgF'+i+'">'+h(f.label||'')+'</label>'
           +(f.type==='textarea'
             ?'<textarea id="bobDlgF'+i+'" rows="3"'+(f.placeholder?' placeholder="'+h(f.placeholder)+'"':'')+'>'+h(f.value)+'</textarea>'
@@ -9072,6 +9075,12 @@ renderAll();
     r.pvClos=false; save(); renderReunions();
   };
 
+  /* ===== Lot 11c (16/08/2026) — TOUT LE COFFRE À DOCUMENTS QUITTE LES FENÊTRES GRISES =======
+     Les deux coffres (modèles périscolaire + pièces officielles) parlaient encore avec les
+     fenêtres du navigateur. Un « Supprimer ? » gris, sans titre ni bouton rouge, ressemblait
+     trait pour trait à un « Indisponible. » : même boîte, même ton, alors que l'un efface une
+     pièce et l'autre ne fait que prévenir. Tout passe à la fenêtre maison, où le titre et la
+     couleur du bouton disent d'un coup d'œil ce qui va se passer. ============================ */
   // === Documents d'inscription périscolaire (bureau) — bucket privé dossiers-periscolaire, chemin <asso>/<uid>/modeles-peri/ ===
   const DOCSPERI=[
     {k:'reglement', file:'01_Reglement-interieur_Garderie-periscolaire_2026-2027.docx', label:'Règlement intérieur de la garderie'},
@@ -9094,8 +9103,8 @@ renderAll();
       return '<tr><td style="padding:8px;border-top:1px solid #eee"><b>'+d.label+'</b><br><span class="muted" style="font-size:12px">'+d.file+'</span></td><td style="padding:8px;border-top:1px solid #eee">'+etat+'</td><td style="padding:8px;border-top:1px solid #eee;text-align:right;white-space:nowrap">'+dl+up+'</td></tr>';
     }).join('')+'</table></div>';
   };
-  window.docsPeriUpload=function(k){
-    if(!canWrite){ alert('Réservé au bureau.'); return; }
+  window.docsPeriUpload=async function(k){
+    if(!canWrite){ await bobAlert('Réservé au bureau.'); return; }
     const d=DOCSPERI.find(function(x){return x.k===k;}); if(!d) return;
     const inp=document.createElement('input'); inp.type='file';
     inp.onchange=async function(){
@@ -9113,23 +9122,23 @@ renderAll();
     inp.click();
   };
   window.docsPeriView=async function(k){
-    const e=(db.docsPeri||{})[k]; if(!e||!e.path){ alert('Pas encore déposé.'); return; }
+    const e=(db.docsPeri||{})[k]; if(!e||!e.path){ await bobAlert('Pas encore déposé.'); return; }
     try{
       const r=await sbc.storage.from('dossiers-periscolaire').createSignedUrl(e.path,3600);
-      if(r.error||!r.data){ alert('Indisponible.'); return; }
+      if(r.error||!r.data){ await bobAlert('Indisponible.'); return; }
       docView(r.data.signedUrl, e.file||'Document');
-    }catch(e2){ alert('Indisponible.'); }
+    }catch(e2){ await bobAlert('Indisponible.'); }
   };
   window.docsPeriDownload=async function(k){
-    const e=(db.docsPeri||{})[k]; if(!e||!e.path){ alert('Pas encore déposé.'); return; }
+    const e=(db.docsPeri||{})[k]; if(!e||!e.path){ await bobAlert('Pas encore déposé.'); return; }
     try{
       const r=await sbc.storage.from('dossiers-periscolaire').createSignedUrl(e.path,3600,{download:e.file||true});
-      if(r.error||!r.data){ alert('Indisponible.'); return; }
+      if(r.error||!r.data){ await bobAlert('Indisponible.'); return; }
       const a=document.createElement('a'); a.href=r.data.signedUrl; a.download=e.file||''; document.body.appendChild(a); a.click(); a.remove();
-    }catch(e2){ alert('Indisponible.'); }
+    }catch(e2){ await bobAlert('Indisponible.'); }
   };
-  window.docsPeriUploadAll=function(){
-    if(!canWrite){ alert('Réservé au bureau.'); return; }
+  window.docsPeriUploadAll=async function(){
+    if(!canWrite){ await bobAlert('Réservé au bureau.'); return; }
     const inp=document.createElement('input'); inp.type='file'; inp.multiple=true;
     inp.onchange=async function(){
       const files=inp.files?Array.from(inp.files):[]; if(!files.length) return;
@@ -9272,8 +9281,8 @@ renderAll();
     var checklist='<div class="card" style="border-top:3px solid var(--brand);margin:0 0 14px"><div style="font-weight:700;font-size:14px;margin-bottom:4px">📋 Les 8 pièces de subvention <span class="muted" style="font-weight:400;font-size:12px">('+_ok+'/8 déposées)</span></div><p class="hint" style="margin:0 0 8px">Les pièces que la Ville redemande à <b>chaque</b> campagne. Dépose-les dans le coffre ci-dessous : elles se cochent <b>toutes seules</b> d\'après le nom du fichier — vérifie d\'un œil.</p>'+_items+'</div>';
     box.innerHTML=checklist+up+rows;
   };
-  window.docsOffUpload=function(){
-    if(!canWrite){ alert('Réservé au bureau.'); return; }
+  window.docsOffUpload=async function(){
+    if(!canWrite){ await bobAlert('Réservé au bureau.'); return; }
     const inp=document.createElement('input'); inp.type='file'; inp.multiple=true; inp.accept='.pdf,image/*';
     inp.onchange=async function(){
       const files=inp.files?Array.from(inp.files):[]; if(!files.length) return;
@@ -9305,17 +9314,17 @@ renderAll();
     inp.click();
   };
   window.docsOffView=async function(id){
-    const d=((window.db&&db.docsOff)||[]).find(function(x){return x.id===id;}); if(!d||!d.path){ alert('Document introuvable.'); return; }
-    try{ const r=await sbc.storage.from('gouvernance').createSignedUrl(d.path,3600); if(r.error||!r.data){ alert('Document indisponible.'); return; } docView(r.data.signedUrl,(d.file||d.label||'Document')); }catch(e){ alert('Document indisponible.'); }
+    const d=((window.db&&db.docsOff)||[]).find(function(x){return x.id===id;}); if(!d||!d.path){ await bobAlert('Document introuvable.', {titre:'⚠️ Erreur'}); return; }
+    try{ const r=await sbc.storage.from('gouvernance').createSignedUrl(d.path,3600); if(r.error||!r.data){ await bobAlert('Document indisponible.', {titre:'⚠️ Erreur'}); return; } docView(r.data.signedUrl,(d.file||d.label||'Document')); }catch(e){ await bobAlert('Document indisponible.'); }
   };
   window.docsOffDownload=async function(id){
-    const d=((window.db&&db.docsOff)||[]).find(function(x){return x.id===id;}); if(!d||!d.path){ alert('Document introuvable.'); return; }
-    try{ const r=await sbc.storage.from('gouvernance').createSignedUrl(d.path,3600,{download:d.file||true}); if(r.error||!r.data){ alert('Document indisponible.'); return; } const a=document.createElement('a'); a.href=r.data.signedUrl; a.download=d.file||''; document.body.appendChild(a); a.click(); a.remove(); }catch(e){ alert('Document indisponible.'); }
+    const d=((window.db&&db.docsOff)||[]).find(function(x){return x.id===id;}); if(!d||!d.path){ await bobAlert('Document introuvable.', {titre:'⚠️ Erreur'}); return; }
+    try{ const r=await sbc.storage.from('gouvernance').createSignedUrl(d.path,3600,{download:d.file||true}); if(r.error||!r.data){ await bobAlert('Document indisponible.', {titre:'⚠️ Erreur'}); return; } const a=document.createElement('a'); a.href=r.data.signedUrl; a.download=d.file||''; document.body.appendChild(a); a.click(); a.remove(); }catch(e){ await bobAlert('Document indisponible.'); }
   };
   window.docsOffDel=async function(id){
-    if(!canWrite){ alert('Réservé au bureau.'); return; }
+    if(!canWrite){ await bobAlert('Réservé au bureau.'); return; }
     const d=((window.db&&db.docsOff)||[]).find(function(x){return x.id===id;}); if(!d) return;
-    if(!confirm('Supprimer « '+((d.label||d.file)||'')+' » du coffre ? (définitif)')) return;
+    if(!await bobConfirm('Supprimer « '+((d.label||d.file)||'')+' » du coffre ? (définitif)', {titre:'Supprimer ?', ok:'Supprimer', danger:true})) return;
     try{ if(d.path) await sbc.storage.from('gouvernance').remove([d.path]); }catch(e){}
     db.docsOff=((window.db&&db.docsOff)||[]).filter(function(x){return x.id!==id;});
     save(); schedulePush(); window.renderDocsOff();
