@@ -9583,7 +9583,18 @@ renderAll();
         try{
           const safe=(f.name||'document').replace(/[^A-Za-z0-9._-]/g,'_');
           const path=myAsso+'/officiels/'+userId+'-'+Date.now()+'-'+safe;
-          const upr=await sbc.storage.from('gouvernance').upload(path,f,{upsert:true,contentType:f.type||'application/octet-stream'});
+          /* 🔴 16/08/2026 — L'ENCODAGE SE DÉCLARE, SINON LES ACCENTS SE CASSENT ==============
+             Le navigateur annonce « text/html » TOUT COURT pour un fichier .html : aucune
+             indication d'encodage. Servi ainsi, le contenu est relu en Latin-1 et
+             « Récolement du coffre » devient « RÃ©colement du coffre Â« … Â» ». Mesuré sur le
+             premier dépôt réel. Les notes déjà dans le coffre, déposées par script, portent
+             « text/html; charset=utf-8 » et s'affichent bien : on s'aligne sur elles.
+             Vaut pour TOUT type texte, pas seulement le HTML. */
+          const _ct=(function(t){
+            if(!t) return 'application/octet-stream';
+            return (/^text\//.test(t) && t.indexOf('charset')<0) ? t+'; charset=utf-8' : t;
+          })(f.type);
+          const upr=await sbc.storage.from('gouvernance').upload(path,f,{upsert:true,contentType:_ct});
           if(upr.error){ skip.push(f.name+' — '+upr.error.message); continue; }
           lignes.push({id:uid(),cat:cat,label:(f.name||'').replace(/\.[^.]+$/,''),file:f.name,path:path,structureId:_structureId,ts:new Date().toISOString()});
         }catch(e){ skip.push(f.name); }
