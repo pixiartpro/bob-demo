@@ -9337,8 +9337,10 @@ renderAll();
     inp.onchange=async function(){
       const files=inp.files?Array.from(inp.files):[]; if(!files.length) return;
       const uid=(myProfile&&myProfile.id)||((await sbc.auth.getUser()).data.user.id);
-      if(!db.docsPeri) db.docsPeri={};
-      let ok=0; const skip=[];
+      /* 🔴 Même règle qu'aux documents officiels : on accumule en local, on range en UNE fois.
+         Sans ça, un rechargement du coffre tombant au milieu de la série faisait disparaître
+         les modèles déjà rangés, et Bob les comptait quand même comme déposés. */
+      const aRanger={}; const skip=[];
       for(const f of files){
         const d=DOCSPERI.find(function(x){return x.file===f.name;});
         if(!d){ skip.push(f.name); continue; }
@@ -9346,10 +9348,16 @@ renderAll();
           const path=myAsso+'/'+uid+'/modeles-peri/'+d.file;
           const up=await sbc.storage.from('dossiers-periscolaire').upload(path, f, {upsert:true, contentType:f.type||'application/octet-stream'});
           if(up.error){ skip.push(f.name+' — '+up.error.message); continue; }
-          db.docsPeri[d.k]={path:path, file:d.file, ts:new Date().toISOString()}; ok++;
+          aRanger[d.k]={path:path, file:d.file, ts:new Date().toISOString()};
         }catch(e){ skip.push(f.name); }
       }
-      save(); schedulePush(); window.renderDocsPeri();
+      const ok=Object.keys(aRanger).length;
+      if(ok){
+        if(!db.docsPeri || typeof db.docsPeri!=='object') db.docsPeri={};   // le coffre d'AUJOURD'HUI
+        Object.assign(db.docsPeri, aRanger);
+        save(); schedulePush();
+      }
+      window.renderDocsPeri();
       alert('✅ '+ok+' document(s) déposé(s).'+(skip.length?'\n\nNon reconnus (nom différent) :\n- '+skip.join('\n- '):''));
     };
     inp.click();
@@ -9490,20 +9498,32 @@ renderAll();
         if(!isNaN(_n) && _structs[_n-1]) _structureId=_structs[_n-1].id;
       }
       let userId; try{ userId=(myProfile&&myProfile.id)||((await sbc.auth.getUser()).data.user.id); }catch(e){ userId='x'; }
-      if(!Array.isArray(db.docsOff)) db.docsOff=[];
-      let ok=0; const skip=[];
+      /* 🔴 ON N'ÉCRIT DANS LE COFFRE QU'À LA FIN, EN UNE FOIS ================================
+         Chaque tour de boucle attend l'envoi du fichier — une attente réseau, sans fenêtre à
+         l'écran, que le rechargement automatique du coffre ne retient pas. Les lignes ajoutées
+         AVANT ce rechargement l'étaient dans un tableau devenu orphelin : le fichier partait
+         bien au coffre-fort, mais sa ligne disparaissait, pendant que Bob annonçait « ✅ 3
+         documents déposés ». Une pièce de dossier de subvention présente et introuvable.
+         Et si le coffre qui arrivait n'avait pas encore de rubrique documents, l'ajout cassait
+         et le fichier était compté « non déposé » — alors qu'il l'était. L'erreur inverse.
+         On accumule donc les lignes ICI, en local, et on les range en une seule fois. */
+      const lignes=[]; const skip=[];
       for(const f of files){
         try{
           const safe=(f.name||'document').replace(/[^A-Za-z0-9._-]/g,'_');
           const path=myAsso+'/officiels/'+userId+'-'+Date.now()+'-'+safe;
           const upr=await sbc.storage.from('gouvernance').upload(path,f,{upsert:true,contentType:f.type||'application/octet-stream'});
           if(upr.error){ skip.push(f.name+' — '+upr.error.message); continue; }
-          db.docsOff.push({id:uid(),cat:cat,label:(f.name||'').replace(/\.[^.]+$/,''),file:f.name,path:path,structureId:_structureId,ts:new Date().toISOString()});
-          ok++;
+          lignes.push({id:uid(),cat:cat,label:(f.name||'').replace(/\.[^.]+$/,''),file:f.name,path:path,structureId:_structureId,ts:new Date().toISOString()});
         }catch(e){ skip.push(f.name); }
       }
-      save(); schedulePush(); window.renderDocsOff();
-      alert('✅ '+ok+' document(s) déposé(s) dans le coffre.'+(skip.length?'\n\nNon déposés :\n- '+skip.join('\n- '):''));
+      if(lignes.length){
+        if(!Array.isArray(db.docsOff)) db.docsOff=[];       // le coffre d'AUJOURD'HUI, relu ici
+        db.docsOff=db.docsOff.concat(lignes);               // concat, pour garder ce qu'un collègue vient d'y mettre
+        save(); schedulePush();
+      }
+      window.renderDocsOff();
+      alert('✅ '+lignes.length+' document(s) déposé(s) dans le coffre.'+(skip.length?'\n\nNon déposés :\n- '+skip.join('\n- '):''));
     };
     inp.click();
   };
