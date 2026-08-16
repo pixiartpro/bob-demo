@@ -9485,7 +9485,14 @@ renderAll();
   };
   window.docsOffUpload=async function(){
     if(!canWrite){ await bobAlert('Réservé au bureau.'); return; }
-    const inp=document.createElement('input'); inp.type='file'; inp.multiple=true; inp.accept='.pdf,image/*';
+    /* 🔴 16/08/2026 — Le coffre contenait déjà 5 notes en .html (PV, notes au CA, budget), et
+       docView sait parfaitement les afficher : il a une branche dédiée qui les ouvre dans un
+       cadre. Mais le sélecteur les REFUSAIT — impossible de déposer soi-même une note qu'on
+       vient d'écrire, alors qu'elle s'affiche très bien une fois dans le coffre. Les deux autres
+       écrans de dépôt de Bob acceptent déjà .doc/.docx ; celui-ci était le plus restrictif de
+       tous, pour le coffre qui en a le moins besoin. On aligne sur ce que la visionneuse
+       sait rendre. (La paie garde .pdf/image : ce sont des bulletins scannés, c'est voulu.) */
+    const inp=document.createElement('input'); inp.type='file'; inp.multiple=true; inp.accept='.pdf,image/*,.doc,.docx,.html,.htm';
     inp.onchange=async function(){
       const files=inp.files?Array.from(inp.files):[]; if(!files.length) return;
       const cat=(prompt('Type de document ? (Convention, PV, Statuts, Autre)','Convention')||'Document').trim()||'Document';
