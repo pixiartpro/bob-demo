@@ -2897,25 +2897,38 @@ function load(){ try{ return Object.assign(blank(), JSON.parse(localStorage.getI
 function blank(){ return {members:[],ops:[],projects:[],subventions:[],comptes:[],contacts:[],liens:[],docs:[],notes:[],echeances:[],demarches:[],reunions:[],incidents:[],dettes:[],recurrents:{},protocoles:[],contrats:[],accueilIntro:'',accompNotes:'',rhOrgCible:'',projetMission:'',projetValeurs:'',projetOrientations:'',orga:null,projetAdosSuivi:'',assurance:{},periscolaire:{enfants:[]},capoints:[],coffreHtml:{}}; }
 function save(){ jLog(); localStorage.setItem(KEY, JSON.stringify(db)); renderAll(); }
 
-/* ---- Historique (journal d'activité automatique, onglet réservé au bureau) ---- */
+/* ---- LA CARTE DES LISTES — une seule, partagée -------------------------------------------
+   Elle décrit chaque liste du coffre. Deux consommateurs à ce jour :
+     · le journal d'activité (historique, onglet réservé au bureau) ;
+     · la recherche dans une liste (bobFiltre/bobListe, plus bas).
+   🔴 `j:1` = LE JOURNAL SUIT CETTE LISTE. Le marqueur est là parce que jSnap/jLog bouclent sur
+   toute la carte : sans lui, déclarer une liste POUR LA RECHERCHE la ferait entrer d'office dans
+   l'historique du bureau — un changement de comportement que personne n'aurait demandé, et
+   invisible tant qu'on ne relit pas le journal. Le périmètre du journal se décide donc ligne à
+   ligne, jamais par effet de bord. Les 16 entrées ci-dessous sont celles qu'il suivait déjà.
+   Colonnes : lbl (une entrée au singulier) · f (accord féminin) · mod (le module, tel qu'écrit
+   dans le journal) · name(x) (comment nommer une entrée) · tab (l'onglet) · cherche (les champs
+   sur lesquels on cherche). Aucun mot propre à un client : que des noms de champs techniques. */
 const J_COLLS={
-  members:{lbl:'Adhérent',mod:'Adhérents',name:x=>x.name},
-  ops:{lbl:'Opération',f:1,mod:'Comptabilité',name:x=>x.label},
-  projects:{lbl:'Projet',mod:'Projets',name:x=>x.name,tab:'projects',cherche:['name','status']},
-  subventions:{lbl:'Subvention',f:1,mod:'Subventions',name:x=>x.name,tab:'subventions',cherche:['name','structure','site','action','statut']},
-  contacts:{lbl:'Contact',mod:'Répertoire',name:x=>x.name},
-  liens:{lbl:'Lien',mod:'Répertoire',name:x=>x.label},
-  docs:{lbl:'Document',mod:'Secrétariat',name:x=>x.label||x.type},
-  notes:{lbl:'Note',f:1,mod:'Secrétariat',name:x=>(x.text||'').slice(0,50),tab:'secretariat',cherche:['text']},
-  echeances:{lbl:'Échéance',f:1,mod:'Secrétariat',name:x=>x.label},
-  reunions:{lbl:'Réunion',f:1,mod:'Secrétariat',name:x=>(x.type||'Réunion')+(x.date?' du '+fmtDate(x.date):'')},
-  incidents:{lbl:'Événement',mod:'Événements',name:x=>(x.type||'Événement')+(x.date?' du '+fmtDate(x.date):'')},
-  dettes:{lbl:'Dette/créance',f:1,mod:'Dettes & créances',name:x=>x.label||x.tiers},
-  salaries:{lbl:'Salaire',mod:'Masse salariale',name:x=>x.name},
-  contratsTravail:{lbl:'Contrat de travail',mod:'Équipe',name:x=>(x.salarie||'')+(x.type?' ('+x.type+')':'')},
-  contrats:{lbl:"Statut d'emploi",mod:'Équipe',name:x=>x.type},
-  protocoles:{lbl:'Protocole',mod:'Équipe',name:x=>x.titre}
+  members:{j:1,lbl:'Adhérent',mod:'Adhérents',name:x=>x.name},
+  ops:{j:1,lbl:'Opération',f:1,mod:'Comptabilité',name:x=>x.label},
+  projects:{j:1,lbl:'Projet',mod:'Projets',name:x=>x.name,tab:'projects',cherche:['name','status']},
+  subventions:{j:1,lbl:'Subvention',f:1,mod:'Subventions',name:x=>x.name,tab:'subventions',cherche:['name','structure','site','action','statut']},
+  contacts:{j:1,lbl:'Contact',mod:'Répertoire',name:x=>x.name},
+  liens:{j:1,lbl:'Lien',mod:'Répertoire',name:x=>x.label},
+  docs:{j:1,lbl:'Document',mod:'Secrétariat',name:x=>x.label||x.type},
+  notes:{j:1,lbl:'Note',f:1,mod:'Secrétariat',name:x=>(x.text||'').slice(0,50),tab:'secretariat',cherche:['text']},
+  echeances:{j:1,lbl:'Échéance',f:1,mod:'Secrétariat',name:x=>x.label},
+  reunions:{j:1,lbl:'Réunion',f:1,mod:'Secrétariat',name:x=>(x.type||'Réunion')+(x.date?' du '+fmtDate(x.date):'')},
+  incidents:{j:1,lbl:'Événement',mod:'Événements',name:x=>(x.type||'Événement')+(x.date?' du '+fmtDate(x.date):'')},
+  dettes:{j:1,lbl:'Dette/créance',f:1,mod:'Dettes & créances',name:x=>x.label||x.tiers},
+  salaries:{j:1,lbl:'Salaire',mod:'Masse salariale',name:x=>x.name},
+  contratsTravail:{j:1,lbl:'Contrat de travail',mod:'Équipe',name:x=>(x.salarie||'')+(x.type?' ('+x.type+')':'')},
+  contrats:{j:1,lbl:"Statut d'emploi",mod:'Équipe',name:x=>x.type},
+  protocoles:{j:1,lbl:'Protocole',mod:'Équipe',name:x=>x.titre}
 };
+/* Le périmètre du journal, lu au même endroit par jSnap et par jLog. */
+const jSuivi=k=>!!(J_COLLS[k]&&J_COLLS[k].j);
 const J_LISTS={comptes:{lbl:'Compte comptable'},sites:{lbl:'Site'},actions:{lbl:'Action',f:1},cats:{lbl:'Catégorie',f:1},typesAdh:{lbl:"Type d'adhésion"}};
 const J_NESTED={}; /* 16/08/2026 : le panneau « Enfants inscrits » du périscolaire a été retiré (jamais utilisé, doublon des Dossiers familles) — plus rien n'écrit dans periscolaire.enfants */
 /* ---- 🔎 CHERCHER DANS UNE LISTE — brique UNIQUE, pilotée par la carte ci-dessus ----------
@@ -2958,7 +2971,7 @@ const jAcc=(f,verbe)=>verbe+(f?'e':'');
 let _jPrev=null;
 function jSnap(){
   const s={};
-  for(const k in J_COLLS){ const m={}; (db[k]||[]).forEach(it=>{ if(it&&it.id) m[it.id]=JSON.stringify(it); }); s[k]=m; }
+  for(const k in J_COLLS){ if(!jSuivi(k)) continue; const m={}; (db[k]||[]).forEach(it=>{ if(it&&it.id) m[it.id]=JSON.stringify(it); }); s[k]=m; }
   for(const k in J_LISTS){ s['#'+k]=(db[k]||[]).slice(); }
   for(const k in J_NESTED){ const m={}; jNestedArr(k).forEach(it=>{ if(it&&it.id) m[it.id]=JSON.stringify(it); }); s['@'+k]=m; }
   return s;
@@ -2968,6 +2981,7 @@ function jLog(){
   if(!_jPrev){ _jPrev=jSnap(); return; }
   const now=jSnap(), entries=[];
   for(const k in J_COLLS){
+    if(!jSuivi(k)) continue;
     const prev=_jPrev[k]||{}, cur=now[k]||{}, C=J_COLLS[k];
     for(const id in cur){
       if(!(id in prev)) entries.push(jEntry(C.mod,'➕ '+C.lbl+' '+jAcc(C.f,'ajouté')+' : '+(C.name(JSON.parse(cur[id]))||'(sans nom)')));
