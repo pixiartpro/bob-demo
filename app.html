@@ -890,6 +890,7 @@
          sinon on lit deux listes de « projets » sans comprendre ce qui les sépare. -->
     <h2 style="margin:22px 0 2px">🧭 Les projets que porte le bureau</h2>
     <p class="hint" style="margin:0 0 12px">Le cadre de l'association : ce qu'elle a décidé de mener, avec son budget et ses dépenses reliées.</p>
+    <div class="toolbar" style="margin:0 0 10px"><input id="flt_projects" type="search" placeholder="🔎 Rechercher un projet…" oninput="renderProjects()" aria-label="Rechercher un projet" style="max-width:260px"></div>
     <div id="projectList"></div>
 
     <!-- 🎬 08/08/2026 — signalé par Guillaume : « on ne voit pas les projets, par exemple celui
@@ -944,7 +945,8 @@
       <div id="echeancier"></div>
     </div>
     <div class="panel">
-      <h2 style="margin:0 0 12px">Suivi des subventions</h2>
+      <div class="toolbar" style="margin:0 0 12px"><h2 style="margin:0">Suivi des subventions</h2>
+        <input id="flt_subventions" type="search" placeholder="🔎 Rechercher…" oninput="renderSubventions()" aria-label="Rechercher une subvention" style="max-width:240px"></div>
       <div style="overflow-x:auto;-webkit-overflow-scrolling:touch"><table style="min-width:900px"><thead><tr><th>Subvention</th><th>Financeur</th><th>Site / Action</th><th class="num">Demandé</th><th class="num">Accordé</th><th class="num">Versé</th><th>Statut</th><th></th></tr></thead>
         <tbody id="subRows"></tbody></table></div>
     </div>
@@ -1641,7 +1643,8 @@
         <div class="field"><label>Nouvelle note</label><input id="n_text" placeholder="Ex. Relancer la Mairie pour la convention" onkeydown="if(event.key==='Enter')addNote()"></div>
         <div class="field" style="flex:0"><label>&nbsp;</label><button class="btn" onclick="addNote()">＋ Ajouter</button></div>
       </div>
-      <div id="noteList" style="margin-top:12px"></div>
+      <div class="toolbar" style="margin-top:12px"><input id="flt_notes" type="search" placeholder="🔎 Rechercher dans les notes…" oninput="renderSecretariat()" aria-label="Rechercher une note" style="max-width:260px"></div>
+      <div id="noteList" style="margin-top:8px"></div>
     </div>
     <div class="panel" style="border:2px solid var(--brand)">
       <h2>📅 Échéancier général</h2>
@@ -2898,12 +2901,12 @@ function save(){ jLog(); localStorage.setItem(KEY, JSON.stringify(db)); renderAl
 const J_COLLS={
   members:{lbl:'Adhérent',mod:'Adhérents',name:x=>x.name},
   ops:{lbl:'Opération',f:1,mod:'Comptabilité',name:x=>x.label},
-  projects:{lbl:'Projet',mod:'Projets',name:x=>x.name},
-  subventions:{lbl:'Subvention',f:1,mod:'Subventions',name:x=>x.name},
+  projects:{lbl:'Projet',mod:'Projets',name:x=>x.name,tab:'projects',cherche:['name','status']},
+  subventions:{lbl:'Subvention',f:1,mod:'Subventions',name:x=>x.name,tab:'subventions',cherche:['name','structure','site','action','statut']},
   contacts:{lbl:'Contact',mod:'Répertoire',name:x=>x.name},
   liens:{lbl:'Lien',mod:'Répertoire',name:x=>x.label},
   docs:{lbl:'Document',mod:'Secrétariat',name:x=>x.label||x.type},
-  notes:{lbl:'Note',f:1,mod:'Secrétariat',name:x=>(x.text||'').slice(0,50)},
+  notes:{lbl:'Note',f:1,mod:'Secrétariat',name:x=>(x.text||'').slice(0,50),tab:'secretariat',cherche:['text']},
   echeances:{lbl:'Échéance',f:1,mod:'Secrétariat',name:x=>x.label},
   reunions:{lbl:'Réunion',f:1,mod:'Secrétariat',name:x=>(x.type||'Réunion')+(x.date?' du '+fmtDate(x.date):'')},
   incidents:{lbl:'Événement',mod:'Événements',name:x=>(x.type||'Événement')+(x.date?' du '+fmtDate(x.date):'')},
@@ -2915,6 +2918,41 @@ const J_COLLS={
 };
 const J_LISTS={comptes:{lbl:'Compte comptable'},sites:{lbl:'Site'},actions:{lbl:'Action',f:1},cats:{lbl:'Catégorie',f:1},typesAdh:{lbl:"Type d'adhésion"}};
 const J_NESTED={}; /* 16/08/2026 : le panneau « Enfants inscrits » du périscolaire a été retiré (jamais utilisé, doublon des Dossiers familles) — plus rien n'écrit dans periscolaire.enfants */
+/* ---- 🔎 CHERCHER DANS UNE LISTE — brique UNIQUE, pilotée par la carte ci-dessus ----------
+   17/08/2026. Trois écrans (Subventions, Projets, Mémo du bureau) n'offraient AUCUN moyen de
+   chercher. Mesuré le même jour : 1 864 entrées dans le coffre du CASE pour 7 champs de filtre
+   en tout, chacun écrit à la main et à sa façon. Plutôt qu'un 8e exemplaire, la LISTE déclare
+   (juste au-dessus) ce sur quoi on la cherche — `cherche` — et l'écran où elle vit — `tab`.
+   Le filtrage lui-même n'est écrit qu'ICI, une fois.
+   Câblage d'un écran : un champ id="flt_<clé de la liste>", et sa fonction de rendu passe sa
+   source par bobListe(). Rien d'autre.
+   SaaS : la carte ne contient que des NOMS DE CHAMPS techniques — aucun mot, aucun nom, aucun
+   réglage propre à un client. Une asso qui n'a pas la liste n'a simplement pas l'écran. */
+function bobFiltre(cle){
+  const el=document.getElementById('flt_'+cle);
+  const q=faqNorm(el?el.value:'');
+  if(!q) return null;                                  // null = aucun filtre actif
+  const champs=((J_COLLS[cle]||{}).cherche)||[];
+  if(!champs.length) return null;                      // liste non déclarée : on ne filtre RIEN plutôt que tout cacher
+  return it=>{
+    if(!it) return false;
+    let hay='';
+    champs.forEach(f=>{ const v=it[f]; if(v!=null) hay+=' '+(typeof v==='object'?JSON.stringify(v):v); });
+    return faqNorm(hay).indexOf(q)>=0;
+  };
+}
+/* Rend {vus, total, filtre} — le `total` sert à ce que l'écran vide dise HONNÊTEMENT pourquoi
+   il l'est : « rien d'enregistré » et « rien qui corresponde » sont deux causes différentes.
+   (C'est exactement le défaut corrigé le matin même sur l'écran Aide.) */
+function bobListe(cle, source){
+  const tout=Array.isArray(source)?source:[];
+  const f=bobFiltre(cle);
+  return {vus: f?tout.filter(f):tout, total: tout.length, filtre:!!f};
+}
+function bobRienTrouve(cle){
+  const el=document.getElementById('flt_'+cle);
+  return 'Rien ne correspond à « '+esc(el?el.value:'')+' ».';
+}
 function jNestedArr(path){ let o=db; for(const k of path.split('.')){ if(o==null) return []; o=o[k]; } return Array.isArray(o)?o:[]; }
 const jAcc=(f,verbe)=>verbe+(f?'e':'');
 let _jPrev=null;
@@ -5145,11 +5183,12 @@ function projSpent(id){ return db.ops.filter(o=>o.project===id&&o.type==='out').
 function projIn(id){ return db.ops.filter(o=>o.project===id&&o.type==='in').reduce((s,o)=>s+o.amount,0); }
 function renderProjects(){
   const el=$('projectList');
-  if(!db.projects.length){ el.innerHTML='<div class="panel"><div class="empty">Aucun projet pour le moment.</div></div>'; return; }
+  const LP=bobListe('projects',db.projects);
+  if(!LP.vus.length){ el.innerHTML='<div class="panel"><div class="empty">'+(LP.filtre?bobRienTrouve('projects'):'Aucun projet pour le moment.')+'</div></div>'; return; }
   window._projOpen = window._projOpen || {};
   const people=[...new Set((db.members||[]).map(m=>m.name).filter(Boolean))];
   const dl='<datalist id="dlProjPeople">'+people.map(n=>`<option value="${esc(n)}">`).join('')+'</datalist>';
-  el.innerHTML = dl + db.projects.map(p=>{
+  el.innerHTML = dl + LP.vus.map(p=>{
     p.team=p.team||[]; p.tasks=p.tasks||[]; p.discussion=p.discussion||[];
     const spent=projSpent(p.id), inc=projIn(p.id), pct=p.budget>0?Math.min(100,Math.round(spent/p.budget*100)):0;
     const over=p.budget>0&&spent>p.budget;
@@ -5573,9 +5612,12 @@ function renderSubventions(){
     + kpi('Reste à percevoir',euro(reste),reste>0?'amber':'','accordé non encore versé');
   renderGuySoldes();
   const tb=$('subRows');
-  if(!subs.length){ tb.innerHTML='<tr><td colspan="8" class="empty">Aucune subvention enregistrée.</td></tr>'; return; }
+  /* Les KPI ci-dessus restent calculés sur TOUTES les subventions : un total qui change pendant
+     qu'on tape n'est plus un total. Seul le tableau se filtre. */
+  const L=bobListe('subventions',subs);
+  if(!L.vus.length){ tb.innerHTML='<tr><td colspan="8" class="empty">'+(L.filtre?bobRienTrouve('subventions'):'Aucune subvention enregistrée.')+'</td></tr>'; return; }
   const pill=st=> st==='Versée'?'<span class="pill ok">Versée</span>':st==='Accordée'?'<span class="pill wait">Accordée</span>':st==='Refusée'?'<span class="pill no">Refusée</span>':'<span class="pill" style="background:#eef0f5;color:#6b7488">Demandée</span>';
-  tb.innerHTML=subs.slice().sort((a,b)=>(b.demande||0)-(a.demande||0)).map(s=>`<tr${s.refusee?' style="opacity:.55"':''}>
+  tb.innerHTML=L.vus.slice().sort((a,b)=>(b.demande||0)-(a.demande||0)).map(s=>`<tr${s.refusee?' style="opacity:.55"':''}>
     <td><strong>${esc(s.name)}</strong></td><td>${esc(s.structure||'—')}</td>
     <td style="font-size:13px" class="muted">${esc(s.site||'—')}${(s.repartition&&s.repartition.length)?'<br>🎯 '+s.repartition.map(r=>esc((r.action||'?')+' ('+euro(r.montant||0)+')')).join(', '):(s.action?'<br>'+esc(s.action):'')}</td>
     <td class="num">${euro(s.demande||0)}</td><td class="num">${euro(s.accorde||0)}</td>
@@ -6074,11 +6116,11 @@ function lancerDemarche(libId){ var d=DEMARCHES_LIB.find(function(x){return x.id
 function toggleDemEtape(instId,i){ var inst=(db.demarches||[]).find(function(x){return x.id===instId;}); if(!inst)return; inst.etapes[i].fait=!inst.etapes[i].fait; save(); }
 function supprDemarche(instId){ var inst=(db.demarches||[]).find(function(x){return x.id===instId;}); if(!inst)return; if(!confirm('Retirer cette démarche en cours ? Le rappel dans l’échéancier reste (tu peux le supprimer là-bas).'))return; db.demarches=db.demarches.filter(function(x){return x.id!==instId;}); save(); }
 function renderSecretariat(){
-  const ns=db.notes||[];
-  $('noteList').innerHTML = ns.length ? ns.slice().sort((a,b)=>(a.done-b.done)).map(n=>`<div class="kv">
+  const ns=bobListe('notes',db.notes);
+  $('noteList').innerHTML = ns.vus.length ? ns.vus.slice().sort((a,b)=>(a.done-b.done)).map(n=>`<div class="kv">
     <span style="${n.done?'text-decoration:line-through;opacity:.55':''}"><input type="checkbox" ${n.done?'checked':''} onclick="toggleNote('${n.id}')"> ${esc(n.text)}</span>
     <button class="danger" onclick="delNote('${n.id}')">Suppr.</button></div>`).join('')
-    : '<p class="hint" style="margin:0">Aucune note pour le moment.</p>';
+    : '<p class="hint" style="margin:0">'+(ns.filtre?bobRienTrouve('notes'):'Aucune note pour le moment.')+'</p>';
   const es=(db.echeances||[]).map(e=>({e,d:gEcheance(e)})).filter(x=>x.d).sort((a,b)=>a.d-b.d);
   const noDate=(db.echeances||[]).filter(e=>!e.date);
   $('echeanceList').innerHTML = (es.length||noDate.length) ?
