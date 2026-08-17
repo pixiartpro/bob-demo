@@ -1598,6 +1598,7 @@
     <div class="panel" id="docsOffPanel">
       <h2>📁 Documents officiels &amp; conventions</h2>
       <p class="hint">Les documents officiels de l'association (conventions CAF / Mairie, PV signés, statuts…) déposés dans le <strong>coffre privé</strong> : visibles seulement une fois connecté, jamais sur le site public. PDF, scan, photo, Word ou note écrite dans Bob.</p>
+      <div class="toolbar" style="margin:0 0 10px"><input id="flt_docsOff" type="search" placeholder="🔎 Rechercher un document…" aria-label="Rechercher un document officiel" oninput="window.renderDocsOff()" style="max-width:260px"></div>
       <div id="docsOffBox"><p class="hint">Chargement…</p></div>
     </div>
     <div class="panel" id="structuresPanel" style="border:2px solid var(--brand)">
@@ -2538,6 +2539,7 @@
         <select id="act_f_qui" onchange="renderActions()" style="min-width:130px"><option value="">Tout le monde</option></select>
         <select id="act_f_origine" onchange="renderActions()" style="min-width:150px"><option value="">Toutes les origines</option></select>
         <label style="display:flex;align-items:center;gap:6px;font-size:13px"><input type="checkbox" id="act_f_masquer" onchange="renderActions()" checked> masquer les actions faites</label>
+        <input id="flt_actionsSuivi" type="search" placeholder="🔎 Rechercher…" oninput="renderActions()" aria-label="Rechercher une action" style="max-width:220px">
       </div>
       <div style="overflow-x:auto;-webkit-overflow-scrolling:touch"><table style="margin-top:8px;min-width:900px"><thead><tr><th>Action</th><th style="width:120px">Qui</th><th style="width:130px">Pour quand</th><th style="width:130px">Statut</th><th style="width:100px">Priorité</th><th>Note</th><th style="width:44px"></th></tr></thead>
         <tbody id="actionsRows"></tbody></table></div>
@@ -2925,7 +2927,14 @@ const J_COLLS={
   salaries:{j:1,lbl:'Salaire',mod:'Masse salariale',name:x=>x.name},
   contratsTravail:{j:1,lbl:'Contrat de travail',mod:'Équipe',name:x=>(x.salarie||'')+(x.type?' ('+x.type+')':'')},
   contrats:{j:1,lbl:"Statut d'emploi",mod:'Équipe',name:x=>x.type},
-  protocoles:{j:1,lbl:'Protocole',mod:'Équipe',name:x=>x.titre}
+  protocoles:{j:1,lbl:'Protocole',mod:'Équipe',name:x=>x.titre},
+  /* Déclarées POUR LA RECHERCHE seulement — pas de `j`, donc le journal ne les suit pas (il ne
+     les suivait pas hier non plus : les déclarer ne change rien à l'historique).
+     Choisies sur mesure et non au jugé : ce sont les deux seules listes non déclarées assez
+     longues pour qu'on s'y perde (17/08/2026 — 118 et 34 entrées au CASE, 12 et 0 chez la 2e
+     asso ; les neuf autres candidates plafonnent à 10, dont trois vides partout). */
+  actionsSuivi:{lbl:'Action',f:1,mod:'Suivi',name:x=>x.sujet,tab:'suivi',cherche:['sujet','note','qui','origine','statut']},
+  docsOff:{lbl:'Document officiel',mod:'Documents officiels',name:x=>x.label||x.file,tab:'periscolaire',cherche:['label','file','cat']}
 };
 /* Le périmètre du journal, lu au même endroit par jSnap et par jLog. */
 const jSuivi=k=>!!(J_COLLS[k]&&J_COLLS[k].j);
@@ -7771,6 +7780,7 @@ function renderActions(){
   if(fo){ const v=fo.value; fo.innerHTML='<option value="">Toutes les origines</option>'+org.map(x=>'<option '+(x===v?'selected':'')+'>'+esc(x)+'</option>').join(''); }
   const fs=($('act_f_statut')||{}).value||'', fqv=($('act_f_qui')||{}).value||'', fov=($('act_f_origine')||{}).value||'', masq=($('act_f_masquer')||{}).checked;
   let a=all.filter(it=>(!fs||it.statut===fs)&&(!fqv||it.qui===fqv)&&(!fov||it.origine===fov)&&(!masq||it.statut!=='Fait'||fs==='Fait'));
+  const ftxt=bobFiltre('actionsSuivi'); if(ftxt) a=a.filter(ftxt);   // la recherche libre s'AJOUTE aux quatre listes déroulantes, elle ne les remplace pas
   /* tri : en retard d'abord, puis par échéance, puis par priorité */
   const rangP=p=>ACT_PRIOS.indexOf(p||'🟠 Moyenne');
   a=a.slice().sort((x,y)=>{
@@ -9562,7 +9572,8 @@ renderAll();
   // === Documents officiels & conventions (coffre prive « gouvernance ») ===
   window.renderDocsOff=function(){
     const box=$('docsOffBox'); if(!box) return;
-    const list=coffreListe('docsOff');
+    const L=bobListe('docsOff',coffreListe('docsOff'));
+    const list=L.vus;
     const up=canWrite?'<div style="margin:0 0 12px"><button class="btn" onclick="docsOffUpload()">⬆️ Déposer un document</button> <span class="muted" style="font-size:12px">— PDF, scan, photo, Word ou HTML ; tu peux en choisir plusieurs d\'un coup</span></div>':'';
     let rows;
     if(list.length){
@@ -9587,7 +9598,8 @@ renderAll();
         return '<tr><td style="padding:8px;border-top:1px solid #eee"><span class="pill" style="background:#fcf2de;color:#a9742a">'+esc(d.cat||'Document')+'</span></td><td style="padding:8px;border-top:1px solid #eee"><b>'+esc(d.label||d.file||'')+'</b>'+fmt+(src?' <span class="muted" style="font-size:12px">· 🏛️ '+esc(src)+'</span>':'')+dt+'</td><td style="padding:8px;border-top:1px solid #eee;text-align:right;white-space:nowrap"><button class="ghost btn" onclick="docsOffView(\''+d.id+'\')">👁️ Visualiser</button> <button class="ghost btn" onclick="docsOffDownload(\''+d.id+'\')">⬇️ Télécharger</button>'+del+'</td></tr>';
       }).join('')+'</tbody></table></div>';
     }else{
-      rows='<p class="empty" style="padding:10px 0">Aucun document officiel déposé pour l\'instant.'+(canWrite?' Clique « Déposer un document » pour ajouter une convention, un PV signé, les statuts…':'')+'</p>';
+      rows=L.filtre ? '<p class="empty" style="padding:10px 0">'+bobRienTrouve('docsOff')+'</p>'
+        : '<p class="empty" style="padding:10px 0">Aucun document officiel déposé pour l\'instant.'+(canWrite?' Clique « Déposer un document » pour ajouter une convention, un PV signé, les statuts…':'')+'</p>';
     }
     // Checklist auto-détectée des 8 pièces récurrentes de subvention (repère d'après le nom du document ; aide, pas un contrôle)
     var _n=function(s){return (s||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');};
