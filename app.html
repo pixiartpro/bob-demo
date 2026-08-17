@@ -3249,8 +3249,19 @@ function faqCard(item,open,sansCat){   /* sansCat (Lot 8) : dans un tiroir qui p
 }
 function renderFaqList(){
   const box=$('faqList'); if(!box) return;
-  /* Coffre pas chargé : on le DIT, plutôt qu'une aide vide qui ferait croire qu'elle n'existe pas. */
-  if(!FAQ.length){ box.innerHTML='<p class="hint" style="margin:6px 0">Les fiches d\'aide sont rangées dans le coffre, réservé au bureau. Si tu es connecté au bureau et que rien ne s\'affiche, recharge la page.</p>'; return; }
+  /* Coffre pas chargé : on le DIT, plutôt qu'une aide vide qui ferait croire qu'elle n'existe pas.
+     17/08/2026 — mais il y a DEUX causes derrière une liste vide, et le message n'en nommait
+     qu'une : « recharge la page ». Chez une asso qui n'a tout simplement pas encore de fiches
+     (BOKAF : la clé `faq` est absente de son coffre), ce conseil envoie le bureau recharger en
+     boucle un écran qui ne se remplira jamais. Le bureau LIT le coffre : si c'est lui qui est là
+     et que la liste est vide, la cause n'est pas la lecture, c'est qu'il n'y a rien d'écrit. */
+  if(!FAQ.length){
+    const bureau=!!(window.bobMe&&window.bobMe.canWrite);
+    box.innerHTML='<p class="hint" style="margin:6px 0">'+(bureau
+      ?'Aucune fiche d\'aide n\'est encore écrite pour cette association : le coffre est bien lu, mais sa liste d\'aide est vide. Tant qu\'il n\'y a pas de fiches, la recherche ci-dessus ne peut rien proposer.'
+      :'Les fiches d\'aide sont rangées dans le coffre, réservé au bureau. Si tu es connecté au bureau et que rien ne s\'affiche, recharge la page.')+'</p>';
+    return;
+  }
   /* Lot 8 (15/08/2026, additif/revertible) : la notice PAR ÉCRAN — ~180 questions à plat devenaient
      introuvables ; elles se rangent maintenant par onglet (un pli par écran, dans l'ordre du corpus),
      et la recherche Zanana au-dessus reste le chemin rapide.
@@ -3355,8 +3366,18 @@ function renderNews(){
   const el=$('newsList'); if(!el) return;
   const lus=newsLus();
   /* Coffre pas (encore) chargé : on le DIT, plutôt que d'afficher un panneau vide qui ferait
-     croire qu'il n'y a rien de neuf. */
-  if(!NEWS.length){ el.innerHTML='<p class="hint" style="margin:6px 0">Les nouveautés sont rangées dans le coffre, réservé au bureau. Si tu es connecté au bureau et que rien ne s\'affiche, recharge la page.</p>'; newsBadge(); return; }
+     croire qu'il n'y a rien de neuf.
+     17/08/2026 — même correction que pour les fiches d'aide, juste au-dessus : le bureau LIT le
+     coffre, donc s'il voit ce panneau vide, ce n'est pas un problème de lecture — c'est qu'aucune
+     carte n'est écrite pour cette association (cas de BOKAF, clé `news` absente de son coffre).
+     Lui dire « recharge la page » l'envoyait recharger un écran qui ne se remplira jamais. */
+  if(!NEWS.length){
+    const bureau=!!(window.bobMe&&window.bobMe.canWrite);
+    el.innerHTML='<p class="hint" style="margin:6px 0">'+(bureau
+      ?'Aucune nouveauté n\'est encore écrite pour cette association : le coffre est bien lu, mais sa liste de nouveautés est vide.'
+      :'Les nouveautés sont rangées dans le coffre, réservé au bureau. Si tu es connecté au bureau et que rien ne s\'affiche, recharge la page.')+'</p>';
+    newsBadge(); return;
+  }
   const vis=NEWS.filter(n=>(!n.asso || (window.bobEstLeCase && window.bobEstLeCase())) && (!window.bobTabVisible||window.bobTabVisible(n.tab)));
   const carte=n=>`<div class="kv" style="align-items:flex-start;padding:8px 0;border-bottom:1px solid #eef3ef">
     <span style="flex:1;min-width:0"><strong>${esc(n.titre)}</strong> <span class="pill ${lus.includes(n.id)?'ok':'no'}">${lus.includes(n.id)?'vu':'nouveau'}</span><br>
