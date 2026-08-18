@@ -16,7 +16,7 @@
 </style>
 <style>
   :root{
-    --vert:#1f9d6b; --vert-fonce:#0f6b46; --jaune:#f4b740; --ananas:#dc8f38;
+    --vert:#1f9d6b; --vert-fonce:#0f6b46;--vert-tresfonce:#0b5638; --jaune:#f4b740; --ananas:#dc8f38;
     --ciel:#cfeaf0; --ink:#16302a; --muted:#62756b;
     --bg:#fbfcf8; --card:#ffffff; --line:#e9efe9;
     --shadow:0 8px 28px rgba(16,60,40,.07); --shadow-lg:0 22px 50px rgba(16,60,40,.13);
@@ -52,8 +52,8 @@
   }
   .btn{display:inline-block;border:none;cursor:pointer;font:inherit;font-weight:800;text-decoration:none;
        padding:12px 20px;border-radius:999px;transition:.15s;font-size:15px}
-  .btn.primary{background:var(--vert);color:#fff;box-shadow:0 6px 16px rgba(31,157,107,.35)}
-  .btn.primary:hover{background:var(--vert-fonce);transform:translateY(-1px)}
+  .btn.primary{background:var(--vert-fonce);color:#fff;box-shadow:0 6px 16px rgba(31,157,107,.35)}
+  .btn.primary:hover{background:var(--vert-tresfonce);transform:translateY(-1px)}
   .btn.sun{background:var(--jaune);color:#5b4300}
   .btn.sun:hover{filter:brightness(.97);transform:translateY(-1px)}
   .btn.ghost{background:#fff;color:var(--vert);border:2px solid var(--vert)}
@@ -289,8 +289,8 @@
   <img class="slogo" src="logo.png" alt="">
   <div class="snom"><b>CASE</b><span>Bois de Nèfles</span></div>
   <a class="sitem" href="#accueil">Accueil</a>
-  <a class="sitem" href="#semaine">La semaine</a>
   <a class="sitem" href="#inscription-peri">S'inscrire</a>
+  <a class="sitem" href="#semaine">La semaine</a>
   <a class="sitem" href="#activites">Nos activités</a>
   <a class="sitem" href="#temps-forts">Les rendez-vous</a>
   <a class="sitem" href="la-maison.html">La maison &amp; le projet</a>
@@ -307,8 +307,8 @@
     <a href="#accueil" class="logo"><img src="logo.png" alt="CASE Bois de Nèfles" style="height:40px;width:auto;display:block"> <span><b>CASE</b> <span>Bois de Nèfles</span></span></a>
     <button class="burger" aria-label="Menu" onclick="document.querySelector('nav.main').classList.toggle('open')">☰</button>
     <nav class="main" onclick="if(event.target.tagName==='A')this.classList.remove('open')">
-      <a href="#semaine">La semaine</a>
       <a href="#inscription-peri">S'inscrire</a>
+      <a href="#semaine">La semaine</a>
       <a href="#activites">Nos activités</a>
       <a href="#temps-forts">Les rendez-vous</a>
       <a href="la-maison.html">La maison &amp; le projet</a>
@@ -335,6 +335,34 @@
 </section>
 <div class="insbar" id="insbar" hidden></div>
 <!-- LA SEMAINE AU CASE — agenda jour par jour -->
+<section class="block" id="inscription-peri" style="background:linear-gradient(135deg,#fff3da,#ffe7c4)">
+  <div class="wrap">
+    <p class="eyebrow">Rentrée d'août</p>
+    <h2 class="title"> Inscrivez vos enfants au périscolaire <span class="y">matin &amp; soir</span></h2>
+    <p style="text-align:center;margin:2px 0 0"><span class="badge" style="background:#e3f6ec;color:#0f6b46;border-color:#bfe6d0"> Nouveau — le périscolaire du matin dès la rentrée</span></p>
+    <p class="sub" style="max-width:720px">La rentrée, c'est le <b>mardi 18 août</b> — et les inscriptions sont déjà ouvertes. Le dépôt du dossier se fait dans votre <b>espace famille</b> : adhérez / connectez-vous, puis déposez vos pièces — vous pouvez les scanner directement depuis votre téléphone. Le <a href="reglement-periscolaire-2026-2027.pdf" style="color:var(--vert-fonce);font-weight:700">règlement intérieur 2026-2027</a> (adopté le 14 août 2026) est consultable en ligne.</p>
+    <div style="display:flex;gap:18px;flex-wrap:wrap;align-items:flex-start;margin-top:6px">
+      <div style="flex:1;min-width:260px;background:#fff;border:1px solid #f1e2ad;border-radius:16px;padding:16px 18px">
+        <b style="color:var(--vert-fonce)"> Pièces à fournir</b>
+        <ul style="margin:8px 0 0;padding-left:18px;line-height:1.9;color:#5b4a2a">
+          <li><b>Attestation CAF</b> (quotient familial, <b>moins de 3 mois</b>)</li>
+          <li>Avis d'imposition</li>
+          <li>Justificatif de domicile</li>
+          <li>Attestation d'assurance (extrascolaire)</li>
+          <li>Vaccins à jour (photo du carnet)</li>
+          <li>Livret de famille</li>
+        </ul>
+      </div>
+      <div style="flex:1;min-width:240px">
+        <p style="margin:0 0 12px;color:#5b4a2a"><b>Comment faire ?</b><br>1. J'adhère / je me connecte à mon espace.<br>2. Je renseigne mes enfants (matin / soir).<br>3. Je dépose mes pièces. C'est tout !</p>
+        <div class="cta">
+          <a href="connexion.html?role=famille" class="btn primary"> Déposer mon dossier</a>
+          <a href="#adhesion" class="btn ghost">Adhérer au CASE</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
 <section class="block bg-w" id="semaine">
   <div class="wrap">
     <p class="eyebrow">La semaine au CASE</p>
@@ -373,7 +401,7 @@
         <div class="ligne" style="--pc:#3a9bd9"><span class="h">17h30</span><span class="pt"></span><span class="quoi"><b>Zumba</b> — date de reprise et créneau en cours de confirmation<span class="ou">Salle polyvalente</span></span></div>
         <div class="ligne" style="--pc:#C74F82"><span class="h">18h-20h</span><span class="pt"></span><span class="quoi"><b>Danse adultes</b> — dont le nouveau cours heels<span class="ou">Salle de danse</span></span></div>
       </details>
-      <details class="jour star" open>
+      <details class="jour star">
         <summary><span class="j">Samedi</span><span class="apercu">La maison ouverte — dès septembre</span><span class="fleche">→</span></summary>
         <div class="ligne" style="--pc:var(--jaune)"><span class="h">8h30-12h</span><span class="pt"></span><span class="quoi"><b>Café-accueil offert</b>, sport du matin, tricot — dès septembre<span class="ou">Local CASE</span></span></div>
         <div class="ligne" style="--pc:#C74F82"><span class="h">matin</span><span class="pt"></span><span class="quoi"><b>« Danse pour tous »</b> + cours ados — dès septembre<span class="ou">Salle de danse</span></span></div>
@@ -384,34 +412,6 @@
         <summary><span class="j">Dimanche</span><span class="apercu">Un dimanche par mois en famille — dès l'automne</span><span class="fleche">→</span></summary>
         <div class="ligne" style="--pc:#C74F82"><span class="h">1×/mois</span><span class="pt"></span><span class="quoi"><b>Dimanche en famille</b> — grillades, olympiades, jardin<span class="ou">Programme à l'automne</span></span></div>
       </details>
-    </div>
-  </div>
-</section>
-<section class="block" id="inscription-peri" style="background:linear-gradient(135deg,#fff3da,#ffe7c4)">
-  <div class="wrap">
-    <p class="eyebrow">Rentrée d'août</p>
-    <h2 class="title"> Inscrivez vos enfants au périscolaire <span class="y">matin &amp; soir</span></h2>
-    <p style="text-align:center;margin:2px 0 0"><span class="badge" style="background:#e3f6ec;color:#0f6b46;border-color:#bfe6d0"> Nouveau — le périscolaire du matin dès la rentrée</span></p>
-    <p class="sub" style="max-width:720px">La rentrée, c'est le <b>mardi 18 août</b> — et les inscriptions sont déjà ouvertes. Le dépôt du dossier se fait dans votre <b>espace famille</b> : adhérez / connectez-vous, puis déposez vos pièces — vous pouvez les scanner directement depuis votre téléphone. Le <a href="reglement-periscolaire-2026-2027.pdf" style="color:var(--vert-fonce);font-weight:700">règlement intérieur 2026-2027</a> (adopté le 14 août 2026) est consultable en ligne.</p>
-    <div style="display:flex;gap:18px;flex-wrap:wrap;align-items:flex-start;margin-top:6px">
-      <div style="flex:1;min-width:260px;background:#fff;border:1px solid #f1e2ad;border-radius:16px;padding:16px 18px">
-        <b style="color:var(--vert-fonce)"> Pièces à fournir</b>
-        <ul style="margin:8px 0 0;padding-left:18px;line-height:1.9;color:#5b4a2a">
-          <li><b>Attestation CAF</b> (quotient familial, <b>moins de 3 mois</b>)</li>
-          <li>Avis d'imposition</li>
-          <li>Justificatif de domicile</li>
-          <li>Attestation d'assurance (extrascolaire)</li>
-          <li>Vaccins à jour (photo du carnet)</li>
-          <li>Livret de famille</li>
-        </ul>
-      </div>
-      <div style="flex:1;min-width:240px">
-        <p style="margin:0 0 12px;color:#5b4a2a"><b>Comment faire ?</b><br>1. J'adhère / je me connecte à mon espace.<br>2. Je renseigne mes enfants (matin / soir).<br>3. Je dépose mes pièces. C'est tout !</p>
-        <div class="cta">
-          <a href="connexion.html?role=famille" class="btn primary"> Déposer mon dossier</a>
-          <a href="#adhesion" class="btn ghost">Adhérer au CASE</a>
-        </div>
-      </div>
     </div>
   </div>
 </section>
