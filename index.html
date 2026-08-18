@@ -31,7 +31,7 @@
   header{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.92);backdrop-filter:blur(8px);
          border-bottom:1px solid var(--line)}
   header .bar{display:flex;align-items:center;gap:12px;padding:12px 20px;max-width:1080px;margin:0 auto}
-  .logo{display:flex;align-items:center;gap:10px;font-weight:900;font-size:18px;text-decoration:none}
+  .logo{display:flex;align-items:center;gap:10px;font-weight:800;font-size:18px;text-decoration:none}
   .logo .pine{font-size:30px;filter:drop-shadow(0 2px 3px rgba(0,0,0,.15))}
   .logo b{color:var(--vert)} .logo span{color:var(--ananas)}
   nav.main{margin-left:auto;display:flex;gap:6px;align-items:center;flex-wrap:wrap}
@@ -52,12 +52,13 @@
   }
   .btn{display:inline-block;border:none;cursor:pointer;font:inherit;font-weight:800;text-decoration:none;
        padding:12px 20px;border-radius:999px;transition:.15s;font-size:15px}
-  .btn.primary{background:var(--vert-fonce);color:#fff;box-shadow:0 6px 16px rgba(31,157,107,.35)}
+  .btn.primary{background:var(--vert-fonce);color:#fff;box-shadow:0 6px 16px rgba(15,107,70,.35)}
   .btn.primary:hover{background:var(--vert-tresfonce);transform:translateY(-1px)}
   .btn.sun{background:var(--jaune);color:#5b4300}
   .btn.sun:hover{filter:brightness(.97);transform:translateY(-1px)}
   .btn.ghost{background:#fff;color:var(--vert);border:2px solid var(--vert)}
   .tel-chip{display:inline-flex;align-items:center;padding:12px 16px;margin:3px 2px;background:#fff;border:1.5px solid var(--vert-fonce);border-radius:999px;color:var(--vert-fonce);font-weight:800;text-decoration:none;white-space:nowrap}
+  section[id]{scroll-margin-top:76px}
   nav.main .btn{padding:9px 16px;font-size:14px}
   /* Hero */
   .hero{position:relative;overflow:hidden;padding:34px 0 30px;background:linear-gradient(180deg,#edf6f0 0%,var(--bg) 100%)}
@@ -65,7 +66,7 @@
   .hero-wrap{position:relative}
   .hero-img{width:100%;display:block;border-radius:22px;box-shadow:0 18px 40px rgba(16,60,40,.18)}
   .hero-text{position:absolute;left:4.5%;top:50%;transform:translateY(-50%);max-width:44%;text-align:left}
-  .hero h1{font-size:clamp(28px,4.6vw,52px);margin:8px 0 10px;font-weight:900;letter-spacing:-1px;line-height:1.04;color:var(--vert-fonce)}
+  .hero h1{font-size:clamp(28px,4.6vw,52px);margin:8px 0 10px;font-weight:800;letter-spacing:-1px;line-height:1.04;color:var(--vert-fonce)}
   .hero p.lead{font-size:clamp(15px,1.8vw,19px);max-width:480px;margin:0 0 8px;color:#33473c;font-weight:600}
   .hero p.lead b{color:#a35c00}
   .hero .site-line{font-weight:800;color:var(--vert-fonce);font-size:clamp(14px,1.55vw,17px);margin:0 0 18px}
@@ -104,7 +105,7 @@
   .bg-g{background:#eef6f1}
   .bg-sun{background:#fdf6e7}
   .eyebrow{color:var(--vert);font-weight:800;text-transform:uppercase;letter-spacing:.08em;font-size:13px;text-align:center}
-  h2.title{text-align:center;font-size:clamp(24px,3.5vw,34px);margin:6px 0 8px;font-weight:900}
+  h2.title{text-align:center;font-size:clamp(24px,3.5vw,34px);margin:6px 0 8px;font-weight:800}
   .sub{text-align:center;color:var(--muted);max-width:640px;margin:0 auto 30px}
   .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:18px}
   .card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:22px;box-shadow:var(--shadow);
@@ -123,8 +124,9 @@
   .panel{background:#fff;border:1px solid var(--line);border-radius:22px;padding:28px;box-shadow:var(--shadow-lg);max-width:560px;margin:0 auto}
   .field{display:flex;flex-direction:column;gap:5px;margin-bottom:14px}
   .field label{font-weight:700;font-size:14px}
-  .field input,.field select{font:inherit;padding:12px 14px;border:1.5px solid var(--line);border-radius:12px;background:#fdfffe}
-  .field input:focus,.field select:focus{outline:none;border-color:var(--vert)}
+  .field input,.field select,.field textarea{font:inherit;padding:12px 14px;border:1.5px solid var(--line);border-radius:12px;background:#fdfffe}
+  .field textarea{resize:vertical}
+  .field input:focus,.field select:focus,.field textarea:focus{outline:none;border-color:var(--vert)}
   .note{font-size:13px;color:var(--muted);text-align:center;margin-top:8px}
   .badge{display:inline-block;background:#fff5da;color:#8a6400;font-weight:700;font-size:12px;padding:4px 10px;border-radius:999px;border:1px solid #f1e2ad}
   /* Contact */
@@ -143,7 +145,7 @@
   /* Bandeau actualité */
   .newsbar{position:relative;display:flex;align-items:center;justify-content:center;gap:10px 14px;flex-wrap:wrap;
            background:linear-gradient(90deg,var(--vert),var(--vert-fonce));color:#fff;padding:11px 46px 11px 18px;font-size:14.5px;text-align:center}
-  .newsbar .nb-tag{background:var(--jaune);color:#5b4300;font-weight:900;font-size:11px;letter-spacing:.06em;padding:3px 9px;border-radius:999px;text-transform:uppercase}
+  .newsbar .nb-tag{background:var(--jaune);color:#5b4300;font-weight:800;font-size:11px;letter-spacing:.06em;padding:3px 9px;border-radius:999px;text-transform:uppercase}
   .newsbar .nb-txt{font-weight:600}
   .newsbar .nb-link{color:#fff;font-weight:800;text-decoration:underline;white-space:nowrap}
   .newsbar .nb-x{position:absolute;right:10px;top:50%;transform:translateY(-50%);background:rgba(255,255,255,.22);border:none;color:#fff;width:34px;height:34px;border-radius:50%;cursor:pointer;font-size:13px;line-height:1}
@@ -154,7 +156,7 @@
   .insbar[hidden]{display:none}
   .insbar{display:flex;align-items:center;justify-content:center;gap:8px 10px;flex-wrap:wrap;
           background:#fff3da;border-bottom:1px solid #f1e2ad;padding:16px 14px;font-size:14px}
-  .insbar .ib-tag{color:#8a5300;font-weight:900;font-size:12px;letter-spacing:.08em;text-transform:uppercase;white-space:nowrap}
+  .insbar .ib-tag{color:#8a5300;font-weight:800;font-size:12px;letter-spacing:.08em;text-transform:uppercase;white-space:nowrap}
   .insbar a.ib-chip{display:inline-flex;align-items:center;gap:7px;background:#fff;border:1.5px solid #f1e2ad;
           border-radius:999px;padding:9px 17px;min-height:44px;font-weight:700;font-size:15px;text-decoration:none;color:var(--ink);box-shadow:var(--shadow);transition:.15s}
   .insbar a.ib-chip:hover{border-color:var(--ananas);transform:translateY(-1px)}
@@ -168,7 +170,7 @@
   .ppanel{background:#fff;border:1px solid var(--line);border-radius:20px;padding:0 8px 14px;box-shadow:var(--shadow);overflow:hidden}
   .ppanel.tourne{border-top:4px solid var(--vert)}
   .ppanel.arrive{border-top:4px solid var(--jaune)}
-  .ppanel-head{display:flex;align-items:center;gap:9px;padding:16px 14px 8px;font-weight:900;font-size:17px}
+  .ppanel-head{display:flex;align-items:center;gap:9px;padding:16px 14px 8px;font-weight:800;font-size:17px}
   .ppanel-head .hcount{margin-left:auto;font-size:13px;font-weight:800;color:var(--muted);background:#f0f7f3;padding:3px 10px;border-radius:999px}
   .pfam{font-size:11.5px;font-weight:800;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);padding:13px 14px 3px}
   .prow{display:flex;align-items:center;gap:12px;width:100%;text-align:left;background:none;border:none;font:inherit;color:var(--ink);cursor:pointer;padding:11px 12px;border-radius:13px;transition:.13s}
@@ -232,8 +234,8 @@
   @media(max-width:680px){.contact-grid{grid-template-columns:1fr}.hero .deco{display:none}}
   /* Accessibilite (ajout audit 2026-07) : focus clavier visible + respect de « moins d'animations » */
   a:focus-visible,button:focus-visible,.btn:focus-visible,.navpill:focus-visible,.ib-chip:focus-visible,.nb-x:focus-visible,.prow:focus-visible,.burger:focus-visible{outline:3px solid var(--vert-fonce);outline-offset:2px}
-  .field input:focus-visible,.field select:focus-visible{outline:3px solid var(--vert-fonce);outline-offset:2px}
-  @media (prefers-reduced-motion: reduce){*{transition:none!important;transform:none!important;scroll-behavior:auto!important}}
+  .field input:focus-visible,.field select:focus-visible,.field textarea:focus-visible{outline:3px solid var(--vert-fonce);outline-offset:2px}
+  @media (prefers-reduced-motion: reduce){*{transition:none!important;animation-duration:.001ms!important;animation-iteration-count:1!important;scroll-behavior:auto!important}}
 
   /* ===== Refonte 09/08/2026 : menu latéral (desktop) + agenda + hero compact ===== */
   .lay{display:block}
@@ -253,7 +255,7 @@
   }
   .hero2{background:linear-gradient(180deg,#edf6f0 0%,var(--bg) 100%)}
   .hero2 .hrow{display:flex;align-items:center;gap:20px;padding:30px 0 22px}
-  .hero2 h1{font-size:clamp(28px,4.6vw,44px);margin:10px 0 8px;font-weight:900;letter-spacing:-1px;line-height:1.06;color:var(--vert-fonce)}
+  .hero2 h1{font-size:clamp(28px,4.6vw,44px);margin:10px 0 8px;font-weight:800;letter-spacing:-1px;line-height:1.06;color:var(--vert-fonce)}
   .hero2 p.lead{font-size:clamp(15px,1.8vw,18px);margin:0 0 16px;color:#33473c;font-weight:600;max-width:560px}
   .hero2 p.lead b{color:#a35c00}
   .hero2 .htxt{flex:1}
@@ -297,7 +299,7 @@
   <a class="sitem" href="la-maison.html">La maison &amp; le projet</a>
   <a class="sitem" href="#contact">Contact</a>
   <div class="sbas">
-    <a class="btn primary" href="#adhesion">Devenir adhérent</a>
+    <a class="btn ghost" href="#adhesion">Devenir adhérent</a>
     <a class="btn ghost" href="connexion.html">Mon espace</a>
     <span class="stel">0262 29 37 90 · 0692 69 18 11<br>Place de la Fraternité, Ste-Clotilde</span>
   </div>
@@ -323,9 +325,9 @@
 <section class="hero2" id="accueil">
   <div class="wrap hrow">
     <div class="htxt">
-      <span class="badge">Rentrée 2026</span>
+      <span class="badge">Inscriptions ouvertes</span>
       <h1>La maison est ouverte.</h1>
-      <p class="lead">Nouvelle organisation dès le <b>mardi 18 août</b> — et grande nouveauté : dès septembre, le CASE ouvrira <b>le samedi</b>. Retrouv' a nou en ligne&nbsp;: <b>casebdn.re</b></p>
+      <p class="lead">Nouvelle organisation dès le <b>mardi 18 août</b> — et grande nouveauté : dès septembre, le CASE ouvrira <b>le samedi</b>. Le dossier se dépose <b>en ligne, dès aujourd'hui</b>.</p>
       <div class="cta">
         <a href="#inscription-peri" class="btn primary">S'inscrire en ligne</a>
         <a href="#semaine" class="btn ghost">Voir la semaine</a>
@@ -342,6 +344,10 @@
     <h2 class="title"> Inscrivez vos enfants au périscolaire <span class="y">matin &amp; soir</span></h2>
     <p style="text-align:center;margin:2px 0 0"><span class="badge" style="background:#e3f6ec;color:#0f6b46;border-color:#bfe6d0"> Nouveau — le périscolaire du matin dès la rentrée</span></p>
     <p class="sub" style="max-width:720px">La rentrée, c'est le <b>mardi 18 août</b> — et les inscriptions sont déjà ouvertes. Le dépôt du dossier se fait dans votre <b>espace famille</b> : adhérez / connectez-vous, puis déposez vos pièces — vous pouvez les scanner directement depuis votre téléphone. Le <a href="reglement-periscolaire-2026-2027.pdf" style="color:var(--vert-fonce);font-weight:700">règlement intérieur 2026-2027</a> (adopté le 14 août 2026) est consultable en ligne.</p>
+    <div class="zguide">
+      <img class="zg-img" src="zanana-thumb.png" onerror="this.src='mascotte-hero.png'" alt="Zanana">
+      <span class="zg-bulle">Moi c'est Zanana ! Adhère, renseigne, dépose — 3 étapes et lé bon.</span>
+    </div>
     <div style="display:flex;gap:18px;flex-wrap:wrap;align-items:flex-start;margin-top:6px">
       <div style="flex:1;min-width:260px;background:#fff;border:1px solid #f1e2ad;border-radius:16px;padding:16px 18px">
         <b style="color:var(--vert-fonce)"> Pièces à fournir</b>
@@ -476,18 +482,18 @@
     <h2 class="title">Une question ? Écrivez-nous </h2>
     <div class="zguide">
       <img class="zg-img" src="zanana-wave.png" onerror="this.src='mascotte-hero.png'" alt="Zanana">
-      <span class="zg-bulle">Une question ? Écris-nous, on répond vite </span>
+      <span class="zg-bulle">C'est Zanana qui transmet — on répond vite !</span>
     </div>
     <div class="contact-grid">
       <div>
-        <div class="info-line"><span class="i"></span><div><b>Adresse</b><br>C.A.S.E du Bois de Nèfles<br>132 Route des Ananas, 97490 Sainte-Clotilde<br><span style="font-size:13px;color:var(--muted)">+ Local des Bringelliers</span></div></div>
-        <div class="info-line"><span class="i"></span><div><b>Téléphone</b><br><a class="tel-chip" href="tel:+262262293790">0262 29 37 90</a> · <span style="font-size:13.5px;color:var(--muted)">CASE</span><br><a class="tel-chip" href="tel:+262692691811">0692 69 18 11</a> · <span style="font-size:13.5px;color:var(--muted)">ligne directe</span></div></div>
-        <div class="info-line"><span class="i"></span><div><b>Email</b><br><a class="tel-chip" href="mailto:contact@casebdn.re">contact@casebdn.re</a></div></div>
+        <div class="info-line"><span class="i">📍</span><div><b>Adresse</b><br>C.A.S.E du Bois de Nèfles<br>132 Route des Ananas, 97490 Sainte-Clotilde<br><span style="font-size:13px;color:var(--muted)">+ Local des Bringelliers</span></div></div>
+        <div class="info-line"><span class="i">☎️</span><div><b>Téléphone</b><br><a class="tel-chip" href="tel:+262262293790">0262 29 37 90</a> · <span style="font-size:13.5px;color:var(--muted)">CASE</span><br><a class="tel-chip" href="tel:+262692691811">0692 69 18 11</a> · <span style="font-size:13.5px;color:var(--muted)">ligne directe</span></div></div>
+        <div class="info-line"><span class="i">✉️</span><div><b>Email</b><br><a class="tel-chip" href="mailto:contact@casebdn.re">contact@casebdn.re</a></div></div>
         <!-- Réseaux sociaux : à remettre dès que Guillaume fournit les liens FB/Insta/TikTok/WhatsApp -->
       </div>
       <div class="panel" style="box-shadow:var(--shadow)">
-        <div class="field"><label>Votre nom</label><input id="ct_nom" placeholder="Nom"></div>
-        <div class="field"><label>Votre message</label><input id="ct_msg" placeholder="Bonjour..."></div>
+        <div class="field"><label>Votre nom</label><input id="ct_nom" placeholder="Nom" maxlength="200"></div>
+        <div class="field"><label>Votre message</label><textarea id="ct_msg" rows="4" placeholder="Bonjour..." maxlength="4000"></textarea></div>
         <button id="ct_btn" class="btn sun" style="width:100%" onclick="envoyerContact()">Envoyer le message</button>
         <p id="ct_info" role="status" aria-live="polite" style="margin:10px 0 0;font-size:13.5px;font-weight:700;text-align:center"></p>
       </div>
@@ -495,7 +501,7 @@
   </div>
 </section>
 <footer>
-  <div class="pine"></div>
+  <div class="pine">🍍</div>
   <p style="margin:6px 0 2px;font-weight:800;font-size:18px">CASE du Bois de Nèfles</p>
   <p style="margin:0;opacity:.85">Centre social associatif · Sainte-Clotilde, Saint-Denis · La Réunion</p>
   <p style="margin:10px 0 0;font-size:13px;opacity:.7">Ce site vous est confié par <a href="https://bob.re" target="_blank" rel="nofollow noopener" style="color:#fff;text-decoration:underline">Bob</a> </p>
@@ -507,7 +513,9 @@
 </div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-const _sbPart=window.supabase.createClient('https://dkidtwypclpwznleiqnq.supabase.co','sb_publishable_HDfV-O2ION1Vw9v03aV_Qg_PkiAjLNo');
+/* Client PUBLIC : jamais de session persistée — un visiteur connecté à Bob (même origine)
+   enverrait sinon un JWT authenticated, et les policies anon des formulaires le refuseraient. */
+const _sbPart=window.supabase.createClient('https://dkidtwypclpwznleiqnq.supabase.co','sb_publishable_HDfV-O2ION1Vw9v03aV_Qg_PkiAjLNo',{auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false}});
 // Cette page publique appartient au CASE du Bois de Nèfles — on le dit explicitement à la base
 // plutôt que de laisser le repli serveur deviner (correctif 31/07/2026, CARTE-ARCHITECTURE-SAAS).
 const _CASE_ASSO_ID='d617489c-b18b-499b-ab17-c31656d0f08a';
@@ -802,7 +810,7 @@ function openActCat(idx){
   if(f.key==='__vie__'){
     inner+='<div class="pico"></div><h3>Vie de quartier</h3>'
       +'<p style="color:var(--muted);margin:0 0 6px">En accès libre, sans inscription :</p>'
-      +'<div class="pmd-line"><span class="i"></span><div><b>Permanence du samedi</b><br>Un moment convivial, café offert.</div></div>'
+      +'<div class="pmd-line"><span class="i">☕</span><div><b>Permanence du samedi</b><br>Un moment convivial, café offert.</div></div>'
       +'<div class="pmd-line"><span class="i"></span><div><b>Jeudi info population</b><br>Accès aux droits et aux ressources.</div></div>';
   } else {
     const list=_actByCat[f.key]||[];
@@ -953,7 +961,7 @@ function openPlan(i){
     +(p.public?'<div class="pmd-line"><span class="i"></span><div><b>Pour qui</b><br>'+escP(p.public)+'</div></div>':'')
     +(p.horaires?'<div class="pmd-line"><span class="i"></span><div><b>Quand</b><br>'+escP(p.horaires)+'</div></div>':'')
     +(p.lieu?'<div class="pmd-line"><span class="i"></span><div><b>Où</b><br>'+escP(p.lieu)+'</div></div>':'')
-    +'<div class="pmd-line"><span class="i"></span><div><b>Infos &amp; inscriptions</b><br><a href="#contact" onclick="closePlan()">Nous contacter</a></div></div>';
+    +'<div class="pmd-line"><span class="i">📞</span><div><b>Infos &amp; inscriptions</b><br><a href="#contact" onclick="closePlan()">Nous contacter</a></div></div>';
   document.getElementById('pmodal').classList.add('open');
 }
 function closePlan(){ document.getElementById('pmodal').classList.remove('open'); }
