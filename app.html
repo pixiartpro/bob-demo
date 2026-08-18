@@ -1990,6 +1990,14 @@
       <p class="hint">Les commerçants et acteurs du quartier qui remplissent le formulaire « Devenir partenaire » sur le site public apparaissent ici.</p>
       <div id="partList"><p class="hint">Chargement…</p></div>
     </div>
+    <div class="panel">
+      <div class="toolbar">
+        <h2 style="margin:0">📩 Messages du site</h2>
+        <button class="ghost btn" onclick="if(window.loadMessagesContact)loadMessagesContact()">↻ Rafraîchir</button>
+      </div>
+      <p class="hint">Les messages envoyés depuis le formulaire « Une question ? Écrivez-nous » du site public arrivent ici.</p>
+      <div id="mcList"><p class="hint">Chargement…</p></div>
+    </div>
   </section>
 
   <!-- ATELIERS PARTICIPATIFS -->
@@ -9968,6 +9976,24 @@ renderAll();
     </div>`).join('');
   };
   window.setPartStatut=async function(id,st){ const {error}=await sbc.from('partenaires').update({statut:st}).eq('id',id); if(error){alert(error.message);return;} window.loadPartenaires(); if(window.loadTodo) loadTodo(); };
+  // Messages du formulaire de contact de la vitrine — table messages_contact (migration 76)
+  const MC_STATUTS={nouveau:'🆕 Nouveau',traite:'✅ Traité'};
+  window.loadMessagesContact=async function(){
+    const box=document.getElementById('mcList'); if(!box) return;
+    const {data,error}=await sbc.from('messages_contact').select('*').order('created_at',{ascending:false});
+    if(error){ box.innerHTML='<p class="hint" style="color:#c0392b">Erreur : '+esc(error.message)+'</p>'; return; }
+    if(!data||!data.length){ box.innerHTML='<p class="hint">Aucun message pour le moment.</p>'; return; }
+    box.innerHTML=data.map(m=>`
+      <div class="panel" style="margin:10px 0;border-left:4px solid ${m.statut==='nouveau'?'#c0392b':'#1f9d6b'}">
+        <div class="toolbar"><div><strong>${esc(m.nom||'(sans nom)')}</strong> <span class="pill" style="background:#eef2fb;color:#1f4fc4;font-size:11px">${MC_STATUTS[m.statut]||esc(m.statut||'')}</span></div>
+        <span class="hint">${new Date(m.created_at).toLocaleString('fr-FR',{timeZone:'Indian/Reunion'})}</span></div>
+        <p style="margin:6px 0;white-space:pre-wrap">${esc(m.message||'')}</p>
+        ${m.statut==='nouveau'
+          ?`<button class="btn" onclick="setMcStatut('${m.id}','traite')">✅ Marquer traité</button>`
+          :`<button class="ghost btn" onclick="setMcStatut('${m.id}','nouveau')">↩️ Rouvrir</button>`}
+      </div>`).join('');
+  };
+  window.setMcStatut=async function(id,st){ const {error}=await sbc.from('messages_contact').update({statut:st}).eq('id',id); if(error){ if(window.bobAlert){await bobAlert(error.message);}return; } window.loadMessagesContact(); };
 
   // 📣 EXPERT COMMUNICATION — fiche de marque (table fiches_marque, 1 par asso, RLS staff)
   window.loadFicheMarque=async function(){
@@ -15328,10 +15354,11 @@ window.loadDossiersPeri=async function(){
       const host=document.querySelector('nav.famtabs'); if(host&&host.parentNode) host.parentNode.insertBefore(w,host);
     }catch(e){} }
     const hb=document.querySelector('nav.tabs button[data-tab="aide"]'); if(hb) hb.addEventListener('click',()=>{ newsMarkRead(); });
-    const pb=document.querySelector('nav.tabs button[data-tab="partenaires"]'); if(pb) pb.addEventListener('click',()=>{ if(window.loadPartenaires) loadPartenaires(); });
+    const pb=document.querySelector('nav.tabs button[data-tab="partenaires"]'); if(pb) pb.addEventListener('click',()=>{ if(window.loadPartenaires) loadPartenaires(); if(window.loadMessagesContact) loadMessagesContact(); });
     const fyb=document.querySelector('nav.tabs button[data-tab="foyers"]'); if(fyb) fyb.addEventListener('click',()=>{ if(window.loadFoyers) loadFoyers(); });
     const fmb=document.querySelector('nav.tabs button[data-tab="communication"]'); if(fmb) fmb.addEventListener('click',()=>{ if(window.loadFicheMarque) loadFicheMarque(); });
     if(window.loadPartenaires) loadPartenaires();
+    if(window.loadMessagesContact) loadMessagesContact();
     const ab=document.querySelector('nav.tabs button[data-tab="ateliers"]'); if(ab) ab.addEventListener('click',()=>{ if(window.loadAteliers) loadAteliers(); });
     if(window.loadAteliers) loadAteliers();
     /* 08/08/2026 — même motif pour les projets d'adhérents : au clic sur l'onglet et au boot. */

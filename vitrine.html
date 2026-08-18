@@ -57,6 +57,7 @@
   .btn.sun{background:var(--jaune);color:#5b4300}
   .btn.sun:hover{filter:brightness(.97);transform:translateY(-1px)}
   .btn.ghost{background:#fff;color:var(--vert);border:2px solid var(--vert)}
+  .tel-chip{display:inline-flex;align-items:center;padding:12px 16px;margin:3px 2px;background:#fff;border:1.5px solid var(--vert-fonce);border-radius:999px;color:var(--vert-fonce);font-weight:800;text-decoration:none;white-space:nowrap}
   nav.main .btn{padding:9px 16px;font-size:14px}
   /* Hero */
   .hero{position:relative;overflow:hidden;padding:34px 0 30px;background:linear-gradient(180deg,#edf6f0 0%,var(--bg) 100%)}
@@ -158,7 +159,7 @@
           border-radius:999px;padding:9px 17px;min-height:44px;font-weight:700;font-size:15px;text-decoration:none;color:var(--ink);box-shadow:var(--shadow);transition:.15s}
   .insbar a.ib-chip:hover{border-color:var(--ananas);transform:translateY(-1px)}
   .insbar .ib-dot{width:9px;height:9px;border-radius:50%;flex:0 0 auto}
-  .insbar .ib-st{font-size:13px;font-weight:800;white-space:nowrap}
+  .insbar .ib-st{font-size:13.5px;font-weight:800;white-space:nowrap}
   /* ===== Plan « ce qui tourne / ce qui arrive » ===== */
   .dot{width:10px;height:10px;border-radius:50%;display:inline-block;flex:0 0 auto}
   .dot.on{background:#1f9d6b}.dot.work{background:var(--jaune)}.dot.soon{background:#4a90d9}
@@ -248,7 +249,7 @@
     .sidebar a.sitem:hover{background:#f0f7f3}
     .sidebar .sbas{margin-top:auto;display:flex;flex-direction:column;gap:9px;padding-top:14px}
     .sidebar .sbas .btn{text-align:center}
-    .sidebar .stel{font-size:12.5px;color:var(--muted);line-height:1.5}
+    .sidebar .stel{font-size:13.5px;color:var(--muted);line-height:1.5}
   }
   .hero2{background:linear-gradient(180deg,#edf6f0 0%,var(--bg) 100%)}
   .hero2 .hrow{display:flex;align-items:center;gap:20px;padding:30px 0 22px}
@@ -268,9 +269,9 @@
   .jour[open] summary .fleche{transform:rotate(90deg)}
   .jour[open] summary{background:#eef6f1}
   .ligne{display:flex;gap:12px;align-items:baseline;padding:9px 16px 9px 26px;border-top:1px dashed var(--line);font-size:14.5px}
-  .ligne .h{width:92px;flex:0 0 auto;font-weight:700;color:var(--muted);font-size:13px}
+  .ligne .h{width:92px;flex:0 0 auto;font-weight:700;color:var(--muted);font-size:13.5px}
   .ligne .pt{width:9px;height:9px;border-radius:50%;background:var(--pc,var(--vert));flex:0 0 auto;align-self:center}
-  .ligne .ou{color:var(--muted);font-size:12.5px;display:block}
+  .ligne .ou{color:var(--muted);font-size:13.5px;display:block}
   .jour.star summary{background:#fdf6e7}
   .jour.star summary .j{color:#8a5300}
   .tag-new{display:inline-block;background:var(--jaune);color:#5b4300;font-size:11px;font-weight:800;border-radius:999px;padding:1px 9px;margin-left:6px;letter-spacing:.04em;text-transform:uppercase}
@@ -425,7 +426,7 @@
       <b style="color:var(--vert-fonce);display:block;text-align:center;font-size:16px;margin-bottom:12px">Envie de rejoindre une activité&nbsp;?</b>
       <p style="margin:0 0 8px"> <b>Périscolaire, ACM, sorties</b> — tout se fait en ligne dans <b>Mon espace famille</b> : créez votre compte en 2 minutes, puis <b>déposez vos pièces</b> (vous pouvez les scanner directement depuis votre téléphone).</p>
       <div style="text-align:center;margin:10px 0 14px"><a href="connexion.html?role=famille" class="btn primary" style="text-decoration:none"> Déposer mon dossier</a></div>
-      <p style="margin:0"> <b>Autres activités</b> — la page d'inscription en ligne arrive bientôt. En attendant, appelez <b>Kathy Maillot</b> au <a href="tel:+262692013834" style="color:var(--vert-fonce);font-weight:700">0692&nbsp;01&nbsp;38&nbsp;34</a> (ou le CASE au <a href="tel:+262262293790" style="color:var(--vert-fonce);font-weight:700">0262&nbsp;29&nbsp;37&nbsp;90</a>) — on vous inscrit. Et si c'est plus simple, <b>passez au CASE</b>, on le fait avec vous.</p>
+      <p style="margin:0"> <b>Autres activités</b> — la page d'inscription en ligne arrive bientôt. En attendant, appelez <b>Kathy Maillot</b> au <a class="tel-chip" href="tel:+262692013834">0692&nbsp;01&nbsp;38&nbsp;34</a> (ou le CASE au <a class="tel-chip" href="tel:+262262293790">0262&nbsp;29&nbsp;37&nbsp;90</a>) — on vous inscrit. Et si c'est plus simple, <b>passez au CASE</b>, on le fait avec vous.</p>
     </div>
   </div>
 </section>
@@ -480,14 +481,15 @@
     <div class="contact-grid">
       <div>
         <div class="info-line"><span class="i"></span><div><b>Adresse</b><br>C.A.S.E du Bois de Nèfles<br>132 Route des Ananas, 97490 Sainte-Clotilde<br><span style="font-size:13px;color:var(--muted)">+ Local des Bringelliers</span></div></div>
-        <div class="info-line"><span class="i"></span><div><b>Téléphone</b><br><a href="tel:+262262293790" style="text-decoration:none">0262 29 37 90</a> · <span style="font-size:13px;color:var(--muted)">CASE</span><br><a href="tel:+262692691811" style="text-decoration:none">0692 69 18 11</a> · <span style="font-size:13px;color:var(--muted)">ligne directe</span></div></div>
-        <div class="info-line"><span class="i"></span><div><b>Email</b><br><a href="mailto:contact@casebdn.re" style="text-decoration:none">contact@casebdn.re</a></div></div>
+        <div class="info-line"><span class="i"></span><div><b>Téléphone</b><br><a class="tel-chip" href="tel:+262262293790">0262 29 37 90</a> · <span style="font-size:13.5px;color:var(--muted)">CASE</span><br><a class="tel-chip" href="tel:+262692691811">0692 69 18 11</a> · <span style="font-size:13.5px;color:var(--muted)">ligne directe</span></div></div>
+        <div class="info-line"><span class="i"></span><div><b>Email</b><br><a class="tel-chip" href="mailto:contact@casebdn.re">contact@casebdn.re</a></div></div>
         <!-- Réseaux sociaux : à remettre dès que Guillaume fournit les liens FB/Insta/TikTok/WhatsApp -->
       </div>
       <div class="panel" style="box-shadow:var(--shadow)">
         <div class="field"><label>Votre nom</label><input id="ct_nom" placeholder="Nom"></div>
         <div class="field"><label>Votre message</label><input id="ct_msg" placeholder="Bonjour..."></div>
-        <button class="btn sun" style="width:100%" onclick="envoyerContact()">Envoyer le message</button>
+        <button id="ct_btn" class="btn sun" style="width:100%" onclick="envoyerContact()">Envoyer le message</button>
+        <p id="ct_info" role="status" aria-live="polite" style="margin:10px 0 0;font-size:13.5px;font-weight:700;text-align:center"></p>
       </div>
     </div>
   </div>
@@ -925,14 +927,20 @@ async function loadLieux(){
       +'</div>';
   }).join('');
 }
-/* ===== Envoi réel par email (mailto) — contact + demande d'inscription ===== */
-function envoyerContact(){
+/* ===== Envoi du message de contact → table messages_contact (Supabase).
+   ⚠️ .insert() SANS .select() : anon n'a pas le droit de lecture (banc 76). ===== */
+async function envoyerContact(){
   const nom=(document.getElementById('ct_nom').value||'').trim();
   const msg=(document.getElementById('ct_msg').value||'').trim();
-  if(!msg){ alert('Écris ton message avant d\'envoyer '); return; }
-  const subject=encodeURIComponent('Message du site — '+(nom||'Visiteur'));
-  const body=encodeURIComponent(msg+'\n\n— '+(nom||'')+' (envoyé depuis le site du CASE)');
-  window.location.href='mailto:contact@casebdn.re?subject='+subject+'&body='+body;
+  const info=document.getElementById('ct_info');
+  const btn=document.getElementById('ct_btn');
+  if(msg.length<2){ info.style.color='#c0392b'; info.textContent='Écris ton message avant d\'envoyer.'; return; }
+  btn.disabled=true; btn.textContent='Envoi…';
+  const {error}=await _sbPart.from('messages_contact').insert({ asso_id:_CASE_ASSO_ID, nom:nom||null, message:msg });
+  btn.disabled=false; btn.textContent='Envoyer le message';
+  if(error){ info.style.color='#c0392b'; info.textContent='Oups, ça n\'est pas parti. Réessaie, ou appelle-nous au 0262 29 37 90.'; return; }
+  info.style.color='var(--vert-fonce)'; info.textContent='C\'est envoyé — on te répond vite !';
+  document.getElementById('ct_nom').value=''; document.getElementById('ct_msg').value='';
 }
 function openPlan(i){
   const p=PLAN[i]; if(!p) return;
