@@ -115,6 +115,18 @@
   .ma-bar{display:flex;gap:8px;margin-top:12px}
   .ma-bar textarea{flex:1;font:inherit;padding:11px 13px;border:1px solid var(--line);border-radius:12px;resize:none;height:52px;max-height:140px}
 </style>
+<style>
+/* Mouvement réduit (19/08/2026) — respecte le réglage système « réduire les animations ».
+   Forme universelle, délais compris : sans les délais, un affichage échelonné laisse
+   du contenu invisible plusieurs centaines de millisecondes. Réversible : supprimer ce bloc. */
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{
+    animation-duration:.001ms!important; animation-iteration-count:1!important;
+    transition-duration:.001ms!important; transition-delay:0s!important;
+    animation-delay:0s!important; scroll-behavior:auto!important;
+  }
+}
+</style>
 </head>
 <body>
 <div class="demo-flag">🍍 Mon espace — mon adhésion, mes activités, et le dossier de mes enfants, en un seul endroit.</div>

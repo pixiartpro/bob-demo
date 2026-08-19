@@ -310,6 +310,18 @@ window.BOB_PORTES = {
   #toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
   @media(max-width:640px){.grid2{grid-template-columns:1fr}}
 </style>
+<style>
+/* Mouvement réduit (19/08/2026) — respecte le réglage système « réduire les animations ».
+   Forme universelle, délais compris : sans les délais, un affichage échelonné laisse
+   du contenu invisible plusieurs centaines de millisecondes. Réversible : supprimer ce bloc. */
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{
+    animation-duration:.001ms!important; animation-iteration-count:1!important;
+    transition-duration:.001ms!important; transition-delay:0s!important;
+    animation-delay:0s!important; scroll-behavior:auto!important;
+  }
+}
+</style>
 </head>
 <body>
 <div class="secure-flag">🔒 Espace sécurisé — connexion chiffrée (Supabase). Les accès sont accordés par le Président.</div>

@@ -160,8 +160,23 @@
     nav.tabs .subttl{flex-basis:100%;padding:4px 2px 0}
   }
   @media(prefers-reduced-motion:reduce){
-    nav.famtabs button,nav.famtabs button:hover,nav.famtabs button.on{transition:none;transform:none}
+    /* Élargi le 19/08/2026 : ce bloc ne couvrait que les onglets — le fondu de page (@keyframes fade)
+       et toutes les autres transitions tournaient encore. Forme universelle, délais compris. */
+    *,*::before,*::after{animation-duration:.001ms!important;animation-iteration-count:1!important;
+      transition-duration:.001ms!important;transition-delay:0s!important;animation-delay:0s!important;
+      scroll-behavior:auto!important}
+    nav.famtabs button,nav.famtabs button:hover,nav.famtabs button.on{transform:none}
   }
+
+  /* === Retour d'appui (19/08/2026) — la pression se voit AVANT le relâchement, pas après.
+         Bob s'utilise au doigt : sans ça, un bouton reste muet tant que le doigt n'est pas relevé.
+         Additif et réversible : supprimer ce bloc suffit. === */
+  button.btn:active,nav.tabs button:active,nav.famtabs button:active{transform:scale(.97)}
+  button.danger{transition:background .15s ease-out,transform .15s ease-out}
+  button.danger:active{transform:scale(.97)}
+  .qcard:active,.todo .it:active,#messages .ma-row:active{transform:scale(.985)}
+  #bobDlg .bobChoice{transition:background .18s ease-out,border-color .18s ease-out,transform .15s ease-out}
+  #bobDlg .bobChoice:active{transform:scale(.985)}
   .page{display:none;animation:fade .2s ease}
   .page.active{display:block}
   @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
@@ -321,6 +336,11 @@
 </style>
 </head>
 <body>
+<script>
+/* iOS Safari n'arme `:active` au toucher que si un écouteur tactile existe quelque part.
+   Sans cette ligne, le retour d'appui ci-dessus resterait invisible sur iPhone. Passive, sans autre effet. */
+document.addEventListener('touchstart', function(){}, {passive:true});
+</script>
 <header class="top">
   <div class="logo">🤖</div>
   <div>
