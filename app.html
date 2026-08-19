@@ -3298,7 +3298,34 @@ document.querySelectorAll('nav.tabs button').forEach(b=>{
    ⚠️ L'aide de l'espace ADHÉRENT (tableau AQ dans espace-adherent.html) n'est PAS concernée :
    elle est écrite POUR les familles et doit rester lisible sans connexion. */
 let FAQ=[];
-function faqSync(){ FAQ = (typeof db!=='undefined' && db && Array.isArray(db.faq)) ? db.faq : []; }
+/* 🧰 LE SOCLE D'AIDE LIVRÉ AVEC BOB ===================================================
+   19/08/2026. Les fiches d'aide vivent dans le coffre de CHAQUE asso depuis le 15/08 —
+   très bien pour la confidentialité, mais une asso neuve hérite du CODE, pas du CONTENU :
+   son coffre est vide, donc l'assistant lui répond « je n'ai pas encore la réponse » à
+   TOUTES les questions — y compris pendant une démo devant un prospect.
+   Le socle vit donc dans une table PARTAGÉE `faq_socle` : une donnée qui n'appartient à
+   aucun client ne se recopie pas dans le coffre de chacun. Un nouveau client l'a d'office,
+   sans migration. Le coffre de l'asso reste prioritaire par-dessus.
+   (⚠️ ce fichier est PUBLIC : aucun nom de client ni chiffre d'usage ici.) */
+let FAQ_SOCLE=[];
+function faqSync(){
+  const perso = (typeof db!=='undefined' && db && Array.isArray(db.faq)) ? db.faq : [];
+  /* le coffre de l'asso PRIME toujours ; le socle ne comble que les questions absentes.
+     Dédoublonnage sur la question D'ORIGINE (`_src`) et pas sur la question affichée :
+     2 fiches du socle ont été reformulées pour ne plus nommer un client, elles feraient
+     doublon chez lui si on comparait le texte final. */
+  const vus = new Set(perso.map(f=>faqNorm(f.q)));
+  FAQ = perso.concat(FAQ_SOCLE.filter(f=>!vus.has(faqNorm(f._src||f.q))));
+}
+async function faqSocleLoad(){
+  try{
+    const {data,error} = await sbc.from('faq_socle').select('fiche,src_q').order('ordre');
+    if(error || !Array.isArray(data)) return;   // socle indisponible = on garde le coffre, jamais d'écran cassé
+    FAQ_SOCLE = data.map(r=>Object.assign({}, r.fiche, {_src:r.src_q}));
+    faqSync();
+    if(typeof renderFaqList==='function') renderFaqList();
+  }catch(e){}
+}
 function faqNorm(s){return (s||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^a-z0-9 ]/g,' ').replace(/\s+/g,' ').trim();}
 const FAQ_STOP=new Set("le la les un une des de du au aux et ou a à je tu il on en y ce que qui quoi est sont pour dans sur mes mon ma ta ton se sa ses comment ou est-ce faire fait puis peux peut on nous vous me te d".split(' '));
 function faqTokens(s){return faqNorm(s).split(' ').filter(w=>w.length>2&&!FAQ_STOP.has(w));}
@@ -15313,6 +15340,7 @@ window.loadDossiersPeri=async function(){
     if(le){ gate('<h2>Erreur de lecture</h2><p>'+esc(le.message)+'</p>'); return; }
     db = Object.assign(blank(), (st&&st.data&&typeof st.data==='object')?st.data:{});
     newsSync(); faqSync();   // nouveautés ET fiches d'aide viennent du coffre (blocs NEWS/FAQ)
+    faqSocleLoad();          // …complétées par le socle livré avec Bob (asso neuve = coffre vide)
     _jPrev = jSnap();
     lastSyncTs = st?st.updated_at:null;
     // remplace l'enregistrement local par l'enregistrement en ligne
