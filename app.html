@@ -2067,7 +2067,7 @@ document.addEventListener('touchstart', function(){}, {passive:true});
     <div class="panel" id="tiroirsPanel"></div>
     <div class="panel">
       <h2>Sauvegarde & données</h2>
-      <p class="hint">Tes données sont enregistrées dans ce navigateur, sur cet ordinateur. Pense à exporter une sauvegarde de temps en temps.</p>
+      <p class="hint">Tes données sont enregistrées <b>en ligne</b>, sur un serveur hébergé en France, et sauvegardées automatiquement. L'export ci-dessous te permet d'en garder une copie chez toi — et de repartir avec, si un jour tu changes d'outil.</p>
       <div class="row">
         <button class="btn" onclick="exportJSON()">💾 Exporter une sauvegarde</button>
         <button class="ghost btn" onclick="document.getElementById('importFile').click()">📂 Importer une sauvegarde</button>
@@ -2080,6 +2080,22 @@ document.addEventListener('touchstart', function(){}, {passive:true});
       <p class="hint" style="margin-top:18px;color:var(--red)">Zone sensible :</p>
       <button class="danger" id="btnResetAll" style="display:none" onclick="resetAll()">🗑️ Tout effacer et repartir de zéro</button>
       <p class="hint" id="hintResetAll" style="display:none;margin-top:6px">La remise à zéro complète est réservée au <b>président</b> de l'association. Les autres membres du bureau suppriment ligne à ligne — avec la corbeille comme filet.</p>
+    </div>
+    <!-- 🌳 RATTRAPER L'ARBRE (20/08/2026) — LE DÉCLENCHEUR QUI MANQUAIT.
+         Avant ce bouton, deux infobulles promettaient qu'un « balayage » réparait les
+         miroirs ratés dans l'arbre famille. Mesuré le 20/08 : rien ne l'appelait (ni
+         cron — l'extension n'est pas installée —, ni fonction serveur, ni bouton), et
+         lancé seul il ne réparait rien (foyers_reposes:0, dossiers_crees:0) car il
+         RENONÇAIT quand le parent n'avait pas de fiche. 51 échecs silencieux du 06 au
+         19/08. La migration 78 a posé arbre_creer_foyers_manquants() ; ce bouton
+         enchaîne les deux dans le bon ordre.
+         Placé dans ⚙️ Données et pas dans un 48e onglet : même doctrine nav que
+         🗄️ Mes tiroirs — « moins de portes, pas plus ». -->
+    <div class="panel">
+      <h2>🌳 Rattraper l'arbre famille</h2>
+      <p class="hint">Quand une famille s'inscrit sans que son parent soit fiché, son foyer peut manquer dans le registre : son dossier n'apparaît alors pas dans 👨‍👩‍👧 Foyers, et un badge <b>⚠️ pas dans l'arbre</b> s'affiche sur sa fiche. Ce bouton passe les familles en revue et <b>rattache ce qui manque</b>. <b>Rien n'est supprimé</b> — Bob ne fait qu'ajouter ce qui manquait.</p>
+      <div class="row"><button class="btn" id="btnRattraperArbre" onclick="bobRattraperArbre()">🌳 Rattraper l'arbre</button></div>
+      <div id="rattrapageOut"></div>
     </div>
     <div class="panel">
       <h2>Plan comptable — comptes personnalisés</h2>
@@ -8717,6 +8733,59 @@ function renderAll(){ renderCoffre(); renderDashboard(); renderZoneCards(); rend
    bob_import_asso (migration 74), qui garde TOUJOURS une copie avant de remplacer.
    La leçon vaut plus que le correctif : un commentaire qui CERTIFIE une garantie dissuade le
    prochain relecteur d'aller la vérifier. ====================================================== */
+/* 🌳 RATTRAPER L'ARBRE (20/08/2026) — le geste qui donne enfin un DÉCLENCHEUR au balayage.
+   Enchaîne les deux fonctions de la base DANS CET ORDRE, et l'ordre compte :
+     1. arbre_creer_foyers_manquants() (migration 78) — crée le foyer d'une famille
+        orpheline au lieu de renoncer ;
+     2. arbre_rattraper() — recrée alors les miroirs (dossiers, inscriptions, liens),
+        ce qu'elle ne pouvait pas faire tant que le foyer manquait.
+   Lancer la 2 sans la 1 rend des zéros : c'est exactement ce qui a fait croire pendant
+   deux semaines que « le balayage rattrapait ».
+   ⚠️ Le vrai verrou est en base (les deux RPC exigent can_write()) — le test ci-dessous
+   n'est que la politesse de l'écran. Et supabase-js NE LÈVE PAS : on lit r.error. */
+async function bobRattraperArbre(){
+  var btn=document.getElementById('btnRattraperArbre');
+  var out=document.getElementById('rattrapageOut');
+  var sbc=window.bobSbc;
+  if(!sbc){ await bobAlert("Bob n'est pas connecté à la base — recharge la page."); return; }
+  if(!(window.bobMe && window.bobMe.canWrite)){ await bobAlert('Ce passage est réservé au bureau.'); return; }
+  var go=await bobConfirm("Passer les familles en revue et rattacher celles qui manquent dans l'arbre ?\n\nRien n'est supprimé : Bob ne fait qu'ajouter ce qui manquait.",
+                          {titre:"🌳 Rattraper l'arbre", ok:'Lancer le passage'});
+  if(!go) return;
+  if(btn){ btn.disabled=true; btn.textContent='Passage en cours…'; }
+  if(out) out.innerHTML='';
+  try{
+    var r1=await sbc.rpc('arbre_creer_foyers_manquants');
+    if(r1.error) throw r1.error;
+    var r2=await sbc.rpc('arbre_rattraper');
+    if(r2.error) throw r2.error;
+    var a=r1.data||{}, b=r2.data||{};
+    var n=function(x){ return Number(x||0); };
+    var lignes=[
+      ['Foyers créés',                    n(a.foyers_crees)],
+      ['Enfants placés dans leur foyer',  n(a.enfants_places)],
+      ['Fiches de parent créées',         n(a.parents_crees)],
+      ['Dossiers remis dans l\'arbre',    n(b.dossiers_crees)],
+      ['Fiches enfant recréées',          n(b.personnes_creees)],
+      ['Foyers reposés',                  n(b.foyers_reposes)],
+      ['Inscriptions rattachées',         n(b.lignes_creees)+n(b.liens_dossier_poses)]
+    ].filter(function(l){ return l[1]>0; });
+    if(out){
+      out.innerHTML = lignes.length===0
+        ? '<p class="hint" style="margin-top:10px;color:#127a51">✅ Rien à rattraper — l\'arbre est à jour.</p>'
+        : '<p class="hint" style="margin-top:10px"><b>✅ Passage terminé.</b></p><ul style="margin:4px 0 0 18px;font-size:13px">'
+          + lignes.map(function(l){ return '<li>'+esc(l[0])+' : <b>'+l[1]+'</b></li>'; }).join('')
+          + '</ul>';
+    }
+    if(lignes.length && window.loadFoyers){ try{ window.loadFoyers(); }catch(e){} }
+  }catch(e){
+    if(out) out.innerHTML='<p class="hint" style="margin-top:10px;color:var(--red)">❌ '+esc((e&&e.message)||'Le passage a échoué.')+'</p>';
+  }finally{
+    if(btn){ btn.disabled=false; btn.textContent="🌳 Rattraper l'arbre"; }
+  }
+}
+window.bobRattraperArbre=bobRattraperArbre;
+
 function exportJSON(motif){
   const blob=new Blob([JSON.stringify(db,null,2)],{type:'application/json'});
   /* le nom du fichier suit l'ASSO connectée (window.bobOrgName), plus « CASE » en dur */
@@ -11501,7 +11570,7 @@ window.loadDossiersPeri=async function(){
       return '<div class="panel" id="peridos_'+d.id+'"'+(d.statut==='depose'?' data-todo="1"':'')+' style="margin:10px 0;border-left:4px solid '+st[1]+(isTodo(d)?';background:#fff8ef':';opacity:.85')+'">'
         +'<div class="toolbar"><div><strong>'+esc(d.foyer||'Famille')+'</strong> '
         +'<span class="pill" style="background:'+st[0]+';color:'+st[1]+';font-size:11px">'+st[2]+'</span>'
-        +((arbreInfo&&!arbreInfo.byId[d.id])?' <span class="pill" style="background:#fff4e0;color:#8a5a00;font-size:12px" title="Ce dossier n\'a pas (encore) de miroir dans l\'arbre famille (registre des foyers) — le balayage arbre_rattraper() le rattrapera">⚠️ pas dans l\'arbre</span>':'')
+        +((arbreInfo&&!arbreInfo.byId[d.id])?' <span class="pill" style="background:#fff4e0;color:#8a5a00;font-size:12px" title="Ce dossier n\'a pas (encore) de miroir dans l\'arbre famille (registre des foyers) — le bouton « Rattraper l\'arbre » (onglet ⚙️ Données) le rattrapera">⚠️ pas dans l\'arbre</span>':'')
         +' <button class="ghost btn" style="font-size:11px;padding:1px 8px" onclick="bobGoFicheFamille(\''+d.id+'\')" title="Ouvrir la fiche de cette famille (👨‍👩‍👧 Familles → 👥 Adhérents)">👥 Fiche famille</button>'
         +(d.besoin_aide?' <span class="pill" style="background:#fff5da;color:#8a6400;font-size:11px">🙋 Aide demandée (RDV)</span>':'')
         +((d.email||d.tel)?'<br><span class="muted" style="font-size:13px">'+esc(d.email||'')+((d.email&&d.tel)?' · ':'')+esc(d.tel||'')+'</span>':'')
@@ -12872,7 +12941,7 @@ window.loadDossiersPeri=async function(){
       var histBlk=(m.hist&&m.hist.length)?('<div style="margin-top:4px"><span onclick="var n=this.nextElementSibling;n.style.display=n.style.display===\'none\'?\'\':\'none\'" style="cursor:pointer;font-size:11px;color:#8a8f98">🕘 '+m.hist.length+' mouvement'+(m.hist.length>1?'s':'')+' — historique</span><div style="display:none;margin-top:3px">'+m.hist.map(function(h){return '<div style="font-size:11px;color:#8a8f98">'+(h.statut==='deplace'?'↪ déplacé':'✕ annulé')+' · '+esc(h.name||'')+(h.note?' <span style="color:#a7abb2">— '+esc(h.note)+'</span>':'')+'</div>';}).join('')+'</div></div>'):'';
       var badges='';
       if(m.arbre||m.arbreSeul) badges+=' <span class="pill" style="background:#e7f5ee;color:#127a51;font-size:12px" title="'+(m.arbreSeul?(m.ficheNonLue?'Cet enfant est relié à une fiche que Bob n\'a pas pu lire (droits ou lecture incomplète) — gestes coupés par prudence':'Enfant saisi au comptoir Foyers — il vit dans l\'arbre famille, sans fiche enfant pour l\'instant'):'Ligne lue depuis l\'arbre famille (le registre de l\'onglet 👨‍👩‍👧 Foyers), reliée à sa fiche enfant')+'">🌳 arbre'+(m.arbreSeul?(m.ficheNonLue?' (fiche non lue)':' seul'):'')+'</span>';
-      if(m.horsArbre) badges+=' <span class="pill" style="background:#fff4e0;color:#8a5a00;font-size:12px" title="Cette fiche enfant n\'a pas (encore) de miroir dans l\'arbre famille — le balayage arbre_rattraper() du bureau la rattrapera">⚠️ pas dans l\'arbre</span>';
+      if(m.horsArbre) badges+=' <span class="pill" style="background:#fff4e0;color:#8a5a00;font-size:12px" title="Cette fiche enfant n\'a pas (encore) de miroir dans l\'arbre famille — le bouton « Rattraper l\'arbre » (onglet ⚙️ Données) la rattrapera">⚠️ pas dans l\'arbre</span>';
       if(m.doublonProbable) badges+=' <span class="pill" style="background:#fdeeee;color:#b03a2e;font-size:12px" title="Un enfant relié porte le même prénom et nom : probablement la même personne, saisie au comptoir PUIS en fiche — à réconcilier (l\'arbre ne fusionne pas tout seul)">👥 doublon probable</span>';
       if(m.divId) badges+=' <span class="pill" style="background:#fdeeee;color:#b03a2e;font-size:12px" title="Le prénom/nom/classe de la fiche et celui de l\'arbre ne disent pas pareil — à réconcilier">🌳 ≠ fiche</span>';
       return '<div class="panel" style="margin:8px 0;padding:10px 12px">'
