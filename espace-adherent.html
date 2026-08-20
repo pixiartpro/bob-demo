@@ -60,6 +60,16 @@
   .gain{color:var(--vert-fonce);font-weight:800}
   .cost{color:var(--ananas);font-weight:800}
   .btn{border:none;cursor:pointer;font:inherit;font-weight:800;border-radius:999px;padding:10px 16px;font-size:14px;transition:.15s}
+
+  /* === Retour d'appui (20/08/2026) — la pression se voit AVANT le relâchement.
+         Cet espace est consulté au téléphone par les familles : sans ça, rien ne bouge
+         tant que le doigt n'est pas relevé. Additif et réversible : supprimer ce bloc suffit. === */
+  .btn:active,nav.adh-tabs button:active{transform:scale(.97)}
+  .fam-tile:active{transform:scale(.985)}
+  #welcomeBar button,#fbBar button{transition:transform .15s ease-out}
+  #welcomeBar button:active,#fbBar button:active{transform:scale(.97)}
+  #fbFab{transition:transform .15s ease-out}
+  #fbFab:active{transform:scale(.95)}
   .btn.win{background:var(--vert);color:#fff} .btn.win:hover{background:var(--vert-fonce)}
   .btn.use{background:var(--jaune);color:#5b4300} .btn.use:hover{filter:brightness(.97)}
   .btn:disabled{opacity:.5;cursor:default}
@@ -129,6 +139,11 @@
 </style>
 </head>
 <body>
+<script>
+/* iOS Safari n'arme `:active` au toucher que si un écouteur tactile existe quelque part.
+   Sans cette ligne, le retour d'appui ci-dessus resterait invisible sur iPhone. Passive, sans autre effet. */
+document.addEventListener('touchstart', function(){}, {passive:true});
+</script>
 <div class="demo-flag">🍍 Mon espace — mon adhésion, mes activités, et le dossier de mes enfants, en un seul endroit.</div>
 <header>
   <div class="bar">
