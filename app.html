@@ -1433,6 +1433,16 @@ document.addEventListener('touchstart', function(){}, {passive:true});
       <summary style="cursor:pointer;font-weight:700;font-size:16px">💶 CAF — Prestation de service <span class="hint" style="font-weight:400">— heures-enfants &amp; estimation PS par année civile</span></summary>
       <p class="hint" style="margin:8px 0 8px">La CAF974 raisonne par <strong>année civile</strong> et compte en <strong>heures-enfants</strong> (jours × enfants × amplitude). Bob l'estime pour t'aider à préparer la déclaration <strong>AFAS</strong> — ce n'est pas la déclaration elle-même.</p>
       <div id="acmCafBody"><p class="hint">Chargement…</p></div>
+      <!-- 📝 COMMENTAIRE DE JUSTIFICATION D'ÉCART (20/08/2026) — première pierre de l'écran « Déclaration CAF ».
+           Pourquoi HORS portail : AFAS n'enregistre le commentaire libre QU'À la transmission — il saute à
+           chaque expiration de session (~15 min, vécu le 19/08/2026). Il se prépare donc ici, copiable en une
+           fois, et le brouillon vit dans le COFFRE par année × équipement : il se reporte de stade en stade
+           jusqu'au Bilan N+1. Format exigé (PDF Caf « Attendus » 2026, §2) : un libellé NATIONAL + une
+           décomposition chiffrée couvrant ≥ 50 % de l'écart, sinon la déclaration est automatiquement retournée. -->
+      <details id="acmCafComPanel" style="margin-top:12px">
+        <summary style="cursor:pointer;font-weight:600">📝 Commentaire de justification d'écart <span class="hint" style="font-weight:400">— à préparer ici : le portail le perd à chaque expiration de session</span></summary>
+        <div id="acmCafComBody" style="margin-top:8px"></div>
+      </details>
     </details>
 
     <!-- 👶 Enfants en ACM (lecture seule) — brique 1 de l'archi « enfant au centre » : liste consolidée, regroupée par enfant. Aucun objet nouveau en base. -->
@@ -12661,7 +12671,7 @@ window.loadDossiersPeri=async function(){
     let h='<div class="row" style="gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:8px"><span class="hint">Barème PS ados</span><input type="number" step="0.01" min="0" value="'+rate+'" onchange="acmSetBaremeCAF(\'ados\',this.value)" style="width:82px;padding:4px 6px"><span class="hint">€ / heure-enfant · revalorisé chaque année (paramètre) — 2026 : 0,94</span></div>';
     const byYear={}; a.sessions.forEach(function(ed){ const d=acmEditionDebut(ed); const y=d?d.getFullYear():null; if(y==null) return; (byYear[y]=byYear[y]||[]).push(ed); });
     const years=Object.keys(byYear).map(Number).sort(function(x,y){return x-y;});
-    if(!years.length){ box.innerHTML=h+'<p class="hint">Aucune édition datée. Renseigne la <b>date de début</b> des éditions (dans leur dossier-bilan) pour calculer les heures-enfants.</p>'; return; }
+    if(!years.length){ box.innerHTML=h+'<p class="hint">Aucune édition datée. Renseigne la <b>date de début</b> des éditions (dans leur dossier-bilan) pour calculer les heures-enfants.</p>'; if(window.renderCafCom) renderCafCom(); return; }
     years.forEach(function(y){
       const eds=byYear[y]; let totH=0, miss=false;
       const rows=eds.map(function(ed){ const c=acmHeuresEnfants(ed); if(c.heures==null) miss=true; else totH+=c.heures;
@@ -12679,9 +12689,134 @@ window.loadDossiersPeri=async function(){
     });
     h+='<p class="hint" style="margin-top:6px;font-size:11px">⚠️ <b>Estimation d\'aide</b> (heures-enfants = jours × enfants × amplitude). La CAF compte les heures <b>réalisées ou facturées</b> selon ta convention, et la PS est <b>plafonnée à ton prix de revient réel</b> (à affiner avec la compta). À déclarer au compte <b>70623</b>.</p>';
     box.innerHTML=h;
+    if(window.renderCafCom) renderCafCom(); /* 📝 le composeur de commentaire vit dans le même panneau */
   };
   window.acmSetAmplitude=function(edId,v){ const ed=acmDb().sessions.find(function(s){return s.id===edId;}); if(!ed)return; ed.amplitude=(v===''||v==null)?null:(parseFloat(v)||null); save(); if(window.renderAcmCaf) renderAcmCaf(); };
   window.acmSetBaremeCAF=function(field,v){ const a=acmDb(); a.baremeCAF=a.baremeCAF||{annee:2026,ados:0.94,peri:0.60,extra:0.64}; a.baremeCAF[field]=parseFloat(v)||0; save(); if(window.renderAcmCaf) renderAcmCaf(); };
+  /* 📝 COMMENTAIRE DE JUSTIFICATION D'ÉCART (20/08/2026) — première pierre de l'écran « Déclaration CAF »
+     (spec : page Notion « Chantier — écran Déclaration CAF », §6.4). Ce que la Caf attend (PDF « Attendus et
+     recommandations » 2026) : au-delà de 20 % d'écart vs la référence (JAMAIS 10 %), la déclaration est
+     automatiquement retournée SAUF commentaire portant un des 10 libellés NATIONAUX + une décomposition
+     arithmétique couvrant ≥ 50 % de l'écart (ex. accepté : « 5 jours × 40 enfants × 8 heures = 1 600 heures,
+     soit plus de 50 % de l'écart constaté »). Nuance par stade, vérifiée à l'écran le 19/08/2026 : le contrôle
+     ne BLOQUE pas au prévisionnel — mais un chiffre trop haut y est PAYÉ puis REPRIS (indu) ; le commentaire
+     s'écrit donc à tous les stades, et resservira tel quel au Bilan N+1. Le brouillon vit dans le COFFRE
+     (acmVac.cafComments, clé année-équipement) — les libellés sont du contenu NATIONAL Caf, pas une donnée
+     client (SaaS ok). */
+  var CAF_COM_LIBELLES=[
+    'Augmentation / Diminution de la capacité d\'accueil DRAJES',
+    'Augmentation / Diminution de l\'amplitude d\'ouverture de la structure',
+    'Regroupement du service durant les vacances scolaires',
+    'Hausse / Diminution du nombre d\'enfants / jeunes accueillis ayant un impact sur l\'évolution des heures',
+    'Changement dans le mode de tarification des familles modifiant la nature des heures financées par la Caf',
+    'Erreur de comptabilisation de l\'activité, des charges, des recettes',
+    'Recrutement / départ du personnel',
+    'Hausse des charges de personnel suite congés maternité, arrêt maladie',
+    'Ouverture / fermeture (temporaire ou définitive) en cours d\'année N ou N-1',
+    'Recours à des prestataires qualifiés'
+  ];
+  var CAF_COM_REFS={n1:'à l\'année précédente (N-1)', prev:'aux prévisions initiales', t2:'à l\'actualisation de juin (Actu T2)'};
+  function cafComKey(){ return (window._cafComYear||new Date().getFullYear())+'-'+(window._cafComEquip||'PERI'); }
+  function cafComGet(){ var a=acmDb(); a.cafComments=a.cafComments||{}; var k=cafComKey();
+    if(!a.cafComments[k]) a.cafComments[k]={stade:'prev', grandeur:'heures', decl:null, refType:'n1', refVal:null, motif:-1, phrase:'', jours:null, enfants:null, amplitude:null, justifEuros:null, calcul:'', complement:''};
+    return a.cafComments[k]; }
+  function cafComCalc(d){
+    var decl=(typeof d.decl==='number')?d.decl:null, ref=(typeof d.refVal==='number')?d.refVal:null;
+    var ecart=(decl!=null&&ref!=null)?decl-ref:null;
+    var pct=(ecart!=null&&ref>0)?(ecart/ref*100):null;
+    var justif=null;
+    if(d.grandeur==='euros'){ justif=(typeof d.justifEuros==='number')?d.justifEuros:null; }
+    else if(typeof d.jours==='number'&&typeof d.enfants==='number'&&typeof d.amplitude==='number'){ justif=d.jours*d.enfants*d.amplitude; }
+    var couvert=(justif!=null&&ecart!=null&&ecart!==0)?(justif/Math.abs(ecart)*100):null;
+    return {decl:decl, ref:ref, ecart:ecart, pct:pct, justif:justif, couvert:couvert};
+  }
+  function cafComText(d){
+    var c=cafComCalc(d), u=(d.grandeur==='euros')?'€':'heures';
+    var o=[];
+    if(d.motif>=0&&CAF_COM_LIBELLES[d.motif]) o.push(CAF_COM_LIBELLES[d.motif]+'.');
+    if(c.ecart!=null){
+      var sens=(c.ecart<0)?'diminution':'augmentation';
+      var l='La '+sens+' de '+acmNum(Math.abs(Math.round(c.ecart)))+' '+u+(d.grandeur==='euros'?'':' d\'activité')+' par rapport '+(CAF_COM_REFS[d.refType]||'à la référence');
+      l+=(d.phrase?' s\'explique principalement par : '+d.phrase+(/[.!?…]$/.test(d.phrase)?'':'.'):' s\'explique par les éléments ci-dessous.');
+      o.push('', l);
+    } else if(d.phrase){ o.push('', d.phrase); }
+    if(c.justif!=null){
+      var lj;
+      if(d.grandeur==='euros') lj=(d.calcul?d.calcul+' : ':'')+acmNum(Math.round(c.justif))+' €';
+      else lj=d.jours+' jours × '+d.enfants+' enfants × '+d.amplitude+' heures = '+acmNum(Math.round(c.justif))+' heures';
+      if(c.couvert!=null) lj+=', soit '+(c.couvert>=100?'la totalité':Math.round(c.couvert)+' %')+' de l\'écart constaté';
+      o.push('', lj+'.');
+    }
+    if(d.complement) o.push('', d.complement);
+    return o.join('\n');
+  }
+  window.cafComSet=function(f,v){
+    if(f==='annee'){ window._cafComYear=parseInt(v,10)||new Date().getFullYear(); renderCafCom(); return; }
+    if(f==='equip'){ window._cafComEquip=v; renderCafCom(); return; }
+    var d=cafComGet();
+    if(['decl','refVal','jours','enfants','amplitude','justifEuros'].indexOf(f)>=0) d[f]=(v===''||v==null)?null:(parseFloat(v)||0);
+    else if(f==='motif') d[f]=parseInt(v,10);
+    else d[f]=v;
+    save(); renderCafCom();
+  };
+  window.cafComCopy=function(){
+    var pre=document.getElementById('cafComOut'); if(!pre) return;
+    var done=function(){ var b=document.getElementById('cafComCopyBtn'); if(b){ var o=b.textContent; b.textContent='Copié ✓'; setTimeout(function(){b.textContent=o;},1500); } };
+    if(navigator.clipboard&&navigator.clipboard.writeText) navigator.clipboard.writeText(pre.textContent).then(done,function(){ bobAlert(pre.textContent); });
+    else bobAlert(pre.textContent);
+  };
+  window.renderCafCom=function(){
+    var box=document.getElementById('acmCafComBody'); if(!box) return;
+    var d=cafComGet(), c=cafComCalc(d), y=window._cafComYear||new Date().getFullYear(), eq=window._cafComEquip||'PERI';
+    var sel=function(name,opts,cur,w){ return '<select onchange="cafComSet(\''+name+'\',this.value)" style="padding:4px 6px;max-width:'+(w||'100%')+'">'+opts.map(function(o){ return '<option value="'+o[0]+'"'+(String(o[0])===String(cur)?' selected':'')+'>'+esc(o[1])+'</option>'; }).join('')+'</select>'; };
+    var num=function(name,val,ph,w){ return '<input type="number" step="any" min="0" value="'+(val!=null?val:'')+'" placeholder="'+(ph||'')+'" onchange="cafComSet(\''+name+'\',this.value)" style="width:'+(w||90)+'px;padding:4px 6px">'; };
+    var h='';
+    h+='<div class="row" style="gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:6px">'
+      +'<span class="hint">Année</span>'+num('annee',y,'',74)
+      +'<span class="hint">Équipement</span>'+sel('equip',[['PERI','PERI (périscolaire)'],['EXTRA','EXTRA (vacances)'],['ADO','ADO (adolescents)']],eq,'190px')
+      +'<span class="hint">Stade</span>'+sel('stade',[['prev','Prévisionnelle'],['t2','Actu T2 (30 juin)'],['t3','Actu T3 (30 sept.)'],['bilan','Bilan (réelles)']],d.stade,'170px')
+      +'<span class="hint">Grandeur</span>'+sel('grandeur',[['heures','Heures d’activité'],['euros','Euros (charges / recettes)']],d.grandeur,'190px')
+      +'</div>';
+    h+='<div class="row" style="gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:6px">'
+      +'<span class="hint">Déclaré</span>'+num('decl',d.decl,(d.grandeur==='euros'?'€':'heures'),110)
+      +'<span class="hint">comparé</span>'+sel('refType',[['n1','au réel N-1'],['prev','au prévisionnel'],['t2','à l’Actu T2']],d.refType,'150px')
+      +num('refVal',d.refVal,(d.grandeur==='euros'?'€':'heures'),110);
+    if(c.pct!=null){
+      var over=Math.abs(c.pct)>20;
+      h+='<span class="pill" style="background:'+(over?'#fdecec':'#eef4ff')+';color:'+(over?'#a02020':'#23448a')+';font-weight:600">Écart '+(c.ecart>0?'+':'')+acmNum(Math.round(c.ecart))+' ('+(c.pct>0?'+':'')+Math.round(c.pct)+' %)</span>'
+        +(over?'<span class="hint" style="color:#a02020">&gt; 20 % — justification exigée</span>':'<span class="hint">sous le seuil des 20 %</span>');
+    }
+    h+='</div>';
+    h+='<div class="row" style="gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:6px"><span class="hint">Libellé national</span>'
+      +sel('motif',[[-1,'— choisir le libellé Caf —']].concat(CAF_COM_LIBELLES.map(function(l,i){return [i,l];})),d.motif,'520px')+'</div>';
+    h+='<div style="margin-bottom:6px"><span class="hint">La cause, en une phrase (elle complète le libellé)</span><br>'
+      +'<input type="text" value="'+esc(d.phrase||'')+'" placeholder="ex. la fermeture exceptionnelle de la structure pendant 5 jours en raison d’un problème technique" onchange="cafComSet(\'phrase\',this.value)" style="width:100%;max-width:640px;padding:5px 7px"></div>';
+    if(d.grandeur==='euros'){
+      h+='<div class="row" style="gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:6px"><span class="hint">Le calcul, en clair</span>'
+        +'<input type="text" value="'+esc(d.calcul||'')+'" placeholder="ex. revalorisation salariale de 3 % sur l’année" onchange="cafComSet(\'calcul\',this.value)" style="width:320px;max-width:100%;padding:4px 6px">'
+        +'<span class="hint">montant justifié</span>'+num('justifEuros',d.justifEuros,'€',110)+'</div>';
+    } else {
+      h+='<div class="row" style="gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:6px"><span class="hint">Décomposition :</span>'
+        +num('jours',d.jours,'jours',72)+'<span class="hint">jours ×</span>'
+        +num('enfants',d.enfants,'enfants',80)+'<span class="hint">enfants ×</span>'
+        +num('amplitude',d.amplitude,'h/jour',72)+'<span class="hint">h/jour</span>';
+      if(c.justif!=null) h+='<span class="pill" style="background:#eef4ff;color:#23448a;font-weight:600">= '+acmNum(Math.round(c.justif))+' heures</span>';
+      h+='</div>';
+    }
+    if(c.couvert!=null){
+      var ok=c.couvert>=50;
+      h+='<div style="margin-bottom:6px"><span class="pill" style="background:'+(ok?'#dff5e9':'#fff5da')+';color:'+(ok?'#127a51':'#8a6400')+';font-weight:700">'+Math.round(c.couvert)+' % de l’écart couvert'+(ok?' — recevable (≥ 50 %)':' — insuffisant : la Caf exige ≥ 50 %')+'</span></div>';
+    }
+    h+='<div style="margin-bottom:8px"><span class="hint">Le reste de la variation (optionnel)</span><br>'
+      +'<textarea onchange="cafComSet(\'complement\',this.value)" placeholder="ex. Le reste de la variation est lié à une baisse ponctuelle de fréquentation sur deux semaines, non anticipée lors de la déclaration prévisionnelle." style="width:100%;max-width:640px;min-height:48px">'+esc(d.complement||'')+'</textarea></div>';
+    var txt=cafComText(d);
+    h+='<div class="row" style="gap:8px;align-items:center;margin-bottom:4px"><b>Commentaire prêt à coller</b>'
+      +'<button class="ghost btn" id="cafComCopyBtn" onclick="cafComCopy()">📋 Copier</button></div>'
+      +'<pre id="cafComOut" style="white-space:pre-wrap;background:#f7f7f4;border:1px solid #e4e4de;border-radius:8px;padding:10px;font-size:13px;margin:0">'+esc(txt||'Remplis les champs ci-dessus : le commentaire se compose tout seul.')+'</pre>';
+    h+='<p class="hint" style="margin-top:6px;font-size:11px">⚠️ À coller dans le portail <b>en dernier, juste avant la signature</b> : AFAS n’enregistre ce commentaire qu’à la transmission (il saute à l’expiration de session).'
+      +(d.stade==='prev'?' Au stade <b>prévisionnel</b> le contrôle ne bloque pas — mais un chiffre trop haut est <b>payé puis repris</b> (indu) : la justification protège aussi dans ce sens.':' Ce commentaire resservira tel quel au stade suivant, jusqu’au Bilan N+1.')+'</p>';
+    box.innerHTML=h;
+  };
   window.acmCloreEdition=async function(edId){
     const ed=acmDb().sessions.find(function(s){return s.id===edId;}); if(!ed)return;
     if(!await bobConfirm('Clôturer l\'édition « '+ed.nom+' » ?\n\nSon effectif du jour sera figé et l\'édition rejoindra les archives (tu pourras toujours la rouvrir).', {titre:'Confirmer', ok:'Confirmer'})) return;
