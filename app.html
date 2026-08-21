@@ -12749,6 +12749,10 @@ window.loadDossiersPeri=async function(){
       window.__cafDecl=(rd.data||[]).map(function(d){ d.etats=ets.filter(function(e){ return e.declaration_id===d.id; }); return d; });
       /* décor de l'écran de saisie (point 5) — chaque échec reste indépendant et bruyant */
       try{ const rl=await sbc.from('caf_lieux').select('*').order('nom'); if(rl.error) console.warn('cafLoadDecl lieux',rl.error); else window.__cafLieux=rl.data||[]; }catch(e2){ console.warn('cafLoadDecl lieux',e2); }
+      /* point 7a : la ventilation vers AFAS — chaque table est indépendante et son échec est bruyant */
+      try{ const rv=await sbc.from('caf_ventilation').select('*'); if(rv.error) console.warn('cafLoadDecl ventilation',rv.error); else window.__cafVentil=rv.data||[]; }catch(e5){ console.warn('cafLoadDecl ventilation',e5); }
+      try{ const rr=await sbc.from('caf_repartition').select('*'); if(rr.error) console.warn('cafLoadDecl repartition',rr.error); else window.__cafRepart=rr.data||[]; }catch(e6){ console.warn('cafLoadDecl repartition',e6); }
+      try{ const rm=await sbc.from('caf_comptes_map').select('*'); if(rm.error) console.warn('cafLoadDecl comptes_map',rm.error); else window.__cafMap=rm.data||[]; }catch(e7){ console.warn('cafLoadDecl comptes_map',e7); }
       try{ const ri=await sbc.from('inscriptions').select('matin,soir').eq('type','periscolaire'); if(!ri.error&&ri.data){ let m=0,s=0; ri.data.forEach(function(r){ if(r.matin)m++; if(r.soir)s++; }); window.__cafInscrits={matin:m,soir:s,total:ri.data.length}; } }catch(e3){}
       try{ if(!window.__periCal&&typeof periChargerCalendrier==='function'){ periChargerCalendrier().then(function(){ if(window.renderCafDeclEdit) renderCafDeclEdit(); }); } }catch(e4){} /* fonction INTERNE à l'IIFE, pas sur window — la tester via typeof, pas via window.* */
       if(window.renderAcmCaf) renderAcmCaf();
@@ -13249,6 +13253,414 @@ window.loadDossiersPeri=async function(){
       if(window.renderAcmCaf) renderAcmCaf();
     }catch(ex){ console.warn('cafDeclNew',ex); }
   };
+  /* ══════════ POINT 7a — L'EXPORT AFAS (§6.1) ══════════
+     « Un export PAR STADE, pas une grille unique. Les valeurs dans l'ordre du
+     formulaire, LIBELLÉ DE COMPTE EN FACE (le portail se repère au libellé, jamais à
+     la position). » Trois conversions : ventilation par ÉQUIPEMENT là où Bob ventile
+     par site et action · charges COMMUNES réparties en DEUX temps (part du périmètre
+     CAF, puis prorata des heures déclarées — arbitrage Guillaume du 21/08/2026) ·
+     compte → case AFAS, demandé à l'asso plutôt que deviné.
+
+     🔴 CE BLOC MANIPULE DES EUROS DÉCLARÉS À LA CAF. L'asso porte déjà 33 497,32 €
+     d'indu sur 2025 : un chiffre faux ici coûte de l'argent. D'où les règles tenues
+     ligne à ligne, chacune posée après un défaut PROUVÉ par la relecture du 21/08 :
+       · aucun euro n'entre ni ne sort sans être compté (bouclage affiché à l'écran) ;
+       · tout ce qui n'est pas classé est MONTRÉ, jamais avalé — charges ET produits ;
+       · toute part est bornée à [0,100] et son chiffre réel est affiché ;
+       · la case AFAS dépend du compte ET DU SENS (un même compte peut servir dans
+         les deux sens : participation encaissée / trop-perçu remboursé) ;
+       · la clé de répartition ne peut pas donner 100 % à un équipement au seul motif
+         que les autres n'ont pas encore saisi leurs heures ;
+       · le texte copié ne contient que des chiffres ASCII (le séparateur de milliers
+         de toLocaleString est une espace fine insécable U+202F, invisible et refusée
+         par les champs du portail). */
+  window.__cafVentil=null; window.__cafRepart=null; window.__cafMap=null;
+  window.__cafExportOpen=false; window.__cafBtn=[];
+  var CAF_AFAS_CHARGES=[['60','Achats'],['611','Sous-traitance générale'],['6112','Prestations de services (accueil)'],
+    ['613','Locations'],['614','Charges locatives'],['61AUT','Autres services extérieurs (61)'],
+    ['621','Personnel extérieur'],['628','Divers (62)'],['62AUT','Autres services extérieurs (62)'],
+    ['63A','Impôts et taxes sur rémunérations'],['63B','Autres impôts et taxes'],['64','Charges de personnel'],
+    ['65','Autres charges de gestion'],['66','Charges financières'],['67','Charges exceptionnelles'],
+    ['68','Dotations aux amortissements'],['86','Emplois des contributions volontaires']];
+  var CAF_AFAS_PRODUITS=[['70623','Prestation de service CAF (+ complément inclusif)'],['70624','Autre prestation de service (70624)'],
+    ['70625','Autre prestation de service (70625)'],['70626','Bonus Territoire CTG'],['70642','Participations des familles'],
+    ['707','Ventes de marchandises'],['708','Autres produits d\'activités'],['70AUT','Autres produits (70)'],
+    ['741','Subvention État'],['742','Subvention Région'],['743','Subvention Département'],['744','Subvention Commune / EPCI'],
+    ['7451','Subvention CAF (hors prestation de service)'],['7452','Subvention MSA'],['746','Subvention organismes sociaux'],
+    ['747','Autres subventions'],['7481','Autres subventions (7481)'],['7488','Autres subventions (7488)'],
+    ['75','Autres produits de gestion'],['76','Produits financiers'],['77','Produits exceptionnels'],
+    ['78','Reprises sur amortissements'],['87','Contributions volontaires en nature']];
+  var CAF_EQUIPS=['PERI','EXTRA','ADO','COMMUN','HORS','EXCLU'];
+  var CAF_EQ_CAF=['PERI','EXTRA','ADO'];
+  function cafAfasLabel(c){
+    var f=CAF_AFAS_CHARGES.concat(CAF_AFAS_PRODUITS).find(function(x){ return x[0]===c; });
+    return f?f[1]:c;
+  }
+  function cafAfasConnue(c){ return CAF_AFAS_CHARGES.concat(CAF_AFAS_PRODUITS).some(function(x){ return x[0]===c; }); }
+  function cafNorm(s){
+    return String(s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/\s+/g,' ').trim();
+  }
+  function cafEur(n){ return (Math.round((n||0)*100)/100).toLocaleString('fr-FR',{minimumFractionDigits:2, maximumFractionDigits:2}); }
+  /* Pour le TEXTE COPIÉ : virgule décimale, aucun séparateur de milliers, ASCII pur. */
+  function cafNum2(n){ var v=(Math.round((n||0)*100)/100); return (isFinite(v)?v:0).toFixed(2).replace('.',','); }
+  function cafNumEnt(n){ var v=Math.round(n||0); return String(isFinite(v)?v:0); }
+  /* Poignées de boutons : on passe un INDEX (type contrôlé), jamais une chaîne de
+     données — JSON.stringify + &quot; n'échappe pas le « & » et se laisse refermer
+     par une donnée contenant le texte « &quot; » (XSS stocké prouvé le 21/08). */
+  function cafRef(fn,a,b){ window.__cafBtn.push({fn:fn,a:a,b:b}); return 'cafBtnGo('+(window.__cafBtn.length-1)+')'; }
+  window.cafBtnGo=function(i){
+    var x=(window.__cafBtn||[])[i]; if(!x) return;
+    if(x.fn==='map') cafMapCompte(x.a,x.b);
+    else if(x.fn==='classer') cafClasserAction(x.a,x.b);
+  };
+  /* Suggestion nationale d'après le préfixe PCG — UNIQUEMENT sans ambiguïté. Tout ce
+     qui touche aux subtilités CAF (63A/63B, 70623/70626/70642, 741/742/744/746) reste
+     « à affecter » : une déclaration ne se devine pas. */
+  function cafAfasSuggere(compte,sens){
+    var m=String(compte||'').match(/^\s*(\d{2,6})/); if(!m) return null;
+    var n=m[1];
+    if(sens==='charge'){
+      if(/^60/.test(n)) return '60';
+      if(/^6112/.test(n)) return '6112';        /* AVANT 611 : sinon 61120 tombait en 61AUT */
+      if(/^611/.test(n)) return '611';
+      if(/^613/.test(n)) return '613';
+      if(/^614/.test(n)) return '614';
+      if(/^61/.test(n)) return '61AUT';
+      if(/^621/.test(n)) return '621';
+      if(/^628/.test(n)) return '628';
+      if(/^62/.test(n)) return '62AUT';
+      if(/^63/.test(n)) return null;            /* 63A ou 63B : l'asso tranche */
+      if(/^64/.test(n)) return '64';
+      if(/^65/.test(n)) return '65';
+      if(/^66/.test(n)) return '66';
+      if(/^67/.test(n)) return '67';
+      if(/^68/.test(n)) return '68';
+      return null;
+    }
+    if(/^707/.test(n)) return '707';
+    if(/^708/.test(n)) return '708';
+    if(/^76/.test(n)) return '76';
+    if(/^77/.test(n)) return '77';
+    if(/^78/.test(n)) return '78';
+    return null;                                 /* 706x, 75x, 74x : l'asso tranche */
+  }
+  /* La case dépend du compte ET DU SENS : « 706 » peut être une participation encaissée
+     (70642) et, en charge, un remboursement de trop-perçu — les additionner déclarerait
+     une recette pour un décaissement (défaut critique prouvé le 21/08). */
+  function cafCaseDe(compte,sens){
+    var m=(window.__cafMap||[]).find(function(x){ return x.compte===compte && x.sens===sens; });
+    if(m) return m.case_afas;
+    return cafAfasSuggere(compte,sens);
+  }
+  function cafMapChoisi(compte,sens){ return (window.__cafMap||[]).some(function(x){ return x.compte===compte && x.sens===sens; }); }
+  /* Règles triées une SEULE fois par passe, de façon déterministe : ordre croissant,
+     puis motif le plus LONG d'abord (le plus précis gagne), puis alphabétique. Sans
+     ça, la priorité dépendait de l'ordre de retour de PostgREST — non garanti. */
+  function cafReglesTriees(){
+    return (window.__cafVentil||[]).map(function(r){ return {champ:r.champ, motif:cafNorm(r.motif), equipement:r.equipement, ordre:(typeof r.ordre==='number'?r.ordre:100)}; })
+      .filter(function(r){ return r.motif; })
+      .sort(function(a,b){ return (a.ordre-b.ordre) || (b.motif.length-a.motif.length) || (a.motif<b.motif?-1:1); });
+  }
+  function cafEquipAvec(regles,action,site){
+    var na=cafNorm(action), ns=cafNorm(site);
+    for(var i=0;i<regles.length;i++){
+      var r=regles[i], cible=(r.champ==='site')?ns:na;
+      if(cible && cible.indexOf(r.motif)===0) return r.equipement;
+    }
+    return null;
+  }
+  /* Parcourt la compta de l'exercice et range chaque SPLIT. Tout ce qui n'entre nulle
+     part est COMPTÉ et rendu visible : rien ne disparaît en silence. */
+  function cafVentilExercice(y){
+    var out={}, direct={}; CAF_EQUIPS.forEach(function(q){ out[q]={}; direct[q]=0; });
+    var nonV={}, alertes={sansDate:{nb:0,montant:0}, typeInconnu:{nb:0,montant:0}, equipInconnu:{nb:0,montant:0},
+                          repartition:{nb:0,montant:0}, montantIllisible:{nb:0}};
+    var totalOps={charge:0, produit:0}, totalRange={charge:0, produit:0};
+    var regles=cafReglesTriees();
+    (db.ops||[]).forEach(function(o){
+      if(o.type==='transfer') return;                       /* virement interne : jamais un flux */
+      var dt=String(o.date||'');
+      if(!/^\d{4}-\d{2}-\d{2}/.test(dt)){ alertes.sansDate.nb++; alertes.sansDate.montant+=Math.abs(parseFloat(o.amount)||0); return; }
+      if(dt.slice(0,4)!==String(y)) return;
+      if(o.type!=='in'&&o.type!=='out'){ alertes.typeInconnu.nb++; alertes.typeInconnu.montant+=Math.abs(parseFloat(o.amount)||0); return; }
+      var sens=(o.type==='in')?'produit':'charge';
+      var compte=String(o.compte||'').trim()||'(sans code comptable)';
+      var mtOp=parseFloat(o.amount); if(!isFinite(mtOp)) mtOp=0;
+      totalOps[sens]+=mtOp;
+      var sp=getSplits(o)||[], somme=0;
+      sp.forEach(function(s){
+        var mt=parseFloat(s.amount);
+        if(!isFinite(mt)){ alertes.montantIllisible.nb++; return; }
+        somme+=mt;
+        if(mt===0) return;                                   /* zéro : rien à ranger, mais compté dans `somme` */
+        var eq=cafEquipAvec(regles,s.action,s.site);
+        if(eq&&!out[eq]){ alertes.equipInconnu.nb++; alertes.equipInconnu.montant+=Math.abs(mt); eq=null; }
+        if(!eq){
+          var k=(s.action||'(sans action)')+' · '+(s.site||'(sans site)');
+          nonV[k]=nonV[k]||{action:s.action||'', site:s.site||'', charges:0, produits:0};
+          nonV[k][sens==='charge'?'charges':'produits']+=mt;
+          totalRange[sens]+=mt;
+          return;
+        }
+        out[eq][compte]=out[eq][compte]||{charge:0,produit:0};
+        out[eq][compte][sens]+=mt;
+        totalRange[sens]+=mt;
+        if(sens==='charge') direct[eq]+=mt;
+      });
+      /* la répartition doit totaliser le montant de l'écriture — sinon des euros
+         n'existent nulle part (un split laissé à 0 masquait 4 500 € au banc du 21/08) */
+      if(Math.abs(somme-mtOp)>0.005){ alertes.repartition.nb++; alertes.repartition.montant+=(mtOp-somme); }
+    });
+    return {parEquip:out, nonVentile:nonV, direct:direct, alertes:alertes, totalOps:totalOps, totalRange:totalRange};
+  }
+  function cafClamp01(x){ return (!isFinite(x))?null:Math.max(0,Math.min(1,x)); }
+  /* Temps 1 : quelle part du COMMUN revient au périmètre CAF. Bornée, chiffrée, dite. */
+  function cafPartPerimetre(y,v){
+    var r=(window.__cafRepart||[]).find(function(x){ return x.exercice===y; });
+    if(r&&r.methode_perimetre==='manuelle'){
+      var brut=parseFloat(r.part_perimetre);
+      if(isFinite(brut)&&brut>=0&&brut<=100)
+        return {part:brut/100, source:'part saisie à la main : '+(Math.round(brut*10)/10)+' %', nonVentile:0, manuelle:true};
+      /* saisie inutilisable : on ne fait pas semblant, on retombe sur l'automatique */
+      return Object.assign(cafPartPerimetreAuto(y,v), {avertissement:'la part saisie à la main est inutilisable ('+esc(String(r.part_perimetre))+') — calcul automatique appliqué'});
+    }
+    return cafPartPerimetreAuto(y,v);
+  }
+  function cafPartPerimetreAuto(y,v){
+    var caf=0; CAF_EQ_CAF.forEach(function(q){ caf+=v.direct[q]||0; });
+    var hors=v.direct.HORS||0;
+    /* les charges NON VENTILÉES entrent au dénominateur : tant qu'une action n'est pas
+       classée, elle pourrait être hors CAF — l'ignorer gonflerait la part CAF, donc les
+       charges déclarées, donc le risque d'indu. On sous-estime plutôt que sur-déclarer. */
+    var nv=0; Object.keys(v.nonVentile||{}).forEach(function(k){ nv+=v.nonVentile[k].charges||0; });
+    var den=caf+hors+nv;
+    if(!(den>0)||!(caf>0)) return {part:0, nonVentile:nv, source:'charges directes insuffisantes ('+cafEur(caf)+' € sur '+cafEur(den)+' €) — aucune charge commune répartie'};
+    var p=cafClamp01(caf/den);
+    var hb=(caf/den>1||caf/den<0);
+    return {part:(p==null?0:p), nonVentile:nv, horsBornes:hb,
+      source:'poids des charges directes CAF ('+cafEur(caf)+' € sur '+cafEur(den)+' €'+(nv>0?', dont '+cafEur(nv)+' € non ventilés':'')+')'
+        +(hb?' — valeur ramenée dans [0 %, 100 %] : des avoirs rendent le calcul instable':'')};
+  }
+  /* Temps 2 : répartition ENTRE les équipements CAF. Un équipement qui a des charges
+     directes mais pas encore d'heures ne doit pas disparaître du dénominateur, sinon
+     un seul déclarant ramasse 100 % du commun (défaut critique prouvé le 21/08). */
+  function cafPartsEquip(y,v){
+    var r=(window.__cafRepart||[]).find(function(x){ return x.exercice===y; });
+    var parts={}, tot=0;
+    if(r&&r.cle==='manuelle'){
+      CAF_EQ_CAF.forEach(function(q){ var p=parseFloat((r.parts||{})[q]); if(isFinite(p)&&p>0){ parts[q]=p; tot+=p; } });
+      if(tot>0){ CAF_EQ_CAF.forEach(function(q){ parts[q]=(parts[q]||0)/tot; });
+        return {parts:parts, source:'parts saisies à la main ('+CAF_EQ_CAF.filter(function(q){return parts[q];}).map(function(q){ return q+' '+Math.round(parts[q]*1000)/10+' %'; }).join(' · ')+')'}; }
+    }
+    var h={}, st={}, actifs=[], sansHeures=[];
+    CAF_EQ_CAF.forEach(function(q){
+      var c=cafCourant(q,y), hasH=!!(c&&c.total>0), hasC=(v.direct[q]||0)>0;
+      if(!hasH&&!hasC) return;
+      actifs.push(q);
+      if(hasH){ h[q]=c.total; st[q]=cafStadeLabel(c.stade); tot+=c.total; } else sansHeures.push(q);
+    });
+    if(!actifs.length) return {parts:{}, source:'aucune heure déclarée ni charge directe — rien à répartir'};
+    if(sansHeures.length){
+      /* clé sur les charges directes : c'est la seule donnée disponible pour TOUS */
+      var td=0; actifs.forEach(function(q){ td+=v.direct[q]||0; });
+      if(td>0){ actifs.forEach(function(q){ parts[q]=(v.direct[q]||0)/td; });
+        return {parts:parts, avertissement:sansHeures.join(', ')+' : aucune heure déclarée pour '+y+' alors que des charges directes existent — clé bâtie sur les charges directes, pas sur les heures',
+          source:'prorata des CHARGES DIRECTES ('+actifs.map(function(q){ return q+' '+cafEur(v.direct[q]||0)+' €'; }).join(' · ')+')'}; }
+      return {parts:{}, source:'des équipements n\'ont ni heures ni charges exploitables — rien à répartir',
+        avertissement:sansHeures.join(', ')+' : aucune heure déclarée pour '+y};
+    }
+    if(tot>0){ actifs.forEach(function(q){ parts[q]=(h[q]||0)/tot; });
+      return {parts:parts, source:'prorata des heures-enfant déclarées ('+actifs.map(function(q){ return q+' '+acmNum(h[q])+' h ('+st[q]+')'; }).join(' · ')+')'}; }
+    return {parts:{}, source:'aucune heure exploitable — rien à répartir'};
+  }
+  /* Montants AFAS d'UN équipement : direct + quote-part du commun (charges ET produits). */
+  function cafMontantsAfas(equip,y){
+    var v=cafVentilExercice(y);
+    var per=cafPartPerimetre(y,v), pe=cafPartsEquip(y,v);
+    var q=cafClamp01((per.part||0)*((pe.parts||{})[equip]||0)); if(q==null) q=0;
+    var cases={}, aAffecter=[], corresp=[], inconnues=[];
+    var pousse=function(compte,sens,mt){
+      if(!mt||!isFinite(mt)) return;
+      var c=cafCaseDe(compte,sens);
+      var e=corresp.find(function(x){ return x.compte===compte&&x.sens===sens; });
+      if(e) e.montant+=mt;
+      else corresp.push({compte:compte, sens:sens, montant:mt, cas:c, propose:!!(c&&!cafMapChoisi(compte,sens))});
+      if(!c){ var a=aAffecter.find(function(x){ return x.compte===compte&&x.sens===sens; }); if(a) a.montant+=mt; else aAffecter.push({compte:compte,sens:sens,montant:mt}); return; }
+      if(!cafAfasConnue(c)){ var u=inconnues.find(function(x){ return x.cas===c&&x.sens===sens; }); if(u) u.montant+=mt; else inconnues.push({cas:c, compte:compte, sens:sens, montant:mt}); return; }
+      cases[c]=cases[c]||{montant:0, sens:sens}; cases[c].montant+=mt;
+    };
+    Object.keys(v.parEquip[equip]||{}).forEach(function(compte){
+      var x=v.parEquip[equip][compte];
+      pousse(compte,'charge',x.charge); pousse(compte,'produit',x.produit);
+    });
+    Object.keys(v.parEquip.COMMUN||{}).forEach(function(compte){
+      var x=v.parEquip.COMMUN[compte];
+      pousse(compte,'charge',(x.charge||0)*q); pousse(compte,'produit',(x.produit||0)*q);
+    });
+    return {cases:cases, aAffecter:aAffecter, corresp:corresp, inconnues:inconnues, ventil:v, perimetre:per, parts:pe, quote:q};
+  }
+  window.cafCopyPre=async function(id){
+    var el=document.getElementById(id); if(!el) return;
+    var txt=el.innerText;
+    try{ await navigator.clipboard.writeText(txt); await bobAlert('📋 Copié — colle-le dans le portail AFAS.',{titre:'Export AFAS'}); }
+    catch(e){
+      try{ var t=document.createElement('textarea'); t.value=txt; document.body.appendChild(t); t.select(); document.execCommand('copy'); document.body.removeChild(t); await bobAlert('📋 Copié.',{titre:'Export AFAS'}); }
+      catch(e2){ await bobAlert('Copie impossible — sélectionne le texte et fais Cmd+C.',{titre:'Export AFAS'}); }
+    }
+  };
+  window.cafMapCompte=async function(compte,sens){
+    if(!canWrite){ await bobAlert('Réservé au bureau.'); return; }
+    var liste=(sens==='charge')?CAF_AFAS_CHARGES:CAF_AFAS_PRODUITS;
+    var v=await bobChoix('« '+compte+' » ('+(sens==='charge'?'dépense':'recette')+') va dans quelle case AFAS ?',
+      liste.map(function(x){ return {v:x[0], label:x[0], sub:x[1]}; }),
+      {corps:'Le portail se repère au LIBELLÉ de la case, jamais à sa position. Ce choix vaut pour ce compte DANS CE SENS, et il est mémorisé pour ton association.'});
+    if(v==null) return;
+    try{
+      var r=await sbc.from('caf_comptes_map').upsert({asso_id:myAsso, compte:compte, case_afas:v, sens:sens},{onConflict:'asso_id,compte,sens'}).select();
+      if(r.error){ await bobAlert('⚠️ '+r.error.message,{titre:'Export AFAS'}); return; }
+      window.__cafMap=(window.__cafMap||[]).filter(function(x){ return !(x.compte===compte&&x.sens===sens); }).concat(r.data||[]);
+      renderCafDeclEdit();
+    }catch(ex){ console.warn('cafMapCompte',ex); }
+  };
+  window.cafClasserAction=async function(action,site){
+    if(!canWrite){ await bobAlert('Réservé au bureau.'); return; }
+    var champ=action?'action':'site', motif=(action||site||'').trim();
+    if(!motif){ await bobAlert('Cette écriture n\'a ni action ni site : classe-la d\'abord en compta.',{titre:'Export AFAS'}); return; }
+    var v=await bobChoix('« '+motif+' » appartient à quoi ?',[
+      {v:'PERI',label:'Périscolaire',sub:'déclaré à la CAF'},
+      {v:'EXTRA',label:'Extrascolaire',sub:'déclaré à la CAF'},
+      {v:'ADO',label:'Ados',sub:'déclaré à la CAF'},
+      {v:'COMMUN',label:'Charges communes',sub:'à répartir entre les activités (ex. Fonctionnement)'},
+      {v:'HORS',label:'Autre activité de l\'asso',sub:'jamais déclarée, mais elle consomme du commun (zumba, fêtes) — elle pèse donc dans la clé'},
+      {v:'EXCLU',label:'À ignorer complètement',sub:'régularisation d\'une année passée, écriture technique — hors déclaration ET hors clé de répartition'}
+    ],{corps:'Toutes les écritures dont l\''+champ+' commence par ce texte suivront ce classement.'});
+    if(v==null) return;
+    /* `ordre` est écrit : sans lui toutes les règles naissaient à 100 et la priorité
+       annoncée (« le motif le plus précis gagne ») ne s'appliquait jamais. */
+    var ordre=(v==='COMMUN')?60:((v==='HORS'||v==='EXCLU')?40:20);
+    try{
+      var r=await sbc.from('caf_ventilation').upsert({asso_id:myAsso, champ:champ, motif:motif, equipement:v, ordre:ordre},{onConflict:'asso_id,champ,motif'}).select();
+      if(r.error){ await bobAlert('⚠️ '+r.error.message,{titre:'Export AFAS'}); return; }
+      window.__cafVentil=(window.__cafVentil||[]).filter(function(x){ return !(x.champ===champ&&x.motif===motif); }).concat(r.data||[]);
+      renderCafDeclEdit();
+    }catch(ex){ console.warn('cafClasserAction',ex); }
+  };
+  window.cafExportToggle=function(o){ window.__cafExportOpen=!!o; };
+  /* Le bloc d'export, PAR STADE. */
+  function cafExportHtml(d,stade,e,conv){
+    if(d.gele) return ''; /* un exercice gelé ne prépare aucune transmission */
+    window.__cafBtn=[];
+    var NOMS={PERI:'Périscolaire',EXTRA:'Extrascolaire',ADO:'Ados'};
+    var h='<details id="cafExportPanel"'+(window.__cafExportOpen?' open':'')+' ontoggle="cafExportToggle(this.open)" style="margin:8px 0 0">'
+      +'<summary style="cursor:pointer;font-weight:600">📤 Export AFAS — '+esc(NOMS[d.equipement]||d.equipement)+' '+d.exercice+' · '+esc(cafStadeLabel(stade))+'</summary>'
+      +'<p class="hint" style="margin:6px 0;font-size:11px">Les valeurs dans l\'ordre du formulaire, <b>libellé en face</b>. Le texte copié ne contient que des chiffres simples (virgule décimale, pas d\'espace de milliers) pour être accepté par les champs du portail.</p>';
+    /* ---- 1. Données d'activité (granularité du stade) ---- */
+    var lx=(e&&e.donnees&&e.donnees.lieux)||[];
+    var actLines=[];
+    lx.forEach(function(l){
+      var nom=l.lieu||'(lieu sans nom)';
+      if(stade==='prev'){
+        actLines.push(nom+' — Nombre d\'heures de présence : '+cafNumEnt(parseFloat(l.heures)||0));
+        actLines.push(nom+' — dont heures AEEH : '+cafNumEnt(parseFloat(l.dont_aeeh)||0));
+      } else if(stade==='t2'||stade==='t3'){
+        actLines.push(nom+' — Total heures : '+cafNumEnt(parseFloat(l.total)||0));
+        actLines.push(nom+' — dont 1er semestre : '+cafNumEnt(parseFloat(l.s1)||0));
+        actLines.push(nom+' — dont 2d semestre : '+cafNumEnt(parseFloat(l.s2)||0));
+      } else {
+        cafGrilleDef(d.equipement).forEach(function(c){
+          var g=(l.grille||{})[c[0]]||{};
+          var a=parseFloat(g.m6)||0, b=parseFloat(g.p6)||0;
+          if(a||b){ actLines.push(nom+' — '+c[1]+' · moins de 6 ans : '+cafNumEnt(a)); actLines.push(nom+' — '+c[1]+' · 6 ans et plus : '+cafNumEnt(b)); }
+        });
+        if(l.enfants!=null) actLines.push(nom+' — Nombre d\'enfants : '+cafNumEnt(parseFloat(l.enfants)||0));
+        if(l.dont_aeeh!=null) actLines.push(nom+' — dont enfants AEEH : '+cafNumEnt(parseFloat(l.dont_aeeh)||0));
+      }
+    });
+    h+='<div style="margin:6px 0"><b style="font-size:13px">Données d\'activité</b>'
+      +(actLines.length?'<pre id="cafExpAct" style="white-space:pre-wrap;background:#f7f8fc;border:1px solid #e3e6ef;border-radius:8px;padding:8px;font-size:12px;margin:4px 0">'+esc(actLines.join('\n'))+'</pre>'
+          +'<button onclick="cafCopyPre(\'cafExpAct\')" style="padding:4px 10px;border:1px solid #d6dbe8;border-radius:9px;background:#fff;cursor:pointer">📋 Copier l\'activité</button>'
+        :'<p class="hint" style="margin:4px 0">Aucun lieu saisi sur ce stade.</p>')+'</div>';
+    /* ---- 2. Données financières ---- */
+    if(stade==='prev'){
+      h+='<p class="hint" style="margin:8px 0 0;font-size:12px">💶 <b>Volet financier</b> : au prévisionnel il se saisit depuis le <b>budget voté</b>, pas depuis les écritures — Bob ne le pré-remplit pas pour ne pas présenter du réalisé comme une prévision.</p></details>';
+      return h;
+    }
+    var m=cafMontantsAfas(d.equipement,d.exercice);
+    var v=m.ventil;
+    var ordre=CAF_AFAS_CHARGES.map(function(x){ return x[0]; }).concat(CAF_AFAS_PRODUITS.map(function(x){ return x[0]; }));
+    var finLines=ordre.filter(function(c){ return m.cases[c]&&Math.round(m.cases[c].montant*100)!==0; })
+      .map(function(c){ return c+' — '+cafAfasLabel(c)+' : '+cafNum2(m.cases[c].montant); });
+    h+='<div style="margin:10px 0 6px"><b style="font-size:13px">Données financières'+(stade!=='reelle'?' <span class="hint" style="font-weight:400">— réalisé à date, à compléter en prévision jusqu\'au 31/12</span>':'')+'</b>';
+    h+='<p class="hint" style="margin:4px 0;font-size:11px">D\'après les <b>écritures encaissées et décaissées</b> de l\'exercice (Bob tient une trésorerie) — si des charges sont engagées et non payées au 31/12, ajoute-les à la main.</p>';
+    h+='<p class="hint" style="margin:4px 0;font-size:11px">Charges et produits communs — <b>temps 1</b> : '+Math.round((m.perimetre.part||0)*1000)/10+' % du commun revient au périmètre CAF ('+esc(m.perimetre.source)+') · <b>temps 2</b> : '+esc(m.parts.source)+' → cet équipement reçoit <b>'+Math.round(m.quote*1000)/10+' %</b> du commun.</p>';
+    if(m.perimetre.avertissement) h+='<p class="hint" style="margin:2px 0;font-size:11px">⚠️ '+esc(m.perimetre.avertissement)+'</p>';
+    if(m.parts.avertissement) h+='<p class="hint" style="margin:2px 0;font-size:11px">⚠️ '+esc(m.parts.avertissement)+'</p>';
+    if(m.perimetre.nonVentile>0) h+='<p class="hint" style="margin:2px 0 4px;font-size:11px">⚠️ '+cafEur(m.perimetre.nonVentile)+' € de charges pas encore classées comptent au dénominateur : la part CAF ci-dessus est <b>volontairement basse</b> (mieux vaut sous-estimer que sur-déclarer). Classe-les ci-dessous pour un chiffre juste.</p>';
+    h+=(finLines.length?'<pre id="cafExpFin" style="white-space:pre-wrap;background:#f7f8fc;border:1px solid #e3e6ef;border-radius:8px;padding:8px;font-size:12px;margin:4px 0">'+esc(finLines.join('\n'))+'</pre>'
+        +'<button onclick="cafCopyPre(\'cafExpFin\')" style="padding:4px 10px;border:1px solid #d6dbe8;border-radius:9px;background:#fff;cursor:pointer">📋 Copier le financier</button>'
+      :'<p class="hint" style="margin:4px 0">Aucun montant ventilé sur cet équipement pour '+d.exercice+'.</p>');
+    if(!m.cases['70626']||Math.round(m.cases['70626'].montant)===0){
+      h+='<p class="hint" style="margin:6px 0 2px;font-size:12px">🟠 <b>70626 — Bonus Territoire à 0</b> : le portail lèvera l\'alerte A53, et la recette est perdue si le compte reste vide'
+        +(conv&&parseFloat(conv.bt_taux)>0&&parseFloat(conv.bt_plafond_h)>0?' (convention : jusqu\'à '+acmNum(parseFloat(conv.bt_plafond_h))+' h × '+esc(String(conv.bt_taux))+' €).':'.')
+        +' La participation de la commune devient alors obligatoire au volet financier.</p>';
+    }
+    h+='</div>';
+    /* ---- 3. Bouclage : aucun euro ne se perd en route ---- */
+    var al=v.alertes, pb=[];
+    if(Math.abs(v.totalOps.charge-v.totalRange.charge)>0.005) pb.push('charges : '+cafEur(v.totalOps.charge)+' € saisis contre '+cafEur(v.totalRange.charge)+' € rangés');
+    if(Math.abs(v.totalOps.produit-v.totalRange.produit)>0.005) pb.push('produits : '+cafEur(v.totalOps.produit)+' € saisis contre '+cafEur(v.totalRange.produit)+' € rangés');
+    if(al.repartition.nb) pb.push(al.repartition.nb+' écriture(s) dont la répartition ne totalise pas le montant ('+cafEur(al.repartition.montant)+' € d\'écart)');
+    if(al.sansDate.nb) pb.push(al.sansDate.nb+' écriture(s) sans date exploitable ('+cafEur(al.sansDate.montant)+' €)');
+    if(al.typeInconnu.nb) pb.push(al.typeInconnu.nb+' écriture(s) de type inattendu ('+cafEur(al.typeInconnu.montant)+' €)');
+    if(al.equipInconnu.nb) pb.push(al.equipInconnu.nb+' ligne(s) rattachées à une destination inconnue ('+cafEur(al.equipInconnu.montant)+' €)');
+    if(al.montantIllisible.nb) pb.push(al.montantIllisible.nb+' ligne(s) de répartition au montant illisible');
+    h+='<p class="hint" style="margin:6px 0 2px;font-size:11px">'
+      +(pb.length?'⚠️ <b>Bouclage incomplet</b> — '+esc(pb.join(' · '))+'. Ces euros ne sont dans aucune déclaration : corrige-les en compta.'
+        :'✓ <b>Bouclage vérifié</b> : '+cafEur(v.totalOps.charge)+' € de charges et '+cafEur(v.totalOps.produit)+' € de produits de '+d.exercice+' sont tous rangés.')+'</p>';
+    /* ---- 4. La correspondance des comptes, VISIBLE et modifiable ---- */
+    var cor=m.corresp.filter(function(x){ return Math.round(x.montant*100)!==0; })
+      .sort(function(a,b){ return Math.abs(b.montant)-Math.abs(a.montant); });
+    if(cor.length){
+      h+='<details style="margin:6px 0"><summary style="cursor:pointer;font-size:13px;font-weight:600">🔗 Correspondance des comptes ('+cor.length+') <span class="hint" style="font-weight:400">— clique pour corriger, y compris ce que Bob a proposé</span></summary>'
+        +'<div class="row" style="gap:6px;flex-wrap:wrap;margin-top:6px">'
+        +cor.map(function(x){
+          var lib=x.cas?(x.cas+' — '+cafAfasLabel(x.cas)):'à affecter';
+          var mark=x.cas?(x.propose?'🅿':'✓'):'⚠️';
+          var bg=x.cas?(x.propose?'#f7f8fc':'#f2fbf6'):'#fffdf3';
+          return '<button onclick="'+cafRef('map',x.compte,x.sens)+'" title="'+(x.propose?'Proposé par Bob d\'après le numéro de compte — à confirmer':(x.cas?'Choisi par ton association':'Aucune case choisie : ce montant N\'EST PAS dans l\'export'))+'" style="padding:4px 9px;border:1px solid #d6dbe8;border-radius:9px;background:'+bg+';cursor:pointer;font-size:12px;text-align:left">'
+            +mark+' '+esc(x.compte)+' <span class="hint" style="font-size:11px">('+(x.sens==='charge'?'dépense':'recette')+')</span><br><span class="hint" style="font-size:11px">→ '+esc(lib)+' · '+cafEur(x.montant)+' €</span></button>';
+        }).join('')+'</div>'
+        +'<p class="hint" style="margin:6px 0 0;font-size:11px">🅿 proposé par Bob d\'après le numéro · ✓ choisi par ton association · ⚠️ non affecté (hors export). Un même compte peut recevoir une case différente en dépense et en recette. Exemple à vérifier : les participations des familles peuvent être saisies sur un compte 75 alors que la CAF les attend en <b>70642</b>.</p></details>';
+    }
+    /* ---- 5. Ce que Bob refuse de deviner ---- */
+    if(m.aAffecter.length){
+      h+='<div style="border:1px dashed #e0c48a;border-radius:9px;padding:8px;margin:6px 0;background:#fffdf3">'
+        +'<b style="font-size:13px">⚠️ Comptes à affecter</b> <span class="hint" style="font-size:11px">— ces montants ne sont PAS dans l\'export tant que leur case AFAS n\'est pas choisie.</span><div class="row" style="gap:6px;flex-wrap:wrap;margin-top:6px">'
+        +m.aAffecter.sort(function(a,b){ return Math.abs(b.montant)-Math.abs(a.montant); }).map(function(a){
+          return '<button onclick="'+cafRef('map',a.compte,a.sens)+'" style="padding:4px 9px;border:1px solid #d6dbe8;border-radius:9px;background:#fff;cursor:pointer;font-size:12px">'+esc(a.compte)+' · '+(a.sens==='charge'?'dépense':'recette')+' · '+cafEur(a.montant)+' € →</button>';
+        }).join('')+'</div></div>';
+    }
+    if(m.inconnues.length){
+      h+='<p class="hint" style="margin:6px 0 2px;font-size:12px">⚠️ Case(s) AFAS non reconnues par Bob, donc hors export : '
+        +esc(m.inconnues.map(function(u){ return u.cas+' ('+u.compte+', '+cafEur(u.montant)+' €)'; }).join(' · '))+'. Rechoisis une case dans la liste.</p>';
+    }
+    var nvKeys=Object.keys(v.nonVentile).sort(function(a,b){
+      var A=v.nonVentile[a], B=v.nonVentile[b];
+      return Math.max(Math.abs(B.charges),Math.abs(B.produits))-Math.max(Math.abs(A.charges),Math.abs(A.produits));
+    });
+    if(nvKeys.length){
+      var cach=nvKeys.slice(12).reduce(function(s,k){ return s+Math.abs(v.nonVentile[k].charges)+Math.abs(v.nonVentile[k].produits); },0);
+      h+='<div style="border:1px dashed #e0c48a;border-radius:9px;padding:8px;margin:6px 0;background:#fffdf3">'
+        +'<b style="font-size:13px">⚠️ Écritures non ventilées</b> <span class="hint" style="font-size:11px">— aucune règle ne dit à quoi elles appartiennent : elles ne comptent dans aucune déclaration. Les RECETTES sont le cas le plus coûteux (une subvention oubliée).</span><div class="row" style="gap:6px;flex-wrap:wrap;margin-top:6px">'
+        +nvKeys.slice(0,12).map(function(k){ var x=v.nonVentile[k];
+          var det=[]; if(Math.round(x.charges*100)!==0) det.push(cafEur(x.charges)+' € de dépenses'); if(Math.round(x.produits*100)!==0) det.push(cafEur(x.produits)+' € de recettes');
+          return '<button onclick="'+cafRef('classer',x.action,x.site)+'" style="padding:4px 9px;border:1px solid #d6dbe8;border-radius:9px;background:#fff;cursor:pointer;font-size:12px;text-align:left">'+esc(k)+'<br><span class="hint" style="font-size:11px">'+esc(det.join(' · ')||'0 €')+' →</span></button>';
+        }).join('')+'</div>'
+        +(nvKeys.length>12?'<p class="hint" style="margin:4px 0 0;font-size:11px">… et '+(nvKeys.length-12)+' autre(s), soit '+cafEur(cach)+' € non affichés ici.</p>':'')+'</div>';
+    }
+    h+='</details>';
+    return h;
+  }
   window.renderCafDeclEdit=function(){
     var box=document.getElementById('cafDeclEdit'); if(!box) return;
     /* ne jamais raser une saisie en cours : le polling collègue re-rend tout l'écran
@@ -13343,6 +13755,7 @@ window.loadDossiersPeri=async function(){
           :'<button onclick="cafProvUpload(\''+e.id+'\')" style="padding:5px 11px;border:1px solid var(--brand,#3a51e8);border-radius:9px;background:#fff;color:var(--brand,#3a51e8);font-weight:600;cursor:pointer">📎 Joindre la capture OMIDEV</button>')
         +'</div></div>';
       h+=cafControlesHtml(d,stade,e,conv); /* 🚨 point 6 : les contrôles vivent dans l'écran */
+      h+=cafExportHtml(d,stade,e,conv);    /* 📤 point 7a : le pré-remplissage AFAS, par stade */
     }
     /* champs calculés — EN LECTURE SEULE (§4) : ce que Bob possède, jamais ressaisi.
        ⚠️ Le calendrier voté en base est celui du PÉRISCOLAIRE (jours d'école) : il ne
