@@ -12827,7 +12827,14 @@ window.loadDossiersPeri=async function(){
   window.__cafSel=null; window.__cafStade=null; window.__cafLieux=null; window.__cafInscrits=null;
   var __cafPushTimers={};
   var CAF_STADES=[['prev','Prévisionnelle'],['t2','Actu T2'],['t3','Actu T3'],['reelle','Réelle']];
-  var CAF_GRILLE=[['matin','Matin'],['midi','Midi'],['soir','Soir'],['merc_sam','Mercredi / Samedi']];
+  /* La grille de la Réelle suit l'ÉQUIPEMENT (§2 de la spec — correctif du point 5) :
+     PÉRI = créneaux de la semaine scolaire · EXTRA/ADO = périodes de vacances. */
+  var CAF_GRILLES={
+    PERI:[['matin','Matin'],['midi','Midi'],['soir','Soir'],['merc_sam','Mercredi / Samedi']],
+    EXTRA:[['hiver','Hiver'],['printemps','Printemps'],['ete','Été'],['toussaint','Toussaint'],['noel','Noël'],['merc_sam','Mercredi / Samedi']],
+    ADO:[['hiver','Hiver'],['printemps','Printemps'],['ete','Été'],['toussaint','Toussaint'],['noel','Noël'],['merc_sam','Mercredi / Samedi']]
+  };
+  function cafGrilleDef(equip){ return CAF_GRILLES[equip]||CAF_GRILLES.PERI; }
   function cafSelDecl(){ return (window.__cafDecl||[]).find(function(d){ return d.id===window.__cafSel; })||null; }
   function cafEtatById(id){ var f=null; (window.__cafDecl||[]).forEach(function(d){ (d.etats||[]).forEach(function(e){ if(e.id===id) f=e; }); }); return f; }
   function cafDeclOfEtat(id){ var f=null; (window.__cafDecl||[]).forEach(function(d){ if((d.etats||[]).some(function(e){ return e.id===id; })) f=d; }); return f; }
@@ -12853,22 +12860,225 @@ window.loadDossiersPeri=async function(){
     }
     return {jours:tot, manquants:manq};
   }
-  function cafLieuHeures(stade,l){
+  function cafLieuHeures(equip,stade,l){
     if(stade==='prev') return parseFloat(l.heures)||0;
     if(stade==='t2'||stade==='t3') return parseFloat(l.total)||0;
     /* réelle : la grille prime dès qu'une case est remplie ; les reprises synthétiques
        (Réelles 2025 posées en SQL : lieux[].heures sans grille) sont honorées en repli —
        jamais un faux « Σ 0 » sur 8 048 h transmises (relecture adverse du 21/08) */
+    /* on somme TOUTES les clés présentes dans la grille, pas seulement celles de la
+       grille de l'équipement : une Réelle saisie avant que les grilles ne deviennent
+       propres à l'équipement porte d'anciennes clés — elles doivent rester comptées,
+       jamais disparaître en silence (relecture adverse du 21/08) */
     var g=l.grille||{}, s=0, any=false;
-    CAF_GRILLE.forEach(function(c){ var r=g[c[0]]||{}; ['m6','p6'].forEach(function(a){ var v=parseFloat(r[a]); if(!isNaN(v)){ any=true; s+=v; } }); });
+    Object.keys(g).forEach(function(k){ var r=g[k]||{}; if(typeof r!=='object') return; ['m6','p6'].forEach(function(a){ var v=parseFloat(r[a]); if(!isNaN(v)){ any=true; s+=v; } }); });
     if(any) return s;
     return parseFloat(l.heures)||parseFloat(l.total)||0;
   }
+  /* Les clés de grille qu'aucune colonne de l'équipement n'affiche : comptées dans le
+     total, mais invisibles à la saisie → il faut le DIRE, pas les laisser orphelines. */
+  function cafGrilleOrphelines(equip,e){
+    var connues={}; cafGrilleDef(equip).forEach(function(c){ connues[c[0]]=true; });
+    var out={};
+    (((e&&e.donnees&&e.donnees.lieux)||[])).forEach(function(l){
+      Object.keys(l.grille||{}).forEach(function(k){
+        if(connues[k]) return;
+        var r=l.grille[k]||{}; var v=(parseFloat(r.m6)||0)+(parseFloat(r.p6)||0);
+        if(v>0) out[k]=(out[k]||0)+v;
+      });
+    });
+    return Object.keys(out).map(function(k){ return {cle:k, heures:out[k]}; });
+  }
+  function cafStadeLabel(s){ var f=CAF_STADES.find(function(x){ return x[0]===s; }); return f?f[1]:s; }
+  function cafTotalEtat(equip,e){ var lx=(e&&e.donnees&&e.donnees.lieux)||[]; return lx.reduce(function(s,l){ return s+cafLieuHeures(equip,e.stade,l); },0); }
+  /* L'état COURANT d'une déclaration (le plus avancé — la Réelle remplace tout) et son total */
+  function cafCourant(equip,exercice){
+    var d=(window.__cafDecl||[]).find(function(x){ return x.equipement===equip&&x.exercice===exercice; });
+    if(!d) return null;
+    var ordre=['reelle','t3','t2','prev'];
+    /* Un BROUILLON vide ou à peine commencé ne doit JAMAIS masquer le stade transmis
+       qui le précède : sinon la référence N-1 — le contrôle qui mord — se compare à
+       zéro (défaut critique prouvé le 21/08). On prend donc le stade le plus avancé
+       qui porte des heures, en privilégiant ce qui a été transmis/validé. */
+    var cand=[];
+    ordre.forEach(function(st,rang){
+      var e=(d.etats||[]).find(function(x){ return x.stade===st; });
+      if(!e) return;
+      var tot=cafTotalEtat(equip,e);
+      if(!(tot>0)) return;
+      cand.push({stade:st, etat:e, total:tot, gele:d.gele, statut:e.statut, rang:rang, ferme:(e.statut!=='brouillon')?0:1});
+    });
+    if(!cand.length) return null;
+    cand.sort(function(a,b){ return (a.ferme-b.ferme)||(a.rang-b.rang); }); /* transmis/validé d'abord, puis le plus avancé */
+    return cand[0];
+  }
   function cafNumAttr(v){ var n=parseFloat(v); return isNaN(n)?'':n; } /* value= d'un input number : toujours un NOMBRE ou vide — une reprise SQL ne peut pas casser l'attribut */
-  function cafEtatEtabli(e){
+  function cafEtatEtabli(equip,e){
     if(!e||!e.donnees) return false;
     var p=e.donnees.provenance||{}; if(!p.capture||!p.saisi_le) return false;
-    var lx=e.donnees.lieux||[]; return lx.some(function(l){ return cafLieuHeures(e.stade,l)>0; });
+    var lx=e.donnees.lieux||[]; return lx.some(function(l){ return cafLieuHeures(equip,e.stade,l)>0; });
+  }
+  /* ══════════ POINT 6 — LES CONTRÔLES (§5) : par créneau, informatifs ou bloquants selon le stade ══════════
+     a) Vraisemblance anti-INDU : heures ÷ heures d'ouverture = effectif moyen, PAR CRÉNEAU,
+        jamais en global (le quotient agrégé mélange deux amplitudes et crie sur des chiffres
+        justes). Calculable seulement là où la grille existe (la Réelle) ET où le dénominateur
+        existe (PERI : amplitudes de la convention × jours du calendrier voté). Au prévisionnel,
+        le danger n'est pas le rejet : un chiffre trop haut est PAYÉ puis REPRIS (indu 2025).
+     b) Écart : la RÉFÉRENCE est un attribut du stade — prev : préconisation N-1 ± 20 % ·
+        t2 : vs N-1 ET prévisionnelle · t3 : vs N-1 ET t2 · réelle : LE contrôle qui mord
+        (> 20 % = retour Caf sauf commentaire couvrant ≥ 50 % — on lit ici le brouillon du
+        composeur §6.4, coffre cafComments par année × équipement).
+     c) C20 charges vs heures : celui qui a réellement mordu à la Réelle 2025 — la Caf a
+        accepté un RAISONNEMENT, pas une arithmétique ; le calcul réel attend la table
+        PCG→AFAS du point 7 : on ne fabrique pas un chiffre qu'on n'a pas.
+     Ces verdicts sont AFFICHÉS ; le comportement bloquant à la Réelle se branchera sur le
+     clic « export AFAS » du point 7 (Bob ne voit jamais la transmission elle-même). */
+  var CAF_REFS_PAR_STADE={ prev:[['n1','préconisation N-1 ± 20 % — pas un contrôle']], t2:[['n1','contrôle informatif'],['prev','vs prévisionnelle']], t3:[['n1','contrôle informatif'],['t2','vs Actu T2']], reelle:[['n1','LE contrôle qui mord']] };
+  function cafRefVal(d,refType){
+    if(refType==='n1'){
+      var c=cafCourant(d.equipement, d.exercice-1);
+      if(!c) return null;
+      return {label:(d.exercice-1)+' ('+cafStadeLabel(c.stade)+')', total:c.total, ferme:(c.statut!=='brouillon')};
+    }
+    var e2=(d.etats||[]).find(function(x){ return x.stade===refType; });
+    if(!e2) return null;
+    return {label:cafStadeLabel(refType)+' '+d.exercice, total:cafTotalEtat(d.equipement,e2), ferme:(e2.statut!=='brouillon')};
+  }
+  /* Le composeur (§6.4) nomme « bilan » la 4e étape que la déclaration nomme « reelle ». */
+  function cafComStade(stade){ return stade==='reelle'?'bilan':stade; }
+  /* Un commentaire ne désamorce un écart QUE s'il parle du MÊME écart : même stade,
+     mêmes chiffres. Un brouillon d'un autre stade couvrant 75 % d'un écart de 200 h
+     n'a jamais éteint un rouge de 12 000 h (défaut prouvé le 21/08). */
+  function cafComEtatPour(d,stade,tot,ref){
+    try{
+      var a=acmDb(); var k=d.exercice+'-'+d.equipement;
+      var dr=a.cafComments&&a.cafComments[k]; if(!dr) return null;
+      var c=cafComCalc(dr);
+      var proche=function(x,y){ return (typeof x==='number')&&(y>0)&&(Math.abs(x-y)<=Math.max(1,y*0.01)); };
+      var meme=(dr.stade===cafComStade(stade))&&proche(dr.decl,tot)&&(ref==null||proche(dr.refVal,ref));
+      return {couvert:c.couvert, pret:(meme&&c.couvert!=null&&c.couvert>=50), meme:meme};
+    }catch(ex){ return null; }
+  }
+  /* Ouvre le composeur PRÉ-RÉGLÉ sur l'écart affiché : stade, déclaré, référence —
+     sinon le seuil des 50 % se mesurerait sur un écart tapé à la main sans rapport. */
+  window.cafComOuvrir=function(y,equip,stade,decl,refVal,refType){
+    window._cafComYear=y; window._cafComEquip=equip;
+    try{
+      var dr=cafComGet();
+      if(stade) dr.stade=cafComStade(stade);
+      if(typeof decl==='number'&&decl>0) dr.decl=decl;
+      if(typeof refVal==='number'&&refVal>0) dr.refVal=refVal;
+      if(refType) dr.refType=refType;
+      save();
+    }catch(ex){}
+    var p=document.getElementById('acmCafComPanel'); if(p) p.open=true;
+    if(window.renderCafCom) renderCafCom();
+    if(p) p.scrollIntoView({behavior:'smooth',block:'nearest'});
+  };
+  function cafPillGris(txt){ return '<span class="pill" style="background:#f4f4f7;color:#777;font-size:12px">'+txt+'</span>'; }
+  function cafControlesHtml(d,stade,e,conv){
+    /* Exercice GELÉ : aucun contrôle, aucune injonction, aucun bouton. Le gel interdit
+       le nudge — on ne pousse pas à justifier ni à transmettre ce que la Caf a mis en
+       attente (défaut critique du 21/08 : le bloc s'affichait sous « ne pas transmettre »). */
+    if(d.gele){
+      return '<div style="border:1px solid #e3e6ef;border-radius:10px;padding:8px 10px;margin:8px 0 0;background:#f7f9ff">'
+        +'<b style="font-size:13px">🧊 Contrôles suspendus</b> <span class="hint" style="font-size:11px">— exercice gelé par la Caf : rien à justifier, rien à transmettre, et on ne réclame pas sa validation.</span></div>';
+    }
+    var tot=cafTotalEtat(d.equipement,e);
+    var h='<div style="border:1px solid #e9ecf3;border-radius:10px;padding:8px 10px;margin:8px 0 0;background:#fffdf6">'
+      +'<b style="font-size:13px">🚨 Contrôles</b> <span class="hint" style="font-size:11px">— '+(stade==='reelle'?'à la Réelle ils mordent côté Caf aussi ; l\'export AFAS (point 7) refusera un rouge':'informatifs à ce stade — la Caf ne rejette pas un prévisionnel trop haut : elle le PAIE, puis le REPREND (indu)')+'</span>';
+    if(!tot){ h+='<p class="hint" style="margin:5px 0 2px;font-size:12px">Aucune heure-enfant saisie sur ce stade — rien à contrôler encore.</p></div>'; return h; }
+    /* b) écarts vs les références DU STADE — UN SEUL calcul, UN SEUL seuil (le pct
+       arrondi et le ratio brut donnaient deux verdicts contradictoires à 20,04 %). */
+    var refs=CAF_REFS_PAR_STADE[stade]||[];
+    var ecarts=refs.map(function(rf){
+      var rv=cafRefVal(d,rf[0]);
+      if(!rv||!(rv.total>0)) return {rf:rf, rv:null, gros:false};
+      var ratio=(tot-rv.total)/rv.total;
+      /* verdict sur le ratio BRUT, affichage sur l'arrondi : à 20,04 % la Caf compte
+         un dépassement — un contrôle anti-indu se trompe du côté qui alerte, jamais
+         du côté qui laisse passer (les deux calculs divergeaient, prouvé le 21/08). */
+      return {rf:rf, rv:rv, pct:Math.round(ratio*1000)/10, ratio:ratio, gros:(Math.abs(ratio)>0.2)};
+    });
+    var premierGros=ecarts.find(function(x){ return x.gros; })||null;
+    var com=premierGros?cafComEtatPour(d,stade,tot,premierGros.rv.total):null;
+    var parts=ecarts.map(function(x){
+      if(!x.rv) return cafPillGris('vs '+esc(x.rf[0]==='n1'?('N-1 ('+(d.exercice-1)+')'):cafStadeLabel(x.rf[0]))+' : <i>pas de référence en base</i>');
+      var couvert=x.gros&&stade==='reelle'&&com&&com.pret;
+      var bg=!x.gros?'#dff5e9':(stade==='reelle'&&!couvert?'#fde8e8':'#fff5da');
+      var fg=!x.gros?'#127a51':(stade==='reelle'&&!couvert?'#a02525':'#8a6400');
+      return '<span class="pill" style="background:'+bg+';color:'+fg+';font-size:12px" title="'+esc(x.rv.label)+' : '+acmNum(x.rv.total)+' heures-enfant — '+esc(x.rf[1])+(x.rv.ferme?'':' — brouillon, pas encore transmis')+'">'
+        +(!x.gros?'🟢':(stade==='reelle'&&!couvert?'🔴':'🟠'))+' vs '+esc(x.rv.label)+' : '+(x.pct>0?'+':'')+x.pct+' %'+(x.rv.ferme?'':' *')+'</span>';
+    });
+    h+='<div class="row" style="gap:6px;flex-wrap:wrap;margin:6px 0 2px">'+parts.join('')+'</div>';
+    if(ecarts.some(function(x){ return x.rv&&!x.rv.ferme; })) h+='<p class="hint" style="margin:0 0 2px;font-size:11px">* référence encore à l\'état de brouillon — elle bougera.</p>';
+    if(premierGros){
+      /* types CONTRÔLÉS dans la poignée (jamais de concaténation libre en JS) */
+      var anS=parseInt(d.exercice,10)||0;
+      var eqS=/^(PERI|EXTRA|ADO)$/.test(d.equipement)?d.equipement:'';
+      var stS=/^(prev|t2|t3|reelle)$/.test(stade)?stade:'';
+      var rfS=/^(n1|prev|t2)$/.test(premierGros.rf[0])?premierGros.rf[0]:'n1';
+      h+='<div class="row" style="gap:8px;flex-wrap:wrap;align-items:center;margin:4px 0 2px">'
+        +(com&&com.meme
+          ?('<span class="pill" style="background:'+(com.pret?'#dff5e9':'#fff5da')+';color:'+(com.pret?'#127a51':'#8a6400')+';font-size:12px">📝 commentaire '+(com.pret?'prêt':'à compléter')+(com.couvert!=null?' (couvre '+Math.round(com.couvert)+' % de l\'écart)':'')+'</span>')
+          :'<span class="pill" style="background:#fff5da;color:#8a6400;font-size:12px">📝 commentaire à préparer'+(com?' — le brouillon existant porte sur un autre écart':'')+'</span>')
+        +'<button onclick="cafComOuvrir('+anS+',\''+eqS+'\',\''+stS+'\','+Math.round(tot)+','+Math.round(premierGros.rv.total)+',\''+rfS+'\')" style="padding:4px 10px;border:1px solid #d6dbe8;border-radius:9px;background:#fff;cursor:pointer">📝 Ouvrir le composeur</button>'
+        +'<span class="hint" style="font-size:11px">écart &gt; 20 % : retour Caf sauf commentaire chiffré couvrant ≥ 50 % — il se reporte de stade en stade jusqu\'en mars N+1</span></div>';
+    }
+    /* a) vraisemblance PAR CRÉNEAU — jamais en global (le quotient agrégé mélange les
+       amplitudes). Calculable seulement où la grille ET le dénominateur existent. */
+    if(stade!=='reelle'){
+      h+='<p class="hint" style="margin:6px 0 2px;font-size:12px"><b>Vraisemblance par créneau</b> : elle attend la grille de la <b>Réelle</b> — à ce stade la Caf ne demande pas le détail, et un quotient global ne voudrait rien dire (il mélangerait les amplitudes).</p>';
+    } else if(d.equipement!=='PERI'){
+      h+='<p class="hint" style="margin:6px 0 2px;font-size:12px"><b>Vraisemblance par période</b> : pas de calendrier de vacances en base — pas de dénominateur, donc pas de quotient inventé. Contrôle à l\'œil sur OMIDEV.</p>';
+    } else {
+      var jc=cafJoursCivils(d.exercice);
+      var creneaux=(conv&&conv.creneaux)||{};
+      /* merc_sam n'a PAS de dénominateur : le calendrier voté ne compte que les jours
+         d'école — diviser par eux sous-estimerait l'effectif d'un facteur ~5. */
+      var MAP={matin:'matin',midi:'midi',soir:'soir'};
+      var anCourante=(new Date()).getFullYear();
+      var ins0=(d.exercice===anCourante&&window.__cafInscrits)?window.__cafInscrits:null; /* les inscrits d'AUJOURD'HUI ne jugent que l'exercice en cours */
+      var calComplet=!!(jc&&jc.jours>0&&!jc.manquants.length);
+      var lignes=[];
+      if(jc&&jc.jours>0){
+        cafGrilleDef('PERI').forEach(function(c){
+          var hCre=0,any=false;
+          ((e.donnees&&e.donnees.lieux)||[]).forEach(function(l){ var g=(l.grille||{})[c[0]]||{}; ['m6','p6'].forEach(function(a){ var v=parseFloat(g[a]); if(!isNaN(v)){ any=true; hCre+=v; } }); });
+          if(!any||!(hCre>0)) return;
+          if(!MAP[c[0]]){ lignes.push(cafPillGris(esc(c[1])+' : pas de dénominateur (le calendrier voté ne compte que les jours d\'école)')); return; }
+          var amp=parseFloat(creneaux[MAP[c[0]]]);
+          if(!(amp>0)){ lignes.push(cafPillGris(esc(c[1])+' : amplitude absente de la convention')); return; }
+          var eff=Math.round((hCre/(amp*jc.jours))*10)/10;
+          var ins=ins0?ins0[c[0]]:null;
+          var jugeable=calComplet&&(typeof ins==='number')&&ins>0;
+          var invra=jugeable&&eff>ins;
+          var titre=acmNum(hCre)+' heures-enfant ÷ ('+amp+' h/j × '+jc.jours+' j d\'ouverture) = effectif moyen';
+          if(!jugeable){ lignes.push(cafPillGris(esc(c[1])+' : ≈ '+eff+' enfant(s) en moyenne'+(!calComplet?' — calendrier incomplet, verdict impossible':' — pas d\'inscrits de référence pour ce créneau'))); return; }
+          lignes.push('<span class="pill" style="background:'+(invra?'#fde8e8':'#dff5e9')+';color:'+(invra?'#a02525':'#127a51')+';font-size:12px" title="'+titre+'">'
+            +(invra?'🔴':'🟢')+' '+esc(c[1])+' : ≈ '+eff+' enfant(s) en moyenne ('+ins+' inscrits)'+(invra?' — invraisemblable':'')+'</span>');
+        });
+      }
+      if(lignes.length){
+        h+='<p class="hint" style="margin:6px 0 2px;font-size:12px"><b>Vraisemblance PAR CRÉNEAU</b> (heures-enfant ÷ heures d\'ouverture = effectif moyen — jamais en global) :</p><div class="row" style="gap:6px;flex-wrap:wrap">'+lignes.join('')+'</div>';
+        if(jc&&jc.manquants.length) h+='<p class="hint" style="margin:2px 0;font-size:11px">⚠️ '+jc.manquants.length+'/12 mois sans calendrier en base : le dénominateur est incomplet, aucun verdict rouge n\'est prononcé ici.</p>';
+      } else {
+        h+='<p class="hint" style="margin:6px 0 2px;font-size:12px"><b>Vraisemblance par créneau</b> : grille non détaillée (reprise synthétique ?) ou calendrier absent — contrôle impossible ici, à l\'œil sur OMIDEV.</p>';
+      }
+    }
+    /* Clés de grille comptées dans le total mais qu'aucune colonne n'affiche */
+    var orph=cafGrilleOrphelines(d.equipement,e);
+    if(orph.length) h+='<p class="hint" style="margin:6px 0 2px;font-size:12px">⚠️ Heures saisies sous des créneaux qui ne sont pas ceux de cet équipement (comptées dans le total, mais pas affichées dans la grille) : '+orph.map(function(o){ return esc(o.cle)+' '+acmNum(o.heures)+' h'; }).join(' · ')+'. À ressaisir dans la bonne grille.</p>';
+    if(stade==='reelle'){
+      /* c) C20 — pédagogique tant que la table PCG→AFAS (point 7) n'existe pas */
+      h+='<p class="hint" style="margin:6px 0 2px;font-size:11px">⚖️ <b>C20 (charges vs heures)</b> : c\'est lui qui a mordu à la Réelle 2025 — la Caf a accepté un <b>raisonnement</b> (« structure et permanents maintenus »), pas une décomposition arithmétique. Le calcul des charges par équipement viendra avec la table PCG→AFAS (point 7) ; en attendant, prépare l\'argument dans le composeur.</p>';
+    }
+    /* plafond Bonus Territoire de la convention — l'excédent ne rapporte plus de BT */
+    if(conv&&parseFloat(conv.bt_plafond_h)>0&&tot>parseFloat(conv.bt_plafond_h)){
+      h+='<p class="hint" style="margin:6px 0 2px;font-size:12px">🟠 '+acmNum(tot)+' heures-enfant &gt; plafond Bonus Territoire de la convention ('+acmNum(parseFloat(conv.bt_plafond_h))+' h) : l\'excédent ne rapporte plus le Bonus Territoire'+(parseFloat(conv.bt_taux)>0?' ('+esc(String(conv.bt_taux))+' €/h)':'')+'.</p>'; /* le taux vient de la convention ou ne s\'affiche pas — jamais un chiffre de convention en dur (règle SaaS) */
+    }
+    h+='</div>';
+    return h;
   }
   window.cafDeclOpen=function(id){ window.__cafSel=id; window.__cafStade=null; if(window.renderAcmCaf) renderAcmCaf(); var p=document.getElementById('acmCafPanel'); if(p) p.open=true; var b=document.getElementById('cafDeclEdit'); if(b) b.scrollIntoView({behavior:'smooth',block:'nearest'}); };
   window.cafDeclClose=function(){ window.__cafSel=null; if(window.renderAcmCaf) renderAcmCaf(); };
@@ -13072,7 +13282,7 @@ window.loadDossiersPeri=async function(){
     } else {
       /* ligne de statut + établi */
       var stIc=e.statut==='validee'?'✅ Validée Caf':(e.statut==='transmise'?'📤 Transmise':'✏️ Brouillon');
-      var etab=cafEtatEtabli(e);
+      var etab=cafEtatEtabli(d.equipement,e);
       h+='<div class="row" style="gap:8px;flex-wrap:wrap;align-items:center;margin:2px 0 8px">'
         +'<span class="pill" style="background:'+(e.statut==='brouillon'?'#fff5da':'#dff5e9')+';color:'+(e.statut==='brouillon'?'#8a6400':'#127a51')+';font-weight:700">'+stIc+'</span>'
         +(e.reference?'<span class="hint">réf. '+esc(e.reference)+'</span>':'')
@@ -13089,7 +13299,7 @@ window.loadDossiersPeri=async function(){
       lx.forEach(function(l,idx){
         h+='<div style="border:1px solid #e9ecf3;border-radius:10px;padding:8px 10px;margin:6px 0;background:#fafbff">'
           +'<div class="row" style="gap:8px;align-items:center;flex-wrap:wrap"><b>📍 '+esc(l.lieu||'?')+'</b>'
-          +'<span class="pill" style="background:#eef4ff;color:#23448a;font-size:12px">Σ '+acmNum(cafLieuHeures(stade,l))+' heures-enfant</span>'
+          +'<span class="pill" style="background:#eef4ff;color:#23448a;font-size:12px">Σ '+acmNum(cafLieuHeures(d.equipement,stade,l))+' heures-enfant</span>'
           +(lock?'':'<button onclick="cafLieuDel(\''+e.id+'\','+idx+')" title="Retirer ce lieu" style="margin-left:auto;padding:3px 8px;border:1px solid #e3c1c1;border-radius:8px;background:#fff;color:#a02525;cursor:pointer">✕</button>')+'</div>';
         if(stade==='prev'){
           h+='<div class="row" style="gap:12px;flex-wrap:wrap;margin-top:6px">'
@@ -13104,8 +13314,8 @@ window.loadDossiersPeri=async function(){
             +'</div>';
         } else {
           /* réelle : la SEULE à porter la grille complète (§2) */
-          h+='<div style="overflow-x:auto;margin-top:6px"><table style="min-width:420px"><thead><tr><th>Créneau</th><th class="num">heures-enfant &lt; 6 ans</th><th class="num">heures-enfant ≥ 6 ans</th></tr></thead><tbody>'
-            +CAF_GRILLE.map(function(c){ var g=(l.grille||{})[c[0]]||{};
+          h+='<div style="overflow-x:auto;margin-top:6px"><table style="min-width:420px"><thead><tr><th>'+(d.equipement==='PERI'?'Créneau':'Période')+'</th><th class="num">heures-enfant &lt; 6 ans</th><th class="num">heures-enfant ≥ 6 ans</th></tr></thead><tbody>'
+            +cafGrilleDef(d.equipement).map(function(c){ var g=(l.grille||{})[c[0]]||{};
               return '<tr><td>'+c[1]+'</td>'
                 +'<td class="num"><input type="number" step="1" min="0" value="'+cafNumAttr(g.m6)+'" onchange="cafGrilleSet(\''+e.id+'\','+idx+',\''+c[0]+'\',\'m6\',this.value)"'+dis+' style="width:95px;padding:3px 5px"></td>'
                 +'<td class="num"><input type="number" step="1" min="0" value="'+cafNumAttr(g.p6)+'" onchange="cafGrilleSet(\''+e.id+'\','+idx+',\''+c[0]+'\',\'p6\',this.value)"'+dis+' style="width:95px;padding:3px 5px"></td></tr>';
@@ -13117,7 +13327,7 @@ window.loadDossiersPeri=async function(){
         }
         h+='</div>';
       });
-      var totS=lx.reduce(function(s,l){ return s+cafLieuHeures(stade,l); },0);
+      var totS=lx.reduce(function(s,l){ return s+cafLieuHeures(d.equipement,stade,l); },0);
       h+='<div class="row" style="gap:8px;flex-wrap:wrap;align-items:center;margin:6px 0">'
         +(lock?'':'<button onclick="cafLieuAdd(\''+e.id+'\')" style="padding:5px 11px;border:1px solid #d6dbe8;border-radius:9px;background:#fff;cursor:pointer">➕ Ajouter un lieu</button>')
         +(lx.length>1?'<span class="pill" style="background:#eef4ff;color:#23448a;font-weight:700">Σ tous lieux : '+acmNum(totS)+' heures-enfant</span>':'')+'</div>';
@@ -13132,6 +13342,7 @@ window.loadDossiersPeri=async function(){
             +'<button onclick="cafProvUpload(\''+e.id+'\')" style="padding:4px 9px;border:1px solid #d6dbe8;border-radius:9px;background:#fff;cursor:pointer">↺ Remplacer</button>'
           :'<button onclick="cafProvUpload(\''+e.id+'\')" style="padding:5px 11px;border:1px solid var(--brand,#3a51e8);border-radius:9px;background:#fff;color:var(--brand,#3a51e8);font-weight:600;cursor:pointer">📎 Joindre la capture OMIDEV</button>')
         +'</div></div>';
+      h+=cafControlesHtml(d,stade,e,conv); /* 🚨 point 6 : les contrôles vivent dans l'écran */
     }
     /* champs calculés — EN LECTURE SEULE (§4) : ce que Bob possède, jamais ressaisi.
        ⚠️ Le calendrier voté en base est celui du PÉRISCOLAIRE (jours d'école) : il ne
