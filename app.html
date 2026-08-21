@@ -13422,7 +13422,7 @@ window.loadDossiersPeri=async function(){
       if(isFinite(brut)&&brut>=0&&brut<=100)
         return {part:brut/100, source:'part saisie à la main : '+(Math.round(brut*10)/10)+' %', nonVentile:0, manuelle:true};
       /* saisie inutilisable : on ne fait pas semblant, on retombe sur l'automatique */
-      return Object.assign(cafPartPerimetreAuto(y,v), {avertissement:'la part saisie à la main est inutilisable ('+esc(String(r.part_perimetre))+') — calcul automatique appliqué'});
+      return Object.assign(cafPartPerimetreAuto(y,v), {avertissement:'la part saisie à la main est inutilisable ('+String(r.part_perimetre)+') — calcul automatique appliqué'});
     }
     return cafPartPerimetreAuto(y,v);
   }
@@ -13661,6 +13661,256 @@ window.loadDossiersPeri=async function(){
     h+='</details>';
     return h;
   }
+  /* ══════════ POINT 7b — COMPARATIF N-1/N-3 ET DOSSIER IMPRIMABLE (§6.2, §6.3) ══════════
+     §6.3 : « Le comparatif N-1 — et N-3 (l'alerte A30 du portail se calcule sur N-3),
+     avec le PÉRIMÈTRE ANNOTÉ. Un comparatif brut afficherait −60 % puis +100 % sans
+     qu'aucun ne soit une variation d'activité. »
+     → Le périmètre se LIT dans les données : lieux réellement déclarés ET créneaux
+     réellement ouverts (une même école passée du soir seul au matin ET soir change de
+     périmètre sans changer de nom — défaut prouvé le 21/08).
+     → Un changement de périmètre n'ÉTEINT PAS le contrôle des 20 % : on affiche l'écart
+     brut ET l'écart À PÉRIMÈTRE CONSTANT (calculé sur les lieux communs), qui, lui,
+     mesure vraiment l'activité et porte le verdict.
+
+     §6.2 : « document HTML mis en page généré par Bob, imprimable / PDF, en-tête depuis
+     l'identité du tenant, sur le motif déjà en production (printHTML) ».
+     ⚠️ « Bilan » est le nom du Compte de résultat (onglet 📈) : ici on dit « dossier ». */
+  function cafPerimetreDe(equip,y){
+    var c=cafCourant(equip,y); if(!c) return null;
+    var lx=(c.etat&&c.etat.donnees&&c.etat.donnees.lieux)||[];
+    var lieux=lx.map(function(l){ return {nom:(l.lieu||'(lieu sans nom)'), heures:cafLieuHeures(equip,c.stade,l), brut:l}; })
+                .filter(function(x){ return x.heures>0; });   /* un lieu à 0 h n'est PAS un périmètre */
+    var cre={};
+    if(c.stade==='reelle') lx.forEach(function(l){
+      Object.keys(l.grille||{}).forEach(function(k){
+        var r=l.grille[k]||{}; if(((parseFloat(r.m6)||0)+(parseFloat(r.p6)||0))>0) cre[k]=true;
+      });
+    });
+    return {stade:c.stade, statut:c.statut, total:c.total, gele:c.gele, lieux:lieux,
+            creneaux:(c.stade==='reelle'?Object.keys(cre):null)};
+  }
+  /* Différence de périmètre : les LIEUX, et les CRÉNEAUX quand les deux exercices ont
+     une grille (sinon on ne peut pas les comparer, et on ne prétend pas le faire). */
+  function cafDiffPerimetre(a,b){
+    if(!a||!b) return {lieux:[], creneaux:[], tout:[]};
+    var na=a.lieux.map(function(x){ return x.nom; }), nb=b.lieux.map(function(x){ return x.nom; });
+    var dl=[];
+    na.forEach(function(n){ if(nb.indexOf(n)<0) dl.push('+ '+n); });
+    nb.forEach(function(n){ if(na.indexOf(n)<0) dl.push('− '+n); });
+    var dc=[];
+    if(a.creneaux&&b.creneaux){
+      a.creneaux.forEach(function(k){ if(b.creneaux.indexOf(k)<0) dc.push('+ '+k); });
+      b.creneaux.forEach(function(k){ if(a.creneaux.indexOf(k)<0) dc.push('− '+k); });
+    }
+    return {lieux:dl, creneaux:dc, tout:dl.concat(dc.map(function(x){ return x+' (créneau)'; }))};
+  }
+  function cafVarPct(now,ref){ return (isFinite(now)&&isFinite(ref)&&ref>0)?((now-ref)/ref):null; }
+  /* L'écart qui mesure VRAIMENT l'activité : sur les seuls lieux présents des deux côtés. */
+  function cafEcartConstant(N,ref){
+    if(!N||!ref) return null;
+    var communs=N.lieux.filter(function(l){ return ref.lieux.some(function(r){ return r.nom===l.nom; }); });
+    if(!communs.length) return null;
+    var sn=0, sr=0;
+    communs.forEach(function(l){ sn+=l.heures; });
+    ref.lieux.forEach(function(r){ if(communs.some(function(l){ return l.nom===r.nom; })) sr+=r.heures; });
+    var v=cafVarPct(sn,sr); if(v==null) return null;
+    return {n:sn, r:sr, v:v, pct:Math.round(v*1000)/10, lieux:communs.map(function(l){ return l.nom; })};
+  }
+  function cafCompareLignes(d){
+    return [d.exercice, d.exercice-1, d.exercice-3].map(function(y){
+      return {annee:y, p:cafPerimetreDe(d.equipement,y)};
+    });
+  }
+  function cafCompareHtml(d){
+    var L=cafCompareLignes(d), N=L[0].p;
+    if(!L[0].p&&!L[1].p&&!L[2].p) return '';
+    var gele=!!d.gele;
+    var h='<div style="border:1px solid #e9ecf3;border-radius:10px;padding:8px 10px;margin:8px 0 0;background:#f7f8fc">'
+      +'<b style="font-size:13px">📊 Comparatif N-1 / N-3</b> <span class="hint" style="font-size:11px">— '
+      +(gele?'exercice gelé : tableau donné pour mémoire, rien à justifier ni à transmettre.'
+            :'le portail calcule son alerte A30 sur <b>N-3</b>. Le périmètre est lu dans les lieux et créneaux réellement déclarés.')+'</span>'
+      +'<div style="overflow-x:auto;margin-top:6px"><table style="min-width:470px"><thead><tr><th>Exercice</th><th class="num">Heures-enfant</th><th>Lieux déclarés</th><th>Stade</th></tr></thead><tbody>';
+    L.forEach(function(x){
+      if(!x.p){ h+='<tr><td>'+esc(String(x.annee))+'</td><td class="num">—</td><td class="hint">aucune déclaration en base</td><td class="hint">—</td></tr>'; return; }
+      h+='<tr><td>'+esc(String(x.annee))+(x.p.gele?' 🧊':'')+'</td><td class="num">'+acmNum(Math.round(x.p.total))+'</td>'
+        +'<td>'+(x.p.lieux.length?esc(x.p.lieux.map(function(l){ return l.nom+' ('+acmNum(Math.round(l.heures))+' h)'; }).join(' · ')):'<span class="hint">non détaillé</span>')+'</td>'
+        +'<td class="hint">'+esc(cafStadeLabel(x.p.stade))+'</td></tr>';
+    });
+    h+='</tbody></table></div>';
+    [[L[1].p,'N-1 ('+(d.exercice-1)+')',false],[L[2].p,'N-3 ('+(d.exercice-3)+')',true]].forEach(function(pair){
+      var ref=pair[0]; if(!N||!ref||!(ref.total>0)) return;
+      var v=cafVarPct(N.total,ref.total); if(v==null) return;
+      var pct=Math.round(v*1000)/10;
+      var diff=cafDiffPerimetre(N,ref), cst=cafEcartConstant(N,ref);
+      var memeStade=(N.stade===ref.stade);
+      /* le verdict porte sur l'écart à périmètre constant quand il existe : un
+         changement de périmètre ne doit jamais éteindre le contrôle des 20 % */
+      var vJuge=(diff.tout.length&&cst)?cst.v:v;
+      var gros=Math.abs(vJuge)>0.2;
+      var bg=gros?'#fff5da':'#dff5e9', fg=gros?'#8a6400':'#127a51';
+      h+='<p class="hint" style="margin:4px 0 0;font-size:12px"><span class="pill" style="background:'+bg+';color:'+fg+';font-size:12px">'
+        +(gros?'🟠':'🟢')+' vs '+esc(pair[1])+' : '+(pct>0?'+':'')+pct+' % (brut)</span> ';
+      if(diff.tout.length){
+        h+='<b>périmètre différent</b> ('+esc(diff.tout.join(' · '))+')'
+          +(cst?' — à périmètre constant ('+esc(cst.lieux.join(', '))+') : <b>'+(cst.pct>0?'+':'')+cst.pct+' %</b>, c\'est CET écart qui mesure l\'activité.'
+               :' — aucun lieu commun : l\'écart brut ne mesure pas une variation d\'activité.');
+      } else h+='même périmètre : l\'écart brut mesure bien l\'activité.';
+      if(!memeStade) h+=' ⚠️ stades différents ('+esc(cafStadeLabel(N.stade))+' vs '+esc(cafStadeLabel(ref.stade))+') : on ne compare pas deux chiffres de même nature.';
+      if(pair[2]&&v<0&&!gele) h+=' <b>Baisse vs N-3 : le portail lèvera l\'alerte A30</b> (informative).';
+      h+='</p>';
+    });
+    h+='</div>';
+    return h;
+  }
+  /* ---- Le dossier imprimable ---- */
+  window.cafDossierDoc=function(declId,stadeVu){
+    var d=(window.__cafDecl||[]).find(function(x){ return x.id===declId; });
+    if(!d){ if(window.bobAlert) window.bobAlert('Déclaration introuvable.',{titre:'Dossier CAF'}); return; }
+    if(typeof printHTML!=='function'){ if(window.bobAlert) window.bobAlert('Aperçu indisponible.',{titre:'Dossier CAF'}); return; }
+    var NOMS={PERI:'Périscolaire',EXTRA:'Extrascolaire',ADO:'Ados'};
+    var conv=cafConvOf(d);
+    var E=function(s){ return esc(String(s==null?'':s)); };
+    /* le dossier parle du stade que l'utilisateur a sous les yeux */
+    var eVu=(d.etats||[]).find(function(x){ return x.stade===stadeVu; })||null;
+    var cur=eVu?{stade:eVu.stade, etat:eVu, total:cafTotalEtat(d.equipement,eVu), statut:eVu.statut}:cafCourant(d.equipement,d.exercice);
+    var h='<div style="font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;color:#111;max-width:780px;margin:0 auto">';
+    h+=((window.bobDocEntete&&window.bobDocEntete())||'');   /* identité du tenant, jamais en dur */
+    h+='<h2 style="text-align:center;margin:10px 0 2px">Déclaration CAF — '+E(NOMS[d.equipement]||d.equipement)+' '+E(d.exercice)+'</h2>'
+      +'<p style="text-align:center;color:#555;font-size:13px;margin:0 0 12px">Dossier d\'activité et éléments financiers · document produit par Bob le '+E(new Date().toLocaleDateString('fr-FR'))+'</p>';
+    if(d.gele) h+='<p style="border:1px solid #1e4f8f;background:#e8f1ff;color:#1e4f8f;border-radius:8px;padding:8px;font-weight:600">🧊 Exercice gelé par la Caf — document de travail : ne pas transmettre, et ne pas réclamer la validation.'+(d.gele_motif?'<br><span style="font-weight:400;font-size:12px">'+E(d.gele_motif)+'</span>':'')+'</p>';
+    if(conv) h+='<p style="font-size:13px;color:#333"><b>Convention :</b> '+E(conv.libelle||'—')
+      +(conv.methode_comptage?' · comptage : '+E(conv.methode_comptage==='plage_accueil'?('plage d\'accueil'+(conv.plafond_jour_h?' plafonnée à '+conv.plafond_jour_h+' h/jour':'')):conv.methode_comptage):'')
+      +(conv.bt_plafond_h?' · Bonus Territoire : jusqu\'à '+acmNum(parseFloat(conv.bt_plafond_h))+' h'+(conv.bt_taux?' × '+E(conv.bt_taux)+' €':''):'')+'</p>';
+    /* 1. Les 4 stades */
+    h+='<h3 style="margin:14px 0 4px;font-size:15px">Les quatre stades de la déclaration</h3>'
+      +'<p style="font-size:12px;color:#555;margin:0 0 6px">Ce sont quatre états d\'un même dossier : la Réelle remplace tout, elle ne s\'additionne pas aux précédentes.</p>'
+      +'<table style="width:100%;border-collapse:collapse;font-size:13px"><thead><tr>'
+      +['Stade','Échéance','État','Référence','Heures-enfant'].map(function(t){ return '<th style="text-align:left;border-bottom:1px solid #ccc;padding:4px">'+t+'</th>'; }).join('')+'</tr></thead><tbody>';
+    var ECH={prev:'31/03/'+d.exercice, t2:'15/07/'+d.exercice, t3:'15/10/'+d.exercice, reelle:'31/03/'+(d.exercice+1)};
+    CAF_STADES.forEach(function(s){
+      var e=(d.etats||[]).find(function(x){ return x.stade===s[0]; });
+      var st=e?(e.statut==='validee'?'Validée Caf':(e.statut==='transmise'?'Transmise':'Brouillon')):'—';
+      h+='<tr><td style="padding:4px;border-bottom:1px solid #eee">'+E(s[1])+(s[0]===(cur&&cur.stade)?' ◀':'')+'</td>'
+        +'<td style="padding:4px;border-bottom:1px solid #eee">'+E(ECH[s[0]])+'</td>'
+        +'<td style="padding:4px;border-bottom:1px solid #eee">'+E(st)+(e&&e.transmis_le?' le '+E(String(e.transmis_le).split('-').reverse().join('/')):'')+'</td>'
+        +'<td style="padding:4px;border-bottom:1px solid #eee">'+E(e&&e.reference||'—')+'</td>'
+        +'<td style="padding:4px;border-bottom:1px solid #eee;text-align:right">'+(e?acmNum(Math.round(cafTotalEtat(d.equipement,e))):'—')+'</td></tr>';
+    });
+    h+='</tbody></table>';
+    /* 2. Activité détaillée DU STADE MONTRÉ */
+    if(cur&&cur.etat){
+      var lx=(cur.etat.donnees&&cur.etat.donnees.lieux)||[];
+      h+='<h3 style="margin:14px 0 4px;font-size:15px">Activité déclarée — '+E(cafStadeLabel(cur.stade))+'</h3>';
+      if(!lx.length) h+='<p style="font-size:13px;color:#555">Aucun lieu saisi.</p>';
+      lx.forEach(function(l){
+        h+='<p style="font-size:13px;margin:6px 0 2px"><b>📍 '+E(l.lieu||'(lieu sans nom)')+'</b> — '+acmNum(Math.round(cafLieuHeures(d.equipement,cur.stade,l)))+' heures-enfant</p>';
+        if(cur.stade==='reelle'){
+          /* union des clés : une grille saisie avant que les créneaux ne deviennent
+             propres à l'équipement compte dans le total, elle doit donc s'imprimer */
+          var g=l.grille||{}, connues=cafGrilleDef(d.equipement), vues={}, r=[];
+          connues.forEach(function(c){
+            vues[c[0]]=true;
+            var a=parseFloat((g[c[0]]||{}).m6)||0, b=parseFloat((g[c[0]]||{}).p6)||0;
+            if(a||b) r.push(c[1]+' : '+acmNum(a)+' h (moins de 6 ans) · '+acmNum(b)+' h (6 ans et plus)');
+          });
+          Object.keys(g).forEach(function(k){
+            if(vues[k]) return;
+            var a=parseFloat((g[k]||{}).m6)||0, b=parseFloat((g[k]||{}).p6)||0;
+            if(a||b) r.push(k+' (créneau d\'un autre équipement) : '+acmNum(a)+' h · '+acmNum(b)+' h');
+          });
+          if(r.length) h+='<p style="font-size:12px;color:#444;margin:0 0 4px">'+E(r.join(' — '))+'</p>';
+          if(l.enfants!=null) h+='<p style="font-size:12px;color:#444;margin:0">'+acmNum(parseFloat(l.enfants)||0)+' enfants accueillis'+(l.dont_aeeh!=null?', dont '+acmNum(parseFloat(l.dont_aeeh)||0)+' AEEH':'')+'</p>';
+        } else if(cur.stade==='t2'||cur.stade==='t3'){
+          var d2=[];
+          if(l.s1!=null) d2.push('1er semestre : '+acmNum(parseFloat(l.s1)||0)+' h');
+          if(l.s2!=null) d2.push('2d semestre : '+acmNum(parseFloat(l.s2)||0)+' h');
+          if(l.dont_aeeh!=null) d2.push('dont AEEH : '+acmNum(parseFloat(l.dont_aeeh)||0)+' h');
+          if(d2.length) h+='<p style="font-size:12px;color:#444;margin:0">'+E(d2.join(' · '))+'</p>';
+        } else if(l.dont_aeeh!=null){
+          h+='<p style="font-size:12px;color:#444;margin:0">dont '+acmNum(parseFloat(l.dont_aeeh)||0)+' heures AEEH</p>';
+        }
+      });
+      var prov=(cur.etat.donnees&&cur.etat.donnees.provenance)||null;
+      h+='<p style="font-size:12px;color:#444;margin:6px 0 0"><b>Provenance des heures :</b> '
+        +(prov&&prov.capture?('capture « Saisie CAF » jointe'+(prov.saisi_le?' le '+E(String(prov.saisi_le).slice(0,10).split('-').reverse().join('/')):'')):'<i>non établie — aucune capture jointe</i>')+'</p>';
+    } else {
+      h+='<h3 style="margin:14px 0 4px;font-size:15px">Activité déclarée</h3><p style="font-size:13px;color:#555">Aucun stade ne porte encore d\'heures pour cet exercice.</p>';
+    }
+    /* 3. Comparatif annoté (avec le stade de chaque exercice) */
+    var L=cafCompareLignes(d), N=L[0].p;
+    h+='<h3 style="margin:14px 0 4px;font-size:15px">Comparatif N-1 / N-3 et périmètre</h3>'
+      +'<table style="width:100%;border-collapse:collapse;font-size:13px"><thead><tr>'
+      +['Exercice','Stade','Heures-enfant','Lieux déclarés'].map(function(t){ return '<th style="text-align:left;border-bottom:1px solid #ccc;padding:4px">'+t+'</th>'; }).join('')+'</tr></thead><tbody>';
+    L.forEach(function(x){
+      h+='<tr><td style="padding:4px;border-bottom:1px solid #eee">'+E(x.annee)+'</td>'
+        +'<td style="padding:4px;border-bottom:1px solid #eee">'+(x.p?E(cafStadeLabel(x.p.stade)):'—')+'</td>'
+        +'<td style="padding:4px;border-bottom:1px solid #eee;text-align:right">'+(x.p?acmNum(Math.round(x.p.total)):'—')+'</td>'
+        +'<td style="padding:4px;border-bottom:1px solid #eee">'+(x.p&&x.p.lieux.length?E(x.p.lieux.map(function(l){ return l.nom+' ('+acmNum(Math.round(l.heures))+' h)'; }).join(' · ')):'—')+'</td></tr>';
+    });
+    h+='</tbody></table>';
+    [[L[1].p,'N-1 ('+(d.exercice-1)+')',false],[L[2].p,'N-3 ('+(d.exercice-3)+')',true]].forEach(function(pair){
+      var ref=pair[0]; if(!N||!ref||!(ref.total>0)) return;
+      var v=cafVarPct(N.total,ref.total); if(v==null) return;
+      var diff=cafDiffPerimetre(N,ref), cst=cafEcartConstant(N,ref);
+      h+='<p style="font-size:12px;color:#333;margin:4px 0 0">Écart vs '+E(pair[1])+' : <b>'+(v>0?'+':'')+(Math.round(v*1000)/10)+' %</b> (brut)'
+        +(diff.tout.length?(' — <b>périmètre différent</b> ('+E(diff.tout.join(' · '))+')'
+            +(cst?', soit <b>'+(cst.pct>0?'+':'')+cst.pct+' %</b> à périmètre constant ('+E(cst.lieux.join(', '))+') : c\'est cet écart qui mesure l\'activité.'
+                 :' : aucun lieu commun, l\'écart brut ne mesure pas une variation d\'activité.'))
+          :' — à périmètre identique.')
+        +((N.stade!==ref.stade)?' ⚠️ stades différents ('+E(cafStadeLabel(N.stade))+' vs '+E(cafStadeLabel(ref.stade))+') : chiffres de nature différente.':'')
+        +((pair[2]&&v<0&&!d.gele)?' <b>Baisse vs N-3 : le portail lèvera l\'alerte A30</b> (informative).':'')
+        +'</p>';
+    });
+    /* 4. Volet financier — de l'EXERCICE, toujours présent (il ne dépend pas du stade) */
+    var m=cafMontantsAfas(d.equipement,d.exercice);
+    var ordreC=CAF_AFAS_CHARGES.map(function(x){ return x[0]; }), ordreP=CAF_AFAS_PRODUITS.map(function(x){ return x[0]; });
+    var ligne=function(c){ return '<tr><td style="padding:4px;border-bottom:1px solid #eee">'+E(c)+'</td><td style="padding:4px;border-bottom:1px solid #eee">'+E(cafAfasLabel(c))+'</td><td style="padding:4px;border-bottom:1px solid #eee;text-align:right">'+cafEur(m.cases[c].montant)+' €</td></tr>'; };
+    var lc=ordreC.filter(function(c){ return m.cases[c]&&Math.round(m.cases[c].montant*100)!==0; });
+    var lp=ordreP.filter(function(c){ return m.cases[c]&&Math.round(m.cases[c].montant*100)!==0; });
+    h+='<h3 style="margin:14px 0 4px;font-size:15px">Éléments financiers de l\'exercice '+E(d.exercice)+'</h3>'
+      +'<p style="font-size:12px;color:#555;margin:0 0 6px">D\'après les écritures encaissées et décaissées de l\'exercice (Bob tient une trésorerie : si des charges sont engagées et non payées au 31/12, ajoute-les à la main). Charges et produits communs répartis en deux temps : <b>'
+      +(Math.round((m.perimetre.part||0)*1000)/10)+' %</b> du commun revient au périmètre CAF ('+E(m.perimetre.source)+'), puis '+E(m.parts.source)
+      +' — cet équipement en reçoit <b>'+(Math.round(m.quote*1000)/10)+' %</b>.</p>';
+    if(cur&&cur.stade==='prev') h+='<p style="font-size:12px;color:#8a6400;margin:0 0 4px">⚠️ Le stade montré est la Prévisionnelle : sur le portail, son volet financier se saisit depuis le <b>budget voté</b>. Les montants ci-dessous sont le RÉALISÉ de l\'exercice, donnés pour information.</p>';
+    if(m.perimetre.avertissement) h+='<p style="font-size:12px;color:#8a6400;margin:0 0 4px">⚠️ '+E(m.perimetre.avertissement)+'</p>';
+    if(m.parts.avertissement) h+='<p style="font-size:12px;color:#8a6400;margin:0 0 4px">⚠️ '+E(m.parts.avertissement)+'</p>';
+    if(lc.length||lp.length){
+      h+='<table style="width:100%;border-collapse:collapse;font-size:13px"><thead><tr>'
+        +['Case AFAS','Libellé','Montant'].map(function(t){ return '<th style="text-align:left;border-bottom:1px solid #ccc;padding:4px">'+t+'</th>'; }).join('')+'</tr></thead><tbody>';
+      if(lc.length) h+='<tr><td colspan="3" style="padding:4px;font-weight:700;background:#f7f8fc">Charges</td></tr>'+lc.map(ligne).join('');
+      if(lp.length) h+='<tr><td colspan="3" style="padding:4px;font-weight:700;background:#f7f8fc">Produits</td></tr>'+lp.map(ligne).join('');
+      h+='</tbody></table>';
+    } else h+='<p style="font-size:13px;color:#555">Aucun montant ventilé sur cet équipement.</p>';
+    /* Tout ce qui n'est pas dans le tableau doit être DIT — même doctrine qu'à l'écran */
+    var av=[];
+    if(m.aAffecter.length) av.push(m.aAffecter.length+' compte(s) sans case AFAS choisie, hors tableau : '+m.aAffecter.map(function(a){ return a.compte+' ('+cafEur(a.montant)+' €)'; }).join(' · '));
+    if(m.inconnues.length) av.push('case(s) AFAS non reconnues, hors tableau : '+m.inconnues.map(function(u){ return u.cas+' ('+u.compte+', '+cafEur(u.montant)+' €)'; }).join(' · '));
+    var nvk=Object.keys(m.ventil.nonVentile);
+    if(nvk.length) av.push(nvk.length+' écriture(s) non ventilée(s) ne comptent dans aucune déclaration');
+    if(m.perimetre.nonVentile>0) av.push(cafEur(m.perimetre.nonVentile)+' € de charges non classées comptent au dénominateur : la part CAF est volontairement basse');
+    var al=m.ventil.alertes;
+    if(al.repartition.nb) av.push(al.repartition.nb+' écriture(s) dont la répartition ne totalise pas le montant ('+cafEur(al.repartition.montant)+' € d\'écart)');
+    if(al.sansDate.nb) av.push(al.sansDate.nb+' écriture(s) sans date exploitable ('+cafEur(al.sansDate.montant)+' €)');
+    if(al.typeInconnu.nb) av.push(al.typeInconnu.nb+' écriture(s) de type inattendu ('+cafEur(al.typeInconnu.montant)+' €)');
+    if(al.equipInconnu.nb) av.push(al.equipInconnu.nb+' ligne(s) à destination inconnue ('+cafEur(al.equipInconnu.montant)+' €)');
+    if(al.montantIllisible.nb) av.push(al.montantIllisible.nb+' ligne(s) au montant illisible');
+    if(av.length) h+='<p style="font-size:12px;color:#8a6400;margin:6px 0 0">⚠️ '+E(av.join(' — '))+'.</p>';
+    else h+='<p style="font-size:12px;color:#127a51;margin:6px 0 0">✓ Bouclage vérifié : '+cafEur(m.ventil.totalOps.charge)+' € de charges et '+cafEur(m.ventil.totalOps.produit)+' € de produits de l\'exercice sont tous rangés.</p>';
+    /* 5. Le commentaire de justification — SEULEMENT s'il parle de CET écart */
+    try{
+      if(typeof cafComText==='function'&&cur){
+        var refN1=L[1].p;
+        var com=cafComEtatPour(d,cur.stade,cur.total,(refN1&&refN1.total>0)?refN1.total:null);
+        if(com&&com.meme){
+          var a2=acmDb(), dr=a2.cafComments&&a2.cafComments[d.exercice+'-'+d.equipement];
+          var txt=dr?cafComText(dr):'';
+          if(txt&&txt.trim()) h+='<h3 style="margin:14px 0 4px;font-size:15px">Commentaire de justification</h3><p style="font-size:13px;white-space:pre-wrap;background:#f7f8fc;border:1px solid #e3e6ef;border-radius:8px;padding:8px">'+E(txt)+'</p>';
+        }
+      }
+    }catch(ex){}
+    h+='<p style="font-size:11px;color:#777;margin-top:16px;border-top:1px solid #ddd;padding-top:6px">Document de travail produit par Bob à partir des données saisies. Il ne remplace pas la déclaration en ligne sur le portail AFAS, qui reste un geste nominatif.</p></div>';
+    printHTML(h);
+  };
   window.renderCafDeclEdit=function(){
     var box=document.getElementById('cafDeclEdit'); if(!box) return;
     /* ne jamais raser une saisie en cours : le polling collègue re-rend tout l'écran
@@ -13757,6 +14007,9 @@ window.loadDossiersPeri=async function(){
       h+=cafControlesHtml(d,stade,e,conv); /* 🚨 point 6 : les contrôles vivent dans l'écran */
       h+=cafExportHtml(d,stade,e,conv);    /* 📤 point 7a : le pré-remplissage AFAS, par stade */
     }
+    h+=cafCompareHtml(d);                  /* 📊 point 7b : comparatif N-1/N-3 à périmètre annoté */
+    /* « Bilan » est le nom du Compte de résultat (onglet 📈) : ici on dit « dossier » */
+    h+='<div class="row" style="gap:8px;flex-wrap:wrap;margin-top:8px"><button onclick="cafDossierDoc(\''+d.id+'\',\''+stade+'\')" style="padding:6px 12px;border:1px solid #d6dbe8;border-radius:9px;background:#fff;cursor:pointer">🖨️ Dossier imprimable / PDF</button><span class="hint" style="font-size:11px">document mis en page par Bob (identité de l\'association, stades, activité, comparatif annoté, financier, commentaire)</span></div>';
     /* champs calculés — EN LECTURE SEULE (§4) : ce que Bob possède, jamais ressaisi.
        ⚠️ Le calendrier voté en base est celui du PÉRISCOLAIRE (jours d'école) : il ne
        vaut RIEN pour EXTRA/ADO (les vacances en sont le complément exact) — on le dit
