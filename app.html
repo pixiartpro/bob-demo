@@ -13016,6 +13016,19 @@ window.loadDossiersPeri=async function(){
     });
     h+='<div class="row" style="gap:6px;flex-wrap:wrap;margin:6px 0 2px">'+parts.join('')+'</div>';
     if(ecarts.some(function(x){ return x.rv&&!x.rv.ferme; })) h+='<p class="hint" style="margin:0 0 2px;font-size:11px">* référence encore à l\'état de brouillon — elle bougera.</p>';
+    /* Le contrôle garde son verdict sur le brut (vue de la Caf) mais dit POURQUOI :
+       sans ça, l'écran affichait 🟠 « −60,2 % » ici et 🟢 « +9,7 % » au comparatif
+       juste en dessous — deux vérités contradictoires à l'œil (vu le 21/08/2026). */
+    var ecN1=ecarts.find(function(x){ return x.rf[0]==='n1'&&x.rv&&x.gros; });
+    if(ecN1){
+      var pN=cafPerimetreEtat(d.equipement,e), pRef=cafPerimetreDe(d.equipement,d.exercice-1);
+      var dif=cafDiffPerimetre(pN,pRef), cst=cafEcartConstant(pN,pRef);
+      if(dif&&dif.tout.length){
+        h+='<p class="hint" style="margin:2px 0 4px;font-size:12px">⚖️ Cet écart vient d\'un <b>changement de périmètre</b> ('+esc(dif.tout.join(' · '))+')'
+          +(cst?' : à périmètre constant ('+esc(cst.lieux.join(', '))+'), la variation réelle est de <b>'+(cst.pct>0?'+':'')+cst.pct+' %</b>.':'.')
+          +' La Caf compare quand même le total brut : elle demandera une justification, et c\'est celle-ci qu\'il faut lui écrire.</p>';
+      }
+    }
     if(premierGros){
       /* types CONTRÔLÉS dans la poignée (jamais de concaténation libre en JS) */
       var anS=parseInt(d.exercice,10)||0;
@@ -13675,6 +13688,23 @@ window.loadDossiersPeri=async function(){
      §6.2 : « document HTML mis en page généré par Bob, imprimable / PDF, en-tête depuis
      l'identité du tenant, sur le motif déjà en production (printHTML) ».
      ⚠️ « Bilan » est le nom du Compte de résultat (onglet 📈) : ici on dit « dossier ». */
+  /* Périmètre d'UN état donné : les lieux qui portent réellement des heures, et les
+     créneaux ouverts quand la grille existe. Utilisé par le comparatif ET par les
+     contrôles, pour qu'ils ne racontent jamais deux histoires différentes. */
+  function cafPerimetreEtat(equip,e){
+    if(!e) return null;
+    var lx=(e.donnees&&e.donnees.lieux)||[];
+    var lieux=lx.map(function(l){ return {nom:(l.lieu||'(lieu sans nom)'), heures:cafLieuHeures(equip,e.stade,l)}; })
+                .filter(function(x){ return x.heures>0; });
+    var cre={};
+    if(e.stade==='reelle') lx.forEach(function(l){
+      Object.keys(l.grille||{}).forEach(function(k){
+        var r=l.grille[k]||{}; if(((parseFloat(r.m6)||0)+(parseFloat(r.p6)||0))>0) cre[k]=true;
+      });
+    });
+    return {stade:e.stade, statut:e.statut, total:cafTotalEtat(equip,e), lieux:lieux,
+            creneaux:(e.stade==='reelle'?Object.keys(cre):null)};
+  }
   function cafPerimetreDe(equip,y){
     var c=cafCourant(equip,y); if(!c) return null;
     var lx=(c.etat&&c.etat.donnees&&c.etat.donnees.lieux)||[];
@@ -13743,17 +13773,19 @@ window.loadDossiersPeri=async function(){
       var pct=Math.round(v*1000)/10;
       var diff=cafDiffPerimetre(N,ref), cst=cafEcartConstant(N,ref);
       var memeStade=(N.stade===ref.stade);
-      /* le verdict porte sur l'écart à périmètre constant quand il existe : un
-         changement de périmètre ne doit jamais éteindre le contrôle des 20 % */
-      var vJuge=(diff.tout.length&&cst)?cst.v:v;
-      var gros=Math.abs(vJuge)>0.2;
+      /* 🔴 Le verdict porte sur l'écart BRUT, toujours : c'est le total déclaré que la
+         Caf compare d'une année sur l'autre, et c'est lui qui déclenche la demande de
+         justification. Un changement de périmètre n'éteint donc RIEN — il fournit
+         l'explication à écrire, pas une raison de se taire (arbitrage du 21/08/2026 :
+         rendre le contrôle vert aurait fait taire Bob sur ce que la Caf relèvera). */
+      var gros=Math.abs(v)>0.2;
       var bg=gros?'#fff5da':'#dff5e9', fg=gros?'#8a6400':'#127a51';
       h+='<p class="hint" style="margin:4px 0 0;font-size:12px"><span class="pill" style="background:'+bg+';color:'+fg+';font-size:12px">'
         +(gros?'🟠':'🟢')+' vs '+esc(pair[1])+' : '+(pct>0?'+':'')+pct+' % (brut)</span> ';
       if(diff.tout.length){
         h+='<b>périmètre différent</b> ('+esc(diff.tout.join(' · '))+')'
-          +(cst?' — à périmètre constant ('+esc(cst.lieux.join(', '))+') : <b>'+(cst.pct>0?'+':'')+cst.pct+' %</b>, c\'est CET écart qui mesure l\'activité.'
-               :' — aucun lieu commun : l\'écart brut ne mesure pas une variation d\'activité.');
+          +(cst?' — à périmètre constant ('+esc(cst.lieux.join(', '))+') : <b>'+(cst.pct>0?'+':'')+cst.pct+' %</b>. La Caf compare le brut : voilà la justification à lui donner.'
+               :' — aucun lieu commun : l\'écart brut ne mesure pas une variation d\'activité, dis-le à la Caf.');
       } else h+='même périmètre : l\'écart brut mesure bien l\'activité.';
       if(!memeStade) h+=' ⚠️ stades différents ('+esc(cafStadeLabel(N.stade))+' vs '+esc(cafStadeLabel(ref.stade))+') : on ne compare pas deux chiffres de même nature.';
       if(pair[2]&&v<0&&!gele) h+=' <b>Baisse vs N-3 : le portail lèvera l\'alerte A30</b> (informative).';
