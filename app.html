@@ -12380,18 +12380,29 @@ window.loadDossiersPeri=async function(){
     view.innerHTML=h; view.scrollIntoView({block:'start',behavior:'smooth'});
     acmFillEffectif(ed); acmFillEncadrement(ed); acmFillPhotos(ed); if(window.acmFillEquipe) acmFillEquipe(ed); if(window.acmRenderDocs) acmRenderDocs(ed);
   };
-  // === 📎 Documents de l'édition (coffre privé acm-docs ; métadonnées dans le coffre db.acmVac → ed.bilan.docs) ===
+  // === 📎 Documents de l'édition (fichiers dans le coffre privé acm-docs ; métadonnées dans la TABLE acm_docs — migration 79 du 21/08/2026) ===
   // Écriture réservée au bureau (canWrite). Lecture par le bureau ici ET par les salariées dans « Mon ACM » (via le miroir acm_reflet, volet 'documents'). Coffre distinct du coffre des familles.
+  // ⚠️ Le blob d'avant (db.acmVac → ed.bilan.docs) est GELÉ : ni lu ni écrit. Il a été recopié en table par la
+  // migration (backfill idempotent) et reste en place comme filet de rollback — ne pas le ranimer.
+  window.__acmDocs=null; // null = jamais chargé (≠ [] : chargé et vide) — ne jamais afficher « aucun document » sur un null, c'est une AFFIRMATION
+  window.acmLoadDocs=async function(){
+    try{ if(!sbc) return false; const {data,error}=await sbc.from('acm_docs').select('*').order('created_at',{ascending:false}); if(error) throw error; window.__acmDocs=data||[]; return true; }
+    catch(e){ console.warn('acmLoadDocs', e); return false; }
+  };
+  window.acmDocsFor=function(edId){ return (window.__acmDocs||[]).filter(function(r){ return r.edition_ref===edId; }); };
   window.acmRenderDocs=function(ed){
     const box=document.getElementById('acmBilanDocs'); if(!box||!ed) return;
-    if(!ed.bilan) return;
-    if(!ed.bilan.docs) ed.bilan.docs=[];
-    const list=ed.bilan.docs, archived=ed.statut==='archivee';
+    if(window.__acmDocs==null){
+      box.innerHTML='<p class="hint">Chargement des documents…</p>';
+      acmLoadDocs().then(function(ok){ if(ok){ acmRenderDocs(ed); } else { box.innerHTML='<p class="hint">⚠️ La liste des documents n\'a pas pu être chargée (connexion). Rouvre le dossier-bilan pour réessayer.</p>'; } });
+      return;
+    }
+    const list=acmDocsFor(ed.id), archived=ed.statut==='archivee';
     const up=(canWrite&&!archived)?'<div style="margin:0 0 10px"><button class="btn" onclick="acmDocUpload(\''+ed.id+'\')">⬆️ Déposer un document</button> <span class="muted" style="font-size:12px">— PDF, scan ou photo ; plusieurs possibles</span></div>':'';
     let rows;
     if(list.length){
       rows='<div style="overflow-x:auto;-webkit-overflow-scrolling:touch"><table style="width:100%;min-width:420px;border-collapse:collapse"><tbody>'+list.map(function(d){
-        const dt=d.ts?('<br><span class="muted" style="font-size:12px">déposé le '+new Date(d.ts).toLocaleDateString('fr-FR')+'</span>'):'';
+        const dt=d.created_at?('<br><span class="muted" style="font-size:12px">déposé le '+new Date(d.created_at).toLocaleDateString('fr-FR')+(d.auteur_nom?' · proposé par '+esc(d.auteur_nom):'')+'</span>'):'';
         const del=(canWrite&&!archived)?' <button class="danger" onclick="acmDocDel(\''+ed.id+'\',\''+d.id+'\')">Suppr.</button>':'';
         return '<tr><td style="padding:8px;border-top:1px solid #eee"><b>'+esc(d.label||d.file||'')+'</b>'+dt+'</td><td style="padding:8px;border-top:1px solid #eee;text-align:right;white-space:nowrap"><button class="ghost btn" onclick="acmDocView(\''+ed.id+'\',\''+d.id+'\')">👁️ Visualiser</button> <button class="ghost btn" onclick="acmDocDownload(\''+ed.id+'\',\''+d.id+'\')">⬇️ Télécharger</button>'+del+'</td></tr>';
       }).join('')+'</tbody></table></div>';
@@ -12408,7 +12419,6 @@ window.loadDossiersPeri=async function(){
     inp.onchange=async function(){
       const files=inp.files?Array.from(inp.files):[]; if(!files.length) return;
       let userId; try{ userId=(myProfile&&myProfile.id)||((await sbc.auth.getUser()).data.user.id); }catch(e){ userId='x'; }
-      if(!ed.bilan.docs) ed.bilan.docs=[];
       let ok=0; const skip=[];
       for(const f of files){
         try{
@@ -12416,33 +12426,42 @@ window.loadDossiersPeri=async function(){
           const path=myAsso+'/'+ed.id+'/'+userId+'-'+Date.now()+'-'+safe;
           const upr=await sbc.storage.from('acm-docs').upload(path,f,{upsert:true,contentType:f.type||'application/octet-stream'});
           if(upr.error){ skip.push(f.name+' — '+upr.error.message); continue; }
-          ed.bilan.docs.push({id:uid(),label:(f.name||'').replace(/\.[^.]+$/,''),file:f.name,path:path,ts:new Date().toISOString()});
+          // migration 79 : la métadonnée va en TABLE (plus dans le blob du coffre). Si l'insert échoue,
+          // on retire le fichier du coffre (compensation) : jamais un fichier sans ligne qui le référence.
+          const ins=await sbc.from('acm_docs').insert({asso_id:myAsso, edition_ref:ed.id, label:(f.name||'').replace(/\.[^.]+$/,''), file:f.name, path:path, statut:'valide'});
+          if(ins.error){ try{ await sbc.storage.from('acm-docs').remove([path]); }catch(e2){} skip.push(f.name+' — '+ins.error.message); continue; }
           ok++;
         }catch(e){ skip.push(f.name); }
       }
-      save(); schedulePush(); if(window.acmRenderDocs) acmRenderDocs(ed); if(ed.type==='vepi'&&window.syncVepiDocs) syncVepiDocs(ed);
+      if(ok) await acmLoadDocs();
+      if(window.acmRenderDocs) acmRenderDocs(ed); if(ed.type==='vepi'&&window.syncVepiDocs) syncVepiDocs(ed);
       await bobAlert('✅ '+ok+' document(s) déposé(s).'+(skip.length?'\n\nNon déposés :\n- '+skip.join('\n- '):''));
     };
     inp.click();
   };
   window.acmDocView=async function(edId,docId){
-    const ed=acmDb().sessions.find(function(s){return s.id===edId;}); if(!ed) return;
-    const d=((ed.bilan&&ed.bilan.docs)||[]).find(function(x){return x.id===docId;}); if(!d||!d.path){ await bobAlert('Document introuvable.', {titre:'⚠️ Erreur'}); return; }
+    if(window.__acmDocs==null) await acmLoadDocs();
+    const d=acmDocsFor(edId).find(function(x){return x.id===docId;}); if(!d||!d.path){ await bobAlert('Document introuvable.', {titre:'⚠️ Erreur'}); return; }
     try{ const r=await sbc.storage.from('acm-docs').createSignedUrl(d.path,3600); if(r.error||!r.data){ await bobAlert('Document indisponible.', {titre:'⚠️ Erreur'}); return; } docView(r.data.signedUrl,(d.file||d.label||'Document')); }catch(e){ await bobAlert('Document indisponible.'); }
   };
   window.acmDocDownload=async function(edId,docId){
-    const ed=acmDb().sessions.find(function(s){return s.id===edId;}); if(!ed) return;
-    const d=((ed.bilan&&ed.bilan.docs)||[]).find(function(x){return x.id===docId;}); if(!d||!d.path){ await bobAlert('Document introuvable.', {titre:'⚠️ Erreur'}); return; }
+    if(window.__acmDocs==null) await acmLoadDocs();
+    const d=acmDocsFor(edId).find(function(x){return x.id===docId;}); if(!d||!d.path){ await bobAlert('Document introuvable.', {titre:'⚠️ Erreur'}); return; }
     try{ const r=await sbc.storage.from('acm-docs').createSignedUrl(d.path,3600,{download:d.file||true}); if(r.error||!r.data){ await bobAlert('Document indisponible.', {titre:'⚠️ Erreur'}); return; } const a=document.createElement('a'); a.href=r.data.signedUrl; a.download=d.file||''; document.body.appendChild(a); a.click(); a.remove(); }catch(e){ await bobAlert('Document indisponible.'); }
   };
   window.acmDocDel=async function(edId,docId){
     if(!canWrite){ await bobAlert('Réservé au bureau.'); return; }
     const ed=acmDb().sessions.find(function(s){return s.id===edId;}); if(!ed) return;
-    const d=((ed.bilan&&ed.bilan.docs)||[]).find(function(x){return x.id===docId;}); if(!d) return;
+    if(window.__acmDocs==null) await acmLoadDocs();
+    const d=acmDocsFor(edId).find(function(x){return x.id===docId;}); if(!d) return;
     if(!await bobConfirm('Supprimer « '+((d.label||d.file)||'')+' » ? (définitif)', {titre:'Supprimer ?', ok:'Supprimer', danger:true})) return;
+    // migration 79 : la LIGNE d'abord (si la base refuse, rien n'est cassé), le FICHIER ensuite.
+    // Un fichier orphelin dans le coffre = du ménage ; une ligne sans fichier = un faux document.
+    const del=await sbc.from('acm_docs').delete().eq('id',docId).select('id');
+    if(del.error){ await bobAlert(del.error.message, {titre:'⚠️ Erreur'}); return; }
     try{ if(d.path) await sbc.storage.from('acm-docs').remove([d.path]); }catch(e){}
-    ed.bilan.docs=((ed.bilan&&ed.bilan.docs)||[]).filter(function(x){return x.id!==docId;});
-    save(); schedulePush(); if(window.acmRenderDocs) acmRenderDocs(ed); if(ed.type==='vepi'&&window.syncVepiDocs) syncVepiDocs(ed);
+    window.__acmDocs=(window.__acmDocs||[]).filter(function(x){return x.id!==docId;});
+    if(window.acmRenderDocs) acmRenderDocs(ed); if(ed.type==='vepi'&&window.syncVepiDocs) syncVepiDocs(ed);
   };
   window.acmCloseBilanView=function(){ window.__acmBilanCur=null; ['acmBilanView','vepiBilanView'].forEach(function(id){ const v=document.getElementById(id); if(v) v.innerHTML=''; }); };
   window.acmBilanCR=function(edId,val){ const ed=acmDb().sessions.find(function(s){return s.id===edId;}); if(!ed)return; ed.bilan.cr=val; save(); };
@@ -12505,6 +12524,7 @@ window.loadDossiersPeri=async function(){
   async function syncAcmReflet(){
     try{
       if(!myAsso||!canWrite||!sbc) return;
+      if(window.__acmDocs==null) await window.acmLoadDocs(); // migration 79 : le volet 'documents' se publie depuis la table, plus depuis le blob
       const a=acmDb();
       const now=new Date(); now.setHours(0,0,0,0);
       const stamp=new Date().toISOString();
@@ -12528,8 +12548,8 @@ window.loadDossiersPeri=async function(){
         });
         rows.push({asso_id:myAsso, edition_ref:s.id, edition_nom:s.nom||'', volet:'demarches', contenu:{items:items}, updated_at:stamp});
         keep.add(s.id+'|demarches');
-        // 📎 Documents de l'édition : on publie la LISTE (label + fichier + chemin) ; le fichier reste dans le coffre privé acm-docs, la salariée génère un lien signé à la consultation (RLS : lecture salariée autorisée). Rien si aucun document → réconciliation nettoie une ancienne ligne vide.
-        const docs=((s.bilan&&s.bilan.docs)||[]).map(function(d){ return {label:d.label||d.file||'', file:d.file||'', path:d.path||''}; }).filter(function(d){ return d.path; });
+        // 📎 Documents de l'édition : on publie la LISTE (label + fichier + chemin) depuis la TABLE acm_docs (migration 79) ; le fichier reste dans le coffre privé acm-docs, la salariée génère un lien signé à la consultation (RLS : lecture salariée autorisée). Rien si aucun document → réconciliation nettoie une ancienne ligne vide.
+        const docs=acmDocsFor(s.id).map(function(d){ return {label:d.label||d.file||'', file:d.file||'', path:d.path||''}; }).filter(function(d){ return d.path; });
         if(docs.length){ rows.push({asso_id:myAsso, edition_ref:s.id, edition_nom:s.nom||'', volet:'documents', contenu:{items:docs}, updated_at:stamp}); keep.add(s.id+'|documents'); }
       });
       const pj=a.projetEducatif||{texte:'',maj:''};
@@ -12548,7 +12568,8 @@ window.loadDossiersPeri=async function(){
   window.syncVepiDocs=async function(ed){
     try{
       if(!myAsso||!canWrite||!sbc||!ed||ed.type!=='vepi') return;
-      const docs=((ed.bilan&&ed.bilan.docs)||[]).map(function(d){ return {label:d.label||d.file||'', file:d.file||'', path:d.path||''}; }).filter(function(d){ return d.path; });
+      if(window.__acmDocs==null) await window.acmLoadDocs(); // migration 79 : le volet se publie depuis la table
+      const docs=acmDocsFor(ed.id).map(function(d){ return {label:d.label||d.file||'', file:d.file||'', path:d.path||''}; }).filter(function(d){ return d.path; });
       if(docs.length){
         const up=await sbc.from('acm_reflet').upsert([{asso_id:myAsso, edition_ref:ed.id, edition_nom:ed.nom||'', volet:'vepi_documents', contenu:{items:docs}, updated_at:new Date().toISOString()}],{onConflict:'asso_id,edition_ref,volet'}); if(up.error) throw up.error;
       } else {
@@ -12642,7 +12663,12 @@ window.loadDossiersPeri=async function(){
       else { integre='marquée acceptée (aucune édition ouverte ciblée — à placer à la main)'; }
     } else if(p.type==='document'){
       const s=a.sessions.find(function(x){return x.id===p.edition_ref;}); // le document est rattaché à SON édition (ACM)
-      if(s && c.path){ s.bilan=s.bilan||{}; s.bilan.docs=s.bilan.docs||[]; s.bilan.docs.push({id:uid(), label:c.label||c.file||'Document', file:c.file||'', path:c.path, ts:new Date().toISOString(), by:(p.auteur_nom||'salarié·e')}); integre='ajoutée aux documents de « '+(s.nom||'')+' » (publiée à l\'équipe)'; }
+      if(s && c.path){
+        // migration 79 : la métadonnée va en TABLE acm_docs, plus dans le blob du coffre
+        const insd=await sbc.from('acm_docs').insert({asso_id:myAsso, edition_ref:s.id, label:c.label||c.file||'Document', file:c.file||'', path:c.path, statut:'valide', auteur_nom:(p.auteur_nom||'salarié·e')});
+        if(insd.error){ integre='acceptée, mais le document n\'a pas pu être rangé ('+insd.error.message+') — à re-déposer'; }
+        else { await window.acmLoadDocs(); integre='ajoutée aux documents de « '+(s.nom||'')+' » (publiée à l\'équipe)'; }
+      }
       else { integre='marquée acceptée (édition introuvable — document non rattaché)'; }
     } else {
       integre='marquée acceptée — à reporter à la main'+(p.type==='budget_prev'?' (ligne de budget dans la fiche-action)':'');
@@ -15637,7 +15663,7 @@ window.loadDossiersPeri=async function(){
     if(window.loadActivitesGestion) loadActivitesGestion();
     const peb=document.querySelector('nav.tabs button[data-tab="periscolaire"]'); if(peb) peb.addEventListener('click',()=>{ if(window.loadPeriDocs) loadPeriDocs(); });
     const dfb=document.querySelector('nav.tabs button[data-tab="dossiers"]'); if(dfb) dfb.addEventListener('click',()=>{ if(window.__periSkipAutoLoad){ window.__periSkipAutoLoad=false; } else if(window.loadDossiersPeri){ loadDossiersPeri(); } }); // 14/08/2026 : le panneau Dossiers familles a déménagé ici — la poignée de main __periSkipAutoLoad (pont bobGoDossierPeri) déménage AVEC lui
-    const acmb=document.querySelector('nav.tabs button[data-tab="acmvac"]'); if(acmb) acmb.addEventListener('click',()=>{ if(window.loadEnfantsACM) loadEnfantsACM(); if(window.acmLoadEditionsData) acmLoadEditionsData(); });
+    const acmb=document.querySelector('nav.tabs button[data-tab="acmvac"]'); if(acmb) acmb.addEventListener('click',()=>{ if(window.loadEnfantsACM) loadEnfantsACM(); if(window.acmLoadEditionsData) acmLoadEditionsData(); if(window.acmLoadDocs) acmLoadDocs(); });
     const vepb=document.querySelector('nav.tabs button[data-tab="vepi"]'); if(vepb) vepb.addEventListener('click',()=>{ if(window.acmLoadEditionsData) acmLoadEditionsData(); });
     const enfb=document.querySelector('nav.tabs button[data-tab="enfants"]'); if(enfb) enfb.addEventListener('click',()=>{ if(window.loadEnfantsHub) loadEnfantsHub(); });
     if(window.loadDossiersPeri) loadDossiersPeri();
