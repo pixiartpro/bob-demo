@@ -70,7 +70,7 @@
   .tabjump input{width:100%;border:1px solid var(--line);background:var(--card);border-radius:999px;padding:8px 14px;font-size:13.5px;font-weight:600;color:var(--ink);outline:none}
   .tabjump input::placeholder{color:var(--muted);font-weight:500}
   .tabjump input:focus{border-color:var(--brand);box-shadow:0 0 0 3px rgba(18,122,81,.13)}
-  .tabjump-res{position:absolute;top:calc(100% + 4px);left:0;right:0;background:var(--card);border:1px solid var(--line);border-radius:12px;box-shadow:0 10px 28px rgba(16,48,42,.16);padding:5px;z-index:60;display:none;max-height:330px;overflow:auto}
+  .tabjump-res{position:absolute;top:calc(100% + 4px);left:0;right:0;background:var(--card);border:1px solid var(--line);border-radius:12px;box-shadow:0 10px 28px rgba(16,48,42,.16);padding:5px;z-index:60;display:none;max-height:330px;overflow:auto;min-width:min(470px,92vw)} /* 22/08 : la liste ne peut plus être large comme le champ — vu à l'écran, 4 écritures sortaient toutes en « Adhésion 2026-20… », indistinguables. Bornée à 92vw pour ne pas déborder sur téléphone. */
   .tabjump-res.show{display:block}
   .tabjump-res button{display:flex;width:100%;align-items:center;gap:8px;border:none;background:transparent;color:var(--ink);padding:8px 11px;border-radius:9px;font-size:13.5px;font-weight:600;cursor:pointer;text-align:left}
   .tabjump-res button:hover,.tabjump-res button.sel{background:#eef4f0}
@@ -3274,7 +3274,8 @@ document.querySelectorAll('nav.tabs button').forEach(b=>{
     coffreListeTJ('members').forEach(m=>{ if(m) pousse('members','👤','adhérent',m.name,m.site); });
     arbreListeTJ('personnes').forEach(p=>{ if(p) pousse('foyers','🧒','personne',((p.prenom||'')+' '+(p.nom||'')),p.role_foyer); });
     arbreListeTJ('foyers').forEach(f=>{ if(f) pousse('foyers','👨‍👩‍👧','foyer',f.nom,f.ville); });
-    coffreListeTJ('ops').forEach(o=>{ if(o) pousse('accounting','💶','écriture',o.label,(o.date&&typeof fmtDate==='function')?fmtDate(o.date):''); });
+    coffreListeTJ('ops').forEach(o=>{ if(o) pousse('accounting','💶','écriture',o.label,
+      [(o.date&&typeof fmtDate==='function')?fmtDate(o.date):'', (o.amount!=null&&typeof euro==='function')?euro(o.amount):''].filter(Boolean).join(' · ')); });
     return out.sort((a,b)=>(b.sc-a.sc)||a.label.localeCompare(b.label,'fr')).slice(0,6);
   }
   /* Ouvrir une fiche = aller sur son onglet, puis y REPORTER la recherche. */
@@ -3308,7 +3309,7 @@ document.querySelectorAll('nav.tabs button').forEach(b=>{
         if(mixte&&!vuF){ vuF=true; html+='<div class="tj-hd">Fiches</div>'; }
         html+='<button type="button" data-fiche="'+i+'" class="'+sl+'">'
           +'<span class="tj-lbl">'+esc(it.ico)+' '+esc(it.label)+'</span>'
-          +'<span class="tj-why">'+esc(it.quoi)+(it.sub?'&nbsp;· '+esc(it.sub):'')+'</span>'
+          +'<span class="tj-why">'+esc(it.sub||it.quoi)+'</span>'   /* le DÉTAIL qui distingue d'abord (date, ville, rôle) — le type est déjà dit par l'icône et par l'onglet à droite ; il ne sert que si le détail manque */
           +'<span class="fam">'+esc(it.fam)+'</span></button>';
       }else{
         if(mixte&&!vuT){ vuT=true; html+='<div class="tj-hd">Onglets</div>'; }
