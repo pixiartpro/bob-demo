@@ -1879,6 +1879,63 @@ function famFicheReadRow(label,val){
   return '<div style="font-size:13px;margin:2px 0"><b>'+esc(label)+' :</b> '
     +(v? esc(v) : '<span style="color:var(--muted);font-style:italic">non renseigné</span>')+'</div>';
 }
+/* 📨 RELANCER LA FAMILLE sur une fiche sanitaire manquante (22/08/2026, additif/revertible).
+   Pourquoi : ce bloc annonçait déjà « obligatoire pour l'accueil en ACM — à relancer » et ne
+   donnait AUCUN moyen de relancer. Kathy l'a signalé par la boîte 💡 le 17/08 (« pas de fiche
+   vaccin ») faute de bouton : l'écran lui donnait un ordre qu'elle ne pouvait pas exécuter.
+   Mesuré en base le 22/08 : 19 enfants sur 27 sans aucune fiche sanitaire.
+   Le message part par le canal QUI EXISTE DÉJÀ (messages_adherents, section 'periscolaire') :
+   la famille le lit dans son espace, le bureau voit l'échange. Aucun canal neuf.
+   🔒 Le texte pré-écrit ne nomme AUCUNE donnée de santé : on demande de remplir la fiche, on ne
+   dit jamais ce qu'elle contient ni ce qui manque dedans (RGPD art. 9 — le message transite par
+   une table lisible par tout le staff de la section).
+   Le bouton n'existe que pour l'assistant sanitaire (seul à recevoir toutes les fiches, donc
+   seul à pouvoir conclure d'une absence) ET si la famille a un compte — sinon on le DIT.
+   Revert : supprimer ce bloc, l'appel famRelanceBtn(k) et la div #famrel_ dans famFicheBlock. */
+function famDerniereRelance(k){
+  if(!k||!k.parent_id) return '';
+  var last='';
+  (ME.msgs||[]).forEach(function(m){
+    if(m && m.sender==='case' && m.adherent_id===k.parent_id && (!last || m.created_at>last)) last=m.created_at;
+  });
+  return last;
+}
+function famRelanceBtn(k){
+  if(!k||!k.parent_id) return '';   // pas de compte famille = pas de destinataire : on n'affiche pas un bouton qui ne peut rien faire
+  return ' <button class="btn ghost" style="padding:3px 10px;font-size:12px" onclick="famRelanceOpen(\'' + k.id + '\')">📨 Relancer la famille</button>';
+}
+window.famRelanceOpen=function(kid){
+  var box=$('#famrel_'+kid); if(!box) return;
+  if(box.dataset.open==='1'){ box.innerHTML=''; box.dataset.open=''; return; }
+  var k=(ME.famKids||[]).filter(function(x){ return x.id===kid; })[0]; if(!k) return;
+  var prenom=String(k.prenom||'').trim();
+  var last=famDerniereRelance(k);
+  box.dataset.open='1';
+  box.innerHTML=(last?'<p class="sub" style="margin:0 0 4px;font-size:11.5px">📨 Dernier message envoyé à cette famille le <b>'+esc(famFicheDate(last))+'</b> — inutile de la harceler.</p>':'')
+    +'<textarea id="famrelt_'+kid+'" style="width:100%;resize:vertical;font:inherit;min-height:118px"></textarea>'
+    +'<div class="row" style="margin-top:6px;gap:6px">'
+      +'<button class="btn win" onclick="famRelanceSend(\''+kid+'\')">Envoyer à la famille</button>'
+      +'<button class="btn ghost" onclick="famRelanceOpen(\''+kid+'\')">Annuler</button>'
+    +'</div>'
+    +'<p class="sub" style="margin:4px 0 0;font-size:11.5px">Tu peux réécrire le message avant de l\'envoyer. Il arrive dans l\'espace de la famille, rubrique 🎒 Périscolaire.</p>';
+  /* Le texte va dans .value, JAMAIS dans le HTML : il porte des apostrophes et des retours à la
+     ligne, qui casseraient l'attribut — et une valeur posée en HTML se re-échappe à l'affichage. */
+  var ta=document.getElementById('famrelt_'+kid);
+  if(ta) ta.value='Bonjour,\n\nIl manque encore la fiche sanitaire de '+(prenom||'votre enfant')+' pour cette année.\n\n'
+    +'Elle est obligatoire pour que nous puissions l\'accueillir, et elle se remplit en quelques minutes depuis votre espace famille, rubrique « Fiche sanitaire ».\n\n'
+    +'Si quelque chose vous bloque, dites-le nous : on la remplit avec vous.\n\nMerci beaucoup, et à bientôt !';
+};
+window.famRelanceSend=async function(kid){
+  var k=(ME.famKids||[]).filter(function(x){ return x.id===kid; })[0];
+  if(!k||!k.parent_id){ toast('Cette famille n\'a pas encore de compte'); return; }
+  var ta=document.getElementById('famrelt_'+kid);
+  var body=ta?ta.value.trim():'';
+  if(!body){ toast('Écris ton message'); return; }
+  var r=await sb.from('messages_adherents').insert({ asso_id:ME.asso, adherent_id:k.parent_id, sender:'case',
+    author_id:ME.session.user.id, author_name:((ME.prof&&ME.prof.full_name)||'CASE'), body:body, section:'periscolaire' });
+  if(r&&r.error){ toast('Erreur : '+r.error.message); return; }
+  await loadMessages(); renderFamilles(); toast('✅ Message envoyé à la famille');
+};
 function famFicheBlock(k){
   const f=ME.famFiches&&ME.famFiches[k.id];
   // Pas de fiche en main = deux causes indiscernables côté navigateur : elle n'existe pas,
@@ -1890,14 +1947,16 @@ function famFicheBlock(k){
     return '<div style="margin-top:10px;padding-top:10px;border-top:1px dashed var(--line)">'
       +'<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><b style="font-size:14px">🩺 Fiche sanitaire</b>'
       +(global
-        ? '<span class="badge b-refuse">⚠️ pas encore remplie</span>'
+        ? '<span class="badge b-refuse">⚠️ pas encore remplie</span>'+famRelanceBtn(k)
         : '<span class="badge b-demande">🔒 non accessible</span>')
       +'</div>'
       +'<p class="sub" style="margin:4px 0 0;font-size:11.5px">'
       +(global
-        ? 'La famille n\'a pas encore rempli la fiche sanitaire de l\'année (allergies, régime alimentaire, PAI, traitements). ⚠️ Elle est <b>obligatoire pour l\'accueil en ACM</b> — à relancer.'
+        ? ('La famille n\'a pas encore rempli la fiche sanitaire de l\'année (allergies, régime alimentaire, PAI, traitements). ⚠️ Elle est <b>obligatoire pour l\'accueil en ACM</b> — à relancer.'
+           + (k.parent_id?'':' <b>Cette famille n\'a pas encore de compte</b> — pas de message possible depuis Bob : à voir avec le bureau.'))
         : 'Réservée au bureau, à l\'assistant sanitaire et au référent de l\'activité de l\'enfant. Si tu en as besoin pour encadrer cet enfant, demande au bureau.')
       +'</p>'
+      +(global?'<div id="famrel_'+k.id+'" style="margin-top:6px"></div>':'')
     +'</div>';
   }
   const sig=f.statut==='signee';
