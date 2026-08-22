@@ -1190,7 +1190,7 @@ document.addEventListener('touchstart', function(){}, {passive:true});
         <div class="field" style="min-width:200px"><label>Adulte responsable</label><input id="fy_adulte" placeholder="Nom complet"></div>
         <div class="field" style="min-width:130px;flex:0"><label>Saison</label><select id="fy_saison"></select></div>
       </div>
-      <p class="hint" style="margin:12px 0 2px"><strong>Enfants</strong><span id="fyPeriHint"> — coche 🎒 matin/soir pour déposer une inscription périscolaire (statut « à compléter »). <strong style="color:#8a6400">⚠️ Tant que la bascule n'est pas faite, reporte AUSSI l'inscription dans 📨 Dossiers familles</strong> — c'est lui qui calcule le forfait et la facturation.</span><span id="fyPeriOff" style="display:none"> — prénom, nom, naissance, classe. (Le module Périscolaire n'est pas actif dans cette organisation : pas d'inscription à cocher ici.)</span></p>
+      <p class="hint" style="margin:12px 0 2px"><strong>Enfants</strong><span id="fyPeriHint"> — coche 🎒 matin/soir pour ouvrir l'inscription périscolaire (statut « à compléter »). Le dossier part aussitôt dans 📨 <strong>Dossiers familles</strong>, prêt à chiffrer : plus rien à reporter à la main.</span><span id="fyPeriOff" style="display:none"> — prénom, nom, naissance, classe. (Le module Périscolaire n'est pas actif dans cette organisation : pas d'inscription à cocher ici.)</span></p>
       <div id="fyKids"></div>
       <button class="ghost btn" style="margin-top:6px" onclick="fyAddKidRow()">+ un enfant</button>
       <div class="row" style="margin-top:14px;gap:10px">
@@ -11869,8 +11869,15 @@ window.loadDossiersPeri=async function(){
         const mEl=r.querySelector('.fy-km'), sEl=r.querySelector('.fy-ks');
         const matin=!!(mEl&&mEl.checked), soir=!!(sEl&&sEl.checked); // les cases n'existent pas si le module Périscolaire est inactif
         if(matin||soir){
-          const ri=await sbc.from('inscriptions').insert({asso_id:myAsso, personne_id:rk.data.id, type:'periscolaire', saison:saison, matin:matin, soir:soir, statut:'incomplet'});
-          if(ri.error) await bobAlert('Inscription périscolaire de « '+(kp||kn)+' » non enregistrée : '+ri.error.message,{titre:'⚠️ À reprendre'});
+          /* 22/08/2026 (migration 83) — la coche ouvre un dossier FACTURABLE.
+             Avant, l'insert direct dans `inscriptions` posait une ligne sans
+             dossier_id et sans clé de classeur : l'écran 📨 Dossiers familles ne
+             la voyait pas et peri_valider_montant ne pouvait pas l'atteindre —
+             elle n'était JAMAIS facturée (banc rouge 83, 6 constats sur 6).
+             La porte serveur crée la fiche enfant puis le dossier au classeur ;
+             les déclencheurs existants posent le miroir et la ligne reliée. */
+          const ri=await sbc.rpc('peri_comptoir_inscrire',{p_personne_id:rk.data.id, p_saison:saison, p_matin:matin, p_soir:soir});
+          if(ri.error) await bobAlert('Inscription périscolaire de « '+(kp||kn)+' » non enregistrée : '+ri.error.message+'\n\nL\'enfant, lui, est bien créé : reprends son inscription depuis 📨 Dossiers familles.',{titre:'⚠️ À reprendre'});
         }
       }
       document.getElementById('foyerNewPanel').style.display='none';
