@@ -3239,13 +3239,87 @@ document.querySelectorAll('nav.tabs button').forEach(b=>{
     });
     return out.sort((a,b)=>(b.sc-a.sc)||(b.f-a.f)||(a.i-b.i)).slice(0,8);
   }
-  /* fabrique de lignes, partagée par la recherche et par les récents */
+  /* ---- Lot 10-D (22/08/2026, additif/revertible) : la palette trouve aussi les FICHES -------
+     Retour d'Olivier Ricé (boîte 💡, 18/08/2026) : « dans le moteur de recherche, un lien qui
+     ramène vers ce que l'on cherche, le rôle d'un moteur de recherche quoi ». Il avait raison :
+     la barre ne connaissait que les ONGLETS. On tapait un nom, elle proposait un onglet, et il
+     fallait re-chercher dedans — deux fois le même geste.
+     Elle cherche désormais AUSSI le contenu : un adhérent (livre), une personne ou un foyer
+     (arbre famille), une écriture (compta). Cliquer une fiche ouvre son onglet ET y reporte la
+     recherche : la ligne est à l'écran, plus à retrouver.
+     🔒 DROITS — une fiche n'est proposée que si l'onglet qui la porte est visible pour ce profil :
+     `parTab` est bâti sur items(), qui applique déjà applyPerms (onglet caché/éteint = absent).
+     Un profil en lecture seule ne peut donc pas apercevoir ici ce que ses droits lui refusent
+     ailleurs — la palette ne devient jamais une porte dérobée.
+     ⚠️ `db` est un `let`, PAS window.db : on teste la liaison (cf. le cartouche des nouveautés et
+     l'incident des 10 lignes du 16/08), et un try/catch couvre la zone morte au cas où.
+     Revert : supprimer ce cartouche + fiches()/ouvreFiche()/choisir(), rendre à rowsHtml() son
+     corps d'une seule ligne, et remettre dans render/keydown/click les 3 lignes d'origine. ---- */
+  function coffreListeTJ(cle){ try{ return (typeof db!=='undefined' && db && Array.isArray(db[cle])) ? db[cle] : []; }catch(e){ return []; } }
+  function arbreListeTJ(cle){ try{ const A=window.__maData; return (A && !A.err && Array.isArray(A[cle])) ? A[cle] : []; }catch(e){ return []; } }
+  /* Où retomber, par onglet : le champ de recherche que l'écran expose déjà. */
+  const FICHE_CIBLE={ members:{champ:'m_search'}, foyers:{champ:'fy_search'}, accounting:{champ:'a_search'} };
+  function fiches(q2){
+    if(!q2 || q2.length<2) return [];        // 1 lettre = la moitié du fichier : illisible, et inutile
+    const parTab=Object.create(null); items().forEach(it=>{ parTab[it.tab]=it; });
+    const out=[], vus=Object.create(null);
+    function pousse(tab,ico,quoi,nom,sub){
+      const t=parTab[tab]; if(!t) return;    // 🔒 onglet masqué pour ce profil → la fiche n'existe pas ici
+      const n=String(nom==null?'':nom).trim(); if(!n) return;
+      const nn=norm2(n); if(!nn || nn.indexOf(q2)<0) return;
+      const s=String(sub==null?'':sub).trim();
+      const cle=tab+'|'+nn+'|'+norm2(s); if(vus[cle]) return; vus[cle]=1;   // le livre et l'arbre nomment souvent la même personne
+      out.push({fiche:1,tab:tab,ico:ico,quoi:quoi,label:n,sub:s,q:n,fam:t.label,sc:(nn.indexOf(q2)===0?2:1)});
+    }
+    coffreListeTJ('members').forEach(m=>{ if(m) pousse('members','👤','adhérent',m.name,m.site); });
+    arbreListeTJ('personnes').forEach(p=>{ if(p) pousse('foyers','🧒','personne',((p.prenom||'')+' '+(p.nom||'')),p.role_foyer); });
+    arbreListeTJ('foyers').forEach(f=>{ if(f) pousse('foyers','👨‍👩‍👧','foyer',f.nom,f.ville); });
+    coffreListeTJ('ops').forEach(o=>{ if(o) pousse('accounting','💶','écriture',o.label,(o.date&&typeof fmtDate==='function')?fmtDate(o.date):''); });
+    return out.sort((a,b)=>(b.sc-a.sc)||a.label.localeCompare(b.label,'fr')).slice(0,6);
+  }
+  /* Ouvrir une fiche = aller sur son onglet, puis y REPORTER la recherche. */
+  function ouvreFiche(it){
+    if(!it) return;
+    if(typeof bobGoTab==='function') bobGoTab(it.tab);
+    input.value=''; close();
+    const c=FICHE_CIBLE[it.tab]; if(!c) return;
+    /* Après le changement d'onglet, jamais avant : le clic re-rend la page, et le champ qu'on
+       aurait rempli serait réécrit. On déclenche l'événement 'input' au lieu d'appeler
+       renderMembers()/renderOps() : c'est le HTML (oninput="…") qui décide quoi rafraîchir, donc
+       rien à re-câbler ici le jour où un écran change de fonction de rendu. */
+    setTimeout(()=>{ try{
+      const ch=document.getElementById(c.champ); if(!ch) return;
+      ch.value=it.q;
+      ch.dispatchEvent(new Event('input',{bubbles:true}));
+      if(ch.scrollIntoView) ch.scrollIntoView({block:'center'});
+      ch.focus();
+    }catch(e){} },60);
+  }
+  /* fabrique de lignes, partagée par la recherche et par les récents.
+     Deux familles : un ONGLET (data-go) et une FICHE (data-fiche = son index dans `cur`).
+     L'index, plutôt que le libellé : une écriture peut s'appeler n'importe comment, guillemets
+     compris — on ne recolle jamais de la donnée dans un attribut. */
   function rowsHtml(){
-    return cur.map((it,i)=>'<button type="button" data-go="'+esc(it.tab)+'" class="'+(i===sel?'sel':'')+'">'
-      +((window.__persoByTab&&window.__persoByTab[it.tab])?'<img class="tj-perso" src="'+esc(window.__persoByTab[it.tab])+'" alt="" onerror="this.remove()">':'')
-      +'<span class="tj-lbl">'+esc(it.label)+'</span>'
-      +(it.why?'<span class="tj-why">via&nbsp;« '+esc(it.why)+' »</span>':'')
-      +'<span class="fam">'+esc(it.fam)+'</span></button>').join('');
+    let html='', vuF=false, vuT=false;
+    const mixte=cur.some(x=>x.fiche)&&cur.some(x=>!x.fiche);   // en-têtes SEULEMENT si les deux cohabitent (sinon, exactement l'écran d'avant)
+    cur.forEach((it,i)=>{
+      const sl=(i===sel?'sel':'');
+      if(it.fiche){
+        if(mixte&&!vuF){ vuF=true; html+='<div class="tj-hd">Fiches</div>'; }
+        html+='<button type="button" data-fiche="'+i+'" class="'+sl+'">'
+          +'<span class="tj-lbl">'+esc(it.ico)+' '+esc(it.label)+'</span>'
+          +'<span class="tj-why">'+esc(it.quoi)+(it.sub?'&nbsp;· '+esc(it.sub):'')+'</span>'
+          +'<span class="fam">'+esc(it.fam)+'</span></button>';
+      }else{
+        if(mixte&&!vuT){ vuT=true; html+='<div class="tj-hd">Onglets</div>'; }
+        html+='<button type="button" data-go="'+esc(it.tab)+'" class="'+sl+'">'
+          +((window.__persoByTab&&window.__persoByTab[it.tab])?'<img class="tj-perso" src="'+esc(window.__persoByTab[it.tab])+'" alt="" onerror="this.remove()">':'')
+          +'<span class="tj-lbl">'+esc(it.label)+'</span>'
+          +(it.why?'<span class="tj-why">via&nbsp;« '+esc(it.why)+' »</span>':'')
+          +'<span class="fam">'+esc(it.fam)+'</span></button>';
+      }
+    });
+    return html;
   }
   /* ---- Lot 10-C : les derniers onglets visités, proposés quand le champ est VIDE.
      Ils repassent par items(), donc par le filtre d'affichage : un onglet rangé, éteint ou
@@ -3268,21 +3342,28 @@ document.querySelectorAll('nav.tabs button').forEach(b=>{
   function render(){
     const q=norm(input.value).trim();
     if(!q){ renderRecents(); return; }   // Lot 10-C (avant : close(); return;)
-    cur=scoreItems(q);                   // Lot 10-A (avant : cur=items().filter(it=>norm(it.label).includes(q)).slice(0,8);)
+    const tabs=scoreItems(q);            // Lot 10-A (avant : cur=items().filter(it=>norm(it.label).includes(q)).slice(0,8);)
+    const fics=fiches(norm2(input.value));   // Lot 10-D : le contenu (adhérents, personnes, foyers, écritures)
+    cur=(fics.length?tabs.slice(0,5):tabs).concat(fics);   // les onglets d'abord, mais ils cèdent 3 places quand des fiches sortent
     sel=cur.length?0:-1;
-    box.innerHTML = cur.length ? rowsHtml() : '<div class="empty">Aucun onglet ne correspond.</div>';
+    box.innerHTML = cur.length ? rowsHtml() : '<div class="empty">Rien ne correspond — ni onglet, ni fiche.</div>';
     box.classList.add('show'); input.setAttribute('aria-expanded','true');
   }
   function go(tab){ if(!tab) return; if(typeof bobGoTab==='function') bobGoTab(tab); input.value=''; close(); }
+  function choisir(it){ if(!it) return; if(it.fiche) ouvreFiche(it); else go(it.tab); }   // Lot 10-D
   input.addEventListener('input', render);
   input.addEventListener('focus', render);
   input.addEventListener('keydown', e=>{
     if(e.key==='ArrowDown'){ e.preventDefault(); if(cur.length){ sel=(sel+1)%cur.length; paint(); } }
     else if(e.key==='ArrowUp'){ e.preventDefault(); if(cur.length){ sel=(sel-1+cur.length)%cur.length; paint(); } }
-    else if(e.key==='Enter'){ e.preventDefault(); if(cur[sel]) go(cur[sel].tab); }
+    else if(e.key==='Enter'){ e.preventDefault(); if(cur[sel]) choisir(cur[sel]); }   // Lot 10-D (avant : go(cur[sel].tab))
     else if(e.key==='Escape'){ input.value=''; close(); input.blur(); }
   });
-  box.addEventListener('click', e=>{ const b=e.target.closest('button[data-go]'); if(b) go(b.getAttribute('data-go')); });
+  box.addEventListener('click', e=>{
+    const bf=e.target.closest('button[data-fiche]');                                   // Lot 10-D
+    if(bf){ choisir(cur[+bf.getAttribute('data-fiche')]); return; }
+    const b=e.target.closest('button[data-go]'); if(b) go(b.getAttribute('data-go'));
+  });
   document.addEventListener('click', e=>{ if(!e.target.closest('.tabjump')) close(); });
 })();
 
