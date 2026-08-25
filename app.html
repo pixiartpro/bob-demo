@@ -186,6 +186,20 @@
   .card .value{font-size:26px;font-weight:800;margin-top:6px}
   .card .sub{font-size:13.5px;color:var(--muted);margin-top:2px} /* Lot 4 : plancher lisibilité */
   .panel{background:var(--card);border-radius:14px;padding:20px;box-shadow:var(--shadow);margin-bottom:20px}
+  /* 🪗 PANNEAUX REPLIABLES (25/08/2026) — voir bobAccordeon().
+     Quatre onglets empilaient 4 à 7 panneaux : on descendait une page entière pour
+     atteindre le dernier. Le repli se fait par UNE classe et ce sélecteur : aucun nœud
+     n'est déplacé, donc aucun identifiant, aucun écouteur et aucun rendu existant n'est
+     touché — et le contenu réécrit plus tard par renderAll() reste masqué tout seul,
+     puisque la règle porte sur les enfants, pas sur des éléments listés un à un. */
+  .panel.bobPlie > *:not(h2){display:none !important}
+  .panel.bobPlie{padding-bottom:14px;margin-bottom:10px}
+  .panel > h2.bobTete{cursor:pointer;user-select:none;display:flex;align-items:center;gap:9px;margin-bottom:12px}
+  .panel.bobPlie > h2.bobTete{margin-bottom:0}
+  .panel > h2.bobTete::before{content:'▾';font-size:14px;color:var(--brand);transition:transform .15s ease;flex:0 0 auto}
+  .panel.bobPlie > h2.bobTete::before{transform:rotate(-90deg)}
+  .panel > h2.bobTete:hover{opacity:.72}
+  .panel > h2.bobTete:focus-visible{outline:2px solid var(--brand);outline-offset:3px;border-radius:6px}
   .panel h2{margin:0 0 4px;font-size:16px}
   .panel .hint{color:var(--muted);font-size:13.5px;margin:0 0 16px} /* Lot 4 : plancher lisibilité 13,5px — c'est le texte qui explique chaque écran */
   .row{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end}
@@ -6408,6 +6422,54 @@ async function lancerDemarche(libId){ var d=demLib().find(function(x){return x.i
   save(); await bobAlert('Sa checklist est dans « Démarches en cours »'+quoi,{titre:'Démarche lancée ✅'}); }
 function toggleDemEtape(instId,i){ var inst=(db.demarches||[]).find(function(x){return x.id===instId;}); if(!inst)return; inst.etapes[i].fait=!inst.etapes[i].fait; save(); }
 function supprDemarche(instId){ var inst=(db.demarches||[]).find(function(x){return x.id===instId;}); if(!inst)return; if(!confirm('Retirer cette démarche en cours ? Le rappel dans l’échéancier reste (tu peux le supprimer là-bas).'))return; db.demarches=db.demarches.filter(function(x){return x.id!==instId;}); save(); }
+/* ---- 🪗 UN ONGLET À PLUSIEURS PANNEAUX DEVIENT UN ACCORDÉON (25/08/2026) ----------------
+   Mesuré avant d'agir : sur les 47 onglets de Bob, QUATRE seulement empilent 4 panneaux ou
+   plus (Secrétariat 7, Communication 6, Répertoire 5, Données 4) — les 43 autres en ont un
+   ou deux. On ne replie donc que là où il y a vraiment de quoi scroller : le seuil est à 3.
+   Replier un onglet qui n'a qu'un panneau ajouterait un clic sans rien économiser.
+
+   Ce que ce code NE fait pas, exprès : il ne transforme aucun <div> en <details>, il ne
+   déplace ni n'enveloppe aucun nœud. Il pose une classe sur le panneau et une sur son titre.
+   Conséquence : les identifiants, les écouteurs et tous les rendus existants sont intacts,
+   et le retour arrière est le retrait de deux classes.
+
+   Le panneau ouvert est MÉMORISÉ par onglet : sans ça, « Structures & financeurs » — le 5ᵉ
+   panneau du Répertoire, celui qu'on ouvre le plus — se serait refermé à chaque visite, et
+   on aurait remplacé un scroll par un clic répété. */
+function bobAccordeon(){
+  try{
+    document.querySelectorAll('section.page').forEach(function(sec){
+      var panels=[];
+      Array.prototype.forEach.call(sec.children, function(el){
+        if(el.classList && el.classList.contains('panel')
+           && el.firstElementChild && el.firstElementChild.tagName==='H2') panels.push(el);
+      });
+      if(panels.length<3) return;                       // 1-2 panneaux : on n'y touche pas
+      var cle='bobAcc:'+(sec.id||''), garde=null;
+      try{ garde=localStorage.getItem(cle); }catch(e){}
+      var ouvert=(garde!==null && !isNaN(parseInt(garde,10)))?parseInt(garde,10):0;
+      if(ouvert<0||ouvert>=panels.length) ouvert=0;     // le coffre peut dater d'une version à moins de panneaux
+      panels.forEach(function(p,i){
+        var h=p.firstElementChild;
+        if(h.classList.contains('bobTete')) return;     // idempotent : déjà monté
+        h.classList.add('bobTete');
+        h.setAttribute('role','button');
+        h.setAttribute('tabindex','0');
+        if(i!==ouvert) p.classList.add('bobPlie');
+        h.setAttribute('aria-expanded', i===ouvert?'true':'false');
+        function bascule(){
+          var plie=p.classList.toggle('bobPlie');
+          h.setAttribute('aria-expanded', plie?'false':'true');
+          if(!plie){ try{ localStorage.setItem(cle,String(i)); }catch(e){} }
+        }
+        h.addEventListener('click',bascule);
+        h.addEventListener('keydown',function(e){
+          if(e.key==='Enter'||e.key===' '){ e.preventDefault(); bascule(); }
+        });
+      });
+    });
+  }catch(e){ console.warn('accordéon',e); }             // un écran qui ne se replie pas vaut mieux qu'un écran cassé
+}
 function renderSecretariat(){
   const ns=bobListe('notes',db.notes);
   $('noteList').innerHTML = ns.vus.length ? ns.vus.slice().sort((a,b)=>(a.done-b.done)).map(n=>`<div class="kv">
@@ -17249,6 +17311,9 @@ window.loadDossiersPeri=async function(){
     addBanner();
     renderAll();
     applyPerms();
+    /* 🪗 après applyPerms : les onglets retirés pour ce rôle ne sont plus là, on ne monte
+       l'accordéon que sur ce qui reste réellement affiché. */
+    bobAccordeon();
     /* 🗄️ Mes tiroirs — rendu une fois au démarrage (les libellés viennent du DOM, la nav
        est déjà en place ici), puis RELU EN BASE à chaque ouverture de l'onglet ⚙️ Données.
        La relecture n'est pas du zèle : le réglage est COLLECTIF, donc le président peut
