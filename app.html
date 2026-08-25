@@ -1644,8 +1644,10 @@ document.addEventListener('touchstart', function(){}, {passive:true});
       </div>
       <div class="row" style="margin-top:8px">
         <div class="field" style="flex:2"><label>Dossier (lien, optionnel)</label><input id="st_url" placeholder="https://… (dossier de la structure)"></div>
+        <div class="field" style="flex:0;min-width:210px"><label>N° adhérent / identifiant</label><input id="st_ident" placeholder="Ex. n° adhérent, n° dossier"></div>
         <div class="field" style="flex:3"><label>Correspondant / note (optionnel)</label><input id="st_note" placeholder="Ex. Réf. Prénom Nom · contact@financeur.fr · 02 62 00 00 00"></div>
       </div>
+      <p class="hint" style="margin:6px 0 0">🔑 Le <strong>n° adhérent</strong> évite de refouiller la boîte mail à chaque démarche. ⛔ N'y mets <strong>jamais de mot de passe</strong> : un identifiant de connexion, oui ; le mot de passe, jamais.</p>
       <div id="echeancesSoonBox" style="margin-top:16px"></div>
       <div id="structuresBody" style="margin-top:8px"><p class="hint">Chargement…</p></div>
     </div>
@@ -5955,8 +5957,8 @@ function addStructure(){
   const nom=$('st_nom').value.trim(); if(!nom){ alert('Indique le nom de la structure.'); return; }
   let url=$('st_url').value.trim(); if(url && !/^https?:\/\//i.test(url)) url='https://'+url;
   db.structures=db.structures||[];
-  db.structures.push({id:uid(),nom,type:$('st_type').value.trim(),url_dossier:url,note:$('st_note').value.trim()});
-  ['st_nom','st_type','st_url','st_note'].forEach(i=>$(i).value=''); save();
+  db.structures.push({id:uid(),nom,type:$('st_type').value.trim(),url_dossier:url,ident:((($('st_ident')||{}).value)||'').trim(),note:$('st_note').value.trim()});
+  ['st_nom','st_type','st_url','st_ident','st_note'].forEach(i=>{ const el=$(i); if(el) el.value=''; }); save();
 }
 function delStructure(id){
   const nbE=(db.echeances||[]).filter(e=>e.structureId===id).length;
@@ -5972,19 +5974,63 @@ function addStructEch(sid){
   const date=$('se_date_'+sid).value||'';
   const montant=parseFloat($('se_mont_'+sid).value)||0;
   const statut=$('se_stat_'+sid).value||'a_faire';
+  /* 25/08/2026 — la récurrence était écrite `false` EN DUR ici : impossible de dire « ça revient
+     chaque année » depuis une fiche de structure, alors que le moteur qui fait rouler les annuelles
+     (gEcheance) marche depuis toujours et que l'échéancier général, lui, propose le choix. Or c'est
+     PRÉCISÉMENT ici que vivent les démarches annuelles (bilan à rendre, cotisation, déclaration).
+     Le trou expliquait 0 échéance rattachée sur 4 fiches remplies. */
+  const recurrent=((($('se_rec_'+sid)||{}).value)||'')==='1';
   db.echeances=db.echeances||[];
-  db.echeances.push({id:uid(),label:s.nom+' — '+lbl+' ('+(sens==='versement'?'versement':'dépôt')+')',date,recurrent:false,structureId:sid,sens,statut,montant,note:''});
+  db.echeances.push({id:uid(),label:s.nom+' — '+lbl+' ('+(sens==='versement'?'versement':'dépôt')+')',date,recurrent,structureId:sid,sens,statut,montant,note:''});
   ['se_lbl_'+sid,'se_date_'+sid,'se_mont_'+sid].forEach(i=>{ const el=$(i); if(el) el.value=''; });
+  const _rec=$('se_rec_'+sid); if(_rec) _rec.value='';
   save();
 }
 function setStructEchStatut(id,v){ const e=(db.echeances||[]).find(x=>x.id===id); if(e){ e.statut=v; save(); } }
 function structEchLine(s,e){
   const d=gEcheance(e); const j=(d!=null)?daysTo(d):null;
   const disp=e.label.indexOf(s.nom+' — ')===0?e.label.slice((s.nom+' — ').length):e.label;
-  return '<div class="kv" style="font-size:13px"><span>'+(e.sens==='versement'?'📥':'📤')+' '+esc(disp)+' — '+(e.date?fmtDate(e.date):'<span class="muted">date à confirmer</span>')+(e.montant?' · '+euro(e.montant):'')+'</span>'
+  return '<div class="kv" style="font-size:13px"><span>'+(e.sens==='versement'?'📥':'📤')+' '+esc(disp)+' — '+(e.date?fmtDate(e.date):'<span class="muted">date à confirmer</span>')+(e.recurrent?' <span class="muted">· 🔁 chaque année</span>':'')+(e.montant?' · '+euro(e.montant):'')+'</span>'
     +'<span style="white-space:nowrap"><select onchange="setStructEchStatut(\''+e.id+'\',this.value)" style="font-size:12px;padding:2px 4px">'
     +Object.keys(STRUCT_STATUTS).map(function(k){return '<option value="'+k+'"'+(e.statut===k?' selected':'')+'>'+STRUCT_STATUTS[k].lbl+'</option>';}).join('')
     +'</select> <button class="danger" onclick="delEcheance(\''+e.id+'\');renderRepertoire()">Suppr.</button></span></div>';
+}
+/* ---- 25/08/2026 — LES CONTACTS PRIVILÉGIÉS D'UN ORGANISME ------------------------------
+   Le Répertoire porte déjà les gens (56 fiches au CASE), chacune avec un « Organisme / rôle »
+   en TEXTE LIBRE. On ne redemande donc RIEN : on relie.
+   ⚠️ Et on ne relie PAS par égalité de nom : mesuré le 25/08/2026, la même mairie s'écrit de
+   six façons dans le répertoire (« Mairie BDN », « Mairie Saint-Denis », « Mairie – DPEG »…).
+   Une correspondance stricte n'aurait rien trouvé, une correspondance trop large aurait tout
+   mélangé. Donc : on ÉPINGLE d'un clic (c'est ça, le contact privilégié — un choix, pas une
+   déduction), et on se contente de SUGGÉRER les ressemblances.
+   Un contact déjà épinglé ailleurs n'est jamais suggéré : on ne le vole pas à sa fiche. */
+const _MOTS_VIDES=new Set(['de','du','des','la','le','les','et','aux','au','en','sur','pour','un','une','par','avec','dans','ile','saint','sainte']);
+function _norm(s){ return String(s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,''); }
+function _motsCles(s){ return _norm(s).split(/[^a-z0-9]+/).filter(function(m){ return m.length>=3 && !_MOTS_VIDES.has(m); }); }
+function structContacts(s){
+  const cs=Array.isArray(db.contacts)?db.contacts:[];
+  const epingles=cs.filter(function(c){ return c.structureId && c.structureId===s.id; });
+  const mots=_motsCles(s.nom);
+  const suggeres=mots.length? cs.filter(function(c){
+    if(c.structureId) return false;
+    const o=_norm(c.org); if(!o) return false;
+    return mots.some(function(m){ return o.indexOf(m)>=0; });
+  }).slice(0,6) : [];
+  return {epingles:epingles, suggeres:suggeres};
+}
+function contactEpingler(cid,sid){ const c=(db.contacts||[]).find(function(x){return x.id===cid;}); if(!c)return; c.structureId=sid; save(); renderRepertoire(); }
+function contactDetacher(cid){ const c=(db.contacts||[]).find(function(x){return x.id===cid;}); if(!c)return; delete c.structureId; save(); renderRepertoire(); }
+/* les identifiants partent dans un attribut onclick, où esc() ne protège PAS (le HTML
+   dé-échappe avant que JS ne lise) — on les réduit donc aux caractères sûrs. */
+function _idSur(x){ return String(x||'').replace(/[^a-zA-Z0-9_-]/g,''); }
+function structContactLigne(c,epingle,sid){
+  const coord=[c.email,c.phone].filter(Boolean).map(esc).join(' · ');
+  return '<div class="kv" style="font-size:13px"><span>'+(epingle?'⭐ ':'👤 ')+'<strong>'+esc(c.name)+'</strong>'
+    +(c.org?' <span class="muted">'+esc(c.org)+'</span>':'')
+    +(coord?'<br><span class="muted" style="font-size:12px">'+coord+'</span>':'')+'</span>'
+    +'<span style="white-space:nowrap">'+(epingle
+      ? '<button class="ghost btn" style="padding:3px 8px;font-size:12px" onclick="contactDetacher(\''+_idSur(c.id)+'\')">Détacher</button>'
+      : '<button class="ghost btn" style="padding:3px 8px;font-size:12px" onclick="contactEpingler(\''+_idSur(c.id)+'\',\''+_idSur(sid)+'\')">⭐ Épingler</button>')+'</span></div>';
 }
 function renderStructures(){
   const box=$('structuresBody'); if(!box) return;
@@ -6000,18 +6046,27 @@ function renderStructures(){
   box.innerHTML = db.structures.length ? db.structures.map(function(s){
     const es=(db.echeances||[]).filter(function(e){return e.structureId===s.id;}).sort(function(a,b){return (a.date||'').localeCompare(b.date||'');});
     const rows=es.length? es.map(function(e){return structEchLine(s,e);}).join('') : '<p class="hint" style="margin:4px 0">Aucune échéance. Ajoute un dépôt à rendre ou un versement à recevoir.</p>';
+    const sc=structContacts(s);
+    const scontRows=(sc.epingles.length||sc.suggeres.length)
+      ? sc.epingles.map(function(c){return structContactLigne(c,true,s.id);}).join('')
+        +(sc.suggeres.length?'<p class="hint" style="margin:6px 0 2px;font-size:12px">Dans ton répertoire, ceux-ci ressemblent à cet organisme — épingle ceux qui sont les bons :</p>'
+          +sc.suggeres.map(function(c){return structContactLigne(c,false,s.id);}).join(''):'')
+      : '<p class="hint" style="margin:4px 0">Aucun contact. Ajoute-le dans le 📇 Répertoire ci-dessus, avec cet organisme — il apparaîtra ici.</p>';
     const sdocs=coffreListe('docsOff').filter(function(d){return d.structureId===s.id;});
     const sdocRows=sdocs.length? sdocs.map(function(d){return '<div class="kv"><span>📄 '+esc(d.label||d.file||'')+(d.cat?' <span class="pill" style="background:#fcf2de;color:#a9742a;font-size:11px">'+esc(d.cat)+'</span>':'')+'</span><span style="white-space:nowrap"><button class="ghost btn" style="padding:3px 8px;font-size:12px" onclick="docsOffView(\''+d.id+'\')">👁️ Voir</button> <button class="ghost btn" style="padding:3px 8px;font-size:12px" onclick="docsOffDownload(\''+d.id+'\')">⬇️</button></span></div>';}).join('') : '<p class="hint" style="margin:4px 0">Aucun document rattaché. (Dépose-le dans « 📁 Documents officiels » et choisis cette structure.)</p>';
     return '<details class="card" style="margin-bottom:8px"><summary style="cursor:pointer;font-weight:600">'+esc(s.nom)+(s.type?' <span class="pill" style="background:#eef2fb;color:#1f4fc4">'+esc(s.type)+'</span>':'')+' <span class="muted" style="font-weight:400">· '+es.length+' échéance(s) · '+sdocs.length+' doc(s)</span></summary>'
       +'<div style="margin-top:8px">'
+      +(s.ident?'<p style="margin:0 0 6px;font-size:13px">🔑 <strong>N° adhérent / identifiant :</strong> <code style="background:#f2f5f3;padding:1px 6px;border-radius:4px">'+esc(s.ident)+'</code></p>':'')
       +(s.note?'<p class="hint" style="margin:0 0 6px">'+esc(s.note)+'</p>':'')
       +(s.url_dossier?'<p style="margin:0 0 8px"><a class="ghost btn" href="'+esc(s.url_dossier)+'" target="_blank" rel="noopener">📂 Ouvrir le dossier ↗</a></p>':'')
+      +'<div style="margin:10px 0 6px"><div style="font-weight:600;font-size:13px;margin-bottom:4px">📞 Contacts privilégiés</div>'+scontRows+'</div>'
       +'<div style="margin:10px 0 6px"><div style="font-weight:600;font-size:13px;margin-bottom:4px">📎 Documents officiels</div>'+sdocRows+'</div>'
       +'<div style="margin:6px 0">'+rows+'</div>'
       +'<div class="row" style="align-items:flex-end;gap:6px;margin-top:8px;background:#fafbfc;padding:8px;border-radius:8px">'
       +'<div class="field" style="flex:0;min-width:150px"><label style="font-size:12px">Sens</label><select id="se_sens_'+s.id+'"><option value="depot">📤 Dépôt (à rendre)</option><option value="versement">📥 Versement (à recevoir)</option></select></div>'
       +'<div class="field" style="flex:2"><label style="font-size:12px">Intitulé</label><input id="se_lbl_'+s.id+'" placeholder="Ex. Déclaration données ALSH 2026"></div>'
       +'<div class="field" style="flex:0;min-width:140px"><label style="font-size:12px">Date</label><input id="se_date_'+s.id+'" type="date"></div>'
+      +'<div class="field" style="flex:0;min-width:165px"><label style="font-size:12px">Récurrence</label><select id="se_rec_'+s.id+'"><option value="">Une fois</option><option value="1">🔁 Chaque année</option></select></div>'
       +'<div class="field" style="flex:0;min-width:110px"><label style="font-size:12px">Montant (opt.)</label><input id="se_mont_'+s.id+'" type="number" placeholder="€"></div>'
       +'<div class="field" style="flex:0;min-width:150px"><label style="font-size:12px">Statut</label><select id="se_stat_'+s.id+'"><option value="a_faire">À faire</option><option value="bloque">Bloqué (en attente)</option><option value="fait">Fait</option></select></div>'
       +'<div class="field" style="flex:0"><label style="font-size:12px">&nbsp;</label><button class="btn" onclick="addStructEch(\''+s.id+'\')">＋ Échéance</button></div>'
@@ -6274,6 +6329,38 @@ const DEMARCHES_LIB=[
 ];
 function demCtx(){ db.assoContext=db.assoContext||{}; const c=db.assoContext; return {greffe:(c.greffe!==undefined?c.greffe:'Sous-préfecture de Saint-Paul'),tel:(c.tel!==undefined?c.tel:'0262 35 89 50'),regime:c.regime||'1901'}; }
 function saveDemCtx(){ db.assoContext=db.assoContext||{}; db.assoContext.greffe=$('dem_greffe').value.trim(); db.assoContext.tel=$('dem_tel').value.trim(); db.assoContext.regime=$('dem_regime').value; save(); }
+/* ---- 25/08/2026 — LE SOCLE ET LES AJOUTS -----------------------------------------------
+   DEMARCHES_LIB est le SOCLE livré avec Bob : il vaut pour toute association (préfecture).
+   Les démarches PROPRES à une asso — santé au travail, OPCO, bilan d'un financeur, agrément —
+   vivent dans SON coffre (db.demarchesLib) et y arrivent par la bannette. Même partage que
+   l'aide : un socle livré + ce que la maison ajoute.
+
+   demFiche() NORMALISE, et c'est le cœur de la sûreté de cet écran :
+   · une fiche venue d'ailleurs peut arriver sans `pieces` ou sans `ou` → `d.ou.map` jetterait,
+     et TOUT l'écran Démarches resterait blanc. Une fiche incomplète doit s'afficher en moins
+     bien, jamais faire écran blanc.
+   · `id` est réduit aux caractères sûrs : il part dans un attribut onclick, où l'échappement
+     HTML ne protège PAS (le HTML dé-échappe avant que le moteur JS ne lise).
+   · les liens sont filtrés sur http/https : sinon un « javascript:… » déposé dans la bannette
+     deviendrait un bouton cliquable dans l'écran du bureau.
+   Tout le reste est échappé au rendu (esc), parce que ce contenu n'est plus écrit par nous. */
+function demFiche(d){
+  const A=function(x){ return Array.isArray(x)?x:[]; };
+  return {
+    id:String(d.id||'').replace(/[^a-zA-Z0-9_-]/g,''),
+    icon:String(d.icon||'📋'), titre:String(d.titre||'Démarche'),
+    quand:String(d.quand||''), delai:String(d.delai||''), amende:String(d.amende||''),
+    delaiJours:Number(d.delaiJours)||0, guide:!!d.guide, piege:String(d.piege||''),
+    pieces:A(d.pieces).map(String), etapes:A(d.etapes).map(String),
+    ou:A(d.ou).filter(function(o){ return o && /^https?:\/\//i.test(String(o.u||'')); })
+              .map(function(o){ return {l:String(o.l||o.u), u:String(o.u)}; }),
+    asso:!!d.asso, structureId:String(d.structureId||''), recurrent:!!d.recurrent,
+    echeanceDate:String(d.echeanceDate||'')
+  };
+}
+function demLib(){
+  return DEMARCHES_LIB.concat(Array.isArray(db.demarchesLib)?db.demarchesLib:[]).map(demFiche);
+}
 function renderDemarches(){
   db.demarches=db.demarches||[];
   const majEl=$('dem_maj'); if(majEl) majEl.textContent='· liens à jour au '+DEMARCHES_MAJ;
@@ -6283,13 +6370,17 @@ function renderDemarches(){
     +'<div class="field"><label>Téléphone du greffe</label><input id="dem_tel" value="'+(c.tel||'')+'" onchange="saveDemCtx()" placeholder="02…"></div>'
     +'<div class="field" style="flex:0;min-width:210px"><label>Régime</label><select id="dem_regime" onchange="saveDemCtx()"><option value="1901"'+(c.regime==='1901'?' selected':'')+'>Loi 1901 (préfecture)</option><option value="am"'+(c.regime==='am'?' selected':'')+'>Alsace-Moselle (tribunal)</option></select></div>'
     +'</div>'+(c.regime==='am'?'<p class="hint" style="margin:8px 0 0;color:#b45309">⚠️ En Alsace-Moselle, ces démarches passent par le <strong>tribunal judiciaire</strong> (registre des associations), pas la préfecture.</p>':'')+'</div>'; }
-  const list=$('demList'); if(list){ list.innerHTML=DEMARCHES_LIB.map(function(d){
-    var liens=d.ou.map(function(o){return '<a class="ghost btn" style="margin:2px 4px 2px 0" href="'+o.u+'" target="_blank" rel="noopener">🔗 '+o.l+'</a>';}).join('');
-    var pieces=d.pieces.map(function(p){return '<li>'+p+'</li>';}).join('');
-    var etapes=d.etapes.map(function(e){return '<li>'+e+'</li>';}).join('');
-    var delai=d.guide?'':'<div class="kv"><span><strong>⏰ Délai</strong></span><span>'+d.delai+' · sinon amende '+d.amende+'</span></div>';
+  const list=$('demList'); if(list){ list.innerHTML=demLib().map(function(d){
+    var liens=d.ou.map(function(o){return '<a class="ghost btn" style="margin:2px 4px 2px 0" href="'+esc(o.u)+'" target="_blank" rel="noopener">🔗 '+esc(o.l)+'</a>';}).join('');
+    var pieces=d.pieces.map(function(p){return '<li>'+esc(p)+'</li>';}).join('');
+    var etapes=d.etapes.map(function(e){return '<li>'+esc(e)+'</li>';}).join('');
+    var delai=(d.guide||!d.delai)?'':'<div class="kv"><span><strong>⏰ Délai</strong></span><span>'+esc(d.delai)+(d.amende?' · sinon amende '+esc(d.amende):'')+'</span></div>';
     var launch=d.guide?'':'<button class="btn" style="margin-top:10px" onclick="lancerDemarche(\''+d.id+'\')">▶️ Lancer cette démarche (checklist + rappel)</button>';
-    return '<details class="card" style="margin-bottom:8px"><summary style="cursor:pointer;font-weight:600">'+d.icon+' '+d.titre+'</summary><div style="margin-top:8px"><p class="hint" style="margin:0 0 8px"><strong>Quand ?</strong> '+d.quand+'</p>'+delai+'<div style="margin:8px 0"><strong>📎 Pièces à fournir</strong><ul style="margin:4px 0 0">'+pieces+'</ul></div><div style="margin:8px 0"><strong>🧭 Étapes</strong><ol style="margin:4px 0 0">'+etapes+'</ol></div><div style="margin:8px 0"><strong>⚠️ Bon à savoir</strong><p class="hint" style="margin:4px 0 0">'+d.piege+'</p></div><div style="margin:8px 0"><strong>🔗 Où aller</strong><div style="margin-top:4px">'+liens+'</div></div>'+launch+'</div></details>';
+    /* une démarche ajoutée par l'asso se signale : on doit voir d'un coup d'œil ce qui vient
+       du socle Bob (valable partout) et ce qui est propre à la maison. */
+    var tag=d.asso?' <span class="pill" style="background:#eef2fb;color:#1f4fc4;font-size:11px">maison</span>':'';
+    var struct=''; if(d.structureId){ var _s=(db.structures||[]).find(function(x){return x.id===d.structureId;}); if(_s) struct='<p class="hint" style="margin:0 0 8px">🏛️ '+esc(_s.nom)+(d.recurrent?' · 🔁 chaque année':'')+'</p>'; }
+    return '<details class="card" style="margin-bottom:8px"><summary style="cursor:pointer;font-weight:600">'+esc(d.icon)+' '+esc(d.titre)+tag+'</summary><div style="margin-top:8px">'+struct+(d.quand?'<p class="hint" style="margin:0 0 8px"><strong>Quand ?</strong> '+esc(d.quand)+'</p>':'')+delai+(pieces?'<div style="margin:8px 0"><strong>📎 Pièces à fournir</strong><ul style="margin:4px 0 0">'+pieces+'</ul></div>':'')+(etapes?'<div style="margin:8px 0"><strong>🧭 Étapes</strong><ol style="margin:4px 0 0">'+etapes+'</ol></div>':'')+(d.piege?'<div style="margin:8px 0"><strong>⚠️ Bon à savoir</strong><p class="hint" style="margin:4px 0 0">'+esc(d.piege)+'</p></div>':'')+(liens?'<div style="margin:8px 0"><strong>🔗 Où aller</strong><div style="margin-top:4px">'+liens+'</div></div>':'')+launch+'</div></details>';
   }).join(''); }
   const enc=$('demEnCours'); if(enc){ if(!db.demarches.length){ enc.innerHTML='<p class="hint" style="margin:0">Aucune démarche en cours.</p>'; } else { enc.innerHTML=db.demarches.map(function(inst){
     var done=inst.etapes.filter(function(e){return e.fait;}).length;
@@ -6297,10 +6388,24 @@ function renderDemarches(){
     return '<div class="card" style="margin-bottom:8px"><div class="row" style="justify-content:space-between;align-items:center"><strong>'+inst.titre+'</strong><span class="muted">lancée le '+fmtDate(inst.dateLancement)+' · '+done+'/'+inst.etapes.length+'</span></div><div style="margin-top:6px">'+items+'</div><button class="ghost btn" style="margin-top:6px" onclick="supprDemarche(\''+inst.id+'\')">🗑️ Retirer</button></div>';
   }).join(''); } }
 }
-function lancerDemarche(libId){ var d=DEMARCHES_LIB.find(function(x){return x.id===libId;}); if(!d)return; db.demarches=db.demarches||[]; db.echeances=db.echeances||[]; var echId='';
-  if(d.delaiJours>0){ var dt=new Date(); dt.setDate(dt.getDate()+d.delaiJours); var iso=dt.toISOString().slice(0,10); echId=uid(); db.echeances.push({id:echId,label:'⏰ Déclarer en préfecture : '+d.titre+' (délai légal 3 mois)',date:iso,recurrent:false}); }
+async function lancerDemarche(libId){ var d=demLib().find(function(x){return x.id===libId;}); if(!d)return; db.demarches=db.demarches||[]; db.echeances=db.echeances||[]; var echId=''; var quoi='';
+  /* Deux façons de dater le rappel :
+     · SOCLE (préfecture) — un délai légal qui court À PARTIR D'AUJOURD'HUI (3 mois).
+     · MAISON — une date fixe dans l'année (le bilan tombe au 15 octobre), qui revient
+       chaque année et qui est rattachée à l'organisme concerné.
+     ⚠️ isoDate() et pas toISOString() : à La Réunion (UTC+4) toISOString() recule d'un jour
+     quand il est tôt le matin — c'est le bug de fuseau déjà purgé ailleurs dans ce fichier. */
+  if(d.echeanceDate){
+    echId=uid();
+    db.echeances.push({id:echId,label:(d.icon||'📋')+' '+d.titre,date:d.echeanceDate,recurrent:!!d.recurrent,structureId:d.structureId||'',sens:'depot',statut:'a_faire',montant:0,note:''});
+    quoi=', et la date du '+fmtDate(d.echeanceDate)+(d.recurrent?' (qui revient chaque année)':'')+' est posée dans ton échéancier.';
+  } else if(d.delaiJours>0){
+    var dt=new Date(); dt.setDate(dt.getDate()+d.delaiJours); echId=uid();
+    db.echeances.push({id:echId,label:'⏰ Déclarer en préfecture : '+d.titre+' (délai légal 3 mois)',date:isoDate(dt),recurrent:false});
+    quoi=', et un rappel « à déclarer sous 3 mois » a été ajouté à ton échéancier.';
+  } else { quoi='.'; }
   db.demarches.push({id:uid(),type:d.id,titre:d.titre,dateLancement:today(),echeanceId:echId,etapes:d.etapes.map(function(e){return {label:e,fait:false};})});
-  save(); alert('Démarche lancée ✅\n\nSa checklist est dans « Démarches en cours »'+(d.delaiJours>0?', et un rappel « à déclarer sous 3 mois » a été ajouté à ton échéancier.':'.')); }
+  save(); await bobAlert('Sa checklist est dans « Démarches en cours »'+quoi,{titre:'Démarche lancée ✅'}); }
 function toggleDemEtape(instId,i){ var inst=(db.demarches||[]).find(function(x){return x.id===instId;}); if(!inst)return; inst.etapes[i].fait=!inst.etapes[i].fait; save(); }
 function supprDemarche(instId){ var inst=(db.demarches||[]).find(function(x){return x.id===instId;}); if(!inst)return; if(!confirm('Retirer cette démarche en cours ? Le rappel dans l’échéancier reste (tu peux le supprimer là-bas).'))return; db.demarches=db.demarches.filter(function(x){return x.id!==instId;}); save(); }
 function renderSecretariat(){
@@ -10825,6 +10930,100 @@ renderAll();
      question posée, pas de fenêtre bloquante — mais on ANNONCE ce qui vient d'être fait, à
      l'écran et au journal. Une écriture comptable créée en silence, ce serait pire que le trou
      qu'on répare. Même code que le bouton : une seule implémentation, donc pas de dérive. */
+  /* ===== 🏛️ LA BANNETTE DES DÉMARCHES (25/08/2026) — table `demarches_propositions` =====
+     POURQUOI UNE BANNETTE, et pas une écriture directe dans le coffre : le coffre est un bloc
+     réécrit EN ENTIER à chaque enregistrement du bureau. Une ligne posée en arrière-plan y
+     serait effacée sans bruit au prochain save() — c'est exactement ce qui a rendu 80 € d'adhésions
+     invisibles pendant six semaines. Donc l'extérieur DÉPOSE dans une table, et c'est l'appli,
+     qui tient déjà son coffre, qui intègre — à l'ouverture, et en le DISANT.
+
+     IDEMPOTENT DEUX FOIS PLUTÔT QU'UNE : la table porte unique(asso_id, cle) au dépôt, et on
+     revérifie ici avant d'écrire (une autre session du bureau a pu intégrer pendant l'aller-retour).
+
+     ORDRE DES ÉCRITURES, choisi exprès : on enregistre LE COFFRE D'ABORD, on marque « intégrée »
+     en base ENSUITE. Si le marquage rate, la prochaine ouverture repassera et ne dupliquera rien
+     (les deux `deja*` ci-dessous le garantissent). L'ordre inverse perdrait la démarche.
+     On préfère un passage en double à une démarche perdue. */
+  window.demarchesRamasser=async function(auto){
+    if(!canWrite){ if(!auto) await bobAlert('Réservé au bureau.'); return 0; }
+    const rq=await sbc.from('demarches_propositions').select('*').eq('statut','en_attente').order('created_at',{ascending:true});
+    if(rq.error){ if(!auto) await bobAlert('Erreur : '+rq.error.message); return 0; }
+    const todo=rq.data||[];
+    if(!todo.length){ if(!auto) await bobAlert('Aucune nouvelle démarche à intégrer : la bannette est vide.'); return 0; }
+
+    db.structures=db.structures||[]; db.echeances=db.echeances||[]; db.demarchesLib=db.demarchesLib||[];
+    const dejaLib=new Set(db.demarchesLib.map(function(f){ return f.cle; }).filter(Boolean));
+    const dejaEch=new Set(db.echeances.map(function(e){ return e.propCle; }).filter(Boolean));
+    const faits=[], noms=[];
+
+    todo.forEach(function(p){
+      const cle=String(p.cle||''); if(!cle) return;
+      const nomOrg=String(p.organisme||'').trim();
+      let sid='';
+      /* 1) L'ORGANISME — on retrouve sa fiche par le nom, sinon on la crée.
+            Sur une fiche existante on COMPLÈTE les cases vides ; on n'ÉCRASE jamais ce que
+            le bureau a saisi à la main : la saisie humaine prime toujours sur le dépôt. */
+      if(nomOrg){
+        let s=db.structures.find(function(x){ return _norm(x.nom)===_norm(nomOrg); });
+        if(!s){
+          s={id:uid(),nom:nomOrg,type:String(p.organisme_type||''),url_dossier:String(p.organisme_url||''),ident:String(p.organisme_ident||''),note:''};
+          db.structures.push(s);
+        } else {
+          if(!s.ident && p.organisme_ident) s.ident=String(p.organisme_ident);
+          if(!s.url_dossier && p.organisme_url) s.url_dossier=String(p.organisme_url);
+          if(!s.type && p.organisme_type) s.type=String(p.organisme_type);
+        }
+        sid=s.id;
+      }
+      /* 2) LA DATE, avec sa récurrence — c'est elle qui fera remonter la démarche toute seule
+            l'an prochain (gEcheance fait rouler les annuelles). */
+      if(p.echeance_date && !dejaEch.has(cle)){
+        db.echeances.push({id:uid(),propCle:cle,
+          label:(nomOrg?nomOrg+' — ':'')+String(p.titre||'Démarche'),
+          date:String(p.echeance_date).slice(0,10),recurrent:!!p.recurrent,
+          structureId:sid,sens:(p.sens==='versement'?'versement':'depot'),
+          statut:'a_faire',montant:Number(p.montant)||0,note:''});
+        dejaEch.add(cle);
+      }
+      /* 3) LE MODE D'EMPLOI — comment on fait, où on va, les pièces, le piège.
+            C'est ce qu'une séance de travail a appris et que personne ne devrait ré-apprendre. */
+      const f=(p.fiche&&typeof p.fiche==='object'&&!Array.isArray(p.fiche))?p.fiche:{};
+      if(!dejaLib.has(cle) && (f.etapes||f.pieces||f.piege||f.ou||f.quand)){
+        db.demarchesLib.push(Object.assign({},f,{
+          id:'p_'+cle.replace(/[^a-zA-Z0-9_-]/g,''), cle:cle,
+          titre:String(p.titre||f.titre||'Démarche'), asso:true, structureId:sid,
+          recurrent:!!p.recurrent,
+          echeanceDate:p.echeance_date?String(p.echeance_date).slice(0,10):''}));
+        dejaLib.add(cle);
+      }
+      faits.push(p.id); noms.push(String(p.titre||'Démarche'));
+    });
+
+    if(!faits.length) return 0;
+    const msg='🏛️ '+faits.length+' démarche(s) intégrée(s) depuis la bannette : '+noms.join(', ')+'.';
+    db.journal=(db.journal||[]).concat([jEntry('Secrétariat',msg)]).slice(-500);
+    save();                                    // le coffre d'abord — un seul enregistrement
+
+    try{
+      await sbc.from('demarches_propositions')
+        .update({statut:'integree',integre_le:new Date().toISOString(),integre_par:(myProfile&&myProfile.id)||null})
+        .in('id',faits).eq('statut','en_attente');
+    }catch(e){ console.warn('marquage bannette', e); }
+
+    /* On le DIT — jamais en silence. Une intégration invisible vaut une intégration ratée. */
+    try{
+      if(!document.getElementById('demBannetteBanner')){
+        const w=document.createElement('div'); w.id='demBannetteBanner';
+        w.style.cssText='background:#e8f4ec;color:#1d5c3f;padding:9px 14px;border-radius:10px;margin:8px 0;font-size:13.5px;font-weight:600';
+        w.textContent='🏛️ '+faits.length+' nouvelle(s) démarche(s) sont entrées : '+noms.join(', ')+'. À voir dans 📝 Secrétariat → Démarches.';
+        const host=document.querySelector('nav.famtabs');
+        if(host&&host.parentNode) host.parentNode.insertBefore(w,host);
+      }
+    }catch(e){}
+    if(!auto) await bobAlert(msg,{titre:'Bannette ramassée ✅'});
+    return faits.length;
+  };
+
   window.adhVerserCompta=async function(auto){
     if(!canWrite){ if(!auto) alert('Réservé au bureau.'); return 0; }
     const rq=await sbc.from('paiements').select('id,user_id,montant_cents,paid_at,created_at,metadata').eq('objet','adhesion').eq('statut','paye');
@@ -17042,6 +17241,11 @@ window.loadDossiersPeri=async function(){
        quand — c'est ce montant-là qui doit coller à la ligne du relevé. */
     try{ if(canWrite) Promise.resolve(window.adhVerserCompta(true)).catch(function(e){ console.warn('versement auto', e); }); }
     catch(e){ console.warn('versement auto', e); }
+    /* 🏛️ Même motif pour la bannette des démarches : ce qu'une séance a découvert entre ici,
+       à l'ouverture, une seule fois, et s'annonce. Si la table n'existe pas encore, la fonction
+       repart à 0 sans bruit — l'écran n'est jamais cassé par une migration pas encore passée. */
+    try{ if(canWrite) Promise.resolve(window.demarchesRamasser(true)).catch(function(e){ console.warn('bannette démarches', e); }); }
+    catch(e){ console.warn('bannette démarches', e); }
     addBanner();
     renderAll();
     applyPerms();
