@@ -1703,8 +1703,18 @@ document.addEventListener('touchstart', function(){}, {passive:true});
         <div class="field"><label>Date</label><input id="e_date" type="date"></div>
         <div class="field" style="flex:0;min-width:190px"><label>Récurrence</label>
           <select id="e_recurrent"><option value="">Une fois</option><option value="1">🔁 Chaque année</option></select></div>
-        <div class="field" style="flex:0"><label>&nbsp;</label><button class="btn" onclick="addEcheance()">Ajouter</button></div>
       </div>
+      <!-- 25/08/2026 — les 4 cases qui manquaient : sans elles, une échéance complète ne pouvait
+           pas naître depuis son propre écran ; il fallait passer par la fiche d'un organisme. -->
+      <div class="row" style="margin-top:8px;align-items:flex-end">
+        <div class="field" style="flex:2"><label>Organisme concerné (optionnel)</label>
+          <select id="e_struct"><option value="">— aucun —</option></select></div>
+        <div class="field" style="flex:0;min-width:200px"><label>Sens</label>
+          <select id="e_sens"><option value="">—</option><option value="depot">📤 Dépôt (à rendre)</option><option value="versement">📥 Versement (à recevoir)</option></select></div>
+        <div class="field" style="flex:0;min-width:120px"><label>Montant (opt.)</label><input id="e_mont" type="number" placeholder="€"></div>
+        <div class="field" style="flex:0"><label>&nbsp;</label><button class="btn" onclick="addEcheance()">＋ Ajouter</button></div>
+      </div>
+      <p class="hint" style="margin:6px 0 0">Rattacher l'échéance à un organisme la fait aussi apparaître dans sa fiche, avec ses documents — 🗂️ Répertoire → 🏛️ Structures &amp; financeurs.</p>
       <div id="echeanceList" style="margin-top:12px"></div>
     </div>
     <div class="panel" id="demarchesPanel" style="border:2px solid var(--brand)">
@@ -5518,7 +5528,7 @@ function renderDashboard(){
   // rappels (≤ 60 jours) : subventions + échéances générales
   const al=[];
   (db.subventions||[]).forEach(s=>{ const d=subEcheance(s); if(d){ const j=daysTo(d); if(j<=60) al.push({titre:s.name,sous:(s.structure||'')+' — à déposer',d,j,lien:s.lien}); } });
-  (db.echeances||[]).forEach(e=>{ if(e.statut==='fait') return; const d=gEcheance(e); if(d){ const j=daysTo(d); if(j<=60) al.push({titre:e.label,sous:e.sens==='versement'?'à recevoir':(e.structureId?'à déposer':(e.recurrent?'échéance annuelle':'échéance')),d,j,lien:''}); } });
+  (db.echeances||[]).forEach(e=>{ if(echClose(e)) return; const d=gEcheance(e); if(d){ const j=daysTo(d); if(j<=60) al.push({titre:e.label,sous:e.sens==='versement'?'à recevoir':(e.structureId?'à déposer':(e.recurrent?'échéance annuelle':'échéance')),d,j,lien:''}); } });
   al.sort((a,b)=>a.j-b.j);
   $('dashAlerts').innerHTML = urgHtml + (al.length ? `<div class="panel" style="border-left:4px solid var(--amber)">
     <h2>⏰ Échéances à venir</h2>`+al.map(({titre,sous,d,j,lien})=>`<div class="kv">
@@ -6000,7 +6010,15 @@ function addStructEch(sid){
   const _rec=$('se_rec_'+sid); if(_rec) _rec.value='';
   save();
 }
-function setStructEchStatut(id,v){ const e=(db.echeances||[]).find(x=>x.id===id); if(e){ e.statut=v; save(); } }
+function setStructEchStatut(id,v){
+  const e=(db.echeances||[]).find(x=>x.id===id); if(!e) return;
+  e.statut=v;
+  /* on note POUR QUELLE occurrence le « fait » vaut — sans ça, une annuelle cochée
+     ici se tairait pour toujours (cf. echClose). */
+  const d=gEcheance(e);
+  e.faitPour = (v==='fait' && d) ? isoDate(d) : '';
+  save();
+}
 function structEchLine(s,e){
   const d=gEcheance(e); const j=(d!=null)?daysTo(d):null;
   const disp=e.label.indexOf(s.nom+' — ')===0?e.label.slice((s.nom+' — ').length):e.label;
@@ -6050,7 +6068,7 @@ function renderStructures(){
   const box=$('structuresBody'); if(!box) return;
   db.structures=db.structures||[]; db.echeances=db.echeances||[];
   const soon=[];
-  (db.echeances||[]).forEach(function(e){ if(!e.structureId||e.statut==='fait') return; const d=gEcheance(e); if(!d) return; soon.push({e:e,d:d,j:daysTo(d)}); });
+  (db.echeances||[]).forEach(function(e){ if(!e.structureId||echClose(e)) return; const d=gEcheance(e); if(!d) return; soon.push({e:e,d:d,j:daysTo(d)}); });
   soon.sort(function(a,b){return a.j-b.j;});
   const sbox=$('echeancesSoonBox');
   if(sbox){ sbox.innerHTML = soon.length ? '<div class="card" style="background:#f4f8f6;border-top:3px solid var(--brand)"><strong>📅 Ce qui tombe bientôt</strong>'+soon.slice(0,8).map(function(o){
@@ -6292,10 +6310,47 @@ function toggleNote(id){ const n=db.notes.find(x=>x.id===id); if(n){ n.done=!n.d
 function delNote(id){ db.notes=db.notes.filter(n=>n.id!==id); save(); }
 function addEcheance(){
   const label=$('e_label').value.trim(); if(!label){ alert('Indique un intitulé.'); return; }
-  db.echeances.push({id:uid(),label,date:$('e_date').value||'',recurrent:$('e_recurrent').value==='1'});
-  ['e_label','e_date'].forEach(i=>$(i).value=''); $('e_recurrent').value=''; save();
+  const v=i=>((($(i)||{}).value)||'').trim();
+  db.echeances.push({id:uid(),label,date:$('e_date').value||'',recurrent:$('e_recurrent').value==='1',
+    structureId:v('e_struct'), sens:v('e_sens')||'depot', montant:parseFloat(v('e_mont'))||0,
+    statut:'a_faire', faitPour:'', note:''});
+  ['e_label','e_date','e_mont'].forEach(i=>{ const el=$(i); if(el) el.value=''; });
+  ['e_recurrent','e_struct','e_sens'].forEach(i=>{ const el=$(i); if(el) el.value=''; });
+  save();
 }
 function delEcheance(id){ db.echeances=db.echeances.filter(e=>e.id!==id); save(); }
+/* ✅ MARQUER UNE ÉCHÉANCE FAITE — SANS LA SUPPRIMER (25/08/2026).
+   Le statut vivait déjà dans la donnée mais n'était affiché QUE dans la fiche d'un organisme :
+   dans l'Échéancier général, le seul geste possible sur une date passée était « Suppr. », donc
+   effacer la trace. Résultat mesuré : 2 échéances dépassées depuis juin, jamais soldées, qui
+   remontaient au tableau de bord toutes les semaines — jusqu'à ce qu'on cesse de le regarder.
+   Le bouton bascule : re-cliquer sur une échéance close la rouvre. */
+window.echBasculerFait=function(id){
+  const e=(db.echeances||[]).find(x=>x.id===id); if(!e) return;
+  const d=gEcheance(e);
+  if(echClose(e)){ e.statut='a_faire'; e.faitPour=''; }
+  else { e.statut='fait'; e.faitPour = d?isoDate(d):''; }
+  save();
+};
+/* 🔴 UNE ÉCHÉANCE ANNUELLE COCHÉE « FAIT » L'EST POUR SON OCCURRENCE, PAS POUR TOUJOURS
+   (25/08/2026). Avant ce jour, le tableau de bord et la fiche organisme écartaient toute
+   échéance `statut==='fait'` AVANT d'appeler gEcheance() — la fonction qui, elle, sait faire
+   rouler une récurrente d'année en année. Conséquence : cocher « fait » une seule fois sur une
+   🔁 annuelle la faisait taire DÉFINITIVEMENT, et rien ne le signalait. « INTERMÉTRA — adhésion
+   santé au travail, 24/08/2027 » aurait disparu au premier clic, sans que personne le voie.
+   C'est le geste que l'écran encourage qui cassait la mécanique : le pire genre de défaut.
+
+   La réparation ne consiste PAS à ignorer « fait » — ce serait rallumer une alerte déjà traitée
+   cette année. On retient POUR QUELLE occurrence le « fait » valait (`faitPour`), et on ne
+   referme que celle-là. Repli volontairement prudent : une échéance récurrente déjà cochée avant
+   cette correction n'a pas de `faitPour` — elle REVIENT. Mieux vaut la revoir une fois de trop
+   que de la perdre en silence. */
+function echClose(e){
+  if(!e || e.statut!=='fait') return false;
+  if(!e.recurrent) return true;                 // ponctuelle : faite une fois, finie
+  const d=gEcheance(e); if(!d) return true;     // sans date, rien à faire rouler
+  return e.faitPour===isoDate(d);               // close SEULEMENT pour l'occurrence en cours
+}
 function gEcheance(e){ // prochaine occurrence (roule si récurrente)
   if(!e.date) return null;
   let d=new Date(e.date+'T00:00:00');
@@ -6476,13 +6531,26 @@ function renderSecretariat(){
     <span style="${n.done?'text-decoration:line-through;opacity:.55':''}"><input type="checkbox" ${n.done?'checked':''} onclick="toggleNote('${n.id}')"> ${esc(n.text)}</span>
     <button class="danger" onclick="delNote('${n.id}')">Suppr.</button></div>`).join('')
     : '<p class="hint" style="margin:0">'+(ns.filtre?bobRienTrouve('notes'):'Aucune note pour le moment.')+'</p>';
+  /* la liste des organismes se relit à chaque rendu (une structure a pu naître entre-temps,
+     y compris par la bannette). On PRÉSERVE la sélection en cours : renderSecretariat est
+     rappelé à chaque enregistrement, y compris pendant que quelqu'un remplit le formulaire. */
+  const selSt=$('e_struct');
+  if(selSt){ const garde=selSt.value;
+    selSt.innerHTML='<option value="">— aucun —</option>'+(db.structures||[])
+      .map(s=>'<option value="'+esc(s.id)+'">'+esc(s.nom)+'</option>').join('');
+    if(garde && selSt.querySelector('option[value="'+garde+'"]')) selSt.value=garde;
+  }
   const es=(db.echeances||[]).map(e=>({e,d:gEcheance(e)})).filter(x=>x.d).sort((a,b)=>a.d-b.d);
   const noDate=(db.echeances||[]).filter(e=>!e.date);
   $('echeanceList').innerHTML = (es.length||noDate.length) ?
-    es.map(({e,d})=>{const j=daysTo(d);const u=j<0?'no':j<=30?'wait':'ok';
-      return `<div class="kv"><span><strong>${esc(e.label)}</strong>${e.recurrent?' <span class="muted">· 🔁 annuelle</span>':''}<br><span class="muted" style="font-size:13px">${fmtDate(isoDate(d))}</span></span>
-      <span><span class="pill ${u}">${j<0?'dépassée':j===0?"aujourd'hui":'dans '+j+' j'}</span> <button class="ghost btn" style="padding:4px 9px;font-size:12px" onclick="openEdit('echeances','${e.id}')" title="Modifier">✏️</button> <button class="danger" onclick="delEcheance('${e.id}')">Suppr.</button></span></div>`;}).join('')
-      + noDate.map(e=>`<div class="kv"><span><strong>${esc(e.label)}</strong> <span class="muted">(sans date)</span></span><span style="white-space:nowrap"><button class="ghost btn" style="padding:4px 9px;font-size:12px" onclick="openEdit('echeances','${e.id}')" title="Modifier">✏️</button> <button class="danger" onclick="delEcheance('${e.id}')">Suppr.</button></span></div>`).join('')
+    es.map(({e,d})=>{const j=daysTo(d);const clos=echClose(e);const u=clos?'ok':j<0?'no':j<=30?'wait':'ok';
+      const etat=clos?'✅ faite'+(e.recurrent?' cette année':''):(j<0?'dépassée':j===0?"aujourd'hui":'dans '+j+' j');
+      return `<div class="kv"${clos?' style="opacity:.6"':''}><span><strong>${esc(e.label)}</strong>${e.recurrent?' <span class="muted">· 🔁 annuelle</span>':''}<br><span class="muted" style="font-size:13px">${fmtDate(isoDate(d))}</span></span>
+      <span style="white-space:nowrap"><span class="pill ${u}">${etat}</span> <button class="ghost btn" style="padding:4px 9px;font-size:12px" onclick="echBasculerFait('${e.id}')" title="${clos?'Rouvrir':'Marquer comme faite (sans la supprimer)'}">${clos?'↩️':'✅'}</button> <button class="ghost btn" style="padding:4px 9px;font-size:12px" onclick="openEdit('echeances','${e.id}')" title="Modifier">✏️</button> <button class="danger" onclick="delEcheance('${e.id}')">Suppr.</button></span></div>`;}).join('')
+      /* 🔴 « Sans date » n'est pas un détail quand l'échéance se dit ANNUELLE : elle s'affiche,
+         elle rassure, et elle ne déclenchera jamais rien. Mesuré le 25/08/2026 : 3 démarches sur
+         4 étaient dans ce cas. On le DIT, en orange, plutôt que de laisser croire. */
+      + noDate.map(e=>`<div class="kv"${e.recurrent?' style="background:#fdf6ec;border-radius:8px;padding:6px 8px"':''}><span><strong>${esc(e.label)}</strong> ${e.recurrent?'<span class="pill wait">⚠️ 🔁 annuelle SANS DATE — aucun rappel ne partira</span>':'<span class="muted">(sans date)</span>'}</span><span style="white-space:nowrap"><button class="ghost btn" style="padding:4px 9px;font-size:12px" onclick="openEdit('echeances','${e.id}')" title="${e.recurrent?'Poser la date — c’est elle qui déclenche le rappel':'Modifier'}">✏️ ${e.recurrent?'Poser la date':''}</button> <button class="danger" onclick="delEcheance('${e.id}')">Suppr.</button></span></div>`).join('')
     : '<p class="hint" style="margin:0">Aucune échéance enregistrée.</p>';
 }
 const MODELS={
