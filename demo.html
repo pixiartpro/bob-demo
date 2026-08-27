@@ -1681,12 +1681,12 @@ function seedDemo(){
     {id:p2,name:'Séjour familles été 2026',budget:4000,status:'À venir'},
     {id:p3,name:'Jardin partagé',budget:1200,status:'En cours'});
   /* 🔴 NOMS DE DÉMO — demo.html est une page PUBLIQUE (casebdn.re/demo.html).
-     Aucun patronyme réel ici : ni une famille adhérente, ni un salarié, ni un
-     membre du bureau. Vécu le 27/08/2026 : une passe d'anonymisation avait bien
-     retiré « Robert » (le trésorier) et « Maillot » (une salariée)… pour les
-     remplacer par « Ramassamy » et « Técher », eux aussi bien réels.
-     ⚠️ Vérifier contre les DEUX sources — la liste des ~104 familles ET la base
-     Bob : Ramassamy n'est que dans la seconde, Hoarau que dans la première.
+     Aucun nom réel ici : ni une famille adhérente, ni un salarié, ni un membre
+     du bureau. Et ça vaut pour CE commentaire aussi : ne jamais citer en exemple
+     le nom qu'on vient de retirer — un commentaire HTML est servi comme le reste.
+     ⚠️ Vérifier contre les DEUX sources, la liste des familles ET la base : l'une
+     est historique, l'autre récente, et chacune contient des noms que l'autre
+     ignore. Un contrôle sur une seule source rend un vert qui ment.
      Un seul geste :  node _qa/verif-demo-noms.mjs  (hors dépôt, il lit du privé). */
   [['Marie Lauret','12 rue des Mille Roches','97490','Saint-Denis',15,'2026-01-12',true],
    ['Jean-Marie Vienne','5 chemin Bancoul','97400','Saint-Denis',15,'2026-01-14',true],
