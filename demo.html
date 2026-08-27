@@ -156,7 +156,7 @@
       <h2>Ajouter un adhérent</h2>
       <p class="hint">Nom, contact, montant et date de la cotisation. Coche « à jour » si la cotisation est payée.</p>
       <div class="row">
-        <div class="field"><label>Nom et prénom</label><input id="m_name" placeholder="Ex. Marie Hoarau"></div>
+        <div class="field"><label>Nom et prénom</label><input id="m_name" placeholder="Ex. Marie Lauret"></div>
         <div class="field"><label>Email</label><input id="m_email" placeholder="marie@exemple.re"></div>
         <div class="field"><label>Téléphone</label><input id="m_phone" placeholder="0692 ..."></div>
       </div>
@@ -547,7 +547,7 @@
         <div class="field"><label>Date</label><input id="r_date" type="date"></div>
         <div class="field" style="flex:0;min-width:150px"><label>Type</label>
           <select id="r_type"><option>Bureau</option><option>Conseil d'administration</option><option>Assemblée générale</option><option>Autre</option></select></div>
-        <div class="field" style="flex:2"><label>Participants</label><input id="r_present" placeholder="Ex. G. Robert, L. Payet..."></div>
+        <div class="field" style="flex:2"><label>Participants</label><input id="r_present" placeholder="Ex. A. Vienne, L. Cadet..."></div>
       </div>
       <div class="row" style="margin-top:10px">
         <div class="field"><label>Ordre du jour</label><input id="r_ordre" placeholder="Points abordés"></div>
@@ -1680,12 +1680,20 @@ function seedDemo(){
     {id:p1,name:'Fête de quartier 2026',budget:2500,status:'En cours'},
     {id:p2,name:'Séjour familles été 2026',budget:4000,status:'À venir'},
     {id:p3,name:'Jardin partagé',budget:1200,status:'En cours'});
-  [['Marie Hoarau','12 rue des Mille Roches','97490','Saint-Denis',15,'2026-01-12',true],
-   ['Jean-Marie Payet','5 chemin Bancoul','97400','Saint-Denis',15,'2026-01-14',true],
-   ['Aline Técher','8 allée des Flamboyants','97490','Saint-Denis',10,'2026-01-18',true],
-   ['Fabrice Rivière','2 impasse des Letchis','97490','Saint-Denis',10,'2026-02-03',false],
-   ['Sylvie Maillot','47 rue du Brûlé','97400','Saint-Denis',15,'2026-01-22',true],
-   ['Nadia Boyer','9 rue des Bougainvilliers','97490','Saint-Denis',10,'2026-02-11',false]
+  /* 🔴 NOMS DE DÉMO — demo.html est une page PUBLIQUE (casebdn.re/demo.html).
+     Aucun patronyme réel ici : ni une famille adhérente, ni un salarié, ni un
+     membre du bureau. Vécu le 27/08/2026 : une passe d'anonymisation avait bien
+     retiré « Robert » (le trésorier) et « Maillot » (une salariée)… pour les
+     remplacer par « Ramassamy » et « Técher », eux aussi bien réels.
+     ⚠️ Vérifier contre les DEUX sources — la liste des ~104 familles ET la base
+     Bob : Ramassamy n'est que dans la seconde, Hoarau que dans la première.
+     Un seul geste :  node _qa/verif-demo-noms.mjs  (hors dépôt, il lit du privé). */
+  [['Marie Lauret','12 rue des Mille Roches','97490','Saint-Denis',15,'2026-01-12',true],
+   ['Jean-Marie Vienne','5 chemin Bancoul','97400','Saint-Denis',15,'2026-01-14',true],
+   ['Aline Cadet','8 allée des Flamboyants','97490','Saint-Denis',10,'2026-01-18',true],
+   ['Bruno Morel','2 impasse des Letchis','97490','Saint-Denis',10,'2026-02-03',false],
+   ['Sylvie Grondin','47 rue du Brûlé','97400','Saint-Denis',15,'2026-01-22',true],
+   ['Nadia Nativel','9 rue des Bougainvilliers','97490','Saint-Denis',10,'2026-02-11',false]
   ].forEach(function(m){db.members.push({id:uid(),name:m[0],email:m[0].split(' ')[0].toLowerCase()+'@exemple.re',phone:'0692 12 34 56',addr:m[1],cp:m[2],city:m[3],amount:m[4],date:m[5],paid:m[6]});});
   function op(type,label,cat,compte,date,amount,project,account,splits){db.ops.push({id:uid(),type:type,label:label,cat:cat,compte:compte,date:date,amount:amount,project:project||'',account:account||'banque',photo:'',splits:splits||[{site:'',action:'',amount:amount}]});}
   op('in','Subvention CAF','Subvention','740 - Subventions d\'exploitation','2026-01-31',8000,'','banque',[{site:S.bdn,action:A.fonc,amount:8000}]);
@@ -1705,7 +1713,7 @@ function seedDemo(){
     {id:uid(),name:'Séjour familles',structure:'CAF',site:S.bdn,action:A.sort,demande:2500,accorde:0,verse:0,date:'',deadline:'2026-06-25',recurrent:false,lien:'',opId:''});
   db.contacts.push(
     {id:uid(),name:'Cabinet Comptable Réunion',org:'Comptable',email:'contact@cabinet.re',phone:'0262 00 00 00',note:'Bilan en juin/juillet'},
-    {id:uid(),name:'Mme Hoarau',org:'Présidente',email:'presidente@exemple.re',phone:'0692 11 22 33',note:''});
+    {id:uid(),name:'Mme Lauret',org:'Présidente',email:'presidente@exemple.re',phone:'0692 11 22 33',note:''});
   db.liens.push(
     {id:uid(),label:'Espace adhérents CAF',cat:'Financeur',url:'https://www.caf.fr',note:''});
   db.docs.push({id:uid(),type:'Statuts',label:'Statuts à jour 2024',url:''});
