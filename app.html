@@ -3775,7 +3775,7 @@ function renderMembers(){
     if(!A.regul || a.categorie==='enfant' || !A.regul.has(a.foyer_id) || regShown[a.foyer_id]) return '';
     regShown[a.foyer_id]=1;
     const sais=String(A.regul.get(a.foyer_id)||'saison en cours');
-    return '<br><span class="pill" style="background:#fff3da;color:#8a5a00;font-weight:700;font-size:11px" title="Pas d\'adhésion payée pour la saison en cours dans l\'arbre famille — la même règle qui bloque l\'ajout d\'enfant et les inscriptions de la famille (verdict identique à l\'onglet 👨‍👩‍👧 Foyers). Le bouton « 💵 Adhésion payée » du comptoir Foyers rouvre l\'accès.">⚠️ adhésion '+esc(sais)+' à régulariser</span>';
+    return '<br><span class="pill" style="background:#fff3da;color:#8a5a00;font-weight:700;font-size:11px" title="Pas d\'adhésion payée pour la saison en cours dans l\'arbre famille — un voyant de relance, qui ne bloque plus rien depuis le 27/08/2026 (verdict identique à l\'onglet 👨‍👩‍👧 Foyers). Le bouton « 💵 Adhésion payée » du comptoir Foyers enregistre le règlement.">⚠️ adhésion '+esc(sais)+' à régulariser</span>';
   };
   const adhs=A.adhesions.slice().sort((x,y)=>
     String(y.saison||'').localeCompare(String(x.saison||'')) ||
@@ -11034,9 +11034,12 @@ renderAll();
         sbc.from('adhesions').select('foyer_id,personne_id,categorie,saison,date_adhesion,montant_cents,paye,legacy_key').eq('asso_id',myAsso),
         sbc.from('foyers').select('id,nom,tel,adresse,cp,ville,legacy_key').eq('asso_id',myAsso),
         sbc.from('personnes').select('id,prenom,nom,role_foyer,fiche_a_completer').eq('asso_id',myAsso),
-        /* Lot 9a lifting (15/08/2026) : la MÊME vue serveur que l'onglet Foyers et que la
-           porte des familles (v_foyers_a_regulariser, migration 65) — pour que les deux
-           onglets portent le MÊME badge « à régulariser », jamais deux verdicts. */
+        /* Lot 9a lifting (15/08/2026) : la MÊME vue serveur que l'onglet Foyers
+           (v_foyers_a_regulariser, migration 65) — pour que les deux onglets portent le
+           MÊME badge « à régulariser », jamais deux verdicts.
+           27/08/2026 (migration 85) : la PORTE a été retirée. Cette vue ne commande plus
+           aucun blocage — elle dit seulement qui doit encore ses 10 €. Le verdict n'a pas
+           changé d'un pouce ; c'est sa CONSÉQUENCE qui a disparu. */
         sbc.from('v_foyers_a_regulariser').select('foyer_id,saison')
       ]);
       const err=ra.error||rf.error||(rp&&rp.error);
@@ -12097,10 +12100,12 @@ window.loadDossiersPeri=async function(){
       // sans quitter cet écran. Bureau seul (la fonction renvoie 0 ligne aux autres).
       sbc.rpc('foyer_attestation_caf'),
       /* 🔴 LE VOYANT VIENT DU SERVEUR, PAS D'UN CALCUL ICI. `v_foyers_a_regulariser`
-         (migration 65) applique exactement la même définition que la PORTE. Recalculer
-         « à jour » en JavaScript, c'est prendre le risque que l'écran affiche vert
-         pendant que la porte refuse — la famille ne comprendrait rien, et le bureau
-         non plus. Une seule source, pour l'affichage comme pour le blocage. */
+         (migration 65) porte LA définition du retard. Recalculer « à jour » en
+         JavaScript, c'est prendre le risque que deux écrans se contredisent sur une
+         même famille. Une seule source.
+         27/08/2026 (migration 85) : il n'y a plus de porte — les deux triggers de garde
+         ont été retirés (décision de Guillaume : « qu'ils aient accès à leur compte, même
+         s'ils payent un peu plus tard »). Ce voyant sert la RELANCE, plus le blocage. */
       sbc.from('v_foyers_a_regulariser').select('foyer_id,saison')
     ]);
     const fyErr=rf.error||rp.error||ra.error||ri.error; // une SEULE lecture en erreur = on n'affiche RIEN de partiel (sinon « pas d'adhésion » mentirait)
@@ -12170,7 +12175,7 @@ window.loadDossiersPeri=async function(){
          laisser croire que tout le monde est en règle. */
       const regBadge = (D.regOK!==true) ? ''
         : (D.regul && D.regul.has(f.id))
-          ? ' <span class="pill" style="background:#fff3da;color:#8a5a00;font-weight:700;font-size:11px" title="Pas d\'adhésion payée pour la saison en cours : cette famille ne peut plus ajouter d\'enfant ni s\'inscrire. Bouton « 💵 Adhésion payée » ci-dessous dès qu\'elle règle.">⚠️ adhésion à régulariser</span>'
+          ? ' <span class="pill" style="background:#fff3da;color:#8a5a00;font-weight:700;font-size:11px" title="Pas d\'adhésion payée pour la saison en cours. Depuis le 27/08/2026, cela ne bloque plus rien : la famille garde son accès et peut payer plus tard. Bouton « 💵 Adhésion payée » ci-dessous dès qu\'elle règle.">⚠️ adhésion à régulariser</span>'
           : '';
       const adhsAff=adhs.filter(function(a){return a.categorie!=='enfant';});
       const adhBadge=adhsAff.length
@@ -16902,8 +16907,10 @@ window.loadDossiersPeri=async function(){
       q('reservations','statut','demande'),
       maWaitingCount(),
       /* Lot 2 lifting 15/08/2026 : le fil rouge ignorait les adhésions à régulariser — « tout est à
-         jour 🎉 » pendant que des foyers étaient BLOQUÉS. Même source serveur que l'écran Foyers et
-         que la porte (v_foyers_a_regulariser) : une seule définition du retard, partout. */
+         jour 🎉 » pendant que des foyers étaient BLOQUÉS. Même source serveur que l'écran
+         Foyers (v_foyers_a_regulariser) : une seule définition du retard, partout.
+         27/08/2026 : la porte est retirée (migration 85) — ce compteur ne signale plus un
+         blocage, mais une RELANCE à faire. */
       sbc.from('v_foyers_a_regulariser').select('foyer_id',{count:'exact',head:true}).then(r=>r.count||0).catch(()=>0)
     ]);
     window.bobTodoByZone={adherents:peri+reg, animation:atel+resa, comm:msgw+part, equipe:cg, finances:0, bureau:0, _total:cg+peri+cpt+part+ques+atel+resa+msgw+reg}; // 27/07/2026 : tiroir lieux dissous → les demandes de salle comptent sur Animation · 14/08/2026 : les dossiers déposés suivent leur onglet 📨 Dossiers familles → tiroir 👨‍👩‍👧 Familles
@@ -16913,7 +16920,7 @@ window.loadDossiersPeri=async function(){
     if(window.renderZoneCards) window.renderZoneCards();
     if(window.renderMonEquipe) window.renderMonEquipe(); // rafraîchit les pastilles des compagnons
     const items=[ // fil rouge (28/07/2026) : bobGoTodo ouvre l'onglet ET fait remonter le panneau concerné
-      {n:reg,emo:'💵',lab:"adhésion(s) de foyer à régulariser (accès bloqué)",act:"bobGoTodo('foyers')"},
+      {n:reg,emo:'💵',lab:"adhésion(s) de foyer à régulariser (à relancer)",act:"bobGoTodo('foyers')"},
       {n:cg,emo:'🏖️',lab:"demande(s) de congé à valider",act:"bobGoTodo('personnel')"},
       {n:peri,emo:'📨',lab:"dossier(s) famille déposé(s) à valider",act:"bobGoTodo('dossiers')"},
       {n:resa,emo:'🛎️',lab:"demande(s) de salle à valider",act:"bobGoTodo('reserver')"},
