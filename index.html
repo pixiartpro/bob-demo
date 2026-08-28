@@ -436,6 +436,14 @@
     </div>
   </div>
 </section>
+<section class="block bg-w" id="ateliers">
+  <div class="wrap">
+    <p class="eyebrow">Ateliers en préparation</p>
+    <h2 class="title">Dites-nous ce qui vous tente</h2>
+    <p class="sub">Ces ateliers n'existent pas encore : ils ouvrent dès qu'assez de monde s'est manifesté. Dites-nous si ça vous intéresse — ça ne vous engage à rien, et il n'y a rien à payer.</p>
+    <div class="qgrid" id="atGrid"><p style="grid-column:1/-1;text-align:center;color:var(--muted)">Chargement des ateliers…</p></div>
+  </div>
+</section>
 <section class="block bg-g" id="temps-forts">
   <div class="wrap">
     <p class="eyebrow">Temps forts 2026</p>
@@ -539,7 +547,7 @@ async function submitPartner(){
   ['pa_commerce','pa_contact','pa_email','pa_phone','pa_type','pa_message'].forEach(id=>g(id).value='');
 }
 /* ===== Ateliers participatifs : liste publique + inscriptions + idées ===== */
-const AT_PAGE='https://pixiartpro.github.io/bob-demo/#ateliers';
+const AT_PAGE='https://casebdn.re/#ateliers';
 let _atForm={};
 async function loadAteliersPublics(){
   const grid=document.getElementById('atGrid'); if(!grid) return;

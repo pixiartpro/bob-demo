@@ -436,6 +436,14 @@
     </div>
   </div>
 </section>
+<section class="block bg-w" id="ateliers">
+  <div class="wrap">
+    <p class="eyebrow">Ateliers en préparation</p>
+    <h2 class="title">Dites-nous ce qui vous tente</h2>
+    <p class="sub">Ces ateliers n'existent pas encore : ils ouvrent dès qu'assez de monde s'est manifesté. Dites-nous si ça vous intéresse — ça ne vous engage à rien, et il n'y a rien à payer.</p>
+    <div class="qgrid" id="atGrid"><p style="grid-column:1/-1;text-align:center;color:var(--muted)">Chargement des ateliers…</p></div>
+  </div>
+</section>
 <section class="block bg-g" id="temps-forts">
   <div class="wrap">
     <p class="eyebrow">Temps forts 2026</p>
@@ -505,7 +513,8 @@
   <p style="margin:6px 0 2px;font-weight:800;font-size:18px">CASE du Bois de Nèfles</p>
   <p style="margin:0;opacity:.85">Centre social associatif · Sainte-Clotilde, Saint-Denis · La Réunion</p>
   <p style="margin:10px 0 0;font-size:13px;opacity:.7">Ce site vous est confié par <a href="https://bob.re" target="_blank" rel="nofollow noopener" style="color:#fff;text-decoration:underline">Bob</a> </p>
-<p style="margin:12px 0 0;font-size:14px"><a href="la-maison.html" style="font-weight:800">La maison &amp; le projet</a> · <a href="la-maison.html#partenaires" style="font-weight:800">Partenaires</a> · <a href="la-maison.html#ateliers" style="font-weight:800">Ateliers participatifs</a></p></footer>
+<p style="margin:12px 0 0;font-size:14px"><a href="la-maison.html" style="font-weight:800">La maison &amp; le projet</a> · <a href="la-maison.html#partenaires" style="font-weight:800">Partenaires</a> · <a href="la-maison.html#ateliers" style="font-weight:800">Ateliers participatifs</a></p>
+<p style="margin:10px 0 0;font-size:13px;opacity:.7"><a href="mentions-legales.html" style="color:#fff;text-decoration:underline">Mentions légales</a></p></footer>
 </div>
 </div>
 <div class="pmodal" id="pmodal" onclick="if(event.target===this)closePlan()">
@@ -538,7 +547,7 @@ async function submitPartner(){
   ['pa_commerce','pa_contact','pa_email','pa_phone','pa_type','pa_message'].forEach(id=>g(id).value='');
 }
 /* ===== Ateliers participatifs : liste publique + inscriptions + idées ===== */
-const AT_PAGE='https://pixiartpro.github.io/bob-demo/#ateliers';
+const AT_PAGE='https://casebdn.re/#ateliers';
 let _atForm={};
 async function loadAteliersPublics(){
   const grid=document.getElementById('atGrid'); if(!grid) return;
