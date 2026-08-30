@@ -11656,13 +11656,16 @@ window.loadDossiersPeri=async function(){
     const [rd, rf, rp, ract, rina, rdoA, rianA, rpenA, rfoyA]=await Promise.all([
       sbc.from('inscriptions_periscolaire').select('*').order('updated_at',{ascending:false}),
       sbc.from('enfants').select('*'),
-      sbc.from('paiements').select('id,inscription_periscolaire_id,statut,paid_at,montant_cents,mode,ref_piece,motif,op_id,created_at').eq('statut','paye'),
+      // 30/08/2026 : on lit AUSSI en_attente/a_verifier — un paiement en ligne parti
+      // chez HelloAsso et jamais revenu était invisible de tous les écrans (trou
+      // attrapé par la relecture adverse ; cas mesuré le 13/08 sur les adhésions).
+      sbc.from('paiements').select('id,inscription_periscolaire_id,statut,paid_at,montant_cents,mode,ref_piece,motif,op_id,created_at,annule_paiement_id').in('statut',['paye','en_attente','a_verifier']),
       sbc.from('activites').select('id,nom,categorie'),
       sbc.from('inscriptions_activite').select('id,enfant_id,activite_id,statut'),
       // 🌳 L'ARBRE (lecture seule, bascule en cours) : dossiers = le miroir foyer×saison
       // (migration 39, relié par legacy_key 'peri-dossier:<id>') ; inscriptions/personnes/
       // foyers pour repérer un 🎒 coché au comptoir pas encore reporté ici. Bornés asso.
-      sbc.from('dossiers').select('legacy_key').eq('asso_id',myAsso),
+      sbc.from('dossiers').select('legacy_key,pay_token').eq('asso_id',myAsso),
       sbc.from('inscriptions').select('personne_id,type,matin,soir,statut,saison').eq('asso_id',myAsso),
       sbc.from('personnes').select('id,foyer_id,prenom,nom,enfant_legacy_id').eq('role_foyer','enfant').eq('asso_id',myAsso),
       sbc.from('foyers').select('id,nom').eq('asso_id',myAsso)
@@ -11672,10 +11675,14 @@ window.loadDossiersPeri=async function(){
     const data=rd.data; const fmap={}; (rf.data||[]).forEach(f=>{ fmap[f.id]=f; });
     window.__periDosIdx={}; (data||[]).forEach(d=>{ window.__periDosIdx[d.id]={email:d.email||'',foyer:d.foyer||''}; }); // index id→identité pour le pont fiche famille (27/07/2026) — jamais d'email/nom dans un onclick
     const payByInsc={}; ((rp&&rp.data)||[]).forEach(p=>{ if(p.inscription_periscolaire_id){ (payByInsc[p.inscription_periscolaire_id]=payByInsc[p.inscription_periscolaire_id]||[]).push(p); } });
-    const paidSumOf=id=>(payByInsc[id]||[]).reduce((s,p)=>s+(p.montant_cents||0),0);
+    // 🔑 Rallumage (30/08/2026) : depuis la 62, le jeton de paiement vit sur le DOSSIER
+    // (registre des foyers) — plus jamais sur le classeur. Cette carte legacy_id → jeton
+    // rend le lien payer.html?t=… au bloc paiement, quel que soit l'écran.
+    const dosTokByInsc={}; ((rdoA&&rdoA.data)||[]).forEach(x=>{ const lk=String(x.legacy_key||''); if(lk.indexOf('peri-dossier:')===0&&x.pay_token) dosTokByInsc[lk.slice(13)]=x.pay_token; });
+    const paidSumOf=id=>(payByInsc[id]||[]).reduce((s,p)=>s+((p.statut==='paye'?p.montant_cents:0)||0),0);
     const versedPmt=new Set((db.ops||[]).map(o=>o.paiement_id).filter(Boolean)); // encaissements déjà versés (marqués dans le coffre par paiement_id)
     const isVerse=p=>versedPmt.has(p.id);
-    const aVerser=Object.keys(payByInsc).reduce((a,k)=>a.concat(payByInsc[k]),[]).filter(p=>p.mode&&!isVerse(p));
+    const aVerser=Object.keys(payByInsc).reduce((a,k)=>a.concat(payByInsc[k]),[]).filter(p=>p.statut==='paye'&&p.mode&&!isVerse(p));
     // Destinations « activité » = catégorie « Péri & extrascolaire » (VEPI, semaines d'ACM…), hors le doublon « Périscolaire — matin & soir » (le dossier ci-dessus fait foi)
     const actById={}; (ract.data||[]).forEach(a=>{ if(a) actById[a.id]=a; });
     const periActs=(ract.data||[]).filter(a=>a&&a.categorie==='Péri & extrascolaire'&&!/p[eé]riscolaire/i.test(a.nom||''));
@@ -11775,18 +11782,33 @@ window.loadDossiersPeri=async function(){
       const paid=paidSumOf(d.id);
       const reste=du-paid;
       // Encaissements déjà enregistrés (mode, date, montant, réf). ✕ annuler = bureau (ligne négative, jamais d'effacement).
+      // 88 (30/08/2026) : un original annulé RESTE 'paye' (sa contre-écriture le neutralise,
+      // somme 0) — on le montre barré, avec sa pastille, et sans ✕ (déjà annulé).
+      const contreDe=new Set(pays.filter(p=>p.annule_paiement_id).map(p=>p.annule_paiement_id));
       const paysHtml=pays.length?('<div style="margin-top:8px;display:flex;flex-direction:column;gap:3px">'+pays.map(p=>{
+        // ⏳/⚠️ (30/08/2026) : un paiement en ligne parti chez HelloAsso mais pas
+        // (encore) confirmé s'AFFICHE — il ne compte pas dans « Payé », mais il
+        // n'est plus invisible du bureau.
+        if(p.statut!=='paye'){
+          const lblp=(p.statut==='a_verifier')?'⚠️ À vérifier (montant ou doublon)':'⏳ Parti chez HelloAsso, en attente';
+          const dtp=(p.created_at||'').slice(0,10);
+          return '<div class="row" style="gap:6px;align-items:center;font-size:12.5px;color:#8a6400">'
+            +'<span>'+lblp+'</span><strong>'+eur(p.montant_cents||0)+'</strong>'
+            +(dtp?'<span class="muted">'+dtp+'</span>':'')+'</div>';
+        }
         const neg=(p.montant_cents||0)<0;
+        const annule=contreDe.has(p.id);
         const lbl=p.mode?modeLabel(p.mode):'💳 En ligne';
         const dt=(p.paid_at||p.created_at||'').slice(0,10);
-        return '<div class="row" style="gap:6px;align-items:center;font-size:12.5px;'+(neg?'color:#b23a23':'')+'">'
+        return '<div class="row" style="gap:6px;align-items:center;font-size:12.5px;'+(neg?'color:#b23a23':'')+(annule?'text-decoration:line-through;opacity:.75':'')+'">'
           +'<span>'+(neg?'↩︎ ':'')+esc(lbl)+'</span><strong>'+eur(p.montant_cents||0)+'</strong>'
           +(dt?'<span class="muted">'+dt+'</span>':'')
           +(p.ref_piece?'<span class="muted">n° '+esc(p.ref_piece)+'</span>':'')
           +(p.motif?'<span class="muted">('+esc(p.motif)+')</span>':'')
+          +(annule?' <span class="pill" style="background:#fbecea;color:#b23a23;font-size:10.5px;text-decoration:none">↩︎ annulé</span>':'')
           +(isVerse(p)?' <span class="pill" style="background:#eef4ff;color:#23744a;font-size:10.5px">✓ compta</span>':'')
           +(p.mode?' <button class="ghost btn" style="padding:1px 7px;font-size:11px" onclick="periRecu(\''+d.id+'\',\''+p.id+'\')" title="Reçu imprimable">🧾</button>':'')
-          +((canWrite&&!neg)?' <button class="ghost btn" style="padding:1px 7px;font-size:11px" onclick="periAnnulerEncaissement(\''+p.id+'\')" title="Annuler (crée une ligne négative, n\'efface rien)">✕</button>':'')
+          +((canWrite&&!neg&&!annule)?' <button class="ghost btn" style="padding:1px 7px;font-size:11px" onclick="periAnnulerEncaissement(\''+p.id+'\')" title="Annuler (crée une ligne négative, n\'efface rien)">✕</button>':'')
           +'</div>';
       }).join('')+'</div>'):'';
       let synth='';
@@ -11819,14 +11841,16 @@ window.loadDossiersPeri=async function(){
           // le bloc entier disparaissait — emportant « ✏️ Modifier le montant » et son
           // panneau. Un montant saisi de travers serait devenu incorrigible dans
           // l'appli. Le bouton n'a aucune raison de dépendre du jeton : il en sort.
-          const url=d.pay_token?(new URL('payer.html',location.href).href+'?t='+d.pay_token):'';
-          // 💤 Paiement EN LIGNE en pause (drapeau features.f_paiement_ligne, 07/08/2026) :
-          // les règlements se font en liquide et en chèque. Le jeton n'est pas supprimé,
-          // seul le bouton disparaît — remettre le drapeau à true le fait revenir.
-          // ⚠️ Après la 62, `d.pay_token` (le classeur) est vide pour toujours : ce
-          // bouton ne reviendra qu'avec le rallumage du canal, qui devra lire le jeton
-          // sur le dossier. Tracé dans 62-banc-qa-12-08-2026.md.
-          const payLigneOn = !(window.__bobFeatures && window.__bobFeatures.f_paiement_ligne === false) && !!d.pay_token;
+          // 🔗 Rallumage (30/08/2026) : le jeton est lu sur le DOSSIER via dosTokByInsc
+          // (porteur unique depuis la 62 — `d.pay_token` du classeur est vide pour
+          // toujours). Le drapeau features.f_paiement_ligne (07/08/2026) reste le seul
+          // interrupteur : à false, seul le bouton disparaît, le jeton vit sa vie.
+          const payTok=dosTokByInsc[d.id]||'';
+          const url=payTok?(new URL('payer.html',location.href).href+'?t='+payTok):'';
+          // Fail-closed (30/08/2026), miroir du serveur : drapeau absent/illisible ⇒
+          // bouton caché — sinon le bureau envoie un lien qui finit en 503.
+          const _fpl=window.__bobFeatures&&window.__bobFeatures.f_paiement_ligne;
+          const payLigneOn = (_fpl===true||_fpl==='on'||_fpl==='true') && !!payTok;
           chiffrage='<div class="row" style="gap:8px;flex-wrap:wrap;align-items:center;margin-top:2px">'
             +(payLigneOn?('<button class="ghost btn" onclick="periCopyLien(\''+esc(url)+'\')">🔗 Lien de paiement en ligne</button>'):'')
             +'<button class="ghost btn" onclick="periEditMontant(\''+d.id+'\')">✏️ Modifier le montant</button></div>'
@@ -15336,7 +15360,7 @@ window.loadDossiersPeri=async function(){
       sbc.from('activites').select('*').eq('asso_id',myAsso).order('ordre',{ascending:true}).order('created_at',{ascending:true}),
       sbc.from('inscriptions_activite').select('*').order('created_at',{ascending:true}),
       sbc.from('profiles').select('id,full_name,email,role,assistant_sanitaire,psc1_note').eq('asso_id',myAsso).in('role',['personnel','bureau','president','tresorier']).eq('statut','actif').order('full_name',{ascending:true}),
-      sbc.from('paiements').select('id,inscription_activite_id,montant_cents,mode,ref_piece,motif,paid_at,created_at').eq('objet','activite').eq('statut','paye')
+      sbc.from('paiements').select('id,inscription_activite_id,montant_cents,mode,ref_piece,motif,paid_at,created_at,annule_paiement_id').eq('objet','activite').eq('statut','paye')
     ]);
     if(ra.error){ box.innerHTML='<p class="hint" style="color:#c0392b">Erreur : '+esc(ra.error.message)+'</p>'; return; }
     const acts=(ra.data||[]).slice().sort((a,b)=>((a.type==='evenement')!==(b.type==='evenement'))?(a.type==='evenement'?1:-1):((a.ordre||0)-(b.ordre||0))), byA={};
@@ -15475,14 +15499,20 @@ window.loadDossiersPeri=async function(){
     const pays=(((window.__actPayByIns||{})[i.id])||[]).slice().sort((x,y)=>((y.paid_at||y.created_at||'')).localeCompare((x.paid_at||x.created_at||'')));
     const versed=new Set((db.ops||[]).map(o=>o.paiement_id).filter(Boolean));
     const du=i.montant_du_cents||0, paid=pays.reduce((s,p)=>s+(p.montant_cents||0),0), reste=du-paid;
+    // 88 (30/08/2026) : un original annulé RESTE 'paye' — barré + pastille, sans ✕
+    // (même règle que le bloc périscolaire, sinon le bureau re-clique et bute sur
+    // « déjà annulé »).
+    const contreDe=new Set(pays.filter(p=>p.annule_paiement_id).map(p=>p.annule_paiement_id));
     const paysHtml=pays.length?('<div style="margin-top:6px;display:flex;flex-direction:column;gap:2px">'+pays.map(p=>{
       const neg=(p.montant_cents||0)<0, dt=(p.paid_at||p.created_at||'').slice(0,10);
-      return '<div class="row" style="gap:6px;align-items:center;font-size:12px;'+(neg?'color:#b23a23':'')+'">'
+      const annule=contreDe.has(p.id);
+      return '<div class="row" style="gap:6px;align-items:center;font-size:12px;'+(neg?'color:#b23a23':'')+(annule?'text-decoration:line-through;opacity:.75':'')+'">'
         +'<span>'+(neg?'↩︎ ':'')+esc(p.mode?modeLabel(p.mode):'💳 En ligne')+'</span><strong>'+eur(p.montant_cents||0)+'</strong>'
         +(dt?'<span class="muted">'+dt+'</span>':'')+(p.ref_piece?'<span class="muted">n° '+esc(p.ref_piece)+'</span>':'')
         +(p.motif?'<span class="muted">('+esc(p.motif)+')</span>':'')
+        +(annule?' <span class="pill" style="background:#fbecea;color:#b23a23;font-size:10px;text-decoration:none">↩︎ annulé</span>':'')
         +(versed.has(p.id)?' <span class="pill" style="background:#eef4ff;color:#23744a;font-size:10px">✓ compta</span>':'')
-        +((canWrite&&!neg)?' <button class="ghost btn" style="padding:0 6px;font-size:11px" onclick="periAnnulerEncaissement(\''+p.id+'\')" title="Annuler (ligne négative, n\'efface rien)">✕</button>':'')
+        +((canWrite&&!neg&&!annule)?' <button class="ghost btn" style="padding:0 6px;font-size:11px" onclick="periAnnulerEncaissement(\''+p.id+'\')" title="Annuler (ligne négative, n\'efface rien)">✕</button>':'')
         +'</div>';
     }).join('')+'</div>'):'';
     let synth;

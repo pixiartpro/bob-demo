@@ -33,7 +33,12 @@
 </div>
 <script>
 const SB_URL = "https://dkidtwypclpwznleiqnq.supabase.co";
-const SB_ANON = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRraWR0d3lwY2xwd3pubGVpcW5xIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA2Nzc3MDgsImV4cCI6MjA5NjI1MzcwOH0.UDvx2B_c5ZRmt9rJ4ideribmIlp6NJkbW7hgmNZ9J9E";
+// 30/08/2026 : cle publiable (comme toutes les autres pages du site) — cette page
+// etait la DERNIERE sur l'ancienne cle anon JWT, morte au premier re-cle des cles API.
+const SB_ANON = "sb_publishable_HDfV-O2ION1Vw9v03aV_Qg_PkiAjLNo";
+// Échappement HTML : d.libelle vient de la base (saison + nom d'asso modifiables) —
+// il ne doit JAMAIS atteindre innerHTML brut (bug hérité tracé le 14/08/2026).
+const esc = s => String(s==null?'':s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const params = new URLSearchParams(location.search);
 const token = (params.get('t') || params.get('token') || '').trim();
 const retour = location.origin + location.pathname + '?t=' + encodeURIComponent(token);
@@ -57,22 +62,39 @@ async function payer(btn){
     const j = await r.json();
     if(j.redirectUrl){ location.href = j.redirectUrl; return; }
     if(j.error === 'deja_paye'){ render({deja_paye:true}); return; }
+    // 30/08/2026 : le serveur rédige des messages précis (pause volontaire, acompte
+    // au comptoir, canal verrouillé) — on les AFFICHE au lieu de promettre à tort
+    // « réessaie dans un instant » sur une suspension qui ne reviendra pas seule.
+    if(j.error === 'paiement_en_ligne_suspendu' || j.error === 'acompte_au_comptoir' || j.error === 'canal_en_ligne_verrouille'){
+      C.innerHTML = '<div class="state err">'+esc(j.message || 'Le paiement en ligne est indisponible pour ce dossier — merci de régler au comptoir, ou contactez le CASE.')+'</div>'; return;
+    }
+    if(j.error === 'lien_invalide' || j.error === 'montant_trop_eleve'){
+      C.innerHTML = '<div class="state err">Ce lien de paiement n’est plus valide.<br>Contactez le CASE pour en obtenir un nouveau.</div>'; return;
+    }
     throw new Error(j.error || 'erreur');
   }catch(e){
-    C.innerHTML = '<div class="state err">Impossible d’ouvrir le paiement pour le moment. Réessaie dans un instant, ou contacte le CASE.</div>';
+    C.innerHTML = '<div class="state err">Impossible d’ouvrir le paiement pour le moment.</div>'
+      + '<button onclick="location.reload()" style="margin-top:12px">Réessayer</button>';
   }
 }
-function render(d){
-  if(params.get('paiement') === 'ok'){
-    C.innerHTML = '<div class="state ok"><strong>Merci ❤️</strong><br>Votre paiement a bien été pris en compte. Un justificatif de paiement vous est envoyé par HelloAsso.</div>'; return;
-  }
+function render(d, note){
   if(params.get('paiement') === 'erreur'){
-    C.innerHTML = '<div class="state err">Le paiement n’a pas abouti. Vous pouvez réessayer.</div>'; return;
+    C.innerHTML = '<div class="state err">Le paiement n’a pas abouti. Vous pouvez réessayer.</div>'
+      + '<button onclick="location.href=retour" style="margin-top:12px">Réessayer</button>'; return;
   }
   if(!token){ C.innerHTML = '<div class="state err">Lien de paiement invalide.</div>'; return; }
   if(!d){ C.innerHTML = '<div class="state err">Ce lien de paiement n’est pas (ou plus) valide.<br>Contactez le CASE pour en obtenir un nouveau.</div>'; return; }
   if(d.deja_paye){ C.innerHTML = '<div class="state ok"><strong>Déjà réglé ✔</strong><br>Ce périscolaire a déjà été payé. Merci !</div>'; return; }
-  C.innerHTML = '<h1>'+(d.libelle||'Paiement')+'</h1>'
+  // Acompte déjà enregistré au comptoir : on dit la vérité (le solde se règle au
+  // CASE), au lieu de l'ancien « Déjà réglé ✔ » mensonger — bug attrapé le 30/08.
+  if((d.deja_verse_cents||0) > 0){
+    C.innerHTML = '<h1>'+esc(d.libelle||'Paiement')+'</h1>'
+      + '<div class="state ok" style="margin-top:10px">Un règlement partiel de <b>'+euro(d.deja_verse_cents)+'</b> est déjà enregistré.<br>'
+      + 'Reste <b>'+euro((d.montant_cents||0)-d.deja_verse_cents)+'</b> — le solde se règle au comptoir du CASE, ou contactez le bureau.</div>';
+    return;
+  }
+  C.innerHTML = (note||'')
+    + '<h1>'+esc(d.libelle||'Paiement')+'</h1>'
     + '<div class="sub">Montant à régler</div>'
     + '<div class="montant">'+euro(d.montant_cents)+'</div>'
     + '<button id="b">Payer en ligne</button>'
@@ -80,10 +102,25 @@ function render(d){
   document.getElementById('b').onclick = function(){ payer(this); };
 }
 (async function(){
-  if(params.get('paiement')){ render(); return; }
+  const p = params.get('paiement');
+  if(p === 'erreur'){ render(); return; }
   if(!token){ render(); return; }
   const d = await rpc('peri_paiement_public', {p_token: token});
-  render(d);
+  if(p === 'ok'){
+    // 30/08/2026 : « Merci » ne se dit plus à l'aveugle — on vérifie le paiement.
+    // Le webhook peut mettre quelques instants : on distingue confirmé / en cours.
+    if(d && d.deja_paye){
+      C.innerHTML = '<div class="state ok"><strong>Merci ❤️ Réglé ✔</strong><br>Votre paiement est confirmé. Un justificatif vous est envoyé par HelloAsso.</div>';
+    } else {
+      C.innerHTML = '<div class="state ok"><strong>Paiement transmis 📨</strong><br>HelloAsso confirme votre règlement dans quelques minutes — un justificatif vous est envoyé par e-mail.<br><span class="muted" style="font-size:12px">Vous pouvez recharger cette page un peu plus tard pour voir la confirmation.</span></div>';
+    }
+    return;
+  }
+  // Retour « annulé » depuis HelloAsso : le lien reste valable — on réaffiche
+  // l'écran de paiement (l'ancien code déclarait le lien mort, bug du 30/08).
+  const note = (p === 'annule')
+    ? '<div class="state muted" style="background:#f2f6f3;margin-bottom:10px">Paiement non terminé — vous pouvez reprendre quand vous voulez.</div>' : '';
+  render(d, note);
 })();
 </script>
 </body>
