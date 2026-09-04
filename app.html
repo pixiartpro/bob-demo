@@ -594,6 +594,7 @@ document.addEventListener('touchstart', function(){}, {passive:true});
             <option value="virement">🏦 Virement</option>
             <option value="carte">💳 Carte bancaire</option>
             <option value="prelevement">🔁 Prélèvement</option>
+            <option value="helloasso">🅷 HelloAsso</option>
           </select>
         </div>
         <div class="field" style="flex:0"><label>&nbsp;</label><button class="btn" onclick="addMember()">Ajouter</button></div>
@@ -616,7 +617,7 @@ document.addEventListener('touchstart', function(){}, {passive:true});
 
     <div class="panel">
       <div class="toolbar">
-        <h2 style="margin:0">💳 Adhésions payées en ligne <small style="font-weight:400;color:#5c7468;font-size:13px">— via HelloAsso, argent direct sur le compte de l'association</small></h2>
+        <h2 style="margin:0">💳 Adhésions payées en ligne <small style="font-weight:400;color:#5c7468;font-size:13px">— via HelloAsso : encaissé pour l'association, puis reversé en bloc sur le compte bancaire</small></h2>
         <button class="ghost btn" onclick="if(window.loadAdhesionsEnLigne)loadAdhesionsEnLigne()">↻ Rafraîchir</button>
         <button class="ghost btn" id="btnVerifHA" onclick="if(window.verifierPaiementsEnAttente)verifierPaiementsEnAttente()" title="Repose la question à HelloAsso pour les paiements restés en route">🔍 Vérifier chez HelloAsso</button>
       </div>
@@ -741,6 +742,7 @@ document.addEventListener('touchstart', function(){}, {passive:true});
             <option value="virement">🏦 Virement</option>
             <option value="carte">💳 Carte bancaire</option>
             <option value="prelevement">🔁 Prélèvement</option>
+            <option value="helloasso">🅷 HelloAsso (en attente de reversement)</option>
           </select></div>
         <div class="field"><label>Site</label><input id="q_site" list="sites" placeholder="Site"></div>
         <div class="field"><label>Action</label><input id="q_action" list="actions" placeholder="Action"></div>
@@ -785,6 +787,7 @@ document.addEventListener('touchstart', function(){}, {passive:true});
             <option value="virement">🏦 Virement</option>
             <option value="carte">💳 Carte bancaire</option>
             <option value="prelevement">🔁 Prélèvement</option>
+            <option value="helloasso">🅷 HelloAsso (en attente de reversement)</option>
           </select>
         </div>
         <div class="field"><label>Projet (optionnel)</label><select id="a_project"></select></div>
@@ -3960,11 +3963,29 @@ function soldeCompte(acc){
    Le « mode » dit COMMENT on a payé ; l'« account » (caisse/banque) dit OÙ l'argent atterrit.
    Règle : espèces → caisse ; tout le reste → banque. La mécanique caisse/rapprochement
    continue de s'appuyer sur getAccount() (account reste la source de vérité). */
-const PAY_MODES=[['especes','💵 Espèces'],['cheque','🧾 Chèque'],['virement','🏦 Virement'],['carte','💳 Carte bancaire'],['prelevement','🔁 Prélèvement']];
+/* 🅷 HelloAsso (04/09/2026) — le 6e mode, et le SEUL qu'on ne
+   puisse pas encaisser en main propre. Le 3e élément du couple vaut true pour « ne pas
+   proposer au comptoir » : les deux écrans d'encaissement (périscolaire et activités)
+   construisent leur liste depuis PAY_MODES_COMPTOIR, parce que les fonctions serveur
+   peri_encaisser / acti_encaisser REFUSENT tout mode hors des 5 historiques
+   (« Mode de paiement invalide. »). Le proposer là aurait posé, dans la liste déroulante,
+   une option qui échoue à l'enregistrement — sans que rien ne l'annonce avant le clic. */
+const PAY_MODES=[['especes','💵 Espèces'],['cheque','🧾 Chèque'],['virement','🏦 Virement'],['carte','💳 Carte bancaire'],['prelevement','🔁 Prélèvement'],['helloasso','🅷 HelloAsso',true]];
+const PAY_MODES_COMPTOIR=PAY_MODES.filter(m=>!m[2]);   // ce qui s'encaisse devant soi
 function modeLabel(c){ const f=PAY_MODES.find(m=>m[0]===c); return f?f[1]:''; }            // avec emoji (UI)
 function modeText(c){ return modeLabel(c).replace(/^\S+\s/,''); }                          // sans emoji (CSV/reçu)
-function modeFromAccount(o){ return o.mode || (getAccount(o)==='caisse'?'especes':''); }   // compat anciennes données
-function accountFromMode(mode){ return mode==='especes'?'caisse':'banque'; }
+/* Repli des anciennes écritures : celles d'avant le 04/09/2026 nées de « Verser en compta »
+   portent un mode VIDE et le compte d'attente HelloAsso. Sans la 2e branche, les deux exports
+   CSV impriment « Banque » dans la colonne Moyen pour de l'argent qui n'est pas en banque.
+   ⚠️ On ne réécrit RIEN en base ici : c'est de l'affichage. Une écriture qui porte déjà un
+   mode garde le sien — o.mode passe devant. */
+function modeFromAccount(o){ return o.mode || (getAccount(o)==='caisse'?'especes':(getAccount(o)===ACC_HA?'helloasso':'')); }
+/* 🔴 mode 'helloasso' → le COMPTE D'ATTENTE, jamais 'banque'. Sans cette branche, une
+   écriture réglée par HelloAsso serait rangée en banque : elle gonflerait le solde bancaire,
+   entrerait dans le rapprochement, et y chercherait pour toujours une ligne de relevé qui
+   n'existe pas (HelloAsso reverse en bloc, pas ligne à ligne). Ce n'est pas théorique :
+   le cas s'est produit. */
+function accountFromMode(mode){ return mode==='especes'?'caisse':(mode==='helloasso'?ACC_HA:'banque'); }
 /* 🔴 « DÉJÀ VERSÉ EN COMPTA » SE RELIT DANS LE COFFRE — ÇA NE SE MÉMORISE PAS ============
    16/08/2026. Les trois versements (périscolaire, adhésions en ligne, activités) créent une
    recette qui porte le `paiement_id` de l'encaissement : « déjà versé » = une écriture existe
@@ -4047,6 +4068,15 @@ function addOp(){
        !confirm('La répartition ('+euro(sum)+') ne correspond pas au montant total ('+euro(total)+').\nEnregistrer quand même ?')) return;
   }
   const mode=$('a_mode').value;
+  /* 🔴 Le compte d'attente ne PAIE rien. HelloAsso encaisse pour l'association puis
+     reverse : il n'en sort jamais d'argent autrement que par le reversement. Sans ce garde,
+     une dépense enregistrée « HelloAsso » rendait le pot débiteur, laissait le solde bancaire
+     intact alors que la banque avait bel et bien été débitée, et la ligne du relevé finissait
+     en « à saisir » — donc ressaisie, donc comptée deux fois. */
+  if(mode==='helloasso' && $('a_type').value==='out'){
+    bobAlert('HelloAsso ne paie rien : il encaisse pour l\'association, puis reverse en bloc sur le compte bancaire.\n\nChoisis le moyen réellement débité (prélèvement, carte, virement…). Le reversement, lui, s\'enregistre avec le bouton « \U0001F3E6 Reversement reçu » de l\'onglet \U0001F465 Adhérents.',{titre:'\U0001F177 Pas pour une dépense'});
+    return;
+  }
   if($('a_type').value==='in' && splits.some(s=>/p[eé]riscol/i.test(s.action||''))){
     if(!confirm('⚠️ Les encaissements du périscolaire se versent tout seuls depuis l\'onglet 🎒 Périscolaire (bouton « 💶 Verser en compta »).\n\nSaisir cette recette « Périscolaire » à la main risque de compter l\'argent EN DOUBLE.\n\nContinuer quand même ?')) return;
   }
@@ -4086,10 +4116,22 @@ function quickAdd(){
   const amount=parseFloat($('q_amount').value);
   if(!label || !(amount>0)){ $('q_info').innerHTML='<span class="red">Indique un libellé et un montant.</span>'; return; }
   const qmode=$('q_mode').value;
+  /* Même garde qu'en saisie complète — et il est encore plus nécessaire ICI : le type vaut
+     « Dépense » par défaut, et ce bloc CONSERVE le moyen d'une ligne à l'autre (c'est son
+     intérêt pour enchaîner des factures). Un seul choix « HelloAsso » se serait donc collé
+     à toutes les factures suivantes, en silence. */
+  if(qmode==='helloasso' && $('q_type').value==='out'){
+    $('q_info').innerHTML='<span class="red">\U0001F177 HelloAsso n\'encaisse pas une dépense : choisis le moyen réellement débité.</span>';
+    return;
+  }
   db.ops.push({id:uid(), type:$('q_type').value, label, cat:$('q_cat').value.trim(), compte:$('q_compte').value.trim(),
     amount, date:$('q_date').value||today(), project:'', mode:qmode, account:accountFromMode(qmode), photo:'',
     splits:[{site:$('q_site').value.trim(), action:$('q_action').value.trim(), amount}]});
   $('q_info').innerHTML='<span class="green">✓ « '+esc(label)+' » ('+euro(amount)+') ajouté. Enchaîne la facture suivante.</span>';
+  /* Le chaînage du moyen (voir le commentaire de la fonction) vaut pour ce qu'on encaisse
+     en main propre. Un moyen hors comptoir — HelloAsso — ne doit PAS se coller à la ligne
+     suivante : on le remet à « non précisé », le reste du chaînage est intact. */
+  if(!PAY_MODES_COMPTOIR.some(m=>m[0]===qmode)) $('q_mode').value='';
   $('q_label').value=''; $('q_amount').value=''; $('q_label').focus();
   save();
 }
@@ -4204,7 +4246,11 @@ function filteredOps(){
   const q  = (($('a_search') && $('a_search').value) || '').toLowerCase().replace(/,/g,'.').trim();
   const match=o=>{
     if(!q) return true;
-    const hay = (o.label+' '+(o.cat||'')+' '+(o.compte||'')+' '+getSplits(o).map(s=>s.site+' '+s.action).join(' ')).toLowerCase()
+    /* Le moyen de paiement et le compte manquaient au sac : taper « helloasso » (ou « chèque »)
+       dans la recherche ne rendait rien, alors que ces mots s'affichent partout à l'écran. */
+    const _mm=modeFromAccount(o);
+    const hay = (o.label+' '+(o.cat||'')+' '+(o.compte||'')+' '+getSplits(o).map(s=>s.site+' '+s.action).join(' ')
+      +' '+_mm+' '+modeText(_mm)+' '+getAccount(o)).toLowerCase()
       + ' ' + String(o.amount) + ' ' + (Number(o.amount)||0).toFixed(2);
     return hay.includes(q);
   };
@@ -4240,9 +4286,17 @@ function renderOps(){
     <td style="font-size:13px" class="muted">${esc(projName(o.project))||'—'}</td>
     <td class="num ${o.type==='in'?'green':'red'}">${o.type==='in'?'+':'−'} ${euro(o.amount)}</td>
     <td><button class="danger" onclick="event.stopPropagation();delOp('${o.id}')">Suppr.</button></td></tr>`; }).join('');
+  /* 🅷 Le pot HelloAsso n'apparaissait dans AUCUN de ces chiffres : « Solde total » le
+     comptait (balance() somme tout, sans regarder le compte), « Banque » et « Caisse »
+     l'ignoraient — donc Banque + Caisse ≠ Solde total dès qu'une adhésion en ligne attendait
+     son reversement, sans une ligne pour l'expliquer. Il ne s'affiche que si ce compte a
+     servi : une association qui n'encaisse pas en ligne ne gagne pas une case vide. */
+  const _soldeHA=soldeCompte(ACC_HA);
+  const _bougeHA=(db.ops||[]).some(function(o){ return o.account===ACC_HA||o.from===ACC_HA||o.to===ACC_HA; });
   $('accKpis').innerHTML = kpi('Solde total',euro(balance()),balance()>=0?'green':'red')
     + kpi('🏦 Banque',euro(acctBalance('banque')),acctBalance('banque')>=0?'green':'red')
     + kpi('💵 Caisse',euro(acctBalance('caisse')),acctBalance('caisse')>=0?'green':'red')
+    + (_bougeHA?kpi('🅷 HelloAsso',euro(_soldeHA),_soldeHA>=0?'green':'red'):'')
     + kpi('Total recettes',euro(totalIn()),'green') + kpi('Total dépenses',euro(totalOut()),'red');
   renderVentilation();
   refreshDatalists();
@@ -4254,9 +4308,14 @@ async function openOpDetail(id){
   const sp=getSplits(o);
   const splitRows=sp.map(s=>`<div class="kv"><span class="k">${esc(s.site||'(site non précisé)')} · ${esc(s.action||'(action non précisée)')}</span><span><strong>${euro(s.amount)}</strong></span></div>`).join('');
   const _mc=modeFromAccount(o);
+  /* 🔴 Le compte se LIT, il ne se déduit pas du mode (04/09/2026). L'ancienne écriture
+     disait « (banque) » pour tout ce qui n'était pas des espèces : une recette HelloAsso se
+     serait affichée « 🅷 HelloAsso (banque) » alors que l'argent dort encore chez HelloAsso. */
+  const _acc=getAccount(o);
+  const _ou=_acc==='caisse'?'caisse':(_acc===ACC_HA?'pas encore en banque':'banque');
   const acc=_mc
-    ? modeLabel(_mc)+(_mc==='especes'?' <span class="muted">(caisse)</span>':' <span class="muted">(banque)</span>')
-    : '<span class="tag '+(getAccount(o)==='caisse'?'cash':'bank')+'">'+accLabel(getAccount(o))+'</span>';
+    ? modeLabel(_mc)+' <span class="muted">('+_ou+')</span>'
+    : '<span class="tag '+(_acc==='caisse'?'cash':'bank')+'">'+accLabel(_acc)+'</span>';
   $('md_title').textContent=o.label;
   $('md_body').innerHTML=`
     <div class="kv"><span class="k">Type</span><span class="${o.type==='in'?'green':'red'}"><strong>${o.type==='in'?'Recette ➕':'Dépense ➖'} ${euro(o.amount)}</strong></span></div>
@@ -4856,9 +4915,16 @@ function addRemise(){
 }
 function renderCaisse(){
   const cash=acctBalance('caisse'), bank=acctBalance('banque');
+  /* Le sous-titre disait « caisse + banque » — une addition que les deux chiffres du dessus
+     ne faisaient plus dès qu'un euro attendait chez HelloAsso : balance() somme TOUT.
+     Même geste qu'au bandeau de la Comptabilité : on montre le 3e pot quand il a servi,
+     et on ne promet l'addition que quand elle est vraie. */
+  const _soldeHA=soldeCompte(ACC_HA);
+  const _bougeHA=(db.ops||[]).some(function(o){ return o.account===ACC_HA||o.from===ACC_HA||o.to===ACC_HA; });
   $('caisseKpis').innerHTML = kpi('💵 Solde caisse (espèces)',euro(cash),cash>=0?'green':'red','en liquide')
     + kpi('🏦 Solde banque',euro(bank),bank>=0?'green':'red','sur le compte')
-    + kpi('Solde total',euro(balance()),balance()>=0?'green':'red','caisse + banque');
+    + (_bougeHA?kpi('🅷 HelloAsso',euro(_soldeHA),_soldeHA>=0?'green':'red','en attente de reversement'):'')
+    + kpi('Solde total',euro(balance()),balance()>=0?'green':'red',_bougeHA?'recettes − dépenses':'caisse + banque');
   const moves = db.ops.filter(o=> o.type==='transfer' ? (o.from==='caisse'||o.to==='caisse') : getAccount(o)==='caisse')
     .slice().sort((a,b)=> a.date.localeCompare(b.date) || a.id.localeCompare(b.id));
   let run=0;
@@ -5515,6 +5581,9 @@ function renderDashboard(){
   if(balance()<0) urg.push({t:'Solde global négatif',s:euro(balance())+' — les dépenses dépassent les recettes'});
   const _bank=acctBalance('banque'); if(_bank<0) urg.push({t:'Compte bancaire négatif',s:euro(_bank)+' — risque d\'agios / rejets'});
   const _cash=acctBalance('caisse'); if(_cash<0) urg.push({t:'Caisse espèces négative',s:euro(_cash)+' — impossible en vrai : une saisie est à corriger'});
+  /* Le 3e compte méritait sa surveillance : un compte d'ATTENTE D'ENCAISSEMENT ne peut pas
+     être débiteur. S'il l'est, c'est qu'une dépense y a été rangée par erreur. */
+  const _ha=acctBalance(ACC_HA); if(_ha<-0.005) urg.push({t:'Compte d\'attente HelloAsso négatif',s:euro(_ha)+" — impossible en vrai : une dépense a été rangée sur le pot HelloAsso"});
   (db.dettes||[]).forEach(d=>{ if(d.sens!=='dette') return; (d.echeancier||[]).forEach(e=>{ if(e.paye||!e.date) return;
     const j=daysTo(new Date(e.date+'T00:00:00'));
     if(j<=14) urg.push({t:'Échéance « '+d.label+' »',s:euro(e.montant)+(d.tiers?' à '+d.tiers:'')+(j<0?' — EN RETARD de '+(-j)+' j':j===0?" — aujourd'hui":' — dans '+j+' j')}); }); });
@@ -9205,11 +9274,14 @@ function orgFileSlug(){
 }
 function exportOpsCSV(){
   const fmt=(sp,f)=>sp.length>1?sp.map(s=>(s[f]||'?')+' ('+s.amount+'€)').join(' | '):(sp[0][f]||'');
-  const tLabel=o=>o.type==='in'?'Recette':o.type==='out'?'Dépense':'Remise en banque';
+  /* Un virement interne n'est pas toujours une remise d'espèces : depuis le compte d'attente,
+     c'est le reversement HelloAsso — la caisse, elle, n'a pas bougé d'un centime. */
+  const accCSV=a=>a==='caisse'?'Caisse':(a===ACC_HA?'HelloAsso':'Banque');
+  const tLabel=o=>o.type==='in'?'Recette':o.type==='out'?'Dépense':(o.from===ACC_HA?'Reversement HelloAsso':'Remise en banque');
   const yr=curExercice();
   const rows=[csvRow(['Date','Type','Libellé','Catégorie','Compte comptable','Moyen','Site','Action','Projet','Montant'])]
     .concat(db.ops.filter(o=>!yr||(o.date||'').slice(0,4)===yr).map(o=>{ const sp=getSplits(o); const _m=modeFromAccount(o);
-      return csvRow([o.date,tLabel(o),o.label,o.cat,o.compte||'',o.type==='transfer'?'Caisse→Banque':(_m?modeText(_m):'Banque'),
+      return csvRow([o.date,tLabel(o),o.label,o.cat,o.compte||'',o.type==='transfer'?(accCSV(o.from||'caisse')+'→'+accCSV(o.to||'banque')):(_m?modeText(_m):'Banque'),
         o.type==='transfer'?'':fmt(sp,'site'),o.type==='transfer'?'':fmt(sp,'action'),projName(o.project),o.amount]); }));
   download(new Blob(['﻿'+rows.join('\n')],{type:'text/csv'}),'comptabilite-'+orgFileSlug()+(yr?'-'+yr:'')+'.csv');
 }
@@ -11211,7 +11283,12 @@ renderAll();
         label:'Adhésion'+(sais?' '+sais:'')+' en ligne — '+(nom[p.user_id]||'compte famille'),
         cat:'Cotisations', compte:'756 - Cotisations',
         amount:euros, date:String(p.paid_at||p.created_at||today()).slice(0,10),
-        project:'', mode:'', account:ACC_HA, photo:'',
+        /* 🅷 Le mode est PRÉ-REMPLI (04/09/2026). Il était vide, et le trésorier devait
+           rouvrir chaque écriture pour le saisir à la main — un geste qui déplaçait l'argent
+           du compte d'attente vers la banque, en silence (le mode décide du compte, cf.
+           accountFromMode). Rempli ici, plus rien à saisir, et le compte reste ACC_HA :
+           la mécanique de reversement est intacte. */
+        project:'', mode:'helloasso', account:ACC_HA, photo:'',
         /* 🔴 Le SITE est obligatoire : sans lui, la recette ne disparaît pas des états par site,
            elle tombe dans la ligne « (non précisé) » — le total général reste juste, mais la part
            du site devient fausse, et c'est elle que réclament la Mairie et la CAF.
@@ -11824,7 +11901,7 @@ window.loadDossiersPeri=async function(){
       const encForm=canPeri?('<div id="encbox_'+d.id+'" style="display:none;margin-top:8px;background:#f4f8f5;border:1px dashed var(--line);border-radius:8px;padding:8px">'
           +'<div class="row" style="gap:6px;flex-wrap:wrap;align-items:center">'
           +'<input id="enc_m_'+d.id+'" type="number" min="0" step="0.01" placeholder="€" value="'+(reste>0?(reste/100).toFixed(2):'')+'" style="width:92px;padding:7px 10px;border:1px solid var(--line);border-radius:8px;font:inherit">'
-          +'<select id="enc_mode_'+d.id+'" style="padding:7px 10px;border:1px solid var(--line);border-radius:8px;font:inherit">'+PAY_MODES.map(m=>'<option value="'+m[0]+'"'+(m[0]==='cheque'?' selected':'')+'>'+m[1]+'</option>').join('')+'</select>'
+          +'<select id="enc_mode_'+d.id+'" style="padding:7px 10px;border:1px solid var(--line);border-radius:8px;font:inherit">'+PAY_MODES_COMPTOIR.map(m=>'<option value="'+m[0]+'"'+(m[0]==='cheque'?' selected':'')+'>'+m[1]+'</option>').join('')+'</select>'
           +'<input id="enc_ref_'+d.id+'" placeholder="n° chèque" style="width:118px;padding:7px 10px;border:1px solid var(--line);border-radius:8px;font:inherit">'
           +'<input id="enc_date_'+d.id+'" type="date" value="'+new Date().toISOString().slice(0,10)+'" style="padding:7px 10px;border:1px solid var(--line);border-radius:8px;font:inherit">'
           +'<button class="btn" onclick="periEncaisser(\''+d.id+'\')">✓ Enregistrer</button>'
@@ -15537,7 +15614,7 @@ window.loadDossiersPeri=async function(){
       enc='<div style="margin-top:6px"><button class="btn" style="padding:4px 10px;font-size:12px" onclick="var b=document.getElementById(\'aenc_'+i.id+'\');if(b)b.style.display=(b.style.display===\'none\'?\'\':\'none\')">💵 Encaisser</button>'
         +'<div id="aenc_'+i.id+'" style="display:none;margin-top:6px;background:#f4f8f5;border:1px dashed var(--line);border-radius:8px;padding:7px"><div class="row" style="gap:5px;flex-wrap:wrap;align-items:center">'
         +'<input id="aem_'+i.id+'" type="number" min="0" step="0.01" placeholder="€" value="'+(reste>0?(reste/100).toFixed(2):'')+'" style="width:84px;padding:6px 8px;border:1px solid var(--line);border-radius:7px;font:inherit">'
-        +'<select id="aemode_'+i.id+'" style="padding:6px 8px;border:1px solid var(--line);border-radius:7px;font:inherit">'+PAY_MODES.map(m=>'<option value="'+m[0]+'"'+(m[0]==='cheque'?' selected':'')+'>'+m[1]+'</option>').join('')+'</select>'
+        +'<select id="aemode_'+i.id+'" style="padding:6px 8px;border:1px solid var(--line);border-radius:7px;font:inherit">'+PAY_MODES_COMPTOIR.map(m=>'<option value="'+m[0]+'"'+(m[0]==='cheque'?' selected':'')+'>'+m[1]+'</option>').join('')+'</select>'
         +'<input id="aeref_'+i.id+'" placeholder="n° chèque" style="width:104px;padding:6px 8px;border:1px solid var(--line);border-radius:7px;font:inherit">'
         +'<input id="aedate_'+i.id+'" type="date" value="'+new Date().toISOString().slice(0,10)+'" style="padding:6px 8px;border:1px solid var(--line);border-radius:7px;font:inherit">'
         +'<button class="btn" style="padding:4px 9px;font-size:12px" onclick="actiEncaisser(\''+i.id+'\')">✓ Enregistrer</button></div></div></div>';
