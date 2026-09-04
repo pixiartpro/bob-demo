@@ -17374,6 +17374,12 @@ window.loadDossiersPeri=async function(){
     if(!GESTION_ROLES.includes(prof.role)){
       if(prof.role==='adherent'){ location.replace('espace-adherent.html'); return; }
       if(prof.role==='personnel'){ location.replace('espace-personnel.html'); return; }
+      /* 04/09/2026 — la branche manquante. espace-intervenant.html est livré et déployé depuis le
+         12/07/2026, mais cette garde ne le savait pas : un intervenant qui suivait le lien de la
+         gestion (celui qu'on partage spontanément) lisait « ton espace dédié n'est pas encore
+         disponible » — faux pendant 54 jours. La page a sa propre garde (statut actif + rôle),
+         donc on redirige sans re-tester ici, comme pour le salarié juste au-dessus. */
+      if(prof.role==='intervenant'){ location.replace('espace-intervenant.html'); return; }
       gate('<h2>🔒 Accès réservé au bureau</h2><p>Cet espace de gestion est réservé au bureau. Ton espace dédié n\'est pas encore disponible — pour toute question, contacte le bureau.</p><p style="margin-top:18px"><a href="connexion.html" style="background:#1f9d6b;color:#fff;text-decoration:none;padding:11px 18px;border-radius:999px;font-weight:800">→ Retour</a></p>');
       return;
     }

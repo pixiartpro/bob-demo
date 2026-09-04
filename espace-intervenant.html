@@ -262,7 +262,9 @@ function render(){
    +'</div>'
    +'<div class="card"><h2 class="title">📎 Mes justificatifs</h2>'
    +'<div class="note">Deux pièces à déposer : votre <b>diplôme (DE danse ou dispense)</b> et votre <b>attestation d\'assurance RC</b>. '
-   +'⚠️ L\'<b>honorabilité</b> (casier B2 / FIJAISV) n\'est <b>pas</b> à téléverser ici — elle est vérifiée directement par le bureau auprès des services de l\'État.</div>'
+   +'⚠️ L\'<b>honorabilité</b> n\'est <b>jamais</b> à téléverser ici, et la loi l\'interdit : un extrait de casier ne se dépose nulle part. '
+   +'Pour une activité déclarée en <b>accueil de mineurs</b>, le contrôle est déclenché par le CASE au moment de la déclaration — tu n\'as rien à fournir. '
+   +'En dehors de ce cadre, le bureau peut te demander un <b>bulletin n° 3</b>, que toi seul peux obtenir.</div>'
    +docLine('de','Diplôme (DE danse ou dispense)','Diplôme d\'État, dispense ou équivalence')
    +docLine('assur','Assurance responsabilité civile','Attestation en cours de validité')
    +'<div class="row" style="margin-top:10px"><div style="max-width:220px"><label>Échéance de l\'assurance</label><input id="f_assur_echeance" type="date" value="'+esc(d.assur_echeance||'')+'" onchange="ivSave(true)"></div></div>'
@@ -333,7 +335,15 @@ function chipsUI(champ, choix, actifs, multi){
 let actOuverte=-1, actDraft=null;
 function coursUI(){
   const nom=((ME.dossier&&ME.dossier.pers)||'').trim();
-  if(!nom) return '';
+  /* 04/09/2026 — avant, on rendait '' : la section « Mes cours » n'apparaissait pas du tout tant
+     que la fiche était vide. La personne devait donc remplir un formulaire pour découvrir à quoi
+     il servait. On ne PEUT pas montrer ses cours sans son nom (le rapprochement se fait dessus,
+     cf. loadCours), mais on peut dire pourquoi on le demande. */
+  if(!nom){
+    return '<div class="card"><h2 class="title">🗓️ Mes cours</h2>'
+      +'<p class="empty">Écris ton nom dans la fiche ci-dessus, et tes créneaux s\'afficheront ici.<br>'
+      +'<span class="hint">C\'est le nom qui permet de retrouver tes cours dans le planning du CASE.</span></p></div>';
+  }
   if(!ME.cours.length){
     return '<div class="card"><h2 class="title">🗓️ Mes cours</h2>'
       +'<p class="empty">Aucun cours n\'est inscrit au nom de « '+esc(nom)+' » dans le planning.<br>'
