@@ -280,10 +280,10 @@
 </style>
 </head>
 <body>
-<div class="newsbar" id="newsbar" data-news="2026-08-rentree-18-aout">
-  <span class="nb-tag">Rentrée 2026</span>
-  <span class="nb-txt"><b>Nou lé paré pou la rentrée !</b> Nouvelle organisation dès le <b>mardi 18 août</b> — inscriptions ouvertes.</span>
-  <a class="nb-link" href="#inscription-peri">Déposer un dossier →</a>
+<div class="newsbar" id="newsbar" data-news="2026-09-12-samedi-ouvert" data-until="2026-09-12">
+  <span class="nb-tag">Samedi 12 sept.</span>
+  <span class="nb-txt"><b>Samedi ouvert au CASE, de 8 h à 17 h</b> — muscu, initiation DJ · écriture · danse, shooting photo, repas créole. Entrée libre, sans inscription.</span>
+  <a class="nb-link" href="#samedi-ouvert" onclick="openSamediOuvert();return false;">Voir le programme →</a>
   <button class="nb-x" onclick="closeNews()" aria-label="Fermer l'annonce">✕</button>
 </div>
 
@@ -514,6 +514,7 @@
   <p style="margin:0;opacity:.85">Centre social associatif · Sainte-Clotilde, Saint-Denis · La Réunion</p>
   <p style="margin:10px 0 0;font-size:13px;opacity:.7">Ce site vous est confié par <a href="https://bob.re" target="_blank" rel="nofollow noopener" style="color:#fff;text-decoration:underline">Bob</a> </p>
 <p style="margin:12px 0 0;font-size:14px"><a href="la-maison.html" style="font-weight:800">La maison &amp; le projet</a> · <a href="la-maison.html#partenaires" style="font-weight:800">Partenaires</a> · <a href="la-maison.html#ateliers" style="font-weight:800">Ateliers participatifs</a></p>
+<p style="margin:10px 0 0;font-size:14px"><a href="https://www.facebook.com/Casebdn" target="_blank" rel="noopener" style="font-weight:800">Suivez le CASE sur Facebook</a></p>
 <p style="margin:10px 0 0;font-size:13px;opacity:.7"><a href="mentions-legales.html" style="color:#fff;text-decoration:underline">Mentions légales</a></p></footer>
 </div>
 </div>
@@ -981,13 +982,40 @@ loadActivitesPubliques();
 loadEvenements();
 loadLieux();
 loadAteliersPublics();
-/* Bandeau actualité : fermeture mémorisée (réapparaît si on change data-news) */
+/* Bandeau actualité : fermeture mémorisée (réapparaît si on change data-news).
+   data-until="AAAA-MM-JJ" : le bandeau se retire tout seul le lendemain (date LOCALE du visiteur, pas toISOString). */
 (function(){
   var bar=document.getElementById('newsbar'); if(!bar) return;
   var key='news_'+bar.dataset.news;
   try{ if(localStorage.getItem(key)==='1') bar.classList.add('hidden'); }catch(e){}
+  var until=bar.dataset.until;
+  if(until){ var d=new Date(), loc=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); if(loc>until) bar.classList.add('hidden'); }
   window.closeNews=function(){ bar.classList.add('hidden'); try{localStorage.setItem(key,'1')}catch(e){} };
 })();
+/* Samedi ouvert du 12/09/2026 : programme dans la fenêtre partagée #pmodal (contenu éditorial fixe, aucune donnée injectée).
+   Ouvert par le bandeau, ou directement par le lien casebdn.re/#samedi-ouvert. */
+function openSamediOuvert(){
+  var box=document.getElementById('pmodalBox'); if(!box) return;
+  var L=[['8 h','Petit-déjeuner offert'],
+         ['8 h 30','Musculation, ouverte à tous (45 min à 1 h)'],
+         ['9 h 30','Initiation DJ · écriture · danse — et de nouveau l\'après-midi'],
+         ['Matin','Shooting photo : pose ou apprends, avec un photographe (2 h)'],
+         ['12 h','Repas créole à 5 €, offert aux adhérents'],
+         ['14 h','Crêpes et gâteaux en dessert, vendus à petits prix'],
+         ['15 h 30','Son et danse jusqu\'à 17 h']];
+  box.innerHTML='<button class="px" onclick="closePlan()" aria-label="Fermer">✕</button>'
+    +'<div class="pico">🍍</div>'
+    +'<span class="pill work"><i class="dot work"></i>Sam. 12 septembre · 8 h – 17 h</span>'
+    +'<h3>Samedi ouvert</h3>'
+    +'<p style="color:var(--muted);margin:6px 0 10px">Entrée libre, sans inscription : viens quand tu veux.</p>'
+    +L.map(function(x){return '<div class="ligne" style="padding:8px 2px"><span class="h" style="width:62px">'+x[0]+'</span><span>'+x[1]+'</span></div>';}).join('')
+    +'<p style="margin:12px 0 0;font-size:13.5px;color:var(--muted)">Buvette toute la journée : boissons, crêpes et gâteaux vendus à petits prix. Adhésion possible sur place.</p>'
+    +'<p style="margin:8px 0 0;font-size:13.5px;color:var(--muted)">Place de la Fraternité · Route de Bois de Nèfles · 0262 29 37 90</p>'
+    +'<p style="margin:8px 0 0;font-size:12.5px;color:var(--muted)">Des photos et des vidéos seront prises pendant la journée : dites-le à l\'accueil si vous ne voulez pas apparaître.</p>'
+    +'<a class="btn primary" style="display:block;width:100%;margin-top:14px;text-align:center" href="https://www.facebook.com/Casebdn" target="_blank" rel="noopener">Suivre le CASE sur Facebook</a>';
+  document.getElementById('pmodal').classList.add('open');
+}
+if(location.hash==='#samedi-ouvert') openSamediOuvert();
 </script>
 </body>
 </html>
