@@ -277,6 +277,28 @@
   .jour.star summary{background:#fdf6e7}
   .jour.star summary .j{color:#8a5300}
   .tag-new{display:inline-block;background:var(--jaune);color:#5b4300;font-size:11px;font-weight:800;border-radius:999px;padding:1px 9px;margin-left:6px;letter-spacing:.04em;text-transform:uppercase}
+  /* Samedi ouvert 12/09/2026 : bande des affiches, dans le style graffiti des affiches (retirée après la date, cf. data-until) */
+  .affband{background:radial-gradient(700px 360px at 85% 0%,rgba(166,255,0,.14),transparent 70%),#171717;color:#fff;padding:26px 0 22px;overflow:hidden}
+  .affband .aff-sur{margin:0;text-align:center;color:#F2E205;font-weight:800;font-size:13px;letter-spacing:.06em;text-transform:uppercase}
+  .affband .aff-titre{margin:6px 0 14px;text-align:center;font-family:'Poppins',sans-serif;font-weight:800;font-size:clamp(22px,3.2vw,30px);color:#A6FF00}
+  .aff-car{position:relative}
+  .aff-track{display:grid;grid-auto-flow:column;grid-auto-columns:min(74%,300px);gap:14px;overflow-x:auto;scroll-snap-type:x mandatory;scroll-padding-inline:4px;padding:4px 4px 10px;scrollbar-width:none;overscroll-behavior-x:contain}
+  .aff-track::-webkit-scrollbar{display:none}
+  .aff{scroll-snap-align:start;display:block;border-radius:14px;overflow:hidden;box-shadow:0 10px 24px rgba(0,0,0,.45);background:#232323}
+  .aff img{display:block;width:100%;height:auto}
+  .aff:focus-visible,.aff-track:focus-visible{outline:3px solid #A6FF00;outline-offset:3px}
+  .aff-nav{position:absolute;top:50%;transform:translateY(-50%);z-index:2;width:44px;height:44px;border-radius:50%;border:none;background:#A6FF00;color:#141414;font-size:26px;font-weight:900;line-height:1;cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,.4)}
+  .aff-nav.prev{left:-6px} .aff-nav.next{right:-6px}
+  .aff-nav[aria-disabled="true"]{opacity:.35;cursor:default}
+  .aff-nav:focus-visible{outline:3px solid #fff;outline-offset:2px}
+  @media(hover:none) and (pointer:coarse){.aff-nav{display:none}}
+  .aff-compte{margin:6px 0 0;text-align:center;font-size:13px;font-weight:700;color:#cfd8c9}
+  .aff-cta{display:flex;flex-wrap:wrap;justify-content:center;gap:10px;margin-top:14px}
+  .btn.aff-lime{background:#A6FF00;color:#141414}
+  .btn.aff-fb{background:#0866FF;color:#fff}
+  .aff-ia{margin:12px 0 0;text-align:center;font-size:12px;color:#9fb08f}
+  .affband .btn:focus-visible{outline:3px solid #fff;outline-offset:2px}
+  .newsbar .nb-link:focus-visible,.newsbar .nb-x:focus-visible{outline-color:#fff}
 </style>
 </head>
 <body>
@@ -322,6 +344,69 @@
     </nav>
   </div>
 </header>
+<!-- SAMEDI OUVERT 12/09/2026 : bande des affiches. Se retire toute seule le lendemain (data-until, date locale). -->
+<section class="affband" id="affiches" data-until="2026-09-12" aria-labelledby="affTitre">
+  <div class="wrap">
+    <p class="aff-sur">Samedi 12 septembre 2026 · 8 h – 17 h · entrée libre</p>
+    <h2 class="aff-titre" id="affTitre">Samedi ouvert : les affiches</h2>
+    <div class="aff-car">
+      <button class="aff-nav prev" type="button" data-dir="-1" aria-label="Affiche précédente">‹</button>
+      <div class="aff-track" id="affTrack" tabindex="0" role="region" aria-label="Affiches du Samedi ouvert, à faire défiler">
+        <a class="aff" href="assets/samedi-ouvert-2026-09-12/1-programme.webp" target="_blank" rel="noopener"><img src="assets/samedi-ouvert-2026-09-12/1-programme.webp" width="900" height="1125" decoding="async" alt="Affiche du Samedi ouvert, samedi 12 septembre 2026 de 8 h à 17 h, gratuit et sans inscription. Programme : 8 h petit-déjeuner offert ; 8 h 30 musculation ouverte à tous, 45 minutes à 1 heure ; 9 h 30 initiation DJ, écriture et danse, et de nouveau l'après-midi ; le matin, shooting photo avec un photographe ; 12 h repas créole à 5 euros, gratuit pour les adhérents ; 14 h pâtisserie, crêpes et gâteaux vendus à petits prix ; 15 h 30 son et danse jusqu'à 17 h. Buvette toute la journée : boissons, crêpes et gâteaux à petits prix. Inscriptions aux activités de la saison sur place. Place de la Fraternité, route de Bois de Nèfles, 0262 29 37 90. Des photos et des vidéos seront prises pendant la journée : dis-le à l'accueil si tu ne veux pas apparaître."></a>
+        <a class="aff" href="assets/samedi-ouvert-2026-09-12/2-annonce.webp" target="_blank" rel="noopener"><img src="assets/samedi-ouvert-2026-09-12/2-annonce.webp" width="900" height="1125" decoding="async" alt="Affiche « Samedi ouvert » : la journée de rentrée du CASE, samedi 12 septembre de 8 h à 17 h, pour tout le quartier. Tout est gratuit sauf le repas à 5 euros et la buvette ; café offert à 8 h."></a>
+        <a class="aff" href="assets/samedi-ouvert-2026-09-12/3-musculation.webp" target="_blank" rel="noopener"><img src="assets/samedi-ouvert-2026-09-12/3-musculation.webp" width="900" height="1125" loading="lazy" decoding="async" alt="Affiche « Renforcement musculaire » : samedi 12 septembre à 8 h 30, de 45 minutes à 1 heure, ouvert à tous, débutants bienvenus."></a>
+        <a class="aff" href="assets/samedi-ouvert-2026-09-12/4-initiation.webp" target="_blank" rel="noopener"><img src="assets/samedi-ouvert-2026-09-12/4-initiation.webp" width="900" height="1125" loading="lazy" decoding="async" alt="Affiche « L'initiation » : DJ, écriture et danse, samedi 12 septembre à 9 h 30 après le renforcement musculaire, et de nouveau l'après-midi. En matinée, shooting photo : pose comme un modèle ou initie-toi à la photo."></a>
+        <a class="aff" href="assets/samedi-ouvert-2026-09-12/5-atelier-des-mots.webp" target="_blank" rel="noopener"><img src="assets/samedi-ouvert-2026-09-12/5-atelier-des-mots.webp" width="900" height="1125" loading="lazy" decoding="async" alt="Affiche « L'atelier des mots » : samedi 12 septembre à 9 h 30, dans l'initiation avec le DJ et la danse, et de nouveau l'après-midi. Gratuit, sans inscription, aucun niveau requis."></a>
+        <a class="aff" href="assets/samedi-ouvert-2026-09-12/6-repas-creole.webp" target="_blank" rel="noopener"><img src="assets/samedi-ouvert-2026-09-12/6-repas-creole.webp" width="900" height="1125" loading="lazy" decoding="async" alt="Affiche « Repas créole 5 euros » : samedi 12 septembre à 12 h, gratuit pour les adhérents, adhésion 10 euros par an sur place. Crêpes et gâteaux en dessert à 14 h, à petits prix."></a>
+        <a class="aff" href="assets/samedi-ouvert-2026-09-12/7-on-ouvre-a-8h.webp" target="_blank" rel="noopener"><img src="assets/samedi-ouvert-2026-09-12/7-on-ouvre-a-8h.webp" width="900" height="1125" loading="lazy" decoding="async" alt="Affiche « On ouvre à 8 h » : samedi 12 septembre jusqu'à 17 h, place de la Fraternité. Viens quand tu veux, reste le temps que tu veux."></a>
+      </div>
+      <button class="aff-nav next" type="button" data-dir="1" aria-label="Affiche suivante">›</button>
+    </div>
+    <p class="aff-compte" id="affCompte" aria-hidden="true"></p>
+    <div class="aff-cta">
+      <a class="btn aff-lime" href="#samedi-ouvert" onclick="openSamediOuvert();return false;">Voir le programme</a>
+      <a class="btn aff-fb" href="https://www.facebook.com/Casebdn" target="_blank" rel="noopener">Suivre le CASE sur Facebook</a>
+    </div>
+    <p class="aff-ia">Appuyez sur une affiche pour l'agrandir · Illustrations créées avec l'aide de l'IA.</p>
+  </div>
+</section>
+<script>
+/* Samedi ouvert : ce petit script tourne DÈS la lecture de la bande (et non en bas de page, derrière supabase-js) :
+   pas de bande qui s'affiche puis saute après la date, et rien ne dépend du CDN. */
+/* Date du jour du visiteur en AAAA-MM-JJ, heure LOCALE (toISOString donnerait la date UTC : la veille avant 4 h à La Réunion). */
+function dateLocaleISO(d){ d=d||new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+/* data-until="AAAA-MM-JJ" : l'élément reste affiché jusqu'à ce jour inclus, puis se retire tout seul. */
+function perime(el){ var u=el&&el.dataset.until; return !!u && dateLocaleISO()>u; }
+/* Bandeau actualité : fermeture mémorisée (réapparaît si on change data-news). */
+(function(){
+  var bar=document.getElementById('newsbar'); if(!bar) return;
+  var key='news_'+bar.dataset.news;
+  try{ if(localStorage.getItem(key)==='1') bar.classList.add('hidden'); }catch(e){}
+  if(perime(bar)) bar.classList.add('hidden');
+  window.closeNews=function(){ bar.classList.add('hidden'); try{localStorage.setItem(key,'1')}catch(e){} };
+})();
+/* Bande des affiches : flèches (ordinateur), glisser au doigt (téléphone), compteur, retrait après la date. */
+(function(){
+  var band=document.getElementById('affiches'); if(!band) return;
+  if(perime(band)){ band.hidden=true; return; }
+  var track=document.getElementById('affTrack'), compte=document.getElementById('affCompte');
+  var cards=track.querySelectorAll('.aff'), n=cards.length;
+  var prev=band.querySelector('.aff-nav.prev'), next=band.querySelector('.aff-nav.next');
+  function pas(){ if(!n) return 0; var g=parseFloat(getComputedStyle(track).columnGap)||0; return cards[0].getBoundingClientRect().width+g; }
+  function maj(){
+    var p=pas(), i=p?Math.round(track.scrollLeft/p):0;
+    var fin=track.scrollLeft+track.clientWidth>=track.scrollWidth-4;
+    i=Math.max(0,Math.min(n-1,i));
+    if(compte) compte.textContent='Affiche '+(fin?n:i+1)+' sur '+n;
+    if(prev) prev.setAttribute('aria-disabled', String(track.scrollLeft<=4));
+    if(next) next.setAttribute('aria-disabled', String(fin));
+  }
+  [prev,next].forEach(function(b){ if(b) b.addEventListener('click',function(){ if(b.getAttribute('aria-disabled')==='true') return; track.scrollBy({left:(+b.dataset.dir)*pas(),behavior:'smooth'}); }); });
+  var t; track.addEventListener('scroll',function(){ clearTimeout(t); t=setTimeout(maj,60); },{passive:true});
+  window.addEventListener('resize',maj);
+  maj();
+})();
+</script>
 <section class="hero2" id="accueil">
   <div class="wrap hrow">
     <div class="htxt">
@@ -974,7 +1059,8 @@ function openPlan(i){
     +'<div class="pmd-line"><span class="i">📞</span><div><b>Infos &amp; inscriptions</b><br><a href="#contact" onclick="closePlan()">Nous contacter</a></div></div>';
   document.getElementById('pmodal').classList.add('open');
 }
-function closePlan(){ document.getElementById('pmodal').classList.remove('open'); }
+var _pmRetour=null; /* élément à qui rendre le focus à la fermeture (posé par openSamediOuvert) */
+function closePlan(){ document.getElementById('pmodal').classList.remove('open'); if(_pmRetour&&_pmRetour.focus){ try{_pmRetour.focus();}catch(e){} } _pmRetour=null; }
 document.addEventListener('keydown',e=>{ if(e.key==='Escape')closePlan(); });
 renderPlan();
 loadInsBar();
@@ -982,16 +1068,6 @@ loadActivitesPubliques();
 loadEvenements();
 loadLieux();
 loadAteliersPublics();
-/* Bandeau actualité : fermeture mémorisée (réapparaît si on change data-news).
-   data-until="AAAA-MM-JJ" : le bandeau se retire tout seul le lendemain (date LOCALE du visiteur, pas toISOString). */
-(function(){
-  var bar=document.getElementById('newsbar'); if(!bar) return;
-  var key='news_'+bar.dataset.news;
-  try{ if(localStorage.getItem(key)==='1') bar.classList.add('hidden'); }catch(e){}
-  var until=bar.dataset.until;
-  if(until){ var d=new Date(), loc=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); if(loc>until) bar.classList.add('hidden'); }
-  window.closeNews=function(){ bar.classList.add('hidden'); try{localStorage.setItem(key,'1')}catch(e){} };
-})();
 /* Samedi ouvert du 12/09/2026 : programme dans la fenêtre partagée #pmodal (contenu éditorial fixe, aucune donnée injectée).
    Ouvert par le bandeau, ou directement par le lien casebdn.re/#samedi-ouvert. */
 function openSamediOuvert(){
@@ -1009,11 +1085,13 @@ function openSamediOuvert(){
     +'<h3>Samedi ouvert</h3>'
     +'<p style="color:var(--muted);margin:6px 0 10px">Entrée libre, sans inscription : viens quand tu veux.</p>'
     +L.map(function(x){return '<div class="ligne" style="padding:8px 2px"><span class="h" style="width:62px">'+x[0]+'</span><span>'+x[1]+'</span></div>';}).join('')
-    +'<p style="margin:12px 0 0;font-size:13.5px;color:var(--muted)">Buvette toute la journée : boissons, crêpes et gâteaux vendus à petits prix. Adhésion possible sur place.</p>'
+    +'<p style="margin:12px 0 0;font-size:13.5px;color:var(--muted)">Buvette toute la journée : boissons, crêpes et gâteaux vendus à petits prix. Adhésion et inscriptions aux activités de la saison sur place.</p>'
     +'<p style="margin:8px 0 0;font-size:13.5px;color:var(--muted)">Place de la Fraternité · Route de Bois de Nèfles · 0262 29 37 90</p>'
     +'<p style="margin:8px 0 0;font-size:12.5px;color:var(--muted)">Des photos et des vidéos seront prises pendant la journée : dites-le à l\'accueil si vous ne voulez pas apparaître.</p>'
     +'<a class="btn primary" style="display:block;width:100%;margin-top:14px;text-align:center" href="https://www.facebook.com/Casebdn" target="_blank" rel="noopener">Suivre le CASE sur Facebook</a>';
+  _pmRetour=document.activeElement;
   document.getElementById('pmodal').classList.add('open');
+  var x=box.querySelector('.px'); if(x) x.focus();
 }
 if(location.hash==='#samedi-ouvert') openSamediOuvert();
 </script>
