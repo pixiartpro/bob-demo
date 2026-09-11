@@ -606,6 +606,54 @@ function perime(el){ var u=el&&el.dataset.until; return !!u && dateLocaleISO()>u
 <div class="pmodal" id="pmodal" onclick="if(event.target===this)closePlan()">
   <div class="pmodal-box" id="pmodalBox"></div>
 </div>
+<script>
+/* ===== Fenêtre partagée #pmodal : UNE seule porte d'entrée, pmodalOuvrir(), pour TOUTES les ouvertures (WCAG 2.2 AA, 2.4.3 et 4.1.2).
+   Chaque openX() remplit #pmodalBox (un bouton .px « Fermer » + un <h3> qui sert de titre), puis appelle pmodalOuvrir() :
+   jamais de classList.add('open') à la main, sinon la fenêtre s'ouvre sans être un vrai dialogue.
+   À l'ouverture : on retient l'élément qui a ouvert la fenêtre, la boîte devient un dialogue (role, aria-modal, nommée par son h3),
+   le reste de la page devient inerte (ni clic, ni Tab, ni lecteur d'écran) et le focus va sur le bouton de fermeture.
+   closePlan() rend la page active et le focus à l'élément d'origine.
+   Script à part, AVANT supabase-js : si le CDN ne charge pas, la fenêtre s'ouvre et se ferme quand même, sans laisser la page inerte. ===== */
+var _pmRetour=null, _pmInertes=[];
+function pmodalOuvrir(){
+  var m=document.getElementById('pmodal'), box=document.getElementById('pmodalBox'); if(!m||!box) return;
+  if(!m.classList.contains('open')){   /* déjà ouverte (seul le contenu change) : on garde l'élément d'origine */
+    /* D'abord l'élément dont le onclick ouvre la fenêtre : Safari (Mac, iPhone) ne donne pas le focus au bouton cliqué. */
+    var ev=window.event, a=(ev&&ev.currentTarget&&ev.currentTarget.nodeType===1)?ev.currentTarget:document.activeElement;
+    _pmRetour=(a&&a!==document.body)?a:null;
+  }
+  box.setAttribute('role','dialog');
+  box.setAttribute('aria-modal','true');
+  var h=box.querySelector('h3');
+  if(h){ h.id='pmodalTitre'; box.setAttribute('aria-labelledby','pmodalTitre'); } else box.removeAttribute('aria-labelledby');
+  m.classList.add('open');
+  Array.prototype.forEach.call(document.body.children,function(el){
+    if(el!==m && el.tagName!=='SCRIPT' && !el.hasAttribute('inert')){ el.setAttribute('inert',''); _pmInertes.push(el); }
+  });
+  var x=box.querySelector('.px');
+  if(x) x.focus(); else { box.setAttribute('tabindex','-1'); box.focus(); }
+}
+function closePlan(){
+  var m=document.getElementById('pmodal'); if(!m||!m.classList.contains('open')) return;
+  m.classList.remove('open');
+  _pmInertes.forEach(function(el){ el.removeAttribute('inert'); }); _pmInertes=[];
+  var r=_pmRetour; _pmRetour=null;
+  if(r&&r.focus){ try{ r.focus(); }catch(e){} }
+}
+/* Fenêtre ouverte : Échap la ferme ; Tab et Maj+Tab tournent en boucle à l'intérieur (filet si le navigateur ignore inert). */
+document.addEventListener('keydown',function(e){
+  var m=document.getElementById('pmodal'); if(!m||!m.classList.contains('open')) return;
+  if(e.key==='Escape'){ closePlan(); return; }
+  if(e.key!=='Tab') return;
+  var box=document.getElementById('pmodalBox');
+  var f=Array.prototype.filter.call(box.querySelectorAll('a[href],button:not([disabled]),input:not([disabled]),select:not([disabled]),textarea:not([disabled]),summary,[tabindex]:not([tabindex="-1"])'),function(el){ return el.getClientRects().length>0; });
+  if(!f.length) return;
+  var a=document.activeElement, first=f[0], last=f[f.length-1];
+  if(!box.contains(a)){ if(!('inert' in HTMLElement.prototype)){ e.preventDefault(); (e.shiftKey?last:first).focus(); } return; }
+  if(e.shiftKey&&a===first){ e.preventDefault(); last.focus(); }
+  else if(!e.shiftKey&&a===last){ e.preventDefault(); first.focus(); }
+});
+</script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 /* Client PUBLIC : jamais de session persistée — un visiteur connecté à Bob (même origine)
@@ -913,7 +961,7 @@ function openActCat(idx){
       +(list.length?('<div class="actlist" style="margin-top:10px">'+list.map(actRowHtml).join('')+'</div>'):'<p style="color:var(--muted)">Activités à venir.</p>');
   }
   box.innerHTML=inner;
-  document.getElementById('pmodal').classList.add('open');
+  pmodalOuvrir();
 }
 function actToggle(id){ const f=document.getElementById('actf_'+id); if(!f) return; f.style.display=(f.style.display==='none')?'block':'none'; if(f.style.display==='block'){ const n=document.getElementById('actn_'+id); if(n) n.focus(); } }
 async function actSend(id){
@@ -940,7 +988,8 @@ async function actSend(id){
     return;
   }
   info.style.color='var(--vert-fonce)'; info.textContent=' C\'est noté, merci ! Le CASE vous recontacte.';
-  setTimeout(()=>{ loadActivitesPubliques(); loadEvenements(); }, 1800);
+  /* Plus de rechargement des tuiles ici : aucune n'affiche de compteur d'inscrits (le seul formulaire est celui des rendez-vous),
+     et redessiner la liste détruisait la tuile à qui la fenêtre venait de rendre le focus. */
 }
 /* ===== Bandeau inscriptions prioritaires (familles) =====
    Piloté par la gestion (onglet  Activités) : catégorie « Péri & extrascolaire » + publié.
@@ -987,12 +1036,12 @@ function openEvent(id){
     + (e.programme?`<p style="color:var(--muted);margin:8px 0 0;white-space:pre-line">${escP(e.programme)}</p>`:``)
     + (e.lieu?`<p style="margin:8px 0 0;font-size:13.5px;color:var(--muted)"> ${escP(e.lieu)}</p>`:``)
     + `<div style="margin-top:14px">`
-    +   `<input id="actn_${e.id}" placeholder="Votre nom *" style="width:100%;margin:4px 0;padding:10px 12px;border:1px solid var(--line);border-radius:10px;font:inherit">`
+    +   `<input id="actn_${e.id}" placeholder="Votre nom *" autocomplete="name" aria-required="true" style="width:100%;margin:4px 0;padding:10px 12px;border:1px solid var(--line);border-radius:10px;font:inherit">`
     +   `<input id="actc_${e.id}" placeholder="Téléphone ou email" style="width:100%;margin:4px 0;padding:10px 12px;border:1px solid var(--line);border-radius:10px;font:inherit">`
     +   `<button class="btn primary" style="width:100%;margin-top:6px" onclick="actSend('${e.id}')">${e.date_event?`Je m'inscris`:`Préviens-moi de la date`}</button>`
-    +   `<p id="acti_${e.id}" style="margin:8px 0 0;font-size:13px;font-weight:700;text-align:center"></p>`
+    +   `<p id="acti_${e.id}" role="status" aria-live="polite" style="margin:8px 0 0;font-size:13px;font-weight:700;text-align:center"></p>`
     + `</div>`;
-  document.getElementById('pmodal').classList.add('open');
+  pmodalOuvrir();
 }
 async function loadEvenements(){
   const box=document.getElementById('agendaList'); if(!box) return;
@@ -1057,11 +1106,8 @@ function openPlan(i){
     +(p.horaires?'<div class="pmd-line"><span class="i"></span><div><b>Quand</b><br>'+escP(p.horaires)+'</div></div>':'')
     +(p.lieu?'<div class="pmd-line"><span class="i"></span><div><b>Où</b><br>'+escP(p.lieu)+'</div></div>':'')
     +'<div class="pmd-line"><span class="i">📞</span><div><b>Infos &amp; inscriptions</b><br><a href="#contact" onclick="closePlan()">Nous contacter</a></div></div>';
-  document.getElementById('pmodal').classList.add('open');
+  pmodalOuvrir();
 }
-var _pmRetour=null; /* élément à qui rendre le focus à la fermeture (posé par openSamediOuvert) */
-function closePlan(){ document.getElementById('pmodal').classList.remove('open'); if(_pmRetour&&_pmRetour.focus){ try{_pmRetour.focus();}catch(e){} } _pmRetour=null; }
-document.addEventListener('keydown',e=>{ if(e.key==='Escape')closePlan(); });
 renderPlan();
 loadInsBar();
 loadActivitesPubliques();
@@ -1089,9 +1135,7 @@ function openSamediOuvert(){
     +'<p style="margin:8px 0 0;font-size:13.5px;color:var(--muted)">Place de la Fraternité · Route de Bois de Nèfles · 0262 29 37 90</p>'
     +'<p style="margin:8px 0 0;font-size:12.5px;color:var(--muted)">Des photos et des vidéos seront prises pendant la journée : dites-le à l\'accueil si vous ne voulez pas apparaître.</p>'
     +'<a class="btn primary" style="display:block;width:100%;margin-top:14px;text-align:center" href="https://www.facebook.com/Casebdn" target="_blank" rel="noopener">Suivre le CASE sur Facebook</a>';
-  _pmRetour=document.activeElement;
-  document.getElementById('pmodal').classList.add('open');
-  var x=box.querySelector('.px'); if(x) x.focus();
+  pmodalOuvrir();
 }
 if(location.hash==='#samedi-ouvert') openSamediOuvert();
 </script>
